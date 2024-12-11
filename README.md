@@ -46,7 +46,7 @@ In the meantime please feel free to leave feedback, requests, or suggestions in 
 > If you'd like to receive release updates [please sign up here.](https://tally.so/r/wLJ5ll)
 
 ## Screenshots
-<img width="585" alt="rezible-screenshot" src="https://github.com/user-attachments/assets/804bc2c5-3141-4d5a-aa9b-c159332f6033">
+<img width="585" alt="demo screenshot" src="https://github.com/user-attachments/assets/b2e98a10-a3bc-41f5-b234-2836adb3cead">
 
 
 ## License
