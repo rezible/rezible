@@ -1,0 +1,3 @@
+internal/http/dist
+internal/providers/saml/testdata
+.dev_provider_configs.json

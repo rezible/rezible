@@ -1,0 +1,100 @@
+<script lang="ts">
+    import { listUserAssignmentsOptions, type ListUserAssignmentsData, type UserAssignment } from "$lib/api";
+    import { createQuery } from "@tanstack/svelte-query";
+    import { Icon, Header, ListItem, Button } from "svelte-ux";
+    import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
+    import { addDays, addHours, formatDate, formatDistanceToNow } from "date-fns";
+    import Avatar from "$src/components/avatar/Avatar.svelte";
+
+	let params = $state<ListUserAssignmentsData["query"]>({});
+	const query = createQuery(() => listUserAssignmentsOptions({query: params}));
+
+	const mockAssignments: UserAssignment[] = [
+		{item_id: "review-bar", item_type: "incident_review", role: "Present", title: "Example Incident", deadline: addHours(Date.now(), 2).toISOString()},
+		{item_id: "foo", item_type: "retrospective", role: "Review", title: "Foo Incident", deadline: addDays(Date.now(), 4).toISOString()},
+		
+	];
+
+	// TODO: don't mock
+	const assignments = $derived(query.data?.data ?? mockAssignments);
+	const incidents = $derived(assignments.filter(a => a.item_type === "incident"));
+	const shifts = $derived(assignments.filter(a => a.item_type === "oncall_shift"));
+	const tasks = $derived(assignments.filter(a => a.item_type === "tasks"));
+</script>
+
+<div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
+	<Header title="Your Items" class="border-b" />
+
+	<div class="flex flex-col gap-2 overflow-y-auto">
+		{#each assignments as a, i (i)}
+				{#if a.item_type == "retrospective"}
+					<a href="/incidents/{a.item_id}/retrospective">
+						<ListItem 
+							title="{a.role} the Retrospective for {a.title}" 
+							subheading="Due in {formatDistanceToNow(a.deadline)}"
+							classes={{ root: 'hover:bg-primary-900/80' }} 
+							icon={mdiFileDocument}
+						>
+							<div slot="actions">
+								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+							</div>
+						</ListItem>
+					</a>
+				{:else if a.item_type === "incident_review"}
+					<a href="/meetings/sessions/{a.item_id}">
+						<ListItem 
+							title="{a.role} {a.title} at Incident Review" 
+							subheading="In {formatDistanceToNow(a.deadline)}"
+							classes={{ root: 'hover:bg-primary-900/80' }} 
+							icon={mdiVideo}
+						>
+							<div slot="actions">
+								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+							</div>
+						</ListItem>
+					</a>
+				{:else}
+					{JSON.stringify(a)}
+				{/if}
+		{/each}
+
+		{#if assignments.length === 0}
+			<div class="flex gap-2 items-center">
+				<span class="leading-none">No Assigned Items</span>
+				<Icon data={mdiGhostOutline} />
+			</div>
+		{/if}
+	</div>
+</div>
+
+
+<!--div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
+	<Header class="border-b">
+		<div class="flex items-center gap-2" slot="title">
+			<span class="text-lg">Oncall Backlog for Search</span>
+			<Avatar kind="roster" id="roster-id" size={22} />
+		</div>
+	</Header>
+
+	<div class="flex flex-col gap-2 overflow-y-auto">
+		<ListItem 
+			title="Investigate Elevated Memory Usage in AP-South-1 Cluster" 
+			subheading="Medium Priority"
+			classes={{ root: 'hover:bg-primary-900/80' }}
+		>
+		<div slot="avatar" class="text-surface-content/80">
+			SRCH-2245
+		</div>
+			<div slot="actions">
+				<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+			</div>
+		</ListItem>
+
+		{#if assignments.length === 0}
+			<div class="flex gap-2 items-center">
+				<span class="leading-none">No Assigned Items</span>
+				<Icon data={mdiGhostOutline} />
+			</div>
+		{/if}
+	</div>
+</div-->

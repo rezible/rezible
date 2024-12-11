@@ -1,0 +1,35 @@
+span.collaboration-cursor__caret {
+	border-left: 1px solid blue;
+	border-right: 1px solid blue;
+	margin-left: -1px;
+	margin-right: -1px;
+	pointer-events: none;
+	position: relative;
+	word-break: normal;
+}
+
+.collaboration-cursor__label {
+	border-radius: 3px 3px 3px 0;
+	font-size: 12px;
+	font-style: normal;
+	font-weight: 600;
+	line-height: normal;
+	padding: 0.1rem 0.3rem;
+	position: absolute;
+	left: -1px;
+	top: -1.4em;
+	user-select: none;
+	white-space: nowrap;
+}
+
+.rez-discussion-draft {
+	@apply bg-yellow-900 border-b border-yellow-400 cursor-pointer;
+}
+
+.rez-annotation {
+	@apply bg-accent-900 border-b border-yellow-400 cursor-pointer;
+}
+
+.rez-user-mention {
+	@apply bg-accent-400 border text-accent-content;
+}

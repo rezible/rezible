@@ -1,0 +1,57 @@
+version: "1.24"
+
+# upgrade after resolved:
+# https://github.com/F1bonacc1/process-compose/issues/258
+
+processes:
+  backend:
+    command: just dev-backend
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    readiness_probe:
+      http_get:
+        scheme: http
+        host: localhost
+        path: "/health"
+        port: 8888
+      initial_delay_seconds: 1
+      period_seconds: 10
+      timeout_seconds: 1
+      success_threshold: 1
+      failure_threshold: 4
+    depends_on:
+      postgresql:
+        condition: process_healthy
+      document-server:
+        condition: process_started
+  postgresql:
+    command: pg_ctl start -o "-k $PGHOST"
+    is_daemon: true
+    availability:
+      restart: always
+    shutdown:
+      command: "pg_ctl stop -m fast"
+    readiness_probe:
+      exec:
+        command: pg_isready
+      initial_delay_seconds: 1
+  document-server:
+    command: just dev-document-server
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    depends_on:
+      postgresql:
+        condition: process_healthy
+  frontend:
+    command: just dev-frontend
+    availability:
+      restart: on_failure
+      max_restarts: 1
+  localias:
+    disabled: true
+    command: localias run
+    availability:
+      restart: on_failure
+      max_restarts: 3

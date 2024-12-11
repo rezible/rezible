@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.10.1/.schema/devbox.schema.json",
+  "packages": {
+    "reflex": "latest",
+    "glibcLocales": {
+      "version":   "latest",
+      "platforms": ["x86_64-linux", "aarch64-linux"]
+    },
+    "ent-go":                      "latest",
+    "atlas":                       "latest",
+    "bun":                         "latest",
+    "process-compose":             "1.24.2",
+    "just":                        "latest",
+    "postgresql":                  "latest",
+    "github:peterldowns/localias": "",
+    "go":                          "latest"
+  },
+  "env": {
+    "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
+  },
+  "shell": {
+    "init_hook": [],
+    "scripts": {
+      "dev":         ["just dev"],
+      "dev-backend": ["just dev-backend"],
+      "start-db":    ["just start-db"],
+      "setup-db":    ["just setup-db"],
+      "codegen":     ["just codegen"]
+    }
+  }
+}

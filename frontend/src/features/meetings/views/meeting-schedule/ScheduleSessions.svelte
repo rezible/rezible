@@ -1,0 +1,37 @@
+<script lang="ts">
+    import { createQuery } from "@tanstack/svelte-query";
+    import { Button, Header } from "svelte-ux";
+    import { listMeetingSessionsOptions, type MeetingSchedule, type MeetingSession } from "$lib/api";
+	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
+    import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+
+	type Props = {
+		schedule: MeetingSchedule;
+	}	
+	const { schedule }: Props = $props();
+
+	const queryOptions = () => listMeetingSessionsOptions({query: {meeting_schedule_id: schedule.id}});
+	const query = createQuery(queryOptions);
+</script>
+
+<div class="border p-2">
+	<Header title="Next Session" classes={{title: "text-lg"}} />
+	<div class="h-20">
+		<!--MeetingSessionCard /-->
+	</div>
+</div>
+
+<div class="border p-2 flex-1 min-h-0 overflow-y-auto">
+	<Header title="Past Sessions" classes={{title: "text-lg"}}>
+		<svelte:fragment slot="actions">
+			<Button>filter</Button>
+		</svelte:fragment>
+	</Header>
+	<LoadingQueryWrapper {query}>
+		{#snippet view(sessions: MeetingSession[])}
+			{#each sessions as session}
+				<MeetingSessionCard {session} />
+			{/each}
+		{/snippet}
+	</LoadingQueryWrapper>
+</div>

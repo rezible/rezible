@@ -1,0 +1,11 @@
+{
+  "name": "rezible",
+  "version": "0.0.1",
+  "workspaces": ["frontend", "documents"],
+  "dependencies": {
+    "@rezible/documents": "workspace:documents"
+  },
+  "scripts": {
+    "build": "bun run --filter frontend build"
+  }
+}
