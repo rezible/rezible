@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallalert"
-	"github.com/twohundreds/rezible/ent/oncallalertinstance"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/oncallalert"
+	"github.com/rezible/rezible/ent/oncallalertinstance"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallAlertInstance is the model entity for the OncallAlertInstance schema.

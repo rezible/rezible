@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallhandovertemplate"
-	"github.com/twohundreds/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	"github.com/rezible/rezible/ent/oncallroster"
 )
 
 // OncallRoster is the model entity for the OncallRoster schema.

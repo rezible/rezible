@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/providersynchistory"
 )
 
 // ProviderSyncHistory is the model entity for the ProviderSyncHistory schema.

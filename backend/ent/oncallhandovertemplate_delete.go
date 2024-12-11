@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/oncallhandovertemplate"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // OncallHandoverTemplateDelete is the builder for deleting a OncallHandoverTemplate entity.

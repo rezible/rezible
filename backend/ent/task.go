@@ -9,9 +9,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/task"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // Task is the model entity for the Task schema.

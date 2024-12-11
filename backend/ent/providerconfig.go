@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/providerconfig"
 )
 
 // ProviderConfig is the model entity for the ProviderConfig schema.

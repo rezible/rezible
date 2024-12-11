@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/environment"
+	"github.com/rezible/rezible/ent/environment"
 )
 
 // Environment is the model entity for the Environment schema.

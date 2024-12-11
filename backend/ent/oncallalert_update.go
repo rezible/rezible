@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallalert"
-	"github.com/twohundreds/rezible/ent/oncallalertinstance"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/oncallalert"
+	"github.com/rezible/rezible/ent/oncallalertinstance"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // OncallAlertUpdate is the builder for updating OncallAlert entities.

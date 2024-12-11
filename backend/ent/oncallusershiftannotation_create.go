@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 )
 
 // OncallUserShiftAnnotationCreate is the builder for creating a OncallUserShiftAnnotation entity.

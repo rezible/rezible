@@ -2,11 +2,11 @@ package api
 
 import (
 	"context"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/schema"
-	entteam "github.com/twohundreds/rezible/ent/team"
-	oapi "github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema"
+	entteam "github.com/rezible/rezible/ent/team"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type teamsHandler struct {

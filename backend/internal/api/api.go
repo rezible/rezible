@@ -4,10 +4,10 @@ import (
 	"context"
 	"regexp"
 
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	oapi "github.com/rezible/rezible/openapi"
 	"github.com/rs/zerolog/log"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	oapi "github.com/twohundreds/rezible/openapi"
 )
 
 type Handler struct {

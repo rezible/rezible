@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentteamassignment"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentteamassignment"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // IncidentTeamAssignmentCreate is the builder for creating a IncidentTeamAssignment entity.

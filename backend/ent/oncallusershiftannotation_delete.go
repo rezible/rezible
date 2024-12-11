@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // OncallUserShiftAnnotationDelete is the builder for deleting a OncallUserShiftAnnotation entity.

@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	oapi "github.com/twohundreds/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type subscriptionsHandler struct {

@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/functionality"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/functionality"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // FunctionalityDelete is the builder for deleting a Functionality entity.

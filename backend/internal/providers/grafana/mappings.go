@@ -3,7 +3,7 @@ package grafana
 import (
 	"time"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 )
 
 // mappings respresent an object with non-zero fields for data that a provider can map

@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/meetingsession"
 )
 
 // MeetingSession is the model entity for the MeetingSession schema.

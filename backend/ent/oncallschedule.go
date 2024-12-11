@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/oncallschedule"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallschedule"
 )
 
 // OncallSchedule is the model entity for the OncallSchedule schema.

@@ -3,9 +3,9 @@ package postgres
 import (
 	"context"
 	"fmt"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/jobs"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 	"time"
 )
 

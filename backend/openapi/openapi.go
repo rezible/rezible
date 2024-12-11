@@ -6,7 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 )
 
 type (

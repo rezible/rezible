@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftcover"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftcover"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallUserShiftCoverCreate is the builder for creating a OncallUserShiftCover entity.

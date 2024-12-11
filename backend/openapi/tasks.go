@@ -7,7 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 )
 
 type TasksHandler interface {

@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/meetingsession"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // MeetingSessionDelete is the builder for deleting a MeetingSession entity.

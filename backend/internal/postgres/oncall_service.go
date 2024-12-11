@@ -6,22 +6,22 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rs/zerolog/log"
 	"github.com/texm/prosemirror-go"
-	"github.com/twohundreds/rezible/ent/oncallhandovertemplate"
-	"github.com/twohundreds/rezible/ent/oncallusershifthandover"
 	"time"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/jobs"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/jobs"
 
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/oncallschedule"
-	"github.com/twohundreds/rezible/ent/oncallscheduleparticipant"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallschedule"
+	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 type OncallService struct {

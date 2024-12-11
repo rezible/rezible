@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentDebriefMessageDelete is the builder for deleting a IncidentDebriefMessage entity.

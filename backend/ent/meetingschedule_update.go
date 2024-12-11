@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/meetingschedule"
-	"github.com/twohundreds/rezible/ent/meetingsession"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/meetingschedule"
+	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // MeetingScheduleUpdate is the builder for updating MeetingSchedule entities.

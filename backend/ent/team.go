@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // Team is the model entity for the Team schema.

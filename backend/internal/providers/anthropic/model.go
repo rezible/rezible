@@ -3,7 +3,7 @@ package anthropic
 import (
 	"errors"
 	"fmt"
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 
 	"github.com/tmc/langchaingo/llms/anthropic"
 )

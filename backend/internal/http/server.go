@@ -11,8 +11,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/twohundreds/rezible"
-	oapi "github.com/twohundreds/rezible/openapi"
+	rez "github.com/rezible/rezible"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type Server struct {

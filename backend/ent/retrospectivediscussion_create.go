@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/retrospective"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussion"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussionreply"
-	"github.com/twohundreds/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivereview"
 )
 
 // RetrospectiveDiscussionCreate is the builder for creating a RetrospectiveDiscussion entity.

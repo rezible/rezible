@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
-	"github.com/twohundreds/rezible/ent/incidentseverity"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentSeverityUpdate is the builder for updating IncidentSeverity entities.

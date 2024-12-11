@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/texm/prosemirror-go"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
 	"time"
 
-	rez "github.com/twohundreds/rezible"
-	oapi "github.com/twohundreds/rezible/openapi"
+	rez "github.com/rezible/rezible"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type oncallHandler struct {

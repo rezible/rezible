@@ -15,9 +15,9 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentevent"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentevent"
 )
 
 type IncidentDataProvider struct {

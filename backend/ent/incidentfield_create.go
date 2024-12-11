@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
-	"github.com/twohundreds/rezible/ent/incidentfield"
-	"github.com/twohundreds/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/incidentfield"
+	"github.com/rezible/rezible/ent/incidentfieldoption"
 )
 
 // IncidentFieldCreate is the builder for creating a IncidentField entity.

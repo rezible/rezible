@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 )
 
 // OncallUserShiftHandover is the model entity for the OncallUserShiftHandover schema.

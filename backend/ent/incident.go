@@ -10,10 +10,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentseverity"
-	"github.com/twohundreds/rezible/ent/incidenttype"
-	"github.com/twohundreds/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/retrospective"
 )
 
 // Incident is the model entity for the Incident schema.

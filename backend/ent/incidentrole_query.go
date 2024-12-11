@@ -13,10 +13,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
-	"github.com/twohundreds/rezible/ent/incidentrole"
-	"github.com/twohundreds/rezible/ent/incidentroleassignment"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/incidentrole"
+	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentRoleQuery is the builder for querying IncidentRole entities.

@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/service"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/service"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // Service is the model entity for the Service schema.

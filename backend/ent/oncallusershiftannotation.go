@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 )
 
 // OncallUserShiftAnnotation is the model entity for the OncallUserShiftAnnotation schema.

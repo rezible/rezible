@@ -2,10 +2,10 @@ package slack
 
 import (
 	"fmt"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/slack-go/slack"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
 	"time"
 )
 

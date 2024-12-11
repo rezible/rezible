@@ -2,8 +2,8 @@ package postgres
 
 import (
 	"context"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type ChatService struct {

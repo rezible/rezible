@@ -9,10 +9,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/functionality"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
-	"github.com/twohundreds/rezible/ent/service"
+	"github.com/rezible/rezible/ent/functionality"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/service"
 )
 
 // IncidentResourceImpact is the model entity for the IncidentResourceImpact schema.

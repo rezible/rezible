@@ -8,13 +8,13 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/twohundreds/rezible/internal/api"
-	"github.com/twohundreds/rezible/internal/documents"
-	"github.com/twohundreds/rezible/internal/http"
-	"github.com/twohundreds/rezible/internal/langchain"
-	"github.com/twohundreds/rezible/internal/postgres"
-	"github.com/twohundreds/rezible/internal/providers"
-	"github.com/twohundreds/rezible/jobs"
+	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/documents"
+	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/langchain"
+	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/providers"
+	"github.com/rezible/rezible/jobs"
 )
 
 type Options struct {

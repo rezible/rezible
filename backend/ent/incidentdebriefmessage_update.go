@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentdebrief"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentDebriefMessageUpdate is the builder for updating IncidentDebriefMessage entities.

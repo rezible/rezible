@@ -9,9 +9,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentteamassignment"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentteamassignment"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // IncidentTeamAssignment is the model entity for the IncidentTeamAssignment schema.

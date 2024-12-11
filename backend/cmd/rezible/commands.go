@@ -17,11 +17,11 @@ import (
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
 
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/internal/api"
-	"github.com/twohundreds/rezible/internal/postgres"
-	"github.com/twohundreds/rezible/internal/providers"
-	"github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/providers"
+	"github.com/rezible/rezible/openapi"
 )
 
 func printSpecCmd(ctx context.Context, opts *Options) error {

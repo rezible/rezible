@@ -16,7 +16,7 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertype"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 )
 
 // river type aliases

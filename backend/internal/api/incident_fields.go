@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentfield"
+	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/schema"
+	oapi "github.com/rezible/rezible/openapi"
 	"github.com/rs/zerolog/log"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentfield"
-	"github.com/twohundreds/rezible/ent/incidentfieldoption"
-	"github.com/twohundreds/rezible/ent/schema"
-	oapi "github.com/twohundreds/rezible/openapi"
 	"time"
 )
 

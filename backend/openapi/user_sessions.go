@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 	"net/http"
 	"time"
 )

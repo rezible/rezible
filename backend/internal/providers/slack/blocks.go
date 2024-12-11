@@ -3,8 +3,8 @@ package slack
 import (
 	"fmt"
 	mapset "github.com/deckarep/golang-set/v2"
+	rez "github.com/rezible/rezible"
 	"github.com/slack-go/slack"
-	rez "github.com/twohundreds/rezible"
 )
 
 func plainText(text string) *slack.TextBlockObject {

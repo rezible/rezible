@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/environment"
-	"github.com/twohundreds/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/environment"
+	"github.com/rezible/rezible/ent/incident"
 )
 
 // EnvironmentCreate is the builder for creating a Environment entity.

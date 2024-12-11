@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/uuid"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type AlertsDataProvider struct {

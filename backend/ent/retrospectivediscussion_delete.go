@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospectivediscussion"
 )
 
 // RetrospectiveDiscussionDelete is the builder for deleting a RetrospectiveDiscussion entity.

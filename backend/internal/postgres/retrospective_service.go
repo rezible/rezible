@@ -3,11 +3,11 @@ package postgres
 import (
 	"context"
 	"github.com/google/uuid"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/retrospective"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussion"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/retrospectivediscussion"
 )
 
 type RetrospectiveService struct {

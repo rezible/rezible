@@ -12,13 +12,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentteamassignment"
-	"github.com/twohundreds/rezible/ent/meetingschedule"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/service"
-	"github.com/twohundreds/rezible/ent/subscription"
-	"github.com/twohundreds/rezible/ent/team"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/incidentteamassignment"
+	"github.com/rezible/rezible/ent/meetingschedule"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/service"
+	"github.com/rezible/rezible/ent/subscription"
+	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // TeamCreate is the builder for creating a Team entity.

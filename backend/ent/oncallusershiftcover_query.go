@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftcover"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftcover"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallUserShiftCoverQuery is the builder for querying OncallUserShiftCover entities.

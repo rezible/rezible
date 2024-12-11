@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallhandovertemplate"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // OncallHandoverTemplateUpdate is the builder for updating OncallHandoverTemplate entities.

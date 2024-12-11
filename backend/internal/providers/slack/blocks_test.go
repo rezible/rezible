@@ -3,10 +3,10 @@ package slack
 import (
 	"encoding/json"
 	"fmt"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
 	"github.com/texm/prosemirror-go"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
 	"testing"
 )
 

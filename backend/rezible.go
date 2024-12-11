@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 	"github.com/texm/prosemirror-go"
 	"github.com/tmc/langchaingo/llms"
-	"github.com/twohundreds/rezible/ent"
 )
 
 var (

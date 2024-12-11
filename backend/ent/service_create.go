@@ -12,9 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
-	"github.com/twohundreds/rezible/ent/service"
-	"github.com/twohundreds/rezible/ent/team"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/service"
+	"github.com/rezible/rezible/ent/team"
 )
 
 // ServiceCreate is the builder for creating a Service entity.

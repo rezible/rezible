@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 )
 
 // IncidentDebriefQuestion is the model entity for the IncidentDebriefQuestion schema.

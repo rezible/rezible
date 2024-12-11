@@ -1,4 +1,4 @@
-module github.com/twohundreds/rezible
+module github.com/rezible/rezible
 
 go 1.23.0
 

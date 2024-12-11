@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttag"
 )
 
 // IncidentTag is the model entity for the IncidentTag schema.

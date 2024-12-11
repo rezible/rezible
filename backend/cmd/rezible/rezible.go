@@ -9,7 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 )
 
 func main() {

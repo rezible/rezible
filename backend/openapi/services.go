@@ -2,7 +2,7 @@ package openapi
 
 import (
 	"context"
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"

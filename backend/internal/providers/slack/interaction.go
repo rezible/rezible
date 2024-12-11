@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
-	"github.com/twohundreds/rezible/ent"
 	"net/http"
 	"time"
 )

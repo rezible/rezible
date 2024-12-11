@@ -5,12 +5,12 @@ package enttest
 import (
 	"context"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 	// required by schema hooks.
-	_ "github.com/twohundreds/rezible/ent/runtime"
+	_ "github.com/rezible/rezible/ent/runtime"
 
 	"entgo.io/ent/dialect/sql/schema"
-	"github.com/twohundreds/rezible/ent/migrate"
+	"github.com/rezible/rezible/ent/migrate"
 )
 
 type (

@@ -6,12 +6,12 @@ import (
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentrole"
+	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rs/zerolog/log"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentrole"
-	"github.com/twohundreds/rezible/ent/incidentroleassignment"
 	"time"
 )
 

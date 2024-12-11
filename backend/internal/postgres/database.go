@@ -17,9 +17,9 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivermigrate"
 
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/entpgx"
-	_ "github.com/twohundreds/rezible/ent/runtime"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/entpgx"
+	_ "github.com/rezible/rezible/ent/runtime"
 )
 
 type Database struct {

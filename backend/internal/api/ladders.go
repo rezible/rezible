@@ -3,8 +3,8 @@ package api
 /*
 import (
 	"context"
-	"github.com/twohundreds/rezible/ent"
-	oapi "github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type laddersHandler struct {

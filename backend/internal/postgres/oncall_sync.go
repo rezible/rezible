@@ -10,12 +10,12 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/oncallschedule"
-	"github.com/twohundreds/rezible/ent/oncallscheduleparticipant"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallschedule"
+	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	"github.com/rezible/rezible/ent/oncallusershift"
 )
 
 type oncallDataSyncer struct {

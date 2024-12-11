@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/subscription"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/subscription"
 )
 
 // SubscriptionDelete is the builder for deleting a Subscription entity.

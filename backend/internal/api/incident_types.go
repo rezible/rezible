@@ -2,10 +2,10 @@ package api
 
 import (
 	"context"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidenttype"
-	"github.com/twohundreds/rezible/ent/schema"
-	oapi "github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/schema"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type incidentTypesHandler struct {

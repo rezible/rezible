@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/providerconfig"
 )
 
 // ProviderConfigCreate is the builder for creating a ProviderConfig entity.

@@ -11,12 +11,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/functionality"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentlink"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/service"
+	"github.com/rezible/rezible/ent/functionality"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentlink"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/service"
 )
 
 // IncidentResourceImpactUpdate is the builder for updating IncidentResourceImpact entities.

@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/incidenttype"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentTypeDelete is the builder for deleting a IncidentType entity.

@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentrole"
+	"github.com/rezible/rezible/ent/incidentrole"
 )
 
 // IncidentRole is the model entity for the IncidentRole schema.

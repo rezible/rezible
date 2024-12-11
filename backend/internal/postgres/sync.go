@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"entgo.io/ent/dialect/sql"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/providersynchistory"
 	"time"
 )
 

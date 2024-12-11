@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
-	oapi "github.com/twohundreds/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi"
 	"time"
 )
 

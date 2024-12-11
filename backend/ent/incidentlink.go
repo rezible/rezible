@@ -9,9 +9,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentlink"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentlink"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
 )
 
 // IncidentLink is the model entity for the IncidentLink schema.

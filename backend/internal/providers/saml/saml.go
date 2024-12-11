@@ -16,8 +16,8 @@ import (
 	"github.com/crewjam/saml/samlsp"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 const (

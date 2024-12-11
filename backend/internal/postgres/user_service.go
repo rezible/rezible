@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/team"
-	"github.com/twohundreds/rezible/ent/user"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 type UserService struct {

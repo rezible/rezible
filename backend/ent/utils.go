@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
-	"github.com/twohundreds/rezible/ent/entpgx"
+	"github.com/rezible/rezible/ent/entpgx"
 )
 
 type ListParams struct {

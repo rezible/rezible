@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/providersynchistory"
 )
 
 // ProviderSyncHistoryQuery is the builder for querying ProviderSyncHistory entities.

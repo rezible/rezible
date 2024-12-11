@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/meetingsession"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // MeetingSessionQuery is the builder for querying MeetingSession entities.

@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentlink"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentlink"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
 )
 
 // IncidentLinkCreate is the builder for creating a IncidentLink entity.

@@ -9,8 +9,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussion"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 )
 
 // RetrospectiveDiscussionReply is the model entity for the RetrospectiveDiscussionReply schema.

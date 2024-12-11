@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 )
 
 // The EnvironmentFunc type is an adapter to allow the use of ordinary

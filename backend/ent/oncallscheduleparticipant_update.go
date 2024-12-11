@@ -11,10 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallschedule"
-	"github.com/twohundreds/rezible/ent/oncallscheduleparticipant"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/oncallschedule"
+	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallScheduleParticipantUpdate is the builder for updating OncallScheduleParticipant entities.

@@ -13,12 +13,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/oncallroster"
-	"github.com/twohundreds/rezible/ent/oncallusershift"
-	"github.com/twohundreds/rezible/ent/oncallusershiftannotation"
-	"github.com/twohundreds/rezible/ent/oncallusershiftcover"
-	"github.com/twohundreds/rezible/ent/oncallusershifthandover"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/oncallusershiftcover"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallUserShiftCreate is the builder for creating a OncallUserShift entity.

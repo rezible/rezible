@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussion"
-	"github.com/twohundreds/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 )
 
 // RetrospectiveDiscussionReplyUpdate is the builder for updating RetrospectiveDiscussionReply entities.

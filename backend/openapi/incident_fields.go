@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 )
 
 type IncidentFieldsHandler interface {

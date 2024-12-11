@@ -2,12 +2,12 @@ package api
 
 import (
 	"context"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent/schema"
+	oapi "github.com/rezible/rezible/openapi"
 	"github.com/rs/zerolog/log"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
-	"github.com/twohundreds/rezible/ent/schema"
-	oapi "github.com/twohundreds/rezible/openapi"
 )
 
 type incidentDebriefsHandler struct {

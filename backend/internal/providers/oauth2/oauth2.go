@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/twohundreds/rezible/ent"
+	"github.com/rezible/rezible/ent"
 	"io"
 	"net/http"
 	"net/url"
@@ -18,7 +18,7 @@ import (
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/github"
 
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 )
 
 // TODO: implement this properly

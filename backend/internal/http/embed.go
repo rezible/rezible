@@ -3,8 +3,8 @@ package http
 import (
 	"embed"
 	"fmt"
+	rez "github.com/rezible/rezible"
 	"github.com/rs/zerolog/log"
-	rez "github.com/twohundreds/rezible"
 	"io/fs"
 	"net/http"
 	"os"

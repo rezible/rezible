@@ -3,9 +3,9 @@ package slack
 import (
 	"context"
 	"fmt"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
 	"net/http"
 )
 

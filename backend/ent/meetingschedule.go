@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/meetingschedule"
+	"github.com/rezible/rezible/ent/meetingschedule"
 )
 
 // MeetingSchedule is the model entity for the MeetingSchedule schema.

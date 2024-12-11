@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	oapi "github.com/twohundreds/rezible/openapi"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 func TestApiHandler(t *testing.T) {

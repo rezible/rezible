@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 	"io"
 	"iter"
 	"net/http"
@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	"github.com/twohundreds/rezible/ent"
 )
 
 type OncallDataProvider struct {

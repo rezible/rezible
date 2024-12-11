@@ -3,8 +3,8 @@ package openapi
 import (
 	"context"
 	"encoding/json"
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	"github.com/twohundreds/rezible/ent"
 	"net/http"
 	"time"
 

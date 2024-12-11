@@ -2,9 +2,9 @@ package api
 
 import (
 	"context"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentevent"
-	oapi "github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentevent"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type incidentEventsHandler struct {

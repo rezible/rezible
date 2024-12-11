@@ -2,4 +2,4 @@
 
 package ent
 
-// The schema-stitching logic is generated in github.com/twohundreds/rezible/ent/runtime/runtime.go
+// The schema-stitching logic is generated in github.com/rezible/rezible/ent/runtime/runtime.go

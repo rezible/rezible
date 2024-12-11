@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/jobs"
 	"github.com/riverqueue/river"
-	"github.com/twohundreds/rezible/jobs"
 )
 
 func (s *IncidentService) RegisterJobs() error {

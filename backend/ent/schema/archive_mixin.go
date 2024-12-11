@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	gen "github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/hook"
-	"github.com/twohundreds/rezible/ent/intercept"
+	gen "github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/hook"
+	"github.com/rezible/rezible/ent/intercept"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"

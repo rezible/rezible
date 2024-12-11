@@ -3,8 +3,8 @@ package jobs
 import (
 	"context"
 	"errors"
+	rez "github.com/rezible/rezible"
 	"github.com/riverqueue/river"
-	rez "github.com/twohundreds/rezible"
 	"time"
 )
 

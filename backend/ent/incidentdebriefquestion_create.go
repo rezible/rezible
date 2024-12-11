@@ -12,13 +12,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
-	"github.com/twohundreds/rezible/ent/incidentdebriefquestion"
-	"github.com/twohundreds/rezible/ent/incidentfield"
-	"github.com/twohundreds/rezible/ent/incidentrole"
-	"github.com/twohundreds/rezible/ent/incidentseverity"
-	"github.com/twohundreds/rezible/ent/incidenttag"
-	"github.com/twohundreds/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/incidentfield"
+	"github.com/rezible/rezible/ent/incidentrole"
+	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttype"
 )
 
 // IncidentDebriefQuestionCreate is the builder for creating a IncidentDebriefQuestion entity.

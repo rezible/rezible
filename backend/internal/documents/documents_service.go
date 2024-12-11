@@ -8,9 +8,9 @@ import (
 	"io"
 	"net/http"
 
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
 )
 
 type Service struct {

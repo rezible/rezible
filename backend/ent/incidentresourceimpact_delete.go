@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
-	"github.com/twohundreds/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/predicate"
 )
 
 // IncidentResourceImpactDelete is the builder for deleting a IncidentResourceImpact entity.

@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	rez "github.com/rezible/rezible"
 	"github.com/tmc/langchaingo/llms"
-	rez "github.com/twohundreds/rezible"
 	"strings"
 
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 )
 
 type AiService struct {

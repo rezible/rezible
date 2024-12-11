@@ -8,8 +8,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/providerconfig"
 )
 
 // ProviderConfigDelete is the builder for deleting a ProviderConfig entity.

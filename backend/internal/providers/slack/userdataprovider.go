@@ -3,8 +3,8 @@ package slack
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
-	"github.com/twohundreds/rezible/ent"
 	"iter"
 )
 

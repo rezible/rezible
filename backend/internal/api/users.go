@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	rez "github.com/twohundreds/rezible"
-	oapi "github.com/twohundreds/rezible/openapi"
+	rez "github.com/rezible/rezible"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type usersHandler struct {

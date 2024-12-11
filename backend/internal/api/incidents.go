@@ -8,10 +8,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/incidentresourceimpact"
-	oapi "github.com/twohundreds/rezible/openapi"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type incidentsHandler struct {

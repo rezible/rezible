@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	rez "github.com/twohundreds/rezible"
+	rez "github.com/rezible/rezible"
 	"reflect"
 	"time"
 

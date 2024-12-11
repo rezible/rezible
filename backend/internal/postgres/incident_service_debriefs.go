@@ -6,11 +6,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/twohundreds/rezible"
-	"github.com/twohundreds/rezible/ent"
-	"github.com/twohundreds/rezible/ent/incidentdebrief"
-	"github.com/twohundreds/rezible/ent/incidentdebriefmessage"
-	"github.com/twohundreds/rezible/ent/incidentroleassignment"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/incidentdebriefmessage"
+	"github.com/rezible/rezible/ent/incidentroleassignment"
 )
 
 func (s *IncidentService) CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {

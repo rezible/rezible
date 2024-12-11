@@ -12,11 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/twohundreds/rezible/ent/incident"
-	"github.com/twohundreds/rezible/ent/predicate"
-	"github.com/twohundreds/rezible/ent/subscription"
-	"github.com/twohundreds/rezible/ent/team"
-	"github.com/twohundreds/rezible/ent/user"
+	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/subscription"
+	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // SubscriptionQuery is the builder for querying Subscription entities.
