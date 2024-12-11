@@ -2,15 +2,13 @@
     <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/f1069946-c5bd-4aad-b49b-49f48a282668">
     <p>
         <br />
-        The open-source platform to <strong>support</strong>, <strong>automate</strong>, and <strong>report</strong> on all aspects of being oncall
-        <br />
+        The open-source platform to <strong>support</strong>, <strong>automate</strong>, and <strong>report</strong> on every aspect of being oncall
+        <br /><br />
         <a href="https://rezible.com">Website</a>
         | 
         <a href="https://rezible.com/slack">Slack</a>
     </p>
 </div>
-
-<br />
 
 ---
 
