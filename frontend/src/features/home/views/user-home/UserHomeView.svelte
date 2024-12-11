@@ -12,7 +12,7 @@
 	const currentShifts = $derived(userShiftsQuery.data?.data);
 </script>
 
-<div class="h-full w-full grid grid-cols-3 gap-2 min-h-0 max-h-full gap-2">
+<div class="h-full w-full grid grid-cols-2 gap-2 min-h-0 max-h-full gap-2">
 	<div class="grid auto-rows-min gap-2 min-h-0">
 		<UserItems />
 
@@ -26,10 +26,14 @@
 	{#if currentShifts}
 		<div class="max-h-full min-h-0 inline">
 			<ShiftCard shifts={currentShifts} />
+
+			<div class="mt-2">
+				<TeamInfo />
+			</div>
 		</div>
 	{/if}
-
+<!-- 
 	<div class="">
 		<TeamInfo />
-	</div>
+	</div> -->
 </div>

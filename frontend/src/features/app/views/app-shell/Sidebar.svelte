@@ -83,7 +83,7 @@
 			{#if currentPath !== '/oncall'}
 				<a href="/oncall">
 					<div class="border rounded-lg border-success-700 bg-success-600/20 {expandingHover ? "group-hover:p-2" : "p-2"} m-2 flex justify-center">
-						<Header title="Currently Oncall" subheading="search" class={expandingHover ? "hidden group-hover:flex" : "flex"}>
+						<Header title="Currently Oncall" subheading="test-schedule" class={expandingHover ? "hidden group-hover:flex" : "flex"}>
 							<svelte:fragment slot="actions">
 								<Icon data={mdiCircleMedium} classes={{ root: 'text-success' }} />
 							</svelte:fragment>

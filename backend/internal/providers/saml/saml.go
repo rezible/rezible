@@ -237,7 +237,7 @@ func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*rez.Au
 	}
 
 	// TODO: remove this - dev mode hack for mocksaml.com
-	if rez.DebugMode && user.Email == "jackson@example.com" {
+	if rez.DebugMode {
 		user.Email = os.Getenv("DEV_MOCKSAML_EMAIL_SUB")
 	}
 
