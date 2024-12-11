@@ -10,8 +10,8 @@
 	const query = createQuery(() => listUserAssignmentsOptions({query: params}));
 
 	const mockAssignments: UserAssignment[] = [
-		{item_id: "review-bar", item_type: "incident_review", role: "Present", title: "Example Incident", deadline: addHours(Date.now(), 2).toISOString()},
-		{item_id: "foo", item_type: "retrospective", role: "Review", title: "Foo Incident", deadline: addDays(Date.now(), 4).toISOString()},
+		{item_id: "review-bar", item_type: "incident_review", role: "Present", title: "SRCH-442", deadline: addHours(Date.now(), 2).toISOString()},
+		{item_id: "foo", item_type: "retrospective", role: "Review", title: "INDX-339", deadline: addDays(Date.now(), 4).toISOString()},
 		
 	];
 

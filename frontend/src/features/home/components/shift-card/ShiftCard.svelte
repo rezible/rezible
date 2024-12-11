@@ -40,7 +40,7 @@
 			<span class="ml-1">for</span>
 			<Button size="sm" href="/oncall/rosters/{roster.attributes.slug}" classes={{root: "p-1 py-0"}}>
 				<span class="font-bold text-base">
-					{roster.attributes.name}
+					search-team
 				</span>
 				<div class="self-center ml-1">
 					<Avatar id={"roster-id"} kind="roster" size={16} />
