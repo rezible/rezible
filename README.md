@@ -1,5 +1,5 @@
 <div align="center">
-    <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/12cfb55f-b856-4b55-9cab-2216a1f7f131" />
+    <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/9f932912-b194-44cd-bf78-204c73d8cdba" />
     <p>
         <br />
         The open-source platform to <strong>support</strong>, <strong>automate</strong>, and <strong>report</strong> on every aspect of being oncall
