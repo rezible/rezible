@@ -26,9 +26,11 @@ processes, while also collecting and visualising data on overall oncall health.
 - 📋 Oncall shift event annotations & automated handovers
   - 🔎 Flag unhelpful alerts, 'invisible' toil work, and more
 - 🗣️ AI-powered post-incident debriefs & incident retrospectives with realtime collaboration
+- 📚 Searchable & discoverable knowledgebase, auto-populated from retrospectives
+- 🎓 Structured oncall training & onboarding
 - 🗓️ Scheduling & facilitation of cross-team meetings (e.g. incident review, operations review)
 - ☑️ Team oncall backlog task tracking
-- 📊 Data collection & visualisation - start reporting on your oncall health!  
+- 📊 Data collection & visualisation - start reporting on your oncall health!
 
 ## Motivation
 Despite being a critical role in keeping live software products running, oncall is often overlooked as a 
