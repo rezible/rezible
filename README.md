@@ -24,13 +24,13 @@ processes, while also collecting and visualising data on overall oncall health.
 > We're also looking for early adopters - [leave your details here!](https://tally.so/r/wzrWkk)
 
 ## Features
-- Easily integrates with the tools you already use
-- Oncall shift event annotations & automated handovers
-  - Automatically flag unhelpful alerts, 'invisible' toil work, and more 
-- AI-powered post-incident debriefs & incident retrospectives with realtime collaboration
-- Scheduling & facilitation of cross-team meetings (eg incident review, operations review)
-- Team oncall backlog task tracking
-- Data collection & visualisation - start reporting on your oncall health!  
+- 🔗 Easily integrates with the tools you already use
+- 📋 Oncall shift event annotations & automated handovers
+  - 🔎 Flag unhelpful alerts, 'invisible' toil work, and more
+- 🗣️ AI-powered post-incident debriefs & incident retrospectives with realtime collaboration
+- 🗓️ Scheduling & facilitation of cross-team meetings (eg incident review, operations review)
+- ☑️ Team oncall backlog task tracking
+- 📊 Data collection & visualisation - start reporting on your oncall health!  
 
 ## Motivation
 Despite being a critical role in keeping live software products running, oncall is often overlooked as a 
