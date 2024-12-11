@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -71,9 +72,13 @@ func (s *SessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }
 
-func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(session *rez.AuthSession)) bool {
+func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs func(*rez.AuthSession, string)) bool {
 	if r.URL.Path == "/auth/callback" {
-		s.handleFlowCallback(w, r, onCreated)
+		if cbErr := s.handleFlowCallback(w, r, cs); cbErr != nil {
+			s.invalidateSession(w, r)
+			log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
+			http.Error(w, cbErr.Error(), http.StatusBadRequest)
+		}
 		return true
 	}
 	return false
@@ -89,39 +94,35 @@ func (s *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated func(session *rez.AuthSession)) *rez.AuthSession {
+func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, createSession func(*rez.AuthSession, string)) error {
 	sess, sessErr := s.getRequestProviderSession(r)
 	if sessErr != nil {
-		s.invalidateSession(w, r)
-		log.Error().Err(sessErr).Msg("could not get provider session")
-		http.Error(w, sessErr.Error(), http.StatusBadRequest)
-		return nil
+		return fmt.Errorf("getting provider session: %w", sessErr)
 	}
 
 	sessUser, fetchErr := s.fetchSessionUser(w, r, sess)
 	if fetchErr != nil {
-		s.invalidateSession(w, r)
-		log.Error().Err(fetchErr).Msg("could not fetch user")
-		http.Error(w, fetchErr.Error(), http.StatusBadRequest)
-		return nil
+		return fmt.Errorf("fetching user: %w", fetchErr)
 	}
 
 	if sessUser.Email == "" {
-		s.invalidateSession(w, r)
-		log.Error().Msg("no email access for oauth2 session")
-		http.Error(w, "missing scopes", http.StatusBadRequest)
-		return nil
+		return errors.New("missing email")
 	}
 
-	onCreated(&rez.AuthSession{
+	fmt.Printf("sess user: %+v\n", sessUser)
+	expiry := sessUser.ExpiresAt
+	if expiry.IsZero() {
+		expiry = time.Now().Add(time.Hour)
+	}
+
+	authSess := &rez.AuthSession{
 		ExpiresAt: sessUser.ExpiresAt,
 		User: ent.User{
 			Email: sessUser.Email,
 		},
-	})
+	}
 
-	http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
-
+	createSession(authSess, rez.FrontendUrl)
 	return nil
 }
 

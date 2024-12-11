@@ -13,8 +13,9 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	if (errStatus) {
 		if (errStatus === 401) {
 			return redirect(301, AUTH_REDIRECT_URL);
-		}
-		if (errStatus >= 500) {
+		} else if (errStatus === 403) {
+			console.log("forbidden!");
+		} else if (errStatus >= 500) {
 			// TODO
 			console.log("failed to set auth session", errStatus);
 		}

@@ -131,7 +131,7 @@ func loadCert(certFile, keyFile string) (*tls.Certificate, error) {
 	return &keyPair, nil
 }
 
-func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession)) bool {
+func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession, string)) bool {
 	if r.URL.Path == p.mw.ServiceProvider.MetadataURL.Path {
 		p.mw.ServeMetadata(w, r)
 		return true
@@ -149,7 +149,7 @@ func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 }
 
 // mostly taken from samlsp
-func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession)) error {
+func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession, string)) error {
 	if parseErr := r.ParseForm(); parseErr != nil {
 		return fmt.Errorf("parse form: %w", parseErr)
 	}
@@ -200,9 +200,8 @@ func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request,
 		return fmt.Errorf("failed to convert assertion to auth session: %w", sessErr)
 	}
 
-	onCreated(sess)
+	onCreated(sess, redirectUri)
 
-	http.Redirect(w, r, redirectUri, http.StatusFound)
 	return nil
 }
 

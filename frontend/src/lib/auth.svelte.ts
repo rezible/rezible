@@ -36,7 +36,7 @@ const createSession = () => {
 
 	const fetchInitial = async (_fetch?: typeof fetch) => {
 		const { data, error, response } = await getCurrentUserSession({client, fetch: _fetch, throwOnError: false});
-
+		console.log(data, error, response);
 		if (data) {
 			setSession(parseUserSessionResponse(data));
 			return;

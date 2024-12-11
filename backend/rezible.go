@@ -15,6 +15,7 @@ import (
 
 var (
 	ErrNoAuthSession = errors.New("no auth session")
+	ErrNoSessionUser = errors.New("no auth session user")
 	ErrUnauthorized  = errors.New("unauthorized")
 
 	BackendUrl  = "http://localhost:8888"
@@ -62,7 +63,7 @@ type (
 	AuthSessionProvider interface {
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*AuthSession)) (handled bool)
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*AuthSession, string)) (handled bool)
 	}
 
 	AuthService interface {
