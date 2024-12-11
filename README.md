@@ -1,24 +1,29 @@
 <div align="center">
     <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/f1069946-c5bd-4aad-b49b-49f48a282668">
     <p>
-        The open-source platform to **support**, **automate**, and **report** on all aspects of being oncall
         <br />
-        <a href="https://rezible.com"><strong>Website</strong></a>
+        The open-source platform to <strong>support</strong>, <strong>automate</strong>, and <strong>report</strong> on all aspects of being oncall
+        <br />
+        <a href="https://rezible.com">Website</a>
         | 
-        <a href="https://rezible.com/slack"><strong>Slack</strong></a>
+        <a href="https://rezible.com/slack">Slack</a>
     </p>
 </div>
-<br />
 
-> [!NOTE]  
-> Rezible is currently **under heavy development**.
-> Please get in touch if you'd like to be involved as we progress towards a stable release.
+<br />
 
 ---
 
 # What is Rezible?
 Rezible is an open-source platform aiming to reduce the burden on oncall teams by streamlining operational 
 processes, while also collecting and visualising data on overall oncall health.
+
+> [!NOTE]  
+> Rezible is currently **under heavy development**.
+> 
+> If you'd like to receive development updates, [please sign up here.](https://tally.so/r/wLJ5ll)
+> 
+> We're also looking for early adopters - [leave your details here!](https://tally.so/r/wzrWkk)
 
 ## Features
 - Easily integrates with the tools you already use
@@ -37,11 +42,12 @@ is viewed as unavoidable by many teams.
 We believe that with the right tooling, many of the negative aspects of being oncall can be improved or removed -  
 so Rezible aims to be that "Oncall on Rails".
 
-### Current Status
+## Current Status
 Rezible is currently under heavy development, with no stable release available.
-- If you'd like to receive updates or be an early adopter, [please leave your details here.](https://tally.so/r/wLJ5ll)
- 
 In the meantime please feel free to leave feedback, requests, or suggestions in the form of Github Issues!
 
-### License
+> [!NOTE]  
+> If you'd like to receive release updates [please sign up here.](https://tally.so/r/wLJ5ll)
+
+## License
 AGPLv3 - see [LICENSE](/LICENSE).
