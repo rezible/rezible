@@ -22,6 +22,7 @@ import (
 // river type aliases
 type (
 	JobArgs               = river.JobArgs
+	InsertManyParams      = river.InsertManyParams
 	JobArgsWithInsertOpts = river.JobArgsWithInsertOpts
 	InsertOpts            = river.InsertOpts
 	JobInsertResult       = rivertype.JobInsertResult
@@ -115,6 +116,13 @@ func (c *BackgroundJobClient) Stop(ctx context.Context) error {
 
 func (c *BackgroundJobClient) Insert(ctx context.Context, args JobArgs, opts *InsertOpts) (*JobInsertResult, error) {
 	return c.client.Insert(ctx, args, opts)
+}
+
+func (c *BackgroundJobClient) InsertMany(ctx context.Context, params []InsertManyParams) ([]*JobInsertResult, error) {
+	if len(params) == 0 {
+		return nil, nil
+	}
+	return c.client.InsertMany(ctx, params)
 }
 
 func (c *BackgroundJobClient) InsertTx(ctx context.Context, tx *ent.Tx, args JobArgs, opts *InsertOpts) (*JobInsertResult, error) {

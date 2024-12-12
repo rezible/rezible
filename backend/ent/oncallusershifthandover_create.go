@@ -37,6 +37,20 @@ func (oushc *OncallUserShiftHandoverCreate) SetCreatedAt(t time.Time) *OncallUse
 	return oushc
 }
 
+// SetReminderSent sets the "reminder_sent" field.
+func (oushc *OncallUserShiftHandoverCreate) SetReminderSent(b bool) *OncallUserShiftHandoverCreate {
+	oushc.mutation.SetReminderSent(b)
+	return oushc
+}
+
+// SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
+func (oushc *OncallUserShiftHandoverCreate) SetNillableReminderSent(b *bool) *OncallUserShiftHandoverCreate {
+	if b != nil {
+		oushc.SetReminderSent(*b)
+	}
+	return oushc
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (oushc *OncallUserShiftHandoverCreate) SetUpdatedAt(t time.Time) *OncallUserShiftHandoverCreate {
 	oushc.mutation.SetUpdatedAt(t)
@@ -125,6 +139,10 @@ func (oushc *OncallUserShiftHandoverCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (oushc *OncallUserShiftHandoverCreate) defaults() {
+	if _, ok := oushc.mutation.ReminderSent(); !ok {
+		v := oncallusershifthandover.DefaultReminderSent
+		oushc.mutation.SetReminderSent(v)
+	}
 	if _, ok := oushc.mutation.UpdatedAt(); !ok {
 		v := oncallusershifthandover.DefaultUpdatedAt()
 		oushc.mutation.SetUpdatedAt(v)
@@ -142,6 +160,9 @@ func (oushc *OncallUserShiftHandoverCreate) check() error {
 	}
 	if _, ok := oushc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallUserShiftHandover.created_at"`)}
+	}
+	if _, ok := oushc.mutation.ReminderSent(); !ok {
+		return &ValidationError{Name: "reminder_sent", err: errors.New(`ent: missing required field "OncallUserShiftHandover.reminder_sent"`)}
 	}
 	if _, ok := oushc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OncallUserShiftHandover.updated_at"`)}
@@ -191,6 +212,10 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 	if value, ok := oushc.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if value, ok := oushc.mutation.ReminderSent(); ok {
+		_spec.SetField(oncallusershifthandover.FieldReminderSent, field.TypeBool, value)
+		_node.ReminderSent = value
 	}
 	if value, ok := oushc.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldUpdatedAt, field.TypeTime, value)
@@ -294,6 +319,18 @@ func (u *OncallUserShiftHandoverUpsert) SetCreatedAt(v time.Time) *OncallUserShi
 // UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
 func (u *OncallUserShiftHandoverUpsert) UpdateCreatedAt() *OncallUserShiftHandoverUpsert {
 	u.SetExcluded(oncallusershifthandover.FieldCreatedAt)
+	return u
+}
+
+// SetReminderSent sets the "reminder_sent" field.
+func (u *OncallUserShiftHandoverUpsert) SetReminderSent(v bool) *OncallUserShiftHandoverUpsert {
+	u.Set(oncallusershifthandover.FieldReminderSent, v)
+	return u
+}
+
+// UpdateReminderSent sets the "reminder_sent" field to the value that was provided on create.
+func (u *OncallUserShiftHandoverUpsert) UpdateReminderSent() *OncallUserShiftHandoverUpsert {
+	u.SetExcluded(oncallusershifthandover.FieldReminderSent)
 	return u
 }
 
@@ -412,6 +449,20 @@ func (u *OncallUserShiftHandoverUpsertOne) SetCreatedAt(v time.Time) *OncallUser
 func (u *OncallUserShiftHandoverUpsertOne) UpdateCreatedAt() *OncallUserShiftHandoverUpsertOne {
 	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
 		s.UpdateCreatedAt()
+	})
+}
+
+// SetReminderSent sets the "reminder_sent" field.
+func (u *OncallUserShiftHandoverUpsertOne) SetReminderSent(v bool) *OncallUserShiftHandoverUpsertOne {
+	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
+		s.SetReminderSent(v)
+	})
+}
+
+// UpdateReminderSent sets the "reminder_sent" field to the value that was provided on create.
+func (u *OncallUserShiftHandoverUpsertOne) UpdateReminderSent() *OncallUserShiftHandoverUpsertOne {
+	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
+		s.UpdateReminderSent()
 	})
 }
 
@@ -704,6 +755,20 @@ func (u *OncallUserShiftHandoverUpsertBulk) SetCreatedAt(v time.Time) *OncallUse
 func (u *OncallUserShiftHandoverUpsertBulk) UpdateCreatedAt() *OncallUserShiftHandoverUpsertBulk {
 	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
 		s.UpdateCreatedAt()
+	})
+}
+
+// SetReminderSent sets the "reminder_sent" field.
+func (u *OncallUserShiftHandoverUpsertBulk) SetReminderSent(v bool) *OncallUserShiftHandoverUpsertBulk {
+	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
+		s.SetReminderSent(v)
+	})
+}
+
+// UpdateReminderSent sets the "reminder_sent" field to the value that was provided on create.
+func (u *OncallUserShiftHandoverUpsertBulk) UpdateReminderSent() *OncallUserShiftHandoverUpsertBulk {
+	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
+		s.UpdateReminderSent()
 	})
 }
 

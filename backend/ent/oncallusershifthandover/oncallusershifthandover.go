@@ -19,6 +19,8 @@ const (
 	FieldShiftID = "shift_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldReminderSent holds the string denoting the reminder_sent field in the database.
+	FieldReminderSent = "reminder_sent"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// FieldSentAt holds the string denoting the sent_at field in the database.
@@ -43,6 +45,7 @@ var Columns = []string{
 	FieldID,
 	FieldShiftID,
 	FieldCreatedAt,
+	FieldReminderSent,
 	FieldUpdatedAt,
 	FieldSentAt,
 	FieldContents,
@@ -59,6 +62,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultReminderSent holds the default value on creation for the "reminder_sent" field.
+	DefaultReminderSent bool
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -81,6 +86,11 @@ func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByReminderSent orders the results by the reminder_sent field.
+func ByReminderSent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldReminderSent, opts...).ToFunc()
 }
 
 // ByUpdatedAt orders the results by the updated_at field.

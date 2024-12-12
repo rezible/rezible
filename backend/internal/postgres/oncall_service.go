@@ -195,23 +195,52 @@ func (s *OncallService) GetRosterByScheduleId(ctx context.Context, scheduleId uu
 		Only(ctx)
 }
 
-func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error) {
-	roster, rosterErr := s.db.OncallRoster.Get(ctx, rosterId)
-	if rosterErr != nil {
-		return nil, fmt.Errorf("failed to get roster: %w", rosterErr)
-	}
-	if roster.HandoverTemplateID != uuid.Nil {
-		return roster.QueryHandoverTemplate().Only(ctx)
-	}
-	return s.db.OncallHandoverTemplate.Query().
-		Where(oncallhandovertemplate.Not(oncallhandovertemplate.HasRoster())).
-		Where(oncallhandovertemplate.IsDefault(true)).
-		Only(ctx)
-}
+func (s *OncallService) CheckOncallHandovers(ctx context.Context) error {
+	// check for shifts ending, that don't have reminder sent
+	endingWindow := time.Hour
+	shiftEndingWithinWindow := oncallusershift.And(
+		oncallusershift.EndAtGT(time.Now().Add(-endingWindow)),
+		oncallusershift.EndAtLT(time.Now().Add(endingWindow)))
+	endingShiftsQuery := s.db.OncallUserShift.Query().Where(shiftEndingWithinWindow)
 
-func (s *OncallService) SendShiftHandoverReminder(ctx context.Context, shiftId uuid.UUID) error {
-	args := oncallHandoverReminderJobArgs{shiftId: shiftId}
-	_, jobErr := s.jobClient.Insert(ctx, args, nil)
+	shifts, shiftsErr := endingShiftsQuery.All(ctx)
+	if shiftsErr != nil {
+		return fmt.Errorf("failed to get shifts: %w", shiftsErr)
+	}
+
+	shiftIds := make([]uuid.UUID, 0, len(shifts))
+	for i, shift := range shifts {
+		shiftIds[i] = shift.ID
+	}
+
+	shiftHandovers := make(map[uuid.UUID]*ent.OncallUserShiftHandover)
+	handovers, handoversErr := s.db.OncallUserShiftHandover.Query().
+		Where(oncallusershifthandover.ShiftIDIn(shiftIds...)).All(ctx)
+	if handoversErr != nil {
+		return fmt.Errorf("failed to get handovers: %w", handoversErr)
+	}
+	for _, h := range handovers {
+		shiftHandovers[h.ShiftID] = h
+	}
+
+	var insertJobs []jobs.InsertManyParams
+	for _, sh := range shifts {
+		shiftId := sh.ID
+		ho, created := shiftHandovers[shiftId]
+		if created && ho.ReminderSent {
+			continue
+		}
+		insertJobs = append(insertJobs, jobs.InsertManyParams{
+			Args: oncallHandoverReminderJobArgs{shiftId: shiftId},
+			InsertOpts: &jobs.InsertOpts{
+				UniqueOpts: jobs.UniqueOpts{
+					ByArgs: true,
+				},
+			},
+		})
+	}
+
+	_, jobErr := s.jobClient.InsertMany(ctx, insertJobs)
 	if jobErr != nil {
 		return fmt.Errorf("insert handover reminder job failed: %w", jobErr)
 	}
@@ -224,6 +253,14 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shiftId u
 		return fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
 
+	ho, hoErr := s.getOrCreateShiftHandover(ctx, shift)
+	if hoErr != nil {
+		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
+	}
+	if ho.ReminderSent {
+		return nil
+	}
+
 	user, userErr := s.users.GetById(ctx, shift.UserID)
 	if userErr != nil {
 		return fmt.Errorf("failed to get shift user: %w", userErr)
@@ -234,15 +271,17 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shiftId u
 		return fmt.Errorf("failed to get roster: %w", rosterErr)
 	}
 
-	msgText := fmt.Sprintf(
-		"Your shift for %s ends soon!\nPlease complete your handover",
-		roster.Name,
-	)
+	msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
+		roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
 	msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shiftId)
-	msgLinkText := "Complete Handover"
-	if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, msgLinkText); msgErr != nil {
-		log.Error().Err(msgErr).Msg("Failed to send oncall shift handover reminder")
+	if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, "Complete Handover"); msgErr != nil {
+		return fmt.Errorf("failed to send message: %w", msgErr)
 	}
+
+	if updateErr := ho.Update().SetReminderSent(true).Exec(ctx); updateErr != nil {
+		return fmt.Errorf("failed to set reminder_sent: %w", updateErr)
+	}
+
 	return nil
 }
 
@@ -263,6 +302,39 @@ func (s *OncallService) registerHandoverSchema() {
 		return
 	}
 	prosemirror.RegisterSchema(schema)
+}
+
+func (s *OncallService) getOrCreateShiftHandover(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShiftHandover, error) {
+	ho, hoErr := s.db.OncallUserShiftHandover.Query().
+		Where(oncallusershifthandover.ShiftID(shift.ID)).Only(ctx)
+	if hoErr != nil && !ent.IsNotFound(hoErr) {
+		return nil, fmt.Errorf("failed to get handover: %w", hoErr)
+	}
+	if ho != nil {
+		return ho, nil
+	}
+	var contents []byte
+	tmpl, tmplErr := s.GetRosterHandoverTemplate(ctx, shift.RosterID)
+	if tmplErr != nil {
+		log.Warn().Err(tmplErr).Msg("failed to get roster handover template")
+	} else {
+		contents = tmpl.Contents
+	}
+	return s.createShiftHandover(ctx, shift.ID, contents)
+}
+
+func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error) {
+	roster, rosterErr := s.db.OncallRoster.Get(ctx, rosterId)
+	if rosterErr != nil {
+		return nil, fmt.Errorf("failed to get roster: %w", rosterErr)
+	}
+	if roster.HandoverTemplateID != uuid.Nil {
+		return roster.QueryHandoverTemplate().Only(ctx)
+	}
+	return s.db.OncallHandoverTemplate.Query().
+		Where(oncallhandovertemplate.Not(oncallhandovertemplate.HasRoster())).
+		Where(oncallhandovertemplate.IsDefault(true)).
+		Only(ctx)
 }
 
 func (s *OncallService) GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error) {

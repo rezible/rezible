@@ -19,6 +19,7 @@ func (OncallUserShiftHandover) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
 		field.Time("created_at"),
+		field.Bool("reminder_sent").Default(false),
 		field.Time("updated_at").Default(time.Now),
 		field.Time("sent_at").Optional(),
 		field.Bytes("contents"),

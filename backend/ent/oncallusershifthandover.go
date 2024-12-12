@@ -23,6 +23,8 @@ type OncallUserShiftHandover struct {
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// ReminderSent holds the value of the "reminder_sent" field.
+	ReminderSent bool `json:"reminder_sent,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// SentAt holds the value of the "sent_at" field.
@@ -62,6 +64,8 @@ func (*OncallUserShiftHandover) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallusershifthandover.FieldContents:
 			values[i] = new([]byte)
+		case oncallusershifthandover.FieldReminderSent:
+			values[i] = new(sql.NullBool)
 		case oncallusershifthandover.FieldCreatedAt, oncallusershifthandover.FieldUpdatedAt, oncallusershifthandover.FieldSentAt:
 			values[i] = new(sql.NullTime)
 		case oncallusershifthandover.FieldID, oncallusershifthandover.FieldShiftID:
@@ -98,6 +102,12 @@ func (oush *OncallUserShiftHandover) assignValues(columns []string, values []any
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				oush.CreatedAt = value.Time
+			}
+		case oncallusershifthandover.FieldReminderSent:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field reminder_sent", values[i])
+			} else if value.Valid {
+				oush.ReminderSent = value.Bool
 			}
 		case oncallusershifthandover.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -163,6 +173,9 @@ func (oush *OncallUserShiftHandover) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(oush.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("reminder_sent=")
+	builder.WriteString(fmt.Sprintf("%v", oush.ReminderSent))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(oush.UpdatedAt.Format(time.ANSIC))

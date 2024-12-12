@@ -29,7 +29,7 @@ type (
 	}
 )
 
-func (c *blockConverter) convertDocument(doc *rez.DocumentNode) []slack.Block {
+func (c *blockConverter) convertDocument(doc *rez.ContentNode) []slack.Block {
 	if doc == nil {
 		return nil
 	}
@@ -45,7 +45,7 @@ func (c *blockConverter) convertDocument(doc *rez.DocumentNode) []slack.Block {
 	return blocks
 }
 
-func (c *blockConverter) crawlNode(node *rez.DocumentNode, marks mapset.Set[string], depth int) {
+func (c *blockConverter) crawlNode(node *rez.ContentNode, marks mapset.Set[string], depth int) {
 	addedMarks := mapset.NewSet[string]()
 	for _, m := range node.Marks {
 		markName := string(m.Type.Name)
@@ -66,7 +66,7 @@ func (c *blockConverter) crawlNode(node *rez.DocumentNode, marks mapset.Set[stri
 	marks = marks.Difference(addedMarks)
 }
 
-func (c *blockConverter) convertNode(node *rez.DocumentNode, marks mapset.Set[string]) {
+func (c *blockConverter) convertNode(node *rez.ContentNode, marks mapset.Set[string]) {
 	// TODO: support links etc, not just plain text
 	// linkEl := slack.NewRichTextSectionLinkElement()
 
@@ -80,7 +80,7 @@ func (c *blockConverter) convertNode(node *rez.DocumentNode, marks mapset.Set[st
 	}
 }
 
-func (c *blockConverter) crawlChildren(node *rez.DocumentNode, marks mapset.Set[string], depth int) {
+func (c *blockConverter) crawlChildren(node *rez.ContentNode, marks mapset.Set[string], depth int) {
 	nodeType := string(node.Type.Name)
 	isList := nodeType == "bulletList" || nodeType == "orderedList" // todo: check if 'container'
 	var listIdx int

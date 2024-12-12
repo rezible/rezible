@@ -2,8 +2,13 @@ package documents
 
 import (
 	"context"
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallusershift"
 )
 
 type ChatService struct {
@@ -35,13 +40,26 @@ func (s *ChatService) LoadDataProvider(ctx context.Context) error {
 	return nil
 }
 
+func (s *ChatService) handleProviderUserCreateAnnotation(ctx context.Context, id string) (uuid.UUID, []*ent.OncallUserShift, error) {
+	usr, usrErr := s.users.GetByChatId(ctx, id)
+	if usrErr != nil {
+		return uuid.Nil, nil, usrErr
+	}
+	shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
+	shifts, shiftsErr := usr.QueryOncallShifts().Where(shiftIsActive).All(ctx)
+	if shiftsErr != nil {
+		return uuid.Nil, nil, shiftsErr
+	}
+	return usr.ID, shifts, nil
+}
+
 func (s *ChatService) SendUserMessage(ctx context.Context, user *ent.User, msgText string) error {
 	return s.provider.SendUserMessage(ctx, user, msgText)
 }
 
-func (s *ChatService) SendMessage(ctx context.Context, user *ent.User, msg *rez.DocumentNode) error {
+func (s *ChatService) SendMessage(ctx context.Context, id string, msg *rez.ContentNode) error {
 	//TODO implement me
-	panic("implement me")
+	return fmt.Errorf("not implemented")
 }
 
 func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {

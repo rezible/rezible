@@ -59,6 +59,20 @@ func (oushu *OncallUserShiftHandoverUpdate) SetNillableCreatedAt(t *time.Time) *
 	return oushu
 }
 
+// SetReminderSent sets the "reminder_sent" field.
+func (oushu *OncallUserShiftHandoverUpdate) SetReminderSent(b bool) *OncallUserShiftHandoverUpdate {
+	oushu.mutation.SetReminderSent(b)
+	return oushu
+}
+
+// SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
+func (oushu *OncallUserShiftHandoverUpdate) SetNillableReminderSent(b *bool) *OncallUserShiftHandoverUpdate {
+	if b != nil {
+		oushu.SetReminderSent(*b)
+	}
+	return oushu
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (oushu *OncallUserShiftHandoverUpdate) SetUpdatedAt(t time.Time) *OncallUserShiftHandoverUpdate {
 	oushu.mutation.SetUpdatedAt(t)
@@ -171,6 +185,9 @@ func (oushu *OncallUserShiftHandoverUpdate) sqlSave(ctx context.Context) (n int,
 	if value, ok := oushu.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldCreatedAt, field.TypeTime, value)
 	}
+	if value, ok := oushu.mutation.ReminderSent(); ok {
+		_spec.SetField(oncallusershifthandover.FieldReminderSent, field.TypeBool, value)
+	}
 	if value, ok := oushu.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldUpdatedAt, field.TypeTime, value)
 	}
@@ -258,6 +275,20 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) SetCreatedAt(t time.Time) *Oncal
 func (oushuo *OncallUserShiftHandoverUpdateOne) SetNillableCreatedAt(t *time.Time) *OncallUserShiftHandoverUpdateOne {
 	if t != nil {
 		oushuo.SetCreatedAt(*t)
+	}
+	return oushuo
+}
+
+// SetReminderSent sets the "reminder_sent" field.
+func (oushuo *OncallUserShiftHandoverUpdateOne) SetReminderSent(b bool) *OncallUserShiftHandoverUpdateOne {
+	oushuo.mutation.SetReminderSent(b)
+	return oushuo
+}
+
+// SetNillableReminderSent sets the "reminder_sent" field if the given value is not nil.
+func (oushuo *OncallUserShiftHandoverUpdateOne) SetNillableReminderSent(b *bool) *OncallUserShiftHandoverUpdateOne {
+	if b != nil {
+		oushuo.SetReminderSent(*b)
 	}
 	return oushuo
 }
@@ -403,6 +434,9 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_n
 	}
 	if value, ok := oushuo.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := oushuo.mutation.ReminderSent(); ok {
+		_spec.SetField(oncallusershifthandover.FieldReminderSent, field.TypeBool, value)
 	}
 	if value, ok := oushuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(oncallusershifthandover.FieldUpdatedAt, field.TypeTime, value)

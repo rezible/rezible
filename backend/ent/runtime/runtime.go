@@ -297,8 +297,12 @@ func init() {
 	oncallusershiftcover.DefaultID = oncallusershiftcoverDescID.Default.(func() uuid.UUID)
 	oncallusershifthandoverFields := schema.OncallUserShiftHandover{}.Fields()
 	_ = oncallusershifthandoverFields
+	// oncallusershifthandoverDescReminderSent is the schema descriptor for reminder_sent field.
+	oncallusershifthandoverDescReminderSent := oncallusershifthandoverFields[3].Descriptor()
+	// oncallusershifthandover.DefaultReminderSent holds the default value on creation for the reminder_sent field.
+	oncallusershifthandover.DefaultReminderSent = oncallusershifthandoverDescReminderSent.Default.(bool)
 	// oncallusershifthandoverDescUpdatedAt is the schema descriptor for updated_at field.
-	oncallusershifthandoverDescUpdatedAt := oncallusershifthandoverFields[3].Descriptor()
+	oncallusershifthandoverDescUpdatedAt := oncallusershifthandoverFields[4].Descriptor()
 	// oncallusershifthandover.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	oncallusershifthandover.DefaultUpdatedAt = oncallusershifthandoverDescUpdatedAt.Default.(func() time.Time)
 	// oncallusershifthandoverDescID is the schema descriptor for id field.

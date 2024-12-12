@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"net/http"
@@ -66,21 +67,12 @@ func (p *ChatProvider) handleMessageAction(ctx context.Context, ic *slack.Intera
 }
 
 func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *slack.InteractionCallback) error {
-	user, userErr := p.lookupUser(ctx, ic.User.ID)
-	if userErr != nil {
-		return fmt.Errorf("failed to get user: %w", userErr)
+	view, viewErr := p.createAnnotationModalView(ctx, ic)
+	if viewErr != nil || view == nil {
+		return fmt.Errorf("failed to create annotation view: %w", viewErr)
 	}
 
-	queryShifts := user.QueryOncallShifts().WithRoster()
-
-	shifts, shiftsErr := queryShifts.All(ctx)
-	if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
-		return fmt.Errorf("failed to get user oncall rosters: %w", shiftsErr)
-	}
-
-	view := p.createAnnotationModalView(ic, shifts)
-
-	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, view)
+	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, *view)
 	if resp != nil && !resp.Ok && len(resp.ResponseMetadata.Messages) > 0 {
 		log.Debug().
 			Strs("messages", resp.ResponseMetadata.Messages).
@@ -93,9 +85,20 @@ func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *sla
 	return nil
 }
 
-func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, shifts []*ent.OncallUserShift) slack.ModalViewRequest {
+func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+	user, userErr := p.lookupUser(ctx, ic.User.ID)
+	if userErr != nil {
+		return nil, fmt.Errorf("failed to get user: %w", userErr)
+	}
+
+	shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
+	shifts, shiftsErr := user.QueryOncallShifts().Where(shiftIsActive).All(ctx)
+	if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
+		return nil, fmt.Errorf("failed to get active oncall shifts: %w", shiftsErr)
+	}
+
 	if len(shifts) == 0 {
-		return slack.ModalViewRequest{
+		return &slack.ModalViewRequest{
 			Type:  "modal",
 			Title: plainText("No Active Shift"),
 			Blocks: slack.Blocks{BlockSet: []slack.Block{
@@ -103,7 +106,16 @@ func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, 
 			}},
 			Close:      plainText("Cancel"),
 			CallbackID: createAnnotationConfirmCallbackID,
-		}
+		}, nil
+	}
+
+	view := &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      createAnnotationConfirmCallbackID,
+		PrivateMetadata: user.ID.String(),
+		Title:           plainText("Create Annotation"),
+		Close:           plainText("Cancel"),
+		Submit:          plainText("Create"),
 	}
 
 	italicStyle := &slack.RichTextSectionTextStyle{Italic: true}
@@ -113,6 +125,7 @@ func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, 
 
 	var shiftBlock slack.Block
 	if len(shifts) == 1 {
+		view.PrivateMetadata = fmt.Sprintf("%s,%s", user.ID, shifts[0].ID)
 		shiftBlock = plainText("Annotating your active shift in " + shifts[0].Edges.Roster.Name)
 	} else {
 		shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
@@ -122,7 +135,7 @@ func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, 
 			if shiftRoster.ChatChannelID != "" {
 				desc = plainText(shiftRoster.ChatChannelID)
 			}
-			shiftOptions[i] = slack.NewOptionBlockObject(shiftRoster.ID.String(), plainText(shiftRoster.Name), desc)
+			shiftOptions[i] = slack.NewOptionBlockObject(sh.ID.String(), plainText(shiftRoster.Name), desc)
 		}
 
 		shiftSelectElement := slack.NewOptionsSelectBlockElement(
@@ -140,23 +153,19 @@ func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, 
 		plainText("You can edit this later"),
 		slack.NewPlainTextInputBlockElement(nil, "notes_input_text"))
 
-	return slack.ModalViewRequest{
-		Type:       "modal",
-		CallbackID: createAnnotationConfirmCallbackID,
-		Title:      plainText("Create Annotation"),
-		Close:      plainText("Cancel"),
-		Submit:     plainText("Create"),
-		Blocks: slack.Blocks{BlockSet: []slack.Block{
-			messageDetailsBlock,
-			slack.NewDividerBlock(),
-			shiftBlock,
-			slack.NewDividerBlock(),
-			notesInputBlock,
-		}},
-	}
+	view.Blocks = slack.Blocks{BlockSet: []slack.Block{
+		messageDetailsBlock,
+		slack.NewDividerBlock(),
+		shiftBlock,
+		slack.NewDividerBlock(),
+		notesInputBlock,
+	}}
+
+	return view, nil
 }
 
 func (p *ChatProvider) handleViewSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	fmt.Printf("view submission: %+v\n", ic)
+	// ic.View.PrivateMetadata
 	return nil
 }

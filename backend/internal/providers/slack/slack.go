@@ -5,6 +5,7 @@ import (
 	"fmt"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/slack-go/slack"
 	"net/http"
 )
@@ -46,21 +47,16 @@ func (p *ChatProvider) SetUserLookupFunc(lookupFn func(ctx context.Context, id s
 	p.lookupUser = lookupFn
 }
 
-func (p *ChatProvider) SendUserMessage(ctx context.Context, user *ent.User, msg string) error {
-	return p.sendUserMessage(ctx, user, slack.MsgOptionText(msg, false))
+func (p *ChatProvider) SendUserMessage(ctx context.Context, id string, msg string) error {
+	return p.sendUserMessage(ctx, id, slack.MsgOptionText(msg, false))
 }
 
-func (p *ChatProvider) sendUserMessage(ctx context.Context, user *ent.User, msg slack.MsgOption) error {
-	slackUser, userErr := p.client.GetUserByEmailContext(ctx, user.Email)
-	if userErr != nil {
-		return fmt.Errorf("failed to find user by email: %w", userErr)
-	}
-
+func (p *ChatProvider) sendUserMessage(ctx context.Context, id string, msg slack.MsgOption) error {
 	convo, _, _, convoErr := p.client.OpenConversationContext(ctx, &slack.OpenConversationParameters{
-		Users: []string{slackUser.ID},
+		Users: []string{id},
 	})
 	if convoErr != nil {
-		return fmt.Errorf("failed to open conversation with user %s: %w", slackUser.ID, convoErr)
+		return fmt.Errorf("failed to open conversation with user %s: %w", id, convoErr)
 	}
 
 	if sendErr := p.sendMessage(ctx, convo.ID, msg); sendErr != nil {
@@ -92,7 +88,8 @@ func (p *ChatProvider) SendUserLinkMessage(ctx context.Context, user *ent.User, 
 	msg := slack.MsgOptionBlocks(
 		slack.NewSectionBlock(textElement, nil, nil),
 		slack.NewActionBlock("link_button_action_block1", buttonElement))
-	return p.sendUserMessage(ctx, user, msg)
+
+	return p.sendUserMessage(ctx, user.ChatID, msg)
 }
 
 func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
@@ -105,28 +102,26 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 		return fmt.Errorf("no chat channel found for roster: %s", roster.ID)
 	}
 
-	senderUser, senderUserErr := params.EndingShift.QueryUser().Only(ctx)
+	sender, senderUserErr := params.EndingShift.QueryUser().Only(ctx)
 	if senderUserErr != nil {
 		return fmt.Errorf("get EndingShift user: %w", senderUserErr)
 	}
-	sender, senderErr := p.client.GetUserByEmailContext(ctx, senderUser.Email)
-	if senderErr != nil {
-		return fmt.Errorf("get slack sender: %w", senderErr)
+	if sender.ChatID == "" {
+		return fmt.Errorf("no chat id for handover sender %s", sender.ID)
 	}
 
-	receiverUser, receiverUserErr := params.StartingShift.QueryUser().Only(ctx)
+	receiver, receiverUserErr := params.StartingShift.QueryUser().Only(ctx)
 	if receiverUserErr != nil {
 		return fmt.Errorf("get StartingShift user: %w", receiverUserErr)
 	}
-	receiver, receiverErr := p.client.GetUserByEmailContext(ctx, receiverUser.Email)
-	if receiverErr != nil {
-		return fmt.Errorf("get slack receiver: %w", receiverErr)
+	if receiver.ChatID == "" {
+		return fmt.Errorf("no chat id for handover receiver %s", receiver.ID)
 	}
 
 	builder := handoverMessageBuilder{
 		roster:        roster,
-		sender:        sender,
-		receiver:      receiver,
+		senderId:      sender.ChatID,
+		receiverId:    receiver.ChatID,
 		endingShift:   params.EndingShift,
 		startingShift: params.StartingShift,
 		incidents:     params.Incidents,

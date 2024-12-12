@@ -66,6 +66,11 @@ func CreatedAt(v time.Time) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldCreatedAt, v))
 }
 
+// ReminderSent applies equality check predicate on the "reminder_sent" field. It's identical to ReminderSentEQ.
+func ReminderSent(v bool) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldReminderSent, v))
+}
+
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldUpdatedAt, v))
@@ -139,6 +144,16 @@ func CreatedAtLT(v time.Time) predicate.OncallUserShiftHandover {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// ReminderSentEQ applies the EQ predicate on the "reminder_sent" field.
+func ReminderSentEQ(v bool) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldReminderSent, v))
+}
+
+// ReminderSentNEQ applies the NEQ predicate on the "reminder_sent" field.
+func ReminderSentNEQ(v bool) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldNEQ(FieldReminderSent, v))
 }
 
 // UpdatedAtEQ applies the EQ predicate on the "updated_at" field.

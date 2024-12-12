@@ -106,7 +106,7 @@ type (
 )
 
 type (
-	DocumentNode       = prosemirror.Node
+	ContentNode        = prosemirror.Node
 	DocumentSchemaSpec = prosemirror.SchemaSpec
 
 	DocumentsService interface {
@@ -131,10 +131,10 @@ type (
 
 		SetUserLookupFunc(func(ctx context.Context, id string) (*ent.User, error))
 
-		// TODO: just use a generic SendMessage(rez.DocumentNode), and convert in chat client
+		// TODO: just use a generic SendMessage(rez.ContentNode), and convert in chat client
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
 
-		// SendUserMessage(ctx context.Context, user *ent.User, msg *DocumentNode) error
+		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error
 
 		SendUserMessage(ctx context.Context, user *ent.User, msgText string) error
 		SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error
@@ -143,7 +143,7 @@ type (
 	ChatService interface {
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
 
-		// SendUserMessage(ctx context.Context, user *ent.User, msg *DocumentNode) error
+		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error
 
 		SendUserMessage(ctx context.Context, user *ent.User, msgText string) error
 		SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error
@@ -272,6 +272,7 @@ type (
 
 	OncallService interface {
 		SyncData(context.Context) error
+		CheckOncallHandovers(context.Context) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)

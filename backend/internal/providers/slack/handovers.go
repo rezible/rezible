@@ -11,12 +11,18 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 )
 
+/*
+	TODO: eventually this should be handled by the chat service,
+		and all the provider should do is convert rez.ContentNode
+		to []slack.Block and send it
+*/
+
 type handoverMessageBuilder struct {
 	blocks []slack.Block
 
 	roster        *ent.OncallRoster
-	sender        *slack.User
-	receiver      *slack.User
+	senderId      string
+	receiverId    string
 	endingShift   *ent.OncallUserShift
 	startingShift *ent.OncallUserShift
 	incidents     []*ent.Incident
@@ -34,31 +40,26 @@ func (b *handoverMessageBuilder) getMessage() slack.MsgOption {
 func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection) error {
 	b.blocks = make([]slack.Block, 0)
 
-	if headerErr := b.buildHeader(); headerErr != nil {
-		return fmt.Errorf("building header: %w", headerErr)
-	}
-
+	b.addHeader()
 	for i, section := range content {
-		if sectionErr := b.buildSection(i, section); sectionErr != nil {
+		sectionErr := b.addSection(i, section)
+		if sectionErr != nil {
 			return fmt.Errorf("building section %d: %w", i, sectionErr)
 		}
 	}
-
-	if footerErr := b.buildFooter(); footerErr != nil {
-		return fmt.Errorf("building footer: %w", footerErr)
-	}
+	b.addFooter()
 
 	return nil
 }
 
-func (b *handoverMessageBuilder) buildHeader() error {
+func (b *handoverMessageBuilder) addHeader() {
 	headerText := fmt.Sprintf(":pager: %s - Oncall Handover :pager:", b.roster.Name)
 	headerObject := slack.NewTextBlockObject(slack.PlainTextType, headerText, true, false)
 
 	usersBlock := slack.NewRichTextSection(
-		slack.NewRichTextSectionUserElement(b.sender.ID, nil),
+		slack.NewRichTextSectionUserElement(b.senderId, nil),
 		slack.NewRichTextSectionTextElement(" to ", nil),
-		slack.NewRichTextSectionUserElement(b.receiver.ID, nil))
+		slack.NewRichTextSectionUserElement(b.receiverId, nil))
 
 	contextText := fmt.Sprintf("Shift Ending %s", b.endingShift.EndAt.Format(time.DateOnly))
 	contextObject := slack.NewTextBlockObject(slack.MarkdownType, contextText, false, false)
@@ -68,19 +69,17 @@ func (b *handoverMessageBuilder) buildHeader() error {
 		slack.NewRichTextBlock("header_users", usersBlock),
 		slack.NewContextBlock("header_time", contextObject),
 		slack.NewDividerBlock())
-
-	return nil
 }
 
-func (b *handoverMessageBuilder) buildSection(idx int, section rez.OncallShiftHandoverSection) error {
+func (b *handoverMessageBuilder) addSection(idx int, section rez.OncallShiftHandoverSection) error {
 	sectionHeader := slack.NewTextBlockObject("plain_text", section.Header, false, false)
 	b.addBlocks(slack.NewHeaderBlock(sectionHeader))
 
 	switch section.Kind {
 	case "annotations":
-		return b.buildAnnotations()
+		b.addAnnotations()
 	case "incidents":
-		return b.buildIncidents()
+		b.addIncidents()
 	case "regular":
 		{
 			conv := &blockConverter{prefix: fmt.Sprintf("section_%d", idx)}
@@ -94,7 +93,7 @@ func (b *handoverMessageBuilder) buildSection(idx int, section rez.OncallShiftHa
 	return nil
 }
 
-func (b *handoverMessageBuilder) buildAnnotations() error {
+func (b *handoverMessageBuilder) addAnnotations() {
 	numListBlocks := 0
 	numNoteBlocks := 0
 
@@ -138,14 +137,26 @@ func (b *handoverMessageBuilder) buildAnnotations() error {
 	if len(els) > 0 {
 		flushList()
 	}
-
-	return nil
 }
 
-func (b *handoverMessageBuilder) buildIncidents() error {
-	return nil
+func (b *handoverMessageBuilder) addIncidents() {
+	if len(b.incidents) == 0 {
+		b.addBlocks(plainText("No Incidents"))
+		return
+	}
+
+	listEl := slack.NewRichTextList(slack.RTEListBullet, 0)
+	for _, inc := range b.incidents {
+		incLink := fmt.Sprintf("%s/incidents/%s", rez.FrontendUrl, inc.ID)
+		el := slack.NewRichTextSectionLinkElement(incLink, inc.Title, nil)
+		listEl.Elements = append(listEl.Elements, slack.NewRichTextSection(el))
+	}
+	b.addBlocks(slack.NewRichTextBlock("handover_incidents", listEl))
 }
 
-func (b *handoverMessageBuilder) buildFooter() error {
-	return nil
+func (b *handoverMessageBuilder) addFooter() {
+	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.FrontendUrl, b.endingShift.ID)
+	footerEl := slack.NewRichTextSection(slack.NewRichTextSectionLinkElement(
+		endingShiftLink, "View Shift in Rezible", nil))
+	b.addBlocks(slack.NewRichTextBlock("handover_footer", footerEl))
 }

@@ -120,9 +120,9 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 	s.httpServer = httpServer
 
-	syncJobErr := jobs.RegisterProviderDataSyncJob(s.jobClient, users, incidents, oncall, alerts)
-	if syncJobErr != nil {
-		return fmt.Errorf("jobs.RegisterProviderDataSyncJob: %w", syncJobErr)
+	jobsErr := jobs.RegisterPeriodicJobs(s.jobClient, users, incidents, oncall, alerts)
+	if jobsErr != nil {
+		return fmt.Errorf("jobs.RegisterPeriodicJobs: %w", jobsErr)
 	}
 
 	return nil

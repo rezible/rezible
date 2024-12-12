@@ -21427,6 +21427,7 @@ type OncallUserShiftHandoverMutation struct {
 	typ           string
 	id            *uuid.UUID
 	created_at    *time.Time
+	reminder_sent *bool
 	updated_at    *time.Time
 	sent_at       *time.Time
 	contents      *[]byte
@@ -21614,6 +21615,42 @@ func (m *OncallUserShiftHandoverMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
+// SetReminderSent sets the "reminder_sent" field.
+func (m *OncallUserShiftHandoverMutation) SetReminderSent(b bool) {
+	m.reminder_sent = &b
+}
+
+// ReminderSent returns the value of the "reminder_sent" field in the mutation.
+func (m *OncallUserShiftHandoverMutation) ReminderSent() (r bool, exists bool) {
+	v := m.reminder_sent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldReminderSent returns the old "reminder_sent" field's value of the OncallUserShiftHandover entity.
+// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallUserShiftHandoverMutation) OldReminderSent(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldReminderSent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldReminderSent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldReminderSent: %w", err)
+	}
+	return oldValue.ReminderSent, nil
+}
+
+// ResetReminderSent resets all changes to the "reminder_sent" field.
+func (m *OncallUserShiftHandoverMutation) ResetReminderSent() {
+	m.reminder_sent = nil
+}
+
 // SetUpdatedAt sets the "updated_at" field.
 func (m *OncallUserShiftHandoverMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
@@ -21796,12 +21833,15 @@ func (m *OncallUserShiftHandoverMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OncallUserShiftHandoverMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.shift != nil {
 		fields = append(fields, oncallusershifthandover.FieldShiftID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, oncallusershifthandover.FieldCreatedAt)
+	}
+	if m.reminder_sent != nil {
+		fields = append(fields, oncallusershifthandover.FieldReminderSent)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, oncallusershifthandover.FieldUpdatedAt)
@@ -21824,6 +21864,8 @@ func (m *OncallUserShiftHandoverMutation) Field(name string) (ent.Value, bool) {
 		return m.ShiftID()
 	case oncallusershifthandover.FieldCreatedAt:
 		return m.CreatedAt()
+	case oncallusershifthandover.FieldReminderSent:
+		return m.ReminderSent()
 	case oncallusershifthandover.FieldUpdatedAt:
 		return m.UpdatedAt()
 	case oncallusershifthandover.FieldSentAt:
@@ -21843,6 +21885,8 @@ func (m *OncallUserShiftHandoverMutation) OldField(ctx context.Context, name str
 		return m.OldShiftID(ctx)
 	case oncallusershifthandover.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case oncallusershifthandover.FieldReminderSent:
+		return m.OldReminderSent(ctx)
 	case oncallusershifthandover.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
 	case oncallusershifthandover.FieldSentAt:
@@ -21871,6 +21915,13 @@ func (m *OncallUserShiftHandoverMutation) SetField(name string, value ent.Value)
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
+		return nil
+	case oncallusershifthandover.FieldReminderSent:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetReminderSent(v)
 		return nil
 	case oncallusershifthandover.FieldUpdatedAt:
 		v, ok := value.(time.Time)
@@ -21956,6 +22007,9 @@ func (m *OncallUserShiftHandoverMutation) ResetField(name string) error {
 		return nil
 	case oncallusershifthandover.FieldCreatedAt:
 		m.ResetCreatedAt()
+		return nil
+	case oncallusershifthandover.FieldReminderSent:
+		m.ResetReminderSent()
 		return nil
 	case oncallusershifthandover.FieldUpdatedAt:
 		m.ResetUpdatedAt()
