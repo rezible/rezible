@@ -1,22 +1,14 @@
 <script lang="ts">
-    import { listUserAssignmentsOptions, type ListUserAssignmentsData, type UserAssignment } from "$lib/api";
+    import { listUserAssignmentsOptions, type ListUserAssignmentsData } from "$lib/api";
     import { createQuery } from "@tanstack/svelte-query";
     import { Icon, Header, ListItem, Button } from "svelte-ux";
     import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
     import { addDays, addHours, formatDate, formatDistanceToNow } from "date-fns";
-    import Avatar from "$src/components/avatar/Avatar.svelte";
 
 	let params = $state<ListUserAssignmentsData["query"]>({});
 	const query = createQuery(() => listUserAssignmentsOptions({query: params}));
 
-	const mockAssignments: UserAssignment[] = [
-		{item_id: "review-bar", item_type: "incident_review", role: "Present", title: "SRCH-442", deadline: addHours(Date.now(), 2).toISOString()},
-		{item_id: "foo", item_type: "retrospective", role: "Review", title: "INDX-339", deadline: addDays(Date.now(), 4).toISOString()},
-		
-	];
-
-	// TODO: don't mock
-	const assignments = $derived(query.data?.data ?? mockAssignments);
+	const assignments = $derived(query.data?.data ?? []);
 	const incidents = $derived(assignments.filter(a => a.item_type === "incident"));
 	const shifts = $derived(assignments.filter(a => a.item_type === "oncall_shift"));
 	const tasks = $derived(assignments.filter(a => a.item_type === "tasks"));

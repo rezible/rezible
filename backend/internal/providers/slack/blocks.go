@@ -68,6 +68,7 @@ func (c *blockConverter) crawlNode(node *rez.DocumentNode, marks mapset.Set[stri
 
 func (c *blockConverter) convertNode(node *rez.DocumentNode, marks mapset.Set[string]) {
 	// TODO: support links etc, not just plain text
+	// linkEl := slack.NewRichTextSectionLinkElement()
 
 	if node.IsText() {
 		style := &slack.RichTextSectionTextStyle{

@@ -2,11 +2,13 @@ package slack
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/slack-go/slack"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
-	"github.com/slack-go/slack"
-	"time"
 )
 
 type handoverMessageBuilder struct {
