@@ -10,24 +10,24 @@ import (
 
 func (s *OncallService) RegisterJobs() error {
 	return errors.Join(
-		jobs.RegisterWorker(s.jobClient, &oncallHandoverReminderJobWorker{svc: s}),
+		jobs.RegisterWorker(s.jobClient, &checkShiftHandoverJobWorker{svc: s}),
 	)
 }
 
 // Handover Reminder Job
-type oncallHandoverReminderJobArgs struct {
+type checkShiftHandoverJobArgs struct {
 	shiftId uuid.UUID
 }
 
-func (a oncallHandoverReminderJobArgs) Kind() string {
-	return "oncall-handover-reminder-job-args"
+func (a checkShiftHandoverJobArgs) Kind() string {
+	return "oncall-handover-check-job-args"
 }
 
-type oncallHandoverReminderJobWorker struct {
-	river.WorkerDefaults[oncallHandoverReminderJobArgs]
+type checkShiftHandoverJobWorker struct {
+	river.WorkerDefaults[checkShiftHandoverJobArgs]
 	svc *OncallService
 }
 
-func (w *oncallHandoverReminderJobWorker) Work(ctx context.Context, job *river.Job[oncallHandoverReminderJobArgs]) error {
-	return w.svc.sendShiftHandoverReminder(ctx, job.Args.shiftId)
+func (w *checkShiftHandoverJobWorker) Work(ctx context.Context, job *river.Job[checkShiftHandoverJobArgs]) error {
+	return w.svc.checkShiftHandover(ctx, job.Args.shiftId)
 }

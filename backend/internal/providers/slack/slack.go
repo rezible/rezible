@@ -74,7 +74,7 @@ func (p *ChatProvider) sendMessage(ctx context.Context, channel string, msg slac
 	return nil
 }
 
-func (p *ChatProvider) SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error {
+func (p *ChatProvider) SendUserLinkMessage(ctx context.Context, id string, msgText string, linkUrl string, linkText string) error {
 	buttonElement := slack.NewButtonBlockElement(
 		"link_button_action1",
 		"button_value",
@@ -89,7 +89,7 @@ func (p *ChatProvider) SendUserLinkMessage(ctx context.Context, user *ent.User, 
 		slack.NewSectionBlock(textElement, nil, nil),
 		slack.NewActionBlock("link_button_action_block1", buttonElement))
 
-	return p.sendUserMessage(ctx, user.ChatID, msg)
+	return p.sendUserMessage(ctx, id, msg)
 }
 
 func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {

@@ -231,7 +231,7 @@ func (s *OncallService) CheckOncallHandovers(ctx context.Context) error {
 			continue
 		}
 		insertJobs = append(insertJobs, jobs.InsertManyParams{
-			Args: oncallHandoverReminderJobArgs{shiftId: shiftId},
+			Args: checkShiftHandoverJobArgs{shiftId: shiftId},
 			InsertOpts: &jobs.InsertOpts{
 				UniqueOpts: jobs.UniqueOpts{
 					ByArgs: true,
@@ -247,7 +247,7 @@ func (s *OncallService) CheckOncallHandovers(ctx context.Context) error {
 	return nil
 }
 
-func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shiftId uuid.UUID) error {
+func (s *OncallService) checkShiftHandover(ctx context.Context, shiftId uuid.UUID) error {
 	shift, shiftErr := s.GetShiftByID(ctx, shiftId)
 	if shiftErr != nil {
 		return fmt.Errorf("failed to get shift: %w", shiftErr)
@@ -257,6 +257,22 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shiftId u
 	if hoErr != nil {
 		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
 	}
+
+	// shift has already ended, within window
+	if shift.EndAt.Before(time.Now()) {
+		if sendErr := s.sendFallbackShiftHandover(ctx, shift, ho); sendErr != nil {
+			return fmt.Errorf("failed to send fallback handover: %w", sendErr)
+		}
+	} else {
+		if reminderErr := s.sendShiftHandoverReminder(ctx, shift, ho); reminderErr != nil {
+			return fmt.Errorf("failed to send handover reminder: %w", reminderErr)
+		}
+	}
+
+	return nil
+}
+
+func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *ent.OncallUserShift, ho *ent.OncallUserShiftHandover) error {
 	if ho.ReminderSent {
 		return nil
 	}
@@ -273,7 +289,7 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shiftId u
 
 	msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
 		roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
-	msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shiftId)
+	msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shift.ID)
 	if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, "Complete Handover"); msgErr != nil {
 		return fmt.Errorf("failed to send message: %w", msgErr)
 	}
@@ -352,6 +368,27 @@ func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UU
 		Save(ctx)
 }
 
+func (s *OncallService) sendFallbackShiftHandover(ctx context.Context, shift *ent.OncallUserShift, ho *ent.OncallUserShiftHandover) error {
+	if !ho.SentAt.IsZero() { // already sent
+		return nil
+	}
+	contents := []rez.OncallShiftHandoverSection{
+		// TODO:
+		{Header: "Annotations", Kind: "annotations"},
+		{Header: "Incidents", Kind: "incidents"},
+	}
+	if sendErr := s.sendShiftHandover(ctx, shift, contents); sendErr != nil {
+		return fmt.Errorf("sending fallback handover: %w", sendErr)
+	}
+
+	updateErr := ho.Update().SetSentAt(time.Now()).Exec(ctx)
+	if updateErr != nil {
+		return fmt.Errorf("failed to update handover sent_at time: %w", updateErr)
+	}
+
+	return nil
+}
+
 func (s *OncallService) SendShiftHandover(ctx context.Context, id uuid.UUID, contents []rez.OncallShiftHandoverSection) (*ent.OncallUserShiftHandover, error) {
 	shift, shiftErr := s.GetShiftByID(ctx, id)
 	if shiftErr != nil {
@@ -363,11 +400,17 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, id uuid.UUID, con
 		return nil, fmt.Errorf("failed to marshal contents: %w", jsonErr)
 	}
 
-	handover, queryErr := s.GetShiftHandover(ctx, id)
+	handover, handoverErr := s.GetShiftHandover(ctx, id)
+
+	// already sent
+	if handover != nil && !handover.SentAt.IsZero() {
+		return handover, nil
+	}
+
 	var updateContentsErr error
-	if queryErr != nil {
-		if !ent.IsNotFound(queryErr) {
-			return nil, fmt.Errorf("failed to get handover: %w", queryErr)
+	if handoverErr != nil || handover == nil {
+		if !ent.IsNotFound(handoverErr) {
+			return nil, fmt.Errorf("failed to get handover: %w", handoverErr)
 		}
 		handover, updateContentsErr = s.createShiftHandover(ctx, id, jsonContent)
 	} else {
@@ -445,6 +488,7 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, shift *ent.Oncall
 	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
 		return fmt.Errorf("failed to send: %w", sendErr)
 	}
+
 	return nil
 }
 

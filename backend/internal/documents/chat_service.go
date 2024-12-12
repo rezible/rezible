@@ -54,7 +54,7 @@ func (s *ChatService) handleProviderUserCreateAnnotation(ctx context.Context, id
 }
 
 func (s *ChatService) SendUserMessage(ctx context.Context, user *ent.User, msgText string) error {
-	return s.provider.SendUserMessage(ctx, user, msgText)
+	return s.provider.SendUserMessage(ctx, user.ChatID, msgText)
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, id string, msg *rez.ContentNode) error {
@@ -67,5 +67,5 @@ func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOnc
 }
 
 func (s *ChatService) SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error {
-	return s.provider.SendUserLinkMessage(ctx, user, msgText, linkUrl, linkText)
+	return s.provider.SendUserLinkMessage(ctx, user.ChatID, msgText, linkUrl, linkText)
 }

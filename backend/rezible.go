@@ -136,8 +136,8 @@ type (
 
 		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error
 
-		SendUserMessage(ctx context.Context, user *ent.User, msgText string) error
-		SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error
+		SendUserMessage(ctx context.Context, id string, msgText string) error
+		SendUserLinkMessage(ctx context.Context, id string, msgText string, linkUrl string, linkText string) error
 	}
 
 	ChatService interface {
