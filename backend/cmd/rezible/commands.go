@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/internal/documents"
 	"math"
 	"math/rand"
 	"strings"
@@ -71,7 +72,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 		}
 
 		if syncUsers {
-			_, chatErr := postgres.NewChatService(ctx, pl, users)
+			_, chatErr := documents.NewChatService(ctx, pl, users)
 			if chatErr != nil {
 				return fmt.Errorf("to create chat: %w", chatErr)
 			}

@@ -13,7 +13,7 @@ type ChatProvider struct {
 	client        *slack.Client
 	signingSecret string
 
-	lookupUserFn func(context.Context, string) (*ent.User, error)
+	lookupUser func(context.Context, string) (*ent.User, error)
 }
 
 type ChatProviderConfig struct {
@@ -26,7 +26,7 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 	p := &ChatProvider{
 		client:        client,
 		signingSecret: cfg.SigningSecret,
-		lookupUserFn: func(ctx context.Context, s string) (*ent.User, error) {
+		lookupUser: func(ctx context.Context, s string) (*ent.User, error) {
 			return nil, fmt.Errorf("no user lookup func registered")
 		},
 	}
@@ -43,11 +43,7 @@ func (p *ChatProvider) GetWebhooks() rez.Webhooks {
 }
 
 func (p *ChatProvider) SetUserLookupFunc(lookupFn func(ctx context.Context, id string) (*ent.User, error)) {
-	p.lookupUserFn = lookupFn
-}
-
-func (p *ChatProvider) lookupUser(ctx context.Context, id string) (*ent.User, error) {
-	return p.lookupUserFn(ctx, id)
+	p.lookupUser = lookupFn
 }
 
 func (p *ChatProvider) SendUserMessage(ctx context.Context, user *ent.User, msg string) error {

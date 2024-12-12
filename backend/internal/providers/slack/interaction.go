@@ -71,12 +71,14 @@ func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *sla
 		return fmt.Errorf("failed to get user: %w", userErr)
 	}
 
-	rosters, rostersErr := user.QueryTeams().QueryOncallRosters().All(ctx)
-	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
-		return fmt.Errorf("failed to get user oncall rosters: %w", rostersErr)
+	queryShifts := user.QueryOncallShifts().WithRoster()
+
+	shifts, shiftsErr := queryShifts.All(ctx)
+	if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
+		return fmt.Errorf("failed to get user oncall rosters: %w", shiftsErr)
 	}
 
-	view := p.createAnnotationModalView(ic, rosters)
+	view := p.createAnnotationModalView(ic, shifts)
 
 	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, view)
 	if resp != nil && !resp.Ok && len(resp.ResponseMetadata.Messages) > 0 {
@@ -91,41 +93,48 @@ func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *sla
 	return nil
 }
 
-func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, rosters []*ent.OncallRoster) slack.ModalViewRequest {
-	if len(rosters) == 0 {
+func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, shifts []*ent.OncallUserShift) slack.ModalViewRequest {
+	if len(shifts) == 0 {
 		return slack.ModalViewRequest{
 			Type:  "modal",
-			Title: plainText("No Oncall Rosters"),
+			Title: plainText("No Active Shift"),
 			Blocks: slack.Blocks{BlockSet: []slack.Block{
-				slack.NewSectionBlock(plainText("Didn't find any oncall rosters for you"), nil, nil),
+				slack.NewSectionBlock(plainText("You do not have a current oncall shift to annotate"), nil, nil),
 			}},
 			Close:      plainText("Cancel"),
 			CallbackID: createAnnotationConfirmCallbackID,
 		}
 	}
+
 	italicStyle := &slack.RichTextSectionTextStyle{Italic: true}
-	messageDetails := slack.NewRichTextBlock("anno_msg",
+	messageDetailsBlock := slack.NewRichTextBlock("anno_msg",
 		slack.NewRichTextSection(
 			slack.NewRichTextSectionTextElement(ic.Message.Text, italicStyle)))
 
-	rosterOptions := make([]*slack.OptionBlockObject, len(rosters))
-	for i, r := range rosters {
-		var desc *slack.TextBlockObject
-		if r.ChatChannelID != "" {
-			desc = plainText(r.ChatChannelID)
+	var shiftBlock slack.Block
+	if len(shifts) == 1 {
+		shiftBlock = plainText("Annotating your active shift in " + shifts[0].Edges.Roster.Name)
+	} else {
+		shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
+		for i, sh := range shifts {
+			var desc *slack.TextBlockObject
+			shiftRoster := sh.Edges.Roster
+			if shiftRoster.ChatChannelID != "" {
+				desc = plainText(shiftRoster.ChatChannelID)
+			}
+			shiftOptions[i] = slack.NewOptionBlockObject(shiftRoster.ID.String(), plainText(shiftRoster.Name), desc)
 		}
-		rosterOptions[i] = slack.NewOptionBlockObject(r.ID.String(), plainText(r.Name), desc)
+
+		shiftSelectElement := slack.NewOptionsSelectBlockElement(
+			slack.OptTypeStatic,
+			plainText("Select the roster shift to annotate"),
+			"select_shift",
+			shiftOptions...)
+
+		shiftBlock = slack.NewSectionBlock(plainText("Oncall Shift Rosters"), nil, slack.NewAccessory(shiftSelectElement))
 	}
 
-	rosterSelectElement := slack.NewOptionsSelectBlockElement(
-		slack.OptTypeStatic,
-		plainText("Select from your rosters"),
-		"select_roster",
-		rosterOptions...)
-
-	rosterSelect := slack.NewSectionBlock(plainText("Oncall Roster"), nil, slack.NewAccessory(rosterSelectElement))
-
-	notesInput := slack.NewInputBlock(
+	notesInputBlock := slack.NewInputBlock(
 		"notes_input",
 		plainText("Notes"),
 		plainText("You can edit this later"),
@@ -134,15 +143,15 @@ func (p *ChatProvider) createAnnotationModalView(ic *slack.InteractionCallback, 
 	return slack.ModalViewRequest{
 		Type:       "modal",
 		CallbackID: createAnnotationConfirmCallbackID,
-		Title:      plainText("Create Oncall Annotation"),
+		Title:      plainText("Create Annotation"),
 		Close:      plainText("Cancel"),
 		Submit:     plainText("Create"),
 		Blocks: slack.Blocks{BlockSet: []slack.Block{
-			messageDetails,
+			messageDetailsBlock,
 			slack.NewDividerBlock(),
-			rosterSelect,
+			shiftBlock,
 			slack.NewDividerBlock(),
-			notesInput,
+			notesInputBlock,
 		}},
 	}
 }

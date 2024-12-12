@@ -34,7 +34,7 @@ const createSession = () => {
 		checkIsValid();
 	}
 
-	const fetchInitial = async (_fetch?: typeof fetch) => {
+	const fetchSession = async (_fetch?: typeof fetch) => {
 		const { data, error, response } = await getCurrentUserSession({client, fetch: _fetch, throwOnError: false});
 		console.log(data, error, response);
 		if (data) {
@@ -46,7 +46,7 @@ const createSession = () => {
 	}
 
 	return {
-		fetchInitial,
+		fetchSession,
 		get userId() { return session.user?.id },
 		get user() { return session.user },
 		get username() { return session.user?.attributes.name || "<username>" },

@@ -9,7 +9,7 @@ export const prerender = false;
 export const csr = true;
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const errStatus = await session.fetchInitial(fetch);
+	const errStatus = await session.fetchSession(fetch);
 	if (errStatus) {
 		if (errStatus === 401) {
 			return redirect(301, AUTH_REDIRECT_URL);
