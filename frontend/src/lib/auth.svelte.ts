@@ -57,7 +57,9 @@ const createSession = () => {
 			
 			if (authErr == "no_session" || authErr == "session_expired") {
 				return AUTH_REDIRECT_URL;
-			} else if (authErr == "missing_user") {
+			}
+			
+			if (authErr == "missing_user") {
 				newError = "no_user";
 			}
 		}
