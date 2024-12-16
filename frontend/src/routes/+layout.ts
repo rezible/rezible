@@ -10,9 +10,7 @@ export const csr = true;
 
 export const load: LayoutLoad = async ({ fetch }) => {
 	const authRedirect = await session.load(fetch);
-	if (authRedirect) {
-		return redirect(301, authRedirect);
-	}
+	if (authRedirect) return redirect(301, authRedirect);
 	
 	const queryClient = new QueryClient({
 		defaultOptions: {

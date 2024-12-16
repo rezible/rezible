@@ -19,8 +19,8 @@ const parseUserSessionResponse = ({data}: GetCurrentUserSessionResponse): AuthSe
 		user: data.user,
 		expiresAt: new Date(Date.parse(data.expires_at)),
 	}
-
 }
+
 const createSession = () => {
 	let session = $state<AuthSession>();
 	let error = $state<SessionError>();
