@@ -4,27 +4,27 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	"net"
-	"net/http"
-	"strings"
-	"time"
 )
 
 var (
 	authSessionContextKey = "user_auth_session"
 	authSessionCookieName = "rez_auth"
-	authMountPath         = "/auth"
 
 	errInvalidAuthToken = errors.New("invalid bearer token")
-)
 
-// AutoCreateUsers TODO: don't auto-create users
-const AutoCreateUsers = true
+	noDbUser = ent.User{ID: uuid.Nil}
+)
 
 type AuthService struct {
 	users         rez.UserService
@@ -45,91 +45,118 @@ func NewAuthService(ctx context.Context, users rez.UserService, pl rez.ProviderL
 	}, nil
 }
 
-func (s *AuthService) MakeRequireAuthMiddleware(redirect bool) func(http.Handler) http.Handler {
+func (s *AuthService) storeSession(ctx context.Context, sess *rez.AuthSession) context.Context {
+	return context.WithValue(ctx, authSessionContextKey, sess)
+}
+
+func (s *AuthService) GetSession(ctx context.Context) (*rez.AuthSession, error) {
+	sess, ok := ctx.Value(authSessionContextKey).(*rez.AuthSession)
+	if !ok || sess == nil {
+		return nil, rez.ErrNoAuthSession
+	}
+	return sess, nil
+}
+
+func (s *AuthService) MakeRequireAuthMiddleware(redirectStartFlow bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sess, sessErr := s.loadAuthSession(r)
+			sess, sessErr := s.getRequestAuthSession(r)
 			if sessErr == nil {
-				authedReq := r.WithContext(context.WithValue(r.Context(), authSessionContextKey, sess))
-				next.ServeHTTP(w, authedReq)
+				next.ServeHTTP(w, r.WithContext(s.storeSession(r.Context(), sess)))
 				return
 			}
 
-			log.Debug().Err(sessErr).Str("path", r.URL.Path).Msg("auth middleware")
-			if errors.Is(sessErr, rez.ErrNoSessionUser) {
-				log.Debug().Msg("session exists, no user")
-				http.Error(w, "no_user", http.StatusForbidden)
+			if errors.Is(sessErr, rez.ErrAuthSessionUserMissing) {
+				http.Error(w, "missing_user", http.StatusForbidden)
 				return
 			}
 
-			if !redirect {
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-
-			if errors.Is(sessErr, rez.ErrNoAuthSession) {
+			if redirectStartFlow && isRedirectableError(sessErr) {
 				s.sessProvider.StartAuthFlow(w, r)
 			} else {
-				http.Error(w, "auth failed", http.StatusInternalServerError)
+				w.WriteHeader(http.StatusUnauthorized)
 			}
 		})
 	}
 }
 
-func (s *AuthService) MakeAuthHandler() http.Handler {
-	redirectAuth := http.RedirectHandler(rez.FrontendUrl, http.StatusFound)
+func isRedirectableError(err error) bool {
+	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
+}
 
+func (s *AuthService) MakeAuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		handledByProvider := s.providerAuthFlow(w, r)
 		if handledByProvider {
 			return
 		}
 
-		_, sessErr := s.loadAuthSession(r)
-		if sessErr != nil && !errors.Is(sessErr, rez.ErrNoSessionUser) {
+		_, sessErr := s.getRequestAuthSession(r)
+		if sessErr == nil {
+			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
+		} else if isRedirectableError(sessErr) {
 			s.sessProvider.StartAuthFlow(w, r)
-			return
+		} else {
+			w.WriteHeader(http.StatusBadRequest)
 		}
-		log.Debug().Str("path", r.URL.Path).Msg("auth handler redirecting")
-		redirectAuth.ServeHTTP(w, r)
 	})
 }
 
 func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
 	var redirectUrl string
 	var createSessionErr error
-	onSessionCreated := func(sess *rez.AuthSession, ru string) {
-		redirectUrl = ru
-		user, userErr := s.lookupProviderUser(r.Context(), &sess.User)
+
+	onUserSessionCreated := func(sess *rez.AuthSession, redirect string) {
+		redirectUrl = redirect
+
+		if sess.ExpiresAt.IsZero() {
+			sess.ExpiresAt = time.Now().Add(time.Hour)
+		}
+
+		rezUser, userErr := s.lookupProviderUser(r.Context(), &sess.User)
 		if userErr != nil {
-			if ent.IsNotFound(userErr) {
-				log.Debug().Str("redirect", redirectUrl).Msg("provider session created, user does not exist")
-				user = &ent.User{}
-			} else {
-				createSessionErr = fmt.Errorf("failed to lookup provider user: %w", userErr)
-			}
+			createSessionErr = fmt.Errorf("failed to lookup provider user: %w", userErr)
+			return
 		}
-		if user != nil {
-			sess.User = *user
-			createSessionErr = s.storeAuthSession(w, r, sess)
+		if rezUser == nil {
+			rezUser = &noDbUser
 		}
+		sess.User = *rezUser
+		createSessionErr = s.storeAuthSession(w, r, sess)
 	}
 
-	handledByProvider := s.sessProvider.HandleAuthFlowRequest(w, r, onSessionCreated)
-	if handledByProvider {
-		if createSessionErr != nil {
-			http.Error(w, createSessionErr.Error(), http.StatusBadRequest)
-		} else if redirectUrl != "" {
-			http.Redirect(w, r, redirectUrl, http.StatusFound)
-		}
+	providerHandled := s.sessProvider.HandleAuthFlowRequest(w, r, onUserSessionCreated)
+	if !providerHandled {
+		return false
 	}
 
-	return handledByProvider
+	if createSessionErr != nil {
+		log.Debug().Err(createSessionErr).Msg("failed to create auth session")
+		http.Error(w, createSessionErr.Error(), http.StatusBadRequest)
+	} else if redirectUrl != "" {
+		http.Redirect(w, r, redirectUrl, http.StatusFound)
+	}
+
+	return true
 }
 
 func (s *AuthService) lookupProviderUser(ctx context.Context, usr *ent.User) (*ent.User, error) {
+	email := usr.Email
+	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
+		log.Debug().Msg("using debug email")
+		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
+	}
+
 	// TODO: use provider mapping to match user details
-	return s.users.GetByEmail(ctx, usr.Email)
+	user, lookupErr := s.users.GetByEmail(ctx, email)
+	if user != nil && lookupErr == nil {
+		return user, nil
+	}
+	if ent.IsNotFound(lookupErr) {
+		log.Debug().Str("email", email).Msg("failed to match provider user")
+		return nil, nil
+	}
+	return nil, lookupErr
 }
 
 func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
@@ -156,24 +183,16 @@ func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, s
 	return nil
 }
 
-func (s *AuthService) loadAuthSession(r *http.Request) (*rez.AuthSession, error) {
-	tokenValue, tokenErr := s.loadAuthSessionToken(r)
+func (s *AuthService) getRequestAuthSession(r *http.Request) (*rez.AuthSession, error) {
+	tokenValue, tokenErr := s.getRequestAuthSessionToken(r)
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
 
-	sess, verifyErr := s.VerifySessionToken(tokenValue)
-	if verifyErr != nil {
-		return nil, fmt.Errorf("failed to verify session: %w", verifyErr)
-	}
-
-	if sess.User.ID == uuid.Nil {
-		return nil, rez.ErrNoSessionUser
-	}
-	return sess, nil
+	return s.VerifySessionToken(tokenValue)
 }
 
-func (s *AuthService) loadAuthSessionToken(r *http.Request) (string, error) {
+func (s *AuthService) getRequestAuthSessionToken(r *http.Request) (string, error) {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader != "" {
 		split := strings.Split(authHeader, " ")
@@ -199,14 +218,6 @@ func (s *AuthService) loadAuthSessionToken(r *http.Request) (string, error) {
 	return authCookie.Value, nil
 }
 
-func (s *AuthService) GetSession(ctx context.Context) (*rez.AuthSession, error) {
-	sess, ok := ctx.Value(authSessionContextKey).(*rez.AuthSession)
-	if !ok || sess == nil {
-		return nil, rez.ErrNoAuthSession
-	}
-	return sess, nil
-}
-
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
 	Session rez.AuthSession `json:"session"`
@@ -216,8 +227,6 @@ func (s *AuthService) IssueSessionToken(session *rez.AuthSession) (string, error
 	if session == nil {
 		return "", errors.New("nil session")
 	}
-
-	fmt.Printf("issuing: %+v\n", session)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"session": *session,
@@ -232,8 +241,8 @@ func (s *AuthService) IssueSessionToken(session *rez.AuthSession) (string, error
 	return signedToken, nil
 }
 
-func (s *AuthService) VerifySessionToken(tokenStr string) (*rez.AuthSession, error) {
-	keyFunc := func(token *jwt.Token) (interface{}, error) {
+func (s *AuthService) parseSessionTokenClaims(tokenStr string) (*authSessionTokenClaims, error) {
+	keyFunc := func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -249,10 +258,22 @@ func (s *AuthService) VerifySessionToken(tokenStr string) (*rez.AuthSession, err
 	if !claimsOk {
 		return nil, fmt.Errorf("invalid claims")
 	}
+	return claims, nil
+}
+
+func (s *AuthService) VerifySessionToken(tokenStr string) (*rez.AuthSession, error) {
+	claims, parseErr := s.parseSessionTokenClaims(tokenStr)
+	if parseErr != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", parseErr)
+	}
+
+	if claims.Session.User.ID == uuid.Nil {
+		return nil, rez.ErrAuthSessionUserMissing
+	}
 
 	exp, expErr := claims.GetExpirationTime()
 	if expErr != nil || exp.Before(time.Now()) {
-		return nil, fmt.Errorf("claims expired: %s", exp)
+		return nil, rez.ErrAuthSessionExpired
 	}
 
 	return &claims.Session, nil

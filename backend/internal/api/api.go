@@ -75,6 +75,10 @@ func NewHandler(
 	}
 }
 
+func (h *Handler) MakeAdapter() oapi.Adapter {
+	return oapi.MakeDefaultApi(h).Adapter()
+}
+
 func mustGetAuthSession(ctx context.Context, auth rez.AuthService) *rez.AuthSession {
 	sess, sessErr := auth.GetSession(ctx)
 	if sessErr != nil {

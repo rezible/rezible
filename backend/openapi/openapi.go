@@ -13,6 +13,7 @@ type (
 	Context     = huma.Context
 	ErrorModel  = huma.ErrorModel
 	StatusError = huma.StatusError
+	Adapter     = huma.Adapter
 	Middleware  func(ctx Context, next func(Context))
 )
 

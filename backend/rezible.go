@@ -14,9 +14,11 @@ import (
 )
 
 var (
-	ErrNoAuthSession = errors.New("no auth session")
-	ErrNoSessionUser = errors.New("no auth session user")
-	ErrUnauthorized  = errors.New("unauthorized")
+	ErrNoAuthSession          = errors.New("no auth session")
+	ErrAuthSessionExpired     = errors.New("auth session expired")
+	ErrAuthSessionUserMissing = errors.New("missing auth session user")
+
+	ErrUnauthorized = errors.New("unauthorized")
 
 	BackendUrl  = "http://localhost:8888"
 	FrontendUrl = "http://localhost:5173"

@@ -66,6 +66,7 @@ type providerConfigFile struct {
 	Configs []struct {
 		Type         providerconfig.ProviderType `json:"type"`
 		ProviderName string                      `json:"provider_name"`
+		Disabled     bool                        `json:"disabled"`
 		Config       json.RawMessage             `json:"config"`
 	} `json:"configs"`
 }
@@ -93,6 +94,7 @@ func LoadFromFile(ctx context.Context, client *ent.Client, fileName string) erro
 				SetProviderName(c.ProviderName).
 				SetProviderType(c.Type).
 				SetProviderConfig(c.Config).
+				SetEnabled(!c.Disabled).
 				SetUpdatedAt(time.Now()).
 				OnConflictColumns(
 					providerconfig.FieldProviderName,

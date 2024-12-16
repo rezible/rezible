@@ -1,10 +1,10 @@
 <script lang="ts">
 	import '$src/app.postcss';
 	import { settings } from 'svelte-ux';
-	import { QueryClientProvider, createQuery } from '@tanstack/svelte-query';
+	import { QueryClientProvider } from '@tanstack/svelte-query';
+	import { session } from '$lib/auth.svelte';
 	import AppShell from '$features/app/views/app-shell/AppShell.svelte';
-	import themes from "$src/themes.json";
-    import { listUserNotificationsOptions } from '$lib/api/index.js';
+	import AuthSessionErrorView from '$features/app/views/auth-session-error/AuthSessionErrorView.svelte';
 
 	const { data, children } = $props();
 
@@ -19,7 +19,9 @@
 </svelte:head>
 
 <QueryClientProvider client={data.queryClient}>
-	<AppShell>
-		{@render children()}
-	</AppShell>
+	{#if session.error}
+		<AuthSessionErrorView />
+	{:else}
+		<AppShell>{@render children()}</AppShell>
+	{/if}
 </QueryClientProvider>

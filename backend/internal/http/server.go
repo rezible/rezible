@@ -40,10 +40,9 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.srv.Shutdown(ctx)
 }
 
-func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, api oapi.Handler) (*Server, error) {
+func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdapter oapi.Adapter) (*Server, error) {
 	var server Server
 
-	// Base router
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
 
@@ -55,21 +54,17 @@ func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, api oap
 	if feErr != nil {
 		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feErr)
 	}
-	frontendAuthMw := makeAuthMiddleware(auth, true, func(r *http.Request) bool {
-		return r.URL.Path == "/favicon.ico"
-	})
-	frontendHandler := chi.Chain(frontendAuthMw).Handler(embeddedFeServer)
 
-	// API operations handler
-	oapiHandler := oapi.MakeDefaultApi(api).Adapter()
+	frontendAuthMw := makeAuthMiddleware(auth, true, []string{"/favicon.ico"})
+	frontendHandler := chi.Chain(
+		frontendAuthMw,
+	).Handler(embeddedFeServer)
 
-	apiAuthMw := makeAuthMiddleware(auth, false, func(r *http.Request) bool {
-		return r.URL.Path == "/openapi.json"
-	})
+	apiAuthMw := makeAuthMiddleware(auth, false, []string{"/openapi.json"})
 	apiHandler := chi.Chain(
 		middleware.Logger,
 		apiAuthMw,
-	).Handler(oapiHandler)
+	).Handler(apiAdapter)
 
 	webhookHandler := makeWebhookHandler(http.HandlerFunc(pl.HandleWebhookRequest))
 
@@ -109,12 +104,16 @@ func makeWebhookHandler(providerHandler http.Handler) http.Handler {
 	})
 }
 
-func makeAuthMiddleware(s rez.AuthService, redirect bool, skip func(r *http.Request) bool) func(http.Handler) http.Handler {
+func makeAuthMiddleware(s rez.AuthService, redirect bool, skipPaths []string) func(http.Handler) http.Handler {
 	authMw := s.MakeRequireAuthMiddleware(redirect)
+	skipMap := make(map[string]struct{}, len(skipPaths))
+	for _, path := range skipPaths {
+		skipMap[path] = struct{}{}
+	}
 	return func(next http.Handler) http.Handler {
 		withAuth := authMw(next)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if skip(r) {
+			if _, skip := skipMap[r.URL.Path]; skip {
 				next.ServeHTTP(w, r)
 				return
 			}

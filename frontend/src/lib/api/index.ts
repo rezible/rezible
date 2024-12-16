@@ -5,26 +5,25 @@ import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 import { createConfig, type Options } from '@hey-api/client-fetch';
 import type { CreateQueryOptions } from '@tanstack/svelte-query';
 
-client.setConfig(createConfig({
-	baseUrl: dev ? '/api' : undefined,
-}));
+const clientConfig = createConfig({baseUrl: dev ? '/api' : undefined});
+client.setConfig(clientConfig);
 
-client.interceptors.error.use((err, resp, req, opts) => {
+client.interceptors.error.use(async (err, resp, req, opts) => {
+	const status = resp.status;
 	if (!err) {
-		// TODO
-		return {title: "", status: resp.status, detail: ""} as ErrorModel;
+		return {title: "Unknown Error", status, detail: ""} as ErrorModel;
 	}
-	return tryUnwrapApiError(err as Error);
+	return tryUnwrapApiError(err as Error, status);
 });
 
-export const tryUnwrapApiError = (err: Error): ErrorModel => {
-	console.log("unwrap", err);
+export const tryUnwrapApiError = (err: Error, status = 503): ErrorModel => {
 	try {
-		if ("detail" in err) return err as ErrorModel;
-		const parsed = JSON.parse(err.message) as ErrorModel;
-		return parsed;
+		if ("detail" in err) {
+			return err as ErrorModel;
+		}
+		return JSON.parse(err.message) as ErrorModel;
 	} catch {
-		return {title: "Server Error", detail: err.message ?? "Unknown Error", status: 503}
+		return {title: "Server Error", detail: err.message ?? "Unknown Error", status}
 	}
 }
 

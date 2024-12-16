@@ -8,11 +8,13 @@ import { differenceInSeconds } from 'date-fns/differenceInSeconds';
 export const AUTH_REDIRECT_URL = dev ? "http://localhost:8888/auth" : "/auth";
 const refreshWindowSecs = 60 * 3;
 
-type Session = {
-	expiresAt?: Date;
-	user?: User;
+type SessionError = "unknown" | "invalid" | "expired" | "no_user";
+
+type AuthSession = {
+	expiresAt: Date;
+	user: User;
 };
-const parseUserSessionResponse = ({data}: GetCurrentUserSessionResponse): Session => {
+const parseUserSessionResponse = ({data}: GetCurrentUserSessionResponse): AuthSession => {
 	return {
 		user: data.user,
 		expiresAt: new Date(Date.parse(data.expires_at)),
@@ -20,41 +22,61 @@ const parseUserSessionResponse = ({data}: GetCurrentUserSessionResponse): Sessio
 
 }
 const createSession = () => {
-	let session = $state<Session>({});
-	let isValid = $state(false);
+	let session = $state<AuthSession>();
+	let error = $state<SessionError>();
 
-	const clear = () => {session = {}}
-	const setUser = (u: User) => {session.user = u};
-	const setExpiresAt = (d: Date) => {session.expiresAt = d};
-	const checkIsValid = () => {
-		isValid = !!session.expiresAt && session.expiresAt > new Date(Date.now())
-	}
-	const setSession = (s: Session) => {
+	const set = (s: AuthSession) => {
 		session = s;
-		checkIsValid();
+		
+		if (s.expiresAt < new Date(Date.now())) {
+			error = "expired";
+		} else {
+			error = undefined;
+		}
 	}
 
-	const fetchSession = async (_fetch?: typeof fetch) => {
-		const { data, error, response } = await getCurrentUserSession({client, fetch: _fetch, throwOnError: false});
-		console.log(data, error, response);
+	const clear = () => {
+		session = undefined;
+		error = undefined;
+	};
+
+	const load = async (_fetch?: typeof fetch) => {
+		const { data, error: respError, response } = await getCurrentUserSession({client, fetch: _fetch, throwOnError: false});
+		
 		if (data) {
-			setSession(parseUserSessionResponse(data));
+			set(parseUserSessionResponse(data));
 			return;
 		}
+
 		clear();
-		return response.status;
+
+		const status = response.status;
+		if (status === 401) {
+			return AUTH_REDIRECT_URL;
+		}
+		
+		if (status === 403) {
+			error = "no_user";
+		}
+
+		if (status >= 500) {
+			// TODO
+			console.error("failed to get auth session", status, respError);
+			error = "unknown";
+		}
+	
+		return;
 	}
 
 	return {
-		fetchSession,
-		get userId() { return session.user?.id },
-		get user() { return session.user },
-		get username() { return session.user?.attributes.name || "<username>" },
-		get email() { return session.user?.attributes.email || "<email>" },
+		load,
+		get user() { return session?.user },
+		get userId() { return session?.user.id },
+		get username() { return session?.user.attributes.name || "<username>" },
+		get email() { return session?.user.attributes.email || "<email>" },
 		get accentColor() { return "#a33333" },
-		get isValid() { return isValid },
-		get expiresAt() { return session.expiresAt },
-		clear,
+		get error() { return error },
+		get expiresAt() { return session?.expiresAt },
    };
 }
 export const session = createSession();

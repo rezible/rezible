@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { session } from '$lib/auth.svelte';
-    import Toaster, { setToastState } from '$src/components/toaster';
-	
+    import Toaster, { setToastState } from '$components/toaster';
 	import Sidebar from "./Sidebar.svelte";
 	import Header from './Header.svelte';
+
+	const { children } = $props();
 
 	setToastState();
 </script>
@@ -17,11 +17,7 @@
 		</nav>
 
 		<main class="w-full p-2 overflow-y-auto">
-			{#if !session.isValid}
-				<div class="m-4 text-lg text-danger">auth session invalid</div>
-			{/if}
-
-			<slot />
+			{@render children()}
 		</main>
 	</div>
 </div>

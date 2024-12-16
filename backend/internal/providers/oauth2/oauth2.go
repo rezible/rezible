@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
-
-	"github.com/rs/zerolog/log"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/markbates/goth"
@@ -74,12 +72,13 @@ func (s *SessionProvider) GetUserMapping() *ent.User {
 
 func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs func(*rez.AuthSession, string)) bool {
 	if r.URL.Path == "/auth/callback" {
-		if cbErr := s.handleFlowCallback(w, r, cs); cbErr != nil {
-			s.invalidateSession(w, r)
-			log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
-			http.Error(w, cbErr.Error(), http.StatusBadRequest)
+		cbErr := s.handleFlowCallback(w, r, cs)
+		if cbErr == nil {
+			return true
 		}
-		return true
+		s.invalidateSession(w, r)
+		log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
+		return false
 	}
 	return false
 }
@@ -95,9 +94,13 @@ func (s *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, createSession func(*rez.AuthSession, string)) error {
-	sess, sessErr := s.getRequestProviderSession(r)
+	sess, sessErr := s.getProviderSession(r)
 	if sessErr != nil {
 		return fmt.Errorf("getting provider session: %w", sessErr)
+	}
+
+	if validateErr := validateRequestSessionState(r, sess); validateErr != nil {
+		return fmt.Errorf("validating request session: %w", validateErr)
 	}
 
 	sessUser, fetchErr := s.fetchSessionUser(w, r, sess)
@@ -107,12 +110,6 @@ func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Requ
 
 	if sessUser.Email == "" {
 		return errors.New("missing email")
-	}
-
-	fmt.Printf("sess user: %+v\n", sessUser)
-	expiry := sessUser.ExpiresAt
-	if expiry.IsZero() {
-		expiry = time.Now().Add(time.Hour)
 	}
 
 	authSess := &rez.AuthSession{
@@ -156,7 +153,7 @@ func (s *SessionProvider) storeProviderSession(w http.ResponseWriter, r *http.Re
 	return gothic.StoreInSession(s.provider.Name(), sess.Marshal(), r, w)
 }
 
-func (s *SessionProvider) getRequestProviderSession(r *http.Request) (goth.Session, error) {
+func (s *SessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
 	// TODO: dont use gothic, manage session store internally
 	marshalledSess, getErr := gothic.GetFromSession(s.provider.Name(), r)
 	if getErr != nil {
@@ -166,10 +163,6 @@ func (s *SessionProvider) getRequestProviderSession(r *http.Request) (goth.Sessi
 	sess, unmarshalErr := s.provider.UnmarshalSession(marshalledSess)
 	if unmarshalErr != nil {
 		return nil, fmt.Errorf("unmarshalling session: %w", unmarshalErr)
-	}
-
-	if validateErr := validateRequestSessionState(r, sess); validateErr != nil {
-		return nil, fmt.Errorf("validate request session: %w", validateErr)
 	}
 
 	return sess, nil
@@ -192,7 +185,7 @@ func validateRequestSessionState(r *http.Request, sess goth.Session) error {
 
 	params := r.URL.Query()
 	reqState := params.Get("state")
-	if params.Encode() == "" && r.Method == http.MethodPost {
+	if reqState == "" && r.Method == http.MethodPost {
 		reqState = r.FormValue("state")
 	}
 

@@ -1,5 +1,5 @@
 import type { LayoutLoad } from './$types';
-import { AUTH_REDIRECT_URL, session, notifications } from '$lib/auth.svelte';
+import { session, notifications } from '$lib/auth.svelte';
 import { QueryClient } from '@tanstack/svelte-query';
 import { browser, dev } from '$app/environment';
 import { redirect } from '@sveltejs/kit';
@@ -9,16 +9,9 @@ export const prerender = false;
 export const csr = true;
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const errStatus = await session.fetchSession(fetch);
-	if (errStatus) {
-		if (errStatus === 401) {
-			return redirect(301, AUTH_REDIRECT_URL);
-		} else if (errStatus === 403) {
-			console.log("forbidden!");
-		} else if (errStatus >= 500) {
-			// TODO
-			console.log("failed to set auth session", errStatus);
-		}
+	const authRedirect = await session.load(fetch);
+	if (authRedirect) {
+		return redirect(301, authRedirect);
 	}
 	
 	const queryClient = new QueryClient({
