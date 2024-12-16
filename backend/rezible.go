@@ -127,10 +127,14 @@ type (
 		Annotations   []*ent.OncallUserShiftAnnotation
 	}
 
+	ChatInteractionFuncLookupUser        = func(ctx context.Context, id string) (uuid.UUID, []*ent.OncallUserShift, error)
+	ChatInteractionFuncAnnotationCreated = func(ctx context.Context, anno *ent.OncallUserShiftAnnotation) error
+
 	ChatProvider interface {
 		GetWebhooks() Webhooks
 
-		SetUserLookupFunc(func(ctx context.Context, id string) (*ent.User, error))
+		SetCreateAnnotationLookupUserFunc(ChatInteractionFuncLookupUser)
+		SetAnnotationCreatedFunc(ChatInteractionFuncAnnotationCreated)
 
 		// TODO: just use a generic SendMessage(rez.ContentNode), and convert in chat client
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
@@ -142,6 +146,8 @@ type (
 	}
 
 	ChatService interface {
+		SetAnnotationCreatedFunc(ChatInteractionFuncAnnotationCreated)
+
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
 
 		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error

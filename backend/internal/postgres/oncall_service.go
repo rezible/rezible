@@ -54,6 +54,8 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobClient *jobs.Backg
 		return nil, fmt.Errorf("failed to register background job: %w", jobsErr)
 	}
 
+	chat.SetAnnotationCreatedFunc(s.onChatAnnotationCreated)
+
 	go s.registerHandoverSchema()
 
 	return s, nil
@@ -71,6 +73,19 @@ func (s *OncallService) LoadDataProvider(ctx context.Context) error {
 func (s *OncallService) SyncData(ctx context.Context) error {
 	dataSyncer := newOncallDataSyncer(s.db, s.users, s.provider)
 	return dataSyncer.syncProviderData(ctx)
+}
+
+func (s *OncallService) onChatAnnotationCreated(ctx context.Context, anno *ent.OncallUserShiftAnnotation) error {
+	return s.db.OncallUserShiftAnnotation.Create().
+		SetShiftID(anno.ShiftID).
+		SetEventID(anno.EventID).
+		SetEventKind(anno.EventKind).
+		SetOccurredAt(anno.OccurredAt).
+		SetTitle(anno.Title).
+		SetNotes(anno.Notes).
+		SetPinned(anno.Pinned).
+		SetMinutesOccupied(anno.MinutesOccupied).
+		Exec(ctx)
 }
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {

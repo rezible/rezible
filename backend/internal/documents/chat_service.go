@@ -15,6 +15,8 @@ type ChatService struct {
 	loader   rez.ProviderLoader
 	provider rez.ChatProvider
 	users    rez.UserService
+
+	annotationCreatedFn rez.ChatInteractionFuncAnnotationCreated
 }
 
 func NewChatService(ctx context.Context, pl rez.ProviderLoader, users rez.UserService) (*ChatService, error) {
@@ -36,21 +38,27 @@ func (s *ChatService) LoadDataProvider(ctx context.Context) error {
 		return provErr
 	}
 	s.provider = prov
-	s.provider.SetUserLookupFunc(s.users.GetByChatId)
+	s.provider.SetCreateAnnotationLookupUserFunc(s.createAnnotationLookup)
 	return nil
 }
 
-func (s *ChatService) handleProviderUserCreateAnnotation(ctx context.Context, id string) (uuid.UUID, []*ent.OncallUserShift, error) {
+func (s *ChatService) createAnnotationLookup(ctx context.Context, id string) (uuid.UUID, []*ent.OncallUserShift, error) {
 	usr, usrErr := s.users.GetByChatId(ctx, id)
 	if usrErr != nil {
 		return uuid.Nil, nil, usrErr
 	}
 	shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
-	shifts, shiftsErr := usr.QueryOncallShifts().Where(shiftIsActive).All(ctx)
+	shifts, shiftsErr := usr.QueryOncallShifts().WithRoster().Where(shiftIsActive).All(ctx)
 	if shiftsErr != nil {
 		return uuid.Nil, nil, shiftsErr
 	}
 	return usr.ID, shifts, nil
+}
+
+func (s *ChatService) SetAnnotationCreatedFunc(cb rez.ChatInteractionFuncAnnotationCreated) {
+	if s.provider != nil {
+		s.provider.SetAnnotationCreatedFunc(cb)
+	}
 }
 
 func (s *ChatService) SendUserMessage(ctx context.Context, user *ent.User, msgText string) error {
