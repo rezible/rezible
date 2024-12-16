@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"os"
 	"time"
 
 	"github.com/crewjam/saml"
@@ -131,7 +130,7 @@ func loadCert(certFile, keyFile string) (*tls.Certificate, error) {
 	return &keyPair, nil
 }
 
-func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession, string)) bool {
+func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) bool {
 	if r.URL.Path == p.mw.ServiceProvider.MetadataURL.Path {
 		p.mw.ServeMetadata(w, r)
 		return true
@@ -149,7 +148,7 @@ func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 }
 
 // mostly taken from samlsp
-func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated func(*rez.AuthSession, string)) error {
+func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
 	if parseErr := r.ParseForm(); parseErr != nil {
 		return fmt.Errorf("parse form: %w", parseErr)
 	}
@@ -195,12 +194,12 @@ func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request,
 		return fmt.Errorf("failed to create session: %w", createErr)
 	}
 
-	sess, sessErr := p.createSessionFromAssertion(assertion)
+	user, expiresAt, sessErr := p.createSessionFromAssertion(assertion)
 	if sessErr != nil {
 		return fmt.Errorf("failed to convert assertion to auth session: %w", sessErr)
 	}
 
-	onCreated(sess, redirectUri)
+	onCreated(user, expiresAt, redirectUri)
 
 	return nil
 }
@@ -209,25 +208,26 @@ func (p *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) 
 	p.mw.HandleStartAuthFlow(w, r)
 }
 
-func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*rez.AuthSession, error) {
+func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*ent.User, time.Time, error) {
+	var expiresAt time.Time
 	sp, ok := p.mw.Session.(samlsp.CookieSessionProvider)
 	if !ok {
-		return nil, fmt.Errorf("failed to get cookie session provider")
+		return nil, expiresAt, fmt.Errorf("failed to get cookie session provider")
 	}
 
 	sess, sessErr := sp.Codec.New(a)
 	if sessErr != nil {
-		return nil, fmt.Errorf("failed to create session: %w", sessErr)
+		return nil, expiresAt, fmt.Errorf("failed to create session: %w", sessErr)
 	}
 
 	sa, ok := sess.(samlsp.SessionWithAttributes)
 	if !ok {
-		return nil, fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
+		return nil, expiresAt, fmt.Errorf("saml: session does not implement samlsp.SessionWithAttributes")
 	}
 
 	claims, claimsOk := sess.(samlsp.JWTSessionClaims)
 	if !claimsOk {
-		return nil, fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
+		return nil, expiresAt, fmt.Errorf("session does not implement samlsp.JWTSessionClaims")
 	}
 
 	attr := sa.GetAttributes()
@@ -235,16 +235,9 @@ func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*rez.Au
 		Name:  attr.Get("firstName"),
 		Email: attr.Get("email"),
 	}
+	expiresAt = time.Unix(claims.ExpiresAt, 0)
 
-	// TODO: remove this - dev mode hack for mocksaml.com
-	if rez.DebugMode {
-		user.Email = os.Getenv("DEV_MOCKSAML_EMAIL_SUB")
-	}
-
-	return &rez.AuthSession{
-		ExpiresAt: time.Unix(claims.ExpiresAt, 0),
-		User:      *user,
-	}, nil
+	return user, expiresAt, nil
 }
 
 func (p *SessionProvider) GetUserMapping() *ent.User {

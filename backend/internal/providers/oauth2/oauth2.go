@@ -70,7 +70,7 @@ func (s *SessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }
 
-func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs func(*rez.AuthSession, string)) bool {
+func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
 	if r.URL.Path == "/auth/callback" {
 		cbErr := s.handleFlowCallback(w, r, cs)
 		if cbErr == nil {
@@ -93,7 +93,7 @@ func (s *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, createSession func(*rez.AuthSession, string)) error {
+func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
 	sess, sessErr := s.getProviderSession(r)
 	if sessErr != nil {
 		return fmt.Errorf("getting provider session: %w", sessErr)
@@ -112,14 +112,11 @@ func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Requ
 		return errors.New("missing email")
 	}
 
-	authSess := &rez.AuthSession{
-		ExpiresAt: sessUser.ExpiresAt,
-		User: ent.User{
-			Email: sessUser.Email,
-		},
+	user := &ent.User{
+		Email: sessUser.Email,
 	}
 
-	createSession(authSess, rez.FrontendUrl)
+	onCreated(user, sessUser.ExpiresAt, rez.FrontendUrl)
 	return nil
 }
 

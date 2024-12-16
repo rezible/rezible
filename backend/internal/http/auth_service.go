@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	oapi "github.com/rezible/rezible/openapi"
 	"net"
 	"net/http"
 	"os"
@@ -14,18 +13,16 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 var (
-	authSessionContextKey = "user_auth_session"
-	authSessionCookieName = "rez_auth"
-
-	errInvalidAuthToken = errors.New("invalid bearer token")
-
-	noDbUser = ent.User{ID: uuid.Nil}
+	authSessionContextKey = "auth_session"
+	authSessionCookieName = "rez_session"
 )
 
 type AuthService struct {
@@ -132,18 +129,18 @@ func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) b
 	var redirectUrl string
 	var createSessionErr error
 
-	onUserSessionCreated := func(sess *rez.AuthSession, redirect string) {
+	onUserSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
 		redirectUrl = redirect
-		expiry := sess.ExpiresAt
-		if expiry.IsZero() {
+		expiry := expiresAt
+		if expiresAt.IsZero() {
 			expiry = time.Now().Add(time.Hour)
 		}
 
-		user, lookupErr := s.lookupProviderUser(r.Context(), &sess.User)
+		id, lookupErr := s.lookupProviderUserId(r.Context(), provUser)
 		if lookupErr != nil {
 			createSessionErr = fmt.Errorf("failed to lookup provider user: %w", lookupErr)
 		} else {
-			createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, User: *user})
+			createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, UserId: id})
 		}
 	}
 
@@ -161,7 +158,7 @@ func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) b
 	return true
 }
 
-func (s *AuthService) lookupProviderUser(ctx context.Context, usr *ent.User) (*ent.User, error) {
+func (s *AuthService) lookupProviderUserId(ctx context.Context, usr *ent.User) (uuid.UUID, error) {
 	email := usr.Email
 	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
 		log.Debug().Msg("using debug email")
@@ -170,14 +167,14 @@ func (s *AuthService) lookupProviderUser(ctx context.Context, usr *ent.User) (*e
 
 	// TODO: use provider mapping to match user details
 	user, lookupErr := s.users.GetByEmail(ctx, email)
-	if user != nil && lookupErr == nil {
-		return user, nil
+	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			log.Debug().Str("email", email).Msg("failed to match provider user")
+			return uuid.Nil, nil
+		}
+		return uuid.Nil, lookupErr
 	}
-	if ent.IsNotFound(lookupErr) {
-		log.Debug().Str("email", email).Msg("failed to match provider user")
-		return &noDbUser, nil
-	}
-	return nil, lookupErr
+	return user.ID, nil
 }
 
 func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
@@ -218,7 +215,7 @@ func (s *AuthService) getRequestAuthSessionToken(r *http.Request) (string, error
 	if authHeader != "" {
 		split := strings.Split(authHeader, " ")
 		if len(split) != 2 {
-			return "", errInvalidAuthToken
+			return "", rez.ErrNoAuthSession
 		}
 		authType := split[0]
 		token := split[1]
@@ -288,7 +285,7 @@ func (s *AuthService) VerifySessionToken(tokenStr string) (*rez.AuthSession, err
 		return nil, fmt.Errorf("failed to parse token: %w", parseErr)
 	}
 
-	if claims.Session.User.ID == uuid.Nil {
+	if claims.Session.UserId == uuid.Nil {
 		return nil, rez.ErrAuthSessionUserMissing
 	}
 

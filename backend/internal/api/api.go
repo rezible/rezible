@@ -71,7 +71,7 @@ func NewHandler(
 		subscriptionsHandler:    newSubscriptionsHandler(),
 		teamsHandler:            newTeamsHandler(db.Team),
 		usersHandler:            newUsersHandler(users),
-		sessionsHandler:         newSessionsHandler(auth),
+		sessionsHandler:         newSessionsHandler(auth, users),
 	}
 }
 
@@ -82,7 +82,7 @@ func (h *Handler) MakeAdapter() oapi.Adapter {
 func mustGetAuthSession(ctx context.Context, auth rez.AuthService) *rez.AuthSession {
 	sess, sessErr := auth.GetSession(ctx)
 	if sessErr != nil {
-		panic("MustGetAuthSession: " + sessErr.Error())
+		panic("mustGetAuthSession: " + sessErr.Error())
 	}
 	return sess
 }

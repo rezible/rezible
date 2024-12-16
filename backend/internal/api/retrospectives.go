@@ -128,7 +128,7 @@ func (h *retrospectivesHandler) CreateRetrospectiveDiscussion(ctx context.Contex
 
 	discussion, createErr := h.retros.CreateDiscussion(ctx, rez.CreateRetrospectiveDiscussionParams{
 		RetrospectiveID: request.Id,
-		UserID:          sess.User.ID,
+		UserID:          sess.UserId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
@@ -188,7 +188,7 @@ func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Cont
 	attr := request.Body.Attributes
 	reply, replyErr := h.retros.AddDiscussionReply(ctx, rez.AddRetrospectiveDiscussionReplyParams{
 		DiscussionId: discussion.ID,
-		UserID:       sess.User.ID,
+		UserID:       sess.UserId,
 		ParentID:     attr.ParentReplyId,
 		Content:      attr.Content,
 	})

@@ -77,7 +77,7 @@ func (h *oncallHandler) GetUserOncallDetails(ctx context.Context, request *oapi.
 		return nil, detailError("failed to get session", sessErr)
 	}
 
-	userId := sess.User.ID
+	userId := sess.UserId
 	if request.UserId != uuid.Nil {
 		userId = request.UserId
 	}

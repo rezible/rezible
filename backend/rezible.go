@@ -56,16 +56,15 @@ type (
 
 type (
 	AuthSession struct {
-		ExpiresAt      time.Time
-		User           ent.User
-		ImpersonatedBy *ent.User
+		ExpiresAt time.Time
+		UserId    uuid.UUID
 	}
-	AuthSessionFn = func(http.ResponseWriter, *http.Request, *AuthSession)
+	AuthSessionCreatedFn = func(*ent.User, time.Time, string)
 
 	AuthSessionProvider interface {
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated func(*AuthSession, string)) (handled bool)
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
 	}
 
 	AuthService interface {
@@ -113,7 +112,7 @@ type (
 
 	DocumentsService interface {
 		GetWebsocketAddress() string
-		CheckUserDocumentAccess(ctx context.Context, user *ent.User, documentName string) (readOnly bool, err error)
+		CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (readOnly bool, err error)
 		GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
 	}
 )

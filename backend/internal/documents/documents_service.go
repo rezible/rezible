@@ -5,11 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"io"
 	"net/http"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
 )
 
@@ -51,7 +51,7 @@ func (s *Service) GetWebsocketAddress() string {
 	return fmt.Sprintf("ws://%s", s.serverAddress)
 }
 
-func (s *Service) CheckUserDocumentAccess(ctx context.Context, user *ent.User, documentName string) (bool, error) {
+func (s *Service) CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (bool, error) {
 	readOnly := false
 	if false {
 		return false, rez.ErrUnauthorized

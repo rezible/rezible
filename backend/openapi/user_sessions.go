@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
 	"net/http"
 	"time"
 )
@@ -47,13 +46,6 @@ type (
 		Role     string    `json:"role"`
 	}
 )
-
-func UserSessionFromRez(sess *rez.AuthSession) UserSession {
-	return UserSession{
-		ExpiresAt: sess.ExpiresAt,
-		User:      UserFromEnt(&sess.User),
-	}
-}
 
 // Operations
 

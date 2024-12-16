@@ -29,12 +29,12 @@ func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, re
 		return nil, detailError("failed to get auth session", sessErr)
 	}
 
-	debrief, debriefErr := h.incidents.GetUserDebrief(ctx, request.Id, sess.User.ID)
+	debrief, debriefErr := h.incidents.GetUserDebrief(ctx, request.Id, sess.UserId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
 			return nil, detailError("failed to get incident debrief", debriefErr)
 		}
-		created, createErr := h.incidents.CreateDebrief(ctx, request.Id, sess.User.ID)
+		created, createErr := h.incidents.CreateDebrief(ctx, request.Id, sess.UserId)
 		if createErr != nil {
 			return nil, detailError("failed to create debrief", createErr)
 		}

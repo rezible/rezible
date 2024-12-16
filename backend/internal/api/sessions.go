@@ -8,18 +8,27 @@ import (
 )
 
 type sessionsHandler struct {
-	auth rez.AuthService
+	auth  rez.AuthService
+	users rez.UserService
 }
 
-func newSessionsHandler(auth rez.AuthService) *sessionsHandler {
-	return &sessionsHandler{auth}
+func newSessionsHandler(auth rez.AuthService, users rez.UserService) *sessionsHandler {
+	return &sessionsHandler{auth: auth, users: users}
 }
 
 func (h *sessionsHandler) GetUserSession(ctx context.Context, input *oapi.GetUserSessionRequest) (*oapi.GetUserSessionResponse, error) {
 	var resp oapi.GetUserSessionResponse
 
 	sess := mustGetAuthSession(ctx, h.auth)
-	resp.Body.Data = oapi.UserSessionFromRez(sess)
+	user, userErr := h.users.GetById(ctx, sess.UserId)
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	resp.Body.Data = oapi.UserSession{
+		ExpiresAt: sess.ExpiresAt,
+		User:      oapi.UserFromEnt(user),
+	}
 
 	return &resp, nil
 }
