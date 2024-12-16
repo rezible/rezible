@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	oapi "github.com/rezible/rezible/openapi"
 	"net"
 	"net/http"
 	"os"
@@ -57,6 +59,34 @@ func (s *AuthService) GetSession(ctx context.Context) (*rez.AuthSession, error) 
 	return sess, nil
 }
 
+func isRedirectableError(err error) bool {
+	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
+}
+
+func writeAuthError(w http.ResponseWriter, err error) {
+	var resp oapi.StatusError
+	if errors.Is(err, rez.ErrNoAuthSession) {
+		resp = oapi.ErrorUnauthorized("no_session")
+	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
+		resp = oapi.ErrorUnauthorized("session_expired")
+	} else if errors.Is(err, rez.ErrAuthSessionUserMissing) {
+		resp = oapi.ErrorUnauthorized("missing_user")
+	} else {
+		resp = oapi.ErrorUnauthorized("unknown")
+	}
+	respBody, jsonErr := json.Marshal(resp)
+	if jsonErr != nil {
+		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(resp.GetStatus())
+	_, writeErr := w.Write(respBody)
+	if writeErr != nil {
+		log.Warn().Err(writeErr).Msg("failed to write auth error response")
+	}
+}
+
 func (s *AuthService) MakeRequireAuthMiddleware(redirectStartFlow bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -66,38 +96,34 @@ func (s *AuthService) MakeRequireAuthMiddleware(redirectStartFlow bool) func(htt
 				return
 			}
 
-			if errors.Is(sessErr, rez.ErrAuthSessionUserMissing) {
-				http.Error(w, "missing_user", http.StatusForbidden)
+			if redirectStartFlow && isRedirectableError(sessErr) {
+				s.sessProvider.StartAuthFlow(w, r)
 				return
 			}
 
-			if redirectStartFlow && isRedirectableError(sessErr) {
-				s.sessProvider.StartAuthFlow(w, r)
-			} else {
-				w.WriteHeader(http.StatusUnauthorized)
-			}
+			writeAuthError(w, sessErr)
 		})
 	}
 }
 
-func isRedirectableError(err error) bool {
-	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
-}
-
 func (s *AuthService) MakeAuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handledByProvider := s.providerAuthFlow(w, r)
-		if handledByProvider {
+		providerHandled := s.providerAuthFlow(w, r)
+		if providerHandled {
+			return
+		}
+
+		if r.URL.Path == "/auth/logout" {
+			log.Debug().Msg("do logout")
+			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 			return
 		}
 
 		_, sessErr := s.getRequestAuthSession(r)
-		if sessErr == nil {
-			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
-		} else if isRedirectableError(sessErr) {
+		if sessErr != nil && isRedirectableError(sessErr) {
 			s.sessProvider.StartAuthFlow(w, r)
 		} else {
-			w.WriteHeader(http.StatusBadRequest)
+			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 		}
 	})
 }
@@ -108,21 +134,17 @@ func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) b
 
 	onUserSessionCreated := func(sess *rez.AuthSession, redirect string) {
 		redirectUrl = redirect
-
-		if sess.ExpiresAt.IsZero() {
-			sess.ExpiresAt = time.Now().Add(time.Hour)
+		expiry := sess.ExpiresAt
+		if expiry.IsZero() {
+			expiry = time.Now().Add(time.Hour)
 		}
 
-		rezUser, userErr := s.lookupProviderUser(r.Context(), &sess.User)
-		if userErr != nil {
-			createSessionErr = fmt.Errorf("failed to lookup provider user: %w", userErr)
-			return
+		user, lookupErr := s.lookupProviderUser(r.Context(), &sess.User)
+		if lookupErr != nil {
+			createSessionErr = fmt.Errorf("failed to lookup provider user: %w", lookupErr)
+		} else {
+			createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, User: *user})
 		}
-		if rezUser == nil {
-			rezUser = &noDbUser
-		}
-		sess.User = *rezUser
-		createSessionErr = s.storeAuthSession(w, r, sess)
 	}
 
 	providerHandled := s.sessProvider.HandleAuthFlowRequest(w, r, onUserSessionCreated)
@@ -131,8 +153,7 @@ func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) b
 	}
 
 	if createSessionErr != nil {
-		log.Debug().Err(createSessionErr).Msg("failed to create auth session")
-		http.Error(w, createSessionErr.Error(), http.StatusBadRequest)
+		writeAuthError(w, createSessionErr)
 	} else if redirectUrl != "" {
 		http.Redirect(w, r, redirectUrl, http.StatusFound)
 	}
@@ -154,7 +175,7 @@ func (s *AuthService) lookupProviderUser(ctx context.Context, usr *ent.User) (*e
 	}
 	if ent.IsNotFound(lookupErr) {
 		log.Debug().Str("email", email).Msg("failed to match provider user")
-		return nil, nil
+		return &noDbUser, nil
 	}
 	return nil, lookupErr
 }

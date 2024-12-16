@@ -50,20 +50,24 @@ const createSession = () => {
 
 		clear();
 
+		let newError: SessionError = "unknown";
 		const status = response.status;
 		if (status === 401) {
-			return AUTH_REDIRECT_URL;
+			const authErr = respError.detail;
+			
+			if (authErr == "no_session" || authErr == "session_expired") {
+				return AUTH_REDIRECT_URL;
+			} else if (authErr == "missing_user") {
+				newError = "no_user";
+			}
 		}
 		
-		if (status === 403) {
-			error = "no_user";
-		}
-
 		if (status >= 500) {
 			// TODO
 			console.error("failed to get auth session", status, respError);
-			error = "unknown";
 		}
+
+		error = newError;
 	
 		return;
 	}

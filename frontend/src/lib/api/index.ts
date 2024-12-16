@@ -13,6 +13,10 @@ client.interceptors.error.use(async (err, resp, req, opts) => {
 	if (!err) {
 		return {title: "Unknown Error", status, detail: ""} as ErrorModel;
 	}
+	console.log("intercept", err, resp);
+	// if (status === 401) {
+	// 	return {title: "Unauthorized", status, detail: String(err).trim()} as ErrorModel;
+	// }
 	return tryUnwrapApiError(err as Error, status);
 });
 
