@@ -54,7 +54,7 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobClient *jobs.Backg
 		return nil, fmt.Errorf("failed to register background job: %w", jobsErr)
 	}
 
-	chat.SetAnnotationCreatedFunc(s.onChatAnnotationCreated)
+	chat.SetCreateAnnotationFunc(s.chatCreateAnnotation)
 
 	go s.registerHandoverSchema()
 
@@ -75,8 +75,28 @@ func (s *OncallService) SyncData(ctx context.Context) error {
 	return dataSyncer.syncProviderData(ctx)
 }
 
-func (s *OncallService) onChatAnnotationCreated(ctx context.Context, anno *ent.OncallUserShiftAnnotation) error {
-	return s.db.OncallUserShiftAnnotation.Create().
+func (s *OncallService) chatCreateAnnotation(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
+	anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
+		Where(oncallusershiftannotation.And(
+			oncallusershiftannotation.ShiftID(shiftId), oncallusershiftannotation.EventID(msgId))).
+		Only(ctx)
+	if queryErr != nil {
+		if ent.IsNotFound(queryErr) {
+			anno = &ent.OncallUserShiftAnnotation{
+				ShiftID: shiftId,
+				EventID: msgId,
+			}
+		} else {
+			return fmt.Errorf("failed to query: %w", queryErr)
+		}
+	}
+	prevId := anno.ID.String()
+	setFn(anno)
+	if anno.ID.String() != prevId {
+		return fmt.Errorf("annotation id mismatch: %s", anno.ID)
+	}
+
+	upsertQuery := s.db.OncallUserShiftAnnotation.Create().
 		SetShiftID(anno.ShiftID).
 		SetEventID(anno.EventID).
 		SetEventKind(anno.EventKind).
@@ -85,7 +105,10 @@ func (s *OncallService) onChatAnnotationCreated(ctx context.Context, anno *ent.O
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).
 		SetMinutesOccupied(anno.MinutesOccupied).
-		Exec(ctx)
+		OnConflictColumns(oncallusershiftannotation.FieldShiftID, oncallusershiftannotation.FieldEventID).
+		UpdateNewValues()
+
+	return upsertQuery.Exec(ctx)
 }
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {

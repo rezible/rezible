@@ -15,8 +15,8 @@ type ChatProvider struct {
 	client        *slack.Client
 	signingSecret string
 
-	lookupAnnotationUser rez.ChatInteractionFuncLookupUser
-	annotationCreated    rez.ChatInteractionFuncAnnotationCreated
+	lookupUserFn       rez.LookupProviderUserFunc
+	createAnnotationFn rez.ChatInteractionFuncCreateAnnotation
 }
 
 type ChatProviderConfig struct {
@@ -29,11 +29,11 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 	p := &ChatProvider{
 		client:        client,
 		signingSecret: cfg.SigningSecret,
-		lookupAnnotationUser: func(ctx context.Context, s string) (uuid.UUID, []*ent.OncallUserShift, error) {
-			return uuid.Nil, nil, fmt.Errorf("no user lookup func registered")
+		lookupUserFn: func(ctx context.Context, s string) (*ent.User, error) {
+			return nil, fmt.Errorf("no user lookup func registered")
 		},
-		annotationCreated: func(ctx context.Context, anno *ent.OncallUserShiftAnnotation) error {
-			return fmt.Errorf("no callback func registered")
+		createAnnotationFn: func(ctx context.Context, shiftId uuid.UUID, msgId string, up func(*ent.OncallUserShiftAnnotation)) error {
+			return fmt.Errorf("no create func registered")
 		},
 	}
 
@@ -48,12 +48,12 @@ func (p *ChatProvider) GetWebhooks() rez.Webhooks {
 	}
 }
 
-func (p *ChatProvider) SetCreateAnnotationLookupUserFunc(fn rez.ChatInteractionFuncLookupUser) {
-	p.lookupAnnotationUser = fn
+func (p *ChatProvider) SetLookupUserFunc(fn rez.LookupProviderUserFunc) {
+	p.lookupUserFn = fn
 }
 
-func (p *ChatProvider) SetAnnotationCreatedFunc(cb rez.ChatInteractionFuncAnnotationCreated) {
-	p.annotationCreated = cb
+func (p *ChatProvider) SetCreateAnnotationFunc(fn rez.ChatInteractionFuncCreateAnnotation) {
+	p.createAnnotationFn = fn
 }
 
 func (p *ChatProvider) SendUserMessage(ctx context.Context, id string, msg string) error {

@@ -15,8 +15,6 @@ type ChatService struct {
 	loader   rez.ProviderLoader
 	provider rez.ChatProvider
 	users    rez.UserService
-
-	annotationCreatedFn rez.ChatInteractionFuncAnnotationCreated
 }
 
 func NewChatService(ctx context.Context, pl rez.ProviderLoader, users rez.UserService) (*ChatService, error) {
@@ -38,7 +36,7 @@ func (s *ChatService) LoadDataProvider(ctx context.Context) error {
 		return provErr
 	}
 	s.provider = prov
-	s.provider.SetCreateAnnotationLookupUserFunc(s.createAnnotationLookup)
+	s.provider.SetLookupUserFunc(s.users.GetByChatId)
 	return nil
 }
 
@@ -55,9 +53,9 @@ func (s *ChatService) createAnnotationLookup(ctx context.Context, id string) (uu
 	return usr.ID, shifts, nil
 }
 
-func (s *ChatService) SetAnnotationCreatedFunc(cb rez.ChatInteractionFuncAnnotationCreated) {
+func (s *ChatService) SetCreateAnnotationFunc(fn rez.ChatInteractionFuncCreateAnnotation) {
 	if s.provider != nil {
-		s.provider.SetAnnotationCreatedFunc(cb)
+		s.provider.SetCreateAnnotationFunc(fn)
 	}
 }
 

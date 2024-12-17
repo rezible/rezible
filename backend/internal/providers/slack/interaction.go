@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
@@ -88,6 +89,10 @@ func (p *ChatProvider) handleViewSubmission(ctx context.Context, ic *slack.Inter
 	return nil
 }
 
+func getSlackMessageId(msg slack.Message) string {
+	return fmt.Sprintf("%s_%s", msg.Channel, msg.Timestamp)
+}
+
 func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *slack.InteractionCallback) error {
 	view, viewErr := p.createAnnotationModalView(ctx, ic)
 	if viewErr != nil || view == nil {
@@ -95,13 +100,12 @@ func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *sla
 	}
 
 	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, *view)
-	if resp != nil && !resp.Ok && len(resp.ResponseMetadata.Messages) > 0 {
-		log.Debug().
-			Strs("messages", resp.ResponseMetadata.Messages).
-			Msg("message action: open view failed")
-	}
-
 	if respErr != nil {
+		if resp != nil && !resp.Ok && len(resp.ResponseMetadata.Messages) > 0 {
+			log.Debug().
+				Strs("messages", resp.ResponseMetadata.Messages).
+				Msg("message action: open view failed")
+		}
 		return fmt.Errorf("open view: %w", respErr)
 	}
 	return nil
@@ -119,17 +123,33 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
-func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
-	_, shifts, userErr := p.lookupAnnotationUser(ctx, ic.User.ID)
+func (p *ChatProvider) getUserActiveOncallShifts(ctx context.Context, id string) ([]*ent.OncallUserShift, error) {
+	user, userErr := p.lookupUserFn(ctx, id)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to get user: %w", userErr)
 	}
-	//
-	//shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
-	//shifts, shiftsErr := user.QueryOncallShifts().WithRoster().Where(shiftIsActive).All(ctx)
-	//if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
-	//	return nil, fmt.Errorf("failed to get active oncall shifts: %w", shiftsErr)
-	//}
+
+	shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
+	shifts, shiftsErr := user.QueryOncallShifts().WithRoster().Where(shiftIsActive).All(ctx)
+	if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
+		return nil, fmt.Errorf("failed to get active oncall shifts: %w", shiftsErr)
+	}
+
+	return shifts, nil
+}
+
+type createAnnotationMetadata struct {
+	MsgId        string    `json:"mid"`
+	MsgTimestamp time.Time `json:"mts"`
+	ShiftId      uuid.UUID `json:"sid"`
+	AnnotationId uuid.UUID `json:"aid"`
+}
+
+func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+	shifts, shiftsErr := p.getUserActiveOncallShifts(ctx, ic.User.ID)
+	if shiftsErr != nil {
+		return nil, fmt.Errorf("failed to get oncall shifts: %w", shiftsErr)
+	}
 
 	if len(shifts) == 0 {
 		return &slack.ModalViewRequest{
@@ -138,92 +158,116 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 			Blocks: slack.Blocks{BlockSet: []slack.Block{
 				slack.NewSectionBlock(plainText("You do not have a current oncall shift to annotate"), nil, nil),
 			}},
-			Close:      plainText("Cancel"),
+			Close:      plainText("Close"),
 			CallbackID: createAnnotationConfirmCallbackID,
 		}, nil
 	}
 
-	view := &slack.ModalViewRequest{
-		Type:       "modal",
-		CallbackID: createAnnotationConfirmCallbackID,
-		Title:      plainText("Create Annotation"),
-		Close:      plainText("Cancel"),
-		Submit:     plainText("Create"),
-	}
-
 	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
+	msgTime := convertSlackTs(ic.MessageTs)
 
-	showShiftSelect := len(shifts) == 1
-	var shiftBlock slack.Block
-	if showShiftSelect {
-		view.PrivateMetadata = fmt.Sprintf("%s,%s", msgId, shifts[0].ID)
-		shiftBlock = slack.NewRichTextBlock("anno_shift", slack.NewRichTextSection(
-			slack.NewRichTextSectionTextElement("Annotating your active shift in ", nil),
-			slack.NewRichTextSectionTextElement(shifts[0].Edges.Roster.Name, &slack.RichTextSectionTextStyle{Bold: true})))
-	} else {
-		shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
-		for i, sh := range shifts {
-			rosterName := sh.Edges.Roster.Name
-			shiftOptions[i] = slack.NewOptionBlockObject(sh.ID.String(), plainText(rosterName), nil)
-		}
-
-		shiftSelectElement := slack.NewOptionsSelectBlockElement(
-			slack.OptTypeStatic,
-			plainText("Select the roster shift to annotate"),
-			"shift_roster_select",
-			shiftOptions...)
-
-		shiftBlock = slack.NewSectionBlock(plainText("Oncall Shift Rosters"), nil,
-			slack.NewAccessory(shiftSelectElement),
-			slack.SectionBlockOptionBlockID("shift_select"))
+	metadata := createAnnotationMetadata{
+		MsgId:        msgId,
+		MsgTimestamp: msgTime,
 	}
 
-	msgTimeFormat := " - {date_short_pretty} at {time}"
-	messageDetailsBlock := slack.NewRichTextBlock("anno_msg",
-		slack.NewRichTextSection(
-			slack.NewRichTextSectionUserElement(ic.Message.User, nil),
-			slack.NewRichTextSectionDateElement(convertSlackTs(ic.MessageTs).Unix(), msgTimeFormat, nil, nil)),
-		slack.NewRichTextSection(
-			slack.NewRichTextSectionTextElement(ic.Message.Text, &slack.RichTextSectionTextStyle{Italic: true})))
+	var shiftBlock slack.Block
 
-	notesInputBlock := slack.NewInputBlock(
-		"notes_input",
-		plainText("Notes"),
-		plainText("You can edit this later"),
-		slack.NewPlainTextInputBlockElement(nil, "notes_input_text"))
+	// TODO: allow selecting active shift
+	shift := shifts[0]
+	metadata.ShiftId = shift.ID
 
-	view.Blocks = slack.Blocks{BlockSet: []slack.Block{
+	roster := shift.Edges.Roster
+
+	curr, currErr := shift.QueryAnnotations().Where(oncallusershiftannotation.EventID(msgId)).Only(ctx)
+	if currErr != nil && !ent.IsNotFound(currErr) {
+		log.Error().Err(currErr).Msg("failed to query existing oncall shift annotation")
+	}
+	if curr != nil {
+		metadata.AnnotationId = curr.ID
+	}
+
+	shiftDetailsSection := slack.NewRichTextSection(
+		slack.NewRichTextSectionTextElement("Editing annotation for your active shift in ", nil),
+		slack.NewRichTextSectionTextElement(roster.Name, &slack.RichTextSectionTextStyle{Bold: true}))
+	shiftBlock = slack.NewRichTextBlock("anno_shift", shiftDetailsSection)
+	/*
+		if len(shifts) > 1 {
+			shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
+			for i, sh := range shifts {
+				rosterName := sh.Edges.Roster.Name
+				shiftOptions[i] = slack.NewOptionBlockObject(sh.ID.String(), plainText(rosterName), nil)
+			}
+
+			shiftSelectElement := slack.NewOptionsSelectBlockElement(
+				slack.OptTypeStatic,
+				plainText("Select the roster shift to annotate"),
+				"shift_roster_select",
+				shiftOptions...)
+
+			shiftBlock = slack.NewSectionBlock(plainText("Oncall Shift Rosters"), nil,
+				slack.NewAccessory(shiftSelectElement),
+				slack.SectionBlockOptionBlockID("shift_select"))
+		}
+	*/
+
+	messageUserDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionUserElement(ic.Message.User, nil),
+		slack.NewRichTextSectionDateElement(msgTime.Unix(), " - {date_short_pretty} at {time}", nil, nil))
+	messageContentsDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionTextElement(ic.Message.Text, &slack.RichTextSectionTextStyle{Italic: true}))
+
+	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
+	inputHint := plainText("You can edit this later")
+	if curr != nil {
+		inputBlock.WithInitialValue(curr.Notes)
+		inputHint = nil
+	}
+
+	blockSet := []slack.Block{
 		shiftBlock,
 		slack.NewDividerBlock(),
-		messageDetailsBlock,
+		slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails),
 		slack.NewDividerBlock(),
-		notesInputBlock,
-	}}
+		slack.NewInputBlock("notes_input", plainText("Notes"), inputHint, inputBlock),
+	}
 
-	return view, nil
+	jsonMetadata, jsonErr := json.Marshal(metadata)
+	if jsonErr != nil {
+		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
+	}
+
+	titleText := "Create Annotation"
+	submitText := "Create"
+	if curr != nil {
+		titleText = "Update Annotation"
+		submitText = "Update"
+	}
+
+	return &slack.ModalViewRequest{
+		Type:            "modal",
+		CallbackID:      createAnnotationConfirmCallbackID,
+		PrivateMetadata: string(jsonMetadata),
+		Title:           plainText(titleText),
+		Close:           plainText("Cancel"),
+		Submit:          plainText(submitText),
+		Blocks:          slack.Blocks{BlockSet: blockSet},
+	}, nil
 }
 
 func (p *ChatProvider) handleCreateAnnotationModalBlockAction(ctx context.Context, ic *slack.InteractionCallback) error {
-
+	// TODO: check selected active shift once selection from multiple is supported
 	return nil
 }
 
 func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
-	var shiftId uuid.UUID
+	var meta createAnnotationMetadata
+	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+		return fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
+	}
+
 	var notes string
-
-	mdParts := strings.Split(ic.View.PrivateMetadata, ",")
-	if len(mdParts) != 2 {
-		return fmt.Errorf("invalid metadata: %s", ic.View.PrivateMetadata)
-	}
-
-	msgId := mdParts[0]
-
-	var uuidErr error
-	shiftId, uuidErr = uuid.Parse(mdParts[1])
-	if uuidErr != nil {
-		return fmt.Errorf("invalid shift id: %w", uuidErr)
-	}
+	shiftId := meta.ShiftId
 
 	if state := ic.View.State; state != nil {
 		if notesInput, ok := state.Values["notes_input"]; ok {
@@ -235,28 +279,23 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		if shiftId == uuid.Nil {
 			if optionsBlock, ok := state.Values["shift_select"]; ok {
 				if selectBlock, optOk := optionsBlock["shift_roster_select"]; optOk {
-					shiftId, uuidErr = uuid.Parse(selectBlock.SelectedOption.Value)
+					id, uuidErr := uuid.Parse(selectBlock.SelectedOption.Value)
 					if uuidErr != nil {
 						return fmt.Errorf("invalid shift id selected: %w", uuidErr)
 					}
+					shiftId = id
 				}
 			}
 		}
 	}
 
-	anno := &ent.OncallUserShiftAnnotation{
-		ShiftID:         shiftId,
-		EventID:         msgId,
-		EventKind:       oncallusershiftannotation.EventKindPing,
-		Title:           "Slack Message",
-		MinutesOccupied: 0,
-		Notes:           notes,
-		Pinned:          false,
+	setFn := func(anno *ent.OncallUserShiftAnnotation) {
+		if meta.AnnotationId != uuid.Nil {
+			anno.ID = meta.AnnotationId
+		}
+		anno.OccurredAt = meta.MsgTimestamp
+		anno.Notes = notes
 	}
 
-	if idParts := strings.Split(msgId, "_"); len(idParts) >= 2 {
-		anno.OccurredAt = convertSlackTs(idParts[1])
-	}
-
-	return p.annotationCreated(ctx, anno)
+	return p.createAnnotationFn(ctx, shiftId, meta.MsgId, setFn)
 }
