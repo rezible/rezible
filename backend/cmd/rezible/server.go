@@ -97,6 +97,11 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
 	}
 
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, s.jobClient, ai, chat)
+	if debriefsErr != nil {
+		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
+	}
+
 	retros, retrosErr := postgres.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
 		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
@@ -113,7 +118,7 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, oncall, alerts, docs, retros)
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros)
 
 	httpServer, httpErr := http.NewServer(listenAddr, pl, auth, apiHandler.MakeAdapter())
 	if httpErr != nil {

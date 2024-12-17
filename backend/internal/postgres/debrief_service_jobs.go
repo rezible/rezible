@@ -8,27 +8,19 @@ import (
 	"github.com/riverqueue/river"
 )
 
-func (s *IncidentService) RegisterJobs() error {
+func (s *DebriefService) RegisterJobWorkers() error {
 	return errors.Join(
-		jobs.RegisterWorker(s.jobClient, &generateIncidentDebriefResponseWorker{svc: s}),
 		jobs.RegisterWorker(s.jobClient, &sendIncidentDebriefRequestsWorker{svc: s}),
+		jobs.RegisterWorker(s.jobClient, &generateIncidentDebriefResponseWorker{svc: s}),
 	)
 }
 
-type sendIncidentDebriefRequestsJobArgs struct {
-	IncidentId uuid.UUID
-}
-
-func (sendIncidentDebriefRequestsJobArgs) Kind() string {
-	return "send-incident-debrief-requests"
-}
-
 type sendIncidentDebriefRequestsWorker struct {
-	river.WorkerDefaults[sendIncidentDebriefRequestsJobArgs]
-	svc *IncidentService
+	river.WorkerDefaults[jobs.SendIncidentDebriefRequestsJobArgs]
+	svc *DebriefService
 }
 
-func (w *sendIncidentDebriefRequestsWorker) Work(ctx context.Context, job *river.Job[sendIncidentDebriefRequestsJobArgs]) error {
+func (w *sendIncidentDebriefRequestsWorker) Work(ctx context.Context, job *river.Job[jobs.SendIncidentDebriefRequestsJobArgs]) error {
 	return w.svc.sendDebriefRequests(ctx, job.Args.IncidentId)
 }
 
@@ -42,9 +34,9 @@ func (generateIncidentDebriefResponseJobArgs) Kind() string {
 
 type generateIncidentDebriefResponseWorker struct {
 	river.WorkerDefaults[generateIncidentDebriefResponseJobArgs]
-	svc *IncidentService
+	svc *DebriefService
 }
 
 func (w *generateIncidentDebriefResponseWorker) Work(ctx context.Context, job *river.Job[generateIncidentDebriefResponseJobArgs]) error {
-	return w.svc.generateDebriefMessage(ctx, job.Args.DebriefId)
+	return w.svc.generateDebriefResponse(ctx, job.Args.DebriefId)
 }

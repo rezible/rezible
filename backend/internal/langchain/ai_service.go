@@ -5,8 +5,10 @@ import (
 	"errors"
 	"fmt"
 	rez "github.com/rezible/rezible"
+	"github.com/rs/zerolog/log"
 	"github.com/tmc/langchaingo/llms"
 	"strings"
+	"time"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -42,6 +44,15 @@ var (
 )
 
 func (s *AiService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
+	if rez.DebugMode {
+		log.Debug().Msg("TODO: faking ai response")
+		return &ent.IncidentDebriefMessage{
+			DebriefID: debrief.ID,
+			CreatedAt: time.Now(),
+			Type:      incidentdebriefmessage.TypeAssistant,
+			Body:      "faked message",
+		}, nil
+	}
 	debriefMessages, msgErr := debrief.Edges.MessagesOrErr()
 	if msgErr != nil {
 		return nil, msgErr

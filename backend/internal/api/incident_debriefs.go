@@ -2,23 +2,25 @@ package api
 
 import (
 	"context"
+
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/openapi"
-	"github.com/rs/zerolog/log"
 )
 
 type incidentDebriefsHandler struct {
 	questions *ent.IncidentDebriefQuestionClient
 	auth      rez.AuthService
 	users     rez.UserService
-	incidents rez.IncidentService
+	debriefs  rez.DebriefService
 }
 
-func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, auth rez.AuthService, users rez.UserService, incidents rez.IncidentService) *incidentDebriefsHandler {
-	return &incidentDebriefsHandler{questions, auth, users, incidents}
+func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, auth rez.AuthService, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
+	return &incidentDebriefsHandler{questions, auth, users, debriefs}
 }
 
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
@@ -29,12 +31,12 @@ func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, re
 		return nil, detailError("failed to get auth session", sessErr)
 	}
 
-	debrief, debriefErr := h.incidents.GetUserDebrief(ctx, request.Id, sess.UserId)
+	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, sess.UserId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
 			return nil, detailError("failed to get incident debrief", debriefErr)
 		}
-		created, createErr := h.incidents.CreateDebrief(ctx, request.Id, sess.UserId)
+		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, sess.UserId)
 		if createErr != nil {
 			return nil, detailError("failed to create debrief", createErr)
 		}
@@ -55,7 +57,7 @@ func (h *incidentDebriefsHandler) GetIncidentDebrief(ctx context.Context, reques
 
 	// TODO: ensure session user has access to debrief
 
-	debrief, debriefErr := h.incidents.GetDebrief(ctx, request.Id)
+	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
 		return nil, detailError("failed to get incident debrief", debriefErr)
 	}
@@ -73,9 +75,9 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebrief(ctx context.Context, req
 	var debrief *ent.IncidentDebrief
 	var err error
 	if status == "started" {
-		debrief, err = h.incidents.StartDebrief(ctx, request.Id)
+		debrief, err = h.debriefs.StartDebrief(ctx, request.Id)
 	} else if status == "completed" {
-		debrief, err = h.incidents.CompleteDebrief(ctx, request.Id)
+		debrief, err = h.debriefs.CompleteDebrief(ctx, request.Id)
 	}
 
 	if debrief == nil || err != nil {
@@ -90,7 +92,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebrief(ctx context.Context, req
 func (h *incidentDebriefsHandler) ListIncidentDebriefMessages(ctx context.Context, request *oapi.ListIncidentDebriefMessagesRequest) (*oapi.ListIncidentDebriefMessagesResponse, error) {
 	var resp oapi.ListIncidentDebriefMessagesResponse
 
-	debrief, debriefErr := h.incidents.GetDebrief(ctx, request.Id)
+	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
 		return nil, detailError("failed to get debrief", debriefErr)
 	}
@@ -113,7 +115,7 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefMessages(ctx context.Contex
 func (h *incidentDebriefsHandler) AddIncidentDebriefUserMessage(ctx context.Context, request *oapi.AddIncidentDebriefUserMessageRequest) (*oapi.AddIncidentDebriefUserMessageResponse, error) {
 	var resp oapi.AddIncidentDebriefUserMessageResponse
 
-	msg, msgErr := h.incidents.AddUserDebriefMessage(ctx, request.Id, request.Body.Attributes.MessageContent)
+	msg, msgErr := h.debriefs.AddUserDebriefMessage(ctx, request.Id, request.Body.Attributes.MessageContent)
 	if msgErr != nil {
 		return nil, detailError("failed to add user message", msgErr)
 	}
@@ -126,7 +128,7 @@ func (h *incidentDebriefsHandler) AddIncidentDebriefUserMessage(ctx context.Cont
 func (h *incidentDebriefsHandler) ListIncidentDebriefSuggestions(ctx context.Context, request *oapi.ListIncidentDebriefSuggestionsRequest) (*oapi.ListIncidentDebriefSuggestionsResponse, error) {
 	var resp oapi.ListIncidentDebriefSuggestionsResponse
 
-	debrief, debriefErr := h.incidents.GetDebrief(ctx, request.Id)
+	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {
 		return nil, detailError("failed to get debrief", debriefErr)
 	}

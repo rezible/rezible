@@ -67,7 +67,7 @@
 		});
 </script>
 
-<div class="flex flex-col min-h-0 max-h-full overflow-y-auto gap-2 border p-2">
+<div class="flex flex-col overflow-y-auto gap-2 border p-2">
 	{#if started}
 		<div class="grow block overflow-y-auto pb-1">
 			{#if messagesQuery.isError}

@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 )
@@ -15,13 +15,34 @@ type RetrospectiveService struct {
 }
 
 func NewRetrospectiveService(db *ent.Client) (*RetrospectiveService, error) {
-	return &RetrospectiveService{db: db}, nil
+	svc := &RetrospectiveService{
+		db: db,
+	}
+
+	return svc, nil
 }
 
-func (s *RetrospectiveService) GetByIncidentID(ctx context.Context, incidentId uuid.UUID) (*ent.Retrospective, error) {
-	return s.db.Retrospective.Query().
-		Where(retrospective.HasIncidentWith(incident.IDEQ(incidentId))).
-		Only(ctx)
+func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error) {
+	return s.db.Retrospective.Get(ctx, id)
+}
+
+func (s *RetrospectiveService) GetForIncident(ctx context.Context, incId uuid.UUID, createMissing bool) (*ent.Retrospective, error) {
+	inc, incErr := s.db.Incident.Get(ctx, incId)
+	if incErr != nil {
+		return nil, fmt.Errorf("get incident: %w", incErr)
+	}
+	retro, retroErr := inc.QueryRetrospective().Only(ctx)
+	if retroErr == nil && retro != nil {
+		return retro, nil
+	}
+	if ent.IsNotFound(retroErr) && createMissing {
+		return s.db.Retrospective.Create().
+			SetIncidentID(inc.ID).
+			SetDocumentName(inc.Slug + "-retrospective").
+			SetState(retrospective.StateDraft).
+			Save(ctx)
+	}
+	return nil, retroErr
 }
 
 func (s *RetrospectiveService) CreateDiscussion(ctx context.Context, params rez.CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error) {

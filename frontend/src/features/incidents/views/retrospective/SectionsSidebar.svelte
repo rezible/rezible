@@ -5,12 +5,13 @@
 	import { cls, Icon } from "svelte-ux";
 
 	type Props = {
+		hidden: boolean;
 		containerEl: HTMLElement;
 		sections: RetrospectiveSection[];
 		sectionElements: Record<string, HTMLElement>;
 		onSectionClicked: (field: string) => void;
 	}
-	const { containerEl, sections, sectionElements, onSectionClicked }: Props = $props();
+	let { hidden = $bindable(), containerEl, sections, sectionElements, onSectionClicked }: Props = $props();
 
 	let progressBarContainerEl = $state<HTMLElement>();
 	
@@ -41,9 +42,14 @@
 		containerEl.addEventListener("scroll", updateScrollTop);
 		return () => containerEl.removeEventListener("scroll", updateScrollTop);
 	});
+
+	const visible = $derived(scrollHeight > clientHeight);
+	$effect(() => {
+		hidden = !visible;
+	});
 </script>
 
-<div class="flex flex-col h-full items-start" class:hidden={scrollHeight <= clientHeight}>
+<div class="flex flex-col h-full items-start" class:hidden={!visible}>
 	<!-- wrapper -->
 	<div class="flex flex-row grow justify-evenly pl-1">
 		<!-- progress bar container -->

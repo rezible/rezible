@@ -19,7 +19,6 @@ type IncidentService struct {
 	jobClient *jobs.BackgroundJobClient
 	loader    rez.ProviderLoader
 	provider  rez.IncidentDataProvider
-	ai        rez.AiService
 	chat      rez.ChatService
 	users     rez.UserService
 }
@@ -29,17 +28,12 @@ func NewIncidentService(ctx context.Context, db *ent.Client, jobClient *jobs.Bac
 		db:        db,
 		jobClient: jobClient,
 		loader:    pl,
-		ai:        ai,
 		chat:      chat,
 		users:     users,
 	}
 
 	if dataErr := svc.LoadDataProvider(ctx); dataErr != nil {
 		return nil, dataErr
-	}
-
-	if jobsErr := svc.RegisterJobs(); jobsErr != nil {
-		return nil, fmt.Errorf("failed to register background job workers: %w", jobsErr)
 	}
 
 	return svc, nil
@@ -68,6 +62,8 @@ func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt
 	//	log.Error().Err(insertErr).Str("providerId", providerId).Msg("failed to insert update job")
 	//}
 	log.Debug().Str("id", providerId).Msg("incident updated")
+
+	// check resolved, send debrief requests
 }
 
 func (s *IncidentService) SyncData(ctx context.Context) error {

@@ -111,7 +111,7 @@ func (s *AuthService) MakeAuthHandler() http.Handler {
 		}
 
 		if r.URL.Path == "/auth/logout" {
-			log.Debug().Msg("do logout")
+			// TODO: do logout
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 			return
 		}

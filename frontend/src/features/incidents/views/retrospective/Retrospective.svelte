@@ -2,7 +2,7 @@
 	import './styles.postcss';
 	import { onMount } from 'svelte';
 
-	import { Dialog, Header, Button } from 'svelte-ux';
+	import { Dialog, Header, Button, cls } from 'svelte-ux';
     import { mdiClose } from '@mdi/js';
 
 	import type { Incident, IncidentDebrief, Retrospective } from '$lib/api';
@@ -18,7 +18,7 @@
     import IncidentDebriefDialog from './IncidentDebrief';
     import type { AnnotationType } from './BubbleMenu.svelte';
 
-	interface Props { 
+	type Props = { 
 		incident: Incident,
 		retrospective: Retrospective,
 		debrief: IncidentDebrief,
@@ -51,20 +51,25 @@
 		collaborationState.connect(documentName);
 		return () => {collaborationState.disconnect()};
 	});
-	$inspect(collaborationState);
-	const provider = $derived(collaborationState.provider);
+
+	let sectionsHidden = $state(false);
 </script>
 
-<div class="w-full flex-1 min-h-0 grid grid-cols-8 gap-2 py-2 overflow-y-auto">
-	<div class="col-span-1 grow block overflow-y-hidden max-h-full">
+<div class="w-full flex-1 min-h-0 grid grid-cols-8 py-2 overflow-y-auto">
+	<div class="col-span-1 grow block overflow-y-hidden max-h-full" class:hidden={sectionsHidden}>
 		{#if containerEl}
-			<SectionsSidebar {containerEl} {sections} {sectionElements} {onSectionClicked} />
+			<SectionsSidebar 
+				bind:hidden={sectionsHidden}
+				{containerEl} {sections} {sectionElements} {onSectionClicked} />
 		{/if}
 	</div>
 
-	<div class="col-span-4 flex flex-col grow min-h-0 overflow-y-auto bg-surface-300">
+	<div class={cls(
+		"flex flex-col grow min-h-0 overflow-y-auto bg-surface-300", 
+		sectionsHidden ? "col-start-1 col-span-5 border-3" : "col-span-4"
+	)}>
 		<div class="w-full overflow-y-auto pb-2 px-4 flex flex-col gap-4" bind:this={containerEl}>
-			{#if provider}
+			{#if collaborationState.provider}
 				{#each sections as section, i}
 					<div bind:this={sectionElements[section.field]}>
 						{#if section.type == "timeline"}
@@ -72,7 +77,7 @@
 						{:else if section.type === "field"}
 							<EditorWrapper
 								{section}
-								{provider}
+								provider={collaborationState.provider}
 								setIsActive={activeEditor.set}
 								{onCreateAnnotation}
 								bind:focusEditor={focusSectionFn[section.field]} 
@@ -95,7 +100,7 @@
 	bind:open={showDebrief}
 	persistent
 	portal
-	classes={{ dialog: 'flex flex-col max-h-full w-5/6 max-w-7xl my-2' }}
+	classes={{ dialog: 'flex flex-col max-h-full w-5/6 max-w-7xl my-2', root: "p-2" }}
 	>
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="Debrief">
@@ -105,9 +110,9 @@
 		</Header>
 	</div>
 
-	<div slot="default" class="shrink overflow-y-auto min-h-0">
+	<svelte:fragment slot="default">
 		{#if showDebrief}
 			<IncidentDebriefDialog {incident} {debrief} />
 		{/if}
-	</div>
+	</svelte:fragment>
 </Dialog>

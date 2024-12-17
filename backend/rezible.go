@@ -197,7 +197,11 @@ type (
 		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) ([]*ent.Incident, error)
+	}
+)
 
+type (
+	DebriefService interface {
 		CreateDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
 		GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error)
 		GetUserDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
@@ -228,7 +232,8 @@ type (
 	}
 
 	RetrospectiveService interface {
-		GetByIncidentID(context.Context, uuid.UUID) (*ent.Retrospective, error)
+		GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error)
+		GetForIncident(ctx context.Context, incidentId uuid.UUID, createMissing bool) (*ent.Retrospective, error)
 
 		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
 		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)

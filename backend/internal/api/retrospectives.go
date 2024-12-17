@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
@@ -27,15 +26,11 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oapi.GetRetrospectiveRequest) (*oapi.GetRetrospectiveResponse, error) {
 	var resp oapi.GetRetrospectiveResponse
 
-	resp.Body.Data = oapi.Retrospective{
-		Id: uuid.New(),
-		Attributes: oapi.RetrospectiveAttributes{
-			Title:        "Foolish Florbing",
-			DocumentName: "document-name",
-			Status:       oapi.RetrospectiveStatusOpen,
-			Summary:      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-		},
+	retro, retroErr := h.retros.GetById(ctx, input.Id)
+	if retroErr != nil {
+		return nil, detailError("failed to get retrospective", retroErr)
 	}
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
 	return &resp, nil
 }
@@ -43,11 +38,10 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context, input *oapi.GetRetrospectiveForIncidentRequest) (*oapi.GetRetrospectiveForIncidentResponse, error) {
 	var resp oapi.GetRetrospectiveForIncidentResponse
 
-	retro, retroErr := h.retros.GetByIncidentID(ctx, input.Id)
+	retro, retroErr := h.retros.GetForIncident(ctx, input.Id, true)
 	if retroErr != nil {
 		return nil, detailError("failed to get retrospective", retroErr)
 	}
-
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
 	return &resp, nil
