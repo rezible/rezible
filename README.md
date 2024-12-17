@@ -2,7 +2,7 @@
     <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/9f932912-b194-44cd-bf78-204c73d8cdba" />
     <p>
         <br />
-        The open-source platform to <strong>support</strong>, <strong>automate</strong>, and <strong>report</strong> on every aspect of being oncall
+        The open-source platform to <strong>automate</strong>, <strong>support</strong>, and <strong>report</strong> on every aspect of being oncall
         <br /><br />
         <a href="https://rezible.com">Website</a>
     </p>
@@ -37,8 +37,8 @@ Despite being a critical role in keeping live software products running, oncall 
 secondary job function. The stress, fatigue, and compromised output resulting from subpar oncall 
 is viewed as unavoidable by many teams.
 
-We believe that with the right tooling, many of the negative aspects of being oncall can be improved or removed -  
-so Rezible aims to be that "Oncall on Rails".
+We believe that with the right practices in place, many of the negative aspects of being oncall can be improved or removed -  
+so Rezible aims to provide those practices to teams as an "Oncall on Rails" experience.
 
 ## Current Status
 Rezible is currently under heavy development, with no stable release available.
