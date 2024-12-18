@@ -13,13 +13,13 @@ export function debounce<T extends Function>(cb: T, wait = 100) {
 export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
 	optsFn: FunctionedParams<UndefinedInitialDataOptions<any, E, D, K>>,
 	onData: (data: D) => void,
-	onError: (error: ErrorModel) => void
+	onError?: (error: ErrorModel) => void
 ) => {
 	let lastStatus = $state<FetchStatus>();
 	const onChange = ((res: QueryObserverResult<D, Error>) => {
 		if (res.fetchStatus === lastStatus) return;
 		lastStatus = res.fetchStatus;
-		if (res.isError) {
+		if (res.isError && onError) {
 			const queryErr = tryUnwrapApiError(new Error("foo"));
 			onError(queryErr);
 		}
@@ -36,5 +36,5 @@ export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
 			observer.destroy();
 			lastStatus = undefined;
 		};
-	})
+	});
 }

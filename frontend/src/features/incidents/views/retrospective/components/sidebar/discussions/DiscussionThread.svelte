@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Header, Tooltip } from 'svelte-ux';
 	import { mdiCheck } from '@mdi/js';
-	import { activeDiscussion, createReplyEditor } from './discussions.svelte';
+	import { activeDiscussion, createReplyEditor } from '../../../lib/discussions.svelte';
 	import { EditorContent, Editor as SvelteEditor } from 'svelte-tiptap';
 	import { onMount } from 'svelte';
 	import type { RetrospectiveDiscussion } from '$lib/api';

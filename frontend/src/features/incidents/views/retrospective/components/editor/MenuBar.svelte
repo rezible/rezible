@@ -12,7 +12,7 @@
 		mdiText, mdiFormatHeader1, mdiFormatHeader2, mdiChevronDown,
         mdiFormatListCheckbox
 	} from '@mdi/js';
-	import { activeEditor, activeStatus } from './editor.svelte';
+	import { activeEditor, activeStatus } from '../../lib/editor.svelte';
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;
@@ -82,11 +82,11 @@
 		{@render markButton("Task List", activeStatus.taskList, mdiFormatListCheckbox, runCmd(cmd => cmd.toggleTaskList()))}
 	</div>
 
-	<Button
+	<!--Button
 		icon={mdiBug}
 		rounded={false}
 		on:click={() => {
 			if (activeEditor.editor) console.log(activeEditor.editor.getJSON());
 		}}
-	/>
+	/-->
 </div>

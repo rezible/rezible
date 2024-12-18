@@ -15,7 +15,7 @@ import type { HocuspocusProvider } from '@hocuspocus/provider';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
-import { RezUserSuggestion } from './UserSuggestions/user-suggestion.svelte';
+import { RezUserSuggestion } from './user-suggestions/user-suggestion.svelte';
 import { collaborationState } from './collaboration.svelte';
 
 export type ActiveStatus = {

@@ -5,13 +5,13 @@
 	import { cls, Icon } from "svelte-ux";
 
 	type Props = {
-		hidden: boolean;
+		visible: boolean;
 		containerEl: HTMLElement;
 		sections: RetrospectiveSection[];
 		sectionElements: Record<string, HTMLElement>;
 		onSectionClicked: (field: string) => void;
 	}
-	let { hidden = $bindable(), containerEl, sections, sectionElements, onSectionClicked }: Props = $props();
+	let { visible = $bindable(), containerEl, sections, sectionElements, onSectionClicked }: Props = $props();
 
 	let progressBarContainerEl = $state<HTMLElement>();
 	
@@ -19,10 +19,13 @@
 	let scrollHeight = $state(containerEl.scrollHeight);
 	let clientHeight = $state(containerEl.clientHeight);
 	let progessBarContainerHeight = $state(containerEl.clientHeight);
+
 	const updateHeights = () => {
 		scrollHeight = containerEl.scrollHeight;
 		clientHeight = containerEl.clientHeight;
 		progessBarContainerHeight = progressBarContainerEl?.scrollHeight || clientHeight;
+		const isScrolling = scrollHeight > clientHeight;
+		if (isScrolling != visible) visible = isScrolling
 	}
 
 	const windowHeight = $derived(progessBarContainerHeight * (clientHeight / scrollHeight));
@@ -31,6 +34,7 @@
 	
 	const observer = new ResizeObserver(updateHeights);
 	$effect(() => {
+		observer.unobserve(containerEl);
 		Object.values(sectionElements).forEach(el => observer.observe(el));
 		observer.observe(containerEl);
 		return () => observer.disconnect();
@@ -41,11 +45,6 @@
 		const updateScrollTop = () => {scrollTop = containerEl.scrollTop};
 		containerEl.addEventListener("scroll", updateScrollTop);
 		return () => containerEl.removeEventListener("scroll", updateScrollTop);
-	});
-
-	const visible = $derived(scrollHeight > clientHeight);
-	$effect(() => {
-		hidden = !visible;
 	});
 </script>
 
@@ -81,7 +80,7 @@
 							{/if}
 						</div>
 						<div class="relative flex flex-col-reverse pl-0" class:text-primary-content={i === -1}>
-							<button onclick={() => onSectionClicked(section.field)}>{section.title}</button>
+							<button class="text-left" onclick={() => onSectionClicked(section.field)}>{section.title}</button>
 						</div>
 					</div>
 				</div>

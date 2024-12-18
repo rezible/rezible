@@ -2,7 +2,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { Incident } from '$lib/api';
 
-	import Retrospective from '$features/incidents/views/retrospective/Retrospective.svelte';
+	import Retrospective from '$features/incidents/views/retrospective/RetrospectiveView.svelte';
     import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
 
 	const { data } = $props();
