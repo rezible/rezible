@@ -29,9 +29,9 @@
 	import TimelineSummary from './TimelineSummary.svelte';
 
 	interface Props { 
-		incident: Incident;
+		incidentId: string;
 	};
-	let { incident }: Props = $props();
+	let { incidentId }: Props = $props();
 
 	const timelineElements: { [i: number]: HTMLElement } = {};
 
@@ -146,7 +146,7 @@
 		</div>
 
 		{#if editing}
-			<EventDetailsEdit {incident} event={editing.event} bind:changed={editing.changed} />
+			<EventDetailsEdit {incidentId} event={editing.event} bind:changed={editing.changed} />
 		{/if}
 
 		<svelte:fragment slot="actions">

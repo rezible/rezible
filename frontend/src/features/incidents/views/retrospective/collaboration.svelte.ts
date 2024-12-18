@@ -1,8 +1,6 @@
 import * as Y from 'yjs';
-import { HocuspocusProvider, WebSocketStatus, type StatesArray } from '@hocuspocus/provider';
-import { requestDocumentEditorSession, type GetRetrospectiveForIncidentResponseBody, type Retrospective } from '$src/lib/api/oapi.gen';
-import { QueryObserver, useQueryClient, type CreateQueryResult } from '@tanstack/svelte-query';
-import { onMount } from 'svelte';
+import { HocuspocusProvider, WebSocketStatus, type HocuspocusProviderConfiguration, type StatesArray } from '@hocuspocus/provider';
+import { requestDocumentEditorSession } from '$lib/api/oapi.gen';
 
 export type CollaborationState = {
 	documentName?: string;
@@ -27,12 +25,8 @@ const createCollaborationState = () => {
 		if (collab.documentName === documentName) return;
 		collab.documentName = documentName;
 		
-		if (collab.provider) collab.provider.destroy();
-
-		const attributes = {documentName: $state.snapshot(documentName)};
-		
 		const res = await requestDocumentEditorSession({
-			body: {attributes},
+			body: {attributes: {documentName}},
 			throwOnError: false,
 		});
 
@@ -43,7 +37,7 @@ const createCollaborationState = () => {
 		}
 
 		const sess = res.data.data;
-		collab.provider = new HocuspocusProvider({
+		const config: HocuspocusProviderConfiguration = {
 			document: new Y.Doc(),
 			url: sess.connectionUrl,
 			token: sess.token,
@@ -59,18 +53,23 @@ const createCollaborationState = () => {
 			onAuthenticated: () => {
 				collab.error = undefined;
 			},
-			onDestroy() {
-				// console.log("destroying provider");
-			},
 			onAuthenticationFailed: ({ reason }) => {
 				collab.error = new Error(reason);
 			}
-		});
+		};
+
+		if (collab.provider) {
+			// collab.provider.disconnect();
+			collab.provider.setConfiguration(config);
+			// collab.provider.connect();
+			collab.provider.forceSync();
+		} else {
+			collab.provider = new HocuspocusProvider(config);
+		}
 	}
 
 	const cleanup = () => {
-		console.log("cleanup");
-		collab.provider?.destroy();
+		collab.provider?.disconnect();
 		collab = emptyState;
 	};
 
@@ -84,13 +83,3 @@ const createCollaborationState = () => {
 	};
 };
 export const collaborationState = createCollaborationState();
-
-export const mountCollaboration = (query: CreateQueryResult<GetRetrospectiveForIncidentResponseBody, Error>) => {
-	const documentName = $derived(query.data?.data.attributes.documentName);
-	$effect(() => {
-		if (documentName) collaborationState.connect(documentName);
-	});
-	onMount(() => {
-		return () => {collaborationState.cleanup();}
-	});
-}

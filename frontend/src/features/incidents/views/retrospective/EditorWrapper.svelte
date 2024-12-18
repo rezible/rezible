@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { EditorContent, Editor as SvelteEditor } from 'svelte-tiptap';
-	import type { Extensions, Editor } from '@tiptap/core';
-    import type { RetrospectiveSection } from '$lib/api';
+	import { type Extensions, type Editor, type EditorOptions } from '@tiptap/core';
+    import { type RetrospectiveSection } from '$lib/api';
     import MenuBar from './MenuBar.svelte';
     import { activeEditor, configureEditorExtensions } from './editor.svelte';
 	import BubbleMenu, { type AnnotationType } from './BubbleMenu.svelte';
     import type { HocuspocusProvider } from '@hocuspocus/provider';
 
-	interface Props { 
+	type Props = { 
 		section: RetrospectiveSection;
 		provider: HocuspocusProvider;
 		setIsActive: (e: Editor, field: string) => void;
@@ -17,29 +17,25 @@
 	};
 	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
 
-	let editor = $state<SvelteEditor>();
-	const createEditor = () => {
-		return new SvelteEditor({
-			extensions: configureEditorExtensions(section.field, provider),
-			editable: true,
-			autofocus: false,
-			editorProps: {
-				attributes: {
-					class: 'max-w-none focus:outline-none min-h-20'
-				}
-			},
-			onFocus({ editor }) {
-				setIsActive(editor, section.field);
-			},
-			onBlur() {
-				// setIsActive(undefined)
+	const editor = new SvelteEditor({
+		extensions: configureEditorExtensions(section.field, provider),
+		editable: true,
+		autofocus: false,
+		editorProps: {
+			attributes: {
+				class: 'max-w-none focus:outline-none min-h-20'
 			}
-		});
-	}
+		},
+		onFocus({ editor }) {
+			setIsActive(editor, section.field);
+		},
+		onBlur() {
+			// setIsActive(undefined)
+		}
+	});
 	onMount(() => {
-		editor = createEditor();
 		return () => {
-			if (editor && !editor.isDestroyed) editor.destroy();
+			if (!editor?.isDestroyed) editor?.destroy()
 		};
 	});
 

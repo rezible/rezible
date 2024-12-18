@@ -16,6 +16,7 @@ import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
 import { RezUserSuggestion } from './UserSuggestions/user-suggestion.svelte';
+import { collaborationState } from './collaboration.svelte';
 
 export type ActiveStatus = {
 	focused?: boolean;
@@ -145,12 +146,8 @@ const createActiveAnnotationIdState = () => {
 
 export const activeAnnotation = createActiveAnnotationIdState();
 
-export const configureEditorExtensions = (
-	field: string,
-	provider: HocuspocusProvider
- ) => {
+export const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
 	const user = { name: session.username, color: session.accentColor };
-
 	const extensions: Extensions = [
 		...configureBaseExtensions(false),
 		configureUserMentionExtension(RezUserSuggestion),

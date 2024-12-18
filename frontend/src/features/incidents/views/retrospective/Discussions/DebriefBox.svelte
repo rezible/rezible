@@ -5,15 +5,15 @@
 
 	type Props = {
 		debriefId: string;
-		showDebrief: boolean;
+		showDebriefDialog: boolean;
 	}
-	let { debriefId, showDebrief = $bindable() }: Props = $props();
+	let { debriefId, showDebriefDialog = $bindable() }: Props = $props();
 
 	// const queryOptions = $derived(listRetrospectiveDiscussionsOptions({path: {id: retrospectiveId}}));
 	// const query = createQuery(() => debriefSuggestionsQueryOptions);
 </script>
 
-<Collapse open={!showDebrief} class="p-2 rounded-lg elevation-1 bg-surface-100">
+<Collapse open={!showDebriefDialog} class="p-2 rounded-lg elevation-1 bg-surface-100">
 	<div slot="trigger" let:open class="flex-1 px-3 py-3 {open ? "text-surface-content/50" : ""}">Post-Incident Debrief</div>
 	<div class="flex flex-col">
 		<div class="px-3 pb-3 text-surface-content">
@@ -24,7 +24,7 @@
 				{/snippet}
 			</LoadingQueryWrapper-->
 		</div>
-		<Button classes={{root: "px-8 justify-self-center"}} variant="fill-light" color="secondary" on:click={() => {showDebrief = true}}>
+		<Button classes={{root: "px-8 justify-self-center"}} variant="fill-light" color="secondary" on:click={() => {showDebriefDialog = true}}>
 			Open Debrief Window
 		</Button>
 	</div>

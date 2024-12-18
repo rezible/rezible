@@ -11,9 +11,9 @@
 	type Props = {
 		debriefId: string;
 		retrospectiveId: string;
-		showDebrief: boolean;
+		showDebriefDialog: boolean;
 	}
-	let { debriefId, retrospectiveId, showDebrief = $bindable() }: Props = $props();
+	let { debriefId, retrospectiveId, showDebriefDialog = $bindable() }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -43,7 +43,7 @@
 		</svelte:fragment>
 	</Header>
 
-	<DebriefBox {debriefId} bind:showDebrief />
+	<DebriefBox {debriefId} bind:showDebriefDialog />
 
 	{#if draft.open}
 		<NewDiscussionDrafter {retrospectiveId} {onDiscussionCreated} />

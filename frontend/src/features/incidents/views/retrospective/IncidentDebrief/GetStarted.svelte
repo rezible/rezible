@@ -5,18 +5,19 @@
 	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
 
 	interface Props {
-		incident: Incident;
 		debrief: IncidentDebrief;
 	};
 
-	let { incident, debrief }: Props = $props();
+	let { debrief }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const start = createMutation(() => ({
 		...updateIncidentDebriefMutation(),
 		onSuccess: () => {
 			// this is the query used to fetch the debrief in +page.svelte
-			const debriefQueryOpts = getIncidentUserDebriefOptions({path: {id: incident.id}});
+			const debriefQueryOpts = getIncidentUserDebriefOptions({
+				path: {id: debrief.attributes.incidentId}
+			});
 			return queryClient.invalidateQueries(debriefQueryOpts);
 		},
 	}));

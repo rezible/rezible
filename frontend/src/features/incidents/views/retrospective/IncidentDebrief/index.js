@@ -1,1 +1,1 @@
-export { default as default } from './IncidentDebrief.svelte';
+export { default as default } from './IncidentDebriefDialog.svelte';

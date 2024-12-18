@@ -12,6 +12,9 @@
 
 <LoadingQueryWrapper query={incidentQuery}>
 	{#snippet view(incident: Incident)}
-		<Retrospective {incident} />
+		{@const incidentId = incident.id}
+		{#key incidentId}
+			<Retrospective {incidentId} />
+		{/key}
 	{/snippet}
 </LoadingQueryWrapper>

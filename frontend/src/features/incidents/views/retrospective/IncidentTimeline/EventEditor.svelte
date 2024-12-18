@@ -6,12 +6,12 @@
 	import Github from './DataSources/Github.svelte';
 	import type { Incident } from '$lib/api';
 
-	interface Props { 
-		incident: Incident;
+	type Props = { 
+		incidentId: string;
 		event: IncidentEvent;
 		changed: boolean;
 	};
-	let { incident, event, changed = $bindable(false) }: Props = $props();
+	let { incidentId, event, changed = $bindable(false) }: Props = $props();
 
 	const date = $derived(event.start);
 	const timeFmt = $derived(`${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`);

@@ -1,21 +1,14 @@
 <script lang="ts">
 	import './styles.postcss';
 	import { onMount } from 'svelte';
-    import { createQuery, QueryObserver, useQueryClient } from '@tanstack/svelte-query';
+    import { createQuery } from '@tanstack/svelte-query';
 	import type { Editor as TiptapEditor } from '@tiptap/core';
-	import { Dialog, Header, Button, cls } from 'svelte-ux';
-    import { mdiClose } from '@mdi/js';
+	import { cls } from 'svelte-ux';
 
-	import { 
-		getIncidentUserDebriefOptions,
-		getRetrospectiveForIncidentOptions, 
-		type Incident,
-		type IncidentDebrief,
-		type Retrospective
-	} from '$lib/api';
+	import { getIncidentUserDebriefOptions, getRetrospectiveForIncidentOptions } from '$lib/api';
 
 	import { activeEditor } from './editor.svelte';
-	import { collaborationState, mountCollaboration } from './collaboration.svelte';
+	import { collaborationState } from './collaboration.svelte';
 
 	import EditorWrapper from './EditorWrapper.svelte';
 	import { DiscussionSidebar, draft } from './Discussions';
@@ -23,33 +16,21 @@
 	import SectionsSidebar from './SectionsSidebar.svelte';
     import IncidentDebriefDialog from './IncidentDebrief';
     import type { AnnotationType } from './BubbleMenu.svelte';
-    import { onQueryUpdate } from '$src/lib/utils.svelte';
 
-	type Props = { incident: Incident };
-	let { incident }: Props = $props();
+	type Props = { incidentId: string };
+	let { incidentId }: Props = $props();
 
-	const incidentId = $derived(incident.id);
-
-	const debriefQueryOpts = $derived({
-		...getIncidentUserDebriefOptions({path: {id: incidentId}}),
-		enabled: !!incidentId,
-	});
-	const debriefQuery = createQuery(() => debriefQueryOpts);
-	const debrief = $derived(debriefQuery.data?.data);
-
-	const retroQueryOpts = () => ({
-		...getRetrospectiveForIncidentOptions({path: {id: incidentId}}),
-		enabled: !!incidentId
-	});
-	const retrospectiveQuery = createQuery(retroQueryOpts);
-	mountCollaboration(retrospectiveQuery);
-	
-	const retrospective = $derived(retrospectiveQuery.data?.data);
+	const retroQuery = createQuery(() => getRetrospectiveForIncidentOptions({path: {id: incidentId}}));
+	const retrospective = $derived(retroQuery.data?.data);
+	const documentName = $derived(retrospective?.attributes.documentName);
+	$effect(() => {if (documentName) collaborationState.connect(documentName)});
+	onMount(() => {return () => {collaborationState.cleanup()}});
 
 	const sections = $derived(retrospective?.attributes.sections);
 
-	// let showDebrief = $state(!debrief?.attributes.started);
-	let showDebrief = $state(false);
+	const debriefQuery = createQuery(() => getIncidentUserDebriefOptions({path: {id: incidentId}}));
+	const debrief = $derived(debriefQuery.data?.data);
+	let showDebriefDialog = $state(false);
 
 	let sectionsHidden = $state(false);
 
@@ -91,11 +72,11 @@
 				{#each sections as section, i}
 					<div bind:this={sectionElements[section.field]}>
 						{#if section.type == "timeline"}
-							<IncidentTimeline {incident} />
+							<IncidentTimeline {incidentId} />
 						{:else if section.type === "field"}
 							<EditorWrapper
-								{section}
 								provider={collaborationState.provider}
+								{section}
 								setIsActive={activeEditor.set}
 								{onCreateAnnotation}
 								bind:focusEditor={focusSectionFn[section.field]} 
@@ -111,28 +92,15 @@
 
 	<div class="col-span-3 flex flex-col grow min-h-0 overflow-y-auto bg-surface-200 shadow-lg p-3">
 		{#if retrospective && debrief}
-			<DiscussionSidebar bind:showDebrief retrospectiveId={retrospective.id} debriefId={debrief.id} />
+			<DiscussionSidebar 
+				bind:showDebriefDialog
+				retrospectiveId={retrospective.id} 
+				debriefId={debrief.id} 
+			/>
 		{/if}
 	</div>
 </div>
 
-<Dialog
-	bind:open={showDebrief}
-	persistent
-	portal
-	classes={{ dialog: 'flex flex-col max-h-full w-5/6 max-w-7xl my-2', root: "p-2" }}
-	>
-	<div slot="header" class="border-b p-2" let:close>
-		<Header title="Debrief">
-			<svelte:fragment slot="actions">
-				<Button on:click={() => close({force: true})} iconOnly icon={mdiClose} />
-			</svelte:fragment>
-		</Header>
-	</div>
-
-	<svelte:fragment slot="default">
-		{#if debrief && showDebrief}
-			<IncidentDebriefDialog {incident} {debrief} />
-		{/if}
-	</svelte:fragment>
-</Dialog>
+{#if debrief}
+	<IncidentDebriefDialog {debrief} bind:open={showDebriefDialog} />
+{/if}

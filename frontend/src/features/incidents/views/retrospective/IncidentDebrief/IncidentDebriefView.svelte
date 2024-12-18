@@ -5,11 +5,10 @@
 	import MessageEntryBox from './MessageEntryBox.svelte';
 	import MessagesView from './MessagesView.svelte';
 
-	interface Props { 
-		incident: Incident;
+	type Props = { 
 		debrief: IncidentDebrief;
 	};
-	const { incident, debrief }: Props = $props();
+	const { debrief }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -89,6 +88,6 @@
 			/>
 		</div>
 	{:else}
-		<GetStarted {incident} {debrief} />
+		<GetStarted {debrief} />
 	{/if}
 </div>
