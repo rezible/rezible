@@ -1,8 +1,11 @@
 import * as Y from 'yjs';
 import { HocuspocusProvider, WebSocketStatus, type StatesArray } from '@hocuspocus/provider';
-import { requestDocumentEditorSession } from '$src/lib/api/oapi.gen';
+import { requestDocumentEditorSession, type GetRetrospectiveForIncidentResponseBody, type Retrospective } from '$src/lib/api/oapi.gen';
+import { QueryObserver, useQueryClient, type CreateQueryResult } from '@tanstack/svelte-query';
+import { onMount } from 'svelte';
 
 export type CollaborationState = {
+	documentName?: string;
 	provider: HocuspocusProvider | null;
 	awareness: StatesArray;
 	status: WebSocketStatus;
@@ -10,7 +13,8 @@ export type CollaborationState = {
 };
 
 const createCollaborationState = () => {
-	const emptyState = {
+	const emptyState: CollaborationState = {
+		documentName: undefined,
 		provider: null,
 		awareness: [],
 		status: WebSocketStatus.Disconnected,
@@ -20,7 +24,12 @@ const createCollaborationState = () => {
 	let collab = $state<CollaborationState>(emptyState);
 
 	const connect = async (documentName: string) => {
-		const attributes = {documentName};
+		if (collab.documentName === documentName) return;
+		collab.documentName = documentName;
+		
+		if (collab.provider) collab.provider.destroy();
+
+		const attributes = {documentName: $state.snapshot(documentName)};
 		
 		const res = await requestDocumentEditorSession({
 			body: {attributes},
@@ -28,7 +37,7 @@ const createCollaborationState = () => {
 		});
 
 		if (res.error) {
-			console.log("connection error", res.error);
+			console.error("connection error", res.error);
 			collab.error = new Error("failed to connect");
 			return;
 		}
@@ -59,10 +68,11 @@ const createCollaborationState = () => {
 		});
 	}
 
-	const disconnect = () => {
-		if (collab.provider) collab.provider.destroy();
+	const cleanup = () => {
+		console.log("cleanup");
+		collab.provider?.destroy();
 		collab = emptyState;
-	}
+	};
 
 	return {
 		get awareness() { return collab.awareness },
@@ -70,7 +80,17 @@ const createCollaborationState = () => {
 		get status() { return collab.status },
 		get error() { return collab.error },
 		connect,
-		disconnect,
+		cleanup,
 	};
 };
 export const collaborationState = createCollaborationState();
+
+export const mountCollaboration = (query: CreateQueryResult<GetRetrospectiveForIncidentResponseBody, Error>) => {
+	const documentName = $derived(query.data?.data.attributes.documentName);
+	$effect(() => {
+		if (documentName) collaborationState.connect(documentName);
+	});
+	onMount(() => {
+		return () => {collaborationState.cleanup();}
+	});
+}

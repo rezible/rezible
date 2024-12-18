@@ -1,15 +1,21 @@
 <script lang="ts">
 	import './styles.postcss';
 	import { onMount } from 'svelte';
-
+    import { createQuery, QueryObserver, useQueryClient } from '@tanstack/svelte-query';
+	import type { Editor as TiptapEditor } from '@tiptap/core';
 	import { Dialog, Header, Button, cls } from 'svelte-ux';
     import { mdiClose } from '@mdi/js';
 
-	import type { Incident, IncidentDebrief, Retrospective } from '$lib/api';
+	import { 
+		getIncidentUserDebriefOptions,
+		getRetrospectiveForIncidentOptions, 
+		type Incident,
+		type IncidentDebrief,
+		type Retrospective
+	} from '$lib/api';
 
-	import type { Editor as TiptapEditor } from '@tiptap/core';
 	import { activeEditor } from './editor.svelte';
-	import { collaborationState } from './collaboration.svelte';
+	import { collaborationState, mountCollaboration } from './collaboration.svelte';
 
 	import EditorWrapper from './EditorWrapper.svelte';
 	import { DiscussionSidebar, draft } from './Discussions';
@@ -17,17 +23,35 @@
 	import SectionsSidebar from './SectionsSidebar.svelte';
     import IncidentDebriefDialog from './IncidentDebrief';
     import type { AnnotationType } from './BubbleMenu.svelte';
+    import { onQueryUpdate } from '$src/lib/utils.svelte';
 
-	type Props = { 
-		incident: Incident,
-		retrospective: Retrospective,
-		debrief: IncidentDebrief,
-	};
-	let { incident, retrospective, debrief }: Props = $props();
+	type Props = { incident: Incident };
+	let { incident }: Props = $props();
 
-	const sections = $derived(retrospective.attributes.sections);
+	const incidentId = $derived(incident.id);
 
-	let showDebrief = $state(!debrief.attributes.started);
+	const debriefQueryOpts = $derived({
+		...getIncidentUserDebriefOptions({path: {id: incidentId}}),
+		enabled: !!incidentId,
+	});
+	const debriefQuery = createQuery(() => debriefQueryOpts);
+	const debrief = $derived(debriefQuery.data?.data);
+
+	const retroQueryOpts = () => ({
+		...getRetrospectiveForIncidentOptions({path: {id: incidentId}}),
+		enabled: !!incidentId
+	});
+	const retrospectiveQuery = createQuery(retroQueryOpts);
+	mountCollaboration(retrospectiveQuery);
+	
+	const retrospective = $derived(retrospectiveQuery.data?.data);
+
+	const sections = $derived(retrospective?.attributes.sections);
+
+	// let showDebrief = $state(!debrief?.attributes.started);
+	let showDebrief = $state(false);
+
+	let sectionsHidden = $state(false);
 
 	let containerEl = $state<HTMLElement>();
 	const sectionElements = $state<Record<string, HTMLElement>>({});
@@ -45,19 +69,13 @@
 
 		}
 	}
-
-	const documentName = $derived(retrospective.attributes.documentName);
-	onMount(() => {
-		collaborationState.connect(documentName);
-		return () => {collaborationState.disconnect()};
-	});
-
-	let sectionsHidden = $state(false);
 </script>
+
+<a href="http://localhost:5173/incidents/foo-bar-4/retrospective">other</a>
 
 <div class="w-full flex-1 min-h-0 grid grid-cols-8 py-2 overflow-y-auto">
 	<div class="col-span-1 grow block overflow-y-hidden max-h-full" class:hidden={sectionsHidden}>
-		{#if containerEl}
+		{#if sections && containerEl}
 			<SectionsSidebar 
 				bind:hidden={sectionsHidden}
 				{containerEl} {sections} {sectionElements} {onSectionClicked} />
@@ -69,7 +87,7 @@
 		sectionsHidden ? "col-start-1 col-span-5 border-3" : "col-span-4"
 	)}>
 		<div class="w-full overflow-y-auto pb-2 px-4 flex flex-col gap-4" bind:this={containerEl}>
-			{#if collaborationState.provider}
+			{#if sections && collaborationState.provider}
 				{#each sections as section, i}
 					<div bind:this={sectionElements[section.field]}>
 						{#if section.type == "timeline"}
@@ -92,7 +110,9 @@
 	</div>
 
 	<div class="col-span-3 flex flex-col grow min-h-0 overflow-y-auto bg-surface-200 shadow-lg p-3">
-		<DiscussionSidebar bind:showDebrief retrospectiveId={retrospective.id} debriefId={debrief.id} />
+		{#if retrospective && debrief}
+			<DiscussionSidebar bind:showDebrief retrospectiveId={retrospective.id} debriefId={debrief.id} />
+		{/if}
 	</div>
 </div>
 
@@ -111,7 +131,7 @@
 	</div>
 
 	<svelte:fragment slot="default">
-		{#if showDebrief}
+		{#if debrief && showDebrief}
 			<IncidentDebriefDialog {incident} {debrief} />
 		{/if}
 	</svelte:fragment>
