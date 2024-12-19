@@ -2,23 +2,19 @@
     import './styles.postcss';
     import type { Editor as TiptapEditor } from '@tiptap/core';
     import { cls } from 'svelte-ux';
-    import type { Retrospective } from "$lib/api";
+    import type { Retrospective, RetrospectiveSection } from "$lib/api";
     
     import { draft } from '$features/incidents/views/retrospective/lib/discussions.svelte';
     import { activeEditor } from '$features/incidents/views/retrospective/lib/editor.svelte';
     import { collaborationState } from '$features/incidents/views/retrospective/lib/collaboration.svelte';
-    import IncidentTimeline from '$features/incidents/components/incident-timeline/IncidentTimeline.svelte';
     import type { AnnotationType } from './BubbleMenu.svelte';
     import SectionsSidebar from './SectionsSidebar.svelte';
     import FieldEditorWrapper from './FieldEditorWrapper.svelte';
 
     type Props = {
-        incidentId: string;
-        retrospective?: Retrospective;
+        sections: RetrospectiveSection[];
     }
-    const { incidentId, retrospective }: Props = $props();
-    
-	const sections = $derived(retrospective?.attributes.sections);
+    const { sections }: Props = $props();
 
 	let sectionsSidebarVisible = $state(false);
 
@@ -58,17 +54,13 @@
         {#if sections && collaborationState.provider}
             {#each sections as section, i}
                 <div bind:this={sectionElements[section.field]}>
-                    {#if section.type == "timeline"}
-                        <IncidentTimeline {incidentId} />
-                    {:else if section.type === "field"}
-                        <FieldEditorWrapper
-                            provider={collaborationState.provider}
-                            {section}
-                            setIsActive={activeEditor.set}
-                            {onCreateAnnotation}
-                            bind:focusEditor={focusSectionFn[section.field]} 
-                        />
-                    {/if}
+                    <FieldEditorWrapper
+                        provider={collaborationState.provider}
+                        {section}
+                        setIsActive={activeEditor.set}
+                        {onCreateAnnotation}
+                        bind:focusEditor={focusSectionFn[section.field]} 
+                    />
                 </div>
             {/each}
         {:else}

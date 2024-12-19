@@ -6,14 +6,11 @@
 	import { draft } from '$features/incidents/views/retrospective/lib/discussions.svelte';
 	import DiscussionThread from './DiscussionThread.svelte';
 	import NewDiscussionDrafter from './NewDiscussionDrafter.svelte';
-    import DebriefBox from './DebriefBox.svelte';
 
 	type Props = {
-		debriefId: string;
 		retrospectiveId: string;
-		showDebriefDialog: boolean;
 	}
-	let { debriefId, retrospectiveId, showDebriefDialog = $bindable() }: Props = $props();
+	let { retrospectiveId }: Props = $props();
 
 	const queryClient = useQueryClient();
 
@@ -37,14 +34,6 @@
 </script>
 
 <div class="flex flex-col gap-2 overflow-y-auto">
-	<Header title="Discussions">
-		<svelte:fragment slot="actions">
-			<Button>New</Button>
-		</svelte:fragment>
-	</Header>
-
-	<DebriefBox {debriefId} bind:showDebriefDialog />
-
 	{#if draft.open}
 		<NewDiscussionDrafter {retrospectiveId} {onDiscussionCreated} />
 	{/if}

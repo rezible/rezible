@@ -12,7 +12,7 @@
 		mdiText, mdiFormatHeader1, mdiFormatHeader2, mdiChevronDown,
         mdiFormatListCheckbox
 	} from '@mdi/js';
-	import { activeEditor, activeStatus } from '../../lib/editor.svelte';
+	import { activeEditor, activeStatus } from '$features/incidents/views/retrospective/lib/editor.svelte';
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;
@@ -20,12 +20,18 @@
 		if (activeStatus.heading2) return mdiFormatHeader2;
 		return mdiText;
 	}
+	// let lastFocusedStatus = $state()
+	let formatIcon = $state(mdiText);
+	$effect(() => {
+		if (!activeStatus.focused) return;
+		formatIcon = getIconForStatus();
+	});
 	// TODO: make sure this ^ doesn't reset when editor unfocused (frozen state?)
 
 	const runCmd = $derived(activeEditor.tryRunCommand);
 </script>
 
-<div class="flex items-center w-full divide-x divide-surface-100">
+<div class="flex items-center w-full divide-x divide-surface-100 h-8">
 	{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
 		<MenuItem
 			{icon}
@@ -38,10 +44,10 @@
 
 	<Toggle let:on={open} let:toggle let:toggleOff>
 		<Button
-			icon={getIconForStatus()}
+			icon={formatIcon}
 			on:click={toggle}
-			classes={{ root: 'px-2' }}
-			variant={open ? 'fill' : 'fill-light'}
+			classes={{ root: 'px-2 h-8' }}
+			variant={open ? 'fill-light' : 'text'}
 			rounded={false}
 		>
 			<Icon data={mdiChevronDown} />
@@ -57,9 +63,11 @@
 	{#snippet markButton(tooltip: string, active: boolean, icon: string, cmd: VoidFunction)}
 		<Tooltip title={tooltip}>
 			<Button
+				classes={{root: "size-8"}}
 				icon={icon}
 				rounded={false}
-				variant={active ? 'fill' : 'fill-light'}
+				color={active ? "secondary" : "default"}
+				variant={active ? 'fill-light' : 'text'}
 				on:click={() => cmd()}
 			/>
 		</Tooltip>

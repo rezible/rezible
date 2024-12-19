@@ -138,12 +138,6 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 			Description: "",
 		},
 		{
-			Type:        "timeline",
-			Title:       "Timeline",
-			Field:       "timeline",
-			Description: "",
-		},
-		{
 			Type:        "field",
 			Title:       "Lessons Learned",
 			Field:       "lessons",

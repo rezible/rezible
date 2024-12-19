@@ -69,7 +69,7 @@ const updateActiveStatus = (state: EditorState, focused: boolean) => {
 		return;
 	}
 
-	// TODO: this can be quicker
+	// TODO: this can probably be quicker
 	let newActiveMarks: ActiveStatus = {
 		focused: true,
 		bold: isActive(state, 'bold'),
@@ -96,7 +96,7 @@ const updateActiveStatus = (state: EditorState, focused: boolean) => {
 const onEditorTransaction = debounce(
 	({ editor, transaction }: { editor: Editor; transaction: Transaction }) => {
 		updateActiveStatus(editor.state, editor.isFocused);
-	}
+	},
 );
 
 type RunCommandFn = (cmd: ChainedCommands) => void;

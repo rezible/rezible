@@ -31,20 +31,23 @@
 		if (data.attributes.started || !data.attributes.required) return;
 		showDebriefDialog = true;
 	});
+
+	const sections = $derived(retrospective?.attributes.sections);
 </script>
 
 <div class="w-full flex-1 min-h-0 grid grid-cols-9 py-2 overflow-y-auto">
-	<EditorWrapper {incidentId} {retrospective} />
+	{#if sections}
+		<EditorWrapper {sections} />
+	{/if}
 
-	<div class="col-span-3 flex flex-col grow min-h-0 overflow-y-auto bg-surface-200 shadow-lg p-3">
-		{#if retrospectiveId && debriefId}
-			<RetrospectiveSidebar 
-				bind:showDebriefDialog
-				{retrospectiveId} 
-				{debriefId} 
-			/>
-		{/if}
-	</div>
+	{#if retrospectiveId && debriefId}
+		<RetrospectiveSidebar 
+			{incidentId}
+			{retrospectiveId} 
+			{debriefId} 
+			bind:showDebriefDialog
+		/>
+	{/if}
 </div>
 
 {#if debrief}

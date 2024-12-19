@@ -46,8 +46,8 @@
 	focusEditor = onEditorContainerFocused;
 </script>
 
-<div class="flex h-10">
-	<div class="flex-1 flex h-10 items-end">
+<div class="flex h-8">
+	<div class="flex-1 flex h-8 items-end">
 		<span class="text-lg text-surface-content/80">{section.title}</span>
 	</div>
 	<div class="">
