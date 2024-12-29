@@ -4,6 +4,9 @@ import path from 'path';
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
 	kit: {
+		output: {
+			bundleStrategy: "inline",
+		},
 		adapter: adapter({
 			pages: 'dist',
 			assets: 'dist',
