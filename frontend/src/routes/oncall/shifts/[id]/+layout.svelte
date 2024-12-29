@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-    import { page } from "$app/stores";
+    import { page } from "$app/state";
     import { getOncallShiftOptions, type OncallShift } from "$lib/api";
-    import { session } from "$lib/auth.svelte";
     import PageContainer, { type PageTabsProps, type Breadcrumb } from "$components/page-container/PageContainer.svelte";
 
 	const { children } = $props();
 
-	const shiftId = $derived($page.params.id);
+	const shiftId = $derived(page.params.id);
 	const query = createQuery(() => getOncallShiftOptions({path: {id: shiftId}}));
 	const shift = $derived(query.data?.data);
 
@@ -18,7 +17,7 @@
 		return `${rosterName} - ${start.toDateString()} to ${end.toDateString()}`
 	}
 
-	const isHandover = $derived($page.route.id === "/oncall/shifts/[id]/handover");
+	const isHandover = $derived(page.route.id === "/oncall/shifts/[id]/handover");
 
 	const baseCrumbs: Breadcrumb[] = [
 		{label: "Oncall", href: "/oncall"},

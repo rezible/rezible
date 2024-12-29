@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import {
 		mdiAccountGroup,
 		mdiChartBox,
@@ -33,7 +33,7 @@
 		{ path: '/reports', label: 'Reports', icon: mdiChartBox }
 	];
 
-	const currentPath = $derived($page.route.id);
+	const currentPath = $derived(page.route.id);
 	const expandingHover = false;
 </script>
 

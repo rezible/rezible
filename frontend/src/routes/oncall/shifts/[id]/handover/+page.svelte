@@ -1,12 +1,11 @@
 <script lang="ts">
     import { createQuery } from "@tanstack/svelte-query";
-    import { page } from "$app/stores";
+    import { page } from "$app/state";
     import { getOncallShiftHandoverOptions, getOncallShiftOptions, tryUnwrapApiError, type OncallShift } from "$lib/api";
     import ShiftHandoverEditor from "$features/oncall/views/shift-handover-editor/ShiftHandoverEditor.svelte";
     import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 
-	const shiftId = $derived($page.params.id);
-
+	const shiftId = $derived(page.params.id);
 	const shiftQuery = createQuery(() => getOncallShiftOptions({path: {id: shiftId}}));
 
 	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({path: {id: shiftId}}));

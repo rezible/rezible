@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Button, Card, cls, Header, Icon } from 'svelte-ux';
-    import { page } from '$app/stores';
+    import { page } from '$app/state';
     import Avatar from '$components/avatar/Avatar.svelte';
 
 	type Props = {
@@ -16,7 +16,7 @@
 		rosterId
 	}: Props = $props();
 
-	const viewing = $derived(href == $page.url.pathname);
+	const viewing = $derived(href == page.url.pathname);
 </script>
 
 <Button {href} class={'p-0 hover:bg-none text-left'} on:click={() => {}}>

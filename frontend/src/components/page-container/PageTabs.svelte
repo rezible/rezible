@@ -16,7 +16,7 @@
 </script>
 
 <script lang="ts">
-    import { page } from "$app/stores";
+    import { page } from "$app/state";
     import { cls, Icon } from "svelte-ux";
 
 	const { 
@@ -26,12 +26,13 @@
 		end = false
 	}: PageTabsProps = $props();
 
-	const routeId = $derived($page.route.id ?? "");
+	const activePath = $derived(page.route.id?.replace(baseRouteId, "") ?? "");
+	const activePageIdx = $derived(pages.findIndex(p => (p.routeId ?? p.path) === activePath));
 </script>
 
 <ul class="flex space-y-0 -mb-px w-fit" class:self-end={end}>
-	{#each pages as p}
-		{@const active = routeId.replace(baseRouteId, "") === (p.routeId ?? p.path)}
+	{#each pages as p, i}
+		{@const active = i === activePageIdx}
 		<li class="group flex" role="presentation">
 			<a href="{basePath}{p.path}" class={cls(
 					"inline-block pt-2 pb-1 px-6 gap-2 text-xl text-center border-b-2", 

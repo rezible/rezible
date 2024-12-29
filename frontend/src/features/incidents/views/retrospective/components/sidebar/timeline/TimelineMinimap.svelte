@@ -1,7 +1,5 @@
  <script lang="ts">
 	import { onMount } from "svelte";
-	import { cls } from "svelte-ux";
-
 
 	type Props = {
 		containerEl: HTMLElement;

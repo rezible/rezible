@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Button, Card } from 'svelte-ux';
 
-	const status = $derived($page.error?.status || "Unknown");
-	const message = $derived($page.error?.message || "Error");
+	const status = $derived(page.error?.status || "Unknown");
+	const message = $derived(page.error?.message || "Error");
 	
-	console.log("error view", $page.error);
+	console.log("error view", page.error);
 </script>
 
 <div class="w-96">

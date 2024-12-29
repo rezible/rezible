@@ -13,7 +13,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.14.0
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.7.2
 	github.com/markbates/goth v1.80.0
 	github.com/riverqueue/river v0.14.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.1
@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	ariga.io/atlas v0.29.0 // indirect
+	ariga.io/atlas v0.29.1 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/beevik/etree v1.4.1 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/di-wu/parser v0.3.0 // indirect
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/go-json-experiment/json v0.0.0-20241216061136-94d5fea04a42 // indirect
+	github.com/go-json-experiment/json v0.0.0-20241228065829-3e670832f349 // indirect
 	github.com/go-openapi/inflect v0.21.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
