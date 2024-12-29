@@ -10,7 +10,12 @@
 		retrospectiveId: string;
 		showDebriefDialog: boolean;
 	}
-	let { incidentId, debriefId, retrospectiveId, showDebriefDialog = $bindable() }: Props = $props();
+	let { 
+		incidentId, 
+		debriefId, 
+		retrospectiveId,
+		showDebriefDialog = $bindable(),
+	}: Props = $props();
 
 	const tabs = [
 		{key: "timeline", label: "Timeline"},

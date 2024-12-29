@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { watch } from "runed";
     import { createQuery } from '@tanstack/svelte-query';
 
 	import { getIncidentUserDebriefOptions, getRetrospectiveForIncidentOptions } from '$lib/api';
@@ -17,8 +18,9 @@
 	const retrospective = $derived(retroQuery.data?.data);
 	const retrospectiveId = $derived(retrospective?.id);
 
-	const documentName = $derived(retrospective?.attributes.documentName);
-	$effect(() => {if (documentName) collaborationState.connect(documentName)});
+	const documentName = $derived(retrospective?.attributes.documentName ?? "");
+	watch(() => documentName, (name: string) => {collaborationState.connect(name)});
+	// $effect(() => {if (documentName) collaborationState.connect(documentName)});
 	onMount(() => {return () => {collaborationState.cleanup()}});
 
 	const debriefQueryOpts = () => getIncidentUserDebriefOptions({path: {id: incidentId}});

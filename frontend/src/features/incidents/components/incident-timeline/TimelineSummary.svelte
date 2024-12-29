@@ -14,7 +14,7 @@
 	} from '@mdi/js';
 	import { differenceInSeconds } from 'date-fns';
 
-	interface Props { 
+	type Props = { 
 		events: IncidentEvent[];
 		selectedId?: string;
 		hoveringId?: string;

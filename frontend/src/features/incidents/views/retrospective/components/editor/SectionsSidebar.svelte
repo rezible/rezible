@@ -20,6 +20,8 @@
 	let clientHeight = $state(containerEl.clientHeight);
 	let progessBarContainerHeight = $state(containerEl.clientHeight);
 
+	// TODO: https://runed.dev/docs/utilities/element-size
+
 	const updateHeights = () => {
 		scrollHeight = containerEl.scrollHeight;
 		clientHeight = containerEl.clientHeight;
