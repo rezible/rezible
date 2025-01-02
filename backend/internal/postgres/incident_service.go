@@ -3,33 +3,34 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
-	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type IncidentService struct {
-	db        *ent.Client
-	jobClient *jobs.BackgroundJobClient
-	loader    rez.ProviderLoader
-	provider  rez.IncidentDataProvider
-	chat      rez.ChatService
-	users     rez.UserService
+	db       *ent.Client
+	jobs     rez.BackgroundJobService
+	loader   rez.ProviderLoader
+	provider rez.IncidentDataProvider
+	chat     rez.ChatService
+	users    rez.UserService
 }
 
-func NewIncidentService(ctx context.Context, db *ent.Client, jobClient *jobs.BackgroundJobClient, pl rez.ProviderLoader, ai rez.AiService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
+func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.BackgroundJobService, pl rez.ProviderLoader, ai rez.AiService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:        db,
-		jobClient: jobClient,
-		loader:    pl,
-		chat:      chat,
-		users:     users,
+		db:     db,
+		jobs:   jobs,
+		loader: pl,
+		chat:   chat,
+		users:  users,
 	}
 
 	if dataErr := svc.LoadDataProvider(ctx); dataErr != nil {

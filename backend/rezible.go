@@ -40,6 +40,18 @@ type (
 )
 
 type (
+	BackgroundJobService interface {
+		RegisterWorkers(UserService, IncidentService, OncallService, AlertsService, DebriefService) error
+		Start(ctx context.Context) error
+		Stop(ctx context.Context) error
+
+		RequestSendUserDebriefRequests(ctx context.Context, tx *ent.Tx, incidentId uuid.UUID) error
+		RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error
+		RequestGenerateIncidentDebriefSuggestions(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error
+	}
+)
+
+type (
 	ProviderLoader interface {
 		HandleWebhookRequest(w http.ResponseWriter, r *http.Request)
 
@@ -202,12 +214,15 @@ type (
 
 type (
 	DebriefService interface {
+		SendUserDebriefRequests(ctx context.Context, incidentId uuid.UUID) error
+
 		CreateDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
 		GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error)
 		GetUserDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
+		AddUserDebriefMessage(ctx context.Context, debriefID uuid.UUID, text string) (*ent.IncidentDebriefMessage, error)
+		GenerateResponse(ctx context.Context, debriefId uuid.UUID) error
 		StartDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
 		CompleteDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
-		AddUserDebriefMessage(ctx context.Context, debriefID uuid.UUID, text string) (*ent.IncidentDebriefMessage, error)
 	}
 )
 
@@ -286,7 +301,7 @@ type (
 
 	OncallService interface {
 		SyncData(context.Context) error
-		CheckOncallHandovers(context.Context) error
+		ScanForShiftsNeedingHandover(context.Context) ([]uuid.UUID, error)
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
@@ -306,6 +321,7 @@ type (
 
 		GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error)
 		GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error)
+		EnsureShiftHandover(ctx context.Context, shiftId uuid.UUID) error
 		SendShiftHandover(ctx context.Context, id uuid.UUID, contents []OncallShiftHandoverSection) (*ent.OncallUserShiftHandover, error)
 	}
 )

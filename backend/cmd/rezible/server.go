@@ -14,7 +14,7 @@ import (
 	"github.com/rezible/rezible/internal/langchain"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/providers"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/internal/river"
 )
 
 type Options struct {
@@ -31,7 +31,7 @@ type rezServer struct {
 	opts *Options
 
 	db         *postgres.Database
-	jobClient  *jobs.BackgroundJobClient
+	jobs       *river.JobService
 	httpServer *http.Server
 }
 
@@ -42,7 +42,7 @@ func (s *rezServer) Start() {
 		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
 	}
 
-	if jobsErr := s.jobClient.Start(ctx); jobsErr != nil {
+	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
 		log.Fatal().Err(jobsErr).Msg("failed to start background jobs client")
 	}
 
@@ -58,13 +58,14 @@ func (s *rezServer) setup(ctx context.Context) error {
 	}
 
 	s.db = db
-	s.jobClient = jobs.NewBackgroundJobClient(&log.Logger, db.Pool)
 
 	return s.setupServices(ctx)
 }
 
 func (s *rezServer) setupServices(ctx context.Context) error {
 	dbc := s.db.Client()
+
+	s.jobs = river.NewJobService(s.db.Pool)
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
 	users, usersErr := postgres.NewUserService(dbc, pl)
@@ -87,17 +88,17 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, s.jobClient, pl, ai, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, s.jobs, pl, ai, chat, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, handoverErr := postgres.NewOncallService(ctx, dbc, s.jobClient, pl, docs, chat, users, incidents)
+	oncall, handoverErr := postgres.NewOncallService(ctx, dbc, s.jobs, pl, docs, chat, users, incidents)
 	if handoverErr != nil {
 		return fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
 	}
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, s.jobClient, ai, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, s.jobs, ai, chat)
 	if debriefsErr != nil {
 		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
@@ -107,7 +108,7 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertsService(ctx, dbc, s.jobClient, pl, users)
+	alerts, alertsErr := postgres.NewAlertsService(ctx, dbc, s.jobs, pl, users)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertsService: %w", alertsErr)
 	}
@@ -126,9 +127,9 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 	s.httpServer = httpServer
 
-	jobsErr := jobs.RegisterPeriodicJobs(s.jobClient, users, incidents, oncall, alerts)
+	jobsErr := s.jobs.RegisterWorkers(users, incidents, oncall, alerts, debriefs)
 	if jobsErr != nil {
-		return fmt.Errorf("jobs.RegisterPeriodicJobs: %w", jobsErr)
+		return fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
 	}
 
 	return nil
@@ -145,8 +146,8 @@ func (s *rezServer) Stop() {
 		}
 	}
 
-	if s.jobClient != nil {
-		if dbErr := s.jobClient.Stop(timeoutCtx); dbErr != nil {
+	if s.jobs != nil {
+		if dbErr := s.jobs.Stop(timeoutCtx); dbErr != nil {
 			log.Error().Err(dbErr).Msg("failed to stop jobs client")
 		}
 	}

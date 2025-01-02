@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/rezible/rezible/internal/documents"
+	"github.com/rezible/rezible/internal/river"
 	"math"
 	"math/rand"
 	"strings"
@@ -51,7 +52,15 @@ func withDatabase(ctx context.Context, opts *Options, fn func(db *postgres.Datab
 
 func migrateCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return db.RunMigrations(ctx)
+		if dbErr := db.RunEntMigrations(ctx); dbErr != nil {
+			return fmt.Errorf("failed to run ent migrations: %w", dbErr)
+		}
+
+		if riverErr := river.RunMigrations(ctx, db.Pool); riverErr != nil {
+			return fmt.Errorf("failed to run river migrations: %w", riverErr)
+		}
+
+		return nil
 	})
 }
 
