@@ -9,7 +9,6 @@ import (
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 )
 
 func (s *JobService) RegisterWorkers(
@@ -29,25 +28,15 @@ func (s *JobService) RegisterWorkers(
 		return oncall.EnsureShiftHandover(ctx, j.Args.shiftId)
 	})
 	return errors.Join(
-		river.AddWorkerSafely(s.clientCfg.Workers, generateDebriefResponse),
 		river.AddWorkerSafely(s.clientCfg.Workers, sendDebriefRequests),
+		river.AddWorkerSafely(s.clientCfg.Workers, generateDebriefResponse),
 		river.AddWorkerSafely(s.clientCfg.Workers, ensureShiftHandovers),
 		s.registerOncallHandoverScanPeriodicJob(time.Hour, oncall),
-		s.registerProviderDataSyncPeriodicJob(time.Hour, users, incidents, oncall, alerts))
+		s.registerProviderDataSyncPeriodicJob(time.Hour, users, incidents, oncall, alerts),
+	)
 }
 
-type generateIncidentDebriefResponseJobArgs struct {
-	debriefId uuid.UUID
-}
-
-func (generateIncidentDebriefResponseJobArgs) Kind() string {
-	return "generate-incident-debrief-response"
-}
-
-func (s *JobService) RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefResponseJobArgs{debriefId: debriefId}, nil)
-}
-
+// Send requests for users to complete debriefs
 type sendIncidentDebriefRequestsJobArgs struct {
 	incidentId uuid.UUID
 }
@@ -56,10 +45,16 @@ func (sendIncidentDebriefRequestsJobArgs) Kind() string {
 	return "send-incident-debrief-requests"
 }
 
-func (s *JobService) RequestSendUserDebriefRequests(ctx context.Context, tx *ent.Tx, incidentId uuid.UUID) error {
-	return s.insertTx(ctx, tx, sendIncidentDebriefRequestsJobArgs{incidentId: incidentId}, nil)
+// Generate response to user debrief messages
+type generateIncidentDebriefResponseJobArgs struct {
+	debriefId uuid.UUID
 }
 
+func (generateIncidentDebriefResponseJobArgs) Kind() string {
+	return "generate-incident-debrief-response"
+}
+
+// Generate Debrief Suggestions
 type generateIncidentDebriefSuggestionsJobArgs struct {
 	debriefId uuid.UUID
 }
@@ -68,6 +63,11 @@ func (generateIncidentDebriefSuggestionsJobArgs) Kind() string {
 	return "generate-incident-debrief-suggestions"
 }
 
-func (s *JobService) RequestGenerateIncidentDebriefSuggestions(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefSuggestionsJobArgs{debriefId: debriefId}, nil)
+// Ensure Shift Handover (send user reminder, or auto-send fallback if unsent)
+type ensureShiftHandoverJobArgs struct {
+	shiftId uuid.UUID
+}
+
+func (ensureShiftHandoverJobArgs) Kind() string {
+	return "send-shift-handover-reminder"
 }

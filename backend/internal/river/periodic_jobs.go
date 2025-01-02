@@ -6,18 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/riverqueue/river"
 )
-
-type ensureShiftHandoverJobArgs struct {
-	shiftId uuid.UUID
-}
-
-func (ensureShiftHandoverJobArgs) Kind() string {
-	return "send-shift-handover-reminder"
-}
 
 type scanOncallHandoversJobArgs struct{}
 
