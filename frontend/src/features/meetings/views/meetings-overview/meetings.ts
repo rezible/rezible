@@ -34,7 +34,7 @@ export const emptyForm: CreateMeetingFormData = {
 	name: "",
 	session_title: "",
 	description: "",
-	start: {date: new Date().toDateString(), time: "09:00:00", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone},
+	start: {date: new Date(), time: "09:00:00", timezone: Intl.DateTimeFormat().resolvedOptions().timeZone},
 	duration_minutes: 30,
 	repeats: "once",
 	week_days: new Set<Weekday>(),
@@ -51,7 +51,7 @@ const meetingFormSchema = z.object({
 	session_title: z.string(),
 	description: z.string(),
 	start: z.object({
-		date: z.string(),
+		date: z.date(),
 		time: z.string(),
 		timezone: z.string(),
 	}),
@@ -110,7 +110,7 @@ export const CreateMeetingFormSchema = meetingFormSchema.transform((form, ctx): 
 			repeat_monthly_on: form.monthly_on,
 			num_repetitions: form.num_repetitions > 1 ? form.num_repetitions : undefined,
 			repetition_step: form.repetition_step,
-			until_date: !!form.until_date ? form.until_date.toDateString() : undefined,
+			until_date: !!form.until_date ? form.until_date : undefined,
 		}
 	}
 	return {requestType: "schedule", body};

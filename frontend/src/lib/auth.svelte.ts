@@ -17,7 +17,7 @@ type AuthSession = {
 const parseUserSessionResponse = ({data}: GetCurrentUserSessionResponse): AuthSession => {
 	return {
 		user: data.user,
-		expiresAt: new Date(Date.parse(data.expires_at)),
+		expiresAt: data.expires_at,
 	}
 }
 

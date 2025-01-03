@@ -1,5 +1,5 @@
 {
-	"bleh": {
+	"dark": {
 		"color-scheme": "dark",
 		"primary": "#2b4e72",
 		"secondary": "#94ba65",
@@ -40,7 +40,7 @@
 		"danger": "#991b1b",  
 		"danger-content": "#efd3cf"
 	},
-	"dark": {
+	"dark-old": {
 		"color-scheme": "dark",
 		"primary": "#851F3F",
 

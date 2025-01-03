@@ -107,7 +107,7 @@ export type CreateIncidentDebriefQuestionResponseBody = {
 };
 
 export type CreateIncidentEventAttributes = {
-    start_time: string;
+    start_time: Date;
     title: string;
     type: string;
 };
@@ -141,6 +141,11 @@ export type CreateIncidentFieldOptionAttributes = {
 };
 
 export type field_option_type = 'custom' | 'derived';
+
+export const field_option_type = {
+    CUSTOM: 'custom',
+    DERIVED: 'derived'
+} as const;
 
 export type CreateIncidentFieldRequestBody = {
     /**
@@ -281,12 +286,23 @@ export type CreateMeetingScheduleAttributes = {
     repetition_step: number;
     session_title: string;
     starts_at: DateTimeAnchor;
-    until_date?: string;
+    until_date?: Date;
 };
 
 export type repeat_monthly_on = 'same_day' | 'same_weekday';
 
+export const repeat_monthly_on = {
+    SAME_DAY: 'same_day',
+    SAME_WEEKDAY: 'same_weekday'
+} as const;
+
 export type repeats = 'daily' | 'weekly' | 'monthly';
+
+export const repeats = {
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    MONTHLY: 'monthly'
+} as const;
 
 export type CreateMeetingScheduleRequestBody = {
     /**
@@ -334,12 +350,19 @@ export type CreateOncallShiftAnnotationRequestAttributes = {
     event_kind: 'incident' | 'alert' | 'toil' | 'ping';
     minutes_occupied: number;
     notes: string;
-    occurred_at: string;
+    occurred_at: Date;
     pinned: boolean;
     title: string;
 };
 
 export type event_kind = 'incident' | 'alert' | 'toil' | 'ping';
+
+export const event_kind = {
+    INCIDENT: 'incident',
+    ALERT: 'alert',
+    TOIL: 'toil',
+    PING: 'ping'
+} as const;
 
 export type CreateOncallShiftAnnotationRequestBody = {
     /**
@@ -516,7 +539,7 @@ export type CreateTeamResponseBody = {
 };
 
 export type DateTimeAnchor = {
-    date: string;
+    date: Date;
     time: string;
     timezone: string;
 };
@@ -845,13 +868,13 @@ export type Incident = {
 
 export type IncidentAttributes = {
     chat_channel: IncidentChatChannel;
-    closed_at: string;
+    closed_at: Date;
     environments: Array<Environment>;
     fields: Array<IncidentField>;
     impacted_functionality: Array<IncidentResourceImpactFunctionality>;
     impacted_services: Array<IncidentResourceImpactService>;
     linked_incidents: Array<IncidentLink>;
-    opened_at: string;
+    opened_at: Date;
     private: boolean;
     responder_impact: Array<IncidentResponderImpact>;
     roles: Array<IncidentRoleAssignment>;
@@ -869,6 +892,16 @@ export type IncidentAttributes = {
 
 export type status = 'started' | 'detected' | 'alerted' | 'responding' | 'mitigated' | 'retrospective' | 'closed';
 
+export const status = {
+    STARTED: 'started',
+    DETECTED: 'detected',
+    ALERTED: 'alerted',
+    RESPONDING: 'responding',
+    MITIGATED: 'mitigated',
+    RETROSPECTIVE: 'retrospective',
+    CLOSED: 'closed'
+} as const;
+
 export type IncidentChatChannel = {
     id: string;
     private: boolean;
@@ -877,6 +910,11 @@ export type IncidentChatChannel = {
 };
 
 export type provider = 'slack' | 'ms_teams';
+
+export const provider = {
+    SLACK: 'slack',
+    MS_TEAMS: 'ms_teams'
+} as const;
 
 export type IncidentDebrief = {
     attributes: IncidentDebriefAttributes;
@@ -897,11 +935,17 @@ export type IncidentDebriefMessage = {
 
 export type IncidentDebriefMessageAttributes = {
     body: string;
-    createdAt: string;
+    createdAt: Date;
     type: 'user' | 'assistant' | 'question';
 };
 
 export type type = 'user' | 'assistant' | 'question';
+
+export const type = {
+    USER: 'user',
+    ASSISTANT: 'assistant',
+    QUESTION: 'question'
+} as const;
 
 export type IncidentDebriefQuestion = {
     attributes: IncidentDebriefQuestionAttributes;
@@ -929,12 +973,17 @@ export type IncidentEvent = {
 
 export type IncidentEventAttributes = {
     incident_id?: string;
-    start_time: string;
+    start_time: Date;
     title: string;
     type: 'default' | 'incident';
 };
 
 export type type2 = 'default' | 'incident';
+
+export const type2 = {
+    DEFAULT: 'default',
+    INCIDENT: 'incident'
+} as const;
 
 export type IncidentField = {
     attributes: IncidentFieldAttributes;
@@ -963,6 +1012,11 @@ export type IncidentFieldOptionAttributes = {
 
 export type option_type = 'custom' | 'derived';
 
+export const option_type = {
+    CUSTOM: 'custom',
+    DERIVED: 'derived'
+} as const;
+
 export type IncidentLink = {
     incident_id: string;
     incident_summary: string;
@@ -971,6 +1025,13 @@ export type IncidentLink = {
 };
 
 export type link_type = 'duplicate_of' | 'parent' | 'sibling' | 'child';
+
+export const link_type = {
+    DUPLICATE_OF: 'duplicate_of',
+    PARENT: 'parent',
+    SIBLING: 'sibling',
+    CHILD: 'child'
+} as const;
 
 export type IncidentResourceImpactFunctionality = {
     id: string;
@@ -1002,9 +1063,9 @@ export type IncidentRole = {
 
 export type IncidentRoleAssignment = {
     active: boolean;
-    ended_at: string;
+    ended_at: Date;
     role: IncidentRole;
-    started_at: string;
+    started_at: Date;
     user: User;
 };
 
@@ -1039,8 +1100,8 @@ export type IncidentTagAttributes = {
 
 export type IncidentTeamAssignment = {
     active: boolean;
-    ended_at: string;
-    started_at: string;
+    ended_at: Date;
+    started_at: Date;
     team: Team;
 };
 
@@ -1362,12 +1423,18 @@ export type MeetingScheduleTiming = {
     repeat: 'daily' | 'weekly' | 'monthly';
     repeat_monthly_on: 'same_day' | 'same_weekday';
     repeat_step: number;
-    starts_at: string;
+    starts_at: Date;
     until_date?: string;
     until_num_repetitions?: number;
 };
 
 export type repeat = 'daily' | 'weekly' | 'monthly';
+
+export const repeat = {
+    DAILY: 'daily',
+    WEEKLY: 'weekly',
+    MONTHLY: 'monthly'
+} as const;
 
 export type MeetingSession = {
     attributes: MeetingSessionAttributes;
@@ -1379,7 +1446,7 @@ export type MeetingSessionAttributes = {
     document_name: string;
     host_team_id: string;
     meeting_schedule_id: string;
-    starts_at: string;
+    starts_at: Date;
     title: string;
 };
 
@@ -1389,7 +1456,7 @@ export type OncallAlert = {
 };
 
 export type OncallAlertAttributes = {
-    occurred_at: string;
+    occurred_at: Date;
     title: string;
 };
 
@@ -1438,7 +1505,7 @@ export type OncallShiftAnnotationAttributes = {
     kind: 'incident' | 'alert' | 'toil' | 'ping';
     minutes_occupied: number;
     notes: string;
-    occurred_at: string;
+    occurred_at: Date;
     pinned: boolean;
     shift_id: string;
     title: string;
@@ -1446,12 +1513,19 @@ export type OncallShiftAnnotationAttributes = {
 
 export type kind = 'incident' | 'alert' | 'toil' | 'ping';
 
+export const kind = {
+    INCIDENT: 'incident',
+    ALERT: 'alert',
+    TOIL: 'toil',
+    PING: 'ping'
+} as const;
+
 export type OncallShiftAttributes = {
     covers: Array<OncallShiftCover>;
-    end_at: string;
+    end_at: Date;
     role: string;
     roster: OncallRoster;
-    start_at: string;
+    start_at: Date;
     user: User;
 };
 
@@ -1461,8 +1535,8 @@ export type OncallShiftCover = {
 };
 
 export type OncallShiftCoverAttributes = {
-    end_at: string;
-    start_at: string;
+    end_at: Date;
+    start_at: Date;
     user: User;
 };
 
@@ -1473,10 +1547,10 @@ export type OncallShiftHandover = {
 
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
-    created_at: string;
-    sent_at: string;
+    created_at: Date;
+    sent_at: Date;
     shift_id: string;
-    updated_at: string;
+    updated_at: Date;
 };
 
 export type OncallShiftHandoverSection = {
@@ -1486,6 +1560,12 @@ export type OncallShiftHandoverSection = {
 };
 
 export type kind2 = 'regular' | 'annotations' | 'incidents';
+
+export const kind2 = {
+    REGULAR: 'regular',
+    ANNOTATIONS: 'annotations',
+    INCIDENTS: 'incidents'
+} as const;
 
 export type OncallShiftHandoverTemplate = {
     attributes: OncallShiftHandoverTemplateAttributes;
@@ -1503,6 +1583,12 @@ export type OncallShiftHandoverTemplateSection = {
 };
 
 export type type3 = 'regular' | 'annotations' | 'incidents';
+
+export const type3 = {
+    REGULAR: 'regular',
+    ANNOTATIONS: 'annotations',
+    INCIDENTS: 'incidents'
+} as const;
 
 export type RequestDocumentEditorSessionAttributes = {
     documentName: string;
@@ -1545,6 +1631,13 @@ export type RetrospectiveAttributes = {
 
 export type status2 = 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
 
+export const status2 = {
+    OPEN: 'open',
+    IN_REVIEW: 'in_review',
+    MEETING_SCHEDULED: 'meeting_scheduled',
+    COMPLETED: 'completed'
+} as const;
+
 export type RetrospectiveDiscussion = {
     attributes: RetrospectiveDiscussionAttributes;
     id: string;
@@ -1584,6 +1677,11 @@ export type RetrospectiveSection = {
 };
 
 export type type4 = 'field' | 'timeline';
+
+export const type4 = {
+    FIELD: 'field',
+    TIMELINE: 'timeline'
+} as const;
 
 export type RetrospectiveTemplate = {
     attributes: RetrospectiveTemplateAttributes;
@@ -1709,6 +1807,11 @@ export type UpdateIncidentDebriefAttributes = {
 
 export type status3 = 'started' | 'completed';
 
+export const status3 = {
+    STARTED: 'started',
+    COMPLETED: 'completed'
+} as const;
+
 export type UpdateIncidentDebriefQuestionAttributes = {
     content?: string;
 };
@@ -1746,7 +1849,7 @@ export type UpdateIncidentDebriefResponseBody = {
 };
 
 export type UpdateIncidentEventAttributes = {
-    start_time: string;
+    start_time: Date;
     title: string;
     type: string;
 };
@@ -2148,7 +2251,7 @@ export type User = {
 };
 
 export type UserAssignment = {
-    deadline: string;
+    deadline: Date;
     item_id: string;
     item_type: string;
     role: string;
@@ -2177,7 +2280,7 @@ export type UserOncallDetails = {
 };
 
 export type UserSession = {
-    expires_at: string;
+    expires_at: Date;
     user: User;
 };
 
@@ -3612,3 +3715,943 @@ export type GetUserData = {
 export type GetUserResponse = (GetUserResponseBody);
 
 export type GetUserError = (ErrorModel);
+
+export type ListDebriefMessagesResponseTransformer = (data: any) => Promise<ListDebriefMessagesResponse>;
+
+export type ListIncidentDebriefMessagesResponseBodyModelResponseTransformer = (data: any) => ListIncidentDebriefMessagesResponseBody;
+
+export type IncidentDebriefMessageModelResponseTransformer = (data: any) => IncidentDebriefMessage;
+
+export type IncidentDebriefMessageAttributesModelResponseTransformer = (data: any) => IncidentDebriefMessageAttributes;
+
+export const IncidentDebriefMessageAttributesModelResponseTransformer: IncidentDebriefMessageAttributesModelResponseTransformer = data => {
+    if (data?.createdAt) {
+        data.createdAt = new Date(data.createdAt);
+    }
+    return data;
+};
+
+export const IncidentDebriefMessageModelResponseTransformer: IncidentDebriefMessageModelResponseTransformer = data => {
+    if (data?.attributes) {
+        IncidentDebriefMessageAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListIncidentDebriefMessagesResponseBodyModelResponseTransformer: ListIncidentDebriefMessagesResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(IncidentDebriefMessageModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListDebriefMessagesResponseTransformer: ListDebriefMessagesResponseTransformer = async (data) => {
+    ListIncidentDebriefMessagesResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type AddIncidentDebriefUserMessageResponseTransformer = (data: any) => Promise<AddIncidentDebriefUserMessageResponse>;
+
+export type AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer = (data: any) => AddIncidentDebriefUserMessageResponseBody;
+
+export const AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer: AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentDebriefMessageModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const AddIncidentDebriefUserMessageResponseTransformer: AddIncidentDebriefUserMessageResponseTransformer = async (data) => {
+    AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateIncidentEventResponseTransformer = (data: any) => Promise<UpdateIncidentEventResponse>;
+
+export type UpdateIncidentEventResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentEventResponseBody;
+
+export type IncidentEventModelResponseTransformer = (data: any) => IncidentEvent;
+
+export type IncidentEventAttributesModelResponseTransformer = (data: any) => IncidentEventAttributes;
+
+export const IncidentEventAttributesModelResponseTransformer: IncidentEventAttributesModelResponseTransformer = data => {
+    if (data?.start_time) {
+        data.start_time = new Date(data.start_time);
+    }
+    return data;
+};
+
+export const IncidentEventModelResponseTransformer: IncidentEventModelResponseTransformer = data => {
+    if (data?.attributes) {
+        IncidentEventAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const UpdateIncidentEventResponseBodyModelResponseTransformer: UpdateIncidentEventResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentEventModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateIncidentEventResponseTransformer: UpdateIncidentEventResponseTransformer = async (data) => {
+    UpdateIncidentEventResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListIncidentsResponseTransformer = (data: any) => Promise<ListIncidentsResponse>;
+
+export type ListIncidentsResponseBodyModelResponseTransformer = (data: any) => ListIncidentsResponseBody;
+
+export type IncidentModelResponseTransformer = (data: any) => Incident;
+
+export type IncidentAttributesModelResponseTransformer = (data: any) => IncidentAttributes;
+
+export type IncidentRoleAssignmentModelResponseTransformer = (data: any) => IncidentRoleAssignment;
+
+export const IncidentRoleAssignmentModelResponseTransformer: IncidentRoleAssignmentModelResponseTransformer = data => {
+    if (data?.ended_at) {
+        data.ended_at = new Date(data.ended_at);
+    }
+    if (data?.started_at) {
+        data.started_at = new Date(data.started_at);
+    }
+    return data;
+};
+
+export type IncidentTeamAssignmentModelResponseTransformer = (data: any) => IncidentTeamAssignment;
+
+export const IncidentTeamAssignmentModelResponseTransformer: IncidentTeamAssignmentModelResponseTransformer = data => {
+    if (data?.ended_at) {
+        data.ended_at = new Date(data.ended_at);
+    }
+    if (data?.started_at) {
+        data.started_at = new Date(data.started_at);
+    }
+    return data;
+};
+
+export const IncidentAttributesModelResponseTransformer: IncidentAttributesModelResponseTransformer = data => {
+    if (data?.closed_at) {
+        data.closed_at = new Date(data.closed_at);
+    }
+    if (data?.opened_at) {
+        data.opened_at = new Date(data.opened_at);
+    }
+    if (Array.isArray(data?.roles)) {
+        data.roles.forEach(IncidentRoleAssignmentModelResponseTransformer);
+    }
+    if (Array.isArray(data?.teams)) {
+        data.teams.forEach(IncidentTeamAssignmentModelResponseTransformer);
+    }
+    return data;
+};
+
+export const IncidentModelResponseTransformer: IncidentModelResponseTransformer = data => {
+    if (data?.attributes) {
+        IncidentAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListIncidentsResponseBodyModelResponseTransformer: ListIncidentsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(IncidentModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListIncidentsResponseTransformer: ListIncidentsResponseTransformer = async (data) => {
+    ListIncidentsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateIncidentResponseTransformer = (data: any) => Promise<CreateIncidentResponse>;
+
+export type CreateIncidentResponseBodyModelResponseTransformer = (data: any) => CreateIncidentResponseBody;
+
+export const CreateIncidentResponseBodyModelResponseTransformer: CreateIncidentResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateIncidentResponseTransformer: CreateIncidentResponseTransformer = async (data) => {
+    CreateIncidentResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetIncidentResponseTransformer = (data: any) => Promise<GetIncidentResponse>;
+
+export type GetIncidentResponseBodyModelResponseTransformer = (data: any) => GetIncidentResponseBody;
+
+export const GetIncidentResponseBodyModelResponseTransformer: GetIncidentResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetIncidentResponseTransformer: GetIncidentResponseTransformer = async (data) => {
+    GetIncidentResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateIncidentResponseTransformer = (data: any) => Promise<UpdateIncidentResponse>;
+
+export type UpdateIncidentResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentResponseBody;
+
+export const UpdateIncidentResponseBodyModelResponseTransformer: UpdateIncidentResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateIncidentResponseTransformer: UpdateIncidentResponseTransformer = async (data) => {
+    UpdateIncidentResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListIncidentEventsResponseTransformer = (data: any) => Promise<ListIncidentEventsResponse>;
+
+export type ListIncidentEventsResponseBodyModelResponseTransformer = (data: any) => ListIncidentEventsResponseBody;
+
+export const ListIncidentEventsResponseBodyModelResponseTransformer: ListIncidentEventsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(IncidentEventModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListIncidentEventsResponseTransformer: ListIncidentEventsResponseTransformer = async (data) => {
+    ListIncidentEventsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateIncidentEventResponseTransformer = (data: any) => Promise<CreateIncidentEventResponse>;
+
+export type CreateIncidentEventResponseBodyModelResponseTransformer = (data: any) => CreateIncidentEventResponseBody;
+
+export const CreateIncidentEventResponseBodyModelResponseTransformer: CreateIncidentEventResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentEventModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateIncidentEventResponseTransformer: CreateIncidentEventResponseTransformer = async (data) => {
+    CreateIncidentEventResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListMeetingSchedulesResponseTransformer = (data: any) => Promise<ListMeetingSchedulesResponse>;
+
+export type ListMeetingSchedulesResponseBodyModelResponseTransformer = (data: any) => ListMeetingSchedulesResponseBody;
+
+export type MeetingScheduleModelResponseTransformer = (data: any) => MeetingSchedule;
+
+export type MeetingScheduleAttributesModelResponseTransformer = (data: any) => MeetingScheduleAttributes;
+
+export type MeetingScheduleTimingModelResponseTransformer = (data: any) => MeetingScheduleTiming;
+
+export const MeetingScheduleTimingModelResponseTransformer: MeetingScheduleTimingModelResponseTransformer = data => {
+    if (data?.starts_at) {
+        data.starts_at = new Date(data.starts_at);
+    }
+    return data;
+};
+
+export const MeetingScheduleAttributesModelResponseTransformer: MeetingScheduleAttributesModelResponseTransformer = data => {
+    if (data?.timing) {
+        MeetingScheduleTimingModelResponseTransformer(data.timing);
+    }
+    return data;
+};
+
+export const MeetingScheduleModelResponseTransformer: MeetingScheduleModelResponseTransformer = data => {
+    if (data?.attributes) {
+        MeetingScheduleAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListMeetingSchedulesResponseBodyModelResponseTransformer: ListMeetingSchedulesResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(MeetingScheduleModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListMeetingSchedulesResponseTransformer: ListMeetingSchedulesResponseTransformer = async (data) => {
+    ListMeetingSchedulesResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateMeetingScheduleResponseTransformer = (data: any) => Promise<CreateMeetingScheduleResponse>;
+
+export type CreateMeetingScheduleResponseBodyModelResponseTransformer = (data: any) => CreateMeetingScheduleResponseBody;
+
+export const CreateMeetingScheduleResponseBodyModelResponseTransformer: CreateMeetingScheduleResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingScheduleModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateMeetingScheduleResponseTransformer: CreateMeetingScheduleResponseTransformer = async (data) => {
+    CreateMeetingScheduleResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetMeetingScheduleResponseTransformer = (data: any) => Promise<GetMeetingScheduleResponse>;
+
+export type GetMeetingScheduleResponseBodyModelResponseTransformer = (data: any) => GetMeetingScheduleResponseBody;
+
+export const GetMeetingScheduleResponseBodyModelResponseTransformer: GetMeetingScheduleResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingScheduleModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetMeetingScheduleResponseTransformer: GetMeetingScheduleResponseTransformer = async (data) => {
+    GetMeetingScheduleResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateMeetingScheduleResponseTransformer = (data: any) => Promise<UpdateMeetingScheduleResponse>;
+
+export type UpdateMeetingScheduleResponseBodyModelResponseTransformer = (data: any) => UpdateMeetingScheduleResponseBody;
+
+export const UpdateMeetingScheduleResponseBodyModelResponseTransformer: UpdateMeetingScheduleResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingScheduleModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateMeetingScheduleResponseTransformer: UpdateMeetingScheduleResponseTransformer = async (data) => {
+    UpdateMeetingScheduleResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListMeetingSessionsResponseTransformer = (data: any) => Promise<ListMeetingSessionsResponse>;
+
+export type ListMeetingSessionsResponseBodyModelResponseTransformer = (data: any) => ListMeetingSessionsResponseBody;
+
+export type MeetingSessionModelResponseTransformer = (data: any) => MeetingSession;
+
+export type MeetingSessionAttributesModelResponseTransformer = (data: any) => MeetingSessionAttributes;
+
+export const MeetingSessionAttributesModelResponseTransformer: MeetingSessionAttributesModelResponseTransformer = data => {
+    if (data?.starts_at) {
+        data.starts_at = new Date(data.starts_at);
+    }
+    return data;
+};
+
+export const MeetingSessionModelResponseTransformer: MeetingSessionModelResponseTransformer = data => {
+    if (data?.attributes) {
+        MeetingSessionAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListMeetingSessionsResponseBodyModelResponseTransformer: ListMeetingSessionsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(MeetingSessionModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListMeetingSessionsResponseTransformer: ListMeetingSessionsResponseTransformer = async (data) => {
+    ListMeetingSessionsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateMeetingSessionResponseTransformer = (data: any) => Promise<CreateMeetingSessionResponse>;
+
+export type CreateMeetingSessionResponseBodyModelResponseTransformer = (data: any) => CreateMeetingSessionResponseBody;
+
+export const CreateMeetingSessionResponseBodyModelResponseTransformer: CreateMeetingSessionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingSessionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateMeetingSessionResponseTransformer: CreateMeetingSessionResponseTransformer = async (data) => {
+    CreateMeetingSessionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetMeetingSessionResponseTransformer = (data: any) => Promise<GetMeetingSessionResponse>;
+
+export type GetMeetingSessionResponseBodyModelResponseTransformer = (data: any) => GetMeetingSessionResponseBody;
+
+export const GetMeetingSessionResponseBodyModelResponseTransformer: GetMeetingSessionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingSessionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetMeetingSessionResponseTransformer: GetMeetingSessionResponseTransformer = async (data) => {
+    GetMeetingSessionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateMeetingSessionResponseTransformer = (data: any) => Promise<UpdateMeetingSessionResponse>;
+
+export type UpdateMeetingSessionResponseBodyModelResponseTransformer = (data: any) => UpdateMeetingSessionResponseBody;
+
+export const UpdateMeetingSessionResponseBodyModelResponseTransformer: UpdateMeetingSessionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        MeetingSessionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateMeetingSessionResponseTransformer: UpdateMeetingSessionResponseTransformer = async (data) => {
+    UpdateMeetingSessionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateOncallShiftAnnotationResponseTransformer = (data: any) => Promise<UpdateOncallShiftAnnotationResponse>;
+
+export type UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer = (data: any) => UpdateOncallShiftAnnotationResponseBody;
+
+export type OncallShiftAnnotationModelResponseTransformer = (data: any) => OncallShiftAnnotation;
+
+export type OncallShiftAnnotationAttributesModelResponseTransformer = (data: any) => OncallShiftAnnotationAttributes;
+
+export const OncallShiftAnnotationAttributesModelResponseTransformer: OncallShiftAnnotationAttributesModelResponseTransformer = data => {
+    if (data?.occurred_at) {
+        data.occurred_at = new Date(data.occurred_at);
+    }
+    return data;
+};
+
+export const OncallShiftAnnotationModelResponseTransformer: OncallShiftAnnotationModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallShiftAnnotationAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer: UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftAnnotationModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateOncallShiftAnnotationResponseTransformer: UpdateOncallShiftAnnotationResponseTransformer = async (data) => {
+    UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListOncallRostersResponseTransformer = (data: any) => Promise<ListOncallRostersResponse>;
+
+export type ListOncallRostersResponseBodyModelResponseTransformer = (data: any) => ListOncallRostersResponseBody;
+
+export type OncallRosterModelResponseTransformer = (data: any) => OncallRoster;
+
+export type OncallRosterAttributesModelResponseTransformer = (data: any) => OncallRosterAttributes;
+
+export type OncallScheduleModelResponseTransformer = (data: any) => OncallSchedule;
+
+export type OncallScheduleAttributesModelResponseTransformer = (data: any) => OncallScheduleAttributes;
+
+export const OncallScheduleAttributesModelResponseTransformer: OncallScheduleAttributesModelResponseTransformer = data => {
+    if (data?.roster) {
+        OncallRosterModelResponseTransformer(data.roster);
+    }
+    return data;
+};
+
+export const OncallScheduleModelResponseTransformer: OncallScheduleModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallScheduleAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const OncallRosterAttributesModelResponseTransformer: OncallRosterAttributesModelResponseTransformer = data => {
+    if (Array.isArray(data?.schedules)) {
+        data.schedules.forEach(OncallScheduleModelResponseTransformer);
+    }
+    return data;
+};
+
+export const OncallRosterModelResponseTransformer: OncallRosterModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallRosterAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListOncallRostersResponseBodyModelResponseTransformer: ListOncallRostersResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(OncallRosterModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListOncallRostersResponseTransformer: ListOncallRostersResponseTransformer = async (data) => {
+    ListOncallRostersResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetOncallRosterResponseTransformer = (data: any) => Promise<GetOncallRosterResponse>;
+
+export type GetOncallRosterResponseBodyModelResponseTransformer = (data: any) => GetOncallRosterResponseBody;
+
+export const GetOncallRosterResponseBodyModelResponseTransformer: GetOncallRosterResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallRosterModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetOncallRosterResponseTransformer: GetOncallRosterResponseTransformer = async (data) => {
+    GetOncallRosterResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListOncallShiftsResponseTransformer = (data: any) => Promise<ListOncallShiftsResponse>;
+
+export type ListOncallShiftsResponseBodyModelResponseTransformer = (data: any) => ListOncallShiftsResponseBody;
+
+export type OncallShiftModelResponseTransformer = (data: any) => OncallShift;
+
+export type OncallShiftAttributesModelResponseTransformer = (data: any) => OncallShiftAttributes;
+
+export type OncallShiftCoverModelResponseTransformer = (data: any) => OncallShiftCover;
+
+export type OncallShiftCoverAttributesModelResponseTransformer = (data: any) => OncallShiftCoverAttributes;
+
+export const OncallShiftCoverAttributesModelResponseTransformer: OncallShiftCoverAttributesModelResponseTransformer = data => {
+    if (data?.end_at) {
+        data.end_at = new Date(data.end_at);
+    }
+    if (data?.start_at) {
+        data.start_at = new Date(data.start_at);
+    }
+    return data;
+};
+
+export const OncallShiftCoverModelResponseTransformer: OncallShiftCoverModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallShiftCoverAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const OncallShiftAttributesModelResponseTransformer: OncallShiftAttributesModelResponseTransformer = data => {
+    if (Array.isArray(data?.covers)) {
+        data.covers.forEach(OncallShiftCoverModelResponseTransformer);
+    }
+    if (data?.end_at) {
+        data.end_at = new Date(data.end_at);
+    }
+    if (data?.roster) {
+        OncallRosterModelResponseTransformer(data.roster);
+    }
+    if (data?.start_at) {
+        data.start_at = new Date(data.start_at);
+    }
+    return data;
+};
+
+export const OncallShiftModelResponseTransformer: OncallShiftModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallShiftAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListOncallShiftsResponseBodyModelResponseTransformer: ListOncallShiftsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(OncallShiftModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListOncallShiftsResponseTransformer: ListOncallShiftsResponseTransformer = async (data) => {
+    ListOncallShiftsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetOncallShiftResponseTransformer = (data: any) => Promise<GetOncallShiftResponse>;
+
+export type GetOncallShiftResponseBodyModelResponseTransformer = (data: any) => GetOncallShiftResponseBody;
+
+export const GetOncallShiftResponseBodyModelResponseTransformer: GetOncallShiftResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetOncallShiftResponseTransformer: GetOncallShiftResponseTransformer = async (data) => {
+    GetOncallShiftResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListOncallShiftAlertsResponseTransformer = (data: any) => Promise<ListOncallShiftAlertsResponse>;
+
+export type ListOncallShiftAlertsResponseBodyModelResponseTransformer = (data: any) => ListOncallShiftAlertsResponseBody;
+
+export type OncallAlertModelResponseTransformer = (data: any) => OncallAlert;
+
+export type OncallAlertAttributesModelResponseTransformer = (data: any) => OncallAlertAttributes;
+
+export const OncallAlertAttributesModelResponseTransformer: OncallAlertAttributesModelResponseTransformer = data => {
+    if (data?.occurred_at) {
+        data.occurred_at = new Date(data.occurred_at);
+    }
+    return data;
+};
+
+export const OncallAlertModelResponseTransformer: OncallAlertModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallAlertAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListOncallShiftAlertsResponseBodyModelResponseTransformer: ListOncallShiftAlertsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(OncallAlertModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListOncallShiftAlertsResponseTransformer: ListOncallShiftAlertsResponseTransformer = async (data) => {
+    ListOncallShiftAlertsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListOncallShiftAnnotationsResponseTransformer = (data: any) => Promise<ListOncallShiftAnnotationsResponse>;
+
+export type ListOncallShiftAnnotationsResponseBodyModelResponseTransformer = (data: any) => ListOncallShiftAnnotationsResponseBody;
+
+export const ListOncallShiftAnnotationsResponseBodyModelResponseTransformer: ListOncallShiftAnnotationsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(OncallShiftAnnotationModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListOncallShiftAnnotationsResponseTransformer: ListOncallShiftAnnotationsResponseTransformer = async (data) => {
+    ListOncallShiftAnnotationsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateOncallShiftAnnotationResponseTransformer = (data: any) => Promise<CreateOncallShiftAnnotationResponse>;
+
+export type CreateOncallShiftAnnotationResponseBodyModelResponseTransformer = (data: any) => CreateOncallShiftAnnotationResponseBody;
+
+export const CreateOncallShiftAnnotationResponseBodyModelResponseTransformer: CreateOncallShiftAnnotationResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftAnnotationModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateOncallShiftAnnotationResponseTransformer: CreateOncallShiftAnnotationResponseTransformer = async (data) => {
+    CreateOncallShiftAnnotationResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetOncallShiftHandoverResponseTransformer = (data: any) => Promise<GetOncallShiftHandoverResponse>;
+
+export type GetOncallShiftHandoverResponseBodyModelResponseTransformer = (data: any) => GetOncallShiftHandoverResponseBody;
+
+export type OncallShiftHandoverModelResponseTransformer = (data: any) => OncallShiftHandover;
+
+export type OncallShiftHandoverAttributesModelResponseTransformer = (data: any) => OncallShiftHandoverAttributes;
+
+export const OncallShiftHandoverAttributesModelResponseTransformer: OncallShiftHandoverAttributesModelResponseTransformer = data => {
+    if (data?.created_at) {
+        data.created_at = new Date(data.created_at);
+    }
+    if (data?.sent_at) {
+        data.sent_at = new Date(data.sent_at);
+    }
+    if (data?.updated_at) {
+        data.updated_at = new Date(data.updated_at);
+    }
+    return data;
+};
+
+export const OncallShiftHandoverModelResponseTransformer: OncallShiftHandoverModelResponseTransformer = data => {
+    if (data?.attributes) {
+        OncallShiftHandoverAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const GetOncallShiftHandoverResponseBodyModelResponseTransformer: GetOncallShiftHandoverResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftHandoverModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetOncallShiftHandoverResponseTransformer: GetOncallShiftHandoverResponseTransformer = async (data) => {
+    GetOncallShiftHandoverResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type SendOncallShiftHandoverResponseTransformer = (data: any) => Promise<SendOncallShiftHandoverResponse>;
+
+export type SendOncallShiftHandoverResponseBodyModelResponseTransformer = (data: any) => SendOncallShiftHandoverResponseBody;
+
+export const SendOncallShiftHandoverResponseBodyModelResponseTransformer: SendOncallShiftHandoverResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftHandoverModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const SendOncallShiftHandoverResponseTransformer: SendOncallShiftHandoverResponseTransformer = async (data) => {
+    SendOncallShiftHandoverResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListOncallShiftIncidentsResponseTransformer = (data: any) => Promise<ListOncallShiftIncidentsResponse>;
+
+export type ListOncallShiftIncidentsResponseBodyModelResponseTransformer = (data: any) => ListOncallShiftIncidentsResponseBody;
+
+export const ListOncallShiftIncidentsResponseBodyModelResponseTransformer: ListOncallShiftIncidentsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(IncidentModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListOncallShiftIncidentsResponseTransformer: ListOncallShiftIncidentsResponseTransformer = async (data) => {
+    ListOncallShiftIncidentsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetNextOncallShiftResponseTransformer = (data: any) => Promise<GetNextOncallShiftResponse>;
+
+export type GetNextOncallShiftResponseBodyModelResponseTransformer = (data: any) => GetNextOncallShiftResponseBody;
+
+export const GetNextOncallShiftResponseBodyModelResponseTransformer: GetNextOncallShiftResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        OncallShiftModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetNextOncallShiftResponseTransformer: GetNextOncallShiftResponseTransformer = async (data) => {
+    GetNextOncallShiftResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetUserOncallDetailsResponseTransformer = (data: any) => Promise<GetUserOncallDetailsResponse>;
+
+export type GetUserOncallDetailsResponseBodyModelResponseTransformer = (data: any) => GetUserOncallDetailsResponseBody;
+
+export type UserOncallDetailsModelResponseTransformer = (data: any) => UserOncallDetails;
+
+export const UserOncallDetailsModelResponseTransformer: UserOncallDetailsModelResponseTransformer = data => {
+    if (Array.isArray(data?.active_shifts)) {
+        data.active_shifts.forEach(OncallShiftModelResponseTransformer);
+    }
+    if (Array.isArray(data?.past_shifts)) {
+        data.past_shifts.forEach(OncallShiftModelResponseTransformer);
+    }
+    if (Array.isArray(data?.rosters)) {
+        data.rosters.forEach(OncallRosterModelResponseTransformer);
+    }
+    if (Array.isArray(data?.upcoming_shifts)) {
+        data.upcoming_shifts.forEach(OncallShiftModelResponseTransformer);
+    }
+    return data;
+};
+
+export const GetUserOncallDetailsResponseBodyModelResponseTransformer: GetUserOncallDetailsResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        UserOncallDetailsModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetUserOncallDetailsResponseTransformer: GetUserOncallDetailsResponseTransformer = async (data) => {
+    GetUserOncallDetailsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListRetrospectiveDiscussionsResponseTransformer = (data: any) => Promise<ListRetrospectiveDiscussionsResponse>;
+
+export type ListRetrospectiveDiscussionsResponseBodyModelResponseTransformer = (data: any) => ListRetrospectiveDiscussionsResponseBody;
+
+export type RetrospectiveDiscussionModelResponseTransformer = (data: any) => RetrospectiveDiscussion;
+
+export type RetrospectiveDiscussionAttributesModelResponseTransformer = (data: any) => RetrospectiveDiscussionAttributes;
+
+export type RetrospectiveDiscussionReplyModelResponseTransformer = (data: any) => RetrospectiveDiscussionReply;
+
+export type RetrospectiveDiscussionReplyAttributesModelResponseTransformer = (data: any) => RetrospectiveDiscussionReplyAttributes;
+
+export const RetrospectiveDiscussionReplyAttributesModelResponseTransformer: RetrospectiveDiscussionReplyAttributesModelResponseTransformer = data => {
+    if (Array.isArray(data?.replies)) {
+        data.replies.forEach(RetrospectiveDiscussionReplyModelResponseTransformer);
+    }
+    return data;
+};
+
+export const RetrospectiveDiscussionReplyModelResponseTransformer: RetrospectiveDiscussionReplyModelResponseTransformer = data => {
+    if (data?.attributes) {
+        RetrospectiveDiscussionReplyAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const RetrospectiveDiscussionAttributesModelResponseTransformer: RetrospectiveDiscussionAttributesModelResponseTransformer = data => {
+    if (Array.isArray(data?.replies)) {
+        data.replies.forEach(RetrospectiveDiscussionReplyModelResponseTransformer);
+    }
+    return data;
+};
+
+export const RetrospectiveDiscussionModelResponseTransformer: RetrospectiveDiscussionModelResponseTransformer = data => {
+    if (data?.attributes) {
+        RetrospectiveDiscussionAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const ListRetrospectiveDiscussionsResponseBodyModelResponseTransformer: ListRetrospectiveDiscussionsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(RetrospectiveDiscussionModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListRetrospectiveDiscussionsResponseTransformer: ListRetrospectiveDiscussionsResponseTransformer = async (data) => {
+    ListRetrospectiveDiscussionsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateRetrospectiveDiscussionResponseTransformer = (data: any) => Promise<CreateRetrospectiveDiscussionResponse>;
+
+export type CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer = (data: any) => CreateRetrospectiveDiscussionResponseBody;
+
+export const CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer: CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        RetrospectiveDiscussionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateRetrospectiveDiscussionResponseTransformer: CreateRetrospectiveDiscussionResponseTransformer = async (data) => {
+    CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetRetrospectiveDiscussionResponseTransformer = (data: any) => Promise<GetRetrospectiveDiscussionResponse>;
+
+export type GetRetrospectiveDiscussionResponseBodyModelResponseTransformer = (data: any) => GetRetrospectiveDiscussionResponseBody;
+
+export const GetRetrospectiveDiscussionResponseBodyModelResponseTransformer: GetRetrospectiveDiscussionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        RetrospectiveDiscussionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetRetrospectiveDiscussionResponseTransformer: GetRetrospectiveDiscussionResponseTransformer = async (data) => {
+    GetRetrospectiveDiscussionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type AddRetrospectiveDiscussionReplyResponseTransformer = (data: any) => Promise<AddRetrospectiveDiscussionReplyResponse>;
+
+export type AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer = (data: any) => AddRetrospectiveDiscussionReplyResponseBody;
+
+export const AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer: AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        RetrospectiveDiscussionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const AddRetrospectiveDiscussionReplyResponseTransformer: AddRetrospectiveDiscussionReplyResponseTransformer = async (data) => {
+    AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateRetrospectiveDiscussionResponseTransformer = (data: any) => Promise<UpdateRetrospectiveDiscussionResponse>;
+
+export type UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer = (data: any) => UpdateRetrospectiveDiscussionResponseBody;
+
+export const UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer: UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        RetrospectiveDiscussionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateRetrospectiveDiscussionResponseTransformer: UpdateRetrospectiveDiscussionResponseTransformer = async (data) => {
+    UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type GetCurrentUserSessionResponseTransformer = (data: any) => Promise<GetCurrentUserSessionResponse>;
+
+export type GetUserSessionResponseBodyModelResponseTransformer = (data: any) => GetUserSessionResponseBody;
+
+export type UserSessionModelResponseTransformer = (data: any) => UserSession;
+
+export const UserSessionModelResponseTransformer: UserSessionModelResponseTransformer = data => {
+    if (data?.expires_at) {
+        data.expires_at = new Date(data.expires_at);
+    }
+    return data;
+};
+
+export const GetUserSessionResponseBodyModelResponseTransformer: GetUserSessionResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        UserSessionModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const GetCurrentUserSessionResponseTransformer: GetCurrentUserSessionResponseTransformer = async (data) => {
+    GetUserSessionResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListUserAssignmentsResponseTransformer = (data: any) => Promise<ListUserAssignmentsResponse>;
+
+export type ListUserAssignmentsResponseBodyModelResponseTransformer = (data: any) => ListUserAssignmentsResponseBody;
+
+export type UserAssignmentModelResponseTransformer = (data: any) => UserAssignment;
+
+export const UserAssignmentModelResponseTransformer: UserAssignmentModelResponseTransformer = data => {
+    if (data?.deadline) {
+        data.deadline = new Date(data.deadline);
+    }
+    return data;
+};
+
+export const ListUserAssignmentsResponseBodyModelResponseTransformer: ListUserAssignmentsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(UserAssignmentModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListUserAssignmentsResponseTransformer: ListUserAssignmentsResponseTransformer = async (data) => {
+    ListUserAssignmentsResponseBodyModelResponseTransformer(data);
+    return data;
+};

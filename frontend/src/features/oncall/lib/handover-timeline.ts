@@ -26,7 +26,7 @@ export type ShiftTimelineEvent = {
 }
 
 type MergedEvent = {
-	timestamp: number;
+	timestamp: Date;
 	incident?: Incident;
 	alert?: OncallAlert;
 	annotation?: OncallShiftAnnotation;
@@ -77,8 +77,8 @@ export const createTimeline = (currIds: Set<string>, incidents?: Incident[], ale
 	const timeline: ShiftTimelineNode[] = [];
 
 	const merged: MergedEvent[] = [];
-	incidents.forEach(incident => merged.push({timestamp: Date.parse(incident.attributes.opened_at), incident}));
-	alerts.forEach(alert => merged.push({timestamp: Date.parse(alert.attributes.occurred_at), alert}));
+	incidents.forEach(incident => merged.push({timestamp: incident.attributes.opened_at, incident}));
+	alerts.forEach(alert => merged.push({timestamp: alert.attributes.occurred_at, alert}));
 	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurred_at), annotation}));
 
 	const sorted = merged.toSorted((a, b) => (a.timestamp < b.timestamp) ? 1 : -1);

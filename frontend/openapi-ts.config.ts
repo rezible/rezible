@@ -1,19 +1,35 @@
 import { defineConfig } from '@hey-api/openapi-ts';
 
 export default defineConfig({
-	input: '/tmp/rezible-spec.yaml',
+	input: {
+		path: '/tmp/rezible-spec.yaml',
+	},
 	output: {
 		path: 'src/lib/api/oapi.gen',
 	},
-	client: '@hey-api/client-fetch',
-	types: {
-		enums: 'javascript',
-		export: true,
-		dates: false,
+	client: {
+		name: '@hey-api/client-fetch',
 	},
-	services: {
-		asClass: false, 
-	},
-	schemas: false,
-	plugins: ['@tanstack/svelte-query'], 
+	// types: {
+	// 	enums: 'javascript',
+	// 	export: true,
+	// 	dates: false,
+	// },
+	// services: {
+	// 	asClass: false, 
+	// },
+	// schemas: false,
+	plugins: [
+		{
+			name: '@hey-api/typescript',
+			enums: "javascript",
+		},
+		{
+			name: "@hey-api/transformers",
+			dates: true,
+		},
+		{
+			name: '@tanstack/svelte-query',
+		}
+	], 
 });

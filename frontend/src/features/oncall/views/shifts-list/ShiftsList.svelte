@@ -14,11 +14,11 @@
 	const shiftsQuery = createQuery(() => listOncallShiftsOptions(params));
 
 	const today = new Date();
-	let dateRange: DateRangeType = {
+	let dateRange = $state<DateRangeType>({
 		from: subDays(today, 3),
 		to: today,
 		periodType: PeriodType.Day
-	};
+	});
 
 	const periodTypes: PeriodType[] = [
 		PeriodType.Day,
