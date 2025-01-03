@@ -1,6 +1,6 @@
 import { dev } from '$app/environment';
 import { client, getCurrentUserSessionOptions, type UserNotification, type GetCurrentUserSessionResponse, type User } from '$lib/api';
-import { getCurrentUserSession } from "./api/oapi.gen/services.gen"
+import { getCurrentUserSession } from "./api/oapi.gen";
 import { QueryClient, QueryObserver, queryOptions } from '@tanstack/svelte-query';
 import { differenceInSeconds } from 'date-fns/differenceInSeconds';
 

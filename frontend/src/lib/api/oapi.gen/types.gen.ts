@@ -142,11 +142,6 @@ export type CreateIncidentFieldOptionAttributes = {
 
 export type field_option_type = 'custom' | 'derived';
 
-export const field_option_type = {
-    CUSTOM: 'custom',
-    DERIVED: 'derived'
-} as const;
-
 export type CreateIncidentFieldRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -291,18 +286,7 @@ export type CreateMeetingScheduleAttributes = {
 
 export type repeat_monthly_on = 'same_day' | 'same_weekday';
 
-export const repeat_monthly_on = {
-    SAME_DAY: 'same_day',
-    SAME_WEEKDAY: 'same_weekday'
-} as const;
-
 export type repeats = 'daily' | 'weekly' | 'monthly';
-
-export const repeats = {
-    DAILY: 'daily',
-    WEEKLY: 'weekly',
-    MONTHLY: 'monthly'
-} as const;
 
 export type CreateMeetingScheduleRequestBody = {
     /**
@@ -356,13 +340,6 @@ export type CreateOncallShiftAnnotationRequestAttributes = {
 };
 
 export type event_kind = 'incident' | 'alert' | 'toil' | 'ping';
-
-export const event_kind = {
-    INCIDENT: 'incident',
-    ALERT: 'alert',
-    TOIL: 'toil',
-    PING: 'ping'
-} as const;
 
 export type CreateOncallShiftAnnotationRequestBody = {
     /**
@@ -892,16 +869,6 @@ export type IncidentAttributes = {
 
 export type status = 'started' | 'detected' | 'alerted' | 'responding' | 'mitigated' | 'retrospective' | 'closed';
 
-export const status = {
-    STARTED: 'started',
-    DETECTED: 'detected',
-    ALERTED: 'alerted',
-    RESPONDING: 'responding',
-    MITIGATED: 'mitigated',
-    RETROSPECTIVE: 'retrospective',
-    CLOSED: 'closed'
-} as const;
-
 export type IncidentChatChannel = {
     id: string;
     private: boolean;
@@ -910,11 +877,6 @@ export type IncidentChatChannel = {
 };
 
 export type provider = 'slack' | 'ms_teams';
-
-export const provider = {
-    SLACK: 'slack',
-    MS_TEAMS: 'ms_teams'
-} as const;
 
 export type IncidentDebrief = {
     attributes: IncidentDebriefAttributes;
@@ -940,12 +902,6 @@ export type IncidentDebriefMessageAttributes = {
 };
 
 export type type = 'user' | 'assistant' | 'question';
-
-export const type = {
-    USER: 'user',
-    ASSISTANT: 'assistant',
-    QUESTION: 'question'
-} as const;
 
 export type IncidentDebriefQuestion = {
     attributes: IncidentDebriefQuestionAttributes;
@@ -980,11 +936,6 @@ export type IncidentEventAttributes = {
 
 export type type2 = 'default' | 'incident';
 
-export const type2 = {
-    DEFAULT: 'default',
-    INCIDENT: 'incident'
-} as const;
-
 export type IncidentField = {
     attributes: IncidentFieldAttributes;
     id: string;
@@ -1012,11 +963,6 @@ export type IncidentFieldOptionAttributes = {
 
 export type option_type = 'custom' | 'derived';
 
-export const option_type = {
-    CUSTOM: 'custom',
-    DERIVED: 'derived'
-} as const;
-
 export type IncidentLink = {
     incident_id: string;
     incident_summary: string;
@@ -1025,13 +971,6 @@ export type IncidentLink = {
 };
 
 export type link_type = 'duplicate_of' | 'parent' | 'sibling' | 'child';
-
-export const link_type = {
-    DUPLICATE_OF: 'duplicate_of',
-    PARENT: 'parent',
-    SIBLING: 'sibling',
-    CHILD: 'child'
-} as const;
 
 export type IncidentResourceImpactFunctionality = {
     id: string;
@@ -1199,6 +1138,15 @@ export type ListIncidentSeveritiesResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListIncidentsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Incident>;
+    pagination: ResponsePagination;
+};
+
 export type ListIncidentTagsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1214,15 +1162,6 @@ export type ListIncidentTypesResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentType>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Incident>;
     pagination: ResponsePagination;
 };
 
@@ -1325,21 +1264,21 @@ export type ListRetrospectiveReviewsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListRetrospectiveTemplatesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<RetrospectiveTemplate>;
-    pagination: ResponsePagination;
-};
-
 export type ListRetrospectivesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Array<Retrospective>;
+    pagination: ResponsePagination;
+};
+
+export type ListRetrospectiveTemplatesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<RetrospectiveTemplate>;
     pagination: ResponsePagination;
 };
 
@@ -1430,12 +1369,6 @@ export type MeetingScheduleTiming = {
 
 export type repeat = 'daily' | 'weekly' | 'monthly';
 
-export const repeat = {
-    DAILY: 'daily',
-    WEEKLY: 'weekly',
-    MONTHLY: 'monthly'
-} as const;
-
 export type MeetingSession = {
     attributes: MeetingSessionAttributes;
     id: string;
@@ -1513,13 +1446,6 @@ export type OncallShiftAnnotationAttributes = {
 
 export type kind = 'incident' | 'alert' | 'toil' | 'ping';
 
-export const kind = {
-    INCIDENT: 'incident',
-    ALERT: 'alert',
-    TOIL: 'toil',
-    PING: 'ping'
-} as const;
-
 export type OncallShiftAttributes = {
     covers: Array<OncallShiftCover>;
     end_at: string;
@@ -1561,12 +1487,6 @@ export type OncallShiftHandoverSection = {
 
 export type kind2 = 'regular' | 'annotations' | 'incidents';
 
-export const kind2 = {
-    REGULAR: 'regular',
-    ANNOTATIONS: 'annotations',
-    INCIDENTS: 'incidents'
-} as const;
-
 export type OncallShiftHandoverTemplate = {
     attributes: OncallShiftHandoverTemplateAttributes;
     id: string;
@@ -1583,12 +1503,6 @@ export type OncallShiftHandoverTemplateSection = {
 };
 
 export type type3 = 'regular' | 'annotations' | 'incidents';
-
-export const type3 = {
-    REGULAR: 'regular',
-    ANNOTATIONS: 'annotations',
-    INCIDENTS: 'incidents'
-} as const;
 
 export type RequestDocumentEditorSessionAttributes = {
     documentName: string;
@@ -1631,13 +1545,6 @@ export type RetrospectiveAttributes = {
 
 export type status2 = 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
 
-export const status2 = {
-    OPEN: 'open',
-    IN_REVIEW: 'in_review',
-    MEETING_SCHEDULED: 'meeting_scheduled',
-    COMPLETED: 'completed'
-} as const;
-
 export type RetrospectiveDiscussion = {
     attributes: RetrospectiveDiscussionAttributes;
     id: string;
@@ -1677,11 +1584,6 @@ export type RetrospectiveSection = {
 };
 
 export type type4 = 'field' | 'timeline';
-
-export const type4 = {
-    FIELD: 'field',
-    TIMELINE: 'timeline'
-} as const;
 
 export type RetrospectiveTemplate = {
     attributes: RetrospectiveTemplateAttributes;
@@ -1806,11 +1708,6 @@ export type UpdateIncidentDebriefAttributes = {
 };
 
 export type status3 = 'started' | 'completed';
-
-export const status3 = {
-    STARTED: 'started',
-    COMPLETED: 'completed'
-} as const;
 
 export type UpdateIncidentDebriefQuestionAttributes = {
     content?: string;

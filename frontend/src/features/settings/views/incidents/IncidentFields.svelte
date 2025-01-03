@@ -3,7 +3,6 @@
 	import { 
 		archiveIncidentFieldMutation,
 		createIncidentFieldMutation,
-		field_option_type,
 		listIncidentFieldsOptions,
 		listIncidentTypesOptions,
 		updateIncidentFieldMutation, 
@@ -20,7 +19,7 @@
 		.array(
 			z.object({
 				id: z.string().optional(),
-				field_option_type: z.enum([field_option_type.CUSTOM, field_option_type.DERIVED]),
+				field_option_type: z.enum(["custom", "derived"]),
 				value: z.string(),
 				archived: z.boolean().optional()
 			})

@@ -39,7 +39,7 @@ require (
 	github.com/di-wu/parser v0.3.0 // indirect
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/go-json-experiment/json v0.0.0-20241228065829-3e670832f349 // indirect
+	github.com/go-json-experiment/json v0.0.0-20250103021031-ec932d8e20fe // indirect
 	github.com/go-openapi/inflect v0.21.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect

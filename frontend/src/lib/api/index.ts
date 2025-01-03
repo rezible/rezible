@@ -1,5 +1,5 @@
 import { dev } from '$app/environment';
-import { client } from "./oapi.gen/services.gen";
+import { client } from "./oapi.gen";
 import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 
 import { createConfig, type Options } from '@hey-api/client-fetch';
@@ -31,7 +31,7 @@ export type ListQueryParameters = {
 	search?: string;
 	archived?: boolean;
 };
-export type ListFuncQueryOptions = Options<{query?: ListQueryParameters}>;
+export type ListFuncQueryOptions = Options<{query?: ListQueryParameters; url: string}>;
 
 export type PaginatedResponse<T> = {
 	readonly $schema?: string;

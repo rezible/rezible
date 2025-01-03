@@ -7,7 +7,6 @@
 		type UpdateIncidentFieldOptionAttributes,
 		type CreateIncidentFieldOptionAttributes,
 		type field_option_type as OptionType,
-		field_option_type as FieldOptionTypeEnum,
 	} from '$lib/api';
 	import EditableListGroup from '$components/editable-list/EditableList.svelte';
 	import type { EditorSnippetProps } from '$features/settings/components/mutating-table';
@@ -21,7 +20,7 @@
 	}: Props = $props();
 
 	const creating = $derived(!value);
-	const optionTypes = Object.values(FieldOptionTypeEnum);
+	const optionTypes: OptionType[] = ["custom", "derived"];
 	let optionsType = $state<OptionType>("derived");
 
 	type SelectCustomOptionType = MenuOption<string> & { label: string; archived: boolean };
