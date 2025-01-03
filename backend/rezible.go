@@ -3,6 +3,7 @@ package rez
 import (
 	"context"
 	"errors"
+	"github.com/rezible/rezible/jobs"
 	"iter"
 	"net/http"
 	"time"
@@ -45,9 +46,9 @@ type (
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 
-		RequestSendUserDebriefRequests(ctx context.Context, tx *ent.Tx, incidentId uuid.UUID) error
-		RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error
-		RequestGenerateIncidentDebriefSuggestions(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error
+		Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error
+		InsertMany(ctx context.Context, params []jobs.InsertManyParams) error
+		InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs, opts *jobs.InsertOpts) error
 	}
 )
 
@@ -301,7 +302,7 @@ type (
 
 	OncallService interface {
 		SyncData(context.Context) error
-		ScanForShiftsNeedingHandover(context.Context) ([]uuid.UUID, error)
+		ScanForShiftsNeedingHandover(context.Context) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)

@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/jobs"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -84,7 +85,8 @@ func (s *DebriefService) StartDebrief(ctx context.Context, debriefId uuid.UUID) 
 			return fmt.Errorf("failed to start incident debrief: %w", updateErr)
 		}
 
-		if genErr := s.jobs.RequestGenerateIncidentDebriefResponse(ctx, tx, debriefId); genErr != nil {
+		job := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
+		if genErr := s.jobs.InsertTx(ctx, tx, job, nil); genErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genErr)
 		}
 
@@ -115,7 +117,8 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 			return fmt.Errorf("failed to save: %w", updateErr)
 		}
 
-		if genErr := s.jobs.RequestGenerateIncidentDebriefSuggestions(ctx, tx, debriefId); genErr != nil {
+		job := jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId}
+		if genErr := s.jobs.InsertTx(ctx, tx, job, nil); genErr != nil {
 			return fmt.Errorf("failed to request suggestions generation: %w", genErr)
 		}
 
@@ -217,7 +220,8 @@ func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uu
 			return fmt.Errorf("failed to save incident debrief message: %w", msgErr)
 		}
 
-		if genJobErr := s.jobs.RequestGenerateIncidentDebriefResponse(ctx, tx, debrief.ID); genJobErr != nil {
+		job := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
+		if genJobErr := s.jobs.InsertTx(ctx, tx, job, nil); genJobErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genJobErr)
 		}
 

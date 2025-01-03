@@ -3,71 +3,30 @@ package river
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
-	rez "github.com/rezible/rezible"
 	"github.com/riverqueue/river"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/jobs"
 )
-
-type scanOncallHandoversJobArgs struct{}
-
-func (scanOncallHandoversJobArgs) Kind() string {
-	return "scan-oncall-handovers"
-}
 
 func (s *JobService) registerOncallHandoverScanPeriodicJob(interval time.Duration, oncall rez.OncallService) error {
 	s.addPeriodicJob(river.NewPeriodicJob(
 		river.PeriodicInterval(interval),
 		func() (river.JobArgs, *river.InsertOpts) {
-			return &scanOncallHandoversJobArgs{}, nil
+			return &jobs.ScanOncallHandovers{}, nil
 		},
 		&river.PeriodicJobOpts{
 			RunOnStart: true,
 		},
 	))
 
-	worker := river.WorkFunc(func(ctx context.Context, j *river.Job[scanOncallHandoversJobArgs]) error {
-		ids, scanErr := oncall.ScanForShiftsNeedingHandover(ctx)
-		if scanErr != nil {
-			return fmt.Errorf("failed to scan for shifts: %w", scanErr)
-		}
-
-		if len(ids) == 0 {
-			return nil
-		}
-
-		params := make([]river.InsertManyParams, len(ids))
-		for i, id := range ids {
-			params[i] = river.InsertManyParams{
-				Args: ensureShiftHandoverJobArgs{ShiftId: id},
-				InsertOpts: &river.InsertOpts{
-					UniqueOpts: river.UniqueOpts{
-						ByArgs: true,
-					},
-				},
-			}
-		}
-
-		_, insertErr := s.client.InsertMany(ctx, params)
-		if insertErr != nil {
-			return fmt.Errorf("could not insert jobs: %w", insertErr)
-		}
-		return nil
+	worker := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.ScanOncallHandovers]) error {
+		return oncall.ScanForShiftsNeedingHandover(ctx)
 	})
 
 	return river.AddWorkerSafely(s.clientCfg.Workers, worker)
-}
-
-type syncProviderDataJobArgs struct {
-	Users     bool
-	Incidents bool
-	Oncall    bool
-	Alerts    bool
-}
-
-func (syncProviderDataJobArgs) Kind() string {
-	return "sync-provider-data"
 }
 
 func (s *JobService) registerProviderDataSyncPeriodicJob(
@@ -77,7 +36,7 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 	oncall rez.OncallService,
 	alerts rez.AlertsService,
 ) error {
-	args := &syncProviderDataJobArgs{
+	args := &jobs.SyncProviderData{
 		Users:     true,
 		Incidents: true,
 		Oncall:    true,
@@ -98,7 +57,7 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 		},
 	))
 
-	return river.AddWorkerSafely(s.clientCfg.Workers, river.WorkFunc(func(ctx context.Context, j *river.Job[syncProviderDataJobArgs]) error {
+	return river.AddWorkerSafely(s.clientCfg.Workers, river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SyncProviderData]) error {
 		var err error
 		if j.Args.Users {
 			err = errors.Join(err, users.SyncData(ctx))

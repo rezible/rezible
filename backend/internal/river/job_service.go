@@ -3,8 +3,8 @@ package river
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/jobs"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
@@ -96,26 +96,54 @@ func (s *JobService) Stop(ctx context.Context) error {
 	return s.client.Stop(ctx)
 }
 
-func (s *JobService) insertTx(ctx context.Context, tx *ent.Tx, args river.JobArgs, opts *river.InsertOpts) error {
-	pgxTx, pgErr := ent.ExtractPgxTx(tx)
-	if pgErr != nil {
-		return fmt.Errorf("not using pgx driver: %w", pgErr)
+func convertOpts(opts *jobs.InsertOpts) *river.InsertOpts {
+	if opts == nil {
+		return nil
 	}
-	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, opts)
+	riverOpts := &river.InsertOpts{}
+	if opts.Uniqueness != nil {
+		riverOpts.UniqueOpts = river.UniqueOpts{
+			ByArgs: opts.Uniqueness.Args,
+			//ByPeriod:    0,
+			//ByQueue:     false,
+			//ByState:     nil,
+			//ExcludeKind: false,
+		}
+	}
+	return riverOpts
+}
+
+func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error {
+	_, insertErr := s.client.Insert(ctx, args, convertOpts(opts))
 	if insertErr != nil {
-		return fmt.Errorf("could not insert job in tx: %w", insertErr)
+		return fmt.Errorf("could not insert job: %w", insertErr)
 	}
 	return nil
 }
 
-func (s *JobService) RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, id uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefResponseJobArgs{DebriefId: id}, nil)
+func (s *JobService) InsertMany(ctx context.Context, params []jobs.InsertManyParams) error {
+	insertParams := make([]river.InsertManyParams, len(params))
+	for i, p := range params {
+		insertParams[i] = river.InsertManyParams{
+			Args:       p.Args,
+			InsertOpts: convertOpts(p.Opts),
+		}
+	}
+	_, insertErr := s.client.InsertMany(ctx, insertParams)
+	if insertErr != nil {
+		return fmt.Errorf("could not insert jobs: %w", insertErr)
+	}
+	return nil
 }
 
-func (s *JobService) RequestSendUserDebriefRequests(ctx context.Context, tx *ent.Tx, incidentId uuid.UUID) error {
-	return s.insertTx(ctx, tx, sendIncidentDebriefRequestsJobArgs{IncidentId: incidentId}, nil)
-}
-
-func (s *JobService) RequestGenerateIncidentDebriefSuggestions(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefSuggestionsJobArgs{DebriefId: debriefId}, nil)
+func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs, opts *jobs.InsertOpts) error {
+	pgxTx, pgErr := ent.ExtractPgxTx(tx)
+	if pgErr != nil {
+		return fmt.Errorf("not using pgx driver: %w", pgErr)
+	}
+	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, convertOpts(opts))
+	if insertErr != nil {
+		return fmt.Errorf("could not insert job in tx: %w", insertErr)
+	}
+	return nil
 }

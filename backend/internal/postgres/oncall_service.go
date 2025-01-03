@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/rezible/rezible/jobs"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -231,7 +232,7 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 	return query.All(params.GetQueryContext(ctx))
 }
 
-func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) ([]uuid.UUID, error) {
+func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) error {
 	// check for shifts ending within window, that don't have reminder sent
 	window := time.Hour
 	shiftEndingWithinWindow := oncallusershift.And(
@@ -241,7 +242,7 @@ func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) ([]uui
 
 	shifts, shiftsErr := endingShiftsQuery.All(ctx)
 	if shiftsErr != nil {
-		return nil, fmt.Errorf("failed to get shifts: %w", shiftsErr)
+		return fmt.Errorf("failed to get shifts: %w", shiftsErr)
 	}
 
 	shiftIds := make([]uuid.UUID, 0, len(shifts))
@@ -255,7 +256,7 @@ func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) ([]uui
 		Where(oncallusershifthandover.ReminderSent(true)).
 		All(ctx)
 	if handoversErr != nil {
-		return nil, fmt.Errorf("failed to get handovers: %w", handoversErr)
+		return fmt.Errorf("failed to get handovers: %w", handoversErr)
 	}
 	for _, h := range sentHandovers {
 		sentShiftIds.Add(h.ShiftID)
@@ -269,7 +270,27 @@ func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) ([]uui
 		}
 	}
 
-	return endingShiftIds, nil
+	if len(endingShiftIds) == 0 {
+		return nil
+	}
+
+	params := make([]jobs.InsertManyParams, len(endingShiftIds))
+	for i, id := range endingShiftIds {
+		params[i] = jobs.InsertManyParams{
+			Args: jobs.EnsureShiftHandover{ShiftId: id},
+			Opts: &jobs.InsertOpts{
+				Uniqueness: &jobs.UniquenessOpts{
+					Args: true,
+				},
+			},
+		}
+	}
+
+	if insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
+		return fmt.Errorf("could not insert jobs: %w", insertErr)
+	}
+
+	return nil
 }
 
 func (s *OncallService) EnsureShiftHandover(ctx context.Context, shiftId uuid.UUID) error {
