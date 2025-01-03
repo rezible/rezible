@@ -12,7 +12,7 @@
 		mdiText, mdiFormatHeader1, mdiFormatHeader2, mdiChevronDown,
         mdiFormatListCheckbox
 	} from '@mdi/js';
-	import { activeEditor, activeStatus } from '$features/incidents/views/retrospective/lib/editor.svelte';
+	import { activeEditor, activeStatus } from '$features/incidents/lib/editor.svelte';
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;

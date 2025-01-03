@@ -10,7 +10,7 @@
     import { createQuery } from '@tanstack/svelte-query';
 	import { getRetrospectiveForIncidentOptions, type Incident } from '$lib/api';
 
-	interface Props { incident: Incident };
+	type Props = { incident: Incident };
 	let { incident }: Props = $props();
 
 	const retrospectiveQuery = createQuery(() => ({

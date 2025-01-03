@@ -4,9 +4,10 @@
     import { cls } from 'svelte-ux';
     import type { Retrospective, RetrospectiveSection } from "$lib/api";
     
-    import { draft } from '$features/incidents/views/retrospective/lib/discussions.svelte';
-    import { activeEditor } from '$features/incidents/views/retrospective/lib/editor.svelte';
-    import { collaborationState } from '$features/incidents/views/retrospective/lib/collaboration.svelte';
+    import { draft } from '$features/incidents/lib/discussions.svelte';
+    import { activeEditor } from '$features/incidents/lib/editor.svelte';
+    import { collaborationState } from '$src/features/incidents/lib/collaboration.svelte';
+	
     import type { AnnotationType } from './BubbleMenu.svelte';
     import SectionsSidebar from './SectionsSidebar.svelte';
     import FieldEditorWrapper from './FieldEditorWrapper.svelte';
@@ -36,10 +37,7 @@
     }
 </script>
 
-<div class={cls(
-    "flex flex-col min-h-0 overflow-y-auto bg-surface-300", 
-    sectionsSidebarVisible ? "col-span-4" : "col-span-5"
-)}>
+<div class="flex flex-col min-h-0 overflow-y-auto bg-surface-300 grow">
     <div class="w-full overflow-y-auto pb-2 px-4 flex flex-col gap-4" bind:this={containerEl}>
         {#if sections && collaborationState.provider}
             {#each sections as section, i}
@@ -59,7 +57,7 @@
     </div>
 </div>
 
-<div class="block overflow-y-hidden" class:hidden={!sectionsSidebarVisible}>
+<!--div class="block overflow-y-hidden" class:hidden={!sectionsSidebarVisible}>
     {#if sections && containerEl}
         <SectionsSidebar 
             bind:visible={sectionsSidebarVisible}
@@ -67,4 +65,4 @@
             {onSectionClicked} 
         />
     {/if}
-</div>
+</div-->

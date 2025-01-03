@@ -4,7 +4,7 @@
 	import { type Extensions, type Editor, type EditorOptions } from '@tiptap/core';
     import { type RetrospectiveSection } from '$lib/api';
     import MenuBar from './MenuBar.svelte';
-    import { activeEditor, configureEditorExtensions } from '../../lib/editor.svelte';
+    import { activeEditor, configureEditorExtensions } from '$features/incidents/lib/editor.svelte';
 	import BubbleMenu, { type AnnotationType } from './BubbleMenu.svelte';
     import type { HocuspocusProvider } from '@hocuspocus/provider';
 

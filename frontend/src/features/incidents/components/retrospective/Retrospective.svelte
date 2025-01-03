@@ -5,12 +5,10 @@
 
 	import { getIncidentUserDebriefOptions, getRetrospectiveForIncidentOptions } from '$lib/api';
 	import { onQueryUpdate } from '$lib/utils.svelte';
-	import { collaborationState } from './lib/collaboration.svelte';
+	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
 
-	import EditorWrapper from './components/editor/EditorWrapper.svelte';
-    import IncidentDebriefDialog from './components/debrief-dialog/IncidentDebriefDialog.svelte';
-    import DiscussionsContainer from './components/discussions/DiscussionsContainer.svelte';
-    import TimelineSidebar from './components/timeline/TimelineSidebar.svelte';
+	import EditorWrapper from './editor/EditorWrapper.svelte';
+    import IncidentDebriefDialog from './debrief-dialog/IncidentDebriefDialog.svelte';
 
 	type Props = { incidentId: string };
 	let { incidentId }: Props = $props();
@@ -38,17 +36,9 @@
 	const sections = $derived(retrospective?.attributes.sections);
 </script>
 
-<div class="flex-1 min-h-0 grid grid-cols-10">
-	<TimelineSidebar {incidentId} />
-
-	{#if sections}
-		<EditorWrapper {sections} />
-	{/if}
-
-	{#if retrospectiveId}
-		<DiscussionsContainer {retrospectiveId} />
-	{/if}
-</div>
+{#if sections}
+	<EditorWrapper {sections} />
+{/if}
 
 {#if debrief}
 	<IncidentDebriefDialog {debrief} bind:open={showDebriefDialog} />

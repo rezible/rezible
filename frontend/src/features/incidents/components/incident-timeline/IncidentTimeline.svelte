@@ -110,7 +110,7 @@
 		<span class="text-lg text-surface-content/80">Incident Timeline</span>
 	</div>
 	<div class="">
-		<Button variant="fill-light" rounded={false} on:click={createEvent}>
+		<Button variant="fill-light" size="sm" rounded={false} on:click={createEvent}>
 			Add Event
 			<Icon data={mdiPlus} />
 		</Button>

@@ -3,7 +3,7 @@
 	import { Button, Header } from 'svelte-ux';
 	import { listRetrospectiveDiscussionsOptions, type RetrospectiveDiscussion } from '$lib/api';
     import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
-	import { draft } from '$features/incidents/views/retrospective/lib/discussions.svelte';
+	import { draft } from '$features/incidents/lib/discussions.svelte';
 	import DiscussionThread from './DiscussionThread.svelte';
 	import NewDiscussionDrafter from './NewDiscussionDrafter.svelte';
 

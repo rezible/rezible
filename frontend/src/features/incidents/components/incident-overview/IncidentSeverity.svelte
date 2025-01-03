@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { IncidentDetailProps } from './detail';
 	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { Button, Icon, Header } from 'svelte-ux';
 	import { mdiPencil, mdiPencilOutline } from '@mdi/js';
 	import { updateIncidentMutation, type Incident } from '$lib/api';
 	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 
-	const { incident, invalidateQuery }: IncidentDetailProps = $props();
+	type Props = {incident: Incident;};
+	const { incident }: Props = $props();
 
 	let editing = $state(false);
 	let newSeverity = $state(incident.attributes.severity.id);
@@ -21,7 +21,6 @@
 	const update = createMutation(() => ({
 		...updateIncidentMutation(),
 		onSuccess: () => {
-			invalidateQuery();
 			resetState(incident);
 		}
 	}));

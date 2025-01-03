@@ -10,18 +10,11 @@
 	import IncidentStatus from './IncidentStatus.svelte';
     import type { Incident } from '$lib/api';
 
-	type Props = {
-		incident: Incident;
-		invalidateQuery: () => void;
-	};
-	const { incident, invalidateQuery }: Props = $props();
+	type Props = {incident: Incident;};
+	const { incident }: Props = $props();
 </script>
 
-<div class="flex flex-col gap-2 overflow-y-auto w-1/2">
-	<div class="">
-		<RetrospectivePreview {incident} />
-	</div>
-
+<div class="flex flex-col gap-2 overflow-y-auto">
 	<div class="grid grid-cols-2 gap-2">
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">
@@ -43,11 +36,11 @@
 
 		<div class="col-span-1 flex flex-col gap-2 w-fit">
 			<div class="border rounded-lg p-2 group">
-				<IncidentSeverity {incident} {invalidateQuery} />
+				<IncidentSeverity {incident} />
 			</div>
 
 			<div class="border rounded-lg p-2 group">
-				<IncidentVisibility {incident} {invalidateQuery} />
+				<IncidentVisibility {incident} />
 			</div>
 		</div>
 	</div>

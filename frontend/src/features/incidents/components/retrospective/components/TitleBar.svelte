@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Avatar from '$components/avatar/Avatar.svelte';
 	import { Header } from 'svelte-ux';
-	import { collaborationState } from '../lib/collaboration.svelte';
+	import { collaborationState } from '../../../lib/collaboration.svelte';
 </script>
 
 <Header title="Incident Title" classes={{ root: 'h-10', title: 'text-2xl' }}>
