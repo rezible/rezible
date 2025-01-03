@@ -16,6 +16,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/markbates/goth v1.80.0
 	github.com/riverqueue/river v0.14.1
+	github.com/riverqueue/river/riverdriver v0.14.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.14.1
 	github.com/riverqueue/river/rivertype v0.14.1
 	github.com/rs/zerolog v1.33.0
@@ -61,7 +62,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkoukk/tiktoken-go v0.1.7 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/riverqueue/river/riverdriver v0.14.1 // indirect
 	github.com/riverqueue/river/rivershared v0.14.1 // indirect
 	github.com/russellhaering/goxmldsig v1.4.0 // indirect
 	github.com/samber/lo v1.47.0 // indirect

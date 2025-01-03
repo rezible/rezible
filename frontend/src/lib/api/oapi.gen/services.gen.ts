@@ -8,1055 +8,1319 @@ export const client = createClient(createConfig());
 /**
  * List Incident Debrief Questions
  */
-export const listDebriefQuestions = <ThrowOnError extends boolean = false>(options?: Options<ListDebriefQuestionsData, ThrowOnError>) => { return (options?.client ?? client).get<ListDebriefQuestionsResponse, ListDebriefQuestionsError, ThrowOnError>({
-    ...options,
-    url: '/debrief_questions'
-}); };
+export const listDebriefQuestions = <ThrowOnError extends boolean = false>(options?: Options<ListDebriefQuestionsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListDebriefQuestionsResponse, ListDebriefQuestionsError, ThrowOnError>({
+        ...options,
+        url: '/debrief_questions'
+    });
+};
 
 /**
  * Create an Incident Debrief Question
  */
-export const createDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<CreateDebriefQuestionData, ThrowOnError>) => { return (options?.client ?? client).post<CreateDebriefQuestionResponse, CreateDebriefQuestionError, ThrowOnError>({
-    ...options,
-    url: '/debrief_questions'
-}); };
+export const createDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<CreateDebriefQuestionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateDebriefQuestionResponse, CreateDebriefQuestionError, ThrowOnError>({
+        ...options,
+        url: '/debrief_questions'
+    });
+};
 
 /**
  * Get an Incident Debrief Question
  */
-export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<GetDebriefQuestionData, ThrowOnError>) => { return (options?.client ?? client).get<GetDebriefQuestionResponse, GetDebriefQuestionError, ThrowOnError>({
-    ...options,
-    url: '/debrief_questions/{id}'
-}); };
+export const getDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<GetDebriefQuestionData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetDebriefQuestionResponse, GetDebriefQuestionError, ThrowOnError>({
+        ...options,
+        url: '/debrief_questions/{id}'
+    });
+};
 
 /**
  * Archive an Incident Debrief Question
  */
-export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<ArchiveDebriefQuestionData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, ThrowOnError>({
-    ...options,
-    url: '/debrief_questions/{id}'
-}); };
+export const archiveDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<ArchiveDebriefQuestionData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, ThrowOnError>({
+        ...options,
+        url: '/debrief_questions/{id}'
+    });
+};
 
 /**
  * Update an Incident Debrief Question
  */
-export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<UpdateDebriefQuestionData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, ThrowOnError>({
-    ...options,
-    url: '/debrief_questions/{id}'
-}); };
+export const updateDebriefQuestion = <ThrowOnError extends boolean = false>(options: Options<UpdateDebriefQuestionData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, ThrowOnError>({
+        ...options,
+        url: '/debrief_questions/{id}'
+    });
+};
 
 /**
  * Request a Document Editor Session
  */
-export const requestDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) => { return (options?.client ?? client).post<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, ThrowOnError>({
-    ...options,
-    url: '/documents/session/new'
-}); };
+export const requestDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<RequestDocumentEditorSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, ThrowOnError>({
+        ...options,
+        url: '/documents/session/new'
+    });
+};
 
 /**
  * Verify a Document Editor Session
  */
-export const verifyDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<VerifyDocumentEditorSessionData, ThrowOnError>) => { return (options?.client ?? client).post<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, ThrowOnError>({
-    ...options,
-    url: '/documents/session/verify'
-}); };
+export const verifyDocumentEditorSession = <ThrowOnError extends boolean = false>(options: Options<VerifyDocumentEditorSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, ThrowOnError>({
+        ...options,
+        url: '/documents/session/verify'
+    });
+};
 
 /**
  * List Environments
  */
-export const listEnvironments = <ThrowOnError extends boolean = false>(options?: Options<ListEnvironmentsData, ThrowOnError>) => { return (options?.client ?? client).get<ListEnvironmentsResponse, ListEnvironmentsError, ThrowOnError>({
-    ...options,
-    url: '/environments'
-}); };
+export const listEnvironments = <ThrowOnError extends boolean = false>(options?: Options<ListEnvironmentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListEnvironmentsResponse, ListEnvironmentsError, ThrowOnError>({
+        ...options,
+        url: '/environments'
+    });
+};
 
 /**
  * Create an Environment
  */
-export const createEnvironment = <ThrowOnError extends boolean = false>(options: Options<CreateEnvironmentData, ThrowOnError>) => { return (options?.client ?? client).post<CreateEnvironmentResponse, CreateEnvironmentError, ThrowOnError>({
-    ...options,
-    url: '/environments'
-}); };
+export const createEnvironment = <ThrowOnError extends boolean = false>(options: Options<CreateEnvironmentData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateEnvironmentResponse, CreateEnvironmentError, ThrowOnError>({
+        ...options,
+        url: '/environments'
+    });
+};
 
 /**
  * Get an Environment
  */
-export const getEnvironment = <ThrowOnError extends boolean = false>(options: Options<GetEnvironmentData, ThrowOnError>) => { return (options?.client ?? client).get<GetEnvironmentResponse, GetEnvironmentError, ThrowOnError>({
-    ...options,
-    url: '/environments/{id}'
-}); };
+export const getEnvironment = <ThrowOnError extends boolean = false>(options: Options<GetEnvironmentData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetEnvironmentResponse, GetEnvironmentError, ThrowOnError>({
+        ...options,
+        url: '/environments/{id}'
+    });
+};
 
 /**
  * Archive an Environment
  */
-export const archiveEnvironment = <ThrowOnError extends boolean = false>(options: Options<ArchiveEnvironmentData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveEnvironmentResponse, ArchiveEnvironmentError, ThrowOnError>({
-    ...options,
-    url: '/environments/{id}'
-}); };
+export const archiveEnvironment = <ThrowOnError extends boolean = false>(options: Options<ArchiveEnvironmentData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveEnvironmentResponse, ArchiveEnvironmentError, ThrowOnError>({
+        ...options,
+        url: '/environments/{id}'
+    });
+};
 
 /**
  * Update an Environment
  */
-export const updateEnvironment = <ThrowOnError extends boolean = false>(options: Options<UpdateEnvironmentData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateEnvironmentResponse, UpdateEnvironmentError, ThrowOnError>({
-    ...options,
-    url: '/environments/{id}'
-}); };
+export const updateEnvironment = <ThrowOnError extends boolean = false>(options: Options<UpdateEnvironmentData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateEnvironmentResponse, UpdateEnvironmentError, ThrowOnError>({
+        ...options,
+        url: '/environments/{id}'
+    });
+};
 
 /**
  * List Functionalities
  */
-export const listFunctionalities = <ThrowOnError extends boolean = false>(options?: Options<ListFunctionalitiesData, ThrowOnError>) => { return (options?.client ?? client).get<ListFunctionalitiesResponse, ListFunctionalitiesError, ThrowOnError>({
-    ...options,
-    url: '/functionalities'
-}); };
+export const listFunctionalities = <ThrowOnError extends boolean = false>(options?: Options<ListFunctionalitiesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListFunctionalitiesResponse, ListFunctionalitiesError, ThrowOnError>({
+        ...options,
+        url: '/functionalities'
+    });
+};
 
 /**
  * Create a Functionality
  */
-export const createFunctionality = <ThrowOnError extends boolean = false>(options: Options<CreateFunctionalityData, ThrowOnError>) => { return (options?.client ?? client).post<CreateFunctionalityResponse, CreateFunctionalityError, ThrowOnError>({
-    ...options,
-    url: '/functionalities'
-}); };
+export const createFunctionality = <ThrowOnError extends boolean = false>(options: Options<CreateFunctionalityData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateFunctionalityResponse, CreateFunctionalityError, ThrowOnError>({
+        ...options,
+        url: '/functionalities'
+    });
+};
 
 /**
  * Get a Functionality
  */
-export const getFunctionality = <ThrowOnError extends boolean = false>(options: Options<GetFunctionalityData, ThrowOnError>) => { return (options?.client ?? client).get<GetFunctionalityResponse, GetFunctionalityError, ThrowOnError>({
-    ...options,
-    url: '/functionalities/{id}'
-}); };
+export const getFunctionality = <ThrowOnError extends boolean = false>(options: Options<GetFunctionalityData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetFunctionalityResponse, GetFunctionalityError, ThrowOnError>({
+        ...options,
+        url: '/functionalities/{id}'
+    });
+};
 
 /**
  * Archive a Functionality
  */
-export const archiveFunctionality = <ThrowOnError extends boolean = false>(options: Options<ArchiveFunctionalityData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveFunctionalityResponse, ArchiveFunctionalityError, ThrowOnError>({
-    ...options,
-    url: '/functionalities/{id}'
-}); };
+export const archiveFunctionality = <ThrowOnError extends boolean = false>(options: Options<ArchiveFunctionalityData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveFunctionalityResponse, ArchiveFunctionalityError, ThrowOnError>({
+        ...options,
+        url: '/functionalities/{id}'
+    });
+};
 
 /**
  * Update a Functionality
  */
-export const updateFunctionality = <ThrowOnError extends boolean = false>(options: Options<UpdateFunctionalityData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateFunctionalityResponse, UpdateFunctionalityError, ThrowOnError>({
-    ...options,
-    url: '/functionalities/{id}'
-}); };
+export const updateFunctionality = <ThrowOnError extends boolean = false>(options: Options<UpdateFunctionalityData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateFunctionalityResponse, UpdateFunctionalityError, ThrowOnError>({
+        ...options,
+        url: '/functionalities/{id}'
+    });
+};
 
 /**
  * Get Incident Debrief
  */
-export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentDebriefData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentDebriefResponse, GetIncidentDebriefError, ThrowOnError>({
-    ...options,
-    url: '/incident_debriefs/{id}'
-}); };
+export const getIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentDebriefData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentDebriefResponse, GetIncidentDebriefError, ThrowOnError>({
+        ...options,
+        url: '/incident_debriefs/{id}'
+    });
+};
 
 /**
  * Update Incident Debrief
  */
-export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentDebriefData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, ThrowOnError>({
-    ...options,
-    url: '/incident_debriefs/{id}'
-}); };
+export const updateIncidentDebrief = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentDebriefData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, ThrowOnError>({
+        ...options,
+        url: '/incident_debriefs/{id}'
+    });
+};
 
 /**
  * List Incident Debrief Messages
  */
-export const listDebriefMessages = <ThrowOnError extends boolean = false>(options: Options<ListDebriefMessagesData, ThrowOnError>) => { return (options?.client ?? client).get<ListDebriefMessagesResponse, ListDebriefMessagesError, ThrowOnError>({
-    ...options,
-    url: '/incident_debriefs/{id}/messages'
-}); };
+export const listDebriefMessages = <ThrowOnError extends boolean = false>(options: Options<ListDebriefMessagesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListDebriefMessagesResponse, ListDebriefMessagesError, ThrowOnError>({
+        ...options,
+        url: '/incident_debriefs/{id}/messages'
+    });
+};
 
 /**
  * Add an Incident Debrief message
  */
-export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = false>(options: Options<AddIncidentDebriefUserMessageData, ThrowOnError>) => { return (options?.client ?? client).post<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, ThrowOnError>({
-    ...options,
-    url: '/incident_debriefs/{id}/messages'
-}); };
+export const addIncidentDebriefUserMessage = <ThrowOnError extends boolean = false>(options: Options<AddIncidentDebriefUserMessageData, ThrowOnError>) => {
+    return (options?.client ?? client).post<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, ThrowOnError>({
+        ...options,
+        url: '/incident_debriefs/{id}/messages'
+    });
+};
 
 /**
  * List Incident Debrief Suggestions
  */
-export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(options: Options<ListDebriefSuggestionsData, ThrowOnError>) => { return (options?.client ?? client).get<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, ThrowOnError>({
-    ...options,
-    url: '/incident_debriefs/{id}/suggestions'
-}); };
+export const listDebriefSuggestions = <ThrowOnError extends boolean = false>(options: Options<ListDebriefSuggestionsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, ThrowOnError>({
+        ...options,
+        url: '/incident_debriefs/{id}/suggestions'
+    });
+};
 
 /**
  * Archive an Incident Event
  */
-export const archiveIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentEventData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentEventResponse, ArchiveIncidentEventError, ThrowOnError>({
-    ...options,
-    url: '/incident_events/{id}'
-}); };
+export const archiveIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentEventData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentEventResponse, ArchiveIncidentEventError, ThrowOnError>({
+        ...options,
+        url: '/incident_events/{id}'
+    });
+};
 
 /**
  * Update an Incident Event
  */
-export const updateIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentEventData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentEventResponse, UpdateIncidentEventError, ThrowOnError>({
-    ...options,
-    url: '/incident_events/{id}'
-}); };
+export const updateIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentEventData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentEventResponse, UpdateIncidentEventError, ThrowOnError>({
+        ...options,
+        url: '/incident_events/{id}'
+    });
+};
 
 /**
  * List Incident Fields
  */
-export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentFieldsResponse, ListIncidentFieldsError, ThrowOnError>({
-    ...options,
-    url: '/incident_fields'
-}); };
+export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentFieldsResponse, ListIncidentFieldsError, ThrowOnError>({
+        ...options,
+        url: '/incident_fields'
+    });
+};
 
 /**
  * Create an Incident Field
  */
-export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentFieldResponse, CreateIncidentFieldError, ThrowOnError>({
-    ...options,
-    url: '/incident_fields'
-}); };
+export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentFieldResponse, CreateIncidentFieldError, ThrowOnError>({
+        ...options,
+        url: '/incident_fields'
+    });
+};
 
 /**
  * Get an Incident Field
  */
-export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentFieldResponse, GetIncidentFieldError, ThrowOnError>({
-    ...options,
-    url: '/incident_fields/{id}'
-}); };
+export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentFieldResponse, GetIncidentFieldError, ThrowOnError>({
+        ...options,
+        url: '/incident_fields/{id}'
+    });
+};
 
 /**
  * Archive an Incident Field
  */
-export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, ThrowOnError>({
-    ...options,
-    url: '/incident_fields/{id}'
-}); };
+export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, ThrowOnError>({
+        ...options,
+        url: '/incident_fields/{id}'
+    });
+};
 
 /**
  * Update an Incident Field
  */
-export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentFieldResponse, UpdateIncidentFieldError, ThrowOnError>({
-    ...options,
-    url: '/incident_fields/{id}'
-}); };
+export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentFieldResponse, UpdateIncidentFieldError, ThrowOnError>({
+        ...options,
+        url: '/incident_fields/{id}'
+    });
+};
 
 /**
  * List Incident Roles
  */
-export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentRolesResponse, ListIncidentRolesError, ThrowOnError>({
-    ...options,
-    url: '/incident_roles'
-}); };
+export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentRolesResponse, ListIncidentRolesError, ThrowOnError>({
+        ...options,
+        url: '/incident_roles'
+    });
+};
 
 /**
  * Create an Incident Role
  */
-export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentRoleResponse, CreateIncidentRoleError, ThrowOnError>({
-    ...options,
-    url: '/incident_roles'
-}); };
+export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentRoleResponse, CreateIncidentRoleError, ThrowOnError>({
+        ...options,
+        url: '/incident_roles'
+    });
+};
 
 /**
  * Get an Incident Role
  */
-export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentRoleResponse, GetIncidentRoleError, ThrowOnError>({
-    ...options,
-    url: '/incident_roles/{id}'
-}); };
+export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentRoleResponse, GetIncidentRoleError, ThrowOnError>({
+        ...options,
+        url: '/incident_roles/{id}'
+    });
+};
 
 /**
  * Archive an Incident Role
  */
-export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, ThrowOnError>({
-    ...options,
-    url: '/incident_roles/{id}'
-}); };
+export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, ThrowOnError>({
+        ...options,
+        url: '/incident_roles/{id}'
+    });
+};
 
 /**
  * Update an Incident Role
  */
-export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentRoleResponse, UpdateIncidentRoleError, ThrowOnError>({
-    ...options,
-    url: '/incident_roles/{id}'
-}); };
+export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentRoleResponse, UpdateIncidentRoleError, ThrowOnError>({
+        ...options,
+        url: '/incident_roles/{id}'
+    });
+};
 
 /**
  * List Severities
  */
-export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, ThrowOnError>({
-    ...options,
-    url: '/incident_severities'
-}); };
+export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, ThrowOnError>({
+        ...options,
+        url: '/incident_severities'
+    });
+};
 
 /**
  * Create a Severity
  */
-export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentSeverityResponse, CreateIncidentSeverityError, ThrowOnError>({
-    ...options,
-    url: '/incident_severities'
-}); };
+export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentSeverityResponse, CreateIncidentSeverityError, ThrowOnError>({
+        ...options,
+        url: '/incident_severities'
+    });
+};
 
 /**
  * Get a Severity
  */
-export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentSeverityResponse, GetIncidentSeverityError, ThrowOnError>({
-    ...options,
-    url: '/incident_severities/{id}'
-}); };
+export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentSeverityResponse, GetIncidentSeverityError, ThrowOnError>({
+        ...options,
+        url: '/incident_severities/{id}'
+    });
+};
 
 /**
  * Archive a Severity
  */
-export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, ThrowOnError>({
-    ...options,
-    url: '/incident_severities/{id}'
-}); };
+export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, ThrowOnError>({
+        ...options,
+        url: '/incident_severities/{id}'
+    });
+};
 
 /**
  * Update a Severity
  */
-export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, ThrowOnError>({
-    ...options,
-    url: '/incident_severities/{id}'
-}); };
+export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, ThrowOnError>({
+        ...options,
+        url: '/incident_severities/{id}'
+    });
+};
 
 /**
  * List Incident Tags
  */
-export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentTagsResponse, ListIncidentTagsError, ThrowOnError>({
-    ...options,
-    url: '/incident_tags'
-}); };
+export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentTagsResponse, ListIncidentTagsError, ThrowOnError>({
+        ...options,
+        url: '/incident_tags'
+    });
+};
 
 /**
  * Create an Incident Tag
  */
-export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentTagResponse, CreateIncidentTagError, ThrowOnError>({
-    ...options,
-    url: '/incident_tags'
-}); };
+export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentTagResponse, CreateIncidentTagError, ThrowOnError>({
+        ...options,
+        url: '/incident_tags'
+    });
+};
 
 /**
  * Get an Incident Tag
  */
-export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentTagResponse, GetIncidentTagError, ThrowOnError>({
-    ...options,
-    url: '/incident_tags/{id}'
-}); };
+export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentTagResponse, GetIncidentTagError, ThrowOnError>({
+        ...options,
+        url: '/incident_tags/{id}'
+    });
+};
 
 /**
  * Archive an Incident Tag
  */
-export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentTagResponse, ArchiveIncidentTagError, ThrowOnError>({
-    ...options,
-    url: '/incident_tags/{id}'
-}); };
+export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentTagResponse, ArchiveIncidentTagError, ThrowOnError>({
+        ...options,
+        url: '/incident_tags/{id}'
+    });
+};
 
 /**
  * Update an Incident Tag
  */
-export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentTagResponse, UpdateIncidentTagError, ThrowOnError>({
-    ...options,
-    url: '/incident_tags/{id}'
-}); };
+export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentTagResponse, UpdateIncidentTagError, ThrowOnError>({
+        ...options,
+        url: '/incident_tags/{id}'
+    });
+};
 
 /**
  * List Types
  */
-export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentTypesResponse, ListIncidentTypesError, ThrowOnError>({
-    ...options,
-    url: '/incident_types'
-}); };
+export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentTypesResponse, ListIncidentTypesError, ThrowOnError>({
+        ...options,
+        url: '/incident_types'
+    });
+};
 
 /**
  * Create an Incident Type
  */
-export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentTypeResponse, CreateIncidentTypeError, ThrowOnError>({
-    ...options,
-    url: '/incident_types'
-}); };
+export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentTypeResponse, CreateIncidentTypeError, ThrowOnError>({
+        ...options,
+        url: '/incident_types'
+    });
+};
 
 /**
  * Get a Severity
  */
-export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentTypeResponse, GetIncidentTypeError, ThrowOnError>({
-    ...options,
-    url: '/incident_types/{id}'
-}); };
+export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentTypeResponse, GetIncidentTypeError, ThrowOnError>({
+        ...options,
+        url: '/incident_types/{id}'
+    });
+};
 
 /**
  * Archive an Incident Type
  */
-export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, ThrowOnError>({
-    ...options,
-    url: '/incident_types/{id}'
-}); };
+export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, ThrowOnError>({
+        ...options,
+        url: '/incident_types/{id}'
+    });
+};
 
 /**
  * Update an Incident Type
  */
-export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentTypeResponse, UpdateIncidentTypeError, ThrowOnError>({
-    ...options,
-    url: '/incident_types/{id}'
-}); };
+export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentTypeResponse, UpdateIncidentTypeError, ThrowOnError>({
+        ...options,
+        url: '/incident_types/{id}'
+    });
+};
 
 /**
  * List Incidents
  */
-export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentsResponse, ListIncidentsError, ThrowOnError>({
-    ...options,
-    url: '/incidents'
-}); };
+export const listIncidents = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentsResponse, ListIncidentsError, ThrowOnError>({
+        ...options,
+        url: '/incidents'
+    });
+};
 
 /**
  * Create an Incident
  */
-export const createIncident = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentResponse, CreateIncidentError, ThrowOnError>({
-    ...options,
-    url: '/incidents'
-}); };
+export const createIncident = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentResponse, CreateIncidentError, ThrowOnError>({
+        ...options,
+        url: '/incidents'
+    });
+};
 
 /**
  * Get Incident
  */
-export const getIncident = <ThrowOnError extends boolean = false>(options: Options<GetIncidentData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentResponse, GetIncidentError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}'
-}); };
+export const getIncident = <ThrowOnError extends boolean = false>(options: Options<GetIncidentData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentResponse, GetIncidentError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}'
+    });
+};
 
 /**
  * Archive an Incident
  */
-export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIncidentResponse, ArchiveIncidentError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}'
-}); };
+export const archiveIncident = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIncidentResponse, ArchiveIncidentError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}'
+    });
+};
 
 /**
  * Update an Incident
  */
-export const updateIncident = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIncidentResponse, UpdateIncidentError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}'
-}); };
+export const updateIncident = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIncidentResponse, UpdateIncidentError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}'
+    });
+};
 
 /**
  * Get Debrief For Incident
  */
-export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentUserDebriefData, ThrowOnError>) => { return (options?.client ?? client).get<GetIncidentUserDebriefResponse, GetIncidentUserDebriefError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}/debrief'
-}); };
+export const getIncidentUserDebrief = <ThrowOnError extends boolean = false>(options: Options<GetIncidentUserDebriefData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIncidentUserDebriefResponse, GetIncidentUserDebriefError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}/debrief'
+    });
+};
 
 /**
  * List Events for Incident
  */
-export const listIncidentEvents = <ThrowOnError extends boolean = false>(options: Options<ListIncidentEventsData, ThrowOnError>) => { return (options?.client ?? client).get<ListIncidentEventsResponse, ListIncidentEventsError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}/events'
-}); };
+export const listIncidentEvents = <ThrowOnError extends boolean = false>(options: Options<ListIncidentEventsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIncidentEventsResponse, ListIncidentEventsError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}/events'
+    });
+};
 
 /**
  * Create an Incident Event
  */
-export const createIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentEventData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIncidentEventResponse, CreateIncidentEventError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}/events'
-}); };
+export const createIncidentEvent = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentEventData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIncidentEventResponse, CreateIncidentEventError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}/events'
+    });
+};
 
 /**
  * Get a Retrospective for an Incident
  */
-export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveForIncidentData, ThrowOnError>) => { return (options?.client ?? client).get<GetRetrospectiveForIncidentResponse, GetRetrospectiveForIncidentError, ThrowOnError>({
-    ...options,
-    url: '/incidents/{id}/retrospective'
-}); };
+export const getRetrospectiveForIncident = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveForIncidentData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetRetrospectiveForIncidentResponse, GetRetrospectiveForIncidentError, ThrowOnError>({
+        ...options,
+        url: '/incidents/{id}/retrospective'
+    });
+};
 
 /**
  * List Integrations
  */
-export const listIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationsData, ThrowOnError>) => { return (options?.client ?? client).get<ListIntegrationsResponse, ListIntegrationsError, ThrowOnError>({
-    ...options,
-    url: '/integrations'
-}); };
+export const listIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListIntegrationsResponse, ListIntegrationsError, ThrowOnError>({
+        ...options,
+        url: '/integrations'
+    });
+};
 
 /**
  * Create an Integration
  */
-export const createIntegration = <ThrowOnError extends boolean = false>(options: Options<CreateIntegrationData, ThrowOnError>) => { return (options?.client ?? client).post<CreateIntegrationResponse, CreateIntegrationError, ThrowOnError>({
-    ...options,
-    url: '/integrations'
-}); };
+export const createIntegration = <ThrowOnError extends boolean = false>(options: Options<CreateIntegrationData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateIntegrationResponse, CreateIntegrationError, ThrowOnError>({
+        ...options,
+        url: '/integrations'
+    });
+};
 
 /**
  * Get an Integration
  */
-export const getIntegration = <ThrowOnError extends boolean = false>(options: Options<GetIntegrationData, ThrowOnError>) => { return (options?.client ?? client).get<GetIntegrationResponse, GetIntegrationError, ThrowOnError>({
-    ...options,
-    url: '/integrations/{id}'
-}); };
+export const getIntegration = <ThrowOnError extends boolean = false>(options: Options<GetIntegrationData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetIntegrationResponse, GetIntegrationError, ThrowOnError>({
+        ...options,
+        url: '/integrations/{id}'
+    });
+};
 
 /**
  * Archive an Integration
  */
-export const archiveIntegration = <ThrowOnError extends boolean = false>(options: Options<ArchiveIntegrationData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveIntegrationResponse, ArchiveIntegrationError, ThrowOnError>({
-    ...options,
-    url: '/integrations/{id}'
-}); };
+export const archiveIntegration = <ThrowOnError extends boolean = false>(options: Options<ArchiveIntegrationData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveIntegrationResponse, ArchiveIntegrationError, ThrowOnError>({
+        ...options,
+        url: '/integrations/{id}'
+    });
+};
 
 /**
  * Update an Integration
  */
-export const updateIntegration = <ThrowOnError extends boolean = false>(options: Options<UpdateIntegrationData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateIntegrationResponse, UpdateIntegrationError, ThrowOnError>({
-    ...options,
-    url: '/integrations/{id}'
-}); };
+export const updateIntegration = <ThrowOnError extends boolean = false>(options: Options<UpdateIntegrationData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateIntegrationResponse, UpdateIntegrationError, ThrowOnError>({
+        ...options,
+        url: '/integrations/{id}'
+    });
+};
 
 /**
  * List Meeting Schedules
  */
-export const listMeetingSchedules = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSchedulesData, ThrowOnError>) => { return (options?.client ?? client).get<ListMeetingSchedulesResponse, ListMeetingSchedulesError, ThrowOnError>({
-    ...options,
-    url: '/meeting_schedules'
-}); };
+export const listMeetingSchedules = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSchedulesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListMeetingSchedulesResponse, ListMeetingSchedulesError, ThrowOnError>({
+        ...options,
+        url: '/meeting_schedules'
+    });
+};
 
 /**
  * Create a Meeting Schedule
  */
-export const createMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingScheduleData, ThrowOnError>) => { return (options?.client ?? client).post<CreateMeetingScheduleResponse, CreateMeetingScheduleError, ThrowOnError>({
-    ...options,
-    url: '/meeting_schedules'
-}); };
+export const createMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingScheduleData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateMeetingScheduleResponse, CreateMeetingScheduleError, ThrowOnError>({
+        ...options,
+        url: '/meeting_schedules'
+    });
+};
 
 /**
  * Get a Meeting Schedule
  */
-export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<GetMeetingScheduleData, ThrowOnError>) => { return (options?.client ?? client).get<GetMeetingScheduleResponse, GetMeetingScheduleError, ThrowOnError>({
-    ...options,
-    url: '/meeting_schedules/{id}'
-}); };
+export const getMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<GetMeetingScheduleData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetMeetingScheduleResponse, GetMeetingScheduleError, ThrowOnError>({
+        ...options,
+        url: '/meeting_schedules/{id}'
+    });
+};
 
 /**
  * Archive a Meeting Schedule
  */
-export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingScheduleData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, ThrowOnError>({
-    ...options,
-    url: '/meeting_schedules/{id}'
-}); };
+export const archiveMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingScheduleData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, ThrowOnError>({
+        ...options,
+        url: '/meeting_schedules/{id}'
+    });
+};
 
 /**
  * Update a Meeting Schedule
  */
-export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingScheduleData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, ThrowOnError>({
-    ...options,
-    url: '/meeting_schedules/{id}'
-}); };
+export const updateMeetingSchedule = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingScheduleData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, ThrowOnError>({
+        ...options,
+        url: '/meeting_schedules/{id}'
+    });
+};
 
 /**
  * List Sessions
  */
-export const listMeetingSessions = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSessionsData, ThrowOnError>) => { return (options?.client ?? client).get<ListMeetingSessionsResponse, ListMeetingSessionsError, ThrowOnError>({
-    ...options,
-    url: '/meeting_sessions'
-}); };
+export const listMeetingSessions = <ThrowOnError extends boolean = false>(options?: Options<ListMeetingSessionsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListMeetingSessionsResponse, ListMeetingSessionsError, ThrowOnError>({
+        ...options,
+        url: '/meeting_sessions'
+    });
+};
 
 /**
  * Create a Meeting Session
  */
-export const createMeetingSession = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingSessionData, ThrowOnError>) => { return (options?.client ?? client).post<CreateMeetingSessionResponse, CreateMeetingSessionError, ThrowOnError>({
-    ...options,
-    url: '/meeting_sessions'
-}); };
+export const createMeetingSession = <ThrowOnError extends boolean = false>(options: Options<CreateMeetingSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateMeetingSessionResponse, CreateMeetingSessionError, ThrowOnError>({
+        ...options,
+        url: '/meeting_sessions'
+    });
+};
 
 /**
  * Get a Meeting Session
  */
-export const getMeetingSession = <ThrowOnError extends boolean = false>(options: Options<GetMeetingSessionData, ThrowOnError>) => { return (options?.client ?? client).get<GetMeetingSessionResponse, GetMeetingSessionError, ThrowOnError>({
-    ...options,
-    url: '/meeting_sessions/{id}'
-}); };
+export const getMeetingSession = <ThrowOnError extends boolean = false>(options: Options<GetMeetingSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetMeetingSessionResponse, GetMeetingSessionError, ThrowOnError>({
+        ...options,
+        url: '/meeting_sessions/{id}'
+    });
+};
 
 /**
  * Archive a Meeting Session
  */
-export const archiveMeetingSession = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingSessionData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, ThrowOnError>({
-    ...options,
-    url: '/meeting_sessions/{id}'
-}); };
+export const archiveMeetingSession = <ThrowOnError extends boolean = false>(options: Options<ArchiveMeetingSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, ThrowOnError>({
+        ...options,
+        url: '/meeting_sessions/{id}'
+    });
+};
 
 /**
  * Update a Meeting Session
  */
-export const updateMeetingSession = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingSessionData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateMeetingSessionResponse, UpdateMeetingSessionError, ThrowOnError>({
-    ...options,
-    url: '/meeting_sessions/{id}'
-}); };
+export const updateMeetingSession = <ThrowOnError extends boolean = false>(options: Options<UpdateMeetingSessionData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateMeetingSessionResponse, UpdateMeetingSessionError, ThrowOnError>({
+        ...options,
+        url: '/meeting_sessions/{id}'
+    });
+};
 
 /**
  * Archive an Oncall Shift Annotation
  */
-export const archiveOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallShiftAnnotationData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveOncallShiftAnnotationResponse, ArchiveOncallShiftAnnotationError, ThrowOnError>({
-    ...options,
-    url: '/oncall/annotations/{id}'
-}); };
+export const archiveOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallShiftAnnotationData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveOncallShiftAnnotationResponse, ArchiveOncallShiftAnnotationError, ThrowOnError>({
+        ...options,
+        url: '/oncall/annotations/{id}'
+    });
+};
 
 /**
  * Update an Oncall Shift Annotation
  */
-export const updateOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallShiftAnnotationData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationError, ThrowOnError>({
-    ...options,
-    url: '/oncall/annotations/{id}'
-}); };
+export const updateOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallShiftAnnotationData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationError, ThrowOnError>({
+        ...options,
+        url: '/oncall/annotations/{id}'
+    });
+};
 
 /**
  * Create an Oncall Handover Template
  */
-export const createOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateOncallHandoverTemplateData, ThrowOnError>) => { return (options?.client ?? client).post<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, ThrowOnError>({
-    ...options,
-    url: '/oncall/handover_templates'
-}); };
+export const createOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateOncallHandoverTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, ThrowOnError>({
+        ...options,
+        url: '/oncall/handover_templates'
+    });
+};
 
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverTemplateData, ThrowOnError>) => { return (options?.client ?? client).get<GetOncallShiftHandoverTemplateResponse, GetOncallShiftHandoverTemplateError, ThrowOnError>({
-    ...options,
-    url: '/oncall/handover_templates/{id}'
-}); };
+export const getOncallShiftHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetOncallShiftHandoverTemplateResponse, GetOncallShiftHandoverTemplateError, ThrowOnError>({
+        ...options,
+        url: '/oncall/handover_templates/{id}'
+    });
+};
 
 /**
  * Archive an Oncall Handover Template
  */
-export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallHandoverTemplateData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, ThrowOnError>({
-    ...options,
-    url: '/oncall/handover_templates/{id}'
-}); };
+export const archiveOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveOncallHandoverTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, ThrowOnError>({
+        ...options,
+        url: '/oncall/handover_templates/{id}'
+    });
+};
 
 /**
  * Update an Oncall Handover Template
  */
-export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallHandoverTemplateData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, ThrowOnError>({
-    ...options,
-    url: '/oncall/handover_templates/{id}'
-}); };
+export const updateOncallHandoverTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateOncallHandoverTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, ThrowOnError>({
+        ...options,
+        url: '/oncall/handover_templates/{id}'
+    });
+};
 
 /**
  * List Oncall Rosters
  */
-export const listOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListOncallRostersData, ThrowOnError>) => { return (options?.client ?? client).get<ListOncallRostersResponse, ListOncallRostersError, ThrowOnError>({
-    ...options,
-    url: '/oncall/rosters'
-}); };
+export const listOncallRosters = <ThrowOnError extends boolean = false>(options?: Options<ListOncallRostersData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListOncallRostersResponse, ListOncallRostersError, ThrowOnError>({
+        ...options,
+        url: '/oncall/rosters'
+    });
+};
 
 /**
  * Get oncall roster
  */
-export const getOncallRoster = <ThrowOnError extends boolean = false>(options: Options<GetOncallRosterData, ThrowOnError>) => { return (options?.client ?? client).get<GetOncallRosterResponse, GetOncallRosterError, ThrowOnError>({
-    ...options,
-    url: '/oncall/rosters/{id}'
-}); };
+export const getOncallRoster = <ThrowOnError extends boolean = false>(options: Options<GetOncallRosterData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetOncallRosterResponse, GetOncallRosterError, ThrowOnError>({
+        ...options,
+        url: '/oncall/rosters/{id}'
+    });
+};
 
 /**
  * List Oncall Shifts
  */
-export const listOncallShifts = <ThrowOnError extends boolean = false>(options?: Options<ListOncallShiftsData, ThrowOnError>) => { return (options?.client ?? client).get<ListOncallShiftsResponse, ListOncallShiftsError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts'
-}); };
+export const listOncallShifts = <ThrowOnError extends boolean = false>(options?: Options<ListOncallShiftsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListOncallShiftsResponse, ListOncallShiftsError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts'
+    });
+};
 
 /**
  * Get an Oncall Shift
  */
-export const getOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftData, ThrowOnError>) => { return (options?.client ?? client).get<GetOncallShiftResponse, GetOncallShiftError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}'
-}); };
+export const getOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetOncallShiftResponse, GetOncallShiftError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}'
+    });
+};
 
 /**
  * List Alerts For an Oncall Shift
  */
-export const listOncallShiftAlerts = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftAlertsData, ThrowOnError>) => { return (options?.client ?? client).get<ListOncallShiftAlertsResponse, ListOncallShiftAlertsError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/alerts'
-}); };
+export const listOncallShiftAlerts = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftAlertsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListOncallShiftAlertsResponse, ListOncallShiftAlertsError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/alerts'
+    });
+};
 
 /**
  * List Annotations For an Oncall Shift
  */
-export const listOncallShiftAnnotations = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftAnnotationsData, ThrowOnError>) => { return (options?.client ?? client).get<ListOncallShiftAnnotationsResponse, ListOncallShiftAnnotationsError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/annotations'
-}); };
+export const listOncallShiftAnnotations = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftAnnotationsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListOncallShiftAnnotationsResponse, ListOncallShiftAnnotationsError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/annotations'
+    });
+};
 
 /**
  * Create an Oncall Shift Annotation
  */
-export const createOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<CreateOncallShiftAnnotationData, ThrowOnError>) => { return (options?.client ?? client).post<CreateOncallShiftAnnotationResponse, CreateOncallShiftAnnotationError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/annotations'
-}); };
+export const createOncallShiftAnnotation = <ThrowOnError extends boolean = false>(options: Options<CreateOncallShiftAnnotationData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateOncallShiftAnnotationResponse, CreateOncallShiftAnnotationError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/annotations'
+    });
+};
 
 /**
  * Get handover for a shift
  */
-export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverData, ThrowOnError>) => { return (options?.client ?? client).get<GetOncallShiftHandoverResponse, GetOncallShiftHandoverError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/handover'
-}); };
+export const getOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<GetOncallShiftHandoverData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetOncallShiftHandoverResponse, GetOncallShiftHandoverError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/handover'
+    });
+};
 
 /**
  * Send a Shift Handover
  */
-export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<SendOncallShiftHandoverData, ThrowOnError>) => { return (options?.client ?? client).post<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/handover'
-}); };
+export const sendOncallShiftHandover = <ThrowOnError extends boolean = false>(options: Options<SendOncallShiftHandoverData, ThrowOnError>) => {
+    return (options?.client ?? client).post<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/handover'
+    });
+};
 
 /**
  * List Incidents For an Oncall Shift
  */
-export const listOncallShiftIncidents = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftIncidentsData, ThrowOnError>) => { return (options?.client ?? client).get<ListOncallShiftIncidentsResponse, ListOncallShiftIncidentsError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/incidents'
-}); };
+export const listOncallShiftIncidents = <ThrowOnError extends boolean = false>(options: Options<ListOncallShiftIncidentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListOncallShiftIncidentsResponse, ListOncallShiftIncidentsError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/incidents'
+    });
+};
 
 /**
  * Get the following Oncall Shift
  */
-export const getNextOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetNextOncallShiftData, ThrowOnError>) => { return (options?.client ?? client).get<GetNextOncallShiftResponse, GetNextOncallShiftError, ThrowOnError>({
-    ...options,
-    url: '/oncall/shifts/{id}/next'
-}); };
+export const getNextOncallShift = <ThrowOnError extends boolean = false>(options: Options<GetNextOncallShiftData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetNextOncallShiftResponse, GetNextOncallShiftError, ThrowOnError>({
+        ...options,
+        url: '/oncall/shifts/{id}/next'
+    });
+};
 
 /**
  * Get user oncall details
  */
-export const getUserOncallDetails = <ThrowOnError extends boolean = false>(options?: Options<GetUserOncallDetailsData, ThrowOnError>) => { return (options?.client ?? client).get<GetUserOncallDetailsResponse, GetUserOncallDetailsError, ThrowOnError>({
-    ...options,
-    url: '/oncall/user'
-}); };
+export const getUserOncallDetails = <ThrowOnError extends boolean = false>(options?: Options<GetUserOncallDetailsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetUserOncallDetailsResponse, GetUserOncallDetailsError, ThrowOnError>({
+        ...options,
+        url: '/oncall/user'
+    });
+};
 
 /**
  * Archive a Retrospective Review
  */
-export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveReviewData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_reviews/{id}'
-}); };
+export const archiveRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveReviewData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_reviews/{id}'
+    });
+};
 
 /**
  * Update a Retrospective Review
  */
-export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveReviewData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_reviews/{id}'
-}); };
+export const updateRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveReviewData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_reviews/{id}'
+    });
+};
 
 /**
  * Get a Retrospective Template
  */
-export const listRetrospectiveTemplates = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveTemplatesData, ThrowOnError>) => { return (options?.client ?? client).get<ListRetrospectiveTemplatesResponse, ListRetrospectiveTemplatesError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_templates'
-}); };
+export const listRetrospectiveTemplates = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveTemplatesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListRetrospectiveTemplatesResponse, ListRetrospectiveTemplatesError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_templates'
+    });
+};
 
 /**
  * Create a Retrospective Template
  */
-export const createRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveTemplateData, ThrowOnError>) => { return (options?.client ?? client).post<CreateRetrospectiveTemplateResponse, CreateRetrospectiveTemplateError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_templates'
-}); };
+export const createRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateRetrospectiveTemplateResponse, CreateRetrospectiveTemplateError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_templates'
+    });
+};
 
 /**
  * Archive a Retrospective Template
  */
-export const archiveRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveTemplateData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_templates/{id}'
-}); };
+export const archiveRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<ArchiveRetrospectiveTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_templates/{id}'
+    });
+};
 
 /**
  * Update a Retrospective Template
  */
-export const updateRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveTemplateData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateError, ThrowOnError>({
-    ...options,
-    url: '/retrospective_templates/{id}'
-}); };
+export const updateRetrospectiveTemplate = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveTemplateData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateError, ThrowOnError>({
+        ...options,
+        url: '/retrospective_templates/{id}'
+    });
+};
 
 /**
  * List Retrospectives
  */
-export const listRetrospectives = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectivesData, ThrowOnError>) => { return (options?.client ?? client).get<ListRetrospectivesResponse, ListRetrospectivesError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives'
-}); };
+export const listRetrospectives = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectivesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListRetrospectivesResponse, ListRetrospectivesError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives'
+    });
+};
 
 /**
  * Get a Retrospective
  */
-export const getRetrospective = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveData, ThrowOnError>) => { return (options?.client ?? client).get<GetRetrospectiveResponse, GetRetrospectiveError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}'
-}); };
+export const getRetrospective = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetRetrospectiveResponse, GetRetrospectiveError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}'
+    });
+};
 
 /**
  * List Discussions For a Retrospective
  */
-export const listRetrospectiveDiscussions = <ThrowOnError extends boolean = false>(options: Options<ListRetrospectiveDiscussionsData, ThrowOnError>) => { return (options?.client ?? client).get<ListRetrospectiveDiscussionsResponse, ListRetrospectiveDiscussionsError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/discussions'
-}); };
+export const listRetrospectiveDiscussions = <ThrowOnError extends boolean = false>(options: Options<ListRetrospectiveDiscussionsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListRetrospectiveDiscussionsResponse, ListRetrospectiveDiscussionsError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/discussions'
+    });
+};
 
 /**
  * Create a Retrospective Discussion
  */
-export const createRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveDiscussionData, ThrowOnError>) => { return (options?.client ?? client).post<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/discussions'
-}); };
+export const createRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveDiscussionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/discussions'
+    });
+};
 
 /**
  * Get a Retrospective Discussion
  */
-export const getRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveDiscussionData, ThrowOnError>) => { return (options?.client ?? client).get<GetRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/discussions/{discussion_id}'
-}); };
+export const getRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<GetRetrospectiveDiscussionData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/discussions/{discussion_id}'
+    });
+};
 
 /**
  * Add a Reply to a Retrospective Discussion
  */
-export const addRetrospectiveDiscussionReply = <ThrowOnError extends boolean = false>(options: Options<AddRetrospectiveDiscussionReplyData, ThrowOnError>) => { return (options?.client ?? client).post<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/discussions/{discussion_id}'
-}); };
+export const addRetrospectiveDiscussionReply = <ThrowOnError extends boolean = false>(options: Options<AddRetrospectiveDiscussionReplyData, ThrowOnError>) => {
+    return (options?.client ?? client).post<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/discussions/{discussion_id}'
+    });
+};
 
 /**
  * Update a Retrospective Discussion
  */
-export const updateRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveDiscussionData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/discussions/{discussion_id}'
-}); };
+export const updateRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: Options<UpdateRetrospectiveDiscussionData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/discussions/{discussion_id}'
+    });
+};
 
 /**
  * List Retrospective Reviews
  */
-export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveReviewsData, ThrowOnError>) => { return (options?.client ?? client).get<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/reviews'
-}); };
+export const listRetrospectiveReviews = <ThrowOnError extends boolean = false>(options?: Options<ListRetrospectiveReviewsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/reviews'
+    });
+};
 
 /**
  * Create a Retrospective Review
  */
-export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveReviewData, ThrowOnError>) => { return (options?.client ?? client).post<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, ThrowOnError>({
-    ...options,
-    url: '/retrospectives/{id}/reviews'
-}); };
+export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(options: Options<CreateRetrospectiveReviewData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, ThrowOnError>({
+        ...options,
+        url: '/retrospectives/{id}/reviews'
+    });
+};
 
 /**
  * List Services
  */
-export const listServices = <ThrowOnError extends boolean = false>(options?: Options<ListServicesData, ThrowOnError>) => { return (options?.client ?? client).get<ListServicesResponse, ListServicesError, ThrowOnError>({
-    ...options,
-    url: '/services'
-}); };
+export const listServices = <ThrowOnError extends boolean = false>(options?: Options<ListServicesData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListServicesResponse, ListServicesError, ThrowOnError>({
+        ...options,
+        url: '/services'
+    });
+};
 
 /**
  * Create a Service
  */
-export const createService = <ThrowOnError extends boolean = false>(options: Options<CreateServiceData, ThrowOnError>) => { return (options?.client ?? client).post<CreateServiceResponse, CreateServiceError, ThrowOnError>({
-    ...options,
-    url: '/services'
-}); };
+export const createService = <ThrowOnError extends boolean = false>(options: Options<CreateServiceData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateServiceResponse, CreateServiceError, ThrowOnError>({
+        ...options,
+        url: '/services'
+    });
+};
 
 /**
  * Get a Service
  */
-export const getService = <ThrowOnError extends boolean = false>(options: Options<GetServiceData, ThrowOnError>) => { return (options?.client ?? client).get<GetServiceResponse, GetServiceError, ThrowOnError>({
-    ...options,
-    url: '/services/{id}'
-}); };
+export const getService = <ThrowOnError extends boolean = false>(options: Options<GetServiceData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetServiceResponse, GetServiceError, ThrowOnError>({
+        ...options,
+        url: '/services/{id}'
+    });
+};
 
 /**
  * Archive a Service
  */
-export const archiveService = <ThrowOnError extends boolean = false>(options: Options<ArchiveServiceData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveServiceResponse, ArchiveServiceError, ThrowOnError>({
-    ...options,
-    url: '/services/{id}'
-}); };
+export const archiveService = <ThrowOnError extends boolean = false>(options: Options<ArchiveServiceData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveServiceResponse, ArchiveServiceError, ThrowOnError>({
+        ...options,
+        url: '/services/{id}'
+    });
+};
 
 /**
  * Update a Service
  */
-export const updateService = <ThrowOnError extends boolean = false>(options: Options<UpdateServiceData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateServiceResponse, UpdateServiceError, ThrowOnError>({
-    ...options,
-    url: '/services/{id}'
-}); };
+export const updateService = <ThrowOnError extends boolean = false>(options: Options<UpdateServiceData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateServiceResponse, UpdateServiceError, ThrowOnError>({
+        ...options,
+        url: '/services/{id}'
+    });
+};
 
 /**
  * List Subscriptions
  */
-export const listSubscriptions = <ThrowOnError extends boolean = false>(options?: Options<unknown, ThrowOnError>) => { return (options?.client ?? client).get<ListSubscriptionsResponse, ListSubscriptionsError, ThrowOnError>({
-    ...options,
-    url: '/subscriptions'
-}); };
+export const listSubscriptions = <ThrowOnError extends boolean = false>(options?: Options<unknown, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListSubscriptionsResponse, ListSubscriptionsError, ThrowOnError>({
+        ...options,
+        url: '/subscriptions'
+    });
+};
 
 /**
  * Create a Subscription
  */
-export const createSubscription = <ThrowOnError extends boolean = false>(options: Options<CreateSubscriptionData, ThrowOnError>) => { return (options?.client ?? client).post<CreateSubscriptionResponse, CreateSubscriptionError, ThrowOnError>({
-    ...options,
-    url: '/subscriptions'
-}); };
+export const createSubscription = <ThrowOnError extends boolean = false>(options: Options<CreateSubscriptionData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateSubscriptionResponse, CreateSubscriptionError, ThrowOnError>({
+        ...options,
+        url: '/subscriptions'
+    });
+};
 
 /**
  * Get a Subscription
  */
-export const getSubscription = <ThrowOnError extends boolean = false>(options: Options<GetSubscriptionData, ThrowOnError>) => { return (options?.client ?? client).get<GetSubscriptionResponse, GetSubscriptionError, ThrowOnError>({
-    ...options,
-    url: '/subscriptions/{id}'
-}); };
+export const getSubscription = <ThrowOnError extends boolean = false>(options: Options<GetSubscriptionData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetSubscriptionResponse, GetSubscriptionError, ThrowOnError>({
+        ...options,
+        url: '/subscriptions/{id}'
+    });
+};
 
 /**
  * Archive a Subscription
  */
-export const archiveSubscription = <ThrowOnError extends boolean = false>(options: Options<ArchiveSubscriptionData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveSubscriptionResponse, ArchiveSubscriptionError, ThrowOnError>({
-    ...options,
-    url: '/subscriptions/{id}'
-}); };
+export const archiveSubscription = <ThrowOnError extends boolean = false>(options: Options<ArchiveSubscriptionData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveSubscriptionResponse, ArchiveSubscriptionError, ThrowOnError>({
+        ...options,
+        url: '/subscriptions/{id}'
+    });
+};
 
 /**
  * Update a Subscription
  */
-export const updateSubscription = <ThrowOnError extends boolean = false>(options: Options<UpdateSubscriptionData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateSubscriptionResponse, UpdateSubscriptionError, ThrowOnError>({
-    ...options,
-    url: '/subscriptions/{id}'
-}); };
+export const updateSubscription = <ThrowOnError extends boolean = false>(options: Options<UpdateSubscriptionData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateSubscriptionResponse, UpdateSubscriptionError, ThrowOnError>({
+        ...options,
+        url: '/subscriptions/{id}'
+    });
+};
 
 /**
  * List Tasks
  */
-export const listTasks = <ThrowOnError extends boolean = false>(options?: Options<ListTasksData, ThrowOnError>) => { return (options?.client ?? client).get<ListTasksResponse, ListTasksError, ThrowOnError>({
-    ...options,
-    url: '/tasks'
-}); };
+export const listTasks = <ThrowOnError extends boolean = false>(options?: Options<ListTasksData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListTasksResponse, ListTasksError, ThrowOnError>({
+        ...options,
+        url: '/tasks'
+    });
+};
 
 /**
  * Create a Task
  */
-export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => { return (options?.client ?? client).post<CreateTaskResponse, CreateTaskError, ThrowOnError>({
-    ...options,
-    url: '/tasks'
-}); };
+export const createTask = <ThrowOnError extends boolean = false>(options: Options<CreateTaskData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateTaskResponse, CreateTaskError, ThrowOnError>({
+        ...options,
+        url: '/tasks'
+    });
+};
 
 /**
  * Get Task
  */
-export const getTask = <ThrowOnError extends boolean = false>(options: Options<GetTaskData, ThrowOnError>) => { return (options?.client ?? client).get<GetTaskResponse, GetTaskError, ThrowOnError>({
-    ...options,
-    url: '/tasks/{id}'
-}); };
+export const getTask = <ThrowOnError extends boolean = false>(options: Options<GetTaskData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetTaskResponse, GetTaskError, ThrowOnError>({
+        ...options,
+        url: '/tasks/{id}'
+    });
+};
 
 /**
  * Archive a Task
  */
-export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveTaskResponse, ArchiveTaskError, ThrowOnError>({
-    ...options,
-    url: '/tasks/{id}'
-}); };
+export const archiveTask = <ThrowOnError extends boolean = false>(options: Options<ArchiveTaskData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveTaskResponse, ArchiveTaskError, ThrowOnError>({
+        ...options,
+        url: '/tasks/{id}'
+    });
+};
 
 /**
  * Update a Task
  */
-export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateTaskResponse, UpdateTaskError, ThrowOnError>({
-    ...options,
-    url: '/tasks/{id}'
-}); };
+export const updateTask = <ThrowOnError extends boolean = false>(options: Options<UpdateTaskData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateTaskResponse, UpdateTaskError, ThrowOnError>({
+        ...options,
+        url: '/tasks/{id}'
+    });
+};
 
 /**
  * List Teams
  */
-export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => { return (options?.client ?? client).get<ListTeamsResponse, ListTeamsError, ThrowOnError>({
-    ...options,
-    url: '/teams'
-}); };
+export const listTeams = <ThrowOnError extends boolean = false>(options?: Options<ListTeamsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListTeamsResponse, ListTeamsError, ThrowOnError>({
+        ...options,
+        url: '/teams'
+    });
+};
 
 /**
  * Create a Team
  */
-export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => { return (options?.client ?? client).post<CreateTeamResponse, CreateTeamError, ThrowOnError>({
-    ...options,
-    url: '/teams'
-}); };
+export const createTeam = <ThrowOnError extends boolean = false>(options: Options<CreateTeamData, ThrowOnError>) => {
+    return (options?.client ?? client).post<CreateTeamResponse, CreateTeamError, ThrowOnError>({
+        ...options,
+        url: '/teams'
+    });
+};
 
 /**
  * Get a Team
  */
-export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => { return (options?.client ?? client).get<GetTeamResponse, GetTeamError, ThrowOnError>({
-    ...options,
-    url: '/teams/{id}'
-}); };
+export const getTeam = <ThrowOnError extends boolean = false>(options: Options<GetTeamData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetTeamResponse, GetTeamError, ThrowOnError>({
+        ...options,
+        url: '/teams/{id}'
+    });
+};
 
 /**
  * Archive a Team
  */
-export const archiveTeam = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamData, ThrowOnError>) => { return (options?.client ?? client).delete<ArchiveTeamResponse, ArchiveTeamError, ThrowOnError>({
-    ...options,
-    url: '/teams/{id}'
-}); };
+export const archiveTeam = <ThrowOnError extends boolean = false>(options: Options<ArchiveTeamData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<ArchiveTeamResponse, ArchiveTeamError, ThrowOnError>({
+        ...options,
+        url: '/teams/{id}'
+    });
+};
 
 /**
  * Update a Team
  */
-export const updateTeams = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamsData, ThrowOnError>) => { return (options?.client ?? client).patch<UpdateTeamsResponse, UpdateTeamsError, ThrowOnError>({
-    ...options,
-    url: '/teams/{id}'
-}); };
+export const updateTeams = <ThrowOnError extends boolean = false>(options: Options<UpdateTeamsData, ThrowOnError>) => {
+    return (options?.client ?? client).patch<UpdateTeamsResponse, UpdateTeamsError, ThrowOnError>({
+        ...options,
+        url: '/teams/{id}'
+    });
+};
 
 /**
  * Get the Auth Session for the Current User
  */
-export const getCurrentUserSession = <ThrowOnError extends boolean = false>(options?: Options<unknown, ThrowOnError>) => { return (options?.client ?? client).get<GetCurrentUserSessionResponse, GetCurrentUserSessionError, ThrowOnError>({
-    ...options,
-    url: '/user_session'
-}); };
+export const getCurrentUserSession = <ThrowOnError extends boolean = false>(options?: Options<unknown, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetCurrentUserSessionResponse, GetCurrentUserSessionError, ThrowOnError>({
+        ...options,
+        url: '/user_session'
+    });
+};
 
 /**
  * List Assignments for the Current User
  */
-export const listUserAssignments = <ThrowOnError extends boolean = false>(options?: Options<ListUserAssignmentsData, ThrowOnError>) => { return (options?.client ?? client).get<ListUserAssignmentsResponse, ListUserAssignmentsError, ThrowOnError>({
-    ...options,
-    url: '/user_session/assignments'
-}); };
+export const listUserAssignments = <ThrowOnError extends boolean = false>(options?: Options<ListUserAssignmentsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListUserAssignmentsResponse, ListUserAssignmentsError, ThrowOnError>({
+        ...options,
+        url: '/user_session/assignments'
+    });
+};
 
 /**
  * List Notifications for the Current User
  */
-export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => { return (options?.client ?? client).get<ListUserNotificationsResponse, ListUserNotificationsError, ThrowOnError>({
-    ...options,
-    url: '/user_session/notifications'
-}); };
+export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListUserNotificationsResponse, ListUserNotificationsError, ThrowOnError>({
+        ...options,
+        url: '/user_session/notifications'
+    });
+};
 
 /**
  * Delete a Notification for the Current User
  */
-export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => { return (options?.client ?? client).delete<DeleteUserNotificationResponse, DeleteUserNotificationError, ThrowOnError>({
-    ...options,
-    url: '/user_session/notifications/{id}'
-}); };
+export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => {
+    return (options?.client ?? client).delete<DeleteUserNotificationResponse, DeleteUserNotificationError, ThrowOnError>({
+        ...options,
+        url: '/user_session/notifications/{id}'
+    });
+};
 
 /**
  * List Users
  */
-export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => { return (options?.client ?? client).get<ListUsersResponse, ListUsersError, ThrowOnError>({
-    ...options,
-    url: '/users'
-}); };
+export const listUsers = <ThrowOnError extends boolean = false>(options?: Options<ListUsersData, ThrowOnError>) => {
+    return (options?.client ?? client).get<ListUsersResponse, ListUsersError, ThrowOnError>({
+        ...options,
+        url: '/users'
+    });
+};
 
 /**
  * Get a User
  */
-export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => { return (options?.client ?? client).get<GetUserResponse, GetUserError, ThrowOnError>({
-    ...options,
-    url: '/users/{id}'
-}); };
+export const getUser = <ThrowOnError extends boolean = false>(options: Options<GetUserData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetUserResponse, GetUserError, ThrowOnError>({
+        ...options,
+        url: '/users/{id}'
+    });
+};

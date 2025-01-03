@@ -33,20 +33,23 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
 };
 
 export const listDebriefQuestionsQueryKey = (options?: Options<ListDebriefQuestionsData>) => [
-    createQueryKey("listDebriefQuestions", options)
+    createQueryKey('listDebriefQuestions', options)
 ];
 
-export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestionsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listDebriefQuestions({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefQuestionsQueryKey(options)
-}); };
+export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestionsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listDebriefQuestions({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefQuestionsQueryKey(options)
+    });
+};
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
     const params = queryKey[0];
@@ -78,2894 +81,3455 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
 };
 
 export const listDebriefQuestionsInfiniteQueryKey = (options?: Options<ListDebriefQuestionsData>): QueryKey<Options<ListDebriefQuestionsData>> => [
-    createQueryKey("listDebriefQuestions", options, true)
+    createQueryKey('listDebriefQuestions', options, true)
 ];
 
-export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => { return infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefQuestions({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefQuestionsInfiniteQueryKey(options)
-}); };
+export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => {
+    return infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefQuestions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefQuestionsInfiniteQueryKey(options)
+    });
+};
 
 export const createDebriefQuestionQueryKey = (options: Options<CreateDebriefQuestionData>) => [
-    createQueryKey("createDebriefQuestion", options)
+    createQueryKey('createDebriefQuestion', options)
 ];
 
-export const createDebriefQuestionOptions = (options: Options<CreateDebriefQuestionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createDebriefQuestion({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createDebriefQuestionQueryKey(options)
-}); };
+export const createDebriefQuestionOptions = (options: Options<CreateDebriefQuestionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createDebriefQuestion({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createDebriefQuestionQueryKey(options)
+    });
+};
 
-export const createDebriefQuestionMutation = (options?: Partial<Options<CreateDebriefQuestionData>>) => { const mutationOptions: MutationOptions<CreateDebriefQuestionResponse, CreateDebriefQuestionError, Options<CreateDebriefQuestionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createDebriefQuestion({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createDebriefQuestionMutation = (options?: Partial<Options<CreateDebriefQuestionData>>) => {
+    const mutationOptions: MutationOptions<CreateDebriefQuestionResponse, CreateDebriefQuestionError, Options<CreateDebriefQuestionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createDebriefQuestion({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getDebriefQuestionQueryKey = (options: Options<GetDebriefQuestionData>) => [
-    createQueryKey("getDebriefQuestion", options)
+    createQueryKey('getDebriefQuestion', options)
 ];
 
-export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getDebriefQuestion({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getDebriefQuestionQueryKey(options)
-}); };
+export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getDebriefQuestion({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getDebriefQuestionQueryKey(options)
+    });
+};
 
-export const archiveDebriefQuestionMutation = (options?: Partial<Options<ArchiveDebriefQuestionData>>) => { const mutationOptions: MutationOptions<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, Options<ArchiveDebriefQuestionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveDebriefQuestion({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveDebriefQuestionMutation = (options?: Partial<Options<ArchiveDebriefQuestionData>>) => {
+    const mutationOptions: MutationOptions<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, Options<ArchiveDebriefQuestionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveDebriefQuestion({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateDebriefQuestionMutation = (options?: Partial<Options<UpdateDebriefQuestionData>>) => { const mutationOptions: MutationOptions<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, Options<UpdateDebriefQuestionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateDebriefQuestion({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateDebriefQuestionMutation = (options?: Partial<Options<UpdateDebriefQuestionData>>) => {
+    const mutationOptions: MutationOptions<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, Options<UpdateDebriefQuestionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateDebriefQuestion({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const requestDocumentEditorSessionQueryKey = (options: Options<RequestDocumentEditorSessionData>) => [
-    createQueryKey("requestDocumentEditorSession", options)
+    createQueryKey('requestDocumentEditorSession', options)
 ];
 
-export const requestDocumentEditorSessionOptions = (options: Options<RequestDocumentEditorSessionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await requestDocumentEditorSession({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: requestDocumentEditorSessionQueryKey(options)
-}); };
+export const requestDocumentEditorSessionOptions = (options: Options<RequestDocumentEditorSessionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await requestDocumentEditorSession({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: requestDocumentEditorSessionQueryKey(options)
+    });
+};
 
-export const requestDocumentEditorSessionMutation = (options?: Partial<Options<RequestDocumentEditorSessionData>>) => { const mutationOptions: MutationOptions<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, Options<RequestDocumentEditorSessionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await requestDocumentEditorSession({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const requestDocumentEditorSessionMutation = (options?: Partial<Options<RequestDocumentEditorSessionData>>) => {
+    const mutationOptions: MutationOptions<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, Options<RequestDocumentEditorSessionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await requestDocumentEditorSession({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const verifyDocumentEditorSessionQueryKey = (options: Options<VerifyDocumentEditorSessionData>) => [
-    createQueryKey("verifyDocumentEditorSession", options)
+    createQueryKey('verifyDocumentEditorSession', options)
 ];
 
-export const verifyDocumentEditorSessionOptions = (options: Options<VerifyDocumentEditorSessionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await verifyDocumentEditorSession({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: verifyDocumentEditorSessionQueryKey(options)
-}); };
+export const verifyDocumentEditorSessionOptions = (options: Options<VerifyDocumentEditorSessionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await verifyDocumentEditorSession({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: verifyDocumentEditorSessionQueryKey(options)
+    });
+};
 
-export const verifyDocumentEditorSessionMutation = (options?: Partial<Options<VerifyDocumentEditorSessionData>>) => { const mutationOptions: MutationOptions<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, Options<VerifyDocumentEditorSessionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await verifyDocumentEditorSession({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const verifyDocumentEditorSessionMutation = (options?: Partial<Options<VerifyDocumentEditorSessionData>>) => {
+    const mutationOptions: MutationOptions<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, Options<VerifyDocumentEditorSessionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await verifyDocumentEditorSession({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listEnvironmentsQueryKey = (options?: Options<ListEnvironmentsData>) => [
-    createQueryKey("listEnvironments", options)
+    createQueryKey('listEnvironments', options)
 ];
 
-export const listEnvironmentsOptions = (options?: Options<ListEnvironmentsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listEnvironments({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listEnvironmentsQueryKey(options)
-}); };
+export const listEnvironmentsOptions = (options?: Options<ListEnvironmentsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listEnvironments({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listEnvironmentsQueryKey(options)
+    });
+};
 
 export const listEnvironmentsInfiniteQueryKey = (options?: Options<ListEnvironmentsData>): QueryKey<Options<ListEnvironmentsData>> => [
-    createQueryKey("listEnvironments", options, true)
+    createQueryKey('listEnvironments', options, true)
 ];
 
-export const listEnvironmentsInfiniteOptions = (options?: Options<ListEnvironmentsData>) => { return infiniteQueryOptions<ListEnvironmentsResponse, ListEnvironmentsError, InfiniteData<ListEnvironmentsResponse>, QueryKey<Options<ListEnvironmentsData>>, number | Pick<QueryKey<Options<ListEnvironmentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListEnvironmentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listEnvironments({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listEnvironmentsInfiniteQueryKey(options)
-}); };
+export const listEnvironmentsInfiniteOptions = (options?: Options<ListEnvironmentsData>) => {
+    return infiniteQueryOptions<ListEnvironmentsResponse, ListEnvironmentsError, InfiniteData<ListEnvironmentsResponse>, QueryKey<Options<ListEnvironmentsData>>, number | Pick<QueryKey<Options<ListEnvironmentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListEnvironmentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listEnvironments({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listEnvironmentsInfiniteQueryKey(options)
+    });
+};
 
 export const createEnvironmentQueryKey = (options: Options<CreateEnvironmentData>) => [
-    createQueryKey("createEnvironment", options)
+    createQueryKey('createEnvironment', options)
 ];
 
-export const createEnvironmentOptions = (options: Options<CreateEnvironmentData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createEnvironment({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createEnvironmentQueryKey(options)
-}); };
+export const createEnvironmentOptions = (options: Options<CreateEnvironmentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createEnvironment({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createEnvironmentQueryKey(options)
+    });
+};
 
-export const createEnvironmentMutation = (options?: Partial<Options<CreateEnvironmentData>>) => { const mutationOptions: MutationOptions<CreateEnvironmentResponse, CreateEnvironmentError, Options<CreateEnvironmentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createEnvironment({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createEnvironmentMutation = (options?: Partial<Options<CreateEnvironmentData>>) => {
+    const mutationOptions: MutationOptions<CreateEnvironmentResponse, CreateEnvironmentError, Options<CreateEnvironmentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createEnvironment({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getEnvironmentQueryKey = (options: Options<GetEnvironmentData>) => [
-    createQueryKey("getEnvironment", options)
+    createQueryKey('getEnvironment', options)
 ];
 
-export const getEnvironmentOptions = (options: Options<GetEnvironmentData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getEnvironment({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getEnvironmentQueryKey(options)
-}); };
+export const getEnvironmentOptions = (options: Options<GetEnvironmentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getEnvironment({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getEnvironmentQueryKey(options)
+    });
+};
 
-export const archiveEnvironmentMutation = (options?: Partial<Options<ArchiveEnvironmentData>>) => { const mutationOptions: MutationOptions<ArchiveEnvironmentResponse, ArchiveEnvironmentError, Options<ArchiveEnvironmentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveEnvironment({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveEnvironmentMutation = (options?: Partial<Options<ArchiveEnvironmentData>>) => {
+    const mutationOptions: MutationOptions<ArchiveEnvironmentResponse, ArchiveEnvironmentError, Options<ArchiveEnvironmentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveEnvironment({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateEnvironmentMutation = (options?: Partial<Options<UpdateEnvironmentData>>) => { const mutationOptions: MutationOptions<UpdateEnvironmentResponse, UpdateEnvironmentError, Options<UpdateEnvironmentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateEnvironment({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateEnvironmentMutation = (options?: Partial<Options<UpdateEnvironmentData>>) => {
+    const mutationOptions: MutationOptions<UpdateEnvironmentResponse, UpdateEnvironmentError, Options<UpdateEnvironmentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateEnvironment({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listFunctionalitiesQueryKey = (options?: Options<ListFunctionalitiesData>) => [
-    createQueryKey("listFunctionalities", options)
+    createQueryKey('listFunctionalities', options)
 ];
 
-export const listFunctionalitiesOptions = (options?: Options<ListFunctionalitiesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listFunctionalities({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listFunctionalitiesQueryKey(options)
-}); };
+export const listFunctionalitiesOptions = (options?: Options<ListFunctionalitiesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listFunctionalities({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listFunctionalitiesQueryKey(options)
+    });
+};
 
 export const listFunctionalitiesInfiniteQueryKey = (options?: Options<ListFunctionalitiesData>): QueryKey<Options<ListFunctionalitiesData>> => [
-    createQueryKey("listFunctionalities", options, true)
+    createQueryKey('listFunctionalities', options, true)
 ];
 
-export const listFunctionalitiesInfiniteOptions = (options?: Options<ListFunctionalitiesData>) => { return infiniteQueryOptions<ListFunctionalitiesResponse, ListFunctionalitiesError, InfiniteData<ListFunctionalitiesResponse>, QueryKey<Options<ListFunctionalitiesData>>, number | Pick<QueryKey<Options<ListFunctionalitiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListFunctionalitiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listFunctionalities({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listFunctionalitiesInfiniteQueryKey(options)
-}); };
+export const listFunctionalitiesInfiniteOptions = (options?: Options<ListFunctionalitiesData>) => {
+    return infiniteQueryOptions<ListFunctionalitiesResponse, ListFunctionalitiesError, InfiniteData<ListFunctionalitiesResponse>, QueryKey<Options<ListFunctionalitiesData>>, number | Pick<QueryKey<Options<ListFunctionalitiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListFunctionalitiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listFunctionalities({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listFunctionalitiesInfiniteQueryKey(options)
+    });
+};
 
 export const createFunctionalityQueryKey = (options: Options<CreateFunctionalityData>) => [
-    createQueryKey("createFunctionality", options)
+    createQueryKey('createFunctionality', options)
 ];
 
-export const createFunctionalityOptions = (options: Options<CreateFunctionalityData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createFunctionality({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createFunctionalityQueryKey(options)
-}); };
+export const createFunctionalityOptions = (options: Options<CreateFunctionalityData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createFunctionality({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createFunctionalityQueryKey(options)
+    });
+};
 
-export const createFunctionalityMutation = (options?: Partial<Options<CreateFunctionalityData>>) => { const mutationOptions: MutationOptions<CreateFunctionalityResponse, CreateFunctionalityError, Options<CreateFunctionalityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createFunctionality({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createFunctionalityMutation = (options?: Partial<Options<CreateFunctionalityData>>) => {
+    const mutationOptions: MutationOptions<CreateFunctionalityResponse, CreateFunctionalityError, Options<CreateFunctionalityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createFunctionality({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getFunctionalityQueryKey = (options: Options<GetFunctionalityData>) => [
-    createQueryKey("getFunctionality", options)
+    createQueryKey('getFunctionality', options)
 ];
 
-export const getFunctionalityOptions = (options: Options<GetFunctionalityData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getFunctionality({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getFunctionalityQueryKey(options)
-}); };
+export const getFunctionalityOptions = (options: Options<GetFunctionalityData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getFunctionality({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getFunctionalityQueryKey(options)
+    });
+};
 
-export const archiveFunctionalityMutation = (options?: Partial<Options<ArchiveFunctionalityData>>) => { const mutationOptions: MutationOptions<ArchiveFunctionalityResponse, ArchiveFunctionalityError, Options<ArchiveFunctionalityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveFunctionality({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveFunctionalityMutation = (options?: Partial<Options<ArchiveFunctionalityData>>) => {
+    const mutationOptions: MutationOptions<ArchiveFunctionalityResponse, ArchiveFunctionalityError, Options<ArchiveFunctionalityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveFunctionality({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateFunctionalityMutation = (options?: Partial<Options<UpdateFunctionalityData>>) => { const mutationOptions: MutationOptions<UpdateFunctionalityResponse, UpdateFunctionalityError, Options<UpdateFunctionalityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateFunctionality({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateFunctionalityMutation = (options?: Partial<Options<UpdateFunctionalityData>>) => {
+    const mutationOptions: MutationOptions<UpdateFunctionalityResponse, UpdateFunctionalityError, Options<UpdateFunctionalityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateFunctionality({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentDebriefQueryKey = (options: Options<GetIncidentDebriefData>) => [
-    createQueryKey("getIncidentDebrief", options)
+    createQueryKey('getIncidentDebrief', options)
 ];
 
-export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentDebrief({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentDebriefQueryKey(options)
-}); };
+export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentDebrief({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentDebriefQueryKey(options)
+    });
+};
 
-export const updateIncidentDebriefMutation = (options?: Partial<Options<UpdateIncidentDebriefData>>) => { const mutationOptions: MutationOptions<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, Options<UpdateIncidentDebriefData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentDebrief({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentDebriefMutation = (options?: Partial<Options<UpdateIncidentDebriefData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, Options<UpdateIncidentDebriefData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentDebrief({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listDebriefMessagesQueryKey = (options: Options<ListDebriefMessagesData>) => [
-    createQueryKey("listDebriefMessages", options)
+    createQueryKey('listDebriefMessages', options)
 ];
 
-export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listDebriefMessages({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefMessagesQueryKey(options)
-}); };
+export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listDebriefMessages({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefMessagesQueryKey(options)
+    });
+};
 
 export const listDebriefMessagesInfiniteQueryKey = (options: Options<ListDebriefMessagesData>): QueryKey<Options<ListDebriefMessagesData>> => [
-    createQueryKey("listDebriefMessages", options, true)
+    createQueryKey('listDebriefMessages', options, true)
 ];
 
-export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => { return infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefMessages({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefMessagesInfiniteQueryKey(options)
-}); };
+export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => {
+    return infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefMessages({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefMessagesInfiniteQueryKey(options)
+    });
+};
 
 export const addIncidentDebriefUserMessageQueryKey = (options: Options<AddIncidentDebriefUserMessageData>) => [
-    createQueryKey("addIncidentDebriefUserMessage", options)
+    createQueryKey('addIncidentDebriefUserMessage', options)
 ];
 
-export const addIncidentDebriefUserMessageOptions = (options: Options<AddIncidentDebriefUserMessageData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await addIncidentDebriefUserMessage({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: addIncidentDebriefUserMessageQueryKey(options)
-}); };
+export const addIncidentDebriefUserMessageOptions = (options: Options<AddIncidentDebriefUserMessageData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await addIncidentDebriefUserMessage({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: addIncidentDebriefUserMessageQueryKey(options)
+    });
+};
 
-export const addIncidentDebriefUserMessageMutation = (options?: Partial<Options<AddIncidentDebriefUserMessageData>>) => { const mutationOptions: MutationOptions<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, Options<AddIncidentDebriefUserMessageData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await addIncidentDebriefUserMessage({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const addIncidentDebriefUserMessageMutation = (options?: Partial<Options<AddIncidentDebriefUserMessageData>>) => {
+    const mutationOptions: MutationOptions<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, Options<AddIncidentDebriefUserMessageData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await addIncidentDebriefUserMessage({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listDebriefSuggestionsQueryKey = (options: Options<ListDebriefSuggestionsData>) => [
-    createQueryKey("listDebriefSuggestions", options)
+    createQueryKey('listDebriefSuggestions', options)
 ];
 
-export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSuggestionsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listDebriefSuggestions({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefSuggestionsQueryKey(options)
-}); };
+export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSuggestionsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listDebriefSuggestions({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefSuggestionsQueryKey(options)
+    });
+};
 
 export const listDebriefSuggestionsInfiniteQueryKey = (options: Options<ListDebriefSuggestionsData>): QueryKey<Options<ListDebriefSuggestionsData>> => [
-    createQueryKey("listDebriefSuggestions", options, true)
+    createQueryKey('listDebriefSuggestions', options, true)
 ];
 
-export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => { return infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listDebriefSuggestions({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
-}); };
+export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => {
+    return infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listDebriefSuggestions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
+    });
+};
 
-export const archiveIncidentEventMutation = (options?: Partial<Options<ArchiveIncidentEventData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentEventResponse, ArchiveIncidentEventError, Options<ArchiveIncidentEventData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentEvent({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentEventMutation = (options?: Partial<Options<ArchiveIncidentEventData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentEventResponse, ArchiveIncidentEventError, Options<ArchiveIncidentEventData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentEvent({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentEventMutation = (options?: Partial<Options<UpdateIncidentEventData>>) => { const mutationOptions: MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentEvent({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentEventMutation = (options?: Partial<Options<UpdateIncidentEventData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentEvent({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentFieldsQueryKey = (options?: Options<ListIncidentFieldsData>) => [
-    createQueryKey("listIncidentFields", options)
+    createQueryKey('listIncidentFields', options)
 ];
 
-export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentFields({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentFieldsQueryKey(options)
-}); };
+export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentFields({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentFieldsQueryKey(options)
+    });
+};
 
 export const listIncidentFieldsInfiniteQueryKey = (options?: Options<ListIncidentFieldsData>): QueryKey<Options<ListIncidentFieldsData>> => [
-    createQueryKey("listIncidentFields", options, true)
+    createQueryKey('listIncidentFields', options, true)
 ];
 
-export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => { return infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentFields({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentFieldsInfiniteQueryKey(options)
-}); };
+export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => {
+    return infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentFields({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentFieldsInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentFieldQueryKey = (options: Options<CreateIncidentFieldData>) => [
-    createQueryKey("createIncidentField", options)
+    createQueryKey('createIncidentField', options)
 ];
 
-export const createIncidentFieldOptions = (options: Options<CreateIncidentFieldData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentField({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentFieldQueryKey(options)
-}); };
+export const createIncidentFieldOptions = (options: Options<CreateIncidentFieldData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentField({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentFieldQueryKey(options)
+    });
+};
 
-export const createIncidentFieldMutation = (options?: Partial<Options<CreateIncidentFieldData>>) => { const mutationOptions: MutationOptions<CreateIncidentFieldResponse, CreateIncidentFieldError, Options<CreateIncidentFieldData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentField({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentFieldMutation = (options?: Partial<Options<CreateIncidentFieldData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentFieldResponse, CreateIncidentFieldError, Options<CreateIncidentFieldData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentField({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentFieldQueryKey = (options: Options<GetIncidentFieldData>) => [
-    createQueryKey("getIncidentField", options)
+    createQueryKey('getIncidentField', options)
 ];
 
-export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentField({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentFieldQueryKey(options)
-}); };
+export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentField({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentFieldQueryKey(options)
+    });
+};
 
-export const archiveIncidentFieldMutation = (options?: Partial<Options<ArchiveIncidentFieldData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, Options<ArchiveIncidentFieldData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentField({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentFieldMutation = (options?: Partial<Options<ArchiveIncidentFieldData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, Options<ArchiveIncidentFieldData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentField({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentFieldMutation = (options?: Partial<Options<UpdateIncidentFieldData>>) => { const mutationOptions: MutationOptions<UpdateIncidentFieldResponse, UpdateIncidentFieldError, Options<UpdateIncidentFieldData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentField({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentFieldMutation = (options?: Partial<Options<UpdateIncidentFieldData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentFieldResponse, UpdateIncidentFieldError, Options<UpdateIncidentFieldData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentField({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentRolesQueryKey = (options?: Options<ListIncidentRolesData>) => [
-    createQueryKey("listIncidentRoles", options)
+    createQueryKey('listIncidentRoles', options)
 ];
 
-export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentRoles({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentRolesQueryKey(options)
-}); };
+export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentRoles({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentRolesQueryKey(options)
+    });
+};
 
 export const listIncidentRolesInfiniteQueryKey = (options?: Options<ListIncidentRolesData>): QueryKey<Options<ListIncidentRolesData>> => [
-    createQueryKey("listIncidentRoles", options, true)
+    createQueryKey('listIncidentRoles', options, true)
 ];
 
-export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => { return infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentRoles({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentRolesInfiniteQueryKey(options)
-}); };
+export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => {
+    return infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentRoles({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentRolesInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentRoleQueryKey = (options: Options<CreateIncidentRoleData>) => [
-    createQueryKey("createIncidentRole", options)
+    createQueryKey('createIncidentRole', options)
 ];
 
-export const createIncidentRoleOptions = (options: Options<CreateIncidentRoleData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentRole({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentRoleQueryKey(options)
-}); };
+export const createIncidentRoleOptions = (options: Options<CreateIncidentRoleData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentRole({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentRoleQueryKey(options)
+    });
+};
 
-export const createIncidentRoleMutation = (options?: Partial<Options<CreateIncidentRoleData>>) => { const mutationOptions: MutationOptions<CreateIncidentRoleResponse, CreateIncidentRoleError, Options<CreateIncidentRoleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentRole({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentRoleMutation = (options?: Partial<Options<CreateIncidentRoleData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentRoleResponse, CreateIncidentRoleError, Options<CreateIncidentRoleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentRole({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentRoleQueryKey = (options: Options<GetIncidentRoleData>) => [
-    createQueryKey("getIncidentRole", options)
+    createQueryKey('getIncidentRole', options)
 ];
 
-export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentRole({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentRoleQueryKey(options)
-}); };
+export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentRole({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentRoleQueryKey(options)
+    });
+};
 
-export const archiveIncidentRoleMutation = (options?: Partial<Options<ArchiveIncidentRoleData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, Options<ArchiveIncidentRoleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentRole({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentRoleMutation = (options?: Partial<Options<ArchiveIncidentRoleData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, Options<ArchiveIncidentRoleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentRole({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentRoleMutation = (options?: Partial<Options<UpdateIncidentRoleData>>) => { const mutationOptions: MutationOptions<UpdateIncidentRoleResponse, UpdateIncidentRoleError, Options<UpdateIncidentRoleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentRole({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentRoleMutation = (options?: Partial<Options<UpdateIncidentRoleData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentRoleResponse, UpdateIncidentRoleError, Options<UpdateIncidentRoleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentRole({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentSeveritiesQueryKey = (options?: Options<ListIncidentSeveritiesData>) => [
-    createQueryKey("listIncidentSeverities", options)
+    createQueryKey('listIncidentSeverities', options)
 ];
 
-export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeveritiesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentSeverities({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentSeveritiesQueryKey(options)
-}); };
+export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeveritiesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentSeverities({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentSeveritiesQueryKey(options)
+    });
+};
 
 export const listIncidentSeveritiesInfiniteQueryKey = (options?: Options<ListIncidentSeveritiesData>): QueryKey<Options<ListIncidentSeveritiesData>> => [
-    createQueryKey("listIncidentSeverities", options, true)
+    createQueryKey('listIncidentSeverities', options, true)
 ];
 
-export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => { return infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentSeverities({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
-}); };
+export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => {
+    return infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentSeverities({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentSeveritiesInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentSeverityQueryKey = (options: Options<CreateIncidentSeverityData>) => [
-    createQueryKey("createIncidentSeverity", options)
+    createQueryKey('createIncidentSeverity', options)
 ];
 
-export const createIncidentSeverityOptions = (options: Options<CreateIncidentSeverityData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentSeverity({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentSeverityQueryKey(options)
-}); };
+export const createIncidentSeverityOptions = (options: Options<CreateIncidentSeverityData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentSeverity({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentSeverityQueryKey(options)
+    });
+};
 
-export const createIncidentSeverityMutation = (options?: Partial<Options<CreateIncidentSeverityData>>) => { const mutationOptions: MutationOptions<CreateIncidentSeverityResponse, CreateIncidentSeverityError, Options<CreateIncidentSeverityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentSeverity({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentSeverityMutation = (options?: Partial<Options<CreateIncidentSeverityData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentSeverityResponse, CreateIncidentSeverityError, Options<CreateIncidentSeverityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentSeverity({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentSeverityQueryKey = (options: Options<GetIncidentSeverityData>) => [
-    createQueryKey("getIncidentSeverity", options)
+    createQueryKey('getIncidentSeverity', options)
 ];
 
-export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentSeverity({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentSeverityQueryKey(options)
-}); };
+export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentSeverity({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentSeverityQueryKey(options)
+    });
+};
 
-export const archiveIncidentSeverityMutation = (options?: Partial<Options<ArchiveIncidentSeverityData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, Options<ArchiveIncidentSeverityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentSeverity({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentSeverityMutation = (options?: Partial<Options<ArchiveIncidentSeverityData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, Options<ArchiveIncidentSeverityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentSeverity({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentSeverityMutation = (options?: Partial<Options<UpdateIncidentSeverityData>>) => { const mutationOptions: MutationOptions<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, Options<UpdateIncidentSeverityData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentSeverity({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentSeverityMutation = (options?: Partial<Options<UpdateIncidentSeverityData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, Options<UpdateIncidentSeverityData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentSeverity({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentTagsQueryKey = (options?: Options<ListIncidentTagsData>) => [
-    createQueryKey("listIncidentTags", options)
+    createQueryKey('listIncidentTags', options)
 ];
 
-export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentTags({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTagsQueryKey(options)
-}); };
+export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentTags({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTagsQueryKey(options)
+    });
+};
 
 export const listIncidentTagsInfiniteQueryKey = (options?: Options<ListIncidentTagsData>): QueryKey<Options<ListIncidentTagsData>> => [
-    createQueryKey("listIncidentTags", options, true)
+    createQueryKey('listIncidentTags', options, true)
 ];
 
-export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => { return infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentTags({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTagsInfiniteQueryKey(options)
-}); };
+export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => {
+    return infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentTags({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTagsInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentTagQueryKey = (options: Options<CreateIncidentTagData>) => [
-    createQueryKey("createIncidentTag", options)
+    createQueryKey('createIncidentTag', options)
 ];
 
-export const createIncidentTagOptions = (options: Options<CreateIncidentTagData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentTag({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentTagQueryKey(options)
-}); };
+export const createIncidentTagOptions = (options: Options<CreateIncidentTagData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentTag({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentTagQueryKey(options)
+    });
+};
 
-export const createIncidentTagMutation = (options?: Partial<Options<CreateIncidentTagData>>) => { const mutationOptions: MutationOptions<CreateIncidentTagResponse, CreateIncidentTagError, Options<CreateIncidentTagData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentTag({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentTagMutation = (options?: Partial<Options<CreateIncidentTagData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentTagResponse, CreateIncidentTagError, Options<CreateIncidentTagData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentTag({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentTagQueryKey = (options: Options<GetIncidentTagData>) => [
-    createQueryKey("getIncidentTag", options)
+    createQueryKey('getIncidentTag', options)
 ];
 
-export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentTag({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentTagQueryKey(options)
-}); };
+export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentTag({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentTagQueryKey(options)
+    });
+};
 
-export const archiveIncidentTagMutation = (options?: Partial<Options<ArchiveIncidentTagData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentTagResponse, ArchiveIncidentTagError, Options<ArchiveIncidentTagData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentTag({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentTagMutation = (options?: Partial<Options<ArchiveIncidentTagData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentTagResponse, ArchiveIncidentTagError, Options<ArchiveIncidentTagData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentTag({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentTagMutation = (options?: Partial<Options<UpdateIncidentTagData>>) => { const mutationOptions: MutationOptions<UpdateIncidentTagResponse, UpdateIncidentTagError, Options<UpdateIncidentTagData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentTag({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentTagMutation = (options?: Partial<Options<UpdateIncidentTagData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentTagResponse, UpdateIncidentTagError, Options<UpdateIncidentTagData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentTag({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentTypesQueryKey = (options?: Options<ListIncidentTypesData>) => [
-    createQueryKey("listIncidentTypes", options)
+    createQueryKey('listIncidentTypes', options)
 ];
 
-export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentTypes({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTypesQueryKey(options)
-}); };
+export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentTypes({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTypesQueryKey(options)
+    });
+};
 
 export const listIncidentTypesInfiniteQueryKey = (options?: Options<ListIncidentTypesData>): QueryKey<Options<ListIncidentTypesData>> => [
-    createQueryKey("listIncidentTypes", options, true)
+    createQueryKey('listIncidentTypes', options, true)
 ];
 
-export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => { return infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentTypes({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentTypesInfiniteQueryKey(options)
-}); };
+export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => {
+    return infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidentTypes({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentTypesInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentTypeQueryKey = (options: Options<CreateIncidentTypeData>) => [
-    createQueryKey("createIncidentType", options)
+    createQueryKey('createIncidentType', options)
 ];
 
-export const createIncidentTypeOptions = (options: Options<CreateIncidentTypeData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentType({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentTypeQueryKey(options)
-}); };
+export const createIncidentTypeOptions = (options: Options<CreateIncidentTypeData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentType({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentTypeQueryKey(options)
+    });
+};
 
-export const createIncidentTypeMutation = (options?: Partial<Options<CreateIncidentTypeData>>) => { const mutationOptions: MutationOptions<CreateIncidentTypeResponse, CreateIncidentTypeError, Options<CreateIncidentTypeData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentType({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentTypeMutation = (options?: Partial<Options<CreateIncidentTypeData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentTypeResponse, CreateIncidentTypeError, Options<CreateIncidentTypeData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentType({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentTypeQueryKey = (options: Options<GetIncidentTypeData>) => [
-    createQueryKey("getIncidentType", options)
+    createQueryKey('getIncidentType', options)
 ];
 
-export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentType({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentTypeQueryKey(options)
-}); };
+export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentType({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentTypeQueryKey(options)
+    });
+};
 
-export const archiveIncidentTypeMutation = (options?: Partial<Options<ArchiveIncidentTypeData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, Options<ArchiveIncidentTypeData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncidentType({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentTypeMutation = (options?: Partial<Options<ArchiveIncidentTypeData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, Options<ArchiveIncidentTypeData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentType({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentTypeMutation = (options?: Partial<Options<UpdateIncidentTypeData>>) => { const mutationOptions: MutationOptions<UpdateIncidentTypeResponse, UpdateIncidentTypeError, Options<UpdateIncidentTypeData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncidentType({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentTypeMutation = (options?: Partial<Options<UpdateIncidentTypeData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentTypeResponse, UpdateIncidentTypeError, Options<UpdateIncidentTypeData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentType({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listIncidentsQueryKey = (options?: Options<ListIncidentsData>) => [
-    createQueryKey("listIncidents", options)
+    createQueryKey('listIncidents', options)
 ];
 
-export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidents({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentsQueryKey(options)
-}); };
+export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentsQueryKey(options)
+    });
+};
 
 export const listIncidentsInfiniteQueryKey = (options?: Options<ListIncidentsData>): QueryKey<Options<ListIncidentsData>> => [
-    createQueryKey("listIncidents", options, true)
+    createQueryKey('listIncidents', options, true)
 ];
 
-export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => { return infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidents({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentsInfiniteQueryKey(options)
-}); };
+export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => {
+    return infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIncidents({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentsInfiniteQueryKey(options)
+    });
+};
 
 export const createIncidentQueryKey = (options: Options<CreateIncidentData>) => [
-    createQueryKey("createIncident", options)
+    createQueryKey('createIncident', options)
 ];
 
-export const createIncidentOptions = (options: Options<CreateIncidentData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncident({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentQueryKey(options)
-}); };
+export const createIncidentOptions = (options: Options<CreateIncidentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncident({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentQueryKey(options)
+    });
+};
 
-export const createIncidentMutation = (options?: Partial<Options<CreateIncidentData>>) => { const mutationOptions: MutationOptions<CreateIncidentResponse, CreateIncidentError, Options<CreateIncidentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncident({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentMutation = (options?: Partial<Options<CreateIncidentData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentResponse, CreateIncidentError, Options<CreateIncidentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncident({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentQueryKey = (options: Options<GetIncidentData>) => [
-    createQueryKey("getIncident", options)
+    createQueryKey('getIncident', options)
 ];
 
-export const getIncidentOptions = (options: Options<GetIncidentData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncident({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentQueryKey(options)
-}); };
+export const getIncidentOptions = (options: Options<GetIncidentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncident({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentQueryKey(options)
+    });
+};
 
-export const archiveIncidentMutation = (options?: Partial<Options<ArchiveIncidentData>>) => { const mutationOptions: MutationOptions<ArchiveIncidentResponse, ArchiveIncidentError, Options<ArchiveIncidentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIncident({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIncidentMutation = (options?: Partial<Options<ArchiveIncidentData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentResponse, ArchiveIncidentError, Options<ArchiveIncidentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncident({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIncidentMutation = (options?: Partial<Options<UpdateIncidentData>>) => { const mutationOptions: MutationOptions<UpdateIncidentResponse, UpdateIncidentError, Options<UpdateIncidentData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIncident({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIncidentMutation = (options?: Partial<Options<UpdateIncidentData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentResponse, UpdateIncidentError, Options<UpdateIncidentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncident({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIncidentUserDebriefQueryKey = (options: Options<GetIncidentUserDebriefData>) => [
-    createQueryKey("getIncidentUserDebrief", options)
+    createQueryKey('getIncidentUserDebrief', options)
 ];
 
-export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDebriefData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIncidentUserDebrief({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIncidentUserDebriefQueryKey(options)
-}); };
+export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDebriefData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIncidentUserDebrief({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIncidentUserDebriefQueryKey(options)
+    });
+};
 
 export const listIncidentEventsQueryKey = (options: Options<ListIncidentEventsData>) => [
-    createQueryKey("listIncidentEvents", options)
+    createQueryKey('listIncidentEvents', options)
 ];
 
-export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIncidentEvents({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentEventsQueryKey(options)
-}); };
+export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIncidentEvents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIncidentEventsQueryKey(options)
+    });
+};
 
 export const createIncidentEventQueryKey = (options: Options<CreateIncidentEventData>) => [
-    createQueryKey("createIncidentEvent", options)
+    createQueryKey('createIncidentEvent', options)
 ];
 
-export const createIncidentEventOptions = (options: Options<CreateIncidentEventData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIncidentEvent({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIncidentEventQueryKey(options)
-}); };
+export const createIncidentEventOptions = (options: Options<CreateIncidentEventData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIncidentEvent({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIncidentEventQueryKey(options)
+    });
+};
 
-export const createIncidentEventMutation = (options?: Partial<Options<CreateIncidentEventData>>) => { const mutationOptions: MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIncidentEvent({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIncidentEventMutation = (options?: Partial<Options<CreateIncidentEventData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIncidentEvent({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getRetrospectiveForIncidentQueryKey = (options: Options<GetRetrospectiveForIncidentData>) => [
-    createQueryKey("getRetrospectiveForIncident", options)
+    createQueryKey('getRetrospectiveForIncident', options)
 ];
 
-export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospectiveForIncidentData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getRetrospectiveForIncident({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getRetrospectiveForIncidentQueryKey(options)
-}); };
+export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospectiveForIncidentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getRetrospectiveForIncident({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getRetrospectiveForIncidentQueryKey(options)
+    });
+};
 
 export const listIntegrationsQueryKey = (options?: Options<ListIntegrationsData>) => [
-    createQueryKey("listIntegrations", options)
+    createQueryKey('listIntegrations', options)
 ];
 
-export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listIntegrations({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIntegrationsQueryKey(options)
-}); };
+export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listIntegrations({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIntegrationsQueryKey(options)
+    });
+};
 
 export const listIntegrationsInfiniteQueryKey = (options?: Options<ListIntegrationsData>): QueryKey<Options<ListIntegrationsData>> => [
-    createQueryKey("listIntegrations", options, true)
+    createQueryKey('listIntegrations', options, true)
 ];
 
-export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegrationsData>) => { return infiniteQueryOptions<ListIntegrationsResponse, ListIntegrationsError, InfiniteData<ListIntegrationsResponse>, QueryKey<Options<ListIntegrationsData>>, number | Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIntegrations({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIntegrationsInfiniteQueryKey(options)
-}); };
+export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegrationsData>) => {
+    return infiniteQueryOptions<ListIntegrationsResponse, ListIntegrationsError, InfiniteData<ListIntegrationsResponse>, QueryKey<Options<ListIntegrationsData>>, number | Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listIntegrations({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listIntegrationsInfiniteQueryKey(options)
+    });
+};
 
 export const createIntegrationQueryKey = (options: Options<CreateIntegrationData>) => [
-    createQueryKey("createIntegration", options)
+    createQueryKey('createIntegration', options)
 ];
 
-export const createIntegrationOptions = (options: Options<CreateIntegrationData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createIntegration({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createIntegrationQueryKey(options)
-}); };
+export const createIntegrationOptions = (options: Options<CreateIntegrationData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createIntegration({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createIntegrationQueryKey(options)
+    });
+};
 
-export const createIntegrationMutation = (options?: Partial<Options<CreateIntegrationData>>) => { const mutationOptions: MutationOptions<CreateIntegrationResponse, CreateIntegrationError, Options<CreateIntegrationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createIntegration({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createIntegrationMutation = (options?: Partial<Options<CreateIntegrationData>>) => {
+    const mutationOptions: MutationOptions<CreateIntegrationResponse, CreateIntegrationError, Options<CreateIntegrationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createIntegration({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getIntegrationQueryKey = (options: Options<GetIntegrationData>) => [
-    createQueryKey("getIntegration", options)
+    createQueryKey('getIntegration', options)
 ];
 
-export const getIntegrationOptions = (options: Options<GetIntegrationData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getIntegration({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getIntegrationQueryKey(options)
-}); };
+export const getIntegrationOptions = (options: Options<GetIntegrationData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getIntegration({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getIntegrationQueryKey(options)
+    });
+};
 
-export const archiveIntegrationMutation = (options?: Partial<Options<ArchiveIntegrationData>>) => { const mutationOptions: MutationOptions<ArchiveIntegrationResponse, ArchiveIntegrationError, Options<ArchiveIntegrationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveIntegration({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveIntegrationMutation = (options?: Partial<Options<ArchiveIntegrationData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIntegrationResponse, ArchiveIntegrationError, Options<ArchiveIntegrationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIntegration({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateIntegrationMutation = (options?: Partial<Options<UpdateIntegrationData>>) => { const mutationOptions: MutationOptions<UpdateIntegrationResponse, UpdateIntegrationError, Options<UpdateIntegrationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateIntegration({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateIntegrationMutation = (options?: Partial<Options<UpdateIntegrationData>>) => {
+    const mutationOptions: MutationOptions<UpdateIntegrationResponse, UpdateIntegrationError, Options<UpdateIntegrationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIntegration({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listMeetingSchedulesQueryKey = (options?: Options<ListMeetingSchedulesData>) => [
-    createQueryKey("listMeetingSchedules", options)
+    createQueryKey('listMeetingSchedules', options)
 ];
 
-export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedulesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listMeetingSchedules({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSchedulesQueryKey(options)
-}); };
+export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedulesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listMeetingSchedules({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSchedulesQueryKey(options)
+    });
+};
 
 export const listMeetingSchedulesInfiniteQueryKey = (options?: Options<ListMeetingSchedulesData>): QueryKey<Options<ListMeetingSchedulesData>> => [
-    createQueryKey("listMeetingSchedules", options, true)
+    createQueryKey('listMeetingSchedules', options, true)
 ];
 
-export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => { return infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listMeetingSchedules({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSchedulesInfiniteQueryKey(options)
-}); };
+export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => {
+    return infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listMeetingSchedules({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSchedulesInfiniteQueryKey(options)
+    });
+};
 
 export const createMeetingScheduleQueryKey = (options: Options<CreateMeetingScheduleData>) => [
-    createQueryKey("createMeetingSchedule", options)
+    createQueryKey('createMeetingSchedule', options)
 ];
 
-export const createMeetingScheduleOptions = (options: Options<CreateMeetingScheduleData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createMeetingSchedule({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createMeetingScheduleQueryKey(options)
-}); };
+export const createMeetingScheduleOptions = (options: Options<CreateMeetingScheduleData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createMeetingSchedule({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createMeetingScheduleQueryKey(options)
+    });
+};
 
-export const createMeetingScheduleMutation = (options?: Partial<Options<CreateMeetingScheduleData>>) => { const mutationOptions: MutationOptions<CreateMeetingScheduleResponse, CreateMeetingScheduleError, Options<CreateMeetingScheduleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createMeetingSchedule({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createMeetingScheduleMutation = (options?: Partial<Options<CreateMeetingScheduleData>>) => {
+    const mutationOptions: MutationOptions<CreateMeetingScheduleResponse, CreateMeetingScheduleError, Options<CreateMeetingScheduleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createMeetingSchedule({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getMeetingScheduleQueryKey = (options: Options<GetMeetingScheduleData>) => [
-    createQueryKey("getMeetingSchedule", options)
+    createQueryKey('getMeetingSchedule', options)
 ];
 
-export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getMeetingSchedule({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getMeetingScheduleQueryKey(options)
-}); };
+export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getMeetingSchedule({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getMeetingScheduleQueryKey(options)
+    });
+};
 
-export const archiveMeetingScheduleMutation = (options?: Partial<Options<ArchiveMeetingScheduleData>>) => { const mutationOptions: MutationOptions<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, Options<ArchiveMeetingScheduleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveMeetingSchedule({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveMeetingScheduleMutation = (options?: Partial<Options<ArchiveMeetingScheduleData>>) => {
+    const mutationOptions: MutationOptions<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, Options<ArchiveMeetingScheduleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveMeetingSchedule({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateMeetingScheduleMutation = (options?: Partial<Options<UpdateMeetingScheduleData>>) => { const mutationOptions: MutationOptions<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, Options<UpdateMeetingScheduleData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateMeetingSchedule({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateMeetingScheduleMutation = (options?: Partial<Options<UpdateMeetingScheduleData>>) => {
+    const mutationOptions: MutationOptions<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, Options<UpdateMeetingScheduleData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateMeetingSchedule({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listMeetingSessionsQueryKey = (options?: Options<ListMeetingSessionsData>) => [
-    createQueryKey("listMeetingSessions", options)
+    createQueryKey('listMeetingSessions', options)
 ];
 
-export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessionsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listMeetingSessions({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSessionsQueryKey(options)
-}); };
+export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessionsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listMeetingSessions({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSessionsQueryKey(options)
+    });
+};
 
 export const listMeetingSessionsInfiniteQueryKey = (options?: Options<ListMeetingSessionsData>): QueryKey<Options<ListMeetingSessionsData>> => [
-    createQueryKey("listMeetingSessions", options, true)
+    createQueryKey('listMeetingSessions', options, true)
 ];
 
-export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => { return infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listMeetingSessions({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listMeetingSessionsInfiniteQueryKey(options)
-}); };
+export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => {
+    return infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listMeetingSessions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listMeetingSessionsInfiniteQueryKey(options)
+    });
+};
 
 export const createMeetingSessionQueryKey = (options: Options<CreateMeetingSessionData>) => [
-    createQueryKey("createMeetingSession", options)
+    createQueryKey('createMeetingSession', options)
 ];
 
-export const createMeetingSessionOptions = (options: Options<CreateMeetingSessionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createMeetingSession({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createMeetingSessionQueryKey(options)
-}); };
+export const createMeetingSessionOptions = (options: Options<CreateMeetingSessionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createMeetingSession({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createMeetingSessionQueryKey(options)
+    });
+};
 
-export const createMeetingSessionMutation = (options?: Partial<Options<CreateMeetingSessionData>>) => { const mutationOptions: MutationOptions<CreateMeetingSessionResponse, CreateMeetingSessionError, Options<CreateMeetingSessionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createMeetingSession({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createMeetingSessionMutation = (options?: Partial<Options<CreateMeetingSessionData>>) => {
+    const mutationOptions: MutationOptions<CreateMeetingSessionResponse, CreateMeetingSessionError, Options<CreateMeetingSessionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createMeetingSession({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getMeetingSessionQueryKey = (options: Options<GetMeetingSessionData>) => [
-    createQueryKey("getMeetingSession", options)
+    createQueryKey('getMeetingSession', options)
 ];
 
-export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getMeetingSession({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getMeetingSessionQueryKey(options)
-}); };
+export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getMeetingSession({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getMeetingSessionQueryKey(options)
+    });
+};
 
-export const archiveMeetingSessionMutation = (options?: Partial<Options<ArchiveMeetingSessionData>>) => { const mutationOptions: MutationOptions<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, Options<ArchiveMeetingSessionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveMeetingSession({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveMeetingSessionMutation = (options?: Partial<Options<ArchiveMeetingSessionData>>) => {
+    const mutationOptions: MutationOptions<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, Options<ArchiveMeetingSessionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveMeetingSession({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateMeetingSessionMutation = (options?: Partial<Options<UpdateMeetingSessionData>>) => { const mutationOptions: MutationOptions<UpdateMeetingSessionResponse, UpdateMeetingSessionError, Options<UpdateMeetingSessionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateMeetingSession({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateMeetingSessionMutation = (options?: Partial<Options<UpdateMeetingSessionData>>) => {
+    const mutationOptions: MutationOptions<UpdateMeetingSessionResponse, UpdateMeetingSessionError, Options<UpdateMeetingSessionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateMeetingSession({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const archiveOncallShiftAnnotationMutation = (options?: Partial<Options<ArchiveOncallShiftAnnotationData>>) => { const mutationOptions: MutationOptions<ArchiveOncallShiftAnnotationResponse, ArchiveOncallShiftAnnotationError, Options<ArchiveOncallShiftAnnotationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveOncallShiftAnnotation({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveOncallShiftAnnotationMutation = (options?: Partial<Options<ArchiveOncallShiftAnnotationData>>) => {
+    const mutationOptions: MutationOptions<ArchiveOncallShiftAnnotationResponse, ArchiveOncallShiftAnnotationError, Options<ArchiveOncallShiftAnnotationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveOncallShiftAnnotation({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateOncallShiftAnnotationMutation = (options?: Partial<Options<UpdateOncallShiftAnnotationData>>) => { const mutationOptions: MutationOptions<UpdateOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationError, Options<UpdateOncallShiftAnnotationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateOncallShiftAnnotation({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateOncallShiftAnnotationMutation = (options?: Partial<Options<UpdateOncallShiftAnnotationData>>) => {
+    const mutationOptions: MutationOptions<UpdateOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationError, Options<UpdateOncallShiftAnnotationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateOncallShiftAnnotation({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const createOncallHandoverTemplateQueryKey = (options: Options<CreateOncallHandoverTemplateData>) => [
-    createQueryKey("createOncallHandoverTemplate", options)
+    createQueryKey('createOncallHandoverTemplate', options)
 ];
 
-export const createOncallHandoverTemplateOptions = (options: Options<CreateOncallHandoverTemplateData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createOncallHandoverTemplate({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createOncallHandoverTemplateQueryKey(options)
-}); };
+export const createOncallHandoverTemplateOptions = (options: Options<CreateOncallHandoverTemplateData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createOncallHandoverTemplate({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createOncallHandoverTemplateQueryKey(options)
+    });
+};
 
-export const createOncallHandoverTemplateMutation = (options?: Partial<Options<CreateOncallHandoverTemplateData>>) => { const mutationOptions: MutationOptions<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, Options<CreateOncallHandoverTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createOncallHandoverTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createOncallHandoverTemplateMutation = (options?: Partial<Options<CreateOncallHandoverTemplateData>>) => {
+    const mutationOptions: MutationOptions<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, Options<CreateOncallHandoverTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createOncallHandoverTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getOncallShiftHandoverTemplateQueryKey = (options: Options<GetOncallShiftHandoverTemplateData>) => [
-    createQueryKey("getOncallShiftHandoverTemplate", options)
+    createQueryKey('getOncallShiftHandoverTemplate', options)
 ];
 
-export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncallShiftHandoverTemplateData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getOncallShiftHandoverTemplate({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getOncallShiftHandoverTemplateQueryKey(options)
-}); };
+export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncallShiftHandoverTemplateData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getOncallShiftHandoverTemplate({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getOncallShiftHandoverTemplateQueryKey(options)
+    });
+};
 
-export const archiveOncallHandoverTemplateMutation = (options?: Partial<Options<ArchiveOncallHandoverTemplateData>>) => { const mutationOptions: MutationOptions<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, Options<ArchiveOncallHandoverTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveOncallHandoverTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveOncallHandoverTemplateMutation = (options?: Partial<Options<ArchiveOncallHandoverTemplateData>>) => {
+    const mutationOptions: MutationOptions<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, Options<ArchiveOncallHandoverTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveOncallHandoverTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateOncallHandoverTemplateMutation = (options?: Partial<Options<UpdateOncallHandoverTemplateData>>) => { const mutationOptions: MutationOptions<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, Options<UpdateOncallHandoverTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateOncallHandoverTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateOncallHandoverTemplateMutation = (options?: Partial<Options<UpdateOncallHandoverTemplateData>>) => {
+    const mutationOptions: MutationOptions<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, Options<UpdateOncallHandoverTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateOncallHandoverTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listOncallRostersQueryKey = (options?: Options<ListOncallRostersData>) => [
-    createQueryKey("listOncallRosters", options)
+    createQueryKey('listOncallRosters', options)
 ];
 
-export const listOncallRostersOptions = (options?: Options<ListOncallRostersData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listOncallRosters({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallRostersQueryKey(options)
-}); };
+export const listOncallRostersOptions = (options?: Options<ListOncallRostersData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listOncallRosters({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallRostersQueryKey(options)
+    });
+};
 
 export const listOncallRostersInfiniteQueryKey = (options?: Options<ListOncallRostersData>): QueryKey<Options<ListOncallRostersData>> => [
-    createQueryKey("listOncallRosters", options, true)
+    createQueryKey('listOncallRosters', options, true)
 ];
 
-export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => { return infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallRosters({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallRostersInfiniteQueryKey(options)
-}); };
+export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => {
+    return infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallRosters({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallRostersInfiniteQueryKey(options)
+    });
+};
 
 export const getOncallRosterQueryKey = (options: Options<GetOncallRosterData>) => [
-    createQueryKey("getOncallRoster", options)
+    createQueryKey('getOncallRoster', options)
 ];
 
-export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getOncallRoster({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getOncallRosterQueryKey(options)
-}); };
+export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getOncallRoster({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getOncallRosterQueryKey(options)
+    });
+};
 
 export const listOncallShiftsQueryKey = (options?: Options<ListOncallShiftsData>) => [
-    createQueryKey("listOncallShifts", options)
+    createQueryKey('listOncallShifts', options)
 ];
 
-export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listOncallShifts({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftsQueryKey(options)
-}); };
+export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listOncallShifts({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftsQueryKey(options)
+    });
+};
 
 export const listOncallShiftsInfiniteQueryKey = (options?: Options<ListOncallShiftsData>): QueryKey<Options<ListOncallShiftsData>> => [
-    createQueryKey("listOncallShifts", options, true)
+    createQueryKey('listOncallShifts', options, true)
 ];
 
-export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => { return infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallShifts({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftsInfiniteQueryKey(options)
-}); };
+export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => {
+    return infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallShifts({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftsInfiniteQueryKey(options)
+    });
+};
 
 export const getOncallShiftQueryKey = (options: Options<GetOncallShiftData>) => [
-    createQueryKey("getOncallShift", options)
+    createQueryKey('getOncallShift', options)
 ];
 
-export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getOncallShift({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getOncallShiftQueryKey(options)
-}); };
+export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getOncallShift({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getOncallShiftQueryKey(options)
+    });
+};
 
 export const listOncallShiftAlertsQueryKey = (options: Options<ListOncallShiftAlertsData>) => [
-    createQueryKey("listOncallShiftAlerts", options)
+    createQueryKey('listOncallShiftAlerts', options)
 ];
 
-export const listOncallShiftAlertsOptions = (options: Options<ListOncallShiftAlertsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listOncallShiftAlerts({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftAlertsQueryKey(options)
-}); };
+export const listOncallShiftAlertsOptions = (options: Options<ListOncallShiftAlertsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listOncallShiftAlerts({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftAlertsQueryKey(options)
+    });
+};
 
 export const listOncallShiftAlertsInfiniteQueryKey = (options: Options<ListOncallShiftAlertsData>): QueryKey<Options<ListOncallShiftAlertsData>> => [
-    createQueryKey("listOncallShiftAlerts", options, true)
+    createQueryKey('listOncallShiftAlerts', options, true)
 ];
 
-export const listOncallShiftAlertsInfiniteOptions = (options: Options<ListOncallShiftAlertsData>) => { return infiniteQueryOptions<ListOncallShiftAlertsResponse, ListOncallShiftAlertsError, InfiniteData<ListOncallShiftAlertsResponse>, QueryKey<Options<ListOncallShiftAlertsData>>, number | Pick<QueryKey<Options<ListOncallShiftAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallShiftAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallShiftAlerts({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftAlertsInfiniteQueryKey(options)
-}); };
+export const listOncallShiftAlertsInfiniteOptions = (options: Options<ListOncallShiftAlertsData>) => {
+    return infiniteQueryOptions<ListOncallShiftAlertsResponse, ListOncallShiftAlertsError, InfiniteData<ListOncallShiftAlertsResponse>, QueryKey<Options<ListOncallShiftAlertsData>>, number | Pick<QueryKey<Options<ListOncallShiftAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallShiftAlertsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallShiftAlerts({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftAlertsInfiniteQueryKey(options)
+    });
+};
 
 export const listOncallShiftAnnotationsQueryKey = (options: Options<ListOncallShiftAnnotationsData>) => [
-    createQueryKey("listOncallShiftAnnotations", options)
+    createQueryKey('listOncallShiftAnnotations', options)
 ];
 
-export const listOncallShiftAnnotationsOptions = (options: Options<ListOncallShiftAnnotationsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listOncallShiftAnnotations({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftAnnotationsQueryKey(options)
-}); };
+export const listOncallShiftAnnotationsOptions = (options: Options<ListOncallShiftAnnotationsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listOncallShiftAnnotations({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftAnnotationsQueryKey(options)
+    });
+};
 
 export const listOncallShiftAnnotationsInfiniteQueryKey = (options: Options<ListOncallShiftAnnotationsData>): QueryKey<Options<ListOncallShiftAnnotationsData>> => [
-    createQueryKey("listOncallShiftAnnotations", options, true)
+    createQueryKey('listOncallShiftAnnotations', options, true)
 ];
 
-export const listOncallShiftAnnotationsInfiniteOptions = (options: Options<ListOncallShiftAnnotationsData>) => { return infiniteQueryOptions<ListOncallShiftAnnotationsResponse, ListOncallShiftAnnotationsError, InfiniteData<ListOncallShiftAnnotationsResponse>, QueryKey<Options<ListOncallShiftAnnotationsData>>, number | Pick<QueryKey<Options<ListOncallShiftAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallShiftAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallShiftAnnotations({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftAnnotationsInfiniteQueryKey(options)
-}); };
+export const listOncallShiftAnnotationsInfiniteOptions = (options: Options<ListOncallShiftAnnotationsData>) => {
+    return infiniteQueryOptions<ListOncallShiftAnnotationsResponse, ListOncallShiftAnnotationsError, InfiniteData<ListOncallShiftAnnotationsResponse>, QueryKey<Options<ListOncallShiftAnnotationsData>>, number | Pick<QueryKey<Options<ListOncallShiftAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallShiftAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallShiftAnnotations({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftAnnotationsInfiniteQueryKey(options)
+    });
+};
 
 export const createOncallShiftAnnotationQueryKey = (options: Options<CreateOncallShiftAnnotationData>) => [
-    createQueryKey("createOncallShiftAnnotation", options)
+    createQueryKey('createOncallShiftAnnotation', options)
 ];
 
-export const createOncallShiftAnnotationOptions = (options: Options<CreateOncallShiftAnnotationData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createOncallShiftAnnotation({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createOncallShiftAnnotationQueryKey(options)
-}); };
+export const createOncallShiftAnnotationOptions = (options: Options<CreateOncallShiftAnnotationData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createOncallShiftAnnotation({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createOncallShiftAnnotationQueryKey(options)
+    });
+};
 
-export const createOncallShiftAnnotationMutation = (options?: Partial<Options<CreateOncallShiftAnnotationData>>) => { const mutationOptions: MutationOptions<CreateOncallShiftAnnotationResponse, CreateOncallShiftAnnotationError, Options<CreateOncallShiftAnnotationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createOncallShiftAnnotation({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createOncallShiftAnnotationMutation = (options?: Partial<Options<CreateOncallShiftAnnotationData>>) => {
+    const mutationOptions: MutationOptions<CreateOncallShiftAnnotationResponse, CreateOncallShiftAnnotationError, Options<CreateOncallShiftAnnotationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createOncallShiftAnnotation({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getOncallShiftHandoverQueryKey = (options: Options<GetOncallShiftHandoverData>) => [
-    createQueryKey("getOncallShiftHandover", options)
+    createQueryKey('getOncallShiftHandover', options)
 ];
 
-export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHandoverData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getOncallShiftHandover({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getOncallShiftHandoverQueryKey(options)
-}); };
+export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHandoverData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getOncallShiftHandover({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getOncallShiftHandoverQueryKey(options)
+    });
+};
 
 export const sendOncallShiftHandoverQueryKey = (options: Options<SendOncallShiftHandoverData>) => [
-    createQueryKey("sendOncallShiftHandover", options)
+    createQueryKey('sendOncallShiftHandover', options)
 ];
 
-export const sendOncallShiftHandoverOptions = (options: Options<SendOncallShiftHandoverData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await sendOncallShiftHandover({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: sendOncallShiftHandoverQueryKey(options)
-}); };
+export const sendOncallShiftHandoverOptions = (options: Options<SendOncallShiftHandoverData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await sendOncallShiftHandover({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: sendOncallShiftHandoverQueryKey(options)
+    });
+};
 
-export const sendOncallShiftHandoverMutation = (options?: Partial<Options<SendOncallShiftHandoverData>>) => { const mutationOptions: MutationOptions<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, Options<SendOncallShiftHandoverData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await sendOncallShiftHandover({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const sendOncallShiftHandoverMutation = (options?: Partial<Options<SendOncallShiftHandoverData>>) => {
+    const mutationOptions: MutationOptions<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, Options<SendOncallShiftHandoverData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await sendOncallShiftHandover({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listOncallShiftIncidentsQueryKey = (options: Options<ListOncallShiftIncidentsData>) => [
-    createQueryKey("listOncallShiftIncidents", options)
+    createQueryKey('listOncallShiftIncidents', options)
 ];
 
-export const listOncallShiftIncidentsOptions = (options: Options<ListOncallShiftIncidentsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listOncallShiftIncidents({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftIncidentsQueryKey(options)
-}); };
+export const listOncallShiftIncidentsOptions = (options: Options<ListOncallShiftIncidentsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listOncallShiftIncidents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftIncidentsQueryKey(options)
+    });
+};
 
 export const listOncallShiftIncidentsInfiniteQueryKey = (options: Options<ListOncallShiftIncidentsData>): QueryKey<Options<ListOncallShiftIncidentsData>> => [
-    createQueryKey("listOncallShiftIncidents", options, true)
+    createQueryKey('listOncallShiftIncidents', options, true)
 ];
 
-export const listOncallShiftIncidentsInfiniteOptions = (options: Options<ListOncallShiftIncidentsData>) => { return infiniteQueryOptions<ListOncallShiftIncidentsResponse, ListOncallShiftIncidentsError, InfiniteData<ListOncallShiftIncidentsResponse>, QueryKey<Options<ListOncallShiftIncidentsData>>, number | Pick<QueryKey<Options<ListOncallShiftIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListOncallShiftIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listOncallShiftIncidents({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listOncallShiftIncidentsInfiniteQueryKey(options)
-}); };
+export const listOncallShiftIncidentsInfiniteOptions = (options: Options<ListOncallShiftIncidentsData>) => {
+    return infiniteQueryOptions<ListOncallShiftIncidentsResponse, ListOncallShiftIncidentsError, InfiniteData<ListOncallShiftIncidentsResponse>, QueryKey<Options<ListOncallShiftIncidentsData>>, number | Pick<QueryKey<Options<ListOncallShiftIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListOncallShiftIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listOncallShiftIncidents({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listOncallShiftIncidentsInfiniteQueryKey(options)
+    });
+};
 
 export const getNextOncallShiftQueryKey = (options: Options<GetNextOncallShiftData>) => [
-    createQueryKey("getNextOncallShift", options)
+    createQueryKey('getNextOncallShift', options)
 ];
 
-export const getNextOncallShiftOptions = (options: Options<GetNextOncallShiftData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getNextOncallShift({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getNextOncallShiftQueryKey(options)
-}); };
+export const getNextOncallShiftOptions = (options: Options<GetNextOncallShiftData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getNextOncallShift({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getNextOncallShiftQueryKey(options)
+    });
+};
 
 export const getUserOncallDetailsQueryKey = (options?: Options<GetUserOncallDetailsData>) => [
-    createQueryKey("getUserOncallDetails", options)
+    createQueryKey('getUserOncallDetails', options)
 ];
 
-export const getUserOncallDetailsOptions = (options?: Options<GetUserOncallDetailsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getUserOncallDetails({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getUserOncallDetailsQueryKey(options)
-}); };
+export const getUserOncallDetailsOptions = (options?: Options<GetUserOncallDetailsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getUserOncallDetails({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getUserOncallDetailsQueryKey(options)
+    });
+};
 
-export const archiveRetrospectiveReviewMutation = (options?: Partial<Options<ArchiveRetrospectiveReviewData>>) => { const mutationOptions: MutationOptions<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, Options<ArchiveRetrospectiveReviewData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveRetrospectiveReview({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveRetrospectiveReviewMutation = (options?: Partial<Options<ArchiveRetrospectiveReviewData>>) => {
+    const mutationOptions: MutationOptions<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, Options<ArchiveRetrospectiveReviewData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveRetrospectiveReview({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateRetrospectiveReviewMutation = (options?: Partial<Options<UpdateRetrospectiveReviewData>>) => { const mutationOptions: MutationOptions<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, Options<UpdateRetrospectiveReviewData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateRetrospectiveReview({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateRetrospectiveReviewMutation = (options?: Partial<Options<UpdateRetrospectiveReviewData>>) => {
+    const mutationOptions: MutationOptions<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, Options<UpdateRetrospectiveReviewData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateRetrospectiveReview({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listRetrospectiveTemplatesQueryKey = (options?: Options<ListRetrospectiveTemplatesData>) => [
-    createQueryKey("listRetrospectiveTemplates", options)
+    createQueryKey('listRetrospectiveTemplates', options)
 ];
 
-export const listRetrospectiveTemplatesOptions = (options?: Options<ListRetrospectiveTemplatesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listRetrospectiveTemplates({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveTemplatesQueryKey(options)
-}); };
+export const listRetrospectiveTemplatesOptions = (options?: Options<ListRetrospectiveTemplatesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listRetrospectiveTemplates({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveTemplatesQueryKey(options)
+    });
+};
 
 export const listRetrospectiveTemplatesInfiniteQueryKey = (options?: Options<ListRetrospectiveTemplatesData>): QueryKey<Options<ListRetrospectiveTemplatesData>> => [
-    createQueryKey("listRetrospectiveTemplates", options, true)
+    createQueryKey('listRetrospectiveTemplates', options, true)
 ];
 
-export const listRetrospectiveTemplatesInfiniteOptions = (options?: Options<ListRetrospectiveTemplatesData>) => { return infiniteQueryOptions<ListRetrospectiveTemplatesResponse, ListRetrospectiveTemplatesError, InfiniteData<ListRetrospectiveTemplatesResponse>, QueryKey<Options<ListRetrospectiveTemplatesData>>, number | Pick<QueryKey<Options<ListRetrospectiveTemplatesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectiveTemplatesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectiveTemplates({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveTemplatesInfiniteQueryKey(options)
-}); };
+export const listRetrospectiveTemplatesInfiniteOptions = (options?: Options<ListRetrospectiveTemplatesData>) => {
+    return infiniteQueryOptions<ListRetrospectiveTemplatesResponse, ListRetrospectiveTemplatesError, InfiniteData<ListRetrospectiveTemplatesResponse>, QueryKey<Options<ListRetrospectiveTemplatesData>>, number | Pick<QueryKey<Options<ListRetrospectiveTemplatesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectiveTemplatesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectiveTemplates({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveTemplatesInfiniteQueryKey(options)
+    });
+};
 
 export const createRetrospectiveTemplateQueryKey = (options: Options<CreateRetrospectiveTemplateData>) => [
-    createQueryKey("createRetrospectiveTemplate", options)
+    createQueryKey('createRetrospectiveTemplate', options)
 ];
 
-export const createRetrospectiveTemplateOptions = (options: Options<CreateRetrospectiveTemplateData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createRetrospectiveTemplate({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createRetrospectiveTemplateQueryKey(options)
-}); };
+export const createRetrospectiveTemplateOptions = (options: Options<CreateRetrospectiveTemplateData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createRetrospectiveTemplate({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createRetrospectiveTemplateQueryKey(options)
+    });
+};
 
-export const createRetrospectiveTemplateMutation = (options?: Partial<Options<CreateRetrospectiveTemplateData>>) => { const mutationOptions: MutationOptions<CreateRetrospectiveTemplateResponse, CreateRetrospectiveTemplateError, Options<CreateRetrospectiveTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createRetrospectiveTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createRetrospectiveTemplateMutation = (options?: Partial<Options<CreateRetrospectiveTemplateData>>) => {
+    const mutationOptions: MutationOptions<CreateRetrospectiveTemplateResponse, CreateRetrospectiveTemplateError, Options<CreateRetrospectiveTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createRetrospectiveTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const archiveRetrospectiveTemplateMutation = (options?: Partial<Options<ArchiveRetrospectiveTemplateData>>) => { const mutationOptions: MutationOptions<ArchiveRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateError, Options<ArchiveRetrospectiveTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveRetrospectiveTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveRetrospectiveTemplateMutation = (options?: Partial<Options<ArchiveRetrospectiveTemplateData>>) => {
+    const mutationOptions: MutationOptions<ArchiveRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateError, Options<ArchiveRetrospectiveTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveRetrospectiveTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateRetrospectiveTemplateMutation = (options?: Partial<Options<UpdateRetrospectiveTemplateData>>) => { const mutationOptions: MutationOptions<UpdateRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateError, Options<UpdateRetrospectiveTemplateData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateRetrospectiveTemplate({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateRetrospectiveTemplateMutation = (options?: Partial<Options<UpdateRetrospectiveTemplateData>>) => {
+    const mutationOptions: MutationOptions<UpdateRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateError, Options<UpdateRetrospectiveTemplateData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateRetrospectiveTemplate({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listRetrospectivesQueryKey = (options?: Options<ListRetrospectivesData>) => [
-    createQueryKey("listRetrospectives", options)
+    createQueryKey('listRetrospectives', options)
 ];
 
-export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listRetrospectives({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectivesQueryKey(options)
-}); };
+export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listRetrospectives({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectivesQueryKey(options)
+    });
+};
 
 export const listRetrospectivesInfiniteQueryKey = (options?: Options<ListRetrospectivesData>): QueryKey<Options<ListRetrospectivesData>> => [
-    createQueryKey("listRetrospectives", options, true)
+    createQueryKey('listRetrospectives', options, true)
 ];
 
-export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => { return infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectives({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectivesInfiniteQueryKey(options)
-}); };
+export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => {
+    return infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectives({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectivesInfiniteQueryKey(options)
+    });
+};
 
 export const getRetrospectiveQueryKey = (options: Options<GetRetrospectiveData>) => [
-    createQueryKey("getRetrospective", options)
+    createQueryKey('getRetrospective', options)
 ];
 
-export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getRetrospective({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getRetrospectiveQueryKey(options)
-}); };
+export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getRetrospective({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getRetrospectiveQueryKey(options)
+    });
+};
 
 export const listRetrospectiveDiscussionsQueryKey = (options: Options<ListRetrospectiveDiscussionsData>) => [
-    createQueryKey("listRetrospectiveDiscussions", options)
+    createQueryKey('listRetrospectiveDiscussions', options)
 ];
 
-export const listRetrospectiveDiscussionsOptions = (options: Options<ListRetrospectiveDiscussionsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listRetrospectiveDiscussions({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveDiscussionsQueryKey(options)
-}); };
+export const listRetrospectiveDiscussionsOptions = (options: Options<ListRetrospectiveDiscussionsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listRetrospectiveDiscussions({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveDiscussionsQueryKey(options)
+    });
+};
 
 export const listRetrospectiveDiscussionsInfiniteQueryKey = (options: Options<ListRetrospectiveDiscussionsData>): QueryKey<Options<ListRetrospectiveDiscussionsData>> => [
-    createQueryKey("listRetrospectiveDiscussions", options, true)
+    createQueryKey('listRetrospectiveDiscussions', options, true)
 ];
 
-export const listRetrospectiveDiscussionsInfiniteOptions = (options: Options<ListRetrospectiveDiscussionsData>) => { return infiniteQueryOptions<ListRetrospectiveDiscussionsResponse, ListRetrospectiveDiscussionsError, InfiniteData<ListRetrospectiveDiscussionsResponse>, QueryKey<Options<ListRetrospectiveDiscussionsData>>, number | Pick<QueryKey<Options<ListRetrospectiveDiscussionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectiveDiscussionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectiveDiscussions({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveDiscussionsInfiniteQueryKey(options)
-}); };
+export const listRetrospectiveDiscussionsInfiniteOptions = (options: Options<ListRetrospectiveDiscussionsData>) => {
+    return infiniteQueryOptions<ListRetrospectiveDiscussionsResponse, ListRetrospectiveDiscussionsError, InfiniteData<ListRetrospectiveDiscussionsResponse>, QueryKey<Options<ListRetrospectiveDiscussionsData>>, number | Pick<QueryKey<Options<ListRetrospectiveDiscussionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectiveDiscussionsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectiveDiscussions({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveDiscussionsInfiniteQueryKey(options)
+    });
+};
 
 export const createRetrospectiveDiscussionQueryKey = (options: Options<CreateRetrospectiveDiscussionData>) => [
-    createQueryKey("createRetrospectiveDiscussion", options)
+    createQueryKey('createRetrospectiveDiscussion', options)
 ];
 
-export const createRetrospectiveDiscussionOptions = (options: Options<CreateRetrospectiveDiscussionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createRetrospectiveDiscussion({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createRetrospectiveDiscussionQueryKey(options)
-}); };
+export const createRetrospectiveDiscussionOptions = (options: Options<CreateRetrospectiveDiscussionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createRetrospectiveDiscussion({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createRetrospectiveDiscussionQueryKey(options)
+    });
+};
 
-export const createRetrospectiveDiscussionMutation = (options?: Partial<Options<CreateRetrospectiveDiscussionData>>) => { const mutationOptions: MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createRetrospectiveDiscussion({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createRetrospectiveDiscussionMutation = (options?: Partial<Options<CreateRetrospectiveDiscussionData>>) => {
+    const mutationOptions: MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createRetrospectiveDiscussion({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getRetrospectiveDiscussionQueryKey = (options: Options<GetRetrospectiveDiscussionData>) => [
-    createQueryKey("getRetrospectiveDiscussion", options)
+    createQueryKey('getRetrospectiveDiscussion', options)
 ];
 
-export const getRetrospectiveDiscussionOptions = (options: Options<GetRetrospectiveDiscussionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getRetrospectiveDiscussion({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getRetrospectiveDiscussionQueryKey(options)
-}); };
+export const getRetrospectiveDiscussionOptions = (options: Options<GetRetrospectiveDiscussionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getRetrospectiveDiscussion({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getRetrospectiveDiscussionQueryKey(options)
+    });
+};
 
 export const addRetrospectiveDiscussionReplyQueryKey = (options: Options<AddRetrospectiveDiscussionReplyData>) => [
-    createQueryKey("addRetrospectiveDiscussionReply", options)
+    createQueryKey('addRetrospectiveDiscussionReply', options)
 ];
 
-export const addRetrospectiveDiscussionReplyOptions = (options: Options<AddRetrospectiveDiscussionReplyData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await addRetrospectiveDiscussionReply({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: addRetrospectiveDiscussionReplyQueryKey(options)
-}); };
+export const addRetrospectiveDiscussionReplyOptions = (options: Options<AddRetrospectiveDiscussionReplyData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await addRetrospectiveDiscussionReply({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: addRetrospectiveDiscussionReplyQueryKey(options)
+    });
+};
 
-export const addRetrospectiveDiscussionReplyMutation = (options?: Partial<Options<AddRetrospectiveDiscussionReplyData>>) => { const mutationOptions: MutationOptions<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, Options<AddRetrospectiveDiscussionReplyData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await addRetrospectiveDiscussionReply({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const addRetrospectiveDiscussionReplyMutation = (options?: Partial<Options<AddRetrospectiveDiscussionReplyData>>) => {
+    const mutationOptions: MutationOptions<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, Options<AddRetrospectiveDiscussionReplyData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await addRetrospectiveDiscussionReply({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateRetrospectiveDiscussionMutation = (options?: Partial<Options<UpdateRetrospectiveDiscussionData>>) => { const mutationOptions: MutationOptions<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, Options<UpdateRetrospectiveDiscussionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateRetrospectiveDiscussion({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateRetrospectiveDiscussionMutation = (options?: Partial<Options<UpdateRetrospectiveDiscussionData>>) => {
+    const mutationOptions: MutationOptions<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, Options<UpdateRetrospectiveDiscussionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateRetrospectiveDiscussion({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listRetrospectiveReviewsQueryKey = (options?: Options<ListRetrospectiveReviewsData>) => [
-    createQueryKey("listRetrospectiveReviews", options)
+    createQueryKey('listRetrospectiveReviews', options)
 ];
 
-export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospectiveReviewsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listRetrospectiveReviews({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveReviewsQueryKey(options)
-}); };
+export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listRetrospectiveReviews({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveReviewsQueryKey(options)
+    });
+};
 
 export const listRetrospectiveReviewsInfiniteQueryKey = (options?: Options<ListRetrospectiveReviewsData>): QueryKey<Options<ListRetrospectiveReviewsData>> => [
-    createQueryKey("listRetrospectiveReviews", options, true)
+    createQueryKey('listRetrospectiveReviews', options, true)
 ];
 
-export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => { return infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listRetrospectiveReviews({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
-}); };
+export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
+    return infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listRetrospectiveReviews({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listRetrospectiveReviewsInfiniteQueryKey(options)
+    });
+};
 
 export const createRetrospectiveReviewQueryKey = (options: Options<CreateRetrospectiveReviewData>) => [
-    createQueryKey("createRetrospectiveReview", options)
+    createQueryKey('createRetrospectiveReview', options)
 ];
 
-export const createRetrospectiveReviewOptions = (options: Options<CreateRetrospectiveReviewData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createRetrospectiveReview({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createRetrospectiveReviewQueryKey(options)
-}); };
+export const createRetrospectiveReviewOptions = (options: Options<CreateRetrospectiveReviewData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createRetrospectiveReview({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createRetrospectiveReviewQueryKey(options)
+    });
+};
 
-export const createRetrospectiveReviewMutation = (options?: Partial<Options<CreateRetrospectiveReviewData>>) => { const mutationOptions: MutationOptions<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, Options<CreateRetrospectiveReviewData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createRetrospectiveReview({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createRetrospectiveReviewMutation = (options?: Partial<Options<CreateRetrospectiveReviewData>>) => {
+    const mutationOptions: MutationOptions<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, Options<CreateRetrospectiveReviewData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createRetrospectiveReview({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listServicesQueryKey = (options?: Options<ListServicesData>) => [
-    createQueryKey("listServices", options)
+    createQueryKey('listServices', options)
 ];
 
-export const listServicesOptions = (options?: Options<ListServicesData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listServices({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listServicesQueryKey(options)
-}); };
+export const listServicesOptions = (options?: Options<ListServicesData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listServices({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listServicesQueryKey(options)
+    });
+};
 
 export const listServicesInfiniteQueryKey = (options?: Options<ListServicesData>): QueryKey<Options<ListServicesData>> => [
-    createQueryKey("listServices", options, true)
+    createQueryKey('listServices', options, true)
 ];
 
-export const listServicesInfiniteOptions = (options?: Options<ListServicesData>) => { return infiniteQueryOptions<ListServicesResponse, ListServicesError, InfiniteData<ListServicesResponse>, QueryKey<Options<ListServicesData>>, number | Pick<QueryKey<Options<ListServicesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListServicesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listServices({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listServicesInfiniteQueryKey(options)
-}); };
+export const listServicesInfiniteOptions = (options?: Options<ListServicesData>) => {
+    return infiniteQueryOptions<ListServicesResponse, ListServicesError, InfiniteData<ListServicesResponse>, QueryKey<Options<ListServicesData>>, number | Pick<QueryKey<Options<ListServicesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListServicesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listServices({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listServicesInfiniteQueryKey(options)
+    });
+};
 
 export const createServiceQueryKey = (options: Options<CreateServiceData>) => [
-    createQueryKey("createService", options)
+    createQueryKey('createService', options)
 ];
 
-export const createServiceOptions = (options: Options<CreateServiceData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createService({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createServiceQueryKey(options)
-}); };
+export const createServiceOptions = (options: Options<CreateServiceData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createService({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createServiceQueryKey(options)
+    });
+};
 
-export const createServiceMutation = (options?: Partial<Options<CreateServiceData>>) => { const mutationOptions: MutationOptions<CreateServiceResponse, CreateServiceError, Options<CreateServiceData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createService({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createServiceMutation = (options?: Partial<Options<CreateServiceData>>) => {
+    const mutationOptions: MutationOptions<CreateServiceResponse, CreateServiceError, Options<CreateServiceData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createService({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getServiceQueryKey = (options: Options<GetServiceData>) => [
-    createQueryKey("getService", options)
+    createQueryKey('getService', options)
 ];
 
-export const getServiceOptions = (options: Options<GetServiceData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getService({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getServiceQueryKey(options)
-}); };
+export const getServiceOptions = (options: Options<GetServiceData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getService({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getServiceQueryKey(options)
+    });
+};
 
-export const archiveServiceMutation = (options?: Partial<Options<ArchiveServiceData>>) => { const mutationOptions: MutationOptions<ArchiveServiceResponse, ArchiveServiceError, Options<ArchiveServiceData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveService({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveServiceMutation = (options?: Partial<Options<ArchiveServiceData>>) => {
+    const mutationOptions: MutationOptions<ArchiveServiceResponse, ArchiveServiceError, Options<ArchiveServiceData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveService({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateServiceMutation = (options?: Partial<Options<UpdateServiceData>>) => { const mutationOptions: MutationOptions<UpdateServiceResponse, UpdateServiceError, Options<UpdateServiceData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateService({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateServiceMutation = (options?: Partial<Options<UpdateServiceData>>) => {
+    const mutationOptions: MutationOptions<UpdateServiceResponse, UpdateServiceError, Options<UpdateServiceData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateService({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listSubscriptionsQueryKey = (options?: Options) => [
-    createQueryKey("listSubscriptions", options)
+    createQueryKey('listSubscriptions', options)
 ];
 
-export const listSubscriptionsOptions = (options?: Options) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listSubscriptions({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listSubscriptionsQueryKey(options)
-}); };
+export const listSubscriptionsOptions = (options?: Options) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listSubscriptions({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSubscriptionsQueryKey(options)
+    });
+};
 
 export const createSubscriptionQueryKey = (options: Options<CreateSubscriptionData>) => [
-    createQueryKey("createSubscription", options)
+    createQueryKey('createSubscription', options)
 ];
 
-export const createSubscriptionOptions = (options: Options<CreateSubscriptionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createSubscription({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createSubscriptionQueryKey(options)
-}); };
+export const createSubscriptionOptions = (options: Options<CreateSubscriptionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createSubscription({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createSubscriptionQueryKey(options)
+    });
+};
 
-export const createSubscriptionMutation = (options?: Partial<Options<CreateSubscriptionData>>) => { const mutationOptions: MutationOptions<CreateSubscriptionResponse, CreateSubscriptionError, Options<CreateSubscriptionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createSubscription({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createSubscriptionMutation = (options?: Partial<Options<CreateSubscriptionData>>) => {
+    const mutationOptions: MutationOptions<CreateSubscriptionResponse, CreateSubscriptionError, Options<CreateSubscriptionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createSubscription({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getSubscriptionQueryKey = (options: Options<GetSubscriptionData>) => [
-    createQueryKey("getSubscription", options)
+    createQueryKey('getSubscription', options)
 ];
 
-export const getSubscriptionOptions = (options: Options<GetSubscriptionData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getSubscription({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getSubscriptionQueryKey(options)
-}); };
+export const getSubscriptionOptions = (options: Options<GetSubscriptionData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getSubscription({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getSubscriptionQueryKey(options)
+    });
+};
 
-export const archiveSubscriptionMutation = (options?: Partial<Options<ArchiveSubscriptionData>>) => { const mutationOptions: MutationOptions<ArchiveSubscriptionResponse, ArchiveSubscriptionError, Options<ArchiveSubscriptionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveSubscription({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveSubscriptionMutation = (options?: Partial<Options<ArchiveSubscriptionData>>) => {
+    const mutationOptions: MutationOptions<ArchiveSubscriptionResponse, ArchiveSubscriptionError, Options<ArchiveSubscriptionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveSubscription({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateSubscriptionMutation = (options?: Partial<Options<UpdateSubscriptionData>>) => { const mutationOptions: MutationOptions<UpdateSubscriptionResponse, UpdateSubscriptionError, Options<UpdateSubscriptionData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateSubscription({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateSubscriptionMutation = (options?: Partial<Options<UpdateSubscriptionData>>) => {
+    const mutationOptions: MutationOptions<UpdateSubscriptionResponse, UpdateSubscriptionError, Options<UpdateSubscriptionData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateSubscription({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listTasksQueryKey = (options?: Options<ListTasksData>) => [
-    createQueryKey("listTasks", options)
+    createQueryKey('listTasks', options)
 ];
 
-export const listTasksOptions = (options?: Options<ListTasksData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listTasks({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTasksQueryKey(options)
-}); };
+export const listTasksOptions = (options?: Options<ListTasksData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listTasks({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTasksQueryKey(options)
+    });
+};
 
 export const listTasksInfiniteQueryKey = (options?: Options<ListTasksData>): QueryKey<Options<ListTasksData>> => [
-    createQueryKey("listTasks", options, true)
+    createQueryKey('listTasks', options, true)
 ];
 
-export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => { return infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTasks({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTasksInfiniteQueryKey(options)
-}); };
+export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
+    return infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTasks({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTasksInfiniteQueryKey(options)
+    });
+};
 
 export const createTaskQueryKey = (options: Options<CreateTaskData>) => [
-    createQueryKey("createTask", options)
+    createQueryKey('createTask', options)
 ];
 
-export const createTaskOptions = (options: Options<CreateTaskData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createTask({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createTaskQueryKey(options)
-}); };
+export const createTaskOptions = (options: Options<CreateTaskData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createTask({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createTaskQueryKey(options)
+    });
+};
 
-export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>) => { const mutationOptions: MutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createTask({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>) => {
+    const mutationOptions: MutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createTask({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getTaskQueryKey = (options: Options<GetTaskData>) => [
-    createQueryKey("getTask", options)
+    createQueryKey('getTask', options)
 ];
 
-export const getTaskOptions = (options: Options<GetTaskData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getTask({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getTaskQueryKey(options)
-}); };
+export const getTaskOptions = (options: Options<GetTaskData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getTask({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getTaskQueryKey(options)
+    });
+};
 
-export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>) => { const mutationOptions: MutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveTask({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>) => {
+    const mutationOptions: MutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveTask({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>) => { const mutationOptions: MutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateTask({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>) => {
+    const mutationOptions: MutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateTask({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listTeamsQueryKey = (options?: Options<ListTeamsData>) => [
-    createQueryKey("listTeams", options)
+    createQueryKey('listTeams', options)
 ];
 
-export const listTeamsOptions = (options?: Options<ListTeamsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listTeams({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTeamsQueryKey(options)
-}); };
+export const listTeamsOptions = (options?: Options<ListTeamsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listTeams({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTeamsQueryKey(options)
+    });
+};
 
 export const listTeamsInfiniteQueryKey = (options?: Options<ListTeamsData>): QueryKey<Options<ListTeamsData>> => [
-    createQueryKey("listTeams", options, true)
+    createQueryKey('listTeams', options, true)
 ];
 
-export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => { return infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listTeams({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listTeamsInfiniteQueryKey(options)
-}); };
+export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
+    return infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listTeams({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listTeamsInfiniteQueryKey(options)
+    });
+};
 
 export const createTeamQueryKey = (options: Options<CreateTeamData>) => [
-    createQueryKey("createTeam", options)
+    createQueryKey('createTeam', options)
 ];
 
-export const createTeamOptions = (options: Options<CreateTeamData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await createTeam({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: createTeamQueryKey(options)
-}); };
+export const createTeamOptions = (options: Options<CreateTeamData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createTeam({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createTeamQueryKey(options)
+    });
+};
 
-export const createTeamMutation = (options?: Partial<Options<CreateTeamData>>) => { const mutationOptions: MutationOptions<CreateTeamResponse, CreateTeamError, Options<CreateTeamData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await createTeam({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const createTeamMutation = (options?: Partial<Options<CreateTeamData>>) => {
+    const mutationOptions: MutationOptions<CreateTeamResponse, CreateTeamError, Options<CreateTeamData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createTeam({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getTeamQueryKey = (options: Options<GetTeamData>) => [
-    createQueryKey("getTeam", options)
+    createQueryKey('getTeam', options)
 ];
 
-export const getTeamOptions = (options: Options<GetTeamData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getTeam({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getTeamQueryKey(options)
-}); };
+export const getTeamOptions = (options: Options<GetTeamData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getTeam({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getTeamQueryKey(options)
+    });
+};
 
-export const archiveTeamMutation = (options?: Partial<Options<ArchiveTeamData>>) => { const mutationOptions: MutationOptions<ArchiveTeamResponse, ArchiveTeamError, Options<ArchiveTeamData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await archiveTeam({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const archiveTeamMutation = (options?: Partial<Options<ArchiveTeamData>>) => {
+    const mutationOptions: MutationOptions<ArchiveTeamResponse, ArchiveTeamError, Options<ArchiveTeamData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveTeam({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
-export const updateTeamsMutation = (options?: Partial<Options<UpdateTeamsData>>) => { const mutationOptions: MutationOptions<UpdateTeamsResponse, UpdateTeamsError, Options<UpdateTeamsData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await updateTeams({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const updateTeamsMutation = (options?: Partial<Options<UpdateTeamsData>>) => {
+    const mutationOptions: MutationOptions<UpdateTeamsResponse, UpdateTeamsError, Options<UpdateTeamsData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateTeams({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const getCurrentUserSessionQueryKey = (options?: Options) => [
-    createQueryKey("getCurrentUserSession", options)
+    createQueryKey('getCurrentUserSession', options)
 ];
 
-export const getCurrentUserSessionOptions = (options?: Options) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getCurrentUserSession({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getCurrentUserSessionQueryKey(options)
-}); };
+export const getCurrentUserSessionOptions = (options?: Options) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getCurrentUserSession({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getCurrentUserSessionQueryKey(options)
+    });
+};
 
 export const listUserAssignmentsQueryKey = (options?: Options<ListUserAssignmentsData>) => [
-    createQueryKey("listUserAssignments", options)
+    createQueryKey('listUserAssignments', options)
 ];
 
-export const listUserAssignmentsOptions = (options?: Options<ListUserAssignmentsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listUserAssignments({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUserAssignmentsQueryKey(options)
-}); };
+export const listUserAssignmentsOptions = (options?: Options<ListUserAssignmentsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listUserAssignments({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUserAssignmentsQueryKey(options)
+    });
+};
 
 export const listUserAssignmentsInfiniteQueryKey = (options?: Options<ListUserAssignmentsData>): QueryKey<Options<ListUserAssignmentsData>> => [
-    createQueryKey("listUserAssignments", options, true)
+    createQueryKey('listUserAssignments', options, true)
 ];
 
-export const listUserAssignmentsInfiniteOptions = (options?: Options<ListUserAssignmentsData>) => { return infiniteQueryOptions<ListUserAssignmentsResponse, ListUserAssignmentsError, InfiniteData<ListUserAssignmentsResponse>, QueryKey<Options<ListUserAssignmentsData>>, number | Pick<QueryKey<Options<ListUserAssignmentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListUserAssignmentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listUserAssignments({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUserAssignmentsInfiniteQueryKey(options)
-}); };
+export const listUserAssignmentsInfiniteOptions = (options?: Options<ListUserAssignmentsData>) => {
+    return infiniteQueryOptions<ListUserAssignmentsResponse, ListUserAssignmentsError, InfiniteData<ListUserAssignmentsResponse>, QueryKey<Options<ListUserAssignmentsData>>, number | Pick<QueryKey<Options<ListUserAssignmentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListUserAssignmentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listUserAssignments({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUserAssignmentsInfiniteQueryKey(options)
+    });
+};
 
 export const listUserNotificationsQueryKey = (options?: Options<ListUserNotificationsData>) => [
-    createQueryKey("listUserNotifications", options)
+    createQueryKey('listUserNotifications', options)
 ];
 
-export const listUserNotificationsOptions = (options?: Options<ListUserNotificationsData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listUserNotifications({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUserNotificationsQueryKey(options)
-}); };
+export const listUserNotificationsOptions = (options?: Options<ListUserNotificationsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listUserNotifications({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUserNotificationsQueryKey(options)
+    });
+};
 
 export const listUserNotificationsInfiniteQueryKey = (options?: Options<ListUserNotificationsData>): QueryKey<Options<ListUserNotificationsData>> => [
-    createQueryKey("listUserNotifications", options, true)
+    createQueryKey('listUserNotifications', options, true)
 ];
 
-export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => { return infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listUserNotifications({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUserNotificationsInfiniteQueryKey(options)
-}); };
+export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => {
+    return infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listUserNotifications({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUserNotificationsInfiniteQueryKey(options)
+    });
+};
 
-export const deleteUserNotificationMutation = (options?: Partial<Options<DeleteUserNotificationData>>) => { const mutationOptions: MutationOptions<DeleteUserNotificationResponse, DeleteUserNotificationError, Options<DeleteUserNotificationData>> = {
-    mutationFn: async (localOptions) => {
-        const { data } = await deleteUserNotification({
-            ...options,
-            ...localOptions,
-            throwOnError: true
-        });
-        return data;
-    }
-}; return mutationOptions; };
+export const deleteUserNotificationMutation = (options?: Partial<Options<DeleteUserNotificationData>>) => {
+    const mutationOptions: MutationOptions<DeleteUserNotificationResponse, DeleteUserNotificationError, Options<DeleteUserNotificationData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await deleteUserNotification({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
 
 export const listUsersQueryKey = (options?: Options<ListUsersData>) => [
-    createQueryKey("listUsers", options)
+    createQueryKey('listUsers', options)
 ];
 
-export const listUsersOptions = (options?: Options<ListUsersData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await listUsers({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUsersQueryKey(options)
-}); };
+export const listUsersOptions = (options?: Options<ListUsersData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listUsers({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUsersQueryKey(options)
+    });
+};
 
 export const listUsersInfiniteQueryKey = (options?: Options<ListUsersData>): QueryKey<Options<ListUsersData>> => [
-    createQueryKey("listUsers", options, true)
+    createQueryKey('listUsers', options, true)
 ];
 
-export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => { return infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === "object" ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listUsers({
-            ...options,
-            ...params,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listUsersInfiniteQueryKey(options)
-}); };
+export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
+    return infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listUsers({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listUsersInfiniteQueryKey(options)
+    });
+};
 
 export const getUserQueryKey = (options: Options<GetUserData>) => [
-    createQueryKey("getUser", options)
+    createQueryKey('getUser', options)
 ];
 
-export const getUserOptions = (options: Options<GetUserData>) => { return queryOptions({
-    queryFn: async ({ queryKey }) => {
-        const { data } = await getUser({
-            ...options,
-            ...queryKey[0],
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: getUserQueryKey(options)
-}); };
+export const getUserOptions = (options: Options<GetUserData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getUser({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getUserQueryKey(options)
+    });
+};
