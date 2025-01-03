@@ -236,6 +236,7 @@ func (s *DebriefService) GenerateResponse(ctx context.Context, debriefId uuid.UU
 		WithMessages().
 		Only(ctx)
 	if debriefErr != nil {
+		log.Warn().Str("id", debriefId.String()).Msg("get debrief")
 		return fmt.Errorf("failed to get debrief: %w", debriefErr)
 	}
 

@@ -69,7 +69,13 @@ const createCollaborationState = () => {
 	}
 
 	const cleanup = () => {
-		collab.provider?.disconnect();
+		if (collab.provider && collab.provider.isConnected) {
+			try {
+				collab.provider?.destroy();
+			} catch (e) {
+				console.error("failed to disconnect collaboration provider ", e);
+			}
+		}
 		collab = emptyState;
 	};
 

@@ -38,9 +38,9 @@ func (s *JobService) registerOncallHandoverScanPeriodicJob(interval time.Duratio
 		}
 
 		params := make([]river.InsertManyParams, len(ids))
-		for i, shiftId := range ids {
+		for i, id := range ids {
 			params[i] = river.InsertManyParams{
-				Args: ensureShiftHandoverJobArgs{shiftId: shiftId},
+				Args: ensureShiftHandoverJobArgs{ShiftId: id},
 				InsertOpts: &river.InsertOpts{
 					UniqueOpts: river.UniqueOpts{
 						ByArgs: true,

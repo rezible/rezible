@@ -3,7 +3,7 @@ package river
 import (
 	"context"
 	"fmt"
-	
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -108,14 +108,14 @@ func (s *JobService) insertTx(ctx context.Context, tx *ent.Tx, args river.JobArg
 	return nil
 }
 
-func (s *JobService) RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefResponseJobArgs{debriefId: debriefId}, nil)
+func (s *JobService) RequestGenerateIncidentDebriefResponse(ctx context.Context, tx *ent.Tx, id uuid.UUID) error {
+	return s.insertTx(ctx, tx, generateIncidentDebriefResponseJobArgs{DebriefId: id}, nil)
 }
 
 func (s *JobService) RequestSendUserDebriefRequests(ctx context.Context, tx *ent.Tx, incidentId uuid.UUID) error {
-	return s.insertTx(ctx, tx, sendIncidentDebriefRequestsJobArgs{incidentId: incidentId}, nil)
+	return s.insertTx(ctx, tx, sendIncidentDebriefRequestsJobArgs{IncidentId: incidentId}, nil)
 }
 
 func (s *JobService) RequestGenerateIncidentDebriefSuggestions(ctx context.Context, tx *ent.Tx, debriefId uuid.UUID) error {
-	return s.insertTx(ctx, tx, generateIncidentDebriefSuggestionsJobArgs{debriefId: debriefId}, nil)
+	return s.insertTx(ctx, tx, generateIncidentDebriefSuggestionsJobArgs{DebriefId: debriefId}, nil)
 }
