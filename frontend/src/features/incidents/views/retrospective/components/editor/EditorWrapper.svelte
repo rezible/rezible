@@ -59,7 +59,7 @@
     </div>
 </div>
 
-<div class="block overflow-y-hidden max-h-full" class:hidden={!sectionsSidebarVisible}>
+<div class="block overflow-y-hidden" class:hidden={!sectionsSidebarVisible}>
     {#if sections && containerEl}
         <SectionsSidebar 
             bind:visible={sectionsSidebarVisible}

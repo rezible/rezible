@@ -33,7 +33,15 @@
 	}
 </script>
 
-<div class="flex flex-col gap-2 overflow-y-auto">
+<div class="col-span-3 flex flex-col gap-2 overflow-y-auto border p-2">
+	<Header title="Discuss" />
+
+	<div class="flex flex-row gap-2">
+		<span class="rounded-lg border px-3 py-1 bg-primary cursor-pointer">All</span>
+		<span class="rounded-lg border px-3 py-1">Comments</span>
+		<span class="rounded-lg border px-3 py-1">Action Items</span>
+	</div>
+
 	{#if draft.open}
 		<NewDiscussionDrafter {retrospectiveId} {onDiscussionCreated} />
 	{/if}

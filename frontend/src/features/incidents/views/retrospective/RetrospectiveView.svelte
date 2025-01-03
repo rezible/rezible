@@ -9,7 +9,7 @@
 
 	import EditorWrapper from './components/editor/EditorWrapper.svelte';
     import IncidentDebriefDialog from './components/debrief-dialog/IncidentDebriefDialog.svelte';
-    import RetrospectiveSidebar from './components/sidebar/RetrospectiveSidebar.svelte';
+    import DiscussionsContainer from './components/discussions/DiscussionsContainer.svelte';
     import TimelineSidebar from './components/timeline/TimelineSidebar.svelte';
 
 	type Props = { incidentId: string };
@@ -38,22 +38,15 @@
 	const sections = $derived(retrospective?.attributes.sections);
 </script>
 
-<div class="w-full flex-1 min-h-0 grid grid-cols-10 overflow-y-auto">
-	<div class="col-span-2 h-full">
-		<TimelineSidebar {incidentId} />
-	</div>
+<div class="flex-1 min-h-0 grid grid-cols-10">
+	<TimelineSidebar {incidentId} />
 
 	{#if sections}
 		<EditorWrapper {sections} />
 	{/if}
 
-	{#if retrospectiveId && debriefId}
-		<RetrospectiveSidebar 
-			{incidentId}
-			{retrospectiveId} 
-			{debriefId} 
-			bind:showDebriefDialog
-		/>
+	{#if retrospectiveId}
+		<DiscussionsContainer {retrospectiveId} />
 	{/if}
 </div>
 

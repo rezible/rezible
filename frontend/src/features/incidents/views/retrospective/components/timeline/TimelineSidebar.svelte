@@ -18,16 +18,30 @@
 	}
 </script>
 
-<div class="h-full grid grid-cols-[40px_minmax(0,_1fr)] bg-secondary/10" bind:this={containerEl}>
-	<!--div class="grid">
+<!--div class="grid grid-cols-[40px_minmax(0,_1fr)] bg-secondary/10" bind:this={containerEl}>
+	<div class="grid">
 		{#if containerEl && eventsEl}
 			<TimelineMinimap {containerEl} {eventsEl} {events} {onEventClicked} />
 		{/if}
-	</div-->
+	</div>
 
-	<div class="h-full grid auto-rows-min overflow-y-auto border-e" bind:this={eventsEl}>
+	<div class="grid auto-rows-min overflow-y-auto border-e" bind:this={eventsEl}>
 		{#each events as e, i}
 			<div style="height: {e.size}px">{e.label}</div>
+		{/each}
+	</div>
+</div-->
+
+<div class="col-span-2 grid grid-cols-[40px_minmax(0,_1fr)] overflow-y-auto">
+	<div class="border">
+
+	</div>
+
+	<div class="grid auto-rows-min overflow-y-auto" bind:this={eventsEl}>
+		{#each events as e, i}
+			<div class="border p-2" style="height: {e.size}px">
+				{e.label}
+			</div>
 		{/each}
 	</div>
 </div>
