@@ -2,7 +2,6 @@
     import { cls } from "svelte-ux";
 	import DiscussionSidebar from "./discussion/DiscussionSidebar.svelte";
     import SuggestionsSidebar from "./suggestions/SuggestionsSidebar.svelte";
-    import TimelineSidebar from "./timeline/TimelineSidebar.svelte";
 
 	type Props = {
 		incidentId: string;
@@ -18,10 +17,9 @@
 	}: Props = $props();
 
 	const tabs = [
-		{key: "timeline", label: "Timeline"},
 		{key: "discussion", label: "Discussion"},
 		{key: "suggestions", label: "Suggestions"},
-	]
+	];
 	let activeTabIdx = $state(0);
 	const activeTab = $derived(tabs[activeTabIdx]);
 </script>
@@ -48,9 +46,7 @@
 	</ul>
 
 	<div class="grid min-h-0 overflow-y-auto p-2">
-		{#if activeTab.key === "timeline"}
-			<TimelineSidebar {incidentId} />
-		{:else if activeTab.key === "discussion"}
+		{#if activeTab.key === "discussion"}
 			<DiscussionSidebar {retrospectiveId} />
 		{:else if activeTab.key === "suggestions"}
 			<SuggestionsSidebar

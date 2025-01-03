@@ -1,12 +1,11 @@
 <script lang="ts">
-	import IncidentTimeline from "$src/features/incidents/components/incident-timeline/IncidentTimeline.svelte";
-	import { cls } from "svelte-ux";
 	import TimelineMinimap from "./TimelineMinimap.svelte";
 
 	type Props = { incidentId: string; };
 	let { incidentId }: Props = $props();
 
 	let containerEl = $state<HTMLElement>();
+	let eventsEl = $state<HTMLElement>();
 	const events = [
 		{label: "foo", size: 80},
 		{label: "bar", size: 110},
@@ -19,12 +18,14 @@
 	}
 </script>
 
-<div class="grid grid-cols-[40px_minmax(0,_1fr)] min-h-0 bg-secondary/10">
-	{#if containerEl}
-		<TimelineMinimap {containerEl} {events} {onEventClicked} />
-	{/if}
+<div class="h-full grid grid-cols-[40px_minmax(0,_1fr)] bg-secondary/10" bind:this={containerEl}>
+	<!--div class="grid">
+		{#if containerEl && eventsEl}
+			<TimelineMinimap {containerEl} {eventsEl} {events} {onEventClicked} />
+		{/if}
+	</div-->
 
-	<div class="h-full grid overflow-y-auto border-e" bind:this={containerEl}>
+	<div class="h-full grid auto-rows-min overflow-y-auto border-e" bind:this={eventsEl}>
 		{#each events as e, i}
 			<div style="height: {e.size}px">{e.label}</div>
 		{/each}

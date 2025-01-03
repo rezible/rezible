@@ -36,19 +36,9 @@
     }
 </script>
 
-<div class="col-span-1 grow block overflow-y-hidden max-h-full" class:hidden={!sectionsSidebarVisible}>
-    {#if sections && containerEl}
-        <SectionsSidebar 
-            bind:visible={sectionsSidebarVisible}
-            {containerEl} {sections} {sectionElements} 
-            {onSectionClicked} 
-        />
-    {/if}
-</div>
-
 <div class={cls(
-    "flex flex-col grow min-h-0 overflow-y-auto bg-surface-300", 
-    sectionsSidebarVisible ? "col-span-5" : "col-start-1 col-span-6 border-3"
+    "flex flex-col min-h-0 overflow-y-auto bg-surface-300", 
+    sectionsSidebarVisible ? "col-span-4" : "col-span-5"
 )}>
     <div class="w-full overflow-y-auto pb-2 px-4 flex flex-col gap-4" bind:this={containerEl}>
         {#if sections && collaborationState.provider}
@@ -67,4 +57,14 @@
             <span>connecting provider</span>
         {/if}
     </div>
+</div>
+
+<div class="block overflow-y-hidden max-h-full" class:hidden={!sectionsSidebarVisible}>
+    {#if sections && containerEl}
+        <SectionsSidebar 
+            bind:visible={sectionsSidebarVisible}
+            {containerEl} {sections} {sectionElements} 
+            {onSectionClicked} 
+        />
+    {/if}
 </div>
