@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -27,8 +26,6 @@ type IncidentLinkQuery struct {
 	predicates         []predicate.IncidentLink
 	withIncident       *IncidentQuery
 	withLinkedIncident *IncidentQuery
-	withResourceImpact *IncidentResourceImpactQuery
-	withFKs            bool
 	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -103,28 +100,6 @@ func (ilq *IncidentLinkQuery) QueryLinkedIncident() *IncidentQuery {
 			sqlgraph.From(incidentlink.Table, incidentlink.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.LinkedIncidentTable, incidentlink.LinkedIncidentColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryResourceImpact chains the current query on the "resource_impact" edge.
-func (ilq *IncidentLinkQuery) QueryResourceImpact() *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: ilq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := ilq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := ilq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentlink.Table, incidentlink.FieldID, selector),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.ResourceImpactTable, incidentlink.ResourceImpactColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
 		return fromU, nil
@@ -326,7 +301,6 @@ func (ilq *IncidentLinkQuery) Clone() *IncidentLinkQuery {
 		predicates:         append([]predicate.IncidentLink{}, ilq.predicates...),
 		withIncident:       ilq.withIncident.Clone(),
 		withLinkedIncident: ilq.withLinkedIncident.Clone(),
-		withResourceImpact: ilq.withResourceImpact.Clone(),
 		// clone intermediate query.
 		sql:       ilq.sql.Clone(),
 		path:      ilq.path,
@@ -353,17 +327,6 @@ func (ilq *IncidentLinkQuery) WithLinkedIncident(opts ...func(*IncidentQuery)) *
 		opt(query)
 	}
 	ilq.withLinkedIncident = query
-	return ilq
-}
-
-// WithResourceImpact tells the query-builder to eager-load the nodes that are connected to
-// the "resource_impact" edge. The optional arguments are used to configure the query builder of the edge.
-func (ilq *IncidentLinkQuery) WithResourceImpact(opts ...func(*IncidentResourceImpactQuery)) *IncidentLinkQuery {
-	query := (&IncidentResourceImpactClient{config: ilq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	ilq.withResourceImpact = query
 	return ilq
 }
 
@@ -444,20 +407,12 @@ func (ilq *IncidentLinkQuery) prepareQuery(ctx context.Context) error {
 func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IncidentLink, error) {
 	var (
 		nodes       = []*IncidentLink{}
-		withFKs     = ilq.withFKs
 		_spec       = ilq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			ilq.withIncident != nil,
 			ilq.withLinkedIncident != nil,
-			ilq.withResourceImpact != nil,
 		}
 	)
-	if ilq.withResourceImpact != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, incidentlink.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IncidentLink).scanValues(nil, columns)
 	}
@@ -488,12 +443,6 @@ func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if query := ilq.withLinkedIncident; query != nil {
 		if err := ilq.loadLinkedIncident(ctx, query, nodes, nil,
 			func(n *IncidentLink, e *Incident) { n.Edges.LinkedIncident = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := ilq.withResourceImpact; query != nil {
-		if err := ilq.loadResourceImpact(ctx, query, nodes, nil,
-			func(n *IncidentLink, e *IncidentResourceImpact) { n.Edges.ResourceImpact = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -551,38 +500,6 @@ func (ilq *IncidentLinkQuery) loadLinkedIncident(ctx context.Context, query *Inc
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "linked_incident_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (ilq *IncidentLinkQuery) loadResourceImpact(ctx context.Context, query *IncidentResourceImpactQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *IncidentResourceImpact)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*IncidentLink)
-	for i := range nodes {
-		if nodes[i].incident_link_resource_impact == nil {
-			continue
-		}
-		fk := *nodes[i].incident_link_resource_impact
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(incidentresourceimpact.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "incident_link_resource_impact" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

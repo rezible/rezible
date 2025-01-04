@@ -17,8 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -31,9 +29,7 @@ type TeamQuery struct {
 	inters                  []Interceptor
 	predicates              []predicate.Team
 	withUsers               *UserQuery
-	withServices            *ServiceQuery
 	withOncallRosters       *OncallRosterQuery
-	withSubscriptions       *SubscriptionQuery
 	withIncidentAssignments *IncidentTeamAssignmentQuery
 	withScheduledMeetings   *MeetingScheduleQuery
 	modifiers               []func(*sql.Selector)
@@ -95,28 +91,6 @@ func (tq *TeamQuery) QueryUsers() *UserQuery {
 	return query
 }
 
-// QueryServices chains the current query on the "services" edge.
-func (tq *TeamQuery) QueryServices() *ServiceQuery {
-	query := (&ServiceClient{config: tq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, selector),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.ServicesTable, team.ServicesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryOncallRosters chains the current query on the "oncall_rosters" edge.
 func (tq *TeamQuery) QueryOncallRosters() *OncallRosterQuery {
 	query := (&OncallRosterClient{config: tq.config}).Query()
@@ -132,28 +106,6 @@ func (tq *TeamQuery) QueryOncallRosters() *OncallRosterQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, team.OncallRostersTable, team.OncallRostersPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySubscriptions chains the current query on the "subscriptions" edge.
-func (tq *TeamQuery) QuerySubscriptions() *SubscriptionQuery {
-	query := (&SubscriptionClient{config: tq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, selector),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.SubscriptionsTable, team.SubscriptionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -398,9 +350,7 @@ func (tq *TeamQuery) Clone() *TeamQuery {
 		inters:                  append([]Interceptor{}, tq.inters...),
 		predicates:              append([]predicate.Team{}, tq.predicates...),
 		withUsers:               tq.withUsers.Clone(),
-		withServices:            tq.withServices.Clone(),
 		withOncallRosters:       tq.withOncallRosters.Clone(),
-		withSubscriptions:       tq.withSubscriptions.Clone(),
 		withIncidentAssignments: tq.withIncidentAssignments.Clone(),
 		withScheduledMeetings:   tq.withScheduledMeetings.Clone(),
 		// clone intermediate query.
@@ -421,17 +371,6 @@ func (tq *TeamQuery) WithUsers(opts ...func(*UserQuery)) *TeamQuery {
 	return tq
 }
 
-// WithServices tells the query-builder to eager-load the nodes that are connected to
-// the "services" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithServices(opts ...func(*ServiceQuery)) *TeamQuery {
-	query := (&ServiceClient{config: tq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tq.withServices = query
-	return tq
-}
-
 // WithOncallRosters tells the query-builder to eager-load the nodes that are connected to
 // the "oncall_rosters" edge. The optional arguments are used to configure the query builder of the edge.
 func (tq *TeamQuery) WithOncallRosters(opts ...func(*OncallRosterQuery)) *TeamQuery {
@@ -440,17 +379,6 @@ func (tq *TeamQuery) WithOncallRosters(opts ...func(*OncallRosterQuery)) *TeamQu
 		opt(query)
 	}
 	tq.withOncallRosters = query
-	return tq
-}
-
-// WithSubscriptions tells the query-builder to eager-load the nodes that are connected to
-// the "subscriptions" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *TeamQuery {
-	query := (&SubscriptionClient{config: tq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tq.withSubscriptions = query
 	return tq
 }
 
@@ -554,11 +482,9 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	var (
 		nodes       = []*Team{}
 		_spec       = tq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [4]bool{
 			tq.withUsers != nil,
-			tq.withServices != nil,
 			tq.withOncallRosters != nil,
-			tq.withSubscriptions != nil,
 			tq.withIncidentAssignments != nil,
 			tq.withScheduledMeetings != nil,
 		}
@@ -591,24 +517,10 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 			return nil, err
 		}
 	}
-	if query := tq.withServices; query != nil {
-		if err := tq.loadServices(ctx, query, nodes,
-			func(n *Team) { n.Edges.Services = []*Service{} },
-			func(n *Team, e *Service) { n.Edges.Services = append(n.Edges.Services, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := tq.withOncallRosters; query != nil {
 		if err := tq.loadOncallRosters(ctx, query, nodes,
 			func(n *Team) { n.Edges.OncallRosters = []*OncallRoster{} },
 			func(n *Team, e *OncallRoster) { n.Edges.OncallRosters = append(n.Edges.OncallRosters, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := tq.withSubscriptions; query != nil {
-		if err := tq.loadSubscriptions(ctx, query, nodes,
-			func(n *Team) { n.Edges.Subscriptions = []*Subscription{} },
-			func(n *Team, e *Subscription) { n.Edges.Subscriptions = append(n.Edges.Subscriptions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -692,37 +604,6 @@ func (tq *TeamQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*T
 	}
 	return nil
 }
-func (tq *TeamQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*Team, init func(*Team), assign func(*Team, *Service)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Team)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Service(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(team.ServicesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.service_owner_team
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "service_owner_team" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "service_owner_team" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (tq *TeamQuery) loadOncallRosters(ctx context.Context, query *OncallRosterQuery, nodes []*Team, init func(*Team), assign func(*Team, *OncallRoster)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Team)
@@ -781,37 +662,6 @@ func (tq *TeamQuery) loadOncallRosters(ctx context.Context, query *OncallRosterQ
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (tq *TeamQuery) loadSubscriptions(ctx context.Context, query *SubscriptionQuery, nodes []*Team, init func(*Team), assign func(*Team, *Subscription)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Team)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Subscription(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(team.SubscriptionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.subscription_team
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "subscription_team" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "subscription_team" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

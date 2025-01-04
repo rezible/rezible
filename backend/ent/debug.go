@@ -68,6 +68,30 @@ func (c *IncidentEventClient) Debug() *IncidentEventClient {
 	return &IncidentEventClient{config: cfg}
 }
 
+func (c *IncidentEventContextClient) Debug() *IncidentEventContextClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentEventContextClient{config: cfg}
+}
+
+func (c *IncidentEventContributingFactorClient) Debug() *IncidentEventContributingFactorClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentEventContributingFactorClient{config: cfg}
+}
+
+func (c *IncidentEventEvidenceClient) Debug() *IncidentEventEvidenceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentEventEvidenceClient{config: cfg}
+}
+
 func (c *IncidentFieldClient) Debug() *IncidentFieldClient {
 	if c.debug {
 		return c
@@ -92,12 +116,12 @@ func (c *IncidentLinkClient) Debug() *IncidentLinkClient {
 	return &IncidentLinkClient{config: cfg}
 }
 
-func (c *IncidentResourceImpactClient) Debug() *IncidentResourceImpactClient {
+func (c *IncidentMilestoneClient) Debug() *IncidentMilestoneClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentResourceImpactClient{config: cfg}
+	return &IncidentMilestoneClient{config: cfg}
 }
 
 func (c *IncidentRoleClient) Debug() *IncidentRoleClient {
@@ -290,22 +314,6 @@ func (c *RetrospectiveReviewClient) Debug() *RetrospectiveReviewClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &RetrospectiveReviewClient{config: cfg}
-}
-
-func (c *ServiceClient) Debug() *ServiceClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &ServiceClient{config: cfg}
-}
-
-func (c *SubscriptionClient) Debug() *SubscriptionClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SubscriptionClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {

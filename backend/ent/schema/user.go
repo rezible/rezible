@@ -35,8 +35,6 @@ func (User) Edges() []ent.Edge {
 
 		edge.From("alerts_received", OncallAlertInstance.Type).Ref("receiver"),
 
-		edge.From("subscriptions", Subscription.Type).Ref("user"),
-
 		edge.From("incident_role_assignments", IncidentRoleAssignment.Type).Ref("user"),
 		edge.To("incident_debriefs", IncidentDebrief.Type),
 

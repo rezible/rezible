@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
 )
 
 // IncidentEvent is the model entity for the IncidentEvent schema.
@@ -19,12 +20,26 @@ type IncidentEvent struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Type holds the value of the "type" field.
-	Type incidentevent.Type `json:"type,omitempty"`
-	// Time holds the value of the "time" field.
-	Time time.Time `json:"time,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// Timestamp holds the value of the "timestamp" field.
+	Timestamp *time.Time `json:"timestamp,omitempty"`
+	// Type holds the value of the "type" field.
+	Type incidentevent.Type `json:"type,omitempty"`
+	// Title holds the value of the "title" field.
+	Title string `json:"title,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// CreatedBy holds the value of the "created_by" field.
+	CreatedBy uuid.UUID `json:"created_by,omitempty"`
+	// Sequence holds the value of the "sequence" field.
+	Sequence int `json:"sequence,omitempty"`
+	// IsDraft holds the value of the "is_draft" field.
+	IsDraft bool `json:"is_draft,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentEventQuery when eager-loading is set.
 	Edges        IncidentEventEdges `json:"edges"`
@@ -35,11 +50,15 @@ type IncidentEvent struct {
 type IncidentEventEdges struct {
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
-	// Services holds the value of the services edge.
-	Services []*Service `json:"services,omitempty"`
+	// Context holds the value of the context edge.
+	Context *IncidentEventContext `json:"context,omitempty"`
+	// Factors holds the value of the factors edge.
+	Factors []*IncidentEventContributingFactor `json:"factors,omitempty"`
+	// Evidence holds the value of the evidence edge.
+	Evidence []*IncidentEventEvidence `json:"evidence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [4]bool
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -53,13 +72,33 @@ func (e IncidentEventEdges) IncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "incident"}
 }
 
-// ServicesOrErr returns the Services value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEventEdges) ServicesOrErr() ([]*Service, error) {
-	if e.loadedTypes[1] {
-		return e.Services, nil
+// ContextOrErr returns the Context value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventEdges) ContextOrErr() (*IncidentEventContext, error) {
+	if e.Context != nil {
+		return e.Context, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: incidenteventcontext.Label}
 	}
-	return nil, &NotLoadedError{edge: "services"}
+	return nil, &NotLoadedError{edge: "context"}
+}
+
+// FactorsOrErr returns the Factors value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEventEdges) FactorsOrErr() ([]*IncidentEventContributingFactor, error) {
+	if e.loadedTypes[2] {
+		return e.Factors, nil
+	}
+	return nil, &NotLoadedError{edge: "factors"}
+}
+
+// EvidenceOrErr returns the Evidence value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
+	if e.loadedTypes[3] {
+		return e.Evidence, nil
+	}
+	return nil, &NotLoadedError{edge: "evidence"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -67,11 +106,15 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentevent.FieldType:
+		case incidentevent.FieldIsDraft:
+			values[i] = new(sql.NullBool)
+		case incidentevent.FieldSequence:
+			values[i] = new(sql.NullInt64)
+		case incidentevent.FieldType, incidentevent.FieldTitle, incidentevent.FieldDescription:
 			values[i] = new(sql.NullString)
-		case incidentevent.FieldTime:
+		case incidentevent.FieldTimestamp, incidentevent.FieldCreatedAt, incidentevent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case incidentevent.FieldID, incidentevent.FieldIncidentID:
+		case incidentevent.FieldID, incidentevent.FieldIncidentID, incidentevent.FieldCreatedBy:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -94,23 +137,66 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ie.ID = *value
 			}
+		case incidentevent.FieldIncidentID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
+			} else if value != nil {
+				ie.IncidentID = *value
+			}
+		case incidentevent.FieldTimestamp:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
+			} else if value.Valid {
+				ie.Timestamp = new(time.Time)
+				*ie.Timestamp = value.Time
+			}
 		case incidentevent.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
 				ie.Type = incidentevent.Type(value.String)
 			}
-		case incidentevent.FieldTime:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field time", values[i])
+		case incidentevent.FieldTitle:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
-				ie.Time = value.Time
+				ie.Title = value.String
 			}
-		case incidentevent.FieldIncidentID:
+		case incidentevent.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				ie.Description = value.String
+			}
+		case incidentevent.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				ie.CreatedAt = value.Time
+			}
+		case incidentevent.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				ie.UpdatedAt = value.Time
+			}
+		case incidentevent.FieldCreatedBy:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
+				return fmt.Errorf("unexpected type %T for field created_by", values[i])
 			} else if value != nil {
-				ie.IncidentID = *value
+				ie.CreatedBy = *value
+			}
+		case incidentevent.FieldSequence:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field sequence", values[i])
+			} else if value.Valid {
+				ie.Sequence = int(value.Int64)
+			}
+		case incidentevent.FieldIsDraft:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_draft", values[i])
+			} else if value.Valid {
+				ie.IsDraft = value.Bool
 			}
 		default:
 			ie.selectValues.Set(columns[i], values[i])
@@ -130,9 +216,19 @@ func (ie *IncidentEvent) QueryIncident() *IncidentQuery {
 	return NewIncidentEventClient(ie.config).QueryIncident(ie)
 }
 
-// QueryServices queries the "services" edge of the IncidentEvent entity.
-func (ie *IncidentEvent) QueryServices() *ServiceQuery {
-	return NewIncidentEventClient(ie.config).QueryServices(ie)
+// QueryContext queries the "context" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryContext() *IncidentEventContextQuery {
+	return NewIncidentEventClient(ie.config).QueryContext(ie)
+}
+
+// QueryFactors queries the "factors" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryFactors() *IncidentEventContributingFactorQuery {
+	return NewIncidentEventClient(ie.config).QueryFactors(ie)
+}
+
+// QueryEvidence queries the "evidence" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryEvidence() *IncidentEventEvidenceQuery {
+	return NewIncidentEventClient(ie.config).QueryEvidence(ie)
 }
 
 // Update returns a builder for updating this IncidentEvent.
@@ -158,14 +254,37 @@ func (ie *IncidentEvent) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEvent(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ie.ID))
+	builder.WriteString("incident_id=")
+	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
+	builder.WriteString(", ")
+	if v := ie.Timestamp; v != nil {
+		builder.WriteString("timestamp=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", ie.Type))
 	builder.WriteString(", ")
-	builder.WriteString("time=")
-	builder.WriteString(ie.Time.Format(time.ANSIC))
+	builder.WriteString("title=")
+	builder.WriteString(ie.Title)
 	builder.WriteString(", ")
-	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
+	builder.WriteString("description=")
+	builder.WriteString(ie.Description)
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(ie.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(ie.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("created_by=")
+	builder.WriteString(fmt.Sprintf("%v", ie.CreatedBy))
+	builder.WriteString(", ")
+	builder.WriteString("sequence=")
+	builder.WriteString(fmt.Sprintf("%v", ie.Sequence))
+	builder.WriteString(", ")
+	builder.WriteString("is_draft=")
+	builder.WriteString(fmt.Sprintf("%v", ie.IsDraft))
 	builder.WriteByte(')')
 	return builder.String()
 }

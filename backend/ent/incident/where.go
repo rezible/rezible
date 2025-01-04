@@ -636,21 +636,67 @@ func TypeIDNotNil() predicate.Incident {
 	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
-// HasSubscriptions applies the HasEdge predicate on the "subscriptions" edge.
-func HasSubscriptions() predicate.Incident {
+// HasEnvironments applies the HasEdge predicate on the "environments" edge.
+func HasEnvironments() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SubscriptionsTable, SubscriptionsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentsTable, EnvironmentsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSubscriptionsWith applies the HasEdge predicate on the "subscriptions" edge with a given conditions (other predicates).
-func HasSubscriptionsWith(preds ...predicate.Subscription) predicate.Incident {
+// HasEnvironmentsWith applies the HasEdge predicate on the "environments" edge with a given conditions (other predicates).
+func HasEnvironmentsWith(preds ...predicate.Environment) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
-		step := newSubscriptionsStep()
+		step := newEnvironmentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSeverity applies the HasEdge predicate on the "severity" edge.
+func HasSeverity() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, SeverityTable, SeverityColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSeverityWith applies the HasEdge predicate on the "severity" edge with a given conditions (other predicates).
+func HasSeverityWith(preds ...predicate.IncidentSeverity) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newSeverityStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasType applies the HasEdge predicate on the "type" edge.
+func HasType() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TypeTable, TypeColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTypeWith applies the HasEdge predicate on the "type" edge with a given conditions (other predicates).
+func HasTypeWith(preds ...predicate.IncidentType) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newTypeStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -728,98 +774,6 @@ func HasLinkedIncidentsWith(preds ...predicate.Incident) predicate.Incident {
 	})
 }
 
-// HasImpactedResources applies the HasEdge predicate on the "impacted_resources" edge.
-func HasImpactedResources() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ImpactedResourcesTable, ImpactedResourcesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasImpactedResourcesWith applies the HasEdge predicate on the "impacted_resources" edge with a given conditions (other predicates).
-func HasImpactedResourcesWith(preds ...predicate.IncidentResourceImpact) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newImpactedResourcesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasEnvironments applies the HasEdge predicate on the "environments" edge.
-func HasEnvironments() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentsTable, EnvironmentsPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEnvironmentsWith applies the HasEdge predicate on the "environments" edge with a given conditions (other predicates).
-func HasEnvironmentsWith(preds ...predicate.Environment) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newEnvironmentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasSeverity applies the HasEdge predicate on the "severity" edge.
-func HasSeverity() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, SeverityTable, SeverityColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSeverityWith applies the HasEdge predicate on the "severity" edge with a given conditions (other predicates).
-func HasSeverityWith(preds ...predicate.IncidentSeverity) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newSeverityStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasType applies the HasEdge predicate on the "type" edge.
-func HasType() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, TypeTable, TypeColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTypeWith applies the HasEdge predicate on the "type" edge with a given conditions (other predicates).
-func HasTypeWith(preds ...predicate.IncidentType) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newTypeStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
 func HasRetrospective() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -835,6 +789,29 @@ func HasRetrospective() predicate.Incident {
 func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := newRetrospectiveStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMilestones applies the HasEdge predicate on the "milestones" edge.
+func HasMilestones() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMilestonesWith applies the HasEdge predicate on the "milestones" edge with a given conditions (other predicates).
+func HasMilestonesWith(preds ...predicate.IncidentMilestone) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newMilestonesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

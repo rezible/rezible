@@ -20,10 +20,13 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
@@ -48,8 +51,6 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -113,47 +114,48 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			environment.Table:                  environment.ValidColumn,
-			functionality.Table:                functionality.ValidColumn,
-			incident.Table:                     incident.ValidColumn,
-			incidentdebrief.Table:              incidentdebrief.ValidColumn,
-			incidentdebriefmessage.Table:       incidentdebriefmessage.ValidColumn,
-			incidentdebriefquestion.Table:      incidentdebriefquestion.ValidColumn,
-			incidentdebriefsuggestion.Table:    incidentdebriefsuggestion.ValidColumn,
-			incidentevent.Table:                incidentevent.ValidColumn,
-			incidentfield.Table:                incidentfield.ValidColumn,
-			incidentfieldoption.Table:          incidentfieldoption.ValidColumn,
-			incidentlink.Table:                 incidentlink.ValidColumn,
-			incidentresourceimpact.Table:       incidentresourceimpact.ValidColumn,
-			incidentrole.Table:                 incidentrole.ValidColumn,
-			incidentroleassignment.Table:       incidentroleassignment.ValidColumn,
-			incidentseverity.Table:             incidentseverity.ValidColumn,
-			incidenttag.Table:                  incidenttag.ValidColumn,
-			incidentteamassignment.Table:       incidentteamassignment.ValidColumn,
-			incidenttype.Table:                 incidenttype.ValidColumn,
-			meetingschedule.Table:              meetingschedule.ValidColumn,
-			meetingsession.Table:               meetingsession.ValidColumn,
-			oncallalert.Table:                  oncallalert.ValidColumn,
-			oncallalertinstance.Table:          oncallalertinstance.ValidColumn,
-			oncallhandovertemplate.Table:       oncallhandovertemplate.ValidColumn,
-			oncallroster.Table:                 oncallroster.ValidColumn,
-			oncallschedule.Table:               oncallschedule.ValidColumn,
-			oncallscheduleparticipant.Table:    oncallscheduleparticipant.ValidColumn,
-			oncallusershift.Table:              oncallusershift.ValidColumn,
-			oncallusershiftannotation.Table:    oncallusershiftannotation.ValidColumn,
-			oncallusershiftcover.Table:         oncallusershiftcover.ValidColumn,
-			oncallusershifthandover.Table:      oncallusershifthandover.ValidColumn,
-			providerconfig.Table:               providerconfig.ValidColumn,
-			providersynchistory.Table:          providersynchistory.ValidColumn,
-			retrospective.Table:                retrospective.ValidColumn,
-			retrospectivediscussion.Table:      retrospectivediscussion.ValidColumn,
-			retrospectivediscussionreply.Table: retrospectivediscussionreply.ValidColumn,
-			retrospectivereview.Table:          retrospectivereview.ValidColumn,
-			service.Table:                      service.ValidColumn,
-			subscription.Table:                 subscription.ValidColumn,
-			task.Table:                         task.ValidColumn,
-			team.Table:                         team.ValidColumn,
-			user.Table:                         user.ValidColumn,
+			environment.Table:                     environment.ValidColumn,
+			functionality.Table:                   functionality.ValidColumn,
+			incident.Table:                        incident.ValidColumn,
+			incidentdebrief.Table:                 incidentdebrief.ValidColumn,
+			incidentdebriefmessage.Table:          incidentdebriefmessage.ValidColumn,
+			incidentdebriefquestion.Table:         incidentdebriefquestion.ValidColumn,
+			incidentdebriefsuggestion.Table:       incidentdebriefsuggestion.ValidColumn,
+			incidentevent.Table:                   incidentevent.ValidColumn,
+			incidenteventcontext.Table:            incidenteventcontext.ValidColumn,
+			incidenteventcontributingfactor.Table: incidenteventcontributingfactor.ValidColumn,
+			incidenteventevidence.Table:           incidenteventevidence.ValidColumn,
+			incidentfield.Table:                   incidentfield.ValidColumn,
+			incidentfieldoption.Table:             incidentfieldoption.ValidColumn,
+			incidentlink.Table:                    incidentlink.ValidColumn,
+			incidentmilestone.Table:               incidentmilestone.ValidColumn,
+			incidentrole.Table:                    incidentrole.ValidColumn,
+			incidentroleassignment.Table:          incidentroleassignment.ValidColumn,
+			incidentseverity.Table:                incidentseverity.ValidColumn,
+			incidenttag.Table:                     incidenttag.ValidColumn,
+			incidentteamassignment.Table:          incidentteamassignment.ValidColumn,
+			incidenttype.Table:                    incidenttype.ValidColumn,
+			meetingschedule.Table:                 meetingschedule.ValidColumn,
+			meetingsession.Table:                  meetingsession.ValidColumn,
+			oncallalert.Table:                     oncallalert.ValidColumn,
+			oncallalertinstance.Table:             oncallalertinstance.ValidColumn,
+			oncallhandovertemplate.Table:          oncallhandovertemplate.ValidColumn,
+			oncallroster.Table:                    oncallroster.ValidColumn,
+			oncallschedule.Table:                  oncallschedule.ValidColumn,
+			oncallscheduleparticipant.Table:       oncallscheduleparticipant.ValidColumn,
+			oncallusershift.Table:                 oncallusershift.ValidColumn,
+			oncallusershiftannotation.Table:       oncallusershiftannotation.ValidColumn,
+			oncallusershiftcover.Table:            oncallusershiftcover.ValidColumn,
+			oncallusershifthandover.Table:         oncallusershifthandover.ValidColumn,
+			providerconfig.Table:                  providerconfig.ValidColumn,
+			providersynchistory.Table:             providersynchistory.ValidColumn,
+			retrospective.Table:                   retrospective.ValidColumn,
+			retrospectivediscussion.Table:         retrospectivediscussion.ValidColumn,
+			retrospectivediscussionreply.Table:    retrospectivediscussionreply.ValidColumn,
+			retrospectivereview.Table:             retrospectivereview.ValidColumn,
+			task.Table:                            task.ValidColumn,
+			team.Table:                            team.ValidColumn,
+			user.Table:                            user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

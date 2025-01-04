@@ -18,7 +18,7 @@ func (IncidentLink) Fields() []ent.Field {
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("linked_incident_id", uuid.UUID{}),
 		field.String("description").Optional(),
-		field.Enum("link_type").Values("parent", "child", "impact"),
+		field.Enum("link_type").Values("parent", "child", "similar"),
 	}
 }
 
@@ -33,6 +33,5 @@ func (IncidentLink) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("linked_incident_id"),
-		edge.To("resource_impact", IncidentResourceImpact.Type).Unique(),
 	}
 }

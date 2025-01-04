@@ -33,22 +33,24 @@ func (Incident) Fields() []ent.Field {
 // Edges of the Incident.
 func (Incident) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("subscriptions", Subscription.Type).
-			Ref("incident"),
-		edge.From("team_assignments", IncidentTeamAssignment.Type).
-			Ref("incident"),
-		edge.From("role_assignments", IncidentRoleAssignment.Type).
-			Ref("incident"),
-		edge.To("linked_incidents", Incident.Type).
-			Through("incident_links", IncidentLink.Type),
-		edge.To("impacted_resources", IncidentResourceImpact.Type),
 		edge.To("environments", Environment.Type),
 		edge.To("severity", IncidentSeverity.Type).
 			Unique().Field("severity_id"),
 		edge.To("type", IncidentType.Type).
 			Unique().Field("type_id"),
+
+		edge.From("team_assignments", IncidentTeamAssignment.Type).
+			Ref("incident"),
+		edge.From("role_assignments", IncidentRoleAssignment.Type).
+			Ref("incident"),
+		//edge.To("system_components", SystemComponent.Type).
+		//	Through("incident_system_components", IncidentSystemComponent.Type),
+		edge.To("linked_incidents", Incident.Type).
+			Through("incident_links", IncidentLink.Type),
+
 		edge.To("retrospective", Retrospective.Type).
 			Unique(),
+		edge.To("milestones", IncidentMilestone.Type),
 		edge.To("events", IncidentEvent.Type),
 		edge.To("field_selections", IncidentFieldOption.Type),
 		edge.To("tasks", Task.Type),

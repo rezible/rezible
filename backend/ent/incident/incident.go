@@ -35,24 +35,22 @@ const (
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
-	// EdgeSubscriptions holds the string denoting the subscriptions edge name in mutations.
-	EdgeSubscriptions = "subscriptions"
-	// EdgeTeamAssignments holds the string denoting the team_assignments edge name in mutations.
-	EdgeTeamAssignments = "team_assignments"
-	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
-	EdgeRoleAssignments = "role_assignments"
-	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
-	EdgeLinkedIncidents = "linked_incidents"
-	// EdgeImpactedResources holds the string denoting the impacted_resources edge name in mutations.
-	EdgeImpactedResources = "impacted_resources"
 	// EdgeEnvironments holds the string denoting the environments edge name in mutations.
 	EdgeEnvironments = "environments"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
 	EdgeType = "type"
+	// EdgeTeamAssignments holds the string denoting the team_assignments edge name in mutations.
+	EdgeTeamAssignments = "team_assignments"
+	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
+	EdgeRoleAssignments = "role_assignments"
+	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
+	EdgeLinkedIncidents = "linked_incidents"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
+	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
+	EdgeMilestones = "milestones"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
 	// EdgeFieldSelections holds the string denoting the field_selections edge name in mutations.
@@ -69,36 +67,6 @@ const (
 	EdgeIncidentLinks = "incident_links"
 	// Table holds the table name of the incident in the database.
 	Table = "incidents"
-	// SubscriptionsTable is the table that holds the subscriptions relation/edge.
-	SubscriptionsTable = "subscriptions"
-	// SubscriptionsInverseTable is the table name for the Subscription entity.
-	// It exists in this package in order to avoid circular dependency with the "subscription" package.
-	SubscriptionsInverseTable = "subscriptions"
-	// SubscriptionsColumn is the table column denoting the subscriptions relation/edge.
-	SubscriptionsColumn = "subscription_incident"
-	// TeamAssignmentsTable is the table that holds the team_assignments relation/edge.
-	TeamAssignmentsTable = "incident_team_assignments"
-	// TeamAssignmentsInverseTable is the table name for the IncidentTeamAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentteamassignment" package.
-	TeamAssignmentsInverseTable = "incident_team_assignments"
-	// TeamAssignmentsColumn is the table column denoting the team_assignments relation/edge.
-	TeamAssignmentsColumn = "incident_id"
-	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
-	RoleAssignmentsTable = "incident_role_assignments"
-	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
-	RoleAssignmentsInverseTable = "incident_role_assignments"
-	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
-	RoleAssignmentsColumn = "incident_id"
-	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
-	LinkedIncidentsTable = "incident_links"
-	// ImpactedResourcesTable is the table that holds the impacted_resources relation/edge.
-	ImpactedResourcesTable = "incident_resource_impacts"
-	// ImpactedResourcesInverseTable is the table name for the IncidentResourceImpact entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentresourceimpact" package.
-	ImpactedResourcesInverseTable = "incident_resource_impacts"
-	// ImpactedResourcesColumn is the table column denoting the impacted_resources relation/edge.
-	ImpactedResourcesColumn = "incident_id"
 	// EnvironmentsTable is the table that holds the environments relation/edge. The primary key declared below.
 	EnvironmentsTable = "incident_environments"
 	// EnvironmentsInverseTable is the table name for the Environment entity.
@@ -118,6 +86,22 @@ const (
 	TypeInverseTable = "incident_types"
 	// TypeColumn is the table column denoting the type relation/edge.
 	TypeColumn = "type_id"
+	// TeamAssignmentsTable is the table that holds the team_assignments relation/edge.
+	TeamAssignmentsTable = "incident_team_assignments"
+	// TeamAssignmentsInverseTable is the table name for the IncidentTeamAssignment entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentteamassignment" package.
+	TeamAssignmentsInverseTable = "incident_team_assignments"
+	// TeamAssignmentsColumn is the table column denoting the team_assignments relation/edge.
+	TeamAssignmentsColumn = "incident_id"
+	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
+	RoleAssignmentsTable = "incident_role_assignments"
+	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
+	RoleAssignmentsInverseTable = "incident_role_assignments"
+	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
+	RoleAssignmentsColumn = "incident_id"
+	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
+	LinkedIncidentsTable = "incident_links"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -125,6 +109,13 @@ const (
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
 	RetrospectiveColumn = "incident_retrospective"
+	// MilestonesTable is the table that holds the milestones relation/edge.
+	MilestonesTable = "incident_milestones"
+	// MilestonesInverseTable is the table name for the IncidentMilestone entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentmilestone" package.
+	MilestonesInverseTable = "incident_milestones"
+	// MilestonesColumn is the table column denoting the milestones relation/edge.
+	MilestonesColumn = "incident_id"
 	// EventsTable is the table that holds the events relation/edge.
 	EventsTable = "incident_events"
 	// EventsInverseTable is the table name for the IncidentEvent entity.
@@ -187,12 +178,12 @@ var Columns = []string{
 }
 
 var (
-	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
-	// primary key for the linked_incidents relation (M2M).
-	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
 	// EnvironmentsPrimaryKey and EnvironmentsColumn2 are the table columns denoting the
 	// primary key for the environments relation (M2M).
 	EnvironmentsPrimaryKey = []string{"incident_id", "environment_id"}
+	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
+	// primary key for the linked_incidents relation (M2M).
+	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
 	// FieldSelectionsPrimaryKey and FieldSelectionsColumn2 are the table columns denoting the
 	// primary key for the field_selections relation (M2M).
 	FieldSelectionsPrimaryKey = []string{"incident_id", "incident_field_option_id"}
@@ -284,17 +275,31 @@ func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
 }
 
-// BySubscriptionsCount orders the results by subscriptions count.
-func BySubscriptionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByEnvironmentsCount orders the results by environments count.
+func ByEnvironmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSubscriptionsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newEnvironmentsStep(), opts...)
 	}
 }
 
-// BySubscriptions orders the results by subscriptions terms.
-func BySubscriptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByEnvironments orders the results by environments terms.
+func ByEnvironments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSubscriptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newEnvironmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySeverityField orders the results by severity field.
+func BySeverityField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSeverityStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTypeField orders the results by type field.
+func ByTypeField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTypeStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -340,52 +345,24 @@ func ByLinkedIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByImpactedResourcesCount orders the results by impacted_resources count.
-func ByImpactedResourcesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newImpactedResourcesStep(), opts...)
-	}
-}
-
-// ByImpactedResources orders the results by impacted_resources terms.
-func ByImpactedResources(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newImpactedResourcesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByEnvironmentsCount orders the results by environments count.
-func ByEnvironmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEnvironmentsStep(), opts...)
-	}
-}
-
-// ByEnvironments orders the results by environments terms.
-func ByEnvironments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEnvironmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// BySeverityField orders the results by severity field.
-func BySeverityField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSeverityStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByTypeField orders the results by type field.
-func ByTypeField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTypeStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByRetrospectiveField orders the results by retrospective field.
 func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMilestonesCount orders the results by milestones count.
+func ByMilestonesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMilestonesStep(), opts...)
+	}
+}
+
+// ByMilestones orders the results by milestones terms.
+func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMilestonesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -486,11 +463,25 @@ func ByIncidentLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newSubscriptionsStep() *sqlgraph.Step {
+func newEnvironmentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SubscriptionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SubscriptionsTable, SubscriptionsColumn),
+		sqlgraph.To(EnvironmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentsTable, EnvironmentsPrimaryKey...),
+	)
+}
+func newSeverityStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SeverityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SeverityTable, SeverityColumn),
+	)
+}
+func newTypeStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TypeInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TypeTable, TypeColumn),
 	)
 }
 func newTeamAssignmentsStep() *sqlgraph.Step {
@@ -514,39 +505,18 @@ func newLinkedIncidentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
 	)
 }
-func newImpactedResourcesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ImpactedResourcesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, ImpactedResourcesTable, ImpactedResourcesColumn),
-	)
-}
-func newEnvironmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EnvironmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentsTable, EnvironmentsPrimaryKey...),
-	)
-}
-func newSeverityStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SeverityInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SeverityTable, SeverityColumn),
-	)
-}
-func newTypeStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TypeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, TypeTable, TypeColumn),
-	)
-}
 func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
+	)
+}
+func newMilestonesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MilestonesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
 	)
 }
 func newEventsStep() *sqlgraph.Step {

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -14,19 +13,17 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/functionality"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
 // FunctionalityQuery is the builder for querying Functionality entities.
 type FunctionalityQuery struct {
 	config
-	ctx           *QueryContext
-	order         []functionality.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Functionality
-	withIncidents *IncidentResourceImpactQuery
-	modifiers     []func(*sql.Selector)
+	ctx        *QueryContext
+	order      []functionality.OrderOption
+	inters     []Interceptor
+	predicates []predicate.Functionality
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,28 +58,6 @@ func (fq *FunctionalityQuery) Unique(unique bool) *FunctionalityQuery {
 func (fq *FunctionalityQuery) Order(o ...functionality.OrderOption) *FunctionalityQuery {
 	fq.order = append(fq.order, o...)
 	return fq
-}
-
-// QueryIncidents chains the current query on the "incidents" edge.
-func (fq *FunctionalityQuery) QueryIncidents() *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: fq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := fq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := fq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(functionality.Table, functionality.FieldID, selector),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, functionality.IncidentsTable, functionality.IncidentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first Functionality entity from the query.
@@ -272,28 +247,16 @@ func (fq *FunctionalityQuery) Clone() *FunctionalityQuery {
 		return nil
 	}
 	return &FunctionalityQuery{
-		config:        fq.config,
-		ctx:           fq.ctx.Clone(),
-		order:         append([]functionality.OrderOption{}, fq.order...),
-		inters:        append([]Interceptor{}, fq.inters...),
-		predicates:    append([]predicate.Functionality{}, fq.predicates...),
-		withIncidents: fq.withIncidents.Clone(),
+		config:     fq.config,
+		ctx:        fq.ctx.Clone(),
+		order:      append([]functionality.OrderOption{}, fq.order...),
+		inters:     append([]Interceptor{}, fq.inters...),
+		predicates: append([]predicate.Functionality{}, fq.predicates...),
 		// clone intermediate query.
 		sql:       fq.sql.Clone(),
 		path:      fq.path,
 		modifiers: append([]func(*sql.Selector){}, fq.modifiers...),
 	}
-}
-
-// WithIncidents tells the query-builder to eager-load the nodes that are connected to
-// the "incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (fq *FunctionalityQuery) WithIncidents(opts ...func(*IncidentResourceImpactQuery)) *FunctionalityQuery {
-	query := (&IncidentResourceImpactClient{config: fq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	fq.withIncidents = query
-	return fq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -372,11 +335,8 @@ func (fq *FunctionalityQuery) prepareQuery(ctx context.Context) error {
 
 func (fq *FunctionalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Functionality, error) {
 	var (
-		nodes       = []*Functionality{}
-		_spec       = fq.querySpec()
-		loadedTypes = [1]bool{
-			fq.withIncidents != nil,
-		}
+		nodes = []*Functionality{}
+		_spec = fq.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Functionality).scanValues(nil, columns)
@@ -384,7 +344,6 @@ func (fq *FunctionalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Functionality{config: fq.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(fq.modifiers) > 0 {
@@ -399,45 +358,7 @@ func (fq *FunctionalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := fq.withIncidents; query != nil {
-		if err := fq.loadIncidents(ctx, query, nodes,
-			func(n *Functionality) { n.Edges.Incidents = []*IncidentResourceImpact{} },
-			func(n *Functionality, e *IncidentResourceImpact) { n.Edges.Incidents = append(n.Edges.Incidents, e) }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (fq *FunctionalityQuery) loadIncidents(ctx context.Context, query *IncidentResourceImpactQuery, nodes []*Functionality, init func(*Functionality), assign func(*Functionality, *IncidentResourceImpact)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Functionality)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentresourceimpact.FieldFunctionalityID)
-	}
-	query.Where(predicate.IncidentResourceImpact(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(functionality.IncidentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.FunctionalityID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "functionality_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
 }
 
 func (fq *FunctionalityQuery) sqlCount(ctx context.Context) (int, error) {

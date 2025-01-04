@@ -15,8 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -98,21 +96,6 @@ func (tc *TeamCreate) AddUsers(u ...*User) *TeamCreate {
 	return tc.AddUserIDs(ids...)
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (tc *TeamCreate) AddServiceIDs(ids ...uuid.UUID) *TeamCreate {
-	tc.mutation.AddServiceIDs(ids...)
-	return tc
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (tc *TeamCreate) AddServices(s ...*Service) *TeamCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tc.AddServiceIDs(ids...)
-}
-
 // AddOncallRosterIDs adds the "oncall_rosters" edge to the OncallRoster entity by IDs.
 func (tc *TeamCreate) AddOncallRosterIDs(ids ...uuid.UUID) *TeamCreate {
 	tc.mutation.AddOncallRosterIDs(ids...)
@@ -126,21 +109,6 @@ func (tc *TeamCreate) AddOncallRosters(o ...*OncallRoster) *TeamCreate {
 		ids[i] = o[i].ID
 	}
 	return tc.AddOncallRosterIDs(ids...)
-}
-
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (tc *TeamCreate) AddSubscriptionIDs(ids ...uuid.UUID) *TeamCreate {
-	tc.mutation.AddSubscriptionIDs(ids...)
-	return tc
-}
-
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (tc *TeamCreate) AddSubscriptions(s ...*Subscription) *TeamCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tc.AddSubscriptionIDs(ids...)
 }
 
 // AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
@@ -290,22 +258,6 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := tc.mutation.OncallRostersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -315,22 +267,6 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := tc.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

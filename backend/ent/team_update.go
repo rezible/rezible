@@ -15,8 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -118,21 +116,6 @@ func (tu *TeamUpdate) AddUsers(u ...*User) *TeamUpdate {
 	return tu.AddUserIDs(ids...)
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (tu *TeamUpdate) AddServiceIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddServiceIDs(ids...)
-	return tu
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (tu *TeamUpdate) AddServices(s ...*Service) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tu.AddServiceIDs(ids...)
-}
-
 // AddOncallRosterIDs adds the "oncall_rosters" edge to the OncallRoster entity by IDs.
 func (tu *TeamUpdate) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdate {
 	tu.mutation.AddOncallRosterIDs(ids...)
@@ -146,21 +129,6 @@ func (tu *TeamUpdate) AddOncallRosters(o ...*OncallRoster) *TeamUpdate {
 		ids[i] = o[i].ID
 	}
 	return tu.AddOncallRosterIDs(ids...)
-}
-
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (tu *TeamUpdate) AddSubscriptionIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.AddSubscriptionIDs(ids...)
-	return tu
-}
-
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (tu *TeamUpdate) AddSubscriptions(s ...*Subscription) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tu.AddSubscriptionIDs(ids...)
 }
 
 // AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
@@ -219,27 +187,6 @@ func (tu *TeamUpdate) RemoveUsers(u ...*User) *TeamUpdate {
 	return tu.RemoveUserIDs(ids...)
 }
 
-// ClearServices clears all "services" edges to the Service entity.
-func (tu *TeamUpdate) ClearServices() *TeamUpdate {
-	tu.mutation.ClearServices()
-	return tu
-}
-
-// RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (tu *TeamUpdate) RemoveServiceIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveServiceIDs(ids...)
-	return tu
-}
-
-// RemoveServices removes "services" edges to Service entities.
-func (tu *TeamUpdate) RemoveServices(s ...*Service) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tu.RemoveServiceIDs(ids...)
-}
-
 // ClearOncallRosters clears all "oncall_rosters" edges to the OncallRoster entity.
 func (tu *TeamUpdate) ClearOncallRosters() *TeamUpdate {
 	tu.mutation.ClearOncallRosters()
@@ -259,27 +206,6 @@ func (tu *TeamUpdate) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdate {
 		ids[i] = o[i].ID
 	}
 	return tu.RemoveOncallRosterIDs(ids...)
-}
-
-// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
-func (tu *TeamUpdate) ClearSubscriptions() *TeamUpdate {
-	tu.mutation.ClearSubscriptions()
-	return tu
-}
-
-// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
-func (tu *TeamUpdate) RemoveSubscriptionIDs(ids ...uuid.UUID) *TeamUpdate {
-	tu.mutation.RemoveSubscriptionIDs(ids...)
-	return tu
-}
-
-// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
-func (tu *TeamUpdate) RemoveSubscriptions(s ...*Subscription) *TeamUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tu.RemoveSubscriptionIDs(ids...)
 }
 
 // ClearIncidentAssignments clears all "incident_assignments" edges to the IncidentTeamAssignment entity.
@@ -429,51 +355,6 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tu.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedServicesIDs(); len(nodes) > 0 && !tu.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if tu.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -512,51 +393,6 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tu.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !tu.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -759,21 +595,6 @@ func (tuo *TeamUpdateOne) AddUsers(u ...*User) *TeamUpdateOne {
 	return tuo.AddUserIDs(ids...)
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (tuo *TeamUpdateOne) AddServiceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddServiceIDs(ids...)
-	return tuo
-}
-
-// AddServices adds the "services" edges to the Service entity.
-func (tuo *TeamUpdateOne) AddServices(s ...*Service) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tuo.AddServiceIDs(ids...)
-}
-
 // AddOncallRosterIDs adds the "oncall_rosters" edge to the OncallRoster entity by IDs.
 func (tuo *TeamUpdateOne) AddOncallRosterIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.AddOncallRosterIDs(ids...)
@@ -787,21 +608,6 @@ func (tuo *TeamUpdateOne) AddOncallRosters(o ...*OncallRoster) *TeamUpdateOne {
 		ids[i] = o[i].ID
 	}
 	return tuo.AddOncallRosterIDs(ids...)
-}
-
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (tuo *TeamUpdateOne) AddSubscriptionIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.AddSubscriptionIDs(ids...)
-	return tuo
-}
-
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (tuo *TeamUpdateOne) AddSubscriptions(s ...*Subscription) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tuo.AddSubscriptionIDs(ids...)
 }
 
 // AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
@@ -860,27 +666,6 @@ func (tuo *TeamUpdateOne) RemoveUsers(u ...*User) *TeamUpdateOne {
 	return tuo.RemoveUserIDs(ids...)
 }
 
-// ClearServices clears all "services" edges to the Service entity.
-func (tuo *TeamUpdateOne) ClearServices() *TeamUpdateOne {
-	tuo.mutation.ClearServices()
-	return tuo
-}
-
-// RemoveServiceIDs removes the "services" edge to Service entities by IDs.
-func (tuo *TeamUpdateOne) RemoveServiceIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveServiceIDs(ids...)
-	return tuo
-}
-
-// RemoveServices removes "services" edges to Service entities.
-func (tuo *TeamUpdateOne) RemoveServices(s ...*Service) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tuo.RemoveServiceIDs(ids...)
-}
-
 // ClearOncallRosters clears all "oncall_rosters" edges to the OncallRoster entity.
 func (tuo *TeamUpdateOne) ClearOncallRosters() *TeamUpdateOne {
 	tuo.mutation.ClearOncallRosters()
@@ -900,27 +685,6 @@ func (tuo *TeamUpdateOne) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdateOne
 		ids[i] = o[i].ID
 	}
 	return tuo.RemoveOncallRosterIDs(ids...)
-}
-
-// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
-func (tuo *TeamUpdateOne) ClearSubscriptions() *TeamUpdateOne {
-	tuo.mutation.ClearSubscriptions()
-	return tuo
-}
-
-// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
-func (tuo *TeamUpdateOne) RemoveSubscriptionIDs(ids ...uuid.UUID) *TeamUpdateOne {
-	tuo.mutation.RemoveSubscriptionIDs(ids...)
-	return tuo
-}
-
-// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
-func (tuo *TeamUpdateOne) RemoveSubscriptions(s ...*Subscription) *TeamUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return tuo.RemoveSubscriptionIDs(ids...)
 }
 
 // ClearIncidentAssignments clears all "incident_assignments" edges to the IncidentTeamAssignment entity.
@@ -1100,51 +864,6 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if tuo.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedServicesIDs(); len(nodes) > 0 && !tuo.mutation.ServicesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.ServicesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.ServicesTable,
-			Columns: []string{team.ServicesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if tuo.mutation.OncallRostersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1183,51 +902,6 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tuo.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !tuo.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.SubscriptionsTable,
-			Columns: []string{team.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

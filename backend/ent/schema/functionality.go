@@ -4,7 +4,6 @@ import (
 	"github.com/google/uuid"
 
 	"entgo.io/ent"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -24,6 +23,6 @@ func (Functionality) Fields() []ent.Field {
 // Edges of the Functionality.
 func (Functionality) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("incidents", IncidentResourceImpact.Type),
+		//edge.To("incidents", IncidentResourceImpact.Type),
 	}
 }

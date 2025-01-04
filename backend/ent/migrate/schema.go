@@ -158,8 +158,15 @@ var (
 	// IncidentEventsColumns holds the columns for the "incident_events" table.
 	IncidentEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"impact_start", "impact_mitigated", "impact_end", "other"}},
-		{Name: "time", Type: field.TypeTime},
+		{Name: "timestamp", Type: field.TypeTime, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"observation", "action", "decision", "context"}},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "created_by", Type: field.TypeUUID},
+		{Name: "sequence", Type: field.TypeInt},
+		{Name: "is_draft", Type: field.TypeBool, Default: false},
 		{Name: "incident_id", Type: field.TypeUUID},
 	}
 	// IncidentEventsTable holds the schema information for the "incident_events" table.
@@ -170,8 +177,85 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incident_events_incidents_events",
-				Columns:    []*schema.Column{IncidentEventsColumns[3]},
+				Columns:    []*schema.Column{IncidentEventsColumns[10]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentevent_incident_id_timestamp_sequence",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentEventsColumns[10], IncidentEventsColumns[1], IncidentEventsColumns[8]},
+			},
+		},
+	}
+	// IncidentEventContextsColumns holds the columns for the "incident_event_contexts" table.
+	IncidentEventContextsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "system_state", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "decision_options", Type: field.TypeJSON, Nullable: true},
+		{Name: "decision_rationale", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "involved_personnel", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "incident_event_context", Type: field.TypeUUID, Unique: true},
+	}
+	// IncidentEventContextsTable holds the schema information for the "incident_event_contexts" table.
+	IncidentEventContextsTable = &schema.Table{
+		Name:       "incident_event_contexts",
+		Columns:    IncidentEventContextsColumns,
+		PrimaryKey: []*schema.Column{IncidentEventContextsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_event_contexts_incident_events_context",
+				Columns:    []*schema.Column{IncidentEventContextsColumns[6]},
+				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// IncidentEventContributingFactorsColumns holds the columns for the "incident_event_contributing_factors" table.
+	IncidentEventContributingFactorsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "factor_type", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "incident_event_factors", Type: field.TypeUUID},
+	}
+	// IncidentEventContributingFactorsTable holds the schema information for the "incident_event_contributing_factors" table.
+	IncidentEventContributingFactorsTable = &schema.Table{
+		Name:       "incident_event_contributing_factors",
+		Columns:    IncidentEventContributingFactorsColumns,
+		PrimaryKey: []*schema.Column{IncidentEventContributingFactorsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_event_contributing_factors_incident_events_factors",
+				Columns:    []*schema.Column{IncidentEventContributingFactorsColumns[4]},
+				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
+	// IncidentEventEvidencesColumns holds the columns for the "incident_event_evidences" table.
+	IncidentEventEvidencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "evidence_type", Type: field.TypeEnum, Enums: []string{"log", "metric", "chat", "ticket", "other"}},
+		{Name: "url", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "incident_event_evidence", Type: field.TypeUUID},
+	}
+	// IncidentEventEvidencesTable holds the schema information for the "incident_event_evidences" table.
+	IncidentEventEvidencesTable = &schema.Table{
+		Name:       "incident_event_evidences",
+		Columns:    IncidentEventEvidencesColumns,
+		PrimaryKey: []*schema.Column{IncidentEventEvidencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_event_evidences_incident_events_evidence",
+				Columns:    []*schema.Column{IncidentEventEvidencesColumns[6]},
+				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -214,10 +298,9 @@ var (
 	IncidentLinksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "link_type", Type: field.TypeEnum, Enums: []string{"parent", "child", "impact"}},
+		{Name: "link_type", Type: field.TypeEnum, Enums: []string{"parent", "child", "similar"}},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "linked_incident_id", Type: field.TypeUUID},
-		{Name: "incident_link_resource_impact", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncidentLinksTable holds the schema information for the "incident_links" table.
 	IncidentLinksTable = &schema.Table{
@@ -237,12 +320,6 @@ var (
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "incident_links_incident_resource_impacts_resource_impact",
-				Columns:    []*schema.Column{IncidentLinksColumns[5]},
-				RefColumns: []*schema.Column{IncidentResourceImpactsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -252,43 +329,24 @@ var (
 			},
 		},
 	}
-	// IncidentResourceImpactsColumns holds the columns for the "incident_resource_impacts" table.
-	IncidentResourceImpactsColumns = []*schema.Column{
+	// IncidentMilestonesColumns holds the columns for the "incident_milestones" table.
+	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "functionality_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"impact", "detected", "investigating", "triaged", "mitigated", "resolved"}},
+		{Name: "time", Type: field.TypeTime},
 		{Name: "incident_id", Type: field.TypeUUID},
-		{Name: "service_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// IncidentResourceImpactsTable holds the schema information for the "incident_resource_impacts" table.
-	IncidentResourceImpactsTable = &schema.Table{
-		Name:       "incident_resource_impacts",
-		Columns:    IncidentResourceImpactsColumns,
-		PrimaryKey: []*schema.Column{IncidentResourceImpactsColumns[0]},
+	// IncidentMilestonesTable holds the schema information for the "incident_milestones" table.
+	IncidentMilestonesTable = &schema.Table{
+		Name:       "incident_milestones",
+		Columns:    IncidentMilestonesColumns,
+		PrimaryKey: []*schema.Column{IncidentMilestonesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_resource_impacts_functionalities_incidents",
-				Columns:    []*schema.Column{IncidentResourceImpactsColumns[1]},
-				RefColumns: []*schema.Column{FunctionalitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "incident_resource_impacts_incidents_impacted_resources",
-				Columns:    []*schema.Column{IncidentResourceImpactsColumns[2]},
+				Symbol:     "incident_milestones_incidents_milestones",
+				Columns:    []*schema.Column{IncidentMilestonesColumns[3]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "incident_resource_impacts_services_incidents",
-				Columns:    []*schema.Column{IncidentResourceImpactsColumns[3]},
-				RefColumns: []*schema.Column{ServicesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "incidentresourceimpact_incident_id",
-				Unique:  false,
-				Columns: []*schema.Column{IncidentResourceImpactsColumns[2]},
 			},
 		},
 	}
@@ -840,69 +898,6 @@ var (
 			},
 		},
 	}
-	// ServicesColumns holds the columns for the "services" table.
-	ServicesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "slug", Type: field.TypeString, Unique: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "incident_event_services", Type: field.TypeUUID, Nullable: true},
-		{Name: "service_owner_team", Type: field.TypeUUID, Nullable: true},
-	}
-	// ServicesTable holds the schema information for the "services" table.
-	ServicesTable = &schema.Table{
-		Name:       "services",
-		Columns:    ServicesColumns,
-		PrimaryKey: []*schema.Column{ServicesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "services_incident_events_services",
-				Columns:    []*schema.Column{ServicesColumns[3]},
-				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "services_teams_owner_team",
-				Columns:    []*schema.Column{ServicesColumns[4]},
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
-	// SubscriptionsColumns holds the columns for the "subscriptions" table.
-	SubscriptionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "event", Type: field.TypeString},
-		{Name: "active", Type: field.TypeBool, Default: true},
-		{Name: "subscription_user", Type: field.TypeUUID, Nullable: true},
-		{Name: "subscription_team", Type: field.TypeUUID, Nullable: true},
-		{Name: "subscription_incident", Type: field.TypeUUID, Nullable: true},
-	}
-	// SubscriptionsTable holds the schema information for the "subscriptions" table.
-	SubscriptionsTable = &schema.Table{
-		Name:       "subscriptions",
-		Columns:    SubscriptionsColumns,
-		PrimaryKey: []*schema.Column{SubscriptionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "subscriptions_users_user",
-				Columns:    []*schema.Column{SubscriptionsColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "subscriptions_teams_team",
-				Columns:    []*schema.Column{SubscriptionsColumns[4]},
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "subscriptions_incidents_incident",
-				Columns:    []*schema.Column{SubscriptionsColumns[5]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1277,10 +1272,13 @@ var (
 		IncidentDebriefQuestionsTable,
 		IncidentDebriefSuggestionsTable,
 		IncidentEventsTable,
+		IncidentEventContextsTable,
+		IncidentEventContributingFactorsTable,
+		IncidentEventEvidencesTable,
 		IncidentFieldsTable,
 		IncidentFieldOptionsTable,
 		IncidentLinksTable,
-		IncidentResourceImpactsTable,
+		IncidentMilestonesTable,
 		IncidentRolesTable,
 		IncidentRoleAssignmentsTable,
 		IncidentSeveritiesTable,
@@ -1305,8 +1303,6 @@ var (
 		RetrospectiveDiscussionsTable,
 		RetrospectiveDiscussionRepliesTable,
 		RetrospectiveReviewsTable,
-		ServicesTable,
-		SubscriptionsTable,
 		TasksTable,
 		TeamsTable,
 		UsersTable,
@@ -1334,13 +1330,13 @@ func init() {
 	IncidentDebriefMessagesTable.ForeignKeys[1].RefTable = IncidentDebriefQuestionsTable
 	IncidentDebriefSuggestionsTable.ForeignKeys[0].RefTable = IncidentDebriefsTable
 	IncidentEventsTable.ForeignKeys[0].RefTable = IncidentsTable
+	IncidentEventContextsTable.ForeignKeys[0].RefTable = IncidentEventsTable
+	IncidentEventContributingFactorsTable.ForeignKeys[0].RefTable = IncidentEventsTable
+	IncidentEventEvidencesTable.ForeignKeys[0].RefTable = IncidentEventsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
 	IncidentLinksTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentLinksTable.ForeignKeys[1].RefTable = IncidentsTable
-	IncidentLinksTable.ForeignKeys[2].RefTable = IncidentResourceImpactsTable
-	IncidentResourceImpactsTable.ForeignKeys[0].RefTable = FunctionalitiesTable
-	IncidentResourceImpactsTable.ForeignKeys[1].RefTable = IncidentsTable
-	IncidentResourceImpactsTable.ForeignKeys[2].RefTable = ServicesTable
+	IncidentMilestonesTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[0].RefTable = IncidentRolesTable
 	IncidentRoleAssignmentsTable.ForeignKeys[1].RefTable = IncidentsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[2].RefTable = UsersTable
@@ -1368,11 +1364,6 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = RetrospectiveDiscussionsTable
-	ServicesTable.ForeignKeys[0].RefTable = IncidentEventsTable
-	ServicesTable.ForeignKeys[1].RefTable = TeamsTable
-	SubscriptionsTable.ForeignKeys[0].RefTable = UsersTable
-	SubscriptionsTable.ForeignKeys[1].RefTable = TeamsTable
-	SubscriptionsTable.ForeignKeys[2].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

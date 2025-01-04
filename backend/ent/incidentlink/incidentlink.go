@@ -26,8 +26,6 @@ const (
 	EdgeIncident = "incident"
 	// EdgeLinkedIncident holds the string denoting the linked_incident edge name in mutations.
 	EdgeLinkedIncident = "linked_incident"
-	// EdgeResourceImpact holds the string denoting the resource_impact edge name in mutations.
-	EdgeResourceImpact = "resource_impact"
 	// Table holds the table name of the incidentlink in the database.
 	Table = "incident_links"
 	// IncidentTable is the table that holds the incident relation/edge.
@@ -44,13 +42,6 @@ const (
 	LinkedIncidentInverseTable = "incidents"
 	// LinkedIncidentColumn is the table column denoting the linked_incident relation/edge.
 	LinkedIncidentColumn = "linked_incident_id"
-	// ResourceImpactTable is the table that holds the resource_impact relation/edge.
-	ResourceImpactTable = "incident_links"
-	// ResourceImpactInverseTable is the table name for the IncidentResourceImpact entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentresourceimpact" package.
-	ResourceImpactInverseTable = "incident_resource_impacts"
-	// ResourceImpactColumn is the table column denoting the resource_impact relation/edge.
-	ResourceImpactColumn = "incident_link_resource_impact"
 )
 
 // Columns holds all SQL columns for incidentlink fields.
@@ -62,21 +53,10 @@ var Columns = []string{
 	FieldLinkType,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "incident_links"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"incident_link_resource_impact",
-}
-
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -88,9 +68,9 @@ type LinkType string
 
 // LinkType values.
 const (
-	LinkTypeParent LinkType = "parent"
-	LinkTypeChild  LinkType = "child"
-	LinkTypeImpact LinkType = "impact"
+	LinkTypeParent  LinkType = "parent"
+	LinkTypeChild   LinkType = "child"
+	LinkTypeSimilar LinkType = "similar"
 )
 
 func (lt LinkType) String() string {
@@ -100,7 +80,7 @@ func (lt LinkType) String() string {
 // LinkTypeValidator is a validator for the "link_type" field enum values. It is called by the builders before save.
 func LinkTypeValidator(lt LinkType) error {
 	switch lt {
-	case LinkTypeParent, LinkTypeChild, LinkTypeImpact:
+	case LinkTypeParent, LinkTypeChild, LinkTypeSimilar:
 		return nil
 	default:
 		return fmt.Errorf("incidentlink: invalid enum value for link_type field: %q", lt)
@@ -148,13 +128,6 @@ func ByLinkedIncidentField(field string, opts ...sql.OrderTermOption) OrderOptio
 		sqlgraph.OrderByNeighborTerms(s, newLinkedIncidentStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByResourceImpactField orders the results by resource_impact field.
-func ByResourceImpactField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newResourceImpactStep(), sql.OrderByField(field, opts...))
-	}
-}
 func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -167,12 +140,5 @@ func newLinkedIncidentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(LinkedIncidentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, LinkedIncidentTable, LinkedIncidentColumn),
-	)
-}
-func newResourceImpactStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ResourceImpactInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ResourceImpactTable, ResourceImpactColumn),
 	)
 }

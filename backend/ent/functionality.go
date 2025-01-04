@@ -18,29 +18,8 @@ type Functionality struct {
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the FunctionalityQuery when eager-loading is set.
-	Edges        FunctionalityEdges `json:"edges"`
+	Name         string `json:"name,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// FunctionalityEdges holds the relations/edges for other nodes in the graph.
-type FunctionalityEdges struct {
-	// Incidents holds the value of the incidents edge.
-	Incidents []*IncidentResourceImpact `json:"incidents,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// IncidentsOrErr returns the Incidents value or an error if the edge
-// was not loaded in eager-loading.
-func (e FunctionalityEdges) IncidentsOrErr() ([]*IncidentResourceImpact, error) {
-	if e.loadedTypes[0] {
-		return e.Incidents, nil
-	}
-	return nil, &NotLoadedError{edge: "incidents"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -90,11 +69,6 @@ func (f *Functionality) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (f *Functionality) Value(name string) (ent.Value, error) {
 	return f.selectValues.Get(name)
-}
-
-// QueryIncidents queries the "incidents" edge of the Functionality entity.
-func (f *Functionality) QueryIncidents() *IncidentResourceImpactQuery {
-	return NewFunctionalityClient(f.config).QueryIncidents(f)
 }
 
 // Update returns a builder for updating this Functionality.

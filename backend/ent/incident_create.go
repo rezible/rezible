@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
@@ -27,7 +27,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -151,19 +150,29 @@ func (ic *IncidentCreate) SetNillableID(u *uuid.UUID) *IncidentCreate {
 	return ic
 }
 
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (ic *IncidentCreate) AddSubscriptionIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddSubscriptionIDs(ids...)
+// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
+func (ic *IncidentCreate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddEnvironmentIDs(ids...)
 	return ic
 }
 
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (ic *IncidentCreate) AddSubscriptions(s ...*Subscription) *IncidentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddEnvironments adds the "environments" edges to the Environment entity.
+func (ic *IncidentCreate) AddEnvironments(e ...*Environment) *IncidentCreate {
+	ids := make([]uuid.UUID, len(e))
+	for i := range e {
+		ids[i] = e[i].ID
 	}
-	return ic.AddSubscriptionIDs(ids...)
+	return ic.AddEnvironmentIDs(ids...)
+}
+
+// SetSeverity sets the "severity" edge to the IncidentSeverity entity.
+func (ic *IncidentCreate) SetSeverity(i *IncidentSeverity) *IncidentCreate {
+	return ic.SetSeverityID(i.ID)
+}
+
+// SetType sets the "type" edge to the IncidentType entity.
+func (ic *IncidentCreate) SetType(i *IncidentType) *IncidentCreate {
+	return ic.SetTypeID(i.ID)
 }
 
 // AddTeamAssignmentIDs adds the "team_assignments" edge to the IncidentTeamAssignment entity by IDs.
@@ -211,46 +220,6 @@ func (ic *IncidentCreate) AddLinkedIncidents(i ...*Incident) *IncidentCreate {
 	return ic.AddLinkedIncidentIDs(ids...)
 }
 
-// AddImpactedResourceIDs adds the "impacted_resources" edge to the IncidentResourceImpact entity by IDs.
-func (ic *IncidentCreate) AddImpactedResourceIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddImpactedResourceIDs(ids...)
-	return ic
-}
-
-// AddImpactedResources adds the "impacted_resources" edges to the IncidentResourceImpact entity.
-func (ic *IncidentCreate) AddImpactedResources(i ...*IncidentResourceImpact) *IncidentCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ic.AddImpactedResourceIDs(ids...)
-}
-
-// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
-func (ic *IncidentCreate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddEnvironmentIDs(ids...)
-	return ic
-}
-
-// AddEnvironments adds the "environments" edges to the Environment entity.
-func (ic *IncidentCreate) AddEnvironments(e ...*Environment) *IncidentCreate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return ic.AddEnvironmentIDs(ids...)
-}
-
-// SetSeverity sets the "severity" edge to the IncidentSeverity entity.
-func (ic *IncidentCreate) SetSeverity(i *IncidentSeverity) *IncidentCreate {
-	return ic.SetSeverityID(i.ID)
-}
-
-// SetType sets the "type" edge to the IncidentType entity.
-func (ic *IncidentCreate) SetType(i *IncidentType) *IncidentCreate {
-	return ic.SetTypeID(i.ID)
-}
-
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (ic *IncidentCreate) SetRetrospectiveID(id uuid.UUID) *IncidentCreate {
 	ic.mutation.SetRetrospectiveID(id)
@@ -268,6 +237,21 @@ func (ic *IncidentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentCre
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (ic *IncidentCreate) SetRetrospective(r *Retrospective) *IncidentCreate {
 	return ic.SetRetrospectiveID(r.ID)
+}
+
+// AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
+func (ic *IncidentCreate) AddMilestoneIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddMilestoneIDs(ids...)
+	return ic
+}
+
+// AddMilestones adds the "milestones" edges to the IncidentMilestone entity.
+func (ic *IncidentCreate) AddMilestones(i ...*IncidentMilestone) *IncidentCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ic.AddMilestoneIDs(ids...)
 }
 
 // AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
@@ -518,86 +502,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
 	}
-	if nodes := ic.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SubscriptionsTable,
-			Columns: []string{incident.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.TeamAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.TeamAssignmentsTable,
-			Columns: []string{incident.TeamAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.RoleAssignmentsTable,
-			Columns: []string{incident.RoleAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.ImpactedResourcesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.ImpactedResourcesTable,
-			Columns: []string{incident.ImpactedResourcesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ic.mutation.EnvironmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -648,6 +552,54 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_node.TypeID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := ic.mutation.TeamAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.TeamAssignmentsTable,
+			Columns: []string{incident.TeamAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.RoleAssignmentsTable,
+			Columns: []string{incident.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ic.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -657,6 +609,22 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.MilestonesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.MilestonesTable,
+			Columns: []string{incident.MilestonesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

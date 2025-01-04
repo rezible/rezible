@@ -1,5 +1,6 @@
 package schema
 
+/*
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -42,3 +43,4 @@ func (IncidentResourceImpact) Edges() []ent.Edge {
 			Ref("resource_impact"),
 	}
 }
+*/

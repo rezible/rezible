@@ -30,6 +30,15 @@ type IncidentDebriefSuggestion func(*sql.Selector)
 // IncidentEvent is the predicate function for incidentevent builders.
 type IncidentEvent func(*sql.Selector)
 
+// IncidentEventContext is the predicate function for incidenteventcontext builders.
+type IncidentEventContext func(*sql.Selector)
+
+// IncidentEventContributingFactor is the predicate function for incidenteventcontributingfactor builders.
+type IncidentEventContributingFactor func(*sql.Selector)
+
+// IncidentEventEvidence is the predicate function for incidenteventevidence builders.
+type IncidentEventEvidence func(*sql.Selector)
+
 // IncidentField is the predicate function for incidentfield builders.
 type IncidentField func(*sql.Selector)
 
@@ -39,8 +48,8 @@ type IncidentFieldOption func(*sql.Selector)
 // IncidentLink is the predicate function for incidentlink builders.
 type IncidentLink func(*sql.Selector)
 
-// IncidentResourceImpact is the predicate function for incidentresourceimpact builders.
-type IncidentResourceImpact func(*sql.Selector)
+// IncidentMilestone is the predicate function for incidentmilestone builders.
+type IncidentMilestone func(*sql.Selector)
 
 // IncidentRole is the predicate function for incidentrole builders.
 type IncidentRole func(*sql.Selector)
@@ -113,12 +122,6 @@ type RetrospectiveDiscussionReply func(*sql.Selector)
 
 // RetrospectiveReview is the predicate function for retrospectivereview builders.
 type RetrospectiveReview func(*sql.Selector)
-
-// Service is the predicate function for service builders.
-type Service func(*sql.Selector)
-
-// Subscription is the predicate function for subscription builders.
-type Subscription func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

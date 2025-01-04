@@ -4,7 +4,6 @@ package functionality
 
 import (
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -122,29 +121,6 @@ func NameEqualFold(v string) predicate.Functionality {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Functionality {
 	return predicate.Functionality(sql.FieldContainsFold(FieldName, v))
-}
-
-// HasIncidents applies the HasEdge predicate on the "incidents" edge.
-func HasIncidents() predicate.Functionality {
-	return predicate.Functionality(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, IncidentsTable, IncidentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
-func HasIncidentsWith(preds ...predicate.IncidentResourceImpact) predicate.Functionality {
-	return predicate.Functionality(func(s *sql.Selector) {
-		step := newIncidentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
 }
 
 // And groups predicates with the AND operator between them.

@@ -24,10 +24,13 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
@@ -52,8 +55,6 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -80,14 +81,20 @@ type Client struct {
 	IncidentDebriefSuggestion *IncidentDebriefSuggestionClient
 	// IncidentEvent is the client for interacting with the IncidentEvent builders.
 	IncidentEvent *IncidentEventClient
+	// IncidentEventContext is the client for interacting with the IncidentEventContext builders.
+	IncidentEventContext *IncidentEventContextClient
+	// IncidentEventContributingFactor is the client for interacting with the IncidentEventContributingFactor builders.
+	IncidentEventContributingFactor *IncidentEventContributingFactorClient
+	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
+	IncidentEventEvidence *IncidentEventEvidenceClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
 	IncidentFieldOption *IncidentFieldOptionClient
 	// IncidentLink is the client for interacting with the IncidentLink builders.
 	IncidentLink *IncidentLinkClient
-	// IncidentResourceImpact is the client for interacting with the IncidentResourceImpact builders.
-	IncidentResourceImpact *IncidentResourceImpactClient
+	// IncidentMilestone is the client for interacting with the IncidentMilestone builders.
+	IncidentMilestone *IncidentMilestoneClient
 	// IncidentRole is the client for interacting with the IncidentRole builders.
 	IncidentRole *IncidentRoleClient
 	// IncidentRoleAssignment is the client for interacting with the IncidentRoleAssignment builders.
@@ -136,10 +143,6 @@ type Client struct {
 	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
-	// Service is the client for interacting with the Service builders.
-	Service *ServiceClient
-	// Subscription is the client for interacting with the Subscription builders.
-	Subscription *SubscriptionClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -165,10 +168,13 @@ func (c *Client) init() {
 	c.IncidentDebriefQuestion = NewIncidentDebriefQuestionClient(c.config)
 	c.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(c.config)
 	c.IncidentEvent = NewIncidentEventClient(c.config)
+	c.IncidentEventContext = NewIncidentEventContextClient(c.config)
+	c.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(c.config)
+	c.IncidentEventEvidence = NewIncidentEventEvidenceClient(c.config)
 	c.IncidentField = NewIncidentFieldClient(c.config)
 	c.IncidentFieldOption = NewIncidentFieldOptionClient(c.config)
 	c.IncidentLink = NewIncidentLinkClient(c.config)
-	c.IncidentResourceImpact = NewIncidentResourceImpactClient(c.config)
+	c.IncidentMilestone = NewIncidentMilestoneClient(c.config)
 	c.IncidentRole = NewIncidentRoleClient(c.config)
 	c.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(c.config)
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
@@ -193,8 +199,6 @@ func (c *Client) init() {
 	c.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(c.config)
 	c.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
-	c.Service = NewServiceClient(c.config)
-	c.Subscription = NewSubscriptionClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -288,49 +292,50 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                          ctx,
-		config:                       cfg,
-		Environment:                  NewEnvironmentClient(cfg),
-		Functionality:                NewFunctionalityClient(cfg),
-		Incident:                     NewIncidentClient(cfg),
-		IncidentDebrief:              NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:       NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:      NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:    NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                NewIncidentEventClient(cfg),
-		IncidentField:                NewIncidentFieldClient(cfg),
-		IncidentFieldOption:          NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                 NewIncidentLinkClient(cfg),
-		IncidentResourceImpact:       NewIncidentResourceImpactClient(cfg),
-		IncidentRole:                 NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:       NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:             NewIncidentSeverityClient(cfg),
-		IncidentTag:                  NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:       NewIncidentTeamAssignmentClient(cfg),
-		IncidentType:                 NewIncidentTypeClient(cfg),
-		MeetingSchedule:              NewMeetingScheduleClient(cfg),
-		MeetingSession:               NewMeetingSessionClient(cfg),
-		OncallAlert:                  NewOncallAlertClient(cfg),
-		OncallAlertInstance:          NewOncallAlertInstanceClient(cfg),
-		OncallHandoverTemplate:       NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                 NewOncallRosterClient(cfg),
-		OncallSchedule:               NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:    NewOncallScheduleParticipantClient(cfg),
-		OncallUserShift:              NewOncallUserShiftClient(cfg),
-		OncallUserShiftAnnotation:    NewOncallUserShiftAnnotationClient(cfg),
-		OncallUserShiftCover:         NewOncallUserShiftCoverClient(cfg),
-		OncallUserShiftHandover:      NewOncallUserShiftHandoverClient(cfg),
-		ProviderConfig:               NewProviderConfigClient(cfg),
-		ProviderSyncHistory:          NewProviderSyncHistoryClient(cfg),
-		Retrospective:                NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:      NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply: NewRetrospectiveDiscussionReplyClient(cfg),
-		RetrospectiveReview:          NewRetrospectiveReviewClient(cfg),
-		Service:                      NewServiceClient(cfg),
-		Subscription:                 NewSubscriptionClient(cfg),
-		Task:                         NewTaskClient(cfg),
-		Team:                         NewTeamClient(cfg),
-		User:                         NewUserClient(cfg),
+		ctx:                             ctx,
+		config:                          cfg,
+		Environment:                     NewEnvironmentClient(cfg),
+		Functionality:                   NewFunctionalityClient(cfg),
+		Incident:                        NewIncidentClient(cfg),
+		IncidentDebrief:                 NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:          NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:         NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:       NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                   NewIncidentEventClient(cfg),
+		IncidentEventContext:            NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor: NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:           NewIncidentEventEvidenceClient(cfg),
+		IncidentField:                   NewIncidentFieldClient(cfg),
+		IncidentFieldOption:             NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                    NewIncidentLinkClient(cfg),
+		IncidentMilestone:               NewIncidentMilestoneClient(cfg),
+		IncidentRole:                    NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:          NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                NewIncidentSeverityClient(cfg),
+		IncidentTag:                     NewIncidentTagClient(cfg),
+		IncidentTeamAssignment:          NewIncidentTeamAssignmentClient(cfg),
+		IncidentType:                    NewIncidentTypeClient(cfg),
+		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
+		MeetingSession:                  NewMeetingSessionClient(cfg),
+		OncallAlert:                     NewOncallAlertClient(cfg),
+		OncallAlertInstance:             NewOncallAlertInstanceClient(cfg),
+		OncallHandoverTemplate:          NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                    NewOncallRosterClient(cfg),
+		OncallSchedule:                  NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:       NewOncallScheduleParticipantClient(cfg),
+		OncallUserShift:                 NewOncallUserShiftClient(cfg),
+		OncallUserShiftAnnotation:       NewOncallUserShiftAnnotationClient(cfg),
+		OncallUserShiftCover:            NewOncallUserShiftCoverClient(cfg),
+		OncallUserShiftHandover:         NewOncallUserShiftHandoverClient(cfg),
+		ProviderConfig:                  NewProviderConfigClient(cfg),
+		ProviderSyncHistory:             NewProviderSyncHistoryClient(cfg),
+		Retrospective:                   NewRetrospectiveClient(cfg),
+		RetrospectiveDiscussion:         NewRetrospectiveDiscussionClient(cfg),
+		RetrospectiveDiscussionReply:    NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
+		Task:                            NewTaskClient(cfg),
+		Team:                            NewTeamClient(cfg),
+		User:                            NewUserClient(cfg),
 	}, nil
 }
 
@@ -348,49 +353,50 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                          ctx,
-		config:                       cfg,
-		Environment:                  NewEnvironmentClient(cfg),
-		Functionality:                NewFunctionalityClient(cfg),
-		Incident:                     NewIncidentClient(cfg),
-		IncidentDebrief:              NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:       NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:      NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:    NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                NewIncidentEventClient(cfg),
-		IncidentField:                NewIncidentFieldClient(cfg),
-		IncidentFieldOption:          NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                 NewIncidentLinkClient(cfg),
-		IncidentResourceImpact:       NewIncidentResourceImpactClient(cfg),
-		IncidentRole:                 NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:       NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:             NewIncidentSeverityClient(cfg),
-		IncidentTag:                  NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:       NewIncidentTeamAssignmentClient(cfg),
-		IncidentType:                 NewIncidentTypeClient(cfg),
-		MeetingSchedule:              NewMeetingScheduleClient(cfg),
-		MeetingSession:               NewMeetingSessionClient(cfg),
-		OncallAlert:                  NewOncallAlertClient(cfg),
-		OncallAlertInstance:          NewOncallAlertInstanceClient(cfg),
-		OncallHandoverTemplate:       NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                 NewOncallRosterClient(cfg),
-		OncallSchedule:               NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:    NewOncallScheduleParticipantClient(cfg),
-		OncallUserShift:              NewOncallUserShiftClient(cfg),
-		OncallUserShiftAnnotation:    NewOncallUserShiftAnnotationClient(cfg),
-		OncallUserShiftCover:         NewOncallUserShiftCoverClient(cfg),
-		OncallUserShiftHandover:      NewOncallUserShiftHandoverClient(cfg),
-		ProviderConfig:               NewProviderConfigClient(cfg),
-		ProviderSyncHistory:          NewProviderSyncHistoryClient(cfg),
-		Retrospective:                NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:      NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply: NewRetrospectiveDiscussionReplyClient(cfg),
-		RetrospectiveReview:          NewRetrospectiveReviewClient(cfg),
-		Service:                      NewServiceClient(cfg),
-		Subscription:                 NewSubscriptionClient(cfg),
-		Task:                         NewTaskClient(cfg),
-		Team:                         NewTeamClient(cfg),
-		User:                         NewUserClient(cfg),
+		ctx:                             ctx,
+		config:                          cfg,
+		Environment:                     NewEnvironmentClient(cfg),
+		Functionality:                   NewFunctionalityClient(cfg),
+		Incident:                        NewIncidentClient(cfg),
+		IncidentDebrief:                 NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:          NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:         NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:       NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                   NewIncidentEventClient(cfg),
+		IncidentEventContext:            NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor: NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:           NewIncidentEventEvidenceClient(cfg),
+		IncidentField:                   NewIncidentFieldClient(cfg),
+		IncidentFieldOption:             NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                    NewIncidentLinkClient(cfg),
+		IncidentMilestone:               NewIncidentMilestoneClient(cfg),
+		IncidentRole:                    NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:          NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                NewIncidentSeverityClient(cfg),
+		IncidentTag:                     NewIncidentTagClient(cfg),
+		IncidentTeamAssignment:          NewIncidentTeamAssignmentClient(cfg),
+		IncidentType:                    NewIncidentTypeClient(cfg),
+		MeetingSchedule:                 NewMeetingScheduleClient(cfg),
+		MeetingSession:                  NewMeetingSessionClient(cfg),
+		OncallAlert:                     NewOncallAlertClient(cfg),
+		OncallAlertInstance:             NewOncallAlertInstanceClient(cfg),
+		OncallHandoverTemplate:          NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                    NewOncallRosterClient(cfg),
+		OncallSchedule:                  NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:       NewOncallScheduleParticipantClient(cfg),
+		OncallUserShift:                 NewOncallUserShiftClient(cfg),
+		OncallUserShiftAnnotation:       NewOncallUserShiftAnnotationClient(cfg),
+		OncallUserShiftCover:            NewOncallUserShiftCoverClient(cfg),
+		OncallUserShiftHandover:         NewOncallUserShiftHandoverClient(cfg),
+		ProviderConfig:                  NewProviderConfigClient(cfg),
+		ProviderSyncHistory:             NewProviderSyncHistoryClient(cfg),
+		Retrospective:                   NewRetrospectiveClient(cfg),
+		RetrospectiveDiscussion:         NewRetrospectiveDiscussionClient(cfg),
+		RetrospectiveDiscussionReply:    NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveReview:             NewRetrospectiveReviewClient(cfg),
+		Task:                            NewTaskClient(cfg),
+		Team:                            NewTeamClient(cfg),
+		User:                            NewUserClient(cfg),
 	}, nil
 }
 
@@ -422,16 +428,17 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentResourceImpact,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
 		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
 		c.OncallUserShiftAnnotation, c.OncallUserShiftCover, c.OncallUserShiftHandover,
 		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.Service, c.Subscription, c.Task, c.Team, c.User,
+		c.RetrospectiveReview, c.Task, c.Team, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -443,16 +450,17 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentResourceImpact,
-		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
 		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
 		c.OncallUserShiftAnnotation, c.OncallUserShiftCover, c.OncallUserShiftHandover,
 		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.Service, c.Subscription, c.Task, c.Team, c.User,
+		c.RetrospectiveReview, c.Task, c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -477,14 +485,20 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentDebriefSuggestion.mutate(ctx, m)
 	case *IncidentEventMutation:
 		return c.IncidentEvent.mutate(ctx, m)
+	case *IncidentEventContextMutation:
+		return c.IncidentEventContext.mutate(ctx, m)
+	case *IncidentEventContributingFactorMutation:
+		return c.IncidentEventContributingFactor.mutate(ctx, m)
+	case *IncidentEventEvidenceMutation:
+		return c.IncidentEventEvidence.mutate(ctx, m)
 	case *IncidentFieldMutation:
 		return c.IncidentField.mutate(ctx, m)
 	case *IncidentFieldOptionMutation:
 		return c.IncidentFieldOption.mutate(ctx, m)
 	case *IncidentLinkMutation:
 		return c.IncidentLink.mutate(ctx, m)
-	case *IncidentResourceImpactMutation:
-		return c.IncidentResourceImpact.mutate(ctx, m)
+	case *IncidentMilestoneMutation:
+		return c.IncidentMilestone.mutate(ctx, m)
 	case *IncidentRoleMutation:
 		return c.IncidentRole.mutate(ctx, m)
 	case *IncidentRoleAssignmentMutation:
@@ -533,10 +547,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RetrospectiveDiscussionReply.mutate(ctx, m)
 	case *RetrospectiveReviewMutation:
 		return c.RetrospectiveReview.mutate(ctx, m)
-	case *ServiceMutation:
-		return c.Service.mutate(ctx, m)
-	case *SubscriptionMutation:
-		return c.Subscription.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
@@ -807,22 +817,6 @@ func (c *FunctionalityClient) GetX(ctx context.Context, id uuid.UUID) *Functiona
 	return obj
 }
 
-// QueryIncidents queries the incidents edge of a Functionality.
-func (c *FunctionalityClient) QueryIncidents(f *Functionality) *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := f.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(functionality.Table, functionality.FieldID, id),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, functionality.IncidentsTable, functionality.IncidentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *FunctionalityClient) Hooks() []Hook {
 	return c.hooks.Functionality
@@ -956,15 +950,47 @@ func (c *IncidentClient) GetX(ctx context.Context, id uuid.UUID) *Incident {
 	return obj
 }
 
-// QuerySubscriptions queries the subscriptions edge of a Incident.
-func (c *IncidentClient) QuerySubscriptions(i *Incident) *SubscriptionQuery {
-	query := (&SubscriptionClient{config: c.config}).Query()
+// QueryEnvironments queries the environments edge of a Incident.
+func (c *IncidentClient) QueryEnvironments(i *Incident) *EnvironmentQuery {
+	query := (&EnvironmentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.SubscriptionsTable, incident.SubscriptionsColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySeverity queries the severity edge of a Incident.
+func (c *IncidentClient) QuerySeverity(i *Incident) *IncidentSeverityQuery {
+	query := (&IncidentSeverityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.SeverityTable, incident.SeverityColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryType queries the type edge of a Incident.
+func (c *IncidentClient) QueryType(i *Incident) *IncidentTypeQuery {
+	query := (&IncidentTypeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1020,70 +1046,6 @@ func (c *IncidentClient) QueryLinkedIncidents(i *Incident) *IncidentQuery {
 	return query
 }
 
-// QueryImpactedResources queries the impacted_resources edge of a Incident.
-func (c *IncidentClient) QueryImpactedResources(i *Incident) *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.ImpactedResourcesTable, incident.ImpactedResourcesColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEnvironments queries the environments edge of a Incident.
-func (c *IncidentClient) QueryEnvironments(i *Incident) *EnvironmentQuery {
-	query := (&EnvironmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySeverity queries the severity edge of a Incident.
-func (c *IncidentClient) QuerySeverity(i *Incident) *IncidentSeverityQuery {
-	query := (&IncidentSeverityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incident.SeverityTable, incident.SeverityColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryType queries the type edge of a Incident.
-func (c *IncidentClient) QueryType(i *Incident) *IncidentTypeQuery {
-	query := (&IncidentTypeClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRetrospective queries the retrospective edge of a Incident.
 func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: c.config}).Query()
@@ -1093,6 +1055,22 @@ func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMilestones queries the milestones edge of a Incident.
+func (c *IncidentClient) QueryMilestones(i *Incident) *IncidentMilestoneQuery {
+	query := (&IncidentMilestoneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentmilestone.Table, incidentmilestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.MilestonesTable, incident.MilestonesColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -2101,15 +2079,47 @@ func (c *IncidentEventClient) QueryIncident(ie *IncidentEvent) *IncidentQuery {
 	return query
 }
 
-// QueryServices queries the services edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryServices(ie *IncidentEvent) *ServiceQuery {
-	query := (&ServiceClient{config: c.config}).Query()
+// QueryContext queries the context edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryContext(ie *IncidentEvent) *IncidentEventContextQuery {
+	query := (&IncidentEventContextClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ie.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.ServicesTable, incidentevent.ServicesColumn),
+			sqlgraph.To(incidenteventcontext.Table, incidenteventcontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, incidentevent.ContextTable, incidentevent.ContextColumn),
+		)
+		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFactors queries the factors edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryFactors(ie *IncidentEvent) *IncidentEventContributingFactorQuery {
+	query := (&IncidentEventContributingFactorClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ie.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
+			sqlgraph.To(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.FactorsTable, incidentevent.FactorsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvidence queries the evidence edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryEvidence(ie *IncidentEvent) *IncidentEventEvidenceQuery {
+	query := (&IncidentEventEvidenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ie.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
+			sqlgraph.To(incidenteventevidence.Table, incidenteventevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.EvidenceTable, incidentevent.EvidenceColumn),
 		)
 		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
 		return fromV, nil
@@ -2139,6 +2149,453 @@ func (c *IncidentEventClient) mutate(ctx context.Context, m *IncidentEventMutati
 		return (&IncidentEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentEvent mutation op: %q", m.Op())
+	}
+}
+
+// IncidentEventContextClient is a client for the IncidentEventContext schema.
+type IncidentEventContextClient struct {
+	config
+}
+
+// NewIncidentEventContextClient returns a client for the IncidentEventContext from the given config.
+func NewIncidentEventContextClient(c config) *IncidentEventContextClient {
+	return &IncidentEventContextClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenteventcontext.Hooks(f(g(h())))`.
+func (c *IncidentEventContextClient) Use(hooks ...Hook) {
+	c.hooks.IncidentEventContext = append(c.hooks.IncidentEventContext, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenteventcontext.Intercept(f(g(h())))`.
+func (c *IncidentEventContextClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentEventContext = append(c.inters.IncidentEventContext, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentEventContext entity.
+func (c *IncidentEventContextClient) Create() *IncidentEventContextCreate {
+	mutation := newIncidentEventContextMutation(c.config, OpCreate)
+	return &IncidentEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentEventContext entities.
+func (c *IncidentEventContextClient) CreateBulk(builders ...*IncidentEventContextCreate) *IncidentEventContextCreateBulk {
+	return &IncidentEventContextCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentEventContextClient) MapCreateBulk(slice any, setFunc func(*IncidentEventContextCreate, int)) *IncidentEventContextCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentEventContextCreateBulk{err: fmt.Errorf("calling to IncidentEventContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentEventContextCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentEventContextCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentEventContext.
+func (c *IncidentEventContextClient) Update() *IncidentEventContextUpdate {
+	mutation := newIncidentEventContextMutation(c.config, OpUpdate)
+	return &IncidentEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentEventContextClient) UpdateOne(iec *IncidentEventContext) *IncidentEventContextUpdateOne {
+	mutation := newIncidentEventContextMutation(c.config, OpUpdateOne, withIncidentEventContext(iec))
+	return &IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentEventContextClient) UpdateOneID(id uuid.UUID) *IncidentEventContextUpdateOne {
+	mutation := newIncidentEventContextMutation(c.config, OpUpdateOne, withIncidentEventContextID(id))
+	return &IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentEventContext.
+func (c *IncidentEventContextClient) Delete() *IncidentEventContextDelete {
+	mutation := newIncidentEventContextMutation(c.config, OpDelete)
+	return &IncidentEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentEventContextClient) DeleteOne(iec *IncidentEventContext) *IncidentEventContextDeleteOne {
+	return c.DeleteOneID(iec.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentEventContextClient) DeleteOneID(id uuid.UUID) *IncidentEventContextDeleteOne {
+	builder := c.Delete().Where(incidenteventcontext.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentEventContextDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentEventContext.
+func (c *IncidentEventContextClient) Query() *IncidentEventContextQuery {
+	return &IncidentEventContextQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentEventContext},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentEventContext entity by its id.
+func (c *IncidentEventContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventContext, error) {
+	return c.Query().Where(incidenteventcontext.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentEventContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventContext {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEvent queries the event edge of a IncidentEventContext.
+func (c *IncidentEventContextClient) QueryEvent(iec *IncidentEventContext) *IncidentEventQuery {
+	query := (&IncidentEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iec.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventcontext.Table, incidenteventcontext.FieldID, id),
+			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, incidenteventcontext.EventTable, incidenteventcontext.EventColumn),
+		)
+		fromV = sqlgraph.Neighbors(iec.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentEventContextClient) Hooks() []Hook {
+	return c.hooks.IncidentEventContext
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentEventContextClient) Interceptors() []Interceptor {
+	return c.inters.IncidentEventContext
+}
+
+func (c *IncidentEventContextClient) mutate(ctx context.Context, m *IncidentEventContextMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentEventContext mutation op: %q", m.Op())
+	}
+}
+
+// IncidentEventContributingFactorClient is a client for the IncidentEventContributingFactor schema.
+type IncidentEventContributingFactorClient struct {
+	config
+}
+
+// NewIncidentEventContributingFactorClient returns a client for the IncidentEventContributingFactor from the given config.
+func NewIncidentEventContributingFactorClient(c config) *IncidentEventContributingFactorClient {
+	return &IncidentEventContributingFactorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenteventcontributingfactor.Hooks(f(g(h())))`.
+func (c *IncidentEventContributingFactorClient) Use(hooks ...Hook) {
+	c.hooks.IncidentEventContributingFactor = append(c.hooks.IncidentEventContributingFactor, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenteventcontributingfactor.Intercept(f(g(h())))`.
+func (c *IncidentEventContributingFactorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentEventContributingFactor = append(c.inters.IncidentEventContributingFactor, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentEventContributingFactor entity.
+func (c *IncidentEventContributingFactorClient) Create() *IncidentEventContributingFactorCreate {
+	mutation := newIncidentEventContributingFactorMutation(c.config, OpCreate)
+	return &IncidentEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentEventContributingFactor entities.
+func (c *IncidentEventContributingFactorClient) CreateBulk(builders ...*IncidentEventContributingFactorCreate) *IncidentEventContributingFactorCreateBulk {
+	return &IncidentEventContributingFactorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentEventContributingFactorClient) MapCreateBulk(slice any, setFunc func(*IncidentEventContributingFactorCreate, int)) *IncidentEventContributingFactorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentEventContributingFactorCreateBulk{err: fmt.Errorf("calling to IncidentEventContributingFactorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentEventContributingFactorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentEventContributingFactorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentEventContributingFactor.
+func (c *IncidentEventContributingFactorClient) Update() *IncidentEventContributingFactorUpdate {
+	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdate)
+	return &IncidentEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentEventContributingFactorClient) UpdateOne(iecf *IncidentEventContributingFactor) *IncidentEventContributingFactorUpdateOne {
+	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentEventContributingFactor(iecf))
+	return &IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentEventContributingFactorClient) UpdateOneID(id uuid.UUID) *IncidentEventContributingFactorUpdateOne {
+	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentEventContributingFactorID(id))
+	return &IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentEventContributingFactor.
+func (c *IncidentEventContributingFactorClient) Delete() *IncidentEventContributingFactorDelete {
+	mutation := newIncidentEventContributingFactorMutation(c.config, OpDelete)
+	return &IncidentEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentEventContributingFactorClient) DeleteOne(iecf *IncidentEventContributingFactor) *IncidentEventContributingFactorDeleteOne {
+	return c.DeleteOneID(iecf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentEventContributingFactorClient) DeleteOneID(id uuid.UUID) *IncidentEventContributingFactorDeleteOne {
+	builder := c.Delete().Where(incidenteventcontributingfactor.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentEventContributingFactorDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentEventContributingFactor.
+func (c *IncidentEventContributingFactorClient) Query() *IncidentEventContributingFactorQuery {
+	return &IncidentEventContributingFactorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentEventContributingFactor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentEventContributingFactor entity by its id.
+func (c *IncidentEventContributingFactorClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventContributingFactor, error) {
+	return c.Query().Where(incidenteventcontributingfactor.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentEventContributingFactorClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventContributingFactor {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEvent queries the event edge of a IncidentEventContributingFactor.
+func (c *IncidentEventContributingFactorClient) QueryEvent(iecf *IncidentEventContributingFactor) *IncidentEventQuery {
+	query := (&IncidentEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iecf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID, id),
+			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidenteventcontributingfactor.EventTable, incidenteventcontributingfactor.EventColumn),
+		)
+		fromV = sqlgraph.Neighbors(iecf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentEventContributingFactorClient) Hooks() []Hook {
+	return c.hooks.IncidentEventContributingFactor
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentEventContributingFactorClient) Interceptors() []Interceptor {
+	return c.inters.IncidentEventContributingFactor
+}
+
+func (c *IncidentEventContributingFactorClient) mutate(ctx context.Context, m *IncidentEventContributingFactorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentEventContributingFactor mutation op: %q", m.Op())
+	}
+}
+
+// IncidentEventEvidenceClient is a client for the IncidentEventEvidence schema.
+type IncidentEventEvidenceClient struct {
+	config
+}
+
+// NewIncidentEventEvidenceClient returns a client for the IncidentEventEvidence from the given config.
+func NewIncidentEventEvidenceClient(c config) *IncidentEventEvidenceClient {
+	return &IncidentEventEvidenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenteventevidence.Hooks(f(g(h())))`.
+func (c *IncidentEventEvidenceClient) Use(hooks ...Hook) {
+	c.hooks.IncidentEventEvidence = append(c.hooks.IncidentEventEvidence, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenteventevidence.Intercept(f(g(h())))`.
+func (c *IncidentEventEvidenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentEventEvidence = append(c.inters.IncidentEventEvidence, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentEventEvidence entity.
+func (c *IncidentEventEvidenceClient) Create() *IncidentEventEvidenceCreate {
+	mutation := newIncidentEventEvidenceMutation(c.config, OpCreate)
+	return &IncidentEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentEventEvidence entities.
+func (c *IncidentEventEvidenceClient) CreateBulk(builders ...*IncidentEventEvidenceCreate) *IncidentEventEvidenceCreateBulk {
+	return &IncidentEventEvidenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentEventEvidenceClient) MapCreateBulk(slice any, setFunc func(*IncidentEventEvidenceCreate, int)) *IncidentEventEvidenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentEventEvidenceCreateBulk{err: fmt.Errorf("calling to IncidentEventEvidenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentEventEvidenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentEventEvidenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentEventEvidence.
+func (c *IncidentEventEvidenceClient) Update() *IncidentEventEvidenceUpdate {
+	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdate)
+	return &IncidentEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentEventEvidenceClient) UpdateOne(iee *IncidentEventEvidence) *IncidentEventEvidenceUpdateOne {
+	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdateOne, withIncidentEventEvidence(iee))
+	return &IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentEventEvidenceClient) UpdateOneID(id uuid.UUID) *IncidentEventEvidenceUpdateOne {
+	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdateOne, withIncidentEventEvidenceID(id))
+	return &IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentEventEvidence.
+func (c *IncidentEventEvidenceClient) Delete() *IncidentEventEvidenceDelete {
+	mutation := newIncidentEventEvidenceMutation(c.config, OpDelete)
+	return &IncidentEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentEventEvidenceClient) DeleteOne(iee *IncidentEventEvidence) *IncidentEventEvidenceDeleteOne {
+	return c.DeleteOneID(iee.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentEventEvidenceClient) DeleteOneID(id uuid.UUID) *IncidentEventEvidenceDeleteOne {
+	builder := c.Delete().Where(incidenteventevidence.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentEventEvidenceDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentEventEvidence.
+func (c *IncidentEventEvidenceClient) Query() *IncidentEventEvidenceQuery {
+	return &IncidentEventEvidenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentEventEvidence},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentEventEvidence entity by its id.
+func (c *IncidentEventEvidenceClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventEvidence, error) {
+	return c.Query().Where(incidenteventevidence.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentEventEvidenceClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventEvidence {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEvent queries the event edge of a IncidentEventEvidence.
+func (c *IncidentEventEvidenceClient) QueryEvent(iee *IncidentEventEvidence) *IncidentEventQuery {
+	query := (&IncidentEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iee.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventevidence.Table, incidenteventevidence.FieldID, id),
+			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidenteventevidence.EventTable, incidenteventevidence.EventColumn),
+		)
+		fromV = sqlgraph.Neighbors(iee.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentEventEvidenceClient) Hooks() []Hook {
+	return c.hooks.IncidentEventEvidence
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentEventEvidenceClient) Interceptors() []Interceptor {
+	return c.inters.IncidentEventEvidence
+}
+
+func (c *IncidentEventEvidenceClient) mutate(ctx context.Context, m *IncidentEventEvidenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentEventEvidence mutation op: %q", m.Op())
 	}
 }
 
@@ -2616,22 +3073,6 @@ func (c *IncidentLinkClient) QueryLinkedIncident(il *IncidentLink) *IncidentQuer
 	return query
 }
 
-// QueryResourceImpact queries the resource_impact edge of a IncidentLink.
-func (c *IncidentLinkClient) QueryResourceImpact(il *IncidentLink) *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := il.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentlink.Table, incidentlink.FieldID, id),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.ResourceImpactTable, incidentlink.ResourceImpactColumn),
-		)
-		fromV = sqlgraph.Neighbors(il.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *IncidentLinkClient) Hooks() []Hook {
 	return c.hooks.IncidentLink
@@ -2657,107 +3098,107 @@ func (c *IncidentLinkClient) mutate(ctx context.Context, m *IncidentLinkMutation
 	}
 }
 
-// IncidentResourceImpactClient is a client for the IncidentResourceImpact schema.
-type IncidentResourceImpactClient struct {
+// IncidentMilestoneClient is a client for the IncidentMilestone schema.
+type IncidentMilestoneClient struct {
 	config
 }
 
-// NewIncidentResourceImpactClient returns a client for the IncidentResourceImpact from the given config.
-func NewIncidentResourceImpactClient(c config) *IncidentResourceImpactClient {
-	return &IncidentResourceImpactClient{config: c}
+// NewIncidentMilestoneClient returns a client for the IncidentMilestone from the given config.
+func NewIncidentMilestoneClient(c config) *IncidentMilestoneClient {
+	return &IncidentMilestoneClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidentresourceimpact.Hooks(f(g(h())))`.
-func (c *IncidentResourceImpactClient) Use(hooks ...Hook) {
-	c.hooks.IncidentResourceImpact = append(c.hooks.IncidentResourceImpact, hooks...)
+// A call to `Use(f, g, h)` equals to `incidentmilestone.Hooks(f(g(h())))`.
+func (c *IncidentMilestoneClient) Use(hooks ...Hook) {
+	c.hooks.IncidentMilestone = append(c.hooks.IncidentMilestone, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidentresourceimpact.Intercept(f(g(h())))`.
-func (c *IncidentResourceImpactClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentResourceImpact = append(c.inters.IncidentResourceImpact, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `incidentmilestone.Intercept(f(g(h())))`.
+func (c *IncidentMilestoneClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentMilestone = append(c.inters.IncidentMilestone, interceptors...)
 }
 
-// Create returns a builder for creating a IncidentResourceImpact entity.
-func (c *IncidentResourceImpactClient) Create() *IncidentResourceImpactCreate {
-	mutation := newIncidentResourceImpactMutation(c.config, OpCreate)
-	return &IncidentResourceImpactCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a IncidentMilestone entity.
+func (c *IncidentMilestoneClient) Create() *IncidentMilestoneCreate {
+	mutation := newIncidentMilestoneMutation(c.config, OpCreate)
+	return &IncidentMilestoneCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of IncidentResourceImpact entities.
-func (c *IncidentResourceImpactClient) CreateBulk(builders ...*IncidentResourceImpactCreate) *IncidentResourceImpactCreateBulk {
-	return &IncidentResourceImpactCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of IncidentMilestone entities.
+func (c *IncidentMilestoneClient) CreateBulk(builders ...*IncidentMilestoneCreate) *IncidentMilestoneCreateBulk {
+	return &IncidentMilestoneCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *IncidentResourceImpactClient) MapCreateBulk(slice any, setFunc func(*IncidentResourceImpactCreate, int)) *IncidentResourceImpactCreateBulk {
+func (c *IncidentMilestoneClient) MapCreateBulk(slice any, setFunc func(*IncidentMilestoneCreate, int)) *IncidentMilestoneCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &IncidentResourceImpactCreateBulk{err: fmt.Errorf("calling to IncidentResourceImpactClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &IncidentMilestoneCreateBulk{err: fmt.Errorf("calling to IncidentMilestoneClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*IncidentResourceImpactCreate, rv.Len())
+	builders := make([]*IncidentMilestoneCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &IncidentResourceImpactCreateBulk{config: c.config, builders: builders}
+	return &IncidentMilestoneCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) Update() *IncidentResourceImpactUpdate {
-	mutation := newIncidentResourceImpactMutation(c.config, OpUpdate)
-	return &IncidentResourceImpactUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for IncidentMilestone.
+func (c *IncidentMilestoneClient) Update() *IncidentMilestoneUpdate {
+	mutation := newIncidentMilestoneMutation(c.config, OpUpdate)
+	return &IncidentMilestoneUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *IncidentResourceImpactClient) UpdateOne(iri *IncidentResourceImpact) *IncidentResourceImpactUpdateOne {
-	mutation := newIncidentResourceImpactMutation(c.config, OpUpdateOne, withIncidentResourceImpact(iri))
-	return &IncidentResourceImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IncidentMilestoneClient) UpdateOne(im *IncidentMilestone) *IncidentMilestoneUpdateOne {
+	mutation := newIncidentMilestoneMutation(c.config, OpUpdateOne, withIncidentMilestone(im))
+	return &IncidentMilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *IncidentResourceImpactClient) UpdateOneID(id uuid.UUID) *IncidentResourceImpactUpdateOne {
-	mutation := newIncidentResourceImpactMutation(c.config, OpUpdateOne, withIncidentResourceImpactID(id))
-	return &IncidentResourceImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IncidentMilestoneClient) UpdateOneID(id uuid.UUID) *IncidentMilestoneUpdateOne {
+	mutation := newIncidentMilestoneMutation(c.config, OpUpdateOne, withIncidentMilestoneID(id))
+	return &IncidentMilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) Delete() *IncidentResourceImpactDelete {
-	mutation := newIncidentResourceImpactMutation(c.config, OpDelete)
-	return &IncidentResourceImpactDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for IncidentMilestone.
+func (c *IncidentMilestoneClient) Delete() *IncidentMilestoneDelete {
+	mutation := newIncidentMilestoneMutation(c.config, OpDelete)
+	return &IncidentMilestoneDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentResourceImpactClient) DeleteOne(iri *IncidentResourceImpact) *IncidentResourceImpactDeleteOne {
-	return c.DeleteOneID(iri.ID)
+func (c *IncidentMilestoneClient) DeleteOne(im *IncidentMilestone) *IncidentMilestoneDeleteOne {
+	return c.DeleteOneID(im.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentResourceImpactClient) DeleteOneID(id uuid.UUID) *IncidentResourceImpactDeleteOne {
-	builder := c.Delete().Where(incidentresourceimpact.ID(id))
+func (c *IncidentMilestoneClient) DeleteOneID(id uuid.UUID) *IncidentMilestoneDeleteOne {
+	builder := c.Delete().Where(incidentmilestone.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &IncidentResourceImpactDeleteOne{builder}
+	return &IncidentMilestoneDeleteOne{builder}
 }
 
-// Query returns a query builder for IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) Query() *IncidentResourceImpactQuery {
-	return &IncidentResourceImpactQuery{
+// Query returns a query builder for IncidentMilestone.
+func (c *IncidentMilestoneClient) Query() *IncidentMilestoneQuery {
+	return &IncidentMilestoneQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentResourceImpact},
+		ctx:    &QueryContext{Type: TypeIncidentMilestone},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a IncidentResourceImpact entity by its id.
-func (c *IncidentResourceImpactClient) Get(ctx context.Context, id uuid.UUID) (*IncidentResourceImpact, error) {
-	return c.Query().Where(incidentresourceimpact.ID(id)).Only(ctx)
+// Get returns a IncidentMilestone entity by its id.
+func (c *IncidentMilestoneClient) Get(ctx context.Context, id uuid.UUID) (*IncidentMilestone, error) {
+	return c.Query().Where(incidentmilestone.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *IncidentResourceImpactClient) GetX(ctx context.Context, id uuid.UUID) *IncidentResourceImpact {
+func (c *IncidentMilestoneClient) GetX(ctx context.Context, id uuid.UUID) *IncidentMilestone {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -2765,92 +3206,44 @@ func (c *IncidentResourceImpactClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
-// QueryIncident queries the incident edge of a IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) QueryIncident(iri *IncidentResourceImpact) *IncidentQuery {
+// QueryIncident queries the incident edge of a IncidentMilestone.
+func (c *IncidentMilestoneClient) QueryIncident(im *IncidentMilestone) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := iri.ID
+		id := im.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentresourceimpact.Table, incidentresourceimpact.FieldID, id),
+			sqlgraph.From(incidentmilestone.Table, incidentmilestone.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidentresourceimpact.IncidentTable, incidentresourceimpact.IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidentmilestone.IncidentTable, incidentmilestone.IncidentColumn),
 		)
-		fromV = sqlgraph.Neighbors(iri.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryService queries the service edge of a IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) QueryService(iri *IncidentResourceImpact) *ServiceQuery {
-	query := (&ServiceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := iri.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentresourceimpact.Table, incidentresourceimpact.FieldID, id),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidentresourceimpact.ServiceTable, incidentresourceimpact.ServiceColumn),
-		)
-		fromV = sqlgraph.Neighbors(iri.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFunctionality queries the functionality edge of a IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) QueryFunctionality(iri *IncidentResourceImpact) *FunctionalityQuery {
-	query := (&FunctionalityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := iri.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentresourceimpact.Table, incidentresourceimpact.FieldID, id),
-			sqlgraph.To(functionality.Table, functionality.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidentresourceimpact.FunctionalityTable, incidentresourceimpact.FunctionalityColumn),
-		)
-		fromV = sqlgraph.Neighbors(iri.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryResultingIncidents queries the resulting_incidents edge of a IncidentResourceImpact.
-func (c *IncidentResourceImpactClient) QueryResultingIncidents(iri *IncidentResourceImpact) *IncidentLinkQuery {
-	query := (&IncidentLinkClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := iri.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentresourceimpact.Table, incidentresourceimpact.FieldID, id),
-			sqlgraph.To(incidentlink.Table, incidentlink.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incidentresourceimpact.ResultingIncidentsTable, incidentresourceimpact.ResultingIncidentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(iri.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(im.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *IncidentResourceImpactClient) Hooks() []Hook {
-	return c.hooks.IncidentResourceImpact
+func (c *IncidentMilestoneClient) Hooks() []Hook {
+	return c.hooks.IncidentMilestone
 }
 
 // Interceptors returns the client interceptors.
-func (c *IncidentResourceImpactClient) Interceptors() []Interceptor {
-	return c.inters.IncidentResourceImpact
+func (c *IncidentMilestoneClient) Interceptors() []Interceptor {
+	return c.inters.IncidentMilestone
 }
 
-func (c *IncidentResourceImpactClient) mutate(ctx context.Context, m *IncidentResourceImpactMutation) (Value, error) {
+func (c *IncidentMilestoneClient) mutate(ctx context.Context, m *IncidentMilestoneMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&IncidentResourceImpactCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentMilestoneCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&IncidentResourceImpactUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentMilestoneUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&IncidentResourceImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentMilestoneUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&IncidentResourceImpactDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&IncidentMilestoneDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown IncidentResourceImpact mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown IncidentMilestone mutation op: %q", m.Op())
 	}
 }
 
@@ -6874,352 +7267,6 @@ func (c *RetrospectiveReviewClient) mutate(ctx context.Context, m *Retrospective
 	}
 }
 
-// ServiceClient is a client for the Service schema.
-type ServiceClient struct {
-	config
-}
-
-// NewServiceClient returns a client for the Service from the given config.
-func NewServiceClient(c config) *ServiceClient {
-	return &ServiceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `service.Hooks(f(g(h())))`.
-func (c *ServiceClient) Use(hooks ...Hook) {
-	c.hooks.Service = append(c.hooks.Service, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `service.Intercept(f(g(h())))`.
-func (c *ServiceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Service = append(c.inters.Service, interceptors...)
-}
-
-// Create returns a builder for creating a Service entity.
-func (c *ServiceClient) Create() *ServiceCreate {
-	mutation := newServiceMutation(c.config, OpCreate)
-	return &ServiceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Service entities.
-func (c *ServiceClient) CreateBulk(builders ...*ServiceCreate) *ServiceCreateBulk {
-	return &ServiceCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ServiceClient) MapCreateBulk(slice any, setFunc func(*ServiceCreate, int)) *ServiceCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ServiceCreateBulk{err: fmt.Errorf("calling to ServiceClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ServiceCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ServiceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Service.
-func (c *ServiceClient) Update() *ServiceUpdate {
-	mutation := newServiceMutation(c.config, OpUpdate)
-	return &ServiceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ServiceClient) UpdateOne(s *Service) *ServiceUpdateOne {
-	mutation := newServiceMutation(c.config, OpUpdateOne, withService(s))
-	return &ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ServiceClient) UpdateOneID(id uuid.UUID) *ServiceUpdateOne {
-	mutation := newServiceMutation(c.config, OpUpdateOne, withServiceID(id))
-	return &ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Service.
-func (c *ServiceClient) Delete() *ServiceDelete {
-	mutation := newServiceMutation(c.config, OpDelete)
-	return &ServiceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ServiceClient) DeleteOne(s *Service) *ServiceDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ServiceClient) DeleteOneID(id uuid.UUID) *ServiceDeleteOne {
-	builder := c.Delete().Where(service.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ServiceDeleteOne{builder}
-}
-
-// Query returns a query builder for Service.
-func (c *ServiceClient) Query() *ServiceQuery {
-	return &ServiceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeService},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Service entity by its id.
-func (c *ServiceClient) Get(ctx context.Context, id uuid.UUID) (*Service, error) {
-	return c.Query().Where(service.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ServiceClient) GetX(ctx context.Context, id uuid.UUID) *Service {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryIncidents queries the incidents edge of a Service.
-func (c *ServiceClient) QueryIncidents(s *Service) *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, id),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, service.IncidentsTable, service.IncidentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryOwnerTeam queries the owner_team edge of a Service.
-func (c *ServiceClient) QueryOwnerTeam(s *Service) *TeamQuery {
-	query := (&TeamClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(service.Table, service.FieldID, id),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, service.OwnerTeamTable, service.OwnerTeamColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ServiceClient) Hooks() []Hook {
-	return c.hooks.Service
-}
-
-// Interceptors returns the client interceptors.
-func (c *ServiceClient) Interceptors() []Interceptor {
-	return c.inters.Service
-}
-
-func (c *ServiceClient) mutate(ctx context.Context, m *ServiceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ServiceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ServiceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ServiceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ServiceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Service mutation op: %q", m.Op())
-	}
-}
-
-// SubscriptionClient is a client for the Subscription schema.
-type SubscriptionClient struct {
-	config
-}
-
-// NewSubscriptionClient returns a client for the Subscription from the given config.
-func NewSubscriptionClient(c config) *SubscriptionClient {
-	return &SubscriptionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `subscription.Hooks(f(g(h())))`.
-func (c *SubscriptionClient) Use(hooks ...Hook) {
-	c.hooks.Subscription = append(c.hooks.Subscription, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `subscription.Intercept(f(g(h())))`.
-func (c *SubscriptionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Subscription = append(c.inters.Subscription, interceptors...)
-}
-
-// Create returns a builder for creating a Subscription entity.
-func (c *SubscriptionClient) Create() *SubscriptionCreate {
-	mutation := newSubscriptionMutation(c.config, OpCreate)
-	return &SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Subscription entities.
-func (c *SubscriptionClient) CreateBulk(builders ...*SubscriptionCreate) *SubscriptionCreateBulk {
-	return &SubscriptionCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SubscriptionClient) MapCreateBulk(slice any, setFunc func(*SubscriptionCreate, int)) *SubscriptionCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SubscriptionCreateBulk{err: fmt.Errorf("calling to SubscriptionClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SubscriptionCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SubscriptionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Subscription.
-func (c *SubscriptionClient) Update() *SubscriptionUpdate {
-	mutation := newSubscriptionMutation(c.config, OpUpdate)
-	return &SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SubscriptionClient) UpdateOne(s *Subscription) *SubscriptionUpdateOne {
-	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscription(s))
-	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SubscriptionClient) UpdateOneID(id uuid.UUID) *SubscriptionUpdateOne {
-	mutation := newSubscriptionMutation(c.config, OpUpdateOne, withSubscriptionID(id))
-	return &SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Subscription.
-func (c *SubscriptionClient) Delete() *SubscriptionDelete {
-	mutation := newSubscriptionMutation(c.config, OpDelete)
-	return &SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SubscriptionClient) DeleteOne(s *Subscription) *SubscriptionDeleteOne {
-	return c.DeleteOneID(s.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SubscriptionClient) DeleteOneID(id uuid.UUID) *SubscriptionDeleteOne {
-	builder := c.Delete().Where(subscription.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SubscriptionDeleteOne{builder}
-}
-
-// Query returns a query builder for Subscription.
-func (c *SubscriptionClient) Query() *SubscriptionQuery {
-	return &SubscriptionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSubscription},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Subscription entity by its id.
-func (c *SubscriptionClient) Get(ctx context.Context, id uuid.UUID) (*Subscription, error) {
-	return c.Query().Where(subscription.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SubscriptionClient) GetX(ctx context.Context, id uuid.UUID) *Subscription {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUser queries the user edge of a Subscription.
-func (c *SubscriptionClient) QueryUser(s *Subscription) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(subscription.Table, subscription.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, subscription.UserTable, subscription.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTeam queries the team edge of a Subscription.
-func (c *SubscriptionClient) QueryTeam(s *Subscription) *TeamQuery {
-	query := (&TeamClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(subscription.Table, subscription.FieldID, id),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, subscription.TeamTable, subscription.TeamColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncident queries the incident edge of a Subscription.
-func (c *SubscriptionClient) QueryIncident(s *Subscription) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := s.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(subscription.Table, subscription.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, subscription.IncidentTable, subscription.IncidentColumn),
-		)
-		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SubscriptionClient) Hooks() []Hook {
-	return c.hooks.Subscription
-}
-
-// Interceptors returns the client interceptors.
-func (c *SubscriptionClient) Interceptors() []Interceptor {
-	return c.inters.Subscription
-}
-
-func (c *SubscriptionClient) mutate(ctx context.Context, m *SubscriptionMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SubscriptionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SubscriptionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SubscriptionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SubscriptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Subscription mutation op: %q", m.Op())
-	}
-}
-
 // TaskClient is a client for the Task schema.
 type TaskClient struct {
 	config
@@ -7525,22 +7572,6 @@ func (c *TeamClient) QueryUsers(t *Team) *UserQuery {
 	return query
 }
 
-// QueryServices queries the services edge of a Team.
-func (c *TeamClient) QueryServices(t *Team) *ServiceQuery {
-	query := (&ServiceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.ServicesTable, team.ServicesColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryOncallRosters queries the oncall_rosters edge of a Team.
 func (c *TeamClient) QueryOncallRosters(t *Team) *OncallRosterQuery {
 	query := (&OncallRosterClient{config: c.config}).Query()
@@ -7550,22 +7581,6 @@ func (c *TeamClient) QueryOncallRosters(t *Team) *OncallRosterQuery {
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, team.OncallRostersTable, team.OncallRostersPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySubscriptions queries the subscriptions edge of a Team.
-func (c *TeamClient) QuerySubscriptions(t *Team) *SubscriptionQuery {
-	query := (&SubscriptionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.SubscriptionsTable, team.SubscriptionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -7818,22 +7833,6 @@ func (c *UserClient) QueryAlertsReceived(u *User) *OncallAlertInstanceQuery {
 	return query
 }
 
-// QuerySubscriptions queries the subscriptions edge of a User.
-func (c *UserClient) QuerySubscriptions(u *User) *SubscriptionQuery {
-	query := (&SubscriptionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.SubscriptionsTable, user.SubscriptionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryIncidentRoleAssignments queries the incident_role_assignments edge of a User.
 func (c *UserClient) QueryIncidentRoleAssignments(u *User) *IncidentRoleAssignmentQuery {
 	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
@@ -7960,27 +7959,28 @@ type (
 	hooks struct {
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentField, IncidentFieldOption, IncidentLink, IncidentResourceImpact,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
 		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
 		IncidentTeamAssignment, IncidentType, MeetingSchedule, MeetingSession,
 		OncallAlert, OncallAlertInstance, OncallHandoverTemplate, OncallRoster,
 		OncallSchedule, OncallScheduleParticipant, OncallUserShift,
 		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
 		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, Service, Subscription, Task,
-		Team, User []ent.Hook
+		RetrospectiveDiscussionReply, RetrospectiveReview, Task, Team, User []ent.Hook
 	}
 	inters struct {
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentField, IncidentFieldOption, IncidentLink, IncidentResourceImpact,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
 		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
 		IncidentTeamAssignment, IncidentType, MeetingSchedule, MeetingSession,
 		OncallAlert, OncallAlertInstance, OncallHandoverTemplate, OncallRoster,
 		OncallSchedule, OncallScheduleParticipant, OncallUserShift,
 		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
 		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, Service, Subscription, Task,
-		Team, User []ent.Interceptor
+		RetrospectiveDiscussionReply, RetrospectiveReview, Task, Team,
+		User []ent.Interceptor
 	}
 )

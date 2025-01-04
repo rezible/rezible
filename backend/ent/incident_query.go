@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
@@ -28,34 +28,32 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 )
 
 // IncidentQuery is the builder for querying Incident entities.
 type IncidentQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []incident.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.Incident
-	withSubscriptions     *SubscriptionQuery
-	withTeamAssignments   *IncidentTeamAssignmentQuery
-	withRoleAssignments   *IncidentRoleAssignmentQuery
-	withLinkedIncidents   *IncidentQuery
-	withImpactedResources *IncidentResourceImpactQuery
-	withEnvironments      *EnvironmentQuery
-	withSeverity          *IncidentSeverityQuery
-	withType              *IncidentTypeQuery
-	withRetrospective     *RetrospectiveQuery
-	withEvents            *IncidentEventQuery
-	withFieldSelections   *IncidentFieldOptionQuery
-	withTasks             *TaskQuery
-	withTagAssignments    *IncidentTagQuery
-	withDebriefs          *IncidentDebriefQuery
-	withReviewSessions    *MeetingSessionQuery
-	withIncidentLinks     *IncidentLinkQuery
-	modifiers             []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []incident.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Incident
+	withEnvironments    *EnvironmentQuery
+	withSeverity        *IncidentSeverityQuery
+	withType            *IncidentTypeQuery
+	withTeamAssignments *IncidentTeamAssignmentQuery
+	withRoleAssignments *IncidentRoleAssignmentQuery
+	withLinkedIncidents *IncidentQuery
+	withRetrospective   *RetrospectiveQuery
+	withMilestones      *IncidentMilestoneQuery
+	withEvents          *IncidentEventQuery
+	withFieldSelections *IncidentFieldOptionQuery
+	withTasks           *TaskQuery
+	withTagAssignments  *IncidentTagQuery
+	withDebriefs        *IncidentDebriefQuery
+	withReviewSessions  *MeetingSessionQuery
+	withIncidentLinks   *IncidentLinkQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -92,9 +90,9 @@ func (iq *IncidentQuery) Order(o ...incident.OrderOption) *IncidentQuery {
 	return iq
 }
 
-// QuerySubscriptions chains the current query on the "subscriptions" edge.
-func (iq *IncidentQuery) QuerySubscriptions() *SubscriptionQuery {
-	query := (&SubscriptionClient{config: iq.config}).Query()
+// QueryEnvironments chains the current query on the "environments" edge.
+func (iq *IncidentQuery) QueryEnvironments() *EnvironmentQuery {
+	query := (&EnvironmentClient{config: iq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -105,8 +103,52 @@ func (iq *IncidentQuery) QuerySubscriptions() *SubscriptionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.SubscriptionsTable, incident.SubscriptionsColumn),
+			sqlgraph.To(environment.Table, environment.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySeverity chains the current query on the "severity" edge.
+func (iq *IncidentQuery) QuerySeverity() *IncidentSeverityQuery {
+	query := (&IncidentSeverityClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.SeverityTable, incident.SeverityColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryType chains the current query on the "type" edge.
+func (iq *IncidentQuery) QueryType() *IncidentTypeQuery {
+	query := (&IncidentTypeClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -180,94 +222,6 @@ func (iq *IncidentQuery) QueryLinkedIncidents() *IncidentQuery {
 	return query
 }
 
-// QueryImpactedResources chains the current query on the "impacted_resources" edge.
-func (iq *IncidentQuery) QueryImpactedResources() *IncidentResourceImpactQuery {
-	query := (&IncidentResourceImpactClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentresourceimpact.Table, incidentresourceimpact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.ImpactedResourcesTable, incident.ImpactedResourcesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryEnvironments chains the current query on the "environments" edge.
-func (iq *IncidentQuery) QueryEnvironments() *EnvironmentQuery {
-	query := (&EnvironmentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySeverity chains the current query on the "severity" edge.
-func (iq *IncidentQuery) QuerySeverity() *IncidentSeverityQuery {
-	query := (&IncidentSeverityClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incident.SeverityTable, incident.SeverityColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryType chains the current query on the "type" edge.
-func (iq *IncidentQuery) QueryType() *IncidentTypeQuery {
-	query := (&IncidentTypeClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryRetrospective chains the current query on the "retrospective" edge.
 func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: iq.config}).Query()
@@ -283,6 +237,28 @@ func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMilestones chains the current query on the "milestones" edge.
+func (iq *IncidentQuery) QueryMilestones() *IncidentMilestoneQuery {
+	query := (&IncidentMilestoneClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidentmilestone.Table, incidentmilestone.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.MilestonesTable, incident.MilestonesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -631,27 +607,26 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		return nil
 	}
 	return &IncidentQuery{
-		config:                iq.config,
-		ctx:                   iq.ctx.Clone(),
-		order:                 append([]incident.OrderOption{}, iq.order...),
-		inters:                append([]Interceptor{}, iq.inters...),
-		predicates:            append([]predicate.Incident{}, iq.predicates...),
-		withSubscriptions:     iq.withSubscriptions.Clone(),
-		withTeamAssignments:   iq.withTeamAssignments.Clone(),
-		withRoleAssignments:   iq.withRoleAssignments.Clone(),
-		withLinkedIncidents:   iq.withLinkedIncidents.Clone(),
-		withImpactedResources: iq.withImpactedResources.Clone(),
-		withEnvironments:      iq.withEnvironments.Clone(),
-		withSeverity:          iq.withSeverity.Clone(),
-		withType:              iq.withType.Clone(),
-		withRetrospective:     iq.withRetrospective.Clone(),
-		withEvents:            iq.withEvents.Clone(),
-		withFieldSelections:   iq.withFieldSelections.Clone(),
-		withTasks:             iq.withTasks.Clone(),
-		withTagAssignments:    iq.withTagAssignments.Clone(),
-		withDebriefs:          iq.withDebriefs.Clone(),
-		withReviewSessions:    iq.withReviewSessions.Clone(),
-		withIncidentLinks:     iq.withIncidentLinks.Clone(),
+		config:              iq.config,
+		ctx:                 iq.ctx.Clone(),
+		order:               append([]incident.OrderOption{}, iq.order...),
+		inters:              append([]Interceptor{}, iq.inters...),
+		predicates:          append([]predicate.Incident{}, iq.predicates...),
+		withEnvironments:    iq.withEnvironments.Clone(),
+		withSeverity:        iq.withSeverity.Clone(),
+		withType:            iq.withType.Clone(),
+		withTeamAssignments: iq.withTeamAssignments.Clone(),
+		withRoleAssignments: iq.withRoleAssignments.Clone(),
+		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
+		withRetrospective:   iq.withRetrospective.Clone(),
+		withMilestones:      iq.withMilestones.Clone(),
+		withEvents:          iq.withEvents.Clone(),
+		withFieldSelections: iq.withFieldSelections.Clone(),
+		withTasks:           iq.withTasks.Clone(),
+		withTagAssignments:  iq.withTagAssignments.Clone(),
+		withDebriefs:        iq.withDebriefs.Clone(),
+		withReviewSessions:  iq.withReviewSessions.Clone(),
+		withIncidentLinks:   iq.withIncidentLinks.Clone(),
 		// clone intermediate query.
 		sql:       iq.sql.Clone(),
 		path:      iq.path,
@@ -659,14 +634,36 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 	}
 }
 
-// WithSubscriptions tells the query-builder to eager-load the nodes that are connected to
-// the "subscriptions" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *IncidentQuery {
-	query := (&SubscriptionClient{config: iq.config}).Query()
+// WithEnvironments tells the query-builder to eager-load the nodes that are connected to
+// the "environments" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithEnvironments(opts ...func(*EnvironmentQuery)) *IncidentQuery {
+	query := (&EnvironmentClient{config: iq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	iq.withSubscriptions = query
+	iq.withEnvironments = query
+	return iq
+}
+
+// WithSeverity tells the query-builder to eager-load the nodes that are connected to
+// the "severity" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithSeverity(opts ...func(*IncidentSeverityQuery)) *IncidentQuery {
+	query := (&IncidentSeverityClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withSeverity = query
+	return iq
+}
+
+// WithType tells the query-builder to eager-load the nodes that are connected to
+// the "type" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithType(opts ...func(*IncidentTypeQuery)) *IncidentQuery {
+	query := (&IncidentTypeClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withType = query
 	return iq
 }
 
@@ -703,50 +700,6 @@ func (iq *IncidentQuery) WithLinkedIncidents(opts ...func(*IncidentQuery)) *Inci
 	return iq
 }
 
-// WithImpactedResources tells the query-builder to eager-load the nodes that are connected to
-// the "impacted_resources" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithImpactedResources(opts ...func(*IncidentResourceImpactQuery)) *IncidentQuery {
-	query := (&IncidentResourceImpactClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withImpactedResources = query
-	return iq
-}
-
-// WithEnvironments tells the query-builder to eager-load the nodes that are connected to
-// the "environments" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithEnvironments(opts ...func(*EnvironmentQuery)) *IncidentQuery {
-	query := (&EnvironmentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withEnvironments = query
-	return iq
-}
-
-// WithSeverity tells the query-builder to eager-load the nodes that are connected to
-// the "severity" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithSeverity(opts ...func(*IncidentSeverityQuery)) *IncidentQuery {
-	query := (&IncidentSeverityClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withSeverity = query
-	return iq
-}
-
-// WithType tells the query-builder to eager-load the nodes that are connected to
-// the "type" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithType(opts ...func(*IncidentTypeQuery)) *IncidentQuery {
-	query := (&IncidentTypeClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withType = query
-	return iq
-}
-
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
 // the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *IncidentQuery {
@@ -755,6 +708,17 @@ func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *I
 		opt(query)
 	}
 	iq.withRetrospective = query
+	return iq
+}
+
+// WithMilestones tells the query-builder to eager-load the nodes that are connected to
+// the "milestones" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithMilestones(opts ...func(*IncidentMilestoneQuery)) *IncidentQuery {
+	query := (&IncidentMilestoneClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withMilestones = query
 	return iq
 }
 
@@ -913,16 +877,15 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [16]bool{
-			iq.withSubscriptions != nil,
-			iq.withTeamAssignments != nil,
-			iq.withRoleAssignments != nil,
-			iq.withLinkedIncidents != nil,
-			iq.withImpactedResources != nil,
+		loadedTypes = [15]bool{
 			iq.withEnvironments != nil,
 			iq.withSeverity != nil,
 			iq.withType != nil,
+			iq.withTeamAssignments != nil,
+			iq.withRoleAssignments != nil,
+			iq.withLinkedIncidents != nil,
 			iq.withRetrospective != nil,
+			iq.withMilestones != nil,
 			iq.withEvents != nil,
 			iq.withFieldSelections != nil,
 			iq.withTasks != nil,
@@ -953,10 +916,22 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := iq.withSubscriptions; query != nil {
-		if err := iq.loadSubscriptions(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Subscriptions = []*Subscription{} },
-			func(n *Incident, e *Subscription) { n.Edges.Subscriptions = append(n.Edges.Subscriptions, e) }); err != nil {
+	if query := iq.withEnvironments; query != nil {
+		if err := iq.loadEnvironments(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Environments = []*Environment{} },
+			func(n *Incident, e *Environment) { n.Edges.Environments = append(n.Edges.Environments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withSeverity; query != nil {
+		if err := iq.loadSeverity(ctx, query, nodes, nil,
+			func(n *Incident, e *IncidentSeverity) { n.Edges.Severity = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withType; query != nil {
+		if err := iq.loadType(ctx, query, nodes, nil,
+			func(n *Incident, e *IncidentType) { n.Edges.Type = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -985,37 +960,16 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := iq.withImpactedResources; query != nil {
-		if err := iq.loadImpactedResources(ctx, query, nodes,
-			func(n *Incident) { n.Edges.ImpactedResources = []*IncidentResourceImpact{} },
-			func(n *Incident, e *IncidentResourceImpact) {
-				n.Edges.ImpactedResources = append(n.Edges.ImpactedResources, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withEnvironments; query != nil {
-		if err := iq.loadEnvironments(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Environments = []*Environment{} },
-			func(n *Incident, e *Environment) { n.Edges.Environments = append(n.Edges.Environments, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withSeverity; query != nil {
-		if err := iq.loadSeverity(ctx, query, nodes, nil,
-			func(n *Incident, e *IncidentSeverity) { n.Edges.Severity = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withType; query != nil {
-		if err := iq.loadType(ctx, query, nodes, nil,
-			func(n *Incident, e *IncidentType) { n.Edges.Type = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := iq.withRetrospective; query != nil {
 		if err := iq.loadRetrospective(ctx, query, nodes, nil,
 			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withMilestones; query != nil {
+		if err := iq.loadMilestones(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Milestones = []*IncidentMilestone{} },
+			func(n *Incident, e *IncidentMilestone) { n.Edges.Milestones = append(n.Edges.Milestones, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1073,34 +1027,122 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	return nodes, nil
 }
 
-func (iq *IncidentQuery) loadSubscriptions(ctx context.Context, query *SubscriptionQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Subscription)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+func (iq *IncidentQuery) loadEnvironments(ctx context.Context, query *EnvironmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Environment)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Incident)
+	nids := make(map[uuid.UUID]map[*Incident]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Subscription(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.SubscriptionsColumn), fks...))
-	}))
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(incident.EnvironmentsTable)
+		s.Join(joinT).On(s.C(environment.FieldID), joinT.C(incident.EnvironmentsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(incident.EnvironmentsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(incident.EnvironmentsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Environment](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "environments" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeverityQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSeverity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Incident)
+	for i := range nodes {
+		fk := nodes[i].SeverityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(incidentseverity.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.subscription_incident
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "subscription_incident" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "subscription_incident" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "severity_id" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadType(ctx context.Context, query *IncidentTypeQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentType)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Incident)
+	for i := range nodes {
+		fk := nodes[i].TypeID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(incidenttype.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "type_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -1225,155 +1267,6 @@ func (iq *IncidentQuery) loadLinkedIncidents(ctx context.Context, query *Inciden
 	}
 	return nil
 }
-func (iq *IncidentQuery) loadImpactedResources(ctx context.Context, query *IncidentResourceImpactQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentResourceImpact)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentresourceimpact.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentResourceImpact(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.ImpactedResourcesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadEnvironments(ctx context.Context, query *EnvironmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Environment)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.EnvironmentsTable)
-		s.Join(joinT).On(s.C(environment.FieldID), joinT.C(incident.EnvironmentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incident.EnvironmentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.EnvironmentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Environment](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "environments" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeverityQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSeverity)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Incident)
-	for i := range nodes {
-		fk := nodes[i].SeverityID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(incidentseverity.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "severity_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadType(ctx context.Context, query *IncidentTypeQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentType)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Incident)
-	for i := range nodes {
-		fk := nodes[i].TypeID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(incidenttype.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "type_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Retrospective)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
@@ -1397,6 +1290,36 @@ func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "incident_retrospective" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadMilestones(ctx context.Context, query *IncidentMilestoneQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentMilestone)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(incidentmilestone.FieldIncidentID)
+	}
+	query.Where(predicate.IncidentMilestone(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.MilestonesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -1685,7 +1608,6 @@ func (iq *IncidentQuery) loadIncidentLinks(ctx context.Context, query *IncidentL
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(incidentlink.FieldIncidentID)
 	}

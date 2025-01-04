@@ -15,7 +15,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
-	"github.com/rezible/rezible/ent/service"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenteventevidence"
 )
 
 // IncidentEventCreate is the builder for creating a IncidentEvent entity.
@@ -26,21 +28,103 @@ type IncidentEventCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (iec *IncidentEventCreate) SetIncidentID(u uuid.UUID) *IncidentEventCreate {
+	iec.mutation.SetIncidentID(u)
+	return iec
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (iec *IncidentEventCreate) SetTimestamp(t time.Time) *IncidentEventCreate {
+	iec.mutation.SetTimestamp(t)
+	return iec
+}
+
+// SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableTimestamp(t *time.Time) *IncidentEventCreate {
+	if t != nil {
+		iec.SetTimestamp(*t)
+	}
+	return iec
+}
+
 // SetType sets the "type" field.
 func (iec *IncidentEventCreate) SetType(i incidentevent.Type) *IncidentEventCreate {
 	iec.mutation.SetType(i)
 	return iec
 }
 
-// SetTime sets the "time" field.
-func (iec *IncidentEventCreate) SetTime(t time.Time) *IncidentEventCreate {
-	iec.mutation.SetTime(t)
+// SetTitle sets the "title" field.
+func (iec *IncidentEventCreate) SetTitle(s string) *IncidentEventCreate {
+	iec.mutation.SetTitle(s)
 	return iec
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (iec *IncidentEventCreate) SetIncidentID(u uuid.UUID) *IncidentEventCreate {
-	iec.mutation.SetIncidentID(u)
+// SetDescription sets the "description" field.
+func (iec *IncidentEventCreate) SetDescription(s string) *IncidentEventCreate {
+	iec.mutation.SetDescription(s)
+	return iec
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableDescription(s *string) *IncidentEventCreate {
+	if s != nil {
+		iec.SetDescription(*s)
+	}
+	return iec
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (iec *IncidentEventCreate) SetCreatedAt(t time.Time) *IncidentEventCreate {
+	iec.mutation.SetCreatedAt(t)
+	return iec
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableCreatedAt(t *time.Time) *IncidentEventCreate {
+	if t != nil {
+		iec.SetCreatedAt(*t)
+	}
+	return iec
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (iec *IncidentEventCreate) SetUpdatedAt(t time.Time) *IncidentEventCreate {
+	iec.mutation.SetUpdatedAt(t)
+	return iec
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableUpdatedAt(t *time.Time) *IncidentEventCreate {
+	if t != nil {
+		iec.SetUpdatedAt(*t)
+	}
+	return iec
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (iec *IncidentEventCreate) SetCreatedBy(u uuid.UUID) *IncidentEventCreate {
+	iec.mutation.SetCreatedBy(u)
+	return iec
+}
+
+// SetSequence sets the "sequence" field.
+func (iec *IncidentEventCreate) SetSequence(i int) *IncidentEventCreate {
+	iec.mutation.SetSequence(i)
+	return iec
+}
+
+// SetIsDraft sets the "is_draft" field.
+func (iec *IncidentEventCreate) SetIsDraft(b bool) *IncidentEventCreate {
+	iec.mutation.SetIsDraft(b)
+	return iec
+}
+
+// SetNillableIsDraft sets the "is_draft" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableIsDraft(b *bool) *IncidentEventCreate {
+	if b != nil {
+		iec.SetIsDraft(*b)
+	}
 	return iec
 }
 
@@ -63,19 +147,53 @@ func (iec *IncidentEventCreate) SetIncident(i *Incident) *IncidentEventCreate {
 	return iec.SetIncidentID(i.ID)
 }
 
-// AddServiceIDs adds the "services" edge to the Service entity by IDs.
-func (iec *IncidentEventCreate) AddServiceIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	iec.mutation.AddServiceIDs(ids...)
+// SetContextID sets the "context" edge to the IncidentEventContext entity by ID.
+func (iec *IncidentEventCreate) SetContextID(id uuid.UUID) *IncidentEventCreate {
+	iec.mutation.SetContextID(id)
 	return iec
 }
 
-// AddServices adds the "services" edges to the Service entity.
-func (iec *IncidentEventCreate) AddServices(s ...*Service) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// SetNillableContextID sets the "context" edge to the IncidentEventContext entity by ID if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableContextID(id *uuid.UUID) *IncidentEventCreate {
+	if id != nil {
+		iec = iec.SetContextID(*id)
 	}
-	return iec.AddServiceIDs(ids...)
+	return iec
+}
+
+// SetContext sets the "context" edge to the IncidentEventContext entity.
+func (iec *IncidentEventCreate) SetContext(i *IncidentEventContext) *IncidentEventCreate {
+	return iec.SetContextID(i.ID)
+}
+
+// AddFactorIDs adds the "factors" edge to the IncidentEventContributingFactor entity by IDs.
+func (iec *IncidentEventCreate) AddFactorIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	iec.mutation.AddFactorIDs(ids...)
+	return iec
+}
+
+// AddFactors adds the "factors" edges to the IncidentEventContributingFactor entity.
+func (iec *IncidentEventCreate) AddFactors(i ...*IncidentEventContributingFactor) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iec.AddFactorIDs(ids...)
+}
+
+// AddEvidenceIDs adds the "evidence" edge to the IncidentEventEvidence entity by IDs.
+func (iec *IncidentEventCreate) AddEvidenceIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	iec.mutation.AddEvidenceIDs(ids...)
+	return iec
+}
+
+// AddEvidence adds the "evidence" edges to the IncidentEventEvidence entity.
+func (iec *IncidentEventCreate) AddEvidence(i ...*IncidentEventEvidence) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iec.AddEvidenceIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
@@ -113,6 +231,18 @@ func (iec *IncidentEventCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (iec *IncidentEventCreate) defaults() {
+	if _, ok := iec.mutation.CreatedAt(); !ok {
+		v := incidentevent.DefaultCreatedAt()
+		iec.mutation.SetCreatedAt(v)
+	}
+	if _, ok := iec.mutation.UpdatedAt(); !ok {
+		v := incidentevent.DefaultUpdatedAt()
+		iec.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := iec.mutation.IsDraft(); !ok {
+		v := incidentevent.DefaultIsDraft
+		iec.mutation.SetIsDraft(v)
+	}
 	if _, ok := iec.mutation.ID(); !ok {
 		v := incidentevent.DefaultID()
 		iec.mutation.SetID(v)
@@ -121,6 +251,9 @@ func (iec *IncidentEventCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (iec *IncidentEventCreate) check() error {
+	if _, ok := iec.mutation.IncidentID(); !ok {
+		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentEvent.incident_id"`)}
+	}
 	if _, ok := iec.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "IncidentEvent.type"`)}
 	}
@@ -129,11 +262,28 @@ func (iec *IncidentEventCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.type": %w`, err)}
 		}
 	}
-	if _, ok := iec.mutation.Time(); !ok {
-		return &ValidationError{Name: "time", err: errors.New(`ent: missing required field "IncidentEvent.time"`)}
+	if _, ok := iec.mutation.Title(); !ok {
+		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "IncidentEvent.title"`)}
 	}
-	if _, ok := iec.mutation.IncidentID(); !ok {
-		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentEvent.incident_id"`)}
+	if v, ok := iec.mutation.Title(); ok {
+		if err := incidentevent.TitleValidator(v); err != nil {
+			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.title": %w`, err)}
+		}
+	}
+	if _, ok := iec.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEvent.created_at"`)}
+	}
+	if _, ok := iec.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "IncidentEvent.updated_at"`)}
+	}
+	if _, ok := iec.mutation.CreatedBy(); !ok {
+		return &ValidationError{Name: "created_by", err: errors.New(`ent: missing required field "IncidentEvent.created_by"`)}
+	}
+	if _, ok := iec.mutation.Sequence(); !ok {
+		return &ValidationError{Name: "sequence", err: errors.New(`ent: missing required field "IncidentEvent.sequence"`)}
+	}
+	if _, ok := iec.mutation.IsDraft(); !ok {
+		return &ValidationError{Name: "is_draft", err: errors.New(`ent: missing required field "IncidentEvent.is_draft"`)}
 	}
 	if len(iec.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentEvent.incident"`)}
@@ -174,13 +324,41 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := iec.mutation.Timestamp(); ok {
+		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
+		_node.Timestamp = &value
+	}
 	if value, ok := iec.mutation.GetType(); ok {
 		_spec.SetField(incidentevent.FieldType, field.TypeEnum, value)
 		_node.Type = value
 	}
-	if value, ok := iec.mutation.Time(); ok {
-		_spec.SetField(incidentevent.FieldTime, field.TypeTime, value)
-		_node.Time = value
+	if value, ok := iec.mutation.Title(); ok {
+		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
+		_node.Title = value
+	}
+	if value, ok := iec.mutation.Description(); ok {
+		_spec.SetField(incidentevent.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
+	if value, ok := iec.mutation.CreatedAt(); ok {
+		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := iec.mutation.UpdatedAt(); ok {
+		_spec.SetField(incidentevent.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
+	if value, ok := iec.mutation.CreatedBy(); ok {
+		_spec.SetField(incidentevent.FieldCreatedBy, field.TypeUUID, value)
+		_node.CreatedBy = value
+	}
+	if value, ok := iec.mutation.Sequence(); ok {
+		_spec.SetField(incidentevent.FieldSequence, field.TypeInt, value)
+		_node.Sequence = value
+	}
+	if value, ok := iec.mutation.IsDraft(); ok {
+		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
+		_node.IsDraft = value
 	}
 	if nodes := iec.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -199,15 +377,47 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := iec.mutation.ServicesIDs(); len(nodes) > 0 {
+	if nodes := iec.mutation.ContextIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   incidentevent.ContextTable,
+			Columns: []string{incidentevent.ContextColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontext.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iec.mutation.FactorsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incidentevent.ServicesTable,
-			Columns: []string{incidentevent.ServicesColumn},
+			Table:   incidentevent.FactorsTable,
+			Columns: []string{incidentevent.FactorsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(service.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iec.mutation.EvidenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incidentevent.EvidenceTable,
+			Columns: []string{incidentevent.EvidenceColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -222,7 +432,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEvent.Create().
-//		SetType(v).
+//		SetIncidentID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -231,7 +441,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventUpsert) {
-//			SetType(v+v).
+//			SetIncidentID(v+v).
 //		}).
 //		Exec(ctx)
 func (iec *IncidentEventCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertOne {
@@ -267,6 +477,36 @@ type (
 	}
 )
 
+// SetIncidentID sets the "incident_id" field.
+func (u *IncidentEventUpsert) SetIncidentID(v uuid.UUID) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldIncidentID, v)
+	return u
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateIncidentID() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldIncidentID)
+	return u
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentEventUpsert) SetTimestamp(v time.Time) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldTimestamp, v)
+	return u
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateTimestamp() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldTimestamp)
+	return u
+}
+
+// ClearTimestamp clears the value of the "timestamp" field.
+func (u *IncidentEventUpsert) ClearTimestamp() *IncidentEventUpsert {
+	u.SetNull(incidentevent.FieldTimestamp)
+	return u
+}
+
 // SetType sets the "type" field.
 func (u *IncidentEventUpsert) SetType(v incidentevent.Type) *IncidentEventUpsert {
 	u.Set(incidentevent.FieldType, v)
@@ -279,27 +519,99 @@ func (u *IncidentEventUpsert) UpdateType() *IncidentEventUpsert {
 	return u
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentEventUpsert) SetTime(v time.Time) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldTime, v)
+// SetTitle sets the "title" field.
+func (u *IncidentEventUpsert) SetTitle(v string) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldTitle, v)
 	return u
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateTime() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldTime)
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateTitle() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldTitle)
 	return u
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (u *IncidentEventUpsert) SetIncidentID(v uuid.UUID) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldIncidentID, v)
+// SetDescription sets the "description" field.
+func (u *IncidentEventUpsert) SetDescription(v string) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldDescription, v)
 	return u
 }
 
-// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateIncidentID() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldIncidentID)
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateDescription() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentEventUpsert) ClearDescription() *IncidentEventUpsert {
+	u.SetNull(incidentevent.FieldDescription)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentEventUpsert) SetCreatedAt(v time.Time) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateCreatedAt() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentEventUpsert) SetUpdatedAt(v time.Time) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateUpdatedAt() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldUpdatedAt)
+	return u
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *IncidentEventUpsert) SetCreatedBy(v uuid.UUID) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldCreatedBy, v)
+	return u
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateCreatedBy() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldCreatedBy)
+	return u
+}
+
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsert) SetSequence(v int) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldSequence, v)
+	return u
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateSequence() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldSequence)
+	return u
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsert) AddSequence(v int) *IncidentEventUpsert {
+	u.Add(incidentevent.FieldSequence, v)
+	return u
+}
+
+// SetIsDraft sets the "is_draft" field.
+func (u *IncidentEventUpsert) SetIsDraft(v bool) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldIsDraft, v)
+	return u
+}
+
+// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateIsDraft() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldIsDraft)
 	return u
 }
 
@@ -351,6 +663,41 @@ func (u *IncidentEventUpsertOne) Update(set func(*IncidentEventUpsert)) *Inciden
 	return u
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (u *IncidentEventUpsertOne) SetIncidentID(v uuid.UUID) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIncidentID(v)
+	})
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateIncidentID() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIncidentID()
+	})
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentEventUpsertOne) SetTimestamp(v time.Time) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateTimestamp() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// ClearTimestamp clears the value of the "timestamp" field.
+func (u *IncidentEventUpsertOne) ClearTimestamp() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearTimestamp()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *IncidentEventUpsertOne) SetType(v incidentevent.Type) *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
@@ -365,31 +712,115 @@ func (u *IncidentEventUpsertOne) UpdateType() *IncidentEventUpsertOne {
 	})
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentEventUpsertOne) SetTime(v time.Time) *IncidentEventUpsertOne {
+// SetTitle sets the "title" field.
+func (u *IncidentEventUpsertOne) SetTitle(v string) *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetTime(v)
+		s.SetTitle(v)
 	})
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateTime() *IncidentEventUpsertOne {
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateTitle() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateTime()
+		s.UpdateTitle()
 	})
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (u *IncidentEventUpsertOne) SetIncidentID(v uuid.UUID) *IncidentEventUpsertOne {
+// SetDescription sets the "description" field.
+func (u *IncidentEventUpsertOne) SetDescription(v string) *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetIncidentID(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateIncidentID() *IncidentEventUpsertOne {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateDescription() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateIncidentID()
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentEventUpsertOne) ClearDescription() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentEventUpsertOne) SetCreatedAt(v time.Time) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateCreatedAt() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentEventUpsertOne) SetUpdatedAt(v time.Time) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateUpdatedAt() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *IncidentEventUpsertOne) SetCreatedBy(v uuid.UUID) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetCreatedBy(v)
+	})
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateCreatedBy() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateCreatedBy()
+	})
+}
+
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsertOne) SetSequence(v int) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetSequence(v)
+	})
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsertOne) AddSequence(v int) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.AddSequence(v)
+	})
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateSequence() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateSequence()
+	})
+}
+
+// SetIsDraft sets the "is_draft" field.
+func (u *IncidentEventUpsertOne) SetIsDraft(v bool) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIsDraft(v)
+	})
+}
+
+// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateIsDraft() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIsDraft()
 	})
 }
 
@@ -529,7 +960,7 @@ func (iecb *IncidentEventCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventUpsert) {
-//			SetType(v+v).
+//			SetIncidentID(v+v).
 //		}).
 //		Exec(ctx)
 func (iecb *IncidentEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertBulk {
@@ -608,6 +1039,41 @@ func (u *IncidentEventUpsertBulk) Update(set func(*IncidentEventUpsert)) *Incide
 	return u
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (u *IncidentEventUpsertBulk) SetIncidentID(v uuid.UUID) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIncidentID(v)
+	})
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateIncidentID() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIncidentID()
+	})
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (u *IncidentEventUpsertBulk) SetTimestamp(v time.Time) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetTimestamp(v)
+	})
+}
+
+// UpdateTimestamp sets the "timestamp" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateTimestamp() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateTimestamp()
+	})
+}
+
+// ClearTimestamp clears the value of the "timestamp" field.
+func (u *IncidentEventUpsertBulk) ClearTimestamp() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearTimestamp()
+	})
+}
+
 // SetType sets the "type" field.
 func (u *IncidentEventUpsertBulk) SetType(v incidentevent.Type) *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
@@ -622,31 +1088,115 @@ func (u *IncidentEventUpsertBulk) UpdateType() *IncidentEventUpsertBulk {
 	})
 }
 
-// SetTime sets the "time" field.
-func (u *IncidentEventUpsertBulk) SetTime(v time.Time) *IncidentEventUpsertBulk {
+// SetTitle sets the "title" field.
+func (u *IncidentEventUpsertBulk) SetTitle(v string) *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetTime(v)
+		s.SetTitle(v)
 	})
 }
 
-// UpdateTime sets the "time" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateTime() *IncidentEventUpsertBulk {
+// UpdateTitle sets the "title" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateTitle() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateTime()
+		s.UpdateTitle()
 	})
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (u *IncidentEventUpsertBulk) SetIncidentID(v uuid.UUID) *IncidentEventUpsertBulk {
+// SetDescription sets the "description" field.
+func (u *IncidentEventUpsertBulk) SetDescription(v string) *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetIncidentID(v)
+		s.SetDescription(v)
 	})
 }
 
-// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateIncidentID() *IncidentEventUpsertBulk {
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateDescription() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateIncidentID()
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentEventUpsertBulk) ClearDescription() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.ClearDescription()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *IncidentEventUpsertBulk) SetCreatedAt(v time.Time) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateCreatedAt() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *IncidentEventUpsertBulk) SetUpdatedAt(v time.Time) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateUpdatedAt() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetCreatedBy sets the "created_by" field.
+func (u *IncidentEventUpsertBulk) SetCreatedBy(v uuid.UUID) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetCreatedBy(v)
+	})
+}
+
+// UpdateCreatedBy sets the "created_by" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateCreatedBy() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateCreatedBy()
+	})
+}
+
+// SetSequence sets the "sequence" field.
+func (u *IncidentEventUpsertBulk) SetSequence(v int) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetSequence(v)
+	})
+}
+
+// AddSequence adds v to the "sequence" field.
+func (u *IncidentEventUpsertBulk) AddSequence(v int) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.AddSequence(v)
+	})
+}
+
+// UpdateSequence sets the "sequence" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateSequence() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateSequence()
+	})
+}
+
+// SetIsDraft sets the "is_draft" field.
+func (u *IncidentEventUpsertBulk) SetIsDraft(v bool) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIsDraft(v)
+	})
+}
+
+// UpdateIsDraft sets the "is_draft" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateIsDraft() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIsDraft()
 	})
 }
 

@@ -35,19 +35,15 @@ type Team struct {
 type TeamEdges struct {
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
-	// Services holds the value of the services edge.
-	Services []*Service `json:"services,omitempty"`
 	// OncallRosters holds the value of the oncall_rosters edge.
 	OncallRosters []*OncallRoster `json:"oncall_rosters,omitempty"`
-	// Subscriptions holds the value of the subscriptions edge.
-	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// IncidentAssignments holds the value of the incident_assignments edge.
 	IncidentAssignments []*IncidentTeamAssignment `json:"incident_assignments,omitempty"`
 	// ScheduledMeetings holds the value of the scheduled_meetings edge.
 	ScheduledMeetings []*MeetingSchedule `json:"scheduled_meetings,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [4]bool
 }
 
 // UsersOrErr returns the Users value or an error if the edge
@@ -59,37 +55,19 @@ func (e TeamEdges) UsersOrErr() ([]*User, error) {
 	return nil, &NotLoadedError{edge: "users"}
 }
 
-// ServicesOrErr returns the Services value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) ServicesOrErr() ([]*Service, error) {
-	if e.loadedTypes[1] {
-		return e.Services, nil
-	}
-	return nil, &NotLoadedError{edge: "services"}
-}
-
 // OncallRostersOrErr returns the OncallRosters value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) OncallRostersOrErr() ([]*OncallRoster, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.OncallRosters, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_rosters"}
 }
 
-// SubscriptionsOrErr returns the Subscriptions value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) SubscriptionsOrErr() ([]*Subscription, error) {
-	if e.loadedTypes[3] {
-		return e.Subscriptions, nil
-	}
-	return nil, &NotLoadedError{edge: "subscriptions"}
-}
-
 // IncidentAssignmentsOrErr returns the IncidentAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) IncidentAssignmentsOrErr() ([]*IncidentTeamAssignment, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[2] {
 		return e.IncidentAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_assignments"}
@@ -98,7 +76,7 @@ func (e TeamEdges) IncidentAssignmentsOrErr() ([]*IncidentTeamAssignment, error)
 // ScheduledMeetingsOrErr returns the ScheduledMeetings value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) ScheduledMeetingsOrErr() ([]*MeetingSchedule, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[3] {
 		return e.ScheduledMeetings, nil
 	}
 	return nil, &NotLoadedError{edge: "scheduled_meetings"}
@@ -176,19 +154,9 @@ func (t *Team) QueryUsers() *UserQuery {
 	return NewTeamClient(t.config).QueryUsers(t)
 }
 
-// QueryServices queries the "services" edge of the Team entity.
-func (t *Team) QueryServices() *ServiceQuery {
-	return NewTeamClient(t.config).QueryServices(t)
-}
-
 // QueryOncallRosters queries the "oncall_rosters" edge of the Team entity.
 func (t *Team) QueryOncallRosters() *OncallRosterQuery {
 	return NewTeamClient(t.config).QueryOncallRosters(t)
-}
-
-// QuerySubscriptions queries the "subscriptions" edge of the Team entity.
-func (t *Team) QuerySubscriptions() *SubscriptionQuery {
-	return NewTeamClient(t.config).QuerySubscriptions(t)
 }
 
 // QueryIncidentAssignments queries the "incident_assignments" edge of the Team entity.

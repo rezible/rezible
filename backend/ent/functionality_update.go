@@ -10,9 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/functionality"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -44,45 +42,9 @@ func (fu *FunctionalityUpdate) SetNillableName(s *string) *FunctionalityUpdate {
 	return fu
 }
 
-// AddIncidentIDs adds the "incidents" edge to the IncidentResourceImpact entity by IDs.
-func (fu *FunctionalityUpdate) AddIncidentIDs(ids ...uuid.UUID) *FunctionalityUpdate {
-	fu.mutation.AddIncidentIDs(ids...)
-	return fu
-}
-
-// AddIncidents adds the "incidents" edges to the IncidentResourceImpact entity.
-func (fu *FunctionalityUpdate) AddIncidents(i ...*IncidentResourceImpact) *FunctionalityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return fu.AddIncidentIDs(ids...)
-}
-
 // Mutation returns the FunctionalityMutation object of the builder.
 func (fu *FunctionalityUpdate) Mutation() *FunctionalityMutation {
 	return fu.mutation
-}
-
-// ClearIncidents clears all "incidents" edges to the IncidentResourceImpact entity.
-func (fu *FunctionalityUpdate) ClearIncidents() *FunctionalityUpdate {
-	fu.mutation.ClearIncidents()
-	return fu
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to IncidentResourceImpact entities by IDs.
-func (fu *FunctionalityUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *FunctionalityUpdate {
-	fu.mutation.RemoveIncidentIDs(ids...)
-	return fu
-}
-
-// RemoveIncidents removes "incidents" edges to IncidentResourceImpact entities.
-func (fu *FunctionalityUpdate) RemoveIncidents(i ...*IncidentResourceImpact) *FunctionalityUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return fu.RemoveIncidentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -130,51 +92,6 @@ func (fu *FunctionalityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := fu.mutation.Name(); ok {
 		_spec.SetField(functionality.FieldName, field.TypeString, value)
 	}
-	if fu.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fu.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !fu.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fu.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.AddModifiers(fu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, fu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -211,45 +128,9 @@ func (fuo *FunctionalityUpdateOne) SetNillableName(s *string) *FunctionalityUpda
 	return fuo
 }
 
-// AddIncidentIDs adds the "incidents" edge to the IncidentResourceImpact entity by IDs.
-func (fuo *FunctionalityUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *FunctionalityUpdateOne {
-	fuo.mutation.AddIncidentIDs(ids...)
-	return fuo
-}
-
-// AddIncidents adds the "incidents" edges to the IncidentResourceImpact entity.
-func (fuo *FunctionalityUpdateOne) AddIncidents(i ...*IncidentResourceImpact) *FunctionalityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return fuo.AddIncidentIDs(ids...)
-}
-
 // Mutation returns the FunctionalityMutation object of the builder.
 func (fuo *FunctionalityUpdateOne) Mutation() *FunctionalityMutation {
 	return fuo.mutation
-}
-
-// ClearIncidents clears all "incidents" edges to the IncidentResourceImpact entity.
-func (fuo *FunctionalityUpdateOne) ClearIncidents() *FunctionalityUpdateOne {
-	fuo.mutation.ClearIncidents()
-	return fuo
-}
-
-// RemoveIncidentIDs removes the "incidents" edge to IncidentResourceImpact entities by IDs.
-func (fuo *FunctionalityUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *FunctionalityUpdateOne {
-	fuo.mutation.RemoveIncidentIDs(ids...)
-	return fuo
-}
-
-// RemoveIncidents removes "incidents" edges to IncidentResourceImpact entities.
-func (fuo *FunctionalityUpdateOne) RemoveIncidents(i ...*IncidentResourceImpact) *FunctionalityUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return fuo.RemoveIncidentIDs(ids...)
 }
 
 // Where appends a list predicates to the FunctionalityUpdate builder.
@@ -326,51 +207,6 @@ func (fuo *FunctionalityUpdateOne) sqlSave(ctx context.Context) (_node *Function
 	}
 	if value, ok := fuo.mutation.Name(); ok {
 		_spec.SetField(functionality.FieldName, field.TypeString, value)
-	}
-	if fuo.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fuo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !fuo.mutation.IncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := fuo.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.AddModifiers(fuo.modifiers...)
 	_node = &Functionality{config: fuo.config}

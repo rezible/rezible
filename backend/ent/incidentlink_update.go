@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -103,25 +102,6 @@ func (ilu *IncidentLinkUpdate) SetLinkedIncident(i *Incident) *IncidentLinkUpdat
 	return ilu.SetLinkedIncidentID(i.ID)
 }
 
-// SetResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID.
-func (ilu *IncidentLinkUpdate) SetResourceImpactID(id uuid.UUID) *IncidentLinkUpdate {
-	ilu.mutation.SetResourceImpactID(id)
-	return ilu
-}
-
-// SetNillableResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID if the given value is not nil.
-func (ilu *IncidentLinkUpdate) SetNillableResourceImpactID(id *uuid.UUID) *IncidentLinkUpdate {
-	if id != nil {
-		ilu = ilu.SetResourceImpactID(*id)
-	}
-	return ilu
-}
-
-// SetResourceImpact sets the "resource_impact" edge to the IncidentResourceImpact entity.
-func (ilu *IncidentLinkUpdate) SetResourceImpact(i *IncidentResourceImpact) *IncidentLinkUpdate {
-	return ilu.SetResourceImpactID(i.ID)
-}
-
 // Mutation returns the IncidentLinkMutation object of the builder.
 func (ilu *IncidentLinkUpdate) Mutation() *IncidentLinkMutation {
 	return ilu.mutation
@@ -136,12 +116,6 @@ func (ilu *IncidentLinkUpdate) ClearIncident() *IncidentLinkUpdate {
 // ClearLinkedIncident clears the "linked_incident" edge to the Incident entity.
 func (ilu *IncidentLinkUpdate) ClearLinkedIncident() *IncidentLinkUpdate {
 	ilu.mutation.ClearLinkedIncident()
-	return ilu
-}
-
-// ClearResourceImpact clears the "resource_impact" edge to the IncidentResourceImpact entity.
-func (ilu *IncidentLinkUpdate) ClearResourceImpact() *IncidentLinkUpdate {
-	ilu.mutation.ClearResourceImpact()
 	return ilu
 }
 
@@ -273,35 +247,6 @@ func (ilu *IncidentLinkUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ilu.mutation.ResourceImpactCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentlink.ResourceImpactTable,
-			Columns: []string{incidentlink.ResourceImpactColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ilu.mutation.ResourceImpactIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentlink.ResourceImpactTable,
-			Columns: []string{incidentlink.ResourceImpactColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.AddModifiers(ilu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ilu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -396,25 +341,6 @@ func (iluo *IncidentLinkUpdateOne) SetLinkedIncident(i *Incident) *IncidentLinkU
 	return iluo.SetLinkedIncidentID(i.ID)
 }
 
-// SetResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID.
-func (iluo *IncidentLinkUpdateOne) SetResourceImpactID(id uuid.UUID) *IncidentLinkUpdateOne {
-	iluo.mutation.SetResourceImpactID(id)
-	return iluo
-}
-
-// SetNillableResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID if the given value is not nil.
-func (iluo *IncidentLinkUpdateOne) SetNillableResourceImpactID(id *uuid.UUID) *IncidentLinkUpdateOne {
-	if id != nil {
-		iluo = iluo.SetResourceImpactID(*id)
-	}
-	return iluo
-}
-
-// SetResourceImpact sets the "resource_impact" edge to the IncidentResourceImpact entity.
-func (iluo *IncidentLinkUpdateOne) SetResourceImpact(i *IncidentResourceImpact) *IncidentLinkUpdateOne {
-	return iluo.SetResourceImpactID(i.ID)
-}
-
 // Mutation returns the IncidentLinkMutation object of the builder.
 func (iluo *IncidentLinkUpdateOne) Mutation() *IncidentLinkMutation {
 	return iluo.mutation
@@ -429,12 +355,6 @@ func (iluo *IncidentLinkUpdateOne) ClearIncident() *IncidentLinkUpdateOne {
 // ClearLinkedIncident clears the "linked_incident" edge to the Incident entity.
 func (iluo *IncidentLinkUpdateOne) ClearLinkedIncident() *IncidentLinkUpdateOne {
 	iluo.mutation.ClearLinkedIncident()
-	return iluo
-}
-
-// ClearResourceImpact clears the "resource_impact" edge to the IncidentResourceImpact entity.
-func (iluo *IncidentLinkUpdateOne) ClearResourceImpact() *IncidentLinkUpdateOne {
-	iluo.mutation.ClearResourceImpact()
 	return iluo
 }
 
@@ -589,35 +509,6 @@ func (iluo *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *Incident
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iluo.mutation.ResourceImpactCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentlink.ResourceImpactTable,
-			Columns: []string{incidentlink.ResourceImpactColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iluo.mutation.ResourceImpactIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentlink.ResourceImpactTable,
-			Columns: []string{incidentlink.ResourceImpactColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

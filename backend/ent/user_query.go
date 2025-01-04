@@ -21,7 +21,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -39,7 +38,6 @@ type UserQuery struct {
 	withOncallShifts                 *OncallUserShiftQuery
 	withOncallShiftCovers            *OncallUserShiftCoverQuery
 	withAlertsReceived               *OncallAlertInstanceQuery
-	withSubscriptions                *SubscriptionQuery
 	withIncidentRoleAssignments      *IncidentRoleAssignmentQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
 	withAssignedTasks                *TaskQuery
@@ -186,28 +184,6 @@ func (uq *UserQuery) QueryAlertsReceived() *OncallAlertInstanceQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(oncallalertinstance.Table, oncallalertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.AlertsReceivedTable, user.AlertsReceivedColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySubscriptions chains the current query on the "subscriptions" edge.
-func (uq *UserQuery) QuerySubscriptions() *SubscriptionQuery {
-	query := (&SubscriptionClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(subscription.Table, subscription.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.SubscriptionsTable, user.SubscriptionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -544,7 +520,6 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withOncallShifts:                 uq.withOncallShifts.Clone(),
 		withOncallShiftCovers:            uq.withOncallShiftCovers.Clone(),
 		withAlertsReceived:               uq.withAlertsReceived.Clone(),
-		withSubscriptions:                uq.withSubscriptions.Clone(),
 		withIncidentRoleAssignments:      uq.withIncidentRoleAssignments.Clone(),
 		withIncidentDebriefs:             uq.withIncidentDebriefs.Clone(),
 		withAssignedTasks:                uq.withAssignedTasks.Clone(),
@@ -610,17 +585,6 @@ func (uq *UserQuery) WithAlertsReceived(opts ...func(*OncallAlertInstanceQuery))
 		opt(query)
 	}
 	uq.withAlertsReceived = query
-	return uq
-}
-
-// WithSubscriptions tells the query-builder to eager-load the nodes that are connected to
-// the "subscriptions" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithSubscriptions(opts ...func(*SubscriptionQuery)) *UserQuery {
-	query := (&SubscriptionClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withSubscriptions = query
 	return uq
 }
 
@@ -768,13 +732,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [12]bool{
+		loadedTypes = [11]bool{
 			uq.withTeams != nil,
 			uq.withOncallSchedules != nil,
 			uq.withOncallShifts != nil,
 			uq.withOncallShiftCovers != nil,
 			uq.withAlertsReceived != nil,
-			uq.withSubscriptions != nil,
 			uq.withIncidentRoleAssignments != nil,
 			uq.withIncidentDebriefs != nil,
 			uq.withAssignedTasks != nil,
@@ -840,13 +803,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadAlertsReceived(ctx, query, nodes,
 			func(n *User) { n.Edges.AlertsReceived = []*OncallAlertInstance{} },
 			func(n *User, e *OncallAlertInstance) { n.Edges.AlertsReceived = append(n.Edges.AlertsReceived, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withSubscriptions; query != nil {
-		if err := uq.loadSubscriptions(ctx, query, nodes,
-			func(n *User) { n.Edges.Subscriptions = []*Subscription{} },
-			func(n *User, e *Subscription) { n.Edges.Subscriptions = append(n.Edges.Subscriptions, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1077,37 +1033,6 @@ func (uq *UserQuery) loadAlertsReceived(ctx context.Context, query *OncallAlertI
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "receiver_user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadSubscriptions(ctx context.Context, query *SubscriptionQuery, nodes []*User, init func(*User), assign func(*User, *Subscription)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Subscription(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.SubscriptionsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.subscription_user
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "subscription_user" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "subscription_user" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

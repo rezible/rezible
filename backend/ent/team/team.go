@@ -23,12 +23,8 @@ const (
 	FieldTimezone = "timezone"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
-	// EdgeServices holds the string denoting the services edge name in mutations.
-	EdgeServices = "services"
 	// EdgeOncallRosters holds the string denoting the oncall_rosters edge name in mutations.
 	EdgeOncallRosters = "oncall_rosters"
-	// EdgeSubscriptions holds the string denoting the subscriptions edge name in mutations.
-	EdgeSubscriptions = "subscriptions"
 	// EdgeIncidentAssignments holds the string denoting the incident_assignments edge name in mutations.
 	EdgeIncidentAssignments = "incident_assignments"
 	// EdgeScheduledMeetings holds the string denoting the scheduled_meetings edge name in mutations.
@@ -40,25 +36,11 @@ const (
 	// UsersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UsersInverseTable = "users"
-	// ServicesTable is the table that holds the services relation/edge.
-	ServicesTable = "services"
-	// ServicesInverseTable is the table name for the Service entity.
-	// It exists in this package in order to avoid circular dependency with the "service" package.
-	ServicesInverseTable = "services"
-	// ServicesColumn is the table column denoting the services relation/edge.
-	ServicesColumn = "service_owner_team"
 	// OncallRostersTable is the table that holds the oncall_rosters relation/edge. The primary key declared below.
 	OncallRostersTable = "team_oncall_rosters"
 	// OncallRostersInverseTable is the table name for the OncallRoster entity.
 	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
 	OncallRostersInverseTable = "oncall_rosters"
-	// SubscriptionsTable is the table that holds the subscriptions relation/edge.
-	SubscriptionsTable = "subscriptions"
-	// SubscriptionsInverseTable is the table name for the Subscription entity.
-	// It exists in this package in order to avoid circular dependency with the "subscription" package.
-	SubscriptionsInverseTable = "subscriptions"
-	// SubscriptionsColumn is the table column denoting the subscriptions relation/edge.
-	SubscriptionsColumn = "subscription_team"
 	// IncidentAssignmentsTable is the table that holds the incident_assignments relation/edge.
 	IncidentAssignmentsTable = "incident_team_assignments"
 	// IncidentAssignmentsInverseTable is the table name for the IncidentTeamAssignment entity.
@@ -151,20 +133,6 @@ func ByUsers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByServicesCount orders the results by services count.
-func ByServicesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newServicesStep(), opts...)
-	}
-}
-
-// ByServices orders the results by services terms.
-func ByServices(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newServicesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByOncallRostersCount orders the results by oncall_rosters count.
 func ByOncallRostersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -176,20 +144,6 @@ func ByOncallRostersCount(opts ...sql.OrderTermOption) OrderOption {
 func ByOncallRosters(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOncallRostersStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// BySubscriptionsCount orders the results by subscriptions count.
-func BySubscriptionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSubscriptionsStep(), opts...)
-	}
-}
-
-// BySubscriptions orders the results by subscriptions terms.
-func BySubscriptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSubscriptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -227,25 +181,11 @@ func newUsersStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, UsersTable, UsersPrimaryKey...),
 	)
 }
-func newServicesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ServicesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ServicesTable, ServicesColumn),
-	)
-}
 func newOncallRostersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OncallRostersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, OncallRostersTable, OncallRostersPrimaryKey...),
-	)
-}
-func newSubscriptionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SubscriptionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SubscriptionsTable, SubscriptionsColumn),
 	)
 }
 func newIncidentAssignmentsStep() *sqlgraph.Step {

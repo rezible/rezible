@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/functionality"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 )
 
 // FunctionalityCreate is the builder for creating a Functionality entity.
@@ -42,21 +41,6 @@ func (fc *FunctionalityCreate) SetNillableID(u *uuid.UUID) *FunctionalityCreate 
 		fc.SetID(*u)
 	}
 	return fc
-}
-
-// AddIncidentIDs adds the "incidents" edge to the IncidentResourceImpact entity by IDs.
-func (fc *FunctionalityCreate) AddIncidentIDs(ids ...uuid.UUID) *FunctionalityCreate {
-	fc.mutation.AddIncidentIDs(ids...)
-	return fc
-}
-
-// AddIncidents adds the "incidents" edges to the IncidentResourceImpact entity.
-func (fc *FunctionalityCreate) AddIncidents(i ...*IncidentResourceImpact) *FunctionalityCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return fc.AddIncidentIDs(ids...)
 }
 
 // Mutation returns the FunctionalityMutation object of the builder.
@@ -144,22 +128,6 @@ func (fc *FunctionalityCreate) createSpec() (*Functionality, *sqlgraph.CreateSpe
 	if value, ok := fc.mutation.Name(); ok {
 		_spec.SetField(functionality.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if nodes := fc.mutation.IncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   functionality.IncidentsTable,
-			Columns: []string{functionality.IncidentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

@@ -43,8 +43,6 @@ type UserEdges struct {
 	OncallShiftCovers []*OncallUserShiftCover `json:"oncall_shift_covers,omitempty"`
 	// AlertsReceived holds the value of the alerts_received edge.
 	AlertsReceived []*OncallAlertInstance `json:"alerts_received,omitempty"`
-	// Subscriptions holds the value of the subscriptions edge.
-	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
 	// IncidentRoleAssignments holds the value of the incident_role_assignments edge.
 	IncidentRoleAssignments []*IncidentRoleAssignment `json:"incident_role_assignments,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
@@ -59,7 +57,7 @@ type UserEdges struct {
 	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [12]bool
+	loadedTypes [11]bool
 }
 
 // TeamsOrErr returns the Teams value or an error if the edge
@@ -107,19 +105,10 @@ func (e UserEdges) AlertsReceivedOrErr() ([]*OncallAlertInstance, error) {
 	return nil, &NotLoadedError{edge: "alerts_received"}
 }
 
-// SubscriptionsOrErr returns the Subscriptions value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) SubscriptionsOrErr() ([]*Subscription, error) {
-	if e.loadedTypes[5] {
-		return e.Subscriptions, nil
-	}
-	return nil, &NotLoadedError{edge: "subscriptions"}
-}
-
 // IncidentRoleAssignmentsOrErr returns the IncidentRoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentRoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.IncidentRoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_role_assignments"}
@@ -128,7 +117,7 @@ func (e UserEdges) IncidentRoleAssignmentsOrErr() ([]*IncidentRoleAssignment, er
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.IncidentDebriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_debriefs"}
@@ -137,7 +126,7 @@ func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
 // AssignedTasksOrErr returns the AssignedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.AssignedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_tasks"}
@@ -146,7 +135,7 @@ func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
 // CreatedTasksOrErr returns the CreatedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.CreatedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "created_tasks"}
@@ -155,7 +144,7 @@ func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
 // RetrospectiveReviewRequestsOrErr returns the RetrospectiveReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[9] {
 		return e.RetrospectiveReviewRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_requests"}
@@ -164,7 +153,7 @@ func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, e
 // RetrospectiveReviewResponsesOrErr returns the RetrospectiveReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.RetrospectiveReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
@@ -260,11 +249,6 @@ func (u *User) QueryOncallShiftCovers() *OncallUserShiftCoverQuery {
 // QueryAlertsReceived queries the "alerts_received" edge of the User entity.
 func (u *User) QueryAlertsReceived() *OncallAlertInstanceQuery {
 	return NewUserClient(u.config).QueryAlertsReceived(u)
-}
-
-// QuerySubscriptions queries the "subscriptions" edge of the User entity.
-func (u *User) QuerySubscriptions() *SubscriptionQuery {
-	return NewUserClient(u.config).QuerySubscriptions(u)
 }
 
 // QueryIncidentRoleAssignments queries the "incident_role_assignments" edge of the User entity.

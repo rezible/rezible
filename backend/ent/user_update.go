@@ -19,7 +19,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -180,21 +179,6 @@ func (uu *UserUpdate) AddAlertsReceived(o ...*OncallAlertInstance) *UserUpdate {
 		ids[i] = o[i].ID
 	}
 	return uu.AddAlertsReceivedIDs(ids...)
-}
-
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (uu *UserUpdate) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddSubscriptionIDs(ids...)
-	return uu
-}
-
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (uu *UserUpdate) AddSubscriptions(s ...*Subscription) *UserUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uu.AddSubscriptionIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -395,27 +379,6 @@ func (uu *UserUpdate) RemoveAlertsReceived(o ...*OncallAlertInstance) *UserUpdat
 		ids[i] = o[i].ID
 	}
 	return uu.RemoveAlertsReceivedIDs(ids...)
-}
-
-// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
-func (uu *UserUpdate) ClearSubscriptions() *UserUpdate {
-	uu.mutation.ClearSubscriptions()
-	return uu
-}
-
-// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
-func (uu *UserUpdate) RemoveSubscriptionIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveSubscriptionIDs(ids...)
-	return uu
-}
-
-// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
-func (uu *UserUpdate) RemoveSubscriptions(s ...*Subscription) *UserUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uu.RemoveSubscriptionIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -822,51 +785,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !uu.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1309,21 +1227,6 @@ func (uuo *UserUpdateOne) AddAlertsReceived(o ...*OncallAlertInstance) *UserUpda
 	return uuo.AddAlertsReceivedIDs(ids...)
 }
 
-// AddSubscriptionIDs adds the "subscriptions" edge to the Subscription entity by IDs.
-func (uuo *UserUpdateOne) AddSubscriptionIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddSubscriptionIDs(ids...)
-	return uuo
-}
-
-// AddSubscriptions adds the "subscriptions" edges to the Subscription entity.
-func (uuo *UserUpdateOne) AddSubscriptions(s ...*Subscription) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uuo.AddSubscriptionIDs(ids...)
-}
-
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (uuo *UserUpdateOne) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddIncidentRoleAssignmentIDs(ids...)
@@ -1522,27 +1425,6 @@ func (uuo *UserUpdateOne) RemoveAlertsReceived(o ...*OncallAlertInstance) *UserU
 		ids[i] = o[i].ID
 	}
 	return uuo.RemoveAlertsReceivedIDs(ids...)
-}
-
-// ClearSubscriptions clears all "subscriptions" edges to the Subscription entity.
-func (uuo *UserUpdateOne) ClearSubscriptions() *UserUpdateOne {
-	uuo.mutation.ClearSubscriptions()
-	return uuo
-}
-
-// RemoveSubscriptionIDs removes the "subscriptions" edge to Subscription entities by IDs.
-func (uuo *UserUpdateOne) RemoveSubscriptionIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveSubscriptionIDs(ids...)
-	return uuo
-}
-
-// RemoveSubscriptions removes "subscriptions" edges to Subscription entities.
-func (uuo *UserUpdateOne) RemoveSubscriptions(s ...*Subscription) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return uuo.RemoveSubscriptionIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -1979,51 +1861,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedSubscriptionsIDs(); len(nodes) > 0 && !uuo.mutation.SubscriptionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.SubscriptionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.SubscriptionsTable,
-			Columns: []string{user.SubscriptionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(subscription.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

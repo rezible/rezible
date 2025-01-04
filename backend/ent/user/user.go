@@ -31,8 +31,6 @@ const (
 	EdgeOncallShiftCovers = "oncall_shift_covers"
 	// EdgeAlertsReceived holds the string denoting the alerts_received edge name in mutations.
 	EdgeAlertsReceived = "alerts_received"
-	// EdgeSubscriptions holds the string denoting the subscriptions edge name in mutations.
-	EdgeSubscriptions = "subscriptions"
 	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
 	EdgeIncidentRoleAssignments = "incident_role_assignments"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
@@ -80,13 +78,6 @@ const (
 	AlertsReceivedInverseTable = "oncall_alert_instances"
 	// AlertsReceivedColumn is the table column denoting the alerts_received relation/edge.
 	AlertsReceivedColumn = "receiver_user_id"
-	// SubscriptionsTable is the table that holds the subscriptions relation/edge.
-	SubscriptionsTable = "subscriptions"
-	// SubscriptionsInverseTable is the table name for the Subscription entity.
-	// It exists in this package in order to avoid circular dependency with the "subscription" package.
-	SubscriptionsInverseTable = "subscriptions"
-	// SubscriptionsColumn is the table column denoting the subscriptions relation/edge.
-	SubscriptionsColumn = "subscription_user"
 	// IncidentRoleAssignmentsTable is the table that holds the incident_role_assignments relation/edge.
 	IncidentRoleAssignmentsTable = "incident_role_assignments"
 	// IncidentRoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -259,20 +250,6 @@ func ByAlertsReceived(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySubscriptionsCount orders the results by subscriptions count.
-func BySubscriptionsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSubscriptionsStep(), opts...)
-	}
-}
-
-// BySubscriptions orders the results by subscriptions terms.
-func BySubscriptions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSubscriptionsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByIncidentRoleAssignmentsCount orders the results by incident_role_assignments count.
 func ByIncidentRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -389,13 +366,6 @@ func newAlertsReceivedStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AlertsReceivedInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AlertsReceivedTable, AlertsReceivedColumn),
-	)
-}
-func newSubscriptionsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SubscriptionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SubscriptionsTable, SubscriptionsColumn),
 	)
 }
 func newIncidentRoleAssignmentsStep() *sqlgraph.Step {

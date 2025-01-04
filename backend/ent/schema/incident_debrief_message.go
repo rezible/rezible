@@ -13,11 +13,6 @@ type IncidentDebriefMessage struct {
 	ent.Schema
 }
 
-var (
-	debriefMessageTypes = []string{"user", "assistant", "question"}
-	debriefMessageTools = []string{"rating"}
-)
-
 // Fields of the IncidentDebriefMessage.
 func (IncidentDebriefMessage) Fields() []ent.Field {
 	return []ent.Field{
@@ -25,8 +20,8 @@ func (IncidentDebriefMessage) Fields() []ent.Field {
 		field.UUID("debrief_id", uuid.UUID{}),
 		field.UUID("question_id", uuid.UUID{}).Optional(),
 		field.Time("created_at").Default(time.Now),
-		field.Enum("type").Values(debriefMessageTypes...),
-		field.Enum("requested_tool").Values(debriefMessageTools...).Optional(),
+		field.Enum("type").Values("user", "assistant", "question"),
+		field.Enum("requested_tool").Values("rating").Optional(),
 		field.Text("body"),
 	}
 }

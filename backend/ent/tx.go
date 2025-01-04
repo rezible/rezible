@@ -28,14 +28,20 @@ type Tx struct {
 	IncidentDebriefSuggestion *IncidentDebriefSuggestionClient
 	// IncidentEvent is the client for interacting with the IncidentEvent builders.
 	IncidentEvent *IncidentEventClient
+	// IncidentEventContext is the client for interacting with the IncidentEventContext builders.
+	IncidentEventContext *IncidentEventContextClient
+	// IncidentEventContributingFactor is the client for interacting with the IncidentEventContributingFactor builders.
+	IncidentEventContributingFactor *IncidentEventContributingFactorClient
+	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
+	IncidentEventEvidence *IncidentEventEvidenceClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
 	IncidentFieldOption *IncidentFieldOptionClient
 	// IncidentLink is the client for interacting with the IncidentLink builders.
 	IncidentLink *IncidentLinkClient
-	// IncidentResourceImpact is the client for interacting with the IncidentResourceImpact builders.
-	IncidentResourceImpact *IncidentResourceImpactClient
+	// IncidentMilestone is the client for interacting with the IncidentMilestone builders.
+	IncidentMilestone *IncidentMilestoneClient
 	// IncidentRole is the client for interacting with the IncidentRole builders.
 	IncidentRole *IncidentRoleClient
 	// IncidentRoleAssignment is the client for interacting with the IncidentRoleAssignment builders.
@@ -84,10 +90,6 @@ type Tx struct {
 	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
-	// Service is the client for interacting with the Service builders.
-	Service *ServiceClient
-	// Subscription is the client for interacting with the Subscription builders.
-	Subscription *SubscriptionClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -233,10 +235,13 @@ func (tx *Tx) init() {
 	tx.IncidentDebriefQuestion = NewIncidentDebriefQuestionClient(tx.config)
 	tx.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(tx.config)
 	tx.IncidentEvent = NewIncidentEventClient(tx.config)
+	tx.IncidentEventContext = NewIncidentEventContextClient(tx.config)
+	tx.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(tx.config)
+	tx.IncidentEventEvidence = NewIncidentEventEvidenceClient(tx.config)
 	tx.IncidentField = NewIncidentFieldClient(tx.config)
 	tx.IncidentFieldOption = NewIncidentFieldOptionClient(tx.config)
 	tx.IncidentLink = NewIncidentLinkClient(tx.config)
-	tx.IncidentResourceImpact = NewIncidentResourceImpactClient(tx.config)
+	tx.IncidentMilestone = NewIncidentMilestoneClient(tx.config)
 	tx.IncidentRole = NewIncidentRoleClient(tx.config)
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
@@ -261,8 +266,6 @@ func (tx *Tx) init() {
 	tx.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(tx.config)
 	tx.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
-	tx.Service = NewServiceClient(tx.config)
-	tx.Subscription = NewSubscriptionClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.User = NewUserClient(tx.config)

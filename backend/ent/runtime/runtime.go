@@ -14,9 +14,12 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
@@ -41,8 +44,6 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema"
-	"github.com/rezible/rezible/ent/service"
-	"github.com/rezible/rezible/ent/subscription"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -109,10 +110,70 @@ func init() {
 	incidentdebriefsuggestion.DefaultID = incidentdebriefsuggestionDescID.Default.(func() uuid.UUID)
 	incidenteventFields := schema.IncidentEvent{}.Fields()
 	_ = incidenteventFields
+	// incidenteventDescTitle is the schema descriptor for title field.
+	incidenteventDescTitle := incidenteventFields[4].Descriptor()
+	// incidentevent.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	incidentevent.TitleValidator = incidenteventDescTitle.Validators[0].(func(string) error)
+	// incidenteventDescCreatedAt is the schema descriptor for created_at field.
+	incidenteventDescCreatedAt := incidenteventFields[6].Descriptor()
+	// incidentevent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidentevent.DefaultCreatedAt = incidenteventDescCreatedAt.Default.(func() time.Time)
+	// incidenteventDescUpdatedAt is the schema descriptor for updated_at field.
+	incidenteventDescUpdatedAt := incidenteventFields[7].Descriptor()
+	// incidentevent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	incidentevent.DefaultUpdatedAt = incidenteventDescUpdatedAt.Default.(func() time.Time)
+	// incidentevent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	incidentevent.UpdateDefaultUpdatedAt = incidenteventDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// incidenteventDescIsDraft is the schema descriptor for is_draft field.
+	incidenteventDescIsDraft := incidenteventFields[10].Descriptor()
+	// incidentevent.DefaultIsDraft holds the default value on creation for the is_draft field.
+	incidentevent.DefaultIsDraft = incidenteventDescIsDraft.Default.(bool)
 	// incidenteventDescID is the schema descriptor for id field.
 	incidenteventDescID := incidenteventFields[0].Descriptor()
 	// incidentevent.DefaultID holds the default value on creation for the id field.
 	incidentevent.DefaultID = incidenteventDescID.Default.(func() uuid.UUID)
+	incidenteventcontextFields := schema.IncidentEventContext{}.Fields()
+	_ = incidenteventcontextFields
+	// incidenteventcontextDescCreatedAt is the schema descriptor for created_at field.
+	incidenteventcontextDescCreatedAt := incidenteventcontextFields[5].Descriptor()
+	// incidenteventcontext.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidenteventcontext.DefaultCreatedAt = incidenteventcontextDescCreatedAt.Default.(func() time.Time)
+	// incidenteventcontextDescID is the schema descriptor for id field.
+	incidenteventcontextDescID := incidenteventcontextFields[0].Descriptor()
+	// incidenteventcontext.DefaultID holds the default value on creation for the id field.
+	incidenteventcontext.DefaultID = incidenteventcontextDescID.Default.(func() uuid.UUID)
+	incidenteventcontributingfactorFields := schema.IncidentEventContributingFactor{}.Fields()
+	_ = incidenteventcontributingfactorFields
+	// incidenteventcontributingfactorDescFactorType is the schema descriptor for factor_type field.
+	incidenteventcontributingfactorDescFactorType := incidenteventcontributingfactorFields[1].Descriptor()
+	// incidenteventcontributingfactor.FactorTypeValidator is a validator for the "factor_type" field. It is called by the builders before save.
+	incidenteventcontributingfactor.FactorTypeValidator = incidenteventcontributingfactorDescFactorType.Validators[0].(func(string) error)
+	// incidenteventcontributingfactorDescCreatedAt is the schema descriptor for created_at field.
+	incidenteventcontributingfactorDescCreatedAt := incidenteventcontributingfactorFields[3].Descriptor()
+	// incidenteventcontributingfactor.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidenteventcontributingfactor.DefaultCreatedAt = incidenteventcontributingfactorDescCreatedAt.Default.(func() time.Time)
+	// incidenteventcontributingfactorDescID is the schema descriptor for id field.
+	incidenteventcontributingfactorDescID := incidenteventcontributingfactorFields[0].Descriptor()
+	// incidenteventcontributingfactor.DefaultID holds the default value on creation for the id field.
+	incidenteventcontributingfactor.DefaultID = incidenteventcontributingfactorDescID.Default.(func() uuid.UUID)
+	incidenteventevidenceFields := schema.IncidentEventEvidence{}.Fields()
+	_ = incidenteventevidenceFields
+	// incidenteventevidenceDescURL is the schema descriptor for url field.
+	incidenteventevidenceDescURL := incidenteventevidenceFields[2].Descriptor()
+	// incidenteventevidence.URLValidator is a validator for the "url" field. It is called by the builders before save.
+	incidenteventevidence.URLValidator = incidenteventevidenceDescURL.Validators[0].(func(string) error)
+	// incidenteventevidenceDescTitle is the schema descriptor for title field.
+	incidenteventevidenceDescTitle := incidenteventevidenceFields[3].Descriptor()
+	// incidenteventevidence.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	incidenteventevidence.TitleValidator = incidenteventevidenceDescTitle.Validators[0].(func(string) error)
+	// incidenteventevidenceDescCreatedAt is the schema descriptor for created_at field.
+	incidenteventevidenceDescCreatedAt := incidenteventevidenceFields[5].Descriptor()
+	// incidenteventevidence.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidenteventevidence.DefaultCreatedAt = incidenteventevidenceDescCreatedAt.Default.(func() time.Time)
+	// incidenteventevidenceDescID is the schema descriptor for id field.
+	incidenteventevidenceDescID := incidenteventevidenceFields[0].Descriptor()
+	// incidenteventevidence.DefaultID holds the default value on creation for the id field.
+	incidenteventevidence.DefaultID = incidenteventevidenceDescID.Default.(func() uuid.UUID)
 	incidentfieldMixin := schema.IncidentField{}.Mixin()
 	incidentfieldMixinHooks0 := incidentfieldMixin[0].Hooks()
 	incidentfield.Hooks[0] = incidentfieldMixinHooks0[0]
@@ -135,12 +196,12 @@ func init() {
 	incidentfieldoptionDescID := incidentfieldoptionFields[0].Descriptor()
 	// incidentfieldoption.DefaultID holds the default value on creation for the id field.
 	incidentfieldoption.DefaultID = incidentfieldoptionDescID.Default.(func() uuid.UUID)
-	incidentresourceimpactFields := schema.IncidentResourceImpact{}.Fields()
-	_ = incidentresourceimpactFields
-	// incidentresourceimpactDescID is the schema descriptor for id field.
-	incidentresourceimpactDescID := incidentresourceimpactFields[0].Descriptor()
-	// incidentresourceimpact.DefaultID holds the default value on creation for the id field.
-	incidentresourceimpact.DefaultID = incidentresourceimpactDescID.Default.(func() uuid.UUID)
+	incidentmilestoneFields := schema.IncidentMilestone{}.Fields()
+	_ = incidentmilestoneFields
+	// incidentmilestoneDescID is the schema descriptor for id field.
+	incidentmilestoneDescID := incidentmilestoneFields[0].Descriptor()
+	// incidentmilestone.DefaultID holds the default value on creation for the id field.
+	incidentmilestone.DefaultID = incidentmilestoneDescID.Default.(func() uuid.UUID)
 	incidentroleMixin := schema.IncidentRole{}.Mixin()
 	incidentroleMixinHooks0 := incidentroleMixin[0].Hooks()
 	incidentrole.Hooks[0] = incidentroleMixinHooks0[0]
@@ -361,22 +422,6 @@ func init() {
 	retrospectivereviewDescID := retrospectivereviewFields[0].Descriptor()
 	// retrospectivereview.DefaultID holds the default value on creation for the id field.
 	retrospectivereview.DefaultID = retrospectivereviewDescID.Default.(func() uuid.UUID)
-	serviceFields := schema.Service{}.Fields()
-	_ = serviceFields
-	// serviceDescID is the schema descriptor for id field.
-	serviceDescID := serviceFields[0].Descriptor()
-	// service.DefaultID holds the default value on creation for the id field.
-	service.DefaultID = serviceDescID.Default.(func() uuid.UUID)
-	subscriptionFields := schema.Subscription{}.Fields()
-	_ = subscriptionFields
-	// subscriptionDescActive is the schema descriptor for active field.
-	subscriptionDescActive := subscriptionFields[2].Descriptor()
-	// subscription.DefaultActive holds the default value on creation for the active field.
-	subscription.DefaultActive = subscriptionDescActive.Default.(bool)
-	// subscriptionDescID is the schema descriptor for id field.
-	subscriptionDescID := subscriptionFields[0].Descriptor()
-	// subscription.DefaultID holds the default value on creation for the id field.
-	subscription.DefaultID = subscriptionDescID.Default.(func() uuid.UUID)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescID is the schema descriptor for id field.

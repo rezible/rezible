@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 )
 
 // IncidentLink is the model entity for the IncidentLink schema.
@@ -29,9 +28,8 @@ type IncidentLink struct {
 	LinkType incidentlink.LinkType `json:"link_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentLinkQuery when eager-loading is set.
-	Edges                         IncidentLinkEdges `json:"edges"`
-	incident_link_resource_impact *uuid.UUID
-	selectValues                  sql.SelectValues
+	Edges        IncidentLinkEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // IncidentLinkEdges holds the relations/edges for other nodes in the graph.
@@ -40,11 +38,9 @@ type IncidentLinkEdges struct {
 	Incident *Incident `json:"incident,omitempty"`
 	// LinkedIncident holds the value of the linked_incident edge.
 	LinkedIncident *Incident `json:"linked_incident,omitempty"`
-	// ResourceImpact holds the value of the resource_impact edge.
-	ResourceImpact *IncidentResourceImpact `json:"resource_impact,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -69,17 +65,6 @@ func (e IncidentLinkEdges) LinkedIncidentOrErr() (*Incident, error) {
 	return nil, &NotLoadedError{edge: "linked_incident"}
 }
 
-// ResourceImpactOrErr returns the ResourceImpact value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentLinkEdges) ResourceImpactOrErr() (*IncidentResourceImpact, error) {
-	if e.ResourceImpact != nil {
-		return e.ResourceImpact, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: incidentresourceimpact.Label}
-	}
-	return nil, &NotLoadedError{edge: "resource_impact"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*IncidentLink) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -91,8 +76,6 @@ func (*IncidentLink) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incidentlink.FieldIncidentID, incidentlink.FieldLinkedIncidentID:
 			values[i] = new(uuid.UUID)
-		case incidentlink.ForeignKeys[0]: // incident_link_resource_impact
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -138,13 +121,6 @@ func (il *IncidentLink) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				il.LinkType = incidentlink.LinkType(value.String)
 			}
-		case incidentlink.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field incident_link_resource_impact", values[i])
-			} else if value.Valid {
-				il.incident_link_resource_impact = new(uuid.UUID)
-				*il.incident_link_resource_impact = *value.S.(*uuid.UUID)
-			}
 		default:
 			il.selectValues.Set(columns[i], values[i])
 		}
@@ -166,11 +142,6 @@ func (il *IncidentLink) QueryIncident() *IncidentQuery {
 // QueryLinkedIncident queries the "linked_incident" edge of the IncidentLink entity.
 func (il *IncidentLink) QueryLinkedIncident() *IncidentQuery {
 	return NewIncidentLinkClient(il.config).QueryLinkedIncident(il)
-}
-
-// QueryResourceImpact queries the "resource_impact" edge of the IncidentLink entity.
-func (il *IncidentLink) QueryResourceImpact() *IncidentResourceImpactQuery {
-	return NewIncidentLinkClient(il.config).QueryResourceImpact(il)
 }
 
 // Update returns a builder for updating this IncidentLink.

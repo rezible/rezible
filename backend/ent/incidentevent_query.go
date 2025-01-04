@@ -15,8 +15,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/service"
 )
 
 // IncidentEventQuery is the builder for querying IncidentEvent entities.
@@ -27,7 +29,9 @@ type IncidentEventQuery struct {
 	inters       []Interceptor
 	predicates   []predicate.IncidentEvent
 	withIncident *IncidentQuery
-	withServices *ServiceQuery
+	withContext  *IncidentEventContextQuery
+	withFactors  *IncidentEventContributingFactorQuery
+	withEvidence *IncidentEventEvidenceQuery
 	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -87,9 +91,9 @@ func (ieq *IncidentEventQuery) QueryIncident() *IncidentQuery {
 	return query
 }
 
-// QueryServices chains the current query on the "services" edge.
-func (ieq *IncidentEventQuery) QueryServices() *ServiceQuery {
-	query := (&ServiceClient{config: ieq.config}).Query()
+// QueryContext chains the current query on the "context" edge.
+func (ieq *IncidentEventQuery) QueryContext() *IncidentEventContextQuery {
+	query := (&IncidentEventContextClient{config: ieq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := ieq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -100,8 +104,52 @@ func (ieq *IncidentEventQuery) QueryServices() *ServiceQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
-			sqlgraph.To(service.Table, service.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.ServicesTable, incidentevent.ServicesColumn),
+			sqlgraph.To(incidenteventcontext.Table, incidenteventcontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, incidentevent.ContextTable, incidentevent.ContextColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ieq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFactors chains the current query on the "factors" edge.
+func (ieq *IncidentEventQuery) QueryFactors() *IncidentEventContributingFactorQuery {
+	query := (&IncidentEventContributingFactorClient{config: ieq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ieq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ieq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
+			sqlgraph.To(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.FactorsTable, incidentevent.FactorsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ieq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryEvidence chains the current query on the "evidence" edge.
+func (ieq *IncidentEventQuery) QueryEvidence() *IncidentEventEvidenceQuery {
+	query := (&IncidentEventEvidenceClient{config: ieq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ieq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ieq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
+			sqlgraph.To(incidenteventevidence.Table, incidenteventevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.EvidenceTable, incidentevent.EvidenceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ieq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,7 +350,9 @@ func (ieq *IncidentEventQuery) Clone() *IncidentEventQuery {
 		inters:       append([]Interceptor{}, ieq.inters...),
 		predicates:   append([]predicate.IncidentEvent{}, ieq.predicates...),
 		withIncident: ieq.withIncident.Clone(),
-		withServices: ieq.withServices.Clone(),
+		withContext:  ieq.withContext.Clone(),
+		withFactors:  ieq.withFactors.Clone(),
+		withEvidence: ieq.withEvidence.Clone(),
 		// clone intermediate query.
 		sql:       ieq.sql.Clone(),
 		path:      ieq.path,
@@ -321,14 +371,36 @@ func (ieq *IncidentEventQuery) WithIncident(opts ...func(*IncidentQuery)) *Incid
 	return ieq
 }
 
-// WithServices tells the query-builder to eager-load the nodes that are connected to
-// the "services" edge. The optional arguments are used to configure the query builder of the edge.
-func (ieq *IncidentEventQuery) WithServices(opts ...func(*ServiceQuery)) *IncidentEventQuery {
-	query := (&ServiceClient{config: ieq.config}).Query()
+// WithContext tells the query-builder to eager-load the nodes that are connected to
+// the "context" edge. The optional arguments are used to configure the query builder of the edge.
+func (ieq *IncidentEventQuery) WithContext(opts ...func(*IncidentEventContextQuery)) *IncidentEventQuery {
+	query := (&IncidentEventContextClient{config: ieq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ieq.withServices = query
+	ieq.withContext = query
+	return ieq
+}
+
+// WithFactors tells the query-builder to eager-load the nodes that are connected to
+// the "factors" edge. The optional arguments are used to configure the query builder of the edge.
+func (ieq *IncidentEventQuery) WithFactors(opts ...func(*IncidentEventContributingFactorQuery)) *IncidentEventQuery {
+	query := (&IncidentEventContributingFactorClient{config: ieq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ieq.withFactors = query
+	return ieq
+}
+
+// WithEvidence tells the query-builder to eager-load the nodes that are connected to
+// the "evidence" edge. The optional arguments are used to configure the query builder of the edge.
+func (ieq *IncidentEventQuery) WithEvidence(opts ...func(*IncidentEventEvidenceQuery)) *IncidentEventQuery {
+	query := (&IncidentEventEvidenceClient{config: ieq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ieq.withEvidence = query
 	return ieq
 }
 
@@ -338,12 +410,12 @@ func (ieq *IncidentEventQuery) WithServices(opts ...func(*ServiceQuery)) *Incide
 // Example:
 //
 //	var v []struct {
-//		Type incidentevent.Type `json:"type,omitempty"`
+//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentEvent.Query().
-//		GroupBy(incidentevent.FieldType).
+//		GroupBy(incidentevent.FieldIncidentID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ieq *IncidentEventQuery) GroupBy(field string, fields ...string) *IncidentEventGroupBy {
@@ -361,11 +433,11 @@ func (ieq *IncidentEventQuery) GroupBy(field string, fields ...string) *Incident
 // Example:
 //
 //	var v []struct {
-//		Type incidentevent.Type `json:"type,omitempty"`
+//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
 //	}
 //
 //	client.IncidentEvent.Query().
-//		Select(incidentevent.FieldType).
+//		Select(incidentevent.FieldIncidentID).
 //		Scan(ctx, &v)
 func (ieq *IncidentEventQuery) Select(fields ...string) *IncidentEventSelect {
 	ieq.ctx.Fields = append(ieq.ctx.Fields, fields...)
@@ -410,9 +482,11 @@ func (ieq *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 	var (
 		nodes       = []*IncidentEvent{}
 		_spec       = ieq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [4]bool{
 			ieq.withIncident != nil,
-			ieq.withServices != nil,
+			ieq.withContext != nil,
+			ieq.withFactors != nil,
+			ieq.withEvidence != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -442,10 +516,25 @@ func (ieq *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			return nil, err
 		}
 	}
-	if query := ieq.withServices; query != nil {
-		if err := ieq.loadServices(ctx, query, nodes,
-			func(n *IncidentEvent) { n.Edges.Services = []*Service{} },
-			func(n *IncidentEvent, e *Service) { n.Edges.Services = append(n.Edges.Services, e) }); err != nil {
+	if query := ieq.withContext; query != nil {
+		if err := ieq.loadContext(ctx, query, nodes, nil,
+			func(n *IncidentEvent, e *IncidentEventContext) { n.Edges.Context = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := ieq.withFactors; query != nil {
+		if err := ieq.loadFactors(ctx, query, nodes,
+			func(n *IncidentEvent) { n.Edges.Factors = []*IncidentEventContributingFactor{} },
+			func(n *IncidentEvent, e *IncidentEventContributingFactor) {
+				n.Edges.Factors = append(n.Edges.Factors, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := ieq.withEvidence; query != nil {
+		if err := ieq.loadEvidence(ctx, query, nodes,
+			func(n *IncidentEvent) { n.Edges.Evidence = []*IncidentEventEvidence{} },
+			func(n *IncidentEvent, e *IncidentEventEvidence) { n.Edges.Evidence = append(n.Edges.Evidence, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -481,7 +570,35 @@ func (ieq *IncidentEventQuery) loadIncident(ctx context.Context, query *Incident
 	}
 	return nil
 }
-func (ieq *IncidentEventQuery) loadServices(ctx context.Context, query *ServiceQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *Service)) error {
+func (ieq *IncidentEventQuery) loadContext(ctx context.Context, query *IncidentEventContextQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *IncidentEventContext)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*IncidentEvent)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	query.withFKs = true
+	query.Where(predicate.IncidentEventContext(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incidentevent.ContextColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.incident_event_context
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "incident_event_context" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_event_context" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (ieq *IncidentEventQuery) loadFactors(ctx context.Context, query *IncidentEventContributingFactorQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *IncidentEventContributingFactor)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentEvent)
 	for i := range nodes {
@@ -492,21 +609,52 @@ func (ieq *IncidentEventQuery) loadServices(ctx context.Context, query *ServiceQ
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.Service(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incidentevent.ServicesColumn), fks...))
+	query.Where(predicate.IncidentEventContributingFactor(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incidentevent.FactorsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.incident_event_services
+		fk := n.incident_event_factors
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "incident_event_services" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "incident_event_factors" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_event_services" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_event_factors" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (ieq *IncidentEventQuery) loadEvidence(ctx context.Context, query *IncidentEventEvidenceQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *IncidentEventEvidence)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*IncidentEvent)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.IncidentEventEvidence(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incidentevent.EvidenceColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.incident_event_evidence
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "incident_event_evidence" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_event_evidence" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

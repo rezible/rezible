@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
-	"github.com/rezible/rezible/ent/incidentresourceimpact"
 )
 
 // IncidentLinkCreate is the builder for creating a IncidentLink entity.
@@ -64,25 +63,6 @@ func (ilc *IncidentLinkCreate) SetIncident(i *Incident) *IncidentLinkCreate {
 // SetLinkedIncident sets the "linked_incident" edge to the Incident entity.
 func (ilc *IncidentLinkCreate) SetLinkedIncident(i *Incident) *IncidentLinkCreate {
 	return ilc.SetLinkedIncidentID(i.ID)
-}
-
-// SetResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID.
-func (ilc *IncidentLinkCreate) SetResourceImpactID(id uuid.UUID) *IncidentLinkCreate {
-	ilc.mutation.SetResourceImpactID(id)
-	return ilc
-}
-
-// SetNillableResourceImpactID sets the "resource_impact" edge to the IncidentResourceImpact entity by ID if the given value is not nil.
-func (ilc *IncidentLinkCreate) SetNillableResourceImpactID(id *uuid.UUID) *IncidentLinkCreate {
-	if id != nil {
-		ilc = ilc.SetResourceImpactID(*id)
-	}
-	return ilc
-}
-
-// SetResourceImpact sets the "resource_impact" edge to the IncidentResourceImpact entity.
-func (ilc *IncidentLinkCreate) SetResourceImpact(i *IncidentResourceImpact) *IncidentLinkCreate {
-	return ilc.SetResourceImpactID(i.ID)
 }
 
 // Mutation returns the IncidentLinkMutation object of the builder.
@@ -206,23 +186,6 @@ func (ilc *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.LinkedIncidentID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ilc.mutation.ResourceImpactIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentlink.ResourceImpactTable,
-			Columns: []string{incidentlink.ResourceImpactColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentresourceimpact.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.incident_link_resource_impact = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

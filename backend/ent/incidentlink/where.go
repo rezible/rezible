@@ -250,29 +250,6 @@ func HasLinkedIncidentWith(preds ...predicate.Incident) predicate.IncidentLink {
 	})
 }
 
-// HasResourceImpact applies the HasEdge predicate on the "resource_impact" edge.
-func HasResourceImpact() predicate.IncidentLink {
-	return predicate.IncidentLink(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ResourceImpactTable, ResourceImpactColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasResourceImpactWith applies the HasEdge predicate on the "resource_impact" edge with a given conditions (other predicates).
-func HasResourceImpactWith(preds ...predicate.IncidentResourceImpact) predicate.IncidentLink {
-	return predicate.IncidentLink(func(s *sql.Selector) {
-		step := newResourceImpactStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.IncidentLink) predicate.IncidentLink {
 	return predicate.IncidentLink(sql.AndPredicates(predicates...))

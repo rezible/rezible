@@ -105,6 +105,42 @@ func (f IncidentEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventMutation", m)
 }
 
+// The IncidentEventContextFunc type is an adapter to allow the use of ordinary
+// function as IncidentEventContext mutator.
+type IncidentEventContextFunc func(context.Context, *ent.IncidentEventContextMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentEventContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentEventContextMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventContextMutation", m)
+}
+
+// The IncidentEventContributingFactorFunc type is an adapter to allow the use of ordinary
+// function as IncidentEventContributingFactor mutator.
+type IncidentEventContributingFactorFunc func(context.Context, *ent.IncidentEventContributingFactorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentEventContributingFactorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentEventContributingFactorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventContributingFactorMutation", m)
+}
+
+// The IncidentEventEvidenceFunc type is an adapter to allow the use of ordinary
+// function as IncidentEventEvidence mutator.
+type IncidentEventEvidenceFunc func(context.Context, *ent.IncidentEventEvidenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentEventEvidenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventEvidenceMutation", m)
+}
+
 // The IncidentFieldFunc type is an adapter to allow the use of ordinary
 // function as IncidentField mutator.
 type IncidentFieldFunc func(context.Context, *ent.IncidentFieldMutation) (ent.Value, error)
@@ -141,16 +177,16 @@ func (f IncidentLinkFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentLinkMutation", m)
 }
 
-// The IncidentResourceImpactFunc type is an adapter to allow the use of ordinary
-// function as IncidentResourceImpact mutator.
-type IncidentResourceImpactFunc func(context.Context, *ent.IncidentResourceImpactMutation) (ent.Value, error)
+// The IncidentMilestoneFunc type is an adapter to allow the use of ordinary
+// function as IncidentMilestone mutator.
+type IncidentMilestoneFunc func(context.Context, *ent.IncidentMilestoneMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f IncidentResourceImpactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentResourceImpactMutation); ok {
+func (f IncidentMilestoneFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentMilestoneMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentResourceImpactMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentMilestoneMutation", m)
 }
 
 // The IncidentRoleFunc type is an adapter to allow the use of ordinary
@@ -439,30 +475,6 @@ func (f RetrospectiveReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveReviewMutation", m)
-}
-
-// The ServiceFunc type is an adapter to allow the use of ordinary
-// function as Service mutator.
-type ServiceFunc func(context.Context, *ent.ServiceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ServiceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ServiceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ServiceMutation", m)
-}
-
-// The SubscriptionFunc type is an adapter to allow the use of ordinary
-// function as Subscription mutator.
-type SubscriptionFunc func(context.Context, *ent.SubscriptionMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SubscriptionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SubscriptionMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SubscriptionMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary
