@@ -48,6 +48,9 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentcontrolrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentfeedbackrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -1162,6 +1165,87 @@ func (f TraverseRetrospectiveReview) Traverse(ctx context.Context, q ent.Query) 
 	return fmt.Errorf("unexpected query type %T. expect *ent.RetrospectiveReviewQuery", q)
 }
 
+// The SystemComponentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemComponentFunc func(context.Context, *ent.SystemComponentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemComponentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentQuery", q)
+}
+
+// The TraverseSystemComponent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemComponent func(context.Context, *ent.SystemComponentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemComponent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemComponent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentQuery", q)
+}
+
+// The SystemComponentControlRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemComponentControlRelationshipFunc func(context.Context, *ent.SystemComponentControlRelationshipQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemComponentControlRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemComponentControlRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentControlRelationshipQuery", q)
+}
+
+// The TraverseSystemComponentControlRelationship type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemComponentControlRelationship func(context.Context, *ent.SystemComponentControlRelationshipQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemComponentControlRelationship) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemComponentControlRelationship) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemComponentControlRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentControlRelationshipQuery", q)
+}
+
+// The SystemComponentFeedbackRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemComponentFeedbackRelationshipFunc func(context.Context, *ent.SystemComponentFeedbackRelationshipQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemComponentFeedbackRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemComponentFeedbackRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentFeedbackRelationshipQuery", q)
+}
+
+// The TraverseSystemComponentFeedbackRelationship type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemComponentFeedbackRelationship func(context.Context, *ent.SystemComponentFeedbackRelationshipQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemComponentFeedbackRelationship) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemComponentFeedbackRelationship) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemComponentFeedbackRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentFeedbackRelationshipQuery", q)
+}
+
 // The TaskFunc type is an adapter to allow the use of ordinary function as a Querier.
 type TaskFunc func(context.Context, *ent.TaskQuery) (ent.Value, error)
 
@@ -1324,6 +1408,12 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.RetrospectiveDiscussionReplyQuery, predicate.RetrospectiveDiscussionReply, retrospectivediscussionreply.OrderOption]{typ: ent.TypeRetrospectiveDiscussionReply, tq: q}, nil
 	case *ent.RetrospectiveReviewQuery:
 		return &query[*ent.RetrospectiveReviewQuery, predicate.RetrospectiveReview, retrospectivereview.OrderOption]{typ: ent.TypeRetrospectiveReview, tq: q}, nil
+	case *ent.SystemComponentQuery:
+		return &query[*ent.SystemComponentQuery, predicate.SystemComponent, systemcomponent.OrderOption]{typ: ent.TypeSystemComponent, tq: q}, nil
+	case *ent.SystemComponentControlRelationshipQuery:
+		return &query[*ent.SystemComponentControlRelationshipQuery, predicate.SystemComponentControlRelationship, systemcomponentcontrolrelationship.OrderOption]{typ: ent.TypeSystemComponentControlRelationship, tq: q}, nil
+	case *ent.SystemComponentFeedbackRelationshipQuery:
+		return &query[*ent.SystemComponentFeedbackRelationshipQuery, predicate.SystemComponentFeedbackRelationship, systemcomponentfeedbackrelationship.OrderOption]{typ: ent.TypeSystemComponentFeedbackRelationship, tq: q}, nil
 	case *ent.TaskQuery:
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	case *ent.TeamQuery:

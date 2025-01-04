@@ -316,6 +316,30 @@ func (c *RetrospectiveReviewClient) Debug() *RetrospectiveReviewClient {
 	return &RetrospectiveReviewClient{config: cfg}
 }
 
+func (c *SystemComponentClient) Debug() *SystemComponentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemComponentClient{config: cfg}
+}
+
+func (c *SystemComponentControlRelationshipClient) Debug() *SystemComponentControlRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemComponentControlRelationshipClient{config: cfg}
+}
+
+func (c *SystemComponentFeedbackRelationshipClient) Debug() *SystemComponentFeedbackRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemComponentFeedbackRelationshipClient{config: cfg}
+}
+
 func (c *TaskClient) Debug() *TaskClient {
 	if c.debug {
 		return c

@@ -123,6 +123,15 @@ type RetrospectiveDiscussionReply func(*sql.Selector)
 // RetrospectiveReview is the predicate function for retrospectivereview builders.
 type RetrospectiveReview func(*sql.Selector)
 
+// SystemComponent is the predicate function for systemcomponent builders.
+type SystemComponent func(*sql.Selector)
+
+// SystemComponentControlRelationship is the predicate function for systemcomponentcontrolrelationship builders.
+type SystemComponentControlRelationship func(*sql.Selector)
+
+// SystemComponentFeedbackRelationship is the predicate function for systemcomponentfeedbackrelationship builders.
+type SystemComponentFeedbackRelationship func(*sql.Selector)
+
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)
 

@@ -90,6 +90,12 @@ type Tx struct {
 	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
+	// SystemComponent is the client for interacting with the SystemComponent builders.
+	SystemComponent *SystemComponentClient
+	// SystemComponentControlRelationship is the client for interacting with the SystemComponentControlRelationship builders.
+	SystemComponentControlRelationship *SystemComponentControlRelationshipClient
+	// SystemComponentFeedbackRelationship is the client for interacting with the SystemComponentFeedbackRelationship builders.
+	SystemComponentFeedbackRelationship *SystemComponentFeedbackRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -266,6 +272,9 @@ func (tx *Tx) init() {
 	tx.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(tx.config)
 	tx.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
+	tx.SystemComponent = NewSystemComponentClient(tx.config)
+	tx.SystemComponentControlRelationship = NewSystemComponentControlRelationshipClient(tx.config)
+	tx.SystemComponentFeedbackRelationship = NewSystemComponentFeedbackRelationshipClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.User = NewUserClient(tx.config)

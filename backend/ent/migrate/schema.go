@@ -898,6 +898,103 @@ var (
 			},
 		},
 	}
+	// SystemComponentsColumns holds the columns for the "system_components" table.
+	SystemComponentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"service", "control", "feedback", "interface", "human_controller"}},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "system_component_children", Type: field.TypeUUID, Nullable: true},
+	}
+	// SystemComponentsTable holds the schema information for the "system_components" table.
+	SystemComponentsTable = &schema.Table{
+		Name:       "system_components",
+		Columns:    SystemComponentsColumns,
+		PrimaryKey: []*schema.Column{SystemComponentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_components_system_components_children",
+				Columns:    []*schema.Column{SystemComponentsColumns[7]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// SystemComponentControlRelationshipsColumns holds the columns for the "system_component_control_relationships" table.
+	SystemComponentControlRelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "controller_id", Type: field.TypeUUID},
+		{Name: "controlled_id", Type: field.TypeUUID},
+	}
+	// SystemComponentControlRelationshipsTable holds the schema information for the "system_component_control_relationships" table.
+	SystemComponentControlRelationshipsTable = &schema.Table{
+		Name:       "system_component_control_relationships",
+		Columns:    SystemComponentControlRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemComponentControlRelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_component_control_relationships_system_components_controller",
+				Columns:    []*schema.Column{SystemComponentControlRelationshipsColumns[4]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_control_relationships_system_components_controlled",
+				Columns:    []*schema.Column{SystemComponentControlRelationshipsColumns[5]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentcontrolrelationship_controller_id_controlled_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemComponentControlRelationshipsColumns[4], SystemComponentControlRelationshipsColumns[5]},
+			},
+		},
+	}
+	// SystemComponentFeedbackRelationshipsColumns holds the columns for the "system_component_feedback_relationships" table.
+	SystemComponentFeedbackRelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "type", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "source_id", Type: field.TypeUUID},
+		{Name: "target_id", Type: field.TypeUUID},
+	}
+	// SystemComponentFeedbackRelationshipsTable holds the schema information for the "system_component_feedback_relationships" table.
+	SystemComponentFeedbackRelationshipsTable = &schema.Table{
+		Name:       "system_component_feedback_relationships",
+		Columns:    SystemComponentFeedbackRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemComponentFeedbackRelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_component_feedback_relationships_system_components_source",
+				Columns:    []*schema.Column{SystemComponentFeedbackRelationshipsColumns[4]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_feedback_relationships_system_components_target",
+				Columns:    []*schema.Column{SystemComponentFeedbackRelationshipsColumns[5]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentfeedbackrelationship_source_id_target_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemComponentFeedbackRelationshipsColumns[4], SystemComponentFeedbackRelationshipsColumns[5]},
+			},
+		},
+	}
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1303,6 +1400,9 @@ var (
 		RetrospectiveDiscussionsTable,
 		RetrospectiveDiscussionRepliesTable,
 		RetrospectiveReviewsTable,
+		SystemComponentsTable,
+		SystemComponentControlRelationshipsTable,
+		SystemComponentFeedbackRelationshipsTable,
 		TasksTable,
 		TeamsTable,
 		UsersTable,
@@ -1364,6 +1464,11 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = RetrospectiveDiscussionsTable
+	SystemComponentsTable.ForeignKeys[0].RefTable = SystemComponentsTable
+	SystemComponentControlRelationshipsTable.ForeignKeys[0].RefTable = SystemComponentsTable
+	SystemComponentControlRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemComponentFeedbackRelationshipsTable.ForeignKeys[0].RefTable = SystemComponentsTable
+	SystemComponentFeedbackRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable

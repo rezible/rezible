@@ -477,6 +477,42 @@ func (f RetrospectiveReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveReviewMutation", m)
 }
 
+// The SystemComponentFunc type is an adapter to allow the use of ordinary
+// function as SystemComponent mutator.
+type SystemComponentFunc func(context.Context, *ent.SystemComponentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentMutation", m)
+}
+
+// The SystemComponentControlRelationshipFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentControlRelationship mutator.
+type SystemComponentControlRelationshipFunc func(context.Context, *ent.SystemComponentControlRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentControlRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentControlRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentControlRelationshipMutation", m)
+}
+
+// The SystemComponentFeedbackRelationshipFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentFeedbackRelationship mutator.
+type SystemComponentFeedbackRelationshipFunc func(context.Context, *ent.SystemComponentFeedbackRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentFeedbackRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentFeedbackRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentFeedbackRelationshipMutation", m)
+}
+
 // The TaskFunc type is an adapter to allow the use of ordinary
 // function as Task mutator.
 type TaskFunc func(context.Context, *ent.TaskMutation) (ent.Value, error)

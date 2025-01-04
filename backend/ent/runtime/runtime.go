@@ -44,6 +44,9 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentcontrolrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentfeedbackrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -422,6 +425,54 @@ func init() {
 	retrospectivereviewDescID := retrospectivereviewFields[0].Descriptor()
 	// retrospectivereview.DefaultID holds the default value on creation for the id field.
 	retrospectivereview.DefaultID = retrospectivereviewDescID.Default.(func() uuid.UUID)
+	systemcomponentFields := schema.SystemComponent{}.Fields()
+	_ = systemcomponentFields
+	// systemcomponentDescName is the schema descriptor for name field.
+	systemcomponentDescName := systemcomponentFields[1].Descriptor()
+	// systemcomponent.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	systemcomponent.NameValidator = systemcomponentDescName.Validators[0].(func(string) error)
+	// systemcomponentDescCreatedAt is the schema descriptor for created_at field.
+	systemcomponentDescCreatedAt := systemcomponentFields[5].Descriptor()
+	// systemcomponent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemcomponent.DefaultCreatedAt = systemcomponentDescCreatedAt.Default.(func() time.Time)
+	// systemcomponentDescUpdatedAt is the schema descriptor for updated_at field.
+	systemcomponentDescUpdatedAt := systemcomponentFields[6].Descriptor()
+	// systemcomponent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemcomponent.DefaultUpdatedAt = systemcomponentDescUpdatedAt.Default.(func() time.Time)
+	// systemcomponent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemcomponent.UpdateDefaultUpdatedAt = systemcomponentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemcomponentDescID is the schema descriptor for id field.
+	systemcomponentDescID := systemcomponentFields[0].Descriptor()
+	// systemcomponent.DefaultID holds the default value on creation for the id field.
+	systemcomponent.DefaultID = systemcomponentDescID.Default.(func() uuid.UUID)
+	systemcomponentcontrolrelationshipFields := schema.SystemComponentControlRelationship{}.Fields()
+	_ = systemcomponentcontrolrelationshipFields
+	// systemcomponentcontrolrelationshipDescType is the schema descriptor for type field.
+	systemcomponentcontrolrelationshipDescType := systemcomponentcontrolrelationshipFields[3].Descriptor()
+	// systemcomponentcontrolrelationship.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	systemcomponentcontrolrelationship.TypeValidator = systemcomponentcontrolrelationshipDescType.Validators[0].(func(string) error)
+	// systemcomponentcontrolrelationshipDescCreatedAt is the schema descriptor for created_at field.
+	systemcomponentcontrolrelationshipDescCreatedAt := systemcomponentcontrolrelationshipFields[5].Descriptor()
+	// systemcomponentcontrolrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemcomponentcontrolrelationship.DefaultCreatedAt = systemcomponentcontrolrelationshipDescCreatedAt.Default.(func() time.Time)
+	// systemcomponentcontrolrelationshipDescID is the schema descriptor for id field.
+	systemcomponentcontrolrelationshipDescID := systemcomponentcontrolrelationshipFields[0].Descriptor()
+	// systemcomponentcontrolrelationship.DefaultID holds the default value on creation for the id field.
+	systemcomponentcontrolrelationship.DefaultID = systemcomponentcontrolrelationshipDescID.Default.(func() uuid.UUID)
+	systemcomponentfeedbackrelationshipFields := schema.SystemComponentFeedbackRelationship{}.Fields()
+	_ = systemcomponentfeedbackrelationshipFields
+	// systemcomponentfeedbackrelationshipDescType is the schema descriptor for type field.
+	systemcomponentfeedbackrelationshipDescType := systemcomponentfeedbackrelationshipFields[3].Descriptor()
+	// systemcomponentfeedbackrelationship.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	systemcomponentfeedbackrelationship.TypeValidator = systemcomponentfeedbackrelationshipDescType.Validators[0].(func(string) error)
+	// systemcomponentfeedbackrelationshipDescCreatedAt is the schema descriptor for created_at field.
+	systemcomponentfeedbackrelationshipDescCreatedAt := systemcomponentfeedbackrelationshipFields[5].Descriptor()
+	// systemcomponentfeedbackrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemcomponentfeedbackrelationship.DefaultCreatedAt = systemcomponentfeedbackrelationshipDescCreatedAt.Default.(func() time.Time)
+	// systemcomponentfeedbackrelationshipDescID is the schema descriptor for id field.
+	systemcomponentfeedbackrelationshipDescID := systemcomponentfeedbackrelationshipFields[0].Descriptor()
+	// systemcomponentfeedbackrelationship.DefaultID holds the default value on creation for the id field.
+	systemcomponentfeedbackrelationship.DefaultID = systemcomponentfeedbackrelationshipDescID.Default.(func() uuid.UUID)
 	taskFields := schema.Task{}.Fields()
 	_ = taskFields
 	// taskDescID is the schema descriptor for id field.
