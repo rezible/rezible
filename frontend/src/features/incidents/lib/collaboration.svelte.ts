@@ -59,17 +59,16 @@ const createCollaborationState = () => {
 		};
 
 		if (collab.provider) {
-			// collab.provider.disconnect();
-			collab.provider.setConfiguration(config);
-			// collab.provider.connect();
-			collab.provider.forceSync();
-		} else {
-			collab.provider = new HocuspocusProvider(config);
+			collab.provider.destroy();
+			// collab.provider.setConfiguration(config);
+			// collab.provider.forceSync();
 		}
+		collab.provider = new HocuspocusProvider(config);
 	}
 
 	const cleanup = () => {
 		if (collab.provider && collab.provider.isConnected) {
+			// https://github.com/ueberdosis/hocuspocus/issues/845
 			try {
 				collab.provider?.destroy();
 			} catch (e) {

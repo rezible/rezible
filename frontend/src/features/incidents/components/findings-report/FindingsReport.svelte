@@ -1,21 +1,23 @@
 <script lang="ts">
     import './styles.postcss';
     import type { Editor as TiptapEditor } from '@tiptap/core';
-    import { cls } from 'svelte-ux';
-    import type { Retrospective, RetrospectiveSection } from "$lib/api";
     
     import { draft } from '$features/incidents/lib/discussions.svelte';
     import { activeEditor } from '$features/incidents/lib/editor.svelte';
-    import { collaborationState } from '$src/features/incidents/lib/collaboration.svelte';
 	
-    import type { AnnotationType } from './BubbleMenu.svelte';
-    import SectionsSidebar from './SectionsSidebar.svelte';
-    import FieldEditorWrapper from './FieldEditorWrapper.svelte';
+    import type { AnnotationType } from './field-editor/BubbleMenu.svelte';
+    import FieldEditorWrapper from './field-editor/FieldEditorWrapper.svelte';
 
-    type Props = {
-        sections: RetrospectiveSection[];
-    }
-    const { sections }: Props = $props();
+	import type { Incident, Retrospective } from '$lib/api';
+	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
+
+	type Props = { 
+		incident: Incident;
+		retrospective: Retrospective;
+	};
+	let { incident, retrospective }: Props = $props();
+
+	const sections = $derived(retrospective?.attributes.sections);
 
 	let sectionsSidebarVisible = $state(false);
 
@@ -43,8 +45,8 @@
             {#each sections as section, i}
                 <div bind:this={sectionElements[section.field]}>
                     <FieldEditorWrapper
-                        provider={collaborationState.provider}
                         {section}
+						provider={collaborationState.provider}
                         setIsActive={activeEditor.set}
                         {onCreateAnnotation}
                         bind:focusEditor={focusSectionFn[section.field]} 
@@ -56,13 +58,3 @@
         {/if}
     </div>
 </div>
-
-<!--div class="block overflow-y-hidden" class:hidden={!sectionsSidebarVisible}>
-    {#if sections && containerEl}
-        <SectionsSidebar 
-            bind:visible={sectionsSidebarVisible}
-            {containerEl} {sections} {sectionElements} 
-            {onSectionClicked} 
-        />
-    {/if}
-</div-->

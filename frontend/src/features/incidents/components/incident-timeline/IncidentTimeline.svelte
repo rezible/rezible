@@ -35,6 +35,8 @@
 
 	const timelineElements: { [i: number]: HTMLElement } = {};
 
+	// https://visjs.github.io/vis-timeline/docs/timeline/
+
 	type EditMode = 'edit' | 'create';
 	type EditState = {
 		event: IncidentEvent;
@@ -105,11 +107,11 @@
 </script>
 
 
-<div class="flex h-10">
-	<div class="flex-1 flex h-10 items-end">
+<div class="flex">
+	<div class="flex-1 flex items-center">
 		<span class="text-lg text-surface-content/80">Incident Timeline</span>
 	</div>
-	<div class="">
+	<div class="flex items-center">
 		<Button variant="fill-light" size="sm" rounded={false} on:click={createEvent}>
 			Add Event
 			<Icon data={mdiPlus} />

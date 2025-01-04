@@ -1,27 +1,33 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
-	import { getIncidentOptions, type Incident } from '$lib/api';
-    import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
-	import IncidentView from '$features/incidents/views/incident/IncidentView.svelte';
+	import { page } from '$app/state';
+	import { getIncidentOptions, getRetrospectiveForIncidentOptions, type Incident } from '$lib/api';
+    import { convertIncidentViewParam } from '$src/params/incidentView';
+
+	import IncidentView from '$src/features/incidents/views/incident/IncidentOmniView.svelte';
     import PageContainer, { type Breadcrumb } from '$components/page-container/PageContainer.svelte';
-    import { page } from '$app/state';
 
 	const { data } = $props();
 
-	const query = createQuery(() => getIncidentOptions({path: {id: data.slug}}));
+	const incQuery = createQuery(() => getIncidentOptions({path: {id: data.slug}}));
+	const incident = $derived(incQuery.data?.data);
 
-	const viewParam = $derived(!page.params.view ? "overview" : "retrospective");
+	const retroQuery = createQuery(() => getRetrospectiveForIncidentOptions({path: {id: data.slug}}));
+	const retrospective = $derived(retroQuery.data?.data);
 
+	const viewParam = $derived(convertIncidentViewParam(page.params.view));
+	
 	const breadcrumbs = $derived<Breadcrumb[]>([
 		{label: "Incidents", href: "/incidents"},
-		{label: query.data?.data.attributes.title ?? ""},
+		{label: incident?.attributes.title ?? ""},
+		// ...(viewParam ? [{label: viewParam}] : [])
 	]);
 </script>
 
 <PageContainer {breadcrumbs}>
-	<LoadingQueryWrapper {query}>
-		{#snippet view(incident: Incident)}
-			<IncidentView {incident} view={viewParam} />
-		{/snippet}
-	</LoadingQueryWrapper>
+	{#if incident && retrospective}
+		{#key incident.id}
+			<IncidentView {incident} {retrospective} {viewParam} />
+		{/key}
+	{/if}
 </PageContainer>

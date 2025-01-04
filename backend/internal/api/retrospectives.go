@@ -3,18 +3,20 @@ package api
 import (
 	"context"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type retrospectivesHandler struct {
 	auth      rez.AuthService
 	users     rez.UserService
+	incidents rez.IncidentService
 	retros    rez.RetrospectiveService
 	documents rez.DocumentsService
 }
 
-func newRetrospectivesHandler(auth rez.AuthService, users rez.UserService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
-	return &retrospectivesHandler{auth, users, retros, documents}
+func newRetrospectivesHandler(auth rez.AuthService, users rez.UserService, incidents rez.IncidentService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
+	return &retrospectivesHandler{auth, users, incidents, retros, documents}
 }
 
 func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *oapi.ListRetrospectivesRequest) (*oapi.ListRetrospectivesResponse, error) {
@@ -38,7 +40,18 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context, input *oapi.GetRetrospectiveForIncidentRequest) (*oapi.GetRetrospectiveForIncidentResponse, error) {
 	var resp oapi.GetRetrospectiveForIncidentResponse
 
-	retro, retroErr := h.retros.GetForIncident(ctx, input.Id, true)
+	var inc *ent.Incident
+	var incErr error
+	if input.Id.IsUUID {
+		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
+	} else {
+		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
+	}
+	if incErr != nil {
+		return nil, detailError("failed to get incident", incErr)
+	}
+
+	retro, retroErr := h.retros.GetByIncident(ctx, inc, true)
 	if retroErr != nil {
 		return nil, detailError("failed to get retrospective", retroErr)
 	}

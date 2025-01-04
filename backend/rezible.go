@@ -249,7 +249,7 @@ type (
 
 	RetrospectiveService interface {
 		GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error)
-		GetForIncident(ctx context.Context, incidentId uuid.UUID, createMissing bool) (*ent.Retrospective, error)
+		GetByIncident(ctx context.Context, inc *ent.Incident, createMissing bool) (*ent.Retrospective, error)
 
 		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
 		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)

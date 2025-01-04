@@ -221,7 +221,7 @@ var GetRetrospectiveForIncident = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetRetrospectiveForIncidentRequest GetIdRequest
+type GetRetrospectiveForIncidentRequest = GetFlexibleIdRequest
 type GetRetrospectiveForIncidentResponse ItemResponse[Retrospective]
 
 var ListRetrospectiveReviews = huma.Operation{

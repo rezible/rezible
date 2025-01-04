@@ -67,7 +67,7 @@ func NewHandler(
 		integrationsHandler:     newIntegrationsHandler(),
 		meetingsHandler:         newMeetingsHandler(),
 		oncallHandler:           newOncallHandler(auth, users, incidents, oncall, alerts),
-		retrospectivesHandler:   newRetrospectivesHandler(auth, users, retros, documents),
+		retrospectivesHandler:   newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		servicesHandler:         newServicesHandler(),
 		subscriptionsHandler:    newSubscriptionsHandler(),
 		teamsHandler:            newTeamsHandler(db.Team),

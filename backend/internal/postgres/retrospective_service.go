@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -26,11 +25,7 @@ func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.Retrospective.Get(ctx, id)
 }
 
-func (s *RetrospectiveService) GetForIncident(ctx context.Context, incId uuid.UUID, createMissing bool) (*ent.Retrospective, error) {
-	inc, incErr := s.db.Incident.Get(ctx, incId)
-	if incErr != nil {
-		return nil, fmt.Errorf("get incident: %w", incErr)
-	}
+func (s *RetrospectiveService) GetByIncident(ctx context.Context, inc *ent.Incident, createMissing bool) (*ent.Retrospective, error) {
 	retro, retroErr := inc.QueryRetrospective().Only(ctx)
 	if retroErr == nil && retro != nil {
 		return retro, nil
