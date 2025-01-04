@@ -65,7 +65,6 @@ const (
 	TypeImpact        Type = "impact"
 	TypeDetected      Type = "detected"
 	TypeInvestigating Type = "investigating"
-	TypeTriaged       Type = "triaged"
 	TypeMitigated     Type = "mitigated"
 	TypeResolved      Type = "resolved"
 )
@@ -77,7 +76,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeImpact, TypeDetected, TypeInvestigating, TypeTriaged, TypeMitigated, TypeResolved:
+	case TypeImpact, TypeDetected, TypeInvestigating, TypeMitigated, TypeResolved:
 		return nil
 	default:
 		return fmt.Errorf("incidentmilestone: invalid enum value for type field: %q", _type)

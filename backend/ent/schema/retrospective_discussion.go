@@ -34,3 +34,28 @@ func (RetrospectiveDiscussion) Edges() []ent.Edge {
 			Ref("discussion"),
 	}
 }
+
+// RetrospectiveDiscussionReply holds the schema definition for the RetrospectiveDiscussionReply entity.
+type RetrospectiveDiscussionReply struct {
+	ent.Schema
+}
+
+// Fields of the RetrospectiveDiscussionReply.
+func (RetrospectiveDiscussionReply) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.Bytes("content"),
+	}
+}
+
+// Edges of the RetrospectiveDiscussionReply.
+func (RetrospectiveDiscussionReply) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("discussion", RetrospectiveDiscussion.Type).
+			Required().
+			Unique(),
+		edge.To("replies", RetrospectiveDiscussionReply.Type).
+			From("parent_reply").
+			Unique(),
+	}
+}
