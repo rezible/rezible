@@ -33,27 +33,25 @@ type (
 	}
 
 	IncidentAttributes struct {
-		Slug                    string                                  `json:"slug"`
-		Title                   string                                  `json:"title"`
-		Summary                 string                                  `json:"summary"`
-		Private                 bool                                    `json:"private"`
-		Status                  string                                  `json:"status" enum:"started,detected,alerted,responding,mitigated,retrospective,closed"`
-		OpenedAt                time.Time                               `json:"opened_at"`
-		ClosedAt                time.Time                               `json:"closed_at"`
-		Severity                IncidentSeverity                        `json:"severity"`
-		Type                    IncidentType                            `json:"type"`
-		Ticket                  ExternalTicket                          `json:"ticket"`
-		Tasks                   []Task                                  `json:"tasks"`
-		RoleAssignments         []IncidentRoleAssignment                `json:"roles"`
-		TeamAssignments         []IncidentTeamAssignment                `json:"teams"`
-		Tags                    []IncidentTag                           `json:"tags"`
-		Fields                  []IncidentField                         `json:"fields"`
-		Environments            []Environment                           `json:"environments"`
-		ImpactedServices        []IncidentResourceImpact[Service]       `json:"impacted_services"`
-		ImpactedFunctionalities []IncidentResourceImpact[Functionality] `json:"impacted_functionality"`
-		LinkedIncidents         []IncidentLink                          `json:"linked_incidents"`
-		ResponderImpact         []IncidentResponderImpact               `json:"responder_impact"`
-		ChatChannel             IncidentChatChannel                     `json:"chat_channel"`
+		Slug            string                    `json:"slug"`
+		Title           string                    `json:"title"`
+		Summary         string                    `json:"summary"`
+		Private         bool                      `json:"private"`
+		CurrentStatus   string                    `json:"current_status" enum:"started,mitigated,resolved,closed"`
+		OpenedAt        time.Time                 `json:"opened_at"`
+		ClosedAt        time.Time                 `json:"closed_at"`
+		Severity        IncidentSeverity          `json:"severity"`
+		Type            IncidentType              `json:"type"`
+		Ticket          ExternalTicket            `json:"ticket"`
+		Tasks           []Task                    `json:"tasks"`
+		RoleAssignments []IncidentRoleAssignment  `json:"roles"`
+		TeamAssignments []IncidentTeamAssignment  `json:"teams"`
+		Tags            []IncidentTag             `json:"tags"`
+		Fields          []IncidentField           `json:"fields"`
+		Environments    []Environment             `json:"environments"`
+		LinkedIncidents []IncidentLink            `json:"linked_incidents"`
+		ResponderImpact []IncidentResponderImpact `json:"responder_impact"`
+		ChatChannel     IncidentChatChannel       `json:"chat_channel"`
 	}
 
 	IncidentStatusTime struct {
@@ -142,31 +140,6 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 	attributes.Environments = make([]Environment, len(inc.Edges.Environments))
 	for i, env := range inc.Edges.Environments {
 		attributes.Environments[i] = EnvironmentFromEnt(env)
-	}
-
-	if resources, loadErr := inc.Edges.ImpactedResourcesOrErr(); loadErr == nil {
-		attributes.ImpactedServices = make([]IncidentResourceImpact[Service], 0)
-		attributes.ImpactedFunctionalities = make([]IncidentResourceImpact[Functionality], 0)
-		for _, res := range resources {
-			if res.ServiceID != uuid.Nil {
-				attributes.ImpactedServices = append(attributes.ImpactedServices, IncidentResourceImpact[Service]{
-					Id:         res.ID,
-					Resource:   ServiceFromEnt(res.Edges.Service),
-					IncidentId: nil,
-					Magnitude:  "",
-					Summary:    "",
-				})
-			}
-			if res.FunctionalityID != uuid.Nil {
-				attributes.ImpactedFunctionalities = append(attributes.ImpactedFunctionalities, IncidentResourceImpact[Functionality]{
-					Id:         res.ID,
-					Resource:   FunctionalityFromEnt(res.Edges.Functionality),
-					IncidentId: nil,
-					Magnitude:  "",
-					Summary:    "",
-				})
-			}
-		}
 	}
 
 	attributes.LinkedIncidents = make([]IncidentLink, 0)

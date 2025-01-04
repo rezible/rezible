@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 	"io"
 	"iter"
 	"net/http"
@@ -17,7 +18,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incidentevent"
 )
 
 type IncidentDataProvider struct {
@@ -197,9 +197,9 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 		log.Error().Err(timeErrors).Msg("failed to parse incident times")
 	}
 
-	events, eventsErr := p.getIncidentEvents(ctx, i)
-	if eventsErr != nil {
-		log.Error().Err(eventsErr).Msg("failed to get incident events")
+	milestones, msErr := p.getIncidentMilestones(ctx, i)
+	if msErr != nil {
+		log.Error().Err(msErr).Msg("failed to get incident milestones")
 	}
 
 	severity := &ent.IncidentSeverity{
@@ -239,7 +239,7 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 			RoleAssignments: roleAssignments,
 			Severity:        severity,
 			Type:            incType,
-			Events:          events,
+			Milestones:      milestones,
 			Tasks:           tasks,
 			TagAssignments:  tags,
 		},
@@ -307,25 +307,26 @@ func convertIncidentRole(r incidentRole) *ent.IncidentRole {
 	}
 }
 
-func (p *IncidentDataProvider) getIncidentEvents(ctx context.Context, i *gIncident) ([]*ent.IncidentEvent, error) {
-	var events []*ent.IncidentEvent
+func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIncident) ([]*ent.IncidentMilestone, error) {
+	var milestones []*ent.IncidentMilestone
 
 	startedAt, startErr := time.Parse(time.RFC3339, i.IncidentStart)
 	endedAt, endedErr := time.Parse(time.RFC3339, i.IncidentEnd)
 	if timeErrs := errors.Join(startErr, endedErr); timeErrs != nil {
 		return nil, fmt.Errorf("failed to parse times: %w", timeErrs)
 	}
-	startEvent := &ent.IncidentEvent{
-		Type: incidentevent.TypeImpactStart,
+
+	start := &ent.IncidentMilestone{
+		Type: incidentmilestone.TypeImpact,
 		Time: startedAt,
 	}
 
-	endEvent := &ent.IncidentEvent{
-		Type: incidentevent.TypeImpactEnd,
+	end := &ent.IncidentMilestone{
+		Type: incidentmilestone.TypeResolved,
 		Time: endedAt,
 	}
 
-	events = append(events, startEvent, endEvent)
+	milestones = append(milestones, start, end)
 
 	type queryResponse struct {
 		Cursor        incidentCursor         `json:"cursor"`
@@ -361,7 +362,9 @@ func (p *IncidentDataProvider) getIncidentEvents(ctx context.Context, i *gIncide
 			return nil, fmt.Errorf("querying incident events: %s", resp.Error)
 		}
 		for _, item := range resp.ActivityItems {
-			events = append(events, convertIncidentEvent(item))
+			if conv := convertIncidentMilestone(item); conv != nil {
+				milestones = append(milestones, conv)
+			}
 		}
 		if !resp.Cursor.HasMore {
 			break
@@ -369,16 +372,15 @@ func (p *IncidentDataProvider) getIncidentEvents(ctx context.Context, i *gIncide
 		cursor = &resp.Cursor
 	}
 
-	return events, nil
+	return milestones, nil
 }
 
-func convertIncidentEvent(item incidentActivityItem) *ent.IncidentEvent {
+func convertIncidentMilestone(item incidentActivityItem) *ent.IncidentMilestone {
 	// fmt.Printf("incident event (%s) %s, [%s]\n", item.ActivityKind, item.CreatedTime, item.Body)
 
 	// TODO: map properly
 
-	event := &ent.IncidentEvent{
-		Type: incidentevent.TypeOther,
+	event := &ent.IncidentMilestone{
 		Time: item.CreatedTime,
 	}
 

@@ -17,7 +17,7 @@ type Handler struct {
 	*environmentsHandler
 	*functionalitiesHandler
 	*incidentDebriefsHandler
-	*incidentEventsHandler
+	*incidentMilestonesHandler
 	*incidentFieldsHandler
 	*incidentRolesHandler
 	*incidentSeverityHandler
@@ -52,27 +52,27 @@ func NewHandler(
 	return &Handler{
 		middlewareHandler: newMiddlewareHandler(auth),
 
-		documentsHandler:        newDocumentsHandler(documents, auth, users),
-		environmentsHandler:     newEnvironmentsHandler(db.Environment),
-		functionalitiesHandler:  newFunctionalitiesHandler(),
-		incidentDebriefsHandler: newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),
-		incidentEventsHandler:   newIncidentEventsHandler(db.IncidentEvent),
-		incidentFieldsHandler:   newIncidentFieldsHandler(db),
-		incidentRolesHandler:    newincidentRolesHandler(db.IncidentRole),
-		incidentSeverityHandler: newIncidentSeverityHandler(db.IncidentSeverity),
-		incidentTagsHandler:     newIncidentTagsHandler(db.IncidentTag),
-		tasksHandler:            newTasksHandler(db),
-		incidentTypesHandler:    newIncidentTypesHandler(db.IncidentType),
-		incidentsHandler:        newIncidentsHandler(db),
-		integrationsHandler:     newIntegrationsHandler(),
-		meetingsHandler:         newMeetingsHandler(),
-		oncallHandler:           newOncallHandler(auth, users, incidents, oncall, alerts),
-		retrospectivesHandler:   newRetrospectivesHandler(auth, users, incidents, retros, documents),
-		servicesHandler:         newServicesHandler(),
-		subscriptionsHandler:    newSubscriptionsHandler(),
-		teamsHandler:            newTeamsHandler(db.Team),
-		usersHandler:            newUsersHandler(users),
-		sessionsHandler:         newSessionsHandler(auth, users),
+		documentsHandler:          newDocumentsHandler(documents, auth, users),
+		environmentsHandler:       newEnvironmentsHandler(db.Environment),
+		functionalitiesHandler:    newFunctionalitiesHandler(),
+		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),
+		incidentMilestonesHandler: newIncidentMilestonesHandler(db.IncidentMilestone),
+		incidentFieldsHandler:     newIncidentFieldsHandler(db),
+		incidentRolesHandler:      newincidentRolesHandler(db.IncidentRole),
+		incidentSeverityHandler:   newIncidentSeverityHandler(db.IncidentSeverity),
+		incidentTagsHandler:       newIncidentTagsHandler(db.IncidentTag),
+		tasksHandler:              newTasksHandler(db),
+		incidentTypesHandler:      newIncidentTypesHandler(db.IncidentType),
+		incidentsHandler:          newIncidentsHandler(db),
+		integrationsHandler:       newIntegrationsHandler(),
+		meetingsHandler:           newMeetingsHandler(),
+		oncallHandler:             newOncallHandler(auth, users, incidents, oncall, alerts),
+		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
+		servicesHandler:           newServicesHandler(),
+		subscriptionsHandler:      newSubscriptionsHandler(),
+		teamsHandler:              newTeamsHandler(db.Team),
+		usersHandler:              newUsersHandler(users),
+		sessionsHandler:           newSessionsHandler(auth, users),
 	}
 }
 

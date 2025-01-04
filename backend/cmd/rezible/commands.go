@@ -5,16 +5,9 @@ import (
 	"fmt"
 	"github.com/rezible/rezible/internal/documents"
 	"github.com/rezible/rezible/internal/river"
-	"math"
-	"math/rand"
-	"strings"
-	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
-	"github.com/go-faker/faker/v4"
-	fakerintf "github.com/go-faker/faker/v4/pkg/interfaces"
-	fakeropts "github.com/go-faker/faker/v4/pkg/options"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v3"
@@ -127,178 +120,181 @@ func seedCmd(ctx context.Context, opts *Options) error {
 }
 
 func seedDatabase(ctx context.Context, db *postgres.Database) error {
-	fakerOpts := []fakeropts.OptionFunc{
-		fakeropts.WithStringLanguage(fakerintf.LangENG),
-		fakeropts.WithGenerateUniqueValues(true),
-	}
-
-	numBetween := func(min, max int) int {
-		return min + int(math.Round(float64(max-min)*rand.Float64()))
-	}
-
-	return ent.WithTx(ctx, db.Client(), func(tx *ent.Tx) error {
-		numTeams := 20
-		createTeams := make([]*ent.TeamCreate, numTeams)
-		for i := 0; i < numTeams; i++ {
-			name := faker.Word(fakerOpts...)
-			createTeams[i] = tx.Team.Create().
-				SetName(name).
-				SetSlug(strings.ToLower(name))
+	/*
+		fakerOpts := []fakeropts.OptionFunc{
+			fakeropts.WithStringLanguage(fakerintf.LangENG),
+			fakeropts.WithGenerateUniqueValues(true),
 		}
-		teams := tx.Team.CreateBulk(createTeams...).SaveX(ctx)
 
-		minUsersPerTeam := 4
-		maxUsersPerTeam := 12
-		teamUsers := make(map[uuid.UUID][]uuid.UUID)
-		var createUsers []*ent.UserCreate
-		for _, team := range teams {
-			numUsers := numBetween(minUsersPerTeam, maxUsersPerTeam)
-			for j := 0; j < numUsers; j++ {
-				id := uuid.New()
-				name := faker.Name(fakerOpts...)
-				createUsers = append(createUsers, tx.User.Create().
-					SetID(id).
-					SetName(name).
-					SetEmail(faker.Email(fakerOpts...)).
-					AddTeams(team))
-				if _, ok := teamUsers[team.ID]; !ok {
-					teamUsers[team.ID] = make([]uuid.UUID, numUsers)
-				}
-				teamUsers[team.ID][j] = id
-			}
+		numBetween := func(min, max int) int {
+			return min + int(math.Round(float64(max-min)*rand.Float64()))
 		}
-		tx.User.CreateBulk(createUsers...).SaveX(ctx)
 
-		var createRosters []*ent.OncallRosterCreate
-		createRosters = append(createRosters, tx.OncallRoster.Create().
-			SetName("demo-roster").
-			SetProviderID("bleh-demo").
-			SetTimezone("Australia/Sydney").
-			SetSlug("demo-roster"))
-		for _, team := range teams {
-			createRosters = append(createRosters, tx.OncallRoster.Create().
-				SetName(team.Name+"-roster").
-				SetSlug(team.Slug+"-roster").
-				SetTimezone("Australia/Sydney").
-				SetProviderID(team.ID.String()))
-		}
-		rosters := tx.OncallRoster.CreateBulk(createRosters...).SaveX(ctx)
-
-		var createSchedules []*ent.OncallScheduleCreate
-		for _, roster := range rosters {
-			createSchedules = append(createSchedules, tx.OncallSchedule.Create().
-				SetRoster(roster).
-				SetName(roster.Name+"-schedule").
-				SetProviderID(roster.ID.String()).
-				SetTimezone("Australia/Sydney"))
-		}
-		schedules := tx.OncallSchedule.CreateBulk(createSchedules...).SaveX(ctx)
-
-		var createScheduleParticipants []*ent.OncallScheduleParticipantCreate
-		for i, team := range teams {
-			schedule := schedules[i]
-			for idx, userId := range teamUsers[team.ID] {
-				createScheduleParticipants = append(createScheduleParticipants, tx.OncallScheduleParticipant.Create().
-					SetSchedule(schedule).
-					SetUserID(userId).
-					SetIndex(idx))
-			}
-		}
-		tx.OncallScheduleParticipant.CreateBulk(createScheduleParticipants...).SaveX(ctx)
-
-		maxServicesPerTeam := 3
-		var createServices []*ent.ServiceCreate
-		for _, team := range teams {
-			for j := 0; j < numBetween(1, maxServicesPerTeam); j++ {
+		return ent.WithTx(ctx, db.Client(), func(tx *ent.Tx) error {
+			numTeams := 20
+			createTeams := make([]*ent.TeamCreate, numTeams)
+			for i := 0; i < numTeams; i++ {
 				name := faker.Word(fakerOpts...)
-				createServices = append(createServices, tx.Service.Create().
+				createTeams[i] = tx.Team.Create().
 					SetName(name).
-					SetOwnerTeam(team).
-					SetSlug(strings.ToLower(name)))
+					SetSlug(strings.ToLower(name))
 			}
-		}
-		svcs := tx.Service.CreateBulk(createServices...).SaveX(ctx)
+			teams := tx.Team.CreateBulk(createTeams...).SaveX(ctx)
 
-		sev1 := tx.IncidentSeverity.Create().SetName("Severity 1").SaveX(ctx)
-		tx.IncidentSeverity.Create().SetName("Severity 2").ExecX(ctx)
-		prodEnv := tx.Environment.Create().SetName("prod").SaveX(ctx)
-		tx.Environment.Create().SetName("staging").SaveX(ctx)
-		ownerRole := tx.IncidentRole.Create().SetName("Owner").SaveX(ctx)
+			minUsersPerTeam := 4
+			maxUsersPerTeam := 12
+			teamUsers := make(map[uuid.UUID][]uuid.UUID)
+			var createUsers []*ent.UserCreate
+			for _, team := range teams {
+				numUsers := numBetween(minUsersPerTeam, maxUsersPerTeam)
+				for j := 0; j < numUsers; j++ {
+					id := uuid.New()
+					name := faker.Name(fakerOpts...)
+					createUsers = append(createUsers, tx.User.Create().
+						SetID(id).
+						SetName(name).
+						SetEmail(faker.Email(fakerOpts...)).
+						AddTeams(team))
+					if _, ok := teamUsers[team.ID]; !ok {
+						teamUsers[team.ID] = make([]uuid.UUID, numUsers)
+					}
+					teamUsers[team.ID][j] = id
+				}
+			}
+			tx.User.CreateBulk(createUsers...).SaveX(ctx)
 
-		numIncidents := 20
-		events := []struct {
-			Title         string
-			OffsetMinutes int
-		}{
-			{"Incident Declared", 120},
-			{"Something Found", 110},
-			{"Severity Set", 100},
-			{"Impact Mitigated", 70},
-			{"Impact Resolved", 40},
-		}
-		createIncidents := make([]*ent.IncidentCreate, numIncidents)
-		createRetrospectives := make([]*ent.RetrospectiveCreate, numIncidents)
-		createTeamAssignments := make([]*ent.IncidentTeamAssignmentCreate, numIncidents)
-		createRoleAssignments := make([]*ent.IncidentRoleAssignmentCreate, numIncidents)
-		createResourceImpact := make([]*ent.IncidentResourceImpactCreate, numIncidents)
-		createIncidentEvents := make([]*ent.IncidentEventCreate, numIncidents*len(events))
+			var createRosters []*ent.OncallRosterCreate
+			createRosters = append(createRosters, tx.OncallRoster.Create().
+				SetName("demo-roster").
+				SetProviderID("bleh-demo").
+				SetTimezone("Australia/Sydney").
+				SetSlug("demo-roster"))
+			for _, team := range teams {
+				createRosters = append(createRosters, tx.OncallRoster.Create().
+					SetName(team.Name+"-roster").
+					SetSlug(team.Slug+"-roster").
+					SetTimezone("Australia/Sydney").
+					SetProviderID(team.ID.String()))
+			}
+			rosters := tx.OncallRoster.CreateBulk(createRosters...).SaveX(ctx)
 
-		now := time.Now()
-		for i := 0; i < numIncidents; i++ {
-			svc := svcs[numBetween(0, len(svcs)-1)]
-			word := faker.Word(fakerOpts...)
-			incidentId := uuid.New()
-			title := svc.Name + " " + word
-			r := rand.Int()
-			start := (time.Minute * time.Duration(r)) * time.Minute
-			createIncidents[i] = tx.Incident.Create().
-				SetID(incidentId).
-				SetTitle(title).
-				SetOpenedAt(now.Add(-start)).
-				SetClosedAt(now.Add(-start).Add(time.Hour * 2)).
-				SetSlug(svc.Slug + "-" + strings.ToLower(word)).
-				SetProviderID(incidentId.String()).
-				SetSummary("summary").
-				AddEnvironments(prodEnv).
-				SetSeverity(sev1)
+			var createSchedules []*ent.OncallScheduleCreate
+			for _, roster := range rosters {
+				createSchedules = append(createSchedules, tx.OncallSchedule.Create().
+					SetRoster(roster).
+					SetName(roster.Name+"-schedule").
+					SetProviderID(roster.ID.String()).
+					SetTimezone("Australia/Sydney"))
+			}
+			schedules := tx.OncallSchedule.CreateBulk(createSchedules...).SaveX(ctx)
 
-			createRetrospectives[i] = tx.Retrospective.Create().
-				SetDocumentName(strings.ToLower(word) + "-retrospective").
-				SetIncidentID(incidentId)
+			var createScheduleParticipants []*ent.OncallScheduleParticipantCreate
+			for i, team := range teams {
+				schedule := schedules[i]
+				for idx, userId := range teamUsers[team.ID] {
+					createScheduleParticipants = append(createScheduleParticipants, tx.OncallScheduleParticipant.Create().
+						SetSchedule(schedule).
+						SetUserID(userId).
+						SetIndex(idx))
+				}
+			}
+			tx.OncallScheduleParticipant.CreateBulk(createScheduleParticipants...).SaveX(ctx)
 
-			teamId := svc.QueryOwnerTeam().OnlyIDX(ctx)
-			createTeamAssignments[i] = tx.IncidentTeamAssignment.Create().
-				SetIncidentID(incidentId).
-				SetTeamID(teamId)
+			maxServicesPerTeam := 3
+			var createServices []*ent.ServiceCreate
+			for _, team := range teams {
+				for j := 0; j < numBetween(1, maxServicesPerTeam); j++ {
+					name := faker.Word(fakerOpts...)
+					createServices = append(createServices, tx.Service.Create().
+						SetName(name).
+						SetOwnerTeam(team).
+						SetSlug(strings.ToLower(name)))
+				}
+			}
+			svcs := tx.Service.CreateBulk(createServices...).SaveX(ctx)
 
-			usr := teamUsers[teamId][numBetween(0, len(teamUsers[teamId])-1)]
-			createRoleAssignments[i] = tx.IncidentRoleAssignment.Create().
-				SetIncidentID(incidentId).
-				SetRole(ownerRole).
-				SetUserID(usr)
+			sev1 := tx.IncidentSeverity.Create().SetName("Severity 1").SaveX(ctx)
+			tx.IncidentSeverity.Create().SetName("Severity 2").ExecX(ctx)
+			prodEnv := tx.Environment.Create().SetName("prod").SaveX(ctx)
+			tx.Environment.Create().SetName("staging").SaveX(ctx)
+			ownerRole := tx.IncidentRole.Create().SetName("Owner").SaveX(ctx)
 
-			createResourceImpact[i] = tx.IncidentResourceImpact.Create().
-				SetIncidentID(incidentId).
-				SetService(svc)
+			numIncidents := 20
+			events := []struct {
+				Title         string
+				OffsetMinutes int
+			}{
+				{"Incident Declared", 120},
+				{"Something Found", 110},
+				{"Severity Set", 100},
+				{"Impact Mitigated", 70},
+				{"Impact Resolved", 40},
+			}
+			createIncidents := make([]*ent.IncidentCreate, numIncidents)
+			createRetrospectives := make([]*ent.RetrospectiveCreate, numIncidents)
+			createTeamAssignments := make([]*ent.IncidentTeamAssignmentCreate, numIncidents)
+			createRoleAssignments := make([]*ent.IncidentRoleAssignmentCreate, numIncidents)
+			createResourceImpact := make([]*ent.IncidentResourceImpactCreate, numIncidents)
+			createIncidentEvents := make([]*ent.IncidentEventCreate, numIncidents*len(events))
 
-			//for ei, e := range events {
-			//	t := time.Minute * time.Duration(e.OffsetMinutes)
-			//	createIncidentEvents[(i*len(events))+ei] = client.IncidentEvent.Create().
-			//		SetIncidentID(incidentId).
-			//		SetTitle(e.Title).
-			//		SetType(incidentevent.TypeIncident).
-			//		SetTime(time.Now().Add(-t))
-			//}
-		}
-		tx.Incident.CreateBulk(createIncidents...).SaveX(ctx)
-		tx.Retrospective.CreateBulk(createRetrospectives...).SaveX(ctx)
-		tx.IncidentTeamAssignment.CreateBulk(createTeamAssignments...).SaveX(ctx)
-		tx.IncidentRoleAssignment.CreateBulk(createRoleAssignments...).SaveX(ctx)
-		tx.IncidentResourceImpact.CreateBulk(createResourceImpact...).SaveX(ctx)
-		tx.IncidentEvent.CreateBulk(createIncidentEvents...).SaveX(ctx)
+			now := time.Now()
+			for i := 0; i < numIncidents; i++ {
+				svc := svcs[numBetween(0, len(svcs)-1)]
+				word := faker.Word(fakerOpts...)
+				incidentId := uuid.New()
+				title := svc.Name + " " + word
+				r := rand.Int()
+				start := (time.Minute * time.Duration(r)) * time.Minute
+				createIncidents[i] = tx.Incident.Create().
+					SetID(incidentId).
+					SetTitle(title).
+					SetOpenedAt(now.Add(-start)).
+					SetClosedAt(now.Add(-start).Add(time.Hour * 2)).
+					SetSlug(svc.Slug + "-" + strings.ToLower(word)).
+					SetProviderID(incidentId.String()).
+					SetSummary("summary").
+					AddEnvironments(prodEnv).
+					SetSeverity(sev1)
 
-		return nil
-	})
+				createRetrospectives[i] = tx.Retrospective.Create().
+					SetDocumentName(strings.ToLower(word) + "-retrospective").
+					SetIncidentID(incidentId)
+
+				teamId := svc.QueryOwnerTeam().OnlyIDX(ctx)
+				createTeamAssignments[i] = tx.IncidentTeamAssignment.Create().
+					SetIncidentID(incidentId).
+					SetTeamID(teamId)
+
+				usr := teamUsers[teamId][numBetween(0, len(teamUsers[teamId])-1)]
+				createRoleAssignments[i] = tx.IncidentRoleAssignment.Create().
+					SetIncidentID(incidentId).
+					SetRole(ownerRole).
+					SetUserID(usr)
+
+				createResourceImpact[i] = tx.IncidentResourceImpact.Create().
+					SetIncidentID(incidentId).
+					SetService(svc)
+
+				//for ei, e := range events {
+				//	t := time.Minute * time.Duration(e.OffsetMinutes)
+				//	createIncidentEvents[(i*len(events))+ei] = client.IncidentEvent.Create().
+				//		SetIncidentID(incidentId).
+				//		SetTitle(e.Title).
+				//		SetType(incidentevent.TypeIncident).
+				//		SetTime(time.Now().Add(-t))
+				//}
+			}
+			tx.Incident.CreateBulk(createIncidents...).SaveX(ctx)
+			tx.Retrospective.CreateBulk(createRetrospectives...).SaveX(ctx)
+			tx.IncidentTeamAssignment.CreateBulk(createTeamAssignments...).SaveX(ctx)
+			tx.IncidentRoleAssignment.CreateBulk(createRoleAssignments...).SaveX(ctx)
+			tx.IncidentResourceImpact.CreateBulk(createResourceImpact...).SaveX(ctx)
+			tx.IncidentEvent.CreateBulk(createIncidentEvents...).SaveX(ctx)
+
+			return nil
+		})
+	*/
+	return nil
 }
 
 func makeExampleIncident(client *ent.Client, e *ent.Environment, sev1 *ent.IncidentSeverity) {

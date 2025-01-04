@@ -25,11 +25,11 @@ var (
 		Name:   strSupported,
 	}
 
-	incidentSeverityMapping = ent.IncidentSeverity{Name: strSupported}
-	incidentTypeMapping     = ent.IncidentType{Name: strSupported}
-	incidentTaskMapping     = ent.Task{Title: strSupported}
-	incidentEventMapping    = ent.IncidentEvent{Time: timeSupported}
-	incidentTagMapping      = ent.IncidentTag{
+	incidentSeverityMapping  = ent.IncidentSeverity{Name: strSupported}
+	incidentTypeMapping      = ent.IncidentType{Name: strSupported}
+	incidentTaskMapping      = ent.Task{Title: strSupported}
+	incidentMilestoneMapping = ent.IncidentMilestone{Time: timeSupported}
+	incidentTagMapping       = ent.IncidentTag{
 		Key:   strSupported,
 		Value: strSupported,
 	}
@@ -52,7 +52,7 @@ var (
 			Severity:        &incidentSeverityMapping,
 			Type:            &incidentTypeMapping,
 			RoleAssignments: []*ent.IncidentRoleAssignment{&incidentRoleAssignmentMapping},
-			Events:          []*ent.IncidentEvent{&incidentEventMapping},
+			Milestones:      []*ent.IncidentMilestone{&incidentMilestoneMapping},
 			Tasks:           []*ent.Task{&incidentTaskMapping},
 			TagAssignments:  []*ent.IncidentTag{&incidentTagMapping},
 		},

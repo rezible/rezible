@@ -2,7 +2,6 @@ package openapi
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -34,14 +33,14 @@ type ServiceAttributes struct {
 	Name string `json:"name"`
 }
 
-func ServiceFromEnt(serv *ent.Service) Service {
-	return Service{
-		Id: serv.ID,
-		Attributes: ServiceAttributes{
-			Name: serv.Name,
-		},
-	}
-}
+//func ServiceFromEnt(serv *ent.Service) Service {
+//	return Service{
+//		Id: serv.ID,
+//		Attributes: ServiceAttributes{
+//			Name: serv.Name,
+//		},
+//	}
+//}
 
 var servicesTags = []string{"Services"}
 

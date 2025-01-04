@@ -3,7 +3,6 @@ package openapi
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -17,7 +16,7 @@ type SubscriptionsHandler interface {
 	ArchiveSubscription(context.Context, *ArchiveSubscriptionRequest) (*ArchiveSubscriptionResponse, error)
 }
 
-func (o operations) RegisterSubscriptions(api huma.API) {
+func (o operations) _RegisterSubscriptions(api huma.API) {
 	huma.Register(api, ListSubscriptions, o.ListSubscriptions)
 	huma.Register(api, CreateSubscription, o.CreateSubscription)
 	huma.Register(api, GetSubscription, o.GetSubscription)
@@ -32,12 +31,12 @@ type Subscription struct {
 
 type SubscriptionAttributes struct{}
 
-func SubscriptionFromEnt(sub *ent.Subscription) Subscription {
-	return Subscription{
-		Id:         sub.ID,
-		Attributes: SubscriptionAttributes{},
-	}
-}
+//func SubscriptionFromEnt(sub *ent.Subscription) Subscription {
+//	return Subscription{
+//		Id:         sub.ID,
+//		Attributes: SubscriptionAttributes{},
+//	}
+//}
 
 var subscriptionsTags = []string{"Subscriptions"}
 
