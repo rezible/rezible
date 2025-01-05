@@ -3,6 +3,9 @@ import path from 'path';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
+	compilerOptions: {
+		// customElement: true,
+	},
 	kit: {
 		output: {
 			bundleStrategy: "inline",

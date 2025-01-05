@@ -43,6 +43,7 @@
 		"@tiptap/extension-collaboration": "^2.11.0",
 		"@tiptap/extension-collaboration-cursor": "^2.11.0",
 		"@tiptap/pm": "^2.11.0",
+		"@xyflow/svelte": "^0.1.26",
 		"d3-array": "^3.2.4",
 		"d3-random": "^3.0.1",
 		"d3-scale": "^4.0.2",
@@ -54,6 +55,7 @@
 		"svelte-tiptap": "^2.1.0",
 		"svelte-ux": "^0.77.0",
 		"uuid": "^11.0.3",
+		"vis-timeline": "^7.7.3",
 		"yjs": "^13.6.21",
 		"zod": "^3.24.1"
 	}

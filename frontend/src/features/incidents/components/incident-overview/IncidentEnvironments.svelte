@@ -4,9 +4,9 @@
 	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 	import { Button, Header, Icon } from 'svelte-ux';
 	import { mdiPencil } from '@mdi/js';
-	import type { IncidentDetailProps } from './detail';
 
-	const { incident, invalidateQuery }: IncidentDetailProps = $props();
+	type Props = { incident: Incident };
+	const { incident }: Props = $props();
 
 	let incidentEnvironments: string[] = [];
 	let selectedEnvironments: string[] = $state([]);
@@ -25,7 +25,6 @@
 	const update = createMutation(() => ({
 		...updateIncidentMutation(),
 		onSuccess: () => {
-			invalidateQuery();
 			resetState(incident);
 		}
 	}));

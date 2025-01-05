@@ -1,13 +1,9 @@
 <script lang="ts">
-	import Services from './Services.svelte';
 	import LinkedIncidents from './LinkedIncidents.svelte';
 	import IncidentVisibility from './IncidentVisibility.svelte';
-	import IncidentEnvironments from './IncidentEnvironments.svelte';
 	import IncidentSeverity from './IncidentSeverity.svelte';
 	import RoleAssignments from './RoleAssignments.svelte';
 	import TeamAssignments from './TeamAssignments.svelte';
-	import RetrospectivePreview from './RetrospectivePreview.svelte';
-	import IncidentStatus from './IncidentStatus.svelte';
     import type { Incident } from '$lib/api';
 
 	type Props = {incident: Incident;};
@@ -23,10 +19,6 @@
 
 			<div class="border rounded-lg p-2 group">
 				<TeamAssignments {incident} />
-			</div>
-
-			<div class="border rounded-lg p-2 group">
-				<Services {incident} />
 			</div>
 
 			<div class="border rounded-lg p-2 group">

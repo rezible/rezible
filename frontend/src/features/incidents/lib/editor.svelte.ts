@@ -16,7 +16,6 @@ import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
 import { RezUserSuggestion } from './user-suggestions/user-suggestion.svelte';
-import { collaborationState } from './collaboration.svelte';
 
 export type ActiveStatus = {
 	focused?: boolean;
@@ -100,7 +99,7 @@ const onEditorTransaction = debounce(
 );
 
 type RunCommandFn = (cmd: ChainedCommands) => void;
-const createActiveEditor = () => {
+const createActiveEditorState = () => {
 	let editor = $state<Editor>();
 	let field = $state<string>();
 
@@ -128,12 +127,12 @@ const createActiveEditor = () => {
 	return {
 		set,
 		clear,
+		tryRunCommand,
 		get field() { return field },
 		get editor() { return editor },
-		tryRunCommand
 	};
 };
-export let activeEditor = createActiveEditor();
+export let activeEditor = createActiveEditorState();
 
 const createActiveAnnotationIdState = () => {
 	let id = $state<string>();

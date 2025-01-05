@@ -40,7 +40,7 @@
 </script>
 
 <div class="flex flex-col min-h-0 overflow-y-auto bg-surface-300 grow">
-    <div class="w-full overflow-y-auto pb-2 px-4 flex flex-col gap-4" bind:this={containerEl}>
+    <div class="w-full overflow-y-auto flex flex-col gap-4" bind:this={containerEl}>
         {#if sections && collaborationState.provider}
             {#each sections as section, i}
                 <div bind:this={sectionElements[section.field]}>
