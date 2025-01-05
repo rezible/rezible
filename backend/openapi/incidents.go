@@ -33,41 +33,23 @@ type (
 	}
 
 	IncidentAttributes struct {
-		Slug            string                    `json:"slug"`
-		Title           string                    `json:"title"`
-		Summary         string                    `json:"summary"`
-		Private         bool                      `json:"private"`
-		CurrentStatus   string                    `json:"current_status" enum:"started,mitigated,resolved,closed"`
-		OpenedAt        time.Time                 `json:"opened_at"`
-		ClosedAt        time.Time                 `json:"closed_at"`
-		Severity        IncidentSeverity          `json:"severity"`
-		Type            IncidentType              `json:"type"`
-		Ticket          ExternalTicket            `json:"ticket"`
-		Tasks           []Task                    `json:"tasks"`
-		RoleAssignments []IncidentRoleAssignment  `json:"roles"`
-		TeamAssignments []IncidentTeamAssignment  `json:"teams"`
-		Tags            []IncidentTag             `json:"tags"`
-		Fields          []IncidentField           `json:"fields"`
-		Environments    []Environment             `json:"environments"`
-		LinkedIncidents []IncidentLink            `json:"linked_incidents"`
-		ResponderImpact []IncidentResponderImpact `json:"responder_impact"`
-		ChatChannel     IncidentChatChannel       `json:"chat_channel"`
-	}
-
-	IncidentStatusTime struct {
-		Id        uuid.UUID `json:"id"`
-		Status    string    `json:"status"`
-		EventId   uuid.UUID `json:"event_id"`
-		StartedAt time.Time `json:"started_at"`
-		EndedAt   time.Time `json:"ended_at"`
-	}
-
-	IncidentResourceImpact[T any] struct {
-		Id         uuid.UUID  `json:"id"`
-		IncidentId *uuid.UUID `json:"incident_id,omitempty"`
-		Resource   T          `json:"resource"`
-		Magnitude  string     `json:"magnitude"`
-		Summary    string     `json:"summary"`
+		Slug            string                   `json:"slug"`
+		Title           string                   `json:"title"`
+		Summary         string                   `json:"summary"`
+		Private         bool                     `json:"private"`
+		CurrentStatus   string                   `json:"current_status" enum:"started,mitigated,resolved,closed"`
+		OpenedAt        time.Time                `json:"opened_at"`
+		ClosedAt        time.Time                `json:"closed_at"`
+		Severity        IncidentSeverity         `json:"severity"`
+		Type            IncidentType             `json:"type"`
+		Environments    []Environment            `json:"environments"`
+		Tags            []IncidentTag            `json:"tags"`
+		Ticket          ExternalTicket           `json:"ticket"`
+		Tasks           []Task                   `json:"tasks"`
+		RoleAssignments []IncidentRoleAssignment `json:"roles"`
+		TeamAssignments []IncidentTeamAssignment `json:"teams"`
+		LinkedIncidents []IncidentLink           `json:"linked_incidents"`
+		ChatChannel     IncidentChatChannel      `json:"chat_channel"`
 	}
 
 	IncidentLink struct {
@@ -226,13 +208,11 @@ var UpdateIncident = huma.Operation{
 }
 
 type UpdateIncidentAttributes struct {
-	Title           *string   `json:"title,omitempty"`
-	Summary         *string   `json:"summary,omitempty"`
-	SeverityId      *string   `json:"severity_id,omitempty"`
-	Private         *bool     `json:"private,omitempty"`
-	Environments    *[]string `json:"environments,omitempty"`
-	Services        *[]string `json:"services,omitempty"`
-	Functionalities *[]string `json:"functionalities,omitempty"`
+	Title        *string   `json:"title,omitempty"`
+	Summary      *string   `json:"summary,omitempty"`
+	SeverityId   *string   `json:"severity_id,omitempty"`
+	Private      *bool     `json:"private,omitempty"`
+	Environments *[]string `json:"environments,omitempty"`
 }
 type UpdateIncidentRequest UpdateIdRequest[UpdateIncidentAttributes]
 type UpdateIncidentResponse ItemResponse[Incident]

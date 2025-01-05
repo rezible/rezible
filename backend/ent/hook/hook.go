@@ -141,6 +141,18 @@ func (f IncidentEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventEvidenceMutation", m)
 }
 
+// The IncidentEventSystemComponentFunc type is an adapter to allow the use of ordinary
+// function as IncidentEventSystemComponent mutator.
+type IncidentEventSystemComponentFunc func(context.Context, *ent.IncidentEventSystemComponentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentEventSystemComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentEventSystemComponentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventSystemComponentMutation", m)
+}
+
 // The IncidentFieldFunc type is an adapter to allow the use of ordinary
 // function as IncidentField mutator.
 type IncidentFieldFunc func(context.Context, *ent.IncidentFieldMutation) (ent.Value, error)
@@ -223,6 +235,18 @@ func (f IncidentSeverityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentSeverityMutation", m)
+}
+
+// The IncidentSystemComponentFunc type is an adapter to allow the use of ordinary
+// function as IncidentSystemComponent mutator.
+type IncidentSystemComponentFunc func(context.Context, *ent.IncidentSystemComponentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentSystemComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentSystemComponentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentSystemComponentMutation", m)
 }
 
 // The IncidentTagFunc type is an adapter to allow the use of ordinary

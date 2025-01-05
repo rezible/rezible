@@ -45,6 +45,8 @@ const (
 	EdgeTeamAssignments = "team_assignments"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
+	// EdgeSystemComponents holds the string denoting the system_components edge name in mutations.
+	EdgeSystemComponents = "system_components"
 	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
 	EdgeLinkedIncidents = "linked_incidents"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
@@ -63,6 +65,8 @@ const (
 	EdgeDebriefs = "debriefs"
 	// EdgeReviewSessions holds the string denoting the review_sessions edge name in mutations.
 	EdgeReviewSessions = "review_sessions"
+	// EdgeIncidentSystemComponents holds the string denoting the incident_system_components edge name in mutations.
+	EdgeIncidentSystemComponents = "incident_system_components"
 	// EdgeIncidentLinks holds the string denoting the incident_links edge name in mutations.
 	EdgeIncidentLinks = "incident_links"
 	// Table holds the table name of the incident in the database.
@@ -100,6 +104,11 @@ const (
 	RoleAssignmentsInverseTable = "incident_role_assignments"
 	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
 	RoleAssignmentsColumn = "incident_id"
+	// SystemComponentsTable is the table that holds the system_components relation/edge. The primary key declared below.
+	SystemComponentsTable = "incident_system_components"
+	// SystemComponentsInverseTable is the table name for the SystemComponent entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
+	SystemComponentsInverseTable = "system_components"
 	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
 	LinkedIncidentsTable = "incident_links"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
@@ -152,6 +161,13 @@ const (
 	// ReviewSessionsInverseTable is the table name for the MeetingSession entity.
 	// It exists in this package in order to avoid circular dependency with the "meetingsession" package.
 	ReviewSessionsInverseTable = "meeting_sessions"
+	// IncidentSystemComponentsTable is the table that holds the incident_system_components relation/edge.
+	IncidentSystemComponentsTable = "incident_system_components"
+	// IncidentSystemComponentsInverseTable is the table name for the IncidentSystemComponent entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentsystemcomponent" package.
+	IncidentSystemComponentsInverseTable = "incident_system_components"
+	// IncidentSystemComponentsColumn is the table column denoting the incident_system_components relation/edge.
+	IncidentSystemComponentsColumn = "incident_id"
 	// IncidentLinksTable is the table that holds the incident_links relation/edge.
 	IncidentLinksTable = "incident_links"
 	// IncidentLinksInverseTable is the table name for the IncidentLink entity.
@@ -181,6 +197,9 @@ var (
 	// EnvironmentsPrimaryKey and EnvironmentsColumn2 are the table columns denoting the
 	// primary key for the environments relation (M2M).
 	EnvironmentsPrimaryKey = []string{"incident_id", "environment_id"}
+	// SystemComponentsPrimaryKey and SystemComponentsColumn2 are the table columns denoting the
+	// primary key for the system_components relation (M2M).
+	SystemComponentsPrimaryKey = []string{"incident_id", "system_component_id"}
 	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
 	// primary key for the linked_incidents relation (M2M).
 	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
@@ -331,6 +350,20 @@ func ByRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// BySystemComponentsCount orders the results by system_components count.
+func BySystemComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSystemComponentsStep(), opts...)
+	}
+}
+
+// BySystemComponents orders the results by system_components terms.
+func BySystemComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByLinkedIncidentsCount orders the results by linked_incidents count.
 func ByLinkedIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -450,6 +483,20 @@ func ByReviewSessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByIncidentSystemComponentsCount orders the results by incident_system_components count.
+func ByIncidentSystemComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncidentSystemComponentsStep(), opts...)
+	}
+}
+
+// ByIncidentSystemComponents orders the results by incident_system_components terms.
+func ByIncidentSystemComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentSystemComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIncidentLinksCount orders the results by incident_links count.
 func ByIncidentLinksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -496,6 +543,13 @@ func newRoleAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RoleAssignmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
+	)
+}
+func newSystemComponentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemComponentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SystemComponentsTable, SystemComponentsPrimaryKey...),
 	)
 }
 func newLinkedIncidentsStep() *sqlgraph.Step {
@@ -559,6 +613,13 @@ func newReviewSessionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ReviewSessionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, ReviewSessionsTable, ReviewSessionsPrimaryKey...),
+	)
+}
+func newIncidentSystemComponentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentSystemComponentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, IncidentSystemComponentsTable, IncidentSystemComponentsColumn),
 	)
 }
 func newIncidentLinksStep() *sqlgraph.Step {

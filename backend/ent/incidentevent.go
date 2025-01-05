@@ -56,9 +56,13 @@ type IncidentEventEdges struct {
 	Factors []*IncidentEventContributingFactor `json:"factors,omitempty"`
 	// Evidence holds the value of the evidence edge.
 	Evidence []*IncidentEventEvidence `json:"evidence,omitempty"`
+	// SystemComponents holds the value of the system_components edge.
+	SystemComponents []*SystemComponent `json:"system_components,omitempty"`
+	// EventComponents holds the value of the event_components edge.
+	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [6]bool
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -99,6 +103,24 @@ func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
 		return e.Evidence, nil
 	}
 	return nil, &NotLoadedError{edge: "evidence"}
+}
+
+// SystemComponentsOrErr returns the SystemComponents value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) {
+	if e.loadedTypes[4] {
+		return e.SystemComponents, nil
+	}
+	return nil, &NotLoadedError{edge: "system_components"}
+}
+
+// EventComponentsOrErr returns the EventComponents value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEventEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
+	if e.loadedTypes[5] {
+		return e.EventComponents, nil
+	}
+	return nil, &NotLoadedError{edge: "event_components"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -229,6 +251,16 @@ func (ie *IncidentEvent) QueryFactors() *IncidentEventContributingFactorQuery {
 // QueryEvidence queries the "evidence" edge of the IncidentEvent entity.
 func (ie *IncidentEvent) QueryEvidence() *IncidentEventEvidenceQuery {
 	return NewIncidentEventClient(ie.config).QueryEvidence(ie)
+}
+
+// QuerySystemComponents queries the "system_components" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QuerySystemComponents() *SystemComponentQuery {
+	return NewIncidentEventClient(ie.config).QuerySystemComponents(ie)
+}
+
+// QueryEventComponents queries the "event_components" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryEventComponents() *IncidentEventSystemComponentQuery {
+	return NewIncidentEventClient(ie.config).QueryEventComponents(ie)
 }
 
 // Update returns a builder for updating this IncidentEvent.

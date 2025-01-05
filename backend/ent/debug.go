@@ -92,6 +92,14 @@ func (c *IncidentEventEvidenceClient) Debug() *IncidentEventEvidenceClient {
 	return &IncidentEventEvidenceClient{config: cfg}
 }
 
+func (c *IncidentEventSystemComponentClient) Debug() *IncidentEventSystemComponentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentEventSystemComponentClient{config: cfg}
+}
+
 func (c *IncidentFieldClient) Debug() *IncidentFieldClient {
 	if c.debug {
 		return c
@@ -146,6 +154,14 @@ func (c *IncidentSeverityClient) Debug() *IncidentSeverityClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &IncidentSeverityClient{config: cfg}
+}
+
+func (c *IncidentSystemComponentClient) Debug() *IncidentSystemComponentClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentSystemComponentClient{config: cfg}
 }
 
 func (c *IncidentTagClient) Debug() *IncidentTagClient {

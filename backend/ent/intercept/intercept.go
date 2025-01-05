@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -26,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -409,6 +411,33 @@ func (f TraverseIncidentEventEvidence) Traverse(ctx context.Context, q ent.Query
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventEvidenceQuery", q)
 }
 
+// The IncidentEventSystemComponentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentEventSystemComponentFunc func(context.Context, *ent.IncidentEventSystemComponentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentEventSystemComponentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentEventSystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventSystemComponentQuery", q)
+}
+
+// The TraverseIncidentEventSystemComponent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentEventSystemComponent func(context.Context, *ent.IncidentEventSystemComponentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentEventSystemComponent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentEventSystemComponent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentEventSystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventSystemComponentQuery", q)
+}
+
 // The IncidentFieldFunc type is an adapter to allow the use of ordinary function as a Querier.
 type IncidentFieldFunc func(context.Context, *ent.IncidentFieldQuery) (ent.Value, error)
 
@@ -596,6 +625,33 @@ func (f TraverseIncidentSeverity) Traverse(ctx context.Context, q ent.Query) err
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentSeverityQuery", q)
+}
+
+// The IncidentSystemComponentFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentSystemComponentFunc func(context.Context, *ent.IncidentSystemComponentQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentSystemComponentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentSystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentSystemComponentQuery", q)
+}
+
+// The TraverseIncidentSystemComponent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentSystemComponent func(context.Context, *ent.IncidentSystemComponentQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentSystemComponent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentSystemComponent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentSystemComponentQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentSystemComponentQuery", q)
 }
 
 // The IncidentTagFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1352,6 +1408,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentEventContributingFactorQuery, predicate.IncidentEventContributingFactor, incidenteventcontributingfactor.OrderOption]{typ: ent.TypeIncidentEventContributingFactor, tq: q}, nil
 	case *ent.IncidentEventEvidenceQuery:
 		return &query[*ent.IncidentEventEvidenceQuery, predicate.IncidentEventEvidence, incidenteventevidence.OrderOption]{typ: ent.TypeIncidentEventEvidence, tq: q}, nil
+	case *ent.IncidentEventSystemComponentQuery:
+		return &query[*ent.IncidentEventSystemComponentQuery, predicate.IncidentEventSystemComponent, incidenteventsystemcomponent.OrderOption]{typ: ent.TypeIncidentEventSystemComponent, tq: q}, nil
 	case *ent.IncidentFieldQuery:
 		return &query[*ent.IncidentFieldQuery, predicate.IncidentField, incidentfield.OrderOption]{typ: ent.TypeIncidentField, tq: q}, nil
 	case *ent.IncidentFieldOptionQuery:
@@ -1366,6 +1424,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentRoleAssignmentQuery, predicate.IncidentRoleAssignment, incidentroleassignment.OrderOption]{typ: ent.TypeIncidentRoleAssignment, tq: q}, nil
 	case *ent.IncidentSeverityQuery:
 		return &query[*ent.IncidentSeverityQuery, predicate.IncidentSeverity, incidentseverity.OrderOption]{typ: ent.TypeIncidentSeverity, tq: q}, nil
+	case *ent.IncidentSystemComponentQuery:
+		return &query[*ent.IncidentSystemComponentQuery, predicate.IncidentSystemComponent, incidentsystemcomponent.OrderOption]{typ: ent.TypeIncidentSystemComponent, tq: q}, nil
 	case *ent.IncidentTagQuery:
 		return &query[*ent.IncidentTagQuery, predicate.IncidentTag, incidenttag.OrderOption]{typ: ent.TypeIncidentTag, tq: q}, nil
 	case *ent.IncidentTeamAssignmentQuery:

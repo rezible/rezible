@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -34,6 +35,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -90,6 +92,8 @@ type Client struct {
 	IncidentEventContributingFactor *IncidentEventContributingFactorClient
 	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
 	IncidentEventEvidence *IncidentEventEvidenceClient
+	// IncidentEventSystemComponent is the client for interacting with the IncidentEventSystemComponent builders.
+	IncidentEventSystemComponent *IncidentEventSystemComponentClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -104,6 +108,8 @@ type Client struct {
 	IncidentRoleAssignment *IncidentRoleAssignmentClient
 	// IncidentSeverity is the client for interacting with the IncidentSeverity builders.
 	IncidentSeverity *IncidentSeverityClient
+	// IncidentSystemComponent is the client for interacting with the IncidentSystemComponent builders.
+	IncidentSystemComponent *IncidentSystemComponentClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
 	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
@@ -180,6 +186,7 @@ func (c *Client) init() {
 	c.IncidentEventContext = NewIncidentEventContextClient(c.config)
 	c.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(c.config)
 	c.IncidentEventEvidence = NewIncidentEventEvidenceClient(c.config)
+	c.IncidentEventSystemComponent = NewIncidentEventSystemComponentClient(c.config)
 	c.IncidentField = NewIncidentFieldClient(c.config)
 	c.IncidentFieldOption = NewIncidentFieldOptionClient(c.config)
 	c.IncidentLink = NewIncidentLinkClient(c.config)
@@ -187,6 +194,7 @@ func (c *Client) init() {
 	c.IncidentRole = NewIncidentRoleClient(c.config)
 	c.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(c.config)
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
+	c.IncidentSystemComponent = NewIncidentSystemComponentClient(c.config)
 	c.IncidentTag = NewIncidentTagClient(c.config)
 	c.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
@@ -317,6 +325,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentEventContext:                NewIncidentEventContextClient(cfg),
 		IncidentEventContributingFactor:     NewIncidentEventContributingFactorClient(cfg),
 		IncidentEventEvidence:               NewIncidentEventEvidenceClient(cfg),
+		IncidentEventSystemComponent:        NewIncidentEventSystemComponentClient(cfg),
 		IncidentField:                       NewIncidentFieldClient(cfg),
 		IncidentFieldOption:                 NewIncidentFieldOptionClient(cfg),
 		IncidentLink:                        NewIncidentLinkClient(cfg),
@@ -324,6 +333,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentRole:                        NewIncidentRoleClient(cfg),
 		IncidentRoleAssignment:              NewIncidentRoleAssignmentClient(cfg),
 		IncidentSeverity:                    NewIncidentSeverityClient(cfg),
+		IncidentSystemComponent:             NewIncidentSystemComponentClient(cfg),
 		IncidentTag:                         NewIncidentTagClient(cfg),
 		IncidentTeamAssignment:              NewIncidentTeamAssignmentClient(cfg),
 		IncidentType:                        NewIncidentTypeClient(cfg),
@@ -381,6 +391,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentEventContext:                NewIncidentEventContextClient(cfg),
 		IncidentEventContributingFactor:     NewIncidentEventContributingFactorClient(cfg),
 		IncidentEventEvidence:               NewIncidentEventEvidenceClient(cfg),
+		IncidentEventSystemComponent:        NewIncidentEventSystemComponentClient(cfg),
 		IncidentField:                       NewIncidentFieldClient(cfg),
 		IncidentFieldOption:                 NewIncidentFieldOptionClient(cfg),
 		IncidentLink:                        NewIncidentLinkClient(cfg),
@@ -388,6 +399,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentRole:                        NewIncidentRoleClient(cfg),
 		IncidentRoleAssignment:              NewIncidentRoleAssignmentClient(cfg),
 		IncidentSeverity:                    NewIncidentSeverityClient(cfg),
+		IncidentSystemComponent:             NewIncidentSystemComponentClient(cfg),
 		IncidentTag:                         NewIncidentTagClient(cfg),
 		IncidentTeamAssignment:              NewIncidentTeamAssignmentClient(cfg),
 		IncidentType:                        NewIncidentTypeClient(cfg),
@@ -447,9 +459,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
-		c.IncidentEventContributingFactor, c.IncidentEventEvidence, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
+		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentSystemComponent, c.IncidentTag,
 		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
 		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
@@ -470,9 +483,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
-		c.IncidentEventContributingFactor, c.IncidentEventEvidence, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
+		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentSystemComponent, c.IncidentTag,
 		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
 		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
@@ -511,6 +525,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentEventContributingFactor.mutate(ctx, m)
 	case *IncidentEventEvidenceMutation:
 		return c.IncidentEventEvidence.mutate(ctx, m)
+	case *IncidentEventSystemComponentMutation:
+		return c.IncidentEventSystemComponent.mutate(ctx, m)
 	case *IncidentFieldMutation:
 		return c.IncidentField.mutate(ctx, m)
 	case *IncidentFieldOptionMutation:
@@ -525,6 +541,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentRoleAssignment.mutate(ctx, m)
 	case *IncidentSeverityMutation:
 		return c.IncidentSeverity.mutate(ctx, m)
+	case *IncidentSystemComponentMutation:
+		return c.IncidentSystemComponent.mutate(ctx, m)
 	case *IncidentTagMutation:
 		return c.IncidentTag.mutate(ctx, m)
 	case *IncidentTeamAssignmentMutation:
@@ -1056,6 +1074,22 @@ func (c *IncidentClient) QueryRoleAssignments(i *Incident) *IncidentRoleAssignme
 	return query
 }
 
+// QuerySystemComponents queries the system_components edge of a Incident.
+func (c *IncidentClient) QuerySystemComponents(i *Incident) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incident.SystemComponentsTable, incident.SystemComponentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryLinkedIncidents queries the linked_incidents edge of a Incident.
 func (c *IncidentClient) QueryLinkedIncidents(i *Incident) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -1193,6 +1227,22 @@ func (c *IncidentClient) QueryReviewSessions(i *Incident) *MeetingSessionQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncidentSystemComponents queries the incident_system_components edge of a Incident.
+func (c *IncidentClient) QueryIncidentSystemComponents(i *Incident) *IncidentSystemComponentQuery {
+	query := (&IncidentSystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.IncidentSystemComponentsTable, incident.IncidentSystemComponentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -2153,6 +2203,38 @@ func (c *IncidentEventClient) QueryEvidence(ie *IncidentEvent) *IncidentEventEvi
 	return query
 }
 
+// QuerySystemComponents queries the system_components edge of a IncidentEvent.
+func (c *IncidentEventClient) QuerySystemComponents(ie *IncidentEvent) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ie.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incidentevent.SystemComponentsTable, incidentevent.SystemComponentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEventComponents queries the event_components edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryEventComponents(ie *IncidentEvent) *IncidentEventSystemComponentQuery {
+	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ie.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
+			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.EventComponentsTable, incidentevent.EventComponentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *IncidentEventClient) Hooks() []Hook {
 	return c.hooks.IncidentEvent
@@ -2622,6 +2704,171 @@ func (c *IncidentEventEvidenceClient) mutate(ctx context.Context, m *IncidentEve
 		return (&IncidentEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentEventEvidence mutation op: %q", m.Op())
+	}
+}
+
+// IncidentEventSystemComponentClient is a client for the IncidentEventSystemComponent schema.
+type IncidentEventSystemComponentClient struct {
+	config
+}
+
+// NewIncidentEventSystemComponentClient returns a client for the IncidentEventSystemComponent from the given config.
+func NewIncidentEventSystemComponentClient(c config) *IncidentEventSystemComponentClient {
+	return &IncidentEventSystemComponentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenteventsystemcomponent.Hooks(f(g(h())))`.
+func (c *IncidentEventSystemComponentClient) Use(hooks ...Hook) {
+	c.hooks.IncidentEventSystemComponent = append(c.hooks.IncidentEventSystemComponent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenteventsystemcomponent.Intercept(f(g(h())))`.
+func (c *IncidentEventSystemComponentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentEventSystemComponent = append(c.inters.IncidentEventSystemComponent, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentEventSystemComponent entity.
+func (c *IncidentEventSystemComponentClient) Create() *IncidentEventSystemComponentCreate {
+	mutation := newIncidentEventSystemComponentMutation(c.config, OpCreate)
+	return &IncidentEventSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentEventSystemComponent entities.
+func (c *IncidentEventSystemComponentClient) CreateBulk(builders ...*IncidentEventSystemComponentCreate) *IncidentEventSystemComponentCreateBulk {
+	return &IncidentEventSystemComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentEventSystemComponentClient) MapCreateBulk(slice any, setFunc func(*IncidentEventSystemComponentCreate, int)) *IncidentEventSystemComponentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentEventSystemComponentCreateBulk{err: fmt.Errorf("calling to IncidentEventSystemComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentEventSystemComponentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentEventSystemComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) Update() *IncidentEventSystemComponentUpdate {
+	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdate)
+	return &IncidentEventSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentEventSystemComponentClient) UpdateOne(iesc *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
+	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdateOne, withIncidentEventSystemComponent(iesc))
+	return &IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentEventSystemComponentClient) UpdateOneID(id uuid.UUID) *IncidentEventSystemComponentUpdateOne {
+	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdateOne, withIncidentEventSystemComponentID(id))
+	return &IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) Delete() *IncidentEventSystemComponentDelete {
+	mutation := newIncidentEventSystemComponentMutation(c.config, OpDelete)
+	return &IncidentEventSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentEventSystemComponentClient) DeleteOne(iesc *IncidentEventSystemComponent) *IncidentEventSystemComponentDeleteOne {
+	return c.DeleteOneID(iesc.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentEventSystemComponentClient) DeleteOneID(id uuid.UUID) *IncidentEventSystemComponentDeleteOne {
+	builder := c.Delete().Where(incidenteventsystemcomponent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentEventSystemComponentDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) Query() *IncidentEventSystemComponentQuery {
+	return &IncidentEventSystemComponentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentEventSystemComponent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentEventSystemComponent entity by its id.
+func (c *IncidentEventSystemComponentClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventSystemComponent, error) {
+	return c.Query().Where(incidenteventsystemcomponent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentEventSystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventSystemComponent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryEvent queries the event edge of a IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) QueryEvent(iesc *IncidentEventSystemComponent) *IncidentEventSystemComponentQuery {
+	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iesc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
+			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, incidenteventsystemcomponent.EventTable, incidenteventsystemcomponent.EventColumn),
+		)
+		fromV = sqlgraph.Neighbors(iesc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySystemComponent queries the system_component edge of a IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) QuerySystemComponent(iesc *IncidentEventSystemComponent) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iesc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.SystemComponentTable, incidenteventsystemcomponent.SystemComponentColumn),
+		)
+		fromV = sqlgraph.Neighbors(iesc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentEventSystemComponentClient) Hooks() []Hook {
+	return c.hooks.IncidentEventSystemComponent
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentEventSystemComponentClient) Interceptors() []Interceptor {
+	return c.inters.IncidentEventSystemComponent
+}
+
+func (c *IncidentEventSystemComponentClient) mutate(ctx context.Context, m *IncidentEventSystemComponentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentEventSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentEventSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentEventSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentEventSystemComponent mutation op: %q", m.Op())
 	}
 }
 
@@ -3785,6 +4032,171 @@ func (c *IncidentSeverityClient) mutate(ctx context.Context, m *IncidentSeverity
 		return (&IncidentSeverityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentSeverity mutation op: %q", m.Op())
+	}
+}
+
+// IncidentSystemComponentClient is a client for the IncidentSystemComponent schema.
+type IncidentSystemComponentClient struct {
+	config
+}
+
+// NewIncidentSystemComponentClient returns a client for the IncidentSystemComponent from the given config.
+func NewIncidentSystemComponentClient(c config) *IncidentSystemComponentClient {
+	return &IncidentSystemComponentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidentsystemcomponent.Hooks(f(g(h())))`.
+func (c *IncidentSystemComponentClient) Use(hooks ...Hook) {
+	c.hooks.IncidentSystemComponent = append(c.hooks.IncidentSystemComponent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidentsystemcomponent.Intercept(f(g(h())))`.
+func (c *IncidentSystemComponentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentSystemComponent = append(c.inters.IncidentSystemComponent, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentSystemComponent entity.
+func (c *IncidentSystemComponentClient) Create() *IncidentSystemComponentCreate {
+	mutation := newIncidentSystemComponentMutation(c.config, OpCreate)
+	return &IncidentSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentSystemComponent entities.
+func (c *IncidentSystemComponentClient) CreateBulk(builders ...*IncidentSystemComponentCreate) *IncidentSystemComponentCreateBulk {
+	return &IncidentSystemComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentSystemComponentClient) MapCreateBulk(slice any, setFunc func(*IncidentSystemComponentCreate, int)) *IncidentSystemComponentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentSystemComponentCreateBulk{err: fmt.Errorf("calling to IncidentSystemComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentSystemComponentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentSystemComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentSystemComponent.
+func (c *IncidentSystemComponentClient) Update() *IncidentSystemComponentUpdate {
+	mutation := newIncidentSystemComponentMutation(c.config, OpUpdate)
+	return &IncidentSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentSystemComponentClient) UpdateOne(isc *IncidentSystemComponent) *IncidentSystemComponentUpdateOne {
+	mutation := newIncidentSystemComponentMutation(c.config, OpUpdateOne, withIncidentSystemComponent(isc))
+	return &IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentSystemComponentClient) UpdateOneID(id uuid.UUID) *IncidentSystemComponentUpdateOne {
+	mutation := newIncidentSystemComponentMutation(c.config, OpUpdateOne, withIncidentSystemComponentID(id))
+	return &IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentSystemComponent.
+func (c *IncidentSystemComponentClient) Delete() *IncidentSystemComponentDelete {
+	mutation := newIncidentSystemComponentMutation(c.config, OpDelete)
+	return &IncidentSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentSystemComponentClient) DeleteOne(isc *IncidentSystemComponent) *IncidentSystemComponentDeleteOne {
+	return c.DeleteOneID(isc.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentSystemComponentClient) DeleteOneID(id uuid.UUID) *IncidentSystemComponentDeleteOne {
+	builder := c.Delete().Where(incidentsystemcomponent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentSystemComponentDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentSystemComponent.
+func (c *IncidentSystemComponentClient) Query() *IncidentSystemComponentQuery {
+	return &IncidentSystemComponentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentSystemComponent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentSystemComponent entity by its id.
+func (c *IncidentSystemComponentClient) Get(ctx context.Context, id uuid.UUID) (*IncidentSystemComponent, error) {
+	return c.Query().Where(incidentsystemcomponent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentSystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *IncidentSystemComponent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIncident queries the incident edge of a IncidentSystemComponent.
+func (c *IncidentSystemComponentClient) QueryIncident(isc *IncidentSystemComponent) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := isc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentsystemcomponent.IncidentTable, incidentsystemcomponent.IncidentColumn),
+		)
+		fromV = sqlgraph.Neighbors(isc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySystemComponent queries the system_component edge of a IncidentSystemComponent.
+func (c *IncidentSystemComponentClient) QuerySystemComponent(isc *IncidentSystemComponent) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := isc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentsystemcomponent.SystemComponentTable, incidentsystemcomponent.SystemComponentColumn),
+		)
+		fromV = sqlgraph.Neighbors(isc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentSystemComponentClient) Hooks() []Hook {
+	return c.hooks.IncidentSystemComponent
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentSystemComponentClient) Interceptors() []Interceptor {
+	return c.inters.IncidentSystemComponent
+}
+
+func (c *IncidentSystemComponentClient) mutate(ctx context.Context, m *IncidentSystemComponentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentSystemComponent mutation op: %q", m.Op())
 	}
 }
 
@@ -7465,6 +7877,38 @@ func (c *SystemComponentClient) QueryFeedbackTo(sc *SystemComponent) *SystemComp
 	return query
 }
 
+// QueryIncidents queries the incidents edge of a SystemComponent.
+func (c *SystemComponentClient) QueryIncidents(sc *SystemComponent) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.IncidentsTable, systemcomponent.IncidentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvents queries the events edge of a SystemComponent.
+func (c *SystemComponentClient) QueryEvents(sc *SystemComponent) *IncidentEventQuery {
+	query := (&IncidentEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.EventsTable, systemcomponent.EventsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryControlRelationships queries the control_relationships edge of a SystemComponent.
 func (c *SystemComponentClient) QueryControlRelationships(sc *SystemComponent) *SystemComponentControlRelationshipQuery {
 	query := (&SystemComponentControlRelationshipClient{config: c.config}).Query()
@@ -7490,6 +7934,38 @@ func (c *SystemComponentClient) QueryFeedbackRelationships(sc *SystemComponent) 
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
 			sqlgraph.To(systemcomponentfeedbackrelationship.Table, systemcomponentfeedbackrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.FeedbackRelationshipsTable, systemcomponent.FeedbackRelationshipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncidentSystemComponents queries the incident_system_components edge of a SystemComponent.
+func (c *SystemComponentClient) QueryIncidentSystemComponents(sc *SystemComponent) *IncidentSystemComponentQuery {
+	query := (&IncidentSystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.IncidentSystemComponentsTable, systemcomponent.IncidentSystemComponentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEventComponents queries the event_components edge of a SystemComponent.
+func (c *SystemComponentClient) QueryEventComponents(sc *SystemComponent) *IncidentEventSystemComponentQuery {
+	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.EventComponentsTable, systemcomponent.EventComponentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -8545,13 +9021,14 @@ type (
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
-		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
-		IncidentTeamAssignment, IncidentType, MeetingSchedule, MeetingSession,
-		OncallAlert, OncallAlertInstance, OncallHandoverTemplate, OncallRoster,
-		OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentSystemComponent, IncidentTag, IncidentTeamAssignment, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAlert, OncallAlertInstance,
+		OncallHandoverTemplate, OncallRoster, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftAnnotation,
+		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
+		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemComponent,
 		SystemComponentControlRelationship, SystemComponentFeedbackRelationship, Task,
 		Team, User []ent.Hook
@@ -8560,13 +9037,14 @@ type (
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
-		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
-		IncidentTeamAssignment, IncidentType, MeetingSchedule, MeetingSession,
-		OncallAlert, OncallAlertInstance, OncallHandoverTemplate, OncallRoster,
-		OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentSystemComponent, IncidentTag, IncidentTeamAssignment, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAlert, OncallAlertInstance,
+		OncallHandoverTemplate, OncallRoster, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftAnnotation,
+		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
+		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemComponent,
 		SystemComponentControlRelationship, SystemComponentFeedbackRelationship, Task,
 		Team, User []ent.Interceptor

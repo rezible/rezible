@@ -418,6 +418,52 @@ func HasFeedbackToWith(preds ...predicate.SystemComponent) predicate.SystemCompo
 	})
 }
 
+// HasIncidents applies the HasEdge predicate on the "incidents" edge.
+func HasIncidents() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
+func HasIncidentsWith(preds ...predicate.Incident) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newIncidentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEvents applies the HasEdge predicate on the "events" edge.
+func HasEvents() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, EventsTable, EventsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
+func HasEventsWith(preds ...predicate.IncidentEvent) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newEventsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasControlRelationships applies the HasEdge predicate on the "control_relationships" edge.
 func HasControlRelationships() predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
@@ -456,6 +502,52 @@ func HasFeedbackRelationships() predicate.SystemComponent {
 func HasFeedbackRelationshipsWith(preds ...predicate.SystemComponentFeedbackRelationship) predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
 		step := newFeedbackRelationshipsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIncidentSystemComponents applies the HasEdge predicate on the "incident_system_components" edge.
+func HasIncidentSystemComponents() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, IncidentSystemComponentsTable, IncidentSystemComponentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncidentSystemComponentsWith applies the HasEdge predicate on the "incident_system_components" edge with a given conditions (other predicates).
+func HasIncidentSystemComponentsWith(preds ...predicate.IncidentSystemComponent) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newIncidentSystemComponentsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasEventComponents applies the HasEdge predicate on the "event_components" edge.
+func HasEventComponents() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, EventComponentsTable, EventComponentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventComponentsWith applies the HasEdge predicate on the "event_components" edge with a given conditions (other predicates).
+func HasEventComponentsWith(preds ...predicate.IncidentEventSystemComponent) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newEventComponentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

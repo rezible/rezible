@@ -18,6 +18,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 // IncidentEventCreate is the builder for creating a IncidentEvent entity.
@@ -194,6 +196,36 @@ func (iec *IncidentEventCreate) AddEvidence(i ...*IncidentEventEvidence) *Incide
 		ids[j] = i[j].ID
 	}
 	return iec.AddEvidenceIDs(ids...)
+}
+
+// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
+func (iec *IncidentEventCreate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	iec.mutation.AddSystemComponentIDs(ids...)
+	return iec
+}
+
+// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
+func (iec *IncidentEventCreate) AddSystemComponents(s ...*SystemComponent) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iec.AddSystemComponentIDs(ids...)
+}
+
+// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
+func (iec *IncidentEventCreate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	iec.mutation.AddEventComponentIDs(ids...)
+	return iec
+}
+
+// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
+func (iec *IncidentEventCreate) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iec.AddEventComponentIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
@@ -418,6 +450,45 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iec.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentEventSystemComponentCreate{config: iec.config, mutation: newIncidentEventSystemComponentMutation(iec.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iec.mutation.EventComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -39,6 +39,9 @@ type IncidentEventContributingFactor func(*sql.Selector)
 // IncidentEventEvidence is the predicate function for incidenteventevidence builders.
 type IncidentEventEvidence func(*sql.Selector)
 
+// IncidentEventSystemComponent is the predicate function for incidenteventsystemcomponent builders.
+type IncidentEventSystemComponent func(*sql.Selector)
+
 // IncidentField is the predicate function for incidentfield builders.
 type IncidentField func(*sql.Selector)
 
@@ -59,6 +62,9 @@ type IncidentRoleAssignment func(*sql.Selector)
 
 // IncidentSeverity is the predicate function for incidentseverity builders.
 type IncidentSeverity func(*sql.Selector)
+
+// IncidentSystemComponent is the predicate function for incidentsystemcomponent builders.
+type IncidentSystemComponent func(*sql.Selector)
 
 // IncidentTag is the predicate function for incidenttag builders.
 type IncidentTag func(*sql.Selector)

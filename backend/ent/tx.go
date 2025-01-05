@@ -34,6 +34,8 @@ type Tx struct {
 	IncidentEventContributingFactor *IncidentEventContributingFactorClient
 	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
 	IncidentEventEvidence *IncidentEventEvidenceClient
+	// IncidentEventSystemComponent is the client for interacting with the IncidentEventSystemComponent builders.
+	IncidentEventSystemComponent *IncidentEventSystemComponentClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -48,6 +50,8 @@ type Tx struct {
 	IncidentRoleAssignment *IncidentRoleAssignmentClient
 	// IncidentSeverity is the client for interacting with the IncidentSeverity builders.
 	IncidentSeverity *IncidentSeverityClient
+	// IncidentSystemComponent is the client for interacting with the IncidentSystemComponent builders.
+	IncidentSystemComponent *IncidentSystemComponentClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
 	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
@@ -244,6 +248,7 @@ func (tx *Tx) init() {
 	tx.IncidentEventContext = NewIncidentEventContextClient(tx.config)
 	tx.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(tx.config)
 	tx.IncidentEventEvidence = NewIncidentEventEvidenceClient(tx.config)
+	tx.IncidentEventSystemComponent = NewIncidentEventSystemComponentClient(tx.config)
 	tx.IncidentField = NewIncidentFieldClient(tx.config)
 	tx.IncidentFieldOption = NewIncidentFieldOptionClient(tx.config)
 	tx.IncidentLink = NewIncidentLinkClient(tx.config)
@@ -251,6 +256,7 @@ func (tx *Tx) init() {
 	tx.IncidentRole = NewIncidentRoleClient(tx.config)
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
+	tx.IncidentSystemComponent = NewIncidentSystemComponentClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
 	tx.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)

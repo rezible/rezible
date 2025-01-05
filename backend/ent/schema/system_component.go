@@ -52,14 +52,14 @@ func (SystemComponent) Edges() []ent.Edge {
 			StorageKey(edge.Table("system_component_feedback_relationship"), edge.Columns("source_id", "target_id")).
 			Through("feedback_relationships", SystemComponentFeedbackRelationship.Type),
 		// Incident involvement
-		//edge.From("incidents", Incident.Type).
-		//	Ref("system_components").
-		//	Through("incident_system_components", IncidentSystemComponent.Type),
+		edge.From("incidents", Incident.Type).
+			Ref("system_components").
+			Through("incident_system_components", IncidentSystemComponent.Type),
 		// Hierarchical relationships
 		// Timeline events this component was involved in
-		//edge.From("events", IncidentEvent.Type).
-		//	Ref("system_components").
-		//	Through("event_components", IncidentEventSystemComponent.Type),
+		edge.From("events", IncidentEvent.Type).
+			Ref("system_components").
+			Through("event_components", IncidentEventSystemComponent.Type),
 	}
 }
 
@@ -118,34 +118,3 @@ func (SystemComponentFeedbackRelationship) Edges() []ent.Edge {
 			Unique().Required().Field("target_id"),
 	}
 }
-
-/*
-type IncidentSystemComponent struct {
-	ent.Schema
-}
-
-func (IncidentSystemComponent) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
-		field.UUID("incident_id", uuid.UUID{}),
-		field.UUID("system_component_id", uuid.UUID{}),
-		field.Enum("role").
-			Values(
-				"primary",      // Root cause
-				"contributing", // Contributing factor
-				"affected",     // Impacted by incident
-				"mitigating",   // Used in mitigation
-			),
-		field.Time("created_at").
-			Default(time.Now),
-	}
-}
-
-func (IncidentSystemComponent) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("incident", Incident.Type).Unique().Required().Field("incident_id"),
-		edge.To("system_component", SystemComponent.Type).Unique().Required().Field("system_component_id"),
-	}
-}
-*/

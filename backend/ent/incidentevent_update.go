@@ -17,7 +17,9 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 // IncidentEventUpdate is the builder for updating IncidentEvent entities.
@@ -239,6 +241,36 @@ func (ieu *IncidentEventUpdate) AddEvidence(i ...*IncidentEventEvidence) *Incide
 	return ieu.AddEvidenceIDs(ids...)
 }
 
+// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
+func (ieu *IncidentEventUpdate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	ieu.mutation.AddSystemComponentIDs(ids...)
+	return ieu
+}
+
+// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
+func (ieu *IncidentEventUpdate) AddSystemComponents(s ...*SystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ieu.AddSystemComponentIDs(ids...)
+}
+
+// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
+func (ieu *IncidentEventUpdate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	ieu.mutation.AddEventComponentIDs(ids...)
+	return ieu
+}
+
+// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
+func (ieu *IncidentEventUpdate) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ieu.AddEventComponentIDs(ids...)
+}
+
 // Mutation returns the IncidentEventMutation object of the builder.
 func (ieu *IncidentEventUpdate) Mutation() *IncidentEventMutation {
 	return ieu.mutation
@@ -296,6 +328,48 @@ func (ieu *IncidentEventUpdate) RemoveEvidence(i ...*IncidentEventEvidence) *Inc
 		ids[j] = i[j].ID
 	}
 	return ieu.RemoveEvidenceIDs(ids...)
+}
+
+// ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
+func (ieu *IncidentEventUpdate) ClearSystemComponents() *IncidentEventUpdate {
+	ieu.mutation.ClearSystemComponents()
+	return ieu
+}
+
+// RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
+func (ieu *IncidentEventUpdate) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	ieu.mutation.RemoveSystemComponentIDs(ids...)
+	return ieu
+}
+
+// RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
+func (ieu *IncidentEventUpdate) RemoveSystemComponents(s ...*SystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ieu.RemoveSystemComponentIDs(ids...)
+}
+
+// ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
+func (ieu *IncidentEventUpdate) ClearEventComponents() *IncidentEventUpdate {
+	ieu.mutation.ClearEventComponents()
+	return ieu
+}
+
+// RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
+func (ieu *IncidentEventUpdate) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	ieu.mutation.RemoveEventComponentIDs(ids...)
+	return ieu
+}
+
+// RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
+func (ieu *IncidentEventUpdate) RemoveEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ieu.RemoveEventComponentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -554,6 +628,117 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ieu.mutation.SystemComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieu.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !ieu.mutation.SystemComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieu.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ieu.mutation.EventComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieu.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !ieu.mutation.EventComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieu.mutation.EventComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(ieu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ieu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -781,6 +966,36 @@ func (ieuo *IncidentEventUpdateOne) AddEvidence(i ...*IncidentEventEvidence) *In
 	return ieuo.AddEvidenceIDs(ids...)
 }
 
+// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
+func (ieuo *IncidentEventUpdateOne) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	ieuo.mutation.AddSystemComponentIDs(ids...)
+	return ieuo
+}
+
+// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
+func (ieuo *IncidentEventUpdateOne) AddSystemComponents(s ...*SystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ieuo.AddSystemComponentIDs(ids...)
+}
+
+// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
+func (ieuo *IncidentEventUpdateOne) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	ieuo.mutation.AddEventComponentIDs(ids...)
+	return ieuo
+}
+
+// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
+func (ieuo *IncidentEventUpdateOne) AddEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ieuo.AddEventComponentIDs(ids...)
+}
+
 // Mutation returns the IncidentEventMutation object of the builder.
 func (ieuo *IncidentEventUpdateOne) Mutation() *IncidentEventMutation {
 	return ieuo.mutation
@@ -838,6 +1053,48 @@ func (ieuo *IncidentEventUpdateOne) RemoveEvidence(i ...*IncidentEventEvidence) 
 		ids[j] = i[j].ID
 	}
 	return ieuo.RemoveEvidenceIDs(ids...)
+}
+
+// ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
+func (ieuo *IncidentEventUpdateOne) ClearSystemComponents() *IncidentEventUpdateOne {
+	ieuo.mutation.ClearSystemComponents()
+	return ieuo
+}
+
+// RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
+func (ieuo *IncidentEventUpdateOne) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	ieuo.mutation.RemoveSystemComponentIDs(ids...)
+	return ieuo
+}
+
+// RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
+func (ieuo *IncidentEventUpdateOne) RemoveSystemComponents(s ...*SystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ieuo.RemoveSystemComponentIDs(ids...)
+}
+
+// ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
+func (ieuo *IncidentEventUpdateOne) ClearEventComponents() *IncidentEventUpdateOne {
+	ieuo.mutation.ClearEventComponents()
+	return ieuo
+}
+
+// RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
+func (ieuo *IncidentEventUpdateOne) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	ieuo.mutation.RemoveEventComponentIDs(ids...)
+	return ieuo
+}
+
+// RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
+func (ieuo *IncidentEventUpdateOne) RemoveEventComponents(i ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ieuo.RemoveEventComponentIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentEventUpdate builder.
@@ -1119,6 +1376,117 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ieuo.mutation.SystemComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieuo.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !ieuo.mutation.SystemComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieuo.mutation.SystemComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incidentevent.SystemComponentsTable,
+			Columns: incidentevent.SystemComponentsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ieuo.mutation.EventComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieuo.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !ieuo.mutation.EventComponentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ieuo.mutation.EventComponentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incidentevent.EventComponentsTable,
+			Columns: []string{incidentevent.EventComponentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

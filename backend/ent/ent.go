@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -30,6 +31,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -128,6 +130,7 @@ func checkColumn(table, column string) error {
 			incidenteventcontext.Table:                incidenteventcontext.ValidColumn,
 			incidenteventcontributingfactor.Table:     incidenteventcontributingfactor.ValidColumn,
 			incidenteventevidence.Table:               incidenteventevidence.ValidColumn,
+			incidenteventsystemcomponent.Table:        incidenteventsystemcomponent.ValidColumn,
 			incidentfield.Table:                       incidentfield.ValidColumn,
 			incidentfieldoption.Table:                 incidentfieldoption.ValidColumn,
 			incidentlink.Table:                        incidentlink.ValidColumn,
@@ -135,6 +138,7 @@ func checkColumn(table, column string) error {
 			incidentrole.Table:                        incidentrole.ValidColumn,
 			incidentroleassignment.Table:              incidentroleassignment.ValidColumn,
 			incidentseverity.Table:                    incidentseverity.ValidColumn,
+			incidentsystemcomponent.Table:             incidentsystemcomponent.ValidColumn,
 			incidenttag.Table:                         incidenttag.ValidColumn,
 			incidentteamassignment.Table:              incidentteamassignment.ValidColumn,
 			incidenttype.Table:                        incidenttype.ValidColumn,

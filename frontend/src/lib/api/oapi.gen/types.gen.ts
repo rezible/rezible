@@ -106,28 +106,6 @@ export type CreateIncidentDebriefQuestionResponseBody = {
     data: IncidentDebriefQuestion;
 };
 
-export type CreateIncidentEventAttributes = {
-    start_time: Date;
-    title: string;
-    type: string;
-};
-
-export type CreateIncidentEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateIncidentEventAttributes;
-};
-
-export type CreateIncidentEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentEvent;
-};
-
 export type CreateIncidentFieldAttributes = {
     incident_type?: string;
     name: string;
@@ -161,6 +139,28 @@ export type CreateIncidentFieldResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentField;
+};
+
+export type CreateIncidentMilestoneAttributes = {
+    timestamp: Date;
+    title: string;
+    type: string;
+};
+
+export type CreateIncidentMilestoneRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateIncidentMilestoneAttributes;
+};
+
+export type CreateIncidentMilestoneResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentMilestone;
 };
 
 export type CreateIncidentRequestBody = {
@@ -474,28 +474,6 @@ export type CreateServiceResponseBody = {
      */
     readonly $schema?: string;
     data: Service;
-};
-
-export type CreateSubscriptionAttributes = {
-    incident_id?: string;
-    team_id?: string;
-    user_id?: string;
-};
-
-export type CreateSubscriptionRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSubscriptionAttributes;
-};
-
-export type CreateSubscriptionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Subscription;
 };
 
 export type CreateTaskAttributes = {
@@ -813,14 +791,6 @@ export type GetServiceResponseBody = {
     data: Service;
 };
 
-export type GetSubscriptionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Subscription;
-};
-
 export type GetTaskResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -869,18 +839,14 @@ export type Incident = {
 export type IncidentAttributes = {
     chat_channel: IncidentChatChannel;
     closed_at: Date;
+    current_status: 'started' | 'mitigated' | 'resolved' | 'closed';
     environments: Array<Environment>;
-    fields: Array<IncidentField>;
-    impacted_functionality: Array<IncidentResourceImpactFunctionality>;
-    impacted_services: Array<IncidentResourceImpactService>;
     linked_incidents: Array<IncidentLink>;
     opened_at: Date;
     private: boolean;
-    responder_impact: Array<IncidentResponderImpact>;
     roles: Array<IncidentRoleAssignment>;
     severity: IncidentSeverity;
     slug: string;
-    status: 'started' | 'detected' | 'alerted' | 'responding' | 'mitigated' | 'retrospective' | 'closed';
     summary: string;
     tags: Array<IncidentTag>;
     tasks: Array<Task>;
@@ -890,15 +856,12 @@ export type IncidentAttributes = {
     type: IncidentType;
 };
 
-export type status = 'started' | 'detected' | 'alerted' | 'responding' | 'mitigated' | 'retrospective' | 'closed';
+export type current_status = 'started' | 'mitigated' | 'resolved' | 'closed';
 
-export const status = {
+export const current_status = {
     STARTED: 'started',
-    DETECTED: 'detected',
-    ALERTED: 'alerted',
-    RESPONDING: 'responding',
     MITIGATED: 'mitigated',
-    RETROSPECTIVE: 'retrospective',
+    RESOLVED: 'resolved',
     CLOSED: 'closed'
 } as const;
 
@@ -966,25 +929,6 @@ export type IncidentDebriefSuggestionAttributes = {
     ignored: boolean;
 };
 
-export type IncidentEvent = {
-    attributes: IncidentEventAttributes;
-    id: string;
-};
-
-export type IncidentEventAttributes = {
-    incident_id?: string;
-    start_time: Date;
-    title: string;
-    type: 'default' | 'incident';
-};
-
-export type type2 = 'default' | 'incident';
-
-export const type2 = {
-    DEFAULT: 'default',
-    INCIDENT: 'incident'
-} as const;
-
 export type IncidentField = {
     attributes: IncidentFieldAttributes;
     id: string;
@@ -1033,28 +977,23 @@ export const link_type = {
     CHILD: 'child'
 } as const;
 
-export type IncidentResourceImpactFunctionality = {
+export type IncidentMilestone = {
+    attributes: IncidentMilestoneAttributes;
     id: string;
-    incident_id?: string;
-    magnitude: string;
-    resource: Functionality;
-    summary: string;
 };
 
-export type IncidentResourceImpactService = {
-    id: string;
-    incident_id?: string;
-    magnitude: string;
-    resource: Service;
-    summary: string;
+export type IncidentMilestoneAttributes = {
+    timestamp: Date;
+    title: string;
+    type: 'default' | 'incident';
 };
 
-export type IncidentResponderImpact = {
-    business_minutes: number;
-    personal_minutes: number;
-    sleep_minutes: number;
-    timezone: string;
-};
+export type type2 = 'default' | 'incident';
+
+export const type2 = {
+    DEFAULT: 'default',
+    INCIDENT: 'incident'
+} as const;
 
 export type IncidentRole = {
     attributes: IncidentRoleAttributes;
@@ -1163,21 +1102,21 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
     data: Array<IncidentDebriefSuggestion>;
 };
 
-export type ListIncidentEventsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentEvent>;
-    pagination: ResponsePagination;
-};
-
 export type ListIncidentFieldsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: Array<IncidentField>;
+    pagination: ResponsePagination;
+};
+
+export type ListIncidentMilestonesResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentMilestone>;
     pagination: ResponsePagination;
 };
 
@@ -1349,15 +1288,6 @@ export type ListServicesResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Service>;
-    pagination: ResponsePagination;
-};
-
-export type ListSubscriptionsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Subscription>;
     pagination: ResponsePagination;
 };
 
@@ -1629,9 +1559,9 @@ export type RetrospectiveAttributes = {
     title: string;
 };
 
-export type status2 = 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
+export type status = 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
 
-export const status2 = {
+export const status = {
     OPEN: 'open',
     IN_REVIEW: 'in_review',
     MEETING_SCHEDULED: 'meeting_scheduled',
@@ -1721,15 +1651,6 @@ export type ServiceAttributes = {
     name: string;
 };
 
-export type Subscription = {
-    attributes: SubscriptionAttributes;
-    id: string;
-};
-
-export type SubscriptionAttributes = {
-    [key: string]: unknown;
-};
-
 export type Task = {
     attributes: TaskAttributes;
     id: string;
@@ -1793,9 +1714,7 @@ export type UpdateFunctionalityResponseBody = {
 
 export type UpdateIncidentAttributes = {
     environments?: Array<(string)>;
-    functionalities?: Array<(string)>;
     private?: boolean;
-    services?: Array<(string)>;
     severity_id?: string;
     summary?: string;
     title?: string;
@@ -1805,9 +1724,9 @@ export type UpdateIncidentDebriefAttributes = {
     status: 'started' | 'completed';
 };
 
-export type status3 = 'started' | 'completed';
+export type status2 = 'started' | 'completed';
 
-export const status3 = {
+export const status2 = {
     STARTED: 'started',
     COMPLETED: 'completed'
 } as const;
@@ -1848,28 +1767,6 @@ export type UpdateIncidentDebriefResponseBody = {
     data: IncidentDebrief;
 };
 
-export type UpdateIncidentEventAttributes = {
-    start_time: Date;
-    title: string;
-    type: string;
-};
-
-export type UpdateIncidentEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateIncidentEventAttributes;
-};
-
-export type UpdateIncidentEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentEvent;
-};
-
 export type UpdateIncidentFieldAttributes = {
     archived?: boolean;
     incident_type?: string;
@@ -1899,6 +1796,28 @@ export type UpdateIncidentFieldResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentField;
+};
+
+export type UpdateIncidentMilestoneAttributes = {
+    timestamp: Date;
+    title: string;
+    type: string;
+};
+
+export type UpdateIncidentMilestoneRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateIncidentMilestoneAttributes;
+};
+
+export type UpdateIncidentMilestoneResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentMilestone;
 };
 
 export type UpdateIncidentRequestBody = {
@@ -2183,26 +2102,6 @@ export type UpdateServiceResponseBody = {
      */
     readonly $schema?: string;
     data: Service;
-};
-
-export type UpdateSubscriptionAttributes = {
-    [key: string]: unknown;
-};
-
-export type UpdateSubscriptionRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSubscriptionAttributes;
-};
-
-export type UpdateSubscriptionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Subscription;
 };
 
 export type UpdateTaskAttributes = {
@@ -2540,27 +2439,6 @@ export type ListDebriefSuggestionsResponse = (ListIncidentDebriefSuggestionsResp
 
 export type ListDebriefSuggestionsError = (ErrorModel);
 
-export type ArchiveIncidentEventData = {
-    path: {
-        id: string;
-    };
-};
-
-export type ArchiveIncidentEventResponse = (void);
-
-export type ArchiveIncidentEventError = (ErrorModel);
-
-export type UpdateIncidentEventData = {
-    body: UpdateIncidentEventRequestBody;
-    path: {
-        id: string;
-    };
-};
-
-export type UpdateIncidentEventResponse = (UpdateIncidentEventResponseBody);
-
-export type UpdateIncidentEventError = (ErrorModel);
-
 export type ListIncidentFieldsData = {
     query?: {
         archived?: boolean;
@@ -2612,6 +2490,27 @@ export type UpdateIncidentFieldData = {
 export type UpdateIncidentFieldResponse = (UpdateIncidentFieldResponseBody);
 
 export type UpdateIncidentFieldError = (ErrorModel);
+
+export type ArchiveIncidentMilestoneData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ArchiveIncidentMilestoneResponse = (void);
+
+export type ArchiveIncidentMilestoneError = (ErrorModel);
+
+export type UpdateIncidentMilestoneData = {
+    body: UpdateIncidentMilestoneRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateIncidentMilestoneResponse = (UpdateIncidentMilestoneResponseBody);
+
+export type UpdateIncidentMilestoneError = (ErrorModel);
 
 export type ListIncidentRolesData = {
     query?: {
@@ -2884,26 +2783,26 @@ export type GetIncidentUserDebriefResponse = (GetIncidentUserDebriefResponseBody
 
 export type GetIncidentUserDebriefError = (ErrorModel);
 
-export type ListIncidentEventsData = {
+export type ListIncidentMilestonesData = {
     path: {
         id: string;
     };
 };
 
-export type ListIncidentEventsResponse = (ListIncidentEventsResponseBody);
+export type ListIncidentMilestonesResponse = (ListIncidentMilestonesResponseBody);
 
-export type ListIncidentEventsError = (ErrorModel);
+export type ListIncidentMilestonesError = (ErrorModel);
 
-export type CreateIncidentEventData = {
-    body: CreateIncidentEventRequestBody;
+export type CreateIncidentMilestoneData = {
+    body: CreateIncidentMilestoneRequestBody;
     path: {
         id: string;
     };
 };
 
-export type CreateIncidentEventResponse = (CreateIncidentEventResponseBody);
+export type CreateIncidentMilestoneResponse = (CreateIncidentMilestoneResponseBody);
 
-export type CreateIncidentEventError = (ErrorModel);
+export type CreateIncidentMilestoneError = (ErrorModel);
 
 export type GetRetrospectiveForIncidentData = {
     path: {
@@ -3504,49 +3403,6 @@ export type UpdateServiceResponse = (UpdateServiceResponseBody);
 
 export type UpdateServiceError = (ErrorModel);
 
-export type ListSubscriptionsResponse = (ListSubscriptionsResponseBody);
-
-export type ListSubscriptionsError = (ErrorModel);
-
-export type CreateSubscriptionData = {
-    body: CreateSubscriptionRequestBody;
-};
-
-export type CreateSubscriptionResponse = (CreateSubscriptionResponseBody);
-
-export type CreateSubscriptionError = (ErrorModel);
-
-export type GetSubscriptionData = {
-    path: {
-        id: string;
-    };
-};
-
-export type GetSubscriptionResponse = (GetSubscriptionResponseBody);
-
-export type GetSubscriptionError = (ErrorModel);
-
-export type ArchiveSubscriptionData = {
-    path: {
-        id: string;
-    };
-};
-
-export type ArchiveSubscriptionResponse = (void);
-
-export type ArchiveSubscriptionError = (ErrorModel);
-
-export type UpdateSubscriptionData = {
-    body: UpdateSubscriptionRequestBody;
-    path: {
-        id: string;
-    };
-};
-
-export type UpdateSubscriptionResponse = (UpdateSubscriptionResponseBody);
-
-export type UpdateSubscriptionError = (ErrorModel);
-
 export type ListTasksData = {
     query?: {
         archived?: boolean;
@@ -3766,37 +3622,37 @@ export const AddIncidentDebriefUserMessageResponseTransformer: AddIncidentDebrie
     return data;
 };
 
-export type UpdateIncidentEventResponseTransformer = (data: any) => Promise<UpdateIncidentEventResponse>;
+export type UpdateIncidentMilestoneResponseTransformer = (data: any) => Promise<UpdateIncidentMilestoneResponse>;
 
-export type UpdateIncidentEventResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentEventResponseBody;
+export type UpdateIncidentMilestoneResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentMilestoneResponseBody;
 
-export type IncidentEventModelResponseTransformer = (data: any) => IncidentEvent;
+export type IncidentMilestoneModelResponseTransformer = (data: any) => IncidentMilestone;
 
-export type IncidentEventAttributesModelResponseTransformer = (data: any) => IncidentEventAttributes;
+export type IncidentMilestoneAttributesModelResponseTransformer = (data: any) => IncidentMilestoneAttributes;
 
-export const IncidentEventAttributesModelResponseTransformer: IncidentEventAttributesModelResponseTransformer = data => {
-    if (data?.start_time) {
-        data.start_time = new Date(data.start_time);
+export const IncidentMilestoneAttributesModelResponseTransformer: IncidentMilestoneAttributesModelResponseTransformer = data => {
+    if (data?.timestamp) {
+        data.timestamp = new Date(data.timestamp);
     }
     return data;
 };
 
-export const IncidentEventModelResponseTransformer: IncidentEventModelResponseTransformer = data => {
+export const IncidentMilestoneModelResponseTransformer: IncidentMilestoneModelResponseTransformer = data => {
     if (data?.attributes) {
-        IncidentEventAttributesModelResponseTransformer(data.attributes);
+        IncidentMilestoneAttributesModelResponseTransformer(data.attributes);
     }
     return data;
 };
 
-export const UpdateIncidentEventResponseBodyModelResponseTransformer: UpdateIncidentEventResponseBodyModelResponseTransformer = data => {
+export const UpdateIncidentMilestoneResponseBodyModelResponseTransformer: UpdateIncidentMilestoneResponseBodyModelResponseTransformer = data => {
     if (data?.data) {
-        IncidentEventModelResponseTransformer(data.data);
+        IncidentMilestoneModelResponseTransformer(data.data);
     }
     return data;
 };
 
-export const UpdateIncidentEventResponseTransformer: UpdateIncidentEventResponseTransformer = async (data) => {
-    UpdateIncidentEventResponseBodyModelResponseTransformer(data);
+export const UpdateIncidentMilestoneResponseTransformer: UpdateIncidentMilestoneResponseTransformer = async (data) => {
+    UpdateIncidentMilestoneResponseBodyModelResponseTransformer(data);
     return data;
 };
 
@@ -3915,35 +3771,35 @@ export const UpdateIncidentResponseTransformer: UpdateIncidentResponseTransforme
     return data;
 };
 
-export type ListIncidentEventsResponseTransformer = (data: any) => Promise<ListIncidentEventsResponse>;
+export type ListIncidentMilestonesResponseTransformer = (data: any) => Promise<ListIncidentMilestonesResponse>;
 
-export type ListIncidentEventsResponseBodyModelResponseTransformer = (data: any) => ListIncidentEventsResponseBody;
+export type ListIncidentMilestonesResponseBodyModelResponseTransformer = (data: any) => ListIncidentMilestonesResponseBody;
 
-export const ListIncidentEventsResponseBodyModelResponseTransformer: ListIncidentEventsResponseBodyModelResponseTransformer = data => {
+export const ListIncidentMilestonesResponseBodyModelResponseTransformer: ListIncidentMilestonesResponseBodyModelResponseTransformer = data => {
     if (Array.isArray(data?.data)) {
-        data.data.forEach(IncidentEventModelResponseTransformer);
+        data.data.forEach(IncidentMilestoneModelResponseTransformer);
     }
     return data;
 };
 
-export const ListIncidentEventsResponseTransformer: ListIncidentEventsResponseTransformer = async (data) => {
-    ListIncidentEventsResponseBodyModelResponseTransformer(data);
+export const ListIncidentMilestonesResponseTransformer: ListIncidentMilestonesResponseTransformer = async (data) => {
+    ListIncidentMilestonesResponseBodyModelResponseTransformer(data);
     return data;
 };
 
-export type CreateIncidentEventResponseTransformer = (data: any) => Promise<CreateIncidentEventResponse>;
+export type CreateIncidentMilestoneResponseTransformer = (data: any) => Promise<CreateIncidentMilestoneResponse>;
 
-export type CreateIncidentEventResponseBodyModelResponseTransformer = (data: any) => CreateIncidentEventResponseBody;
+export type CreateIncidentMilestoneResponseBodyModelResponseTransformer = (data: any) => CreateIncidentMilestoneResponseBody;
 
-export const CreateIncidentEventResponseBodyModelResponseTransformer: CreateIncidentEventResponseBodyModelResponseTransformer = data => {
+export const CreateIncidentMilestoneResponseBodyModelResponseTransformer: CreateIncidentMilestoneResponseBodyModelResponseTransformer = data => {
     if (data?.data) {
-        IncidentEventModelResponseTransformer(data.data);
+        IncidentMilestoneModelResponseTransformer(data.data);
     }
     return data;
 };
 
-export const CreateIncidentEventResponseTransformer: CreateIncidentEventResponseTransformer = async (data) => {
-    CreateIncidentEventResponseBodyModelResponseTransformer(data);
+export const CreateIncidentMilestoneResponseTransformer: CreateIncidentMilestoneResponseTransformer = async (data) => {
+    CreateIncidentMilestoneResponseBodyModelResponseTransformer(data);
     return data;
 };
 

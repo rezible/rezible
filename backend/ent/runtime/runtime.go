@@ -17,12 +17,14 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -177,6 +179,16 @@ func init() {
 	incidenteventevidenceDescID := incidenteventevidenceFields[0].Descriptor()
 	// incidenteventevidence.DefaultID holds the default value on creation for the id field.
 	incidenteventevidence.DefaultID = incidenteventevidenceDescID.Default.(func() uuid.UUID)
+	incidenteventsystemcomponentFields := schema.IncidentEventSystemComponent{}.Fields()
+	_ = incidenteventsystemcomponentFields
+	// incidenteventsystemcomponentDescCreatedAt is the schema descriptor for created_at field.
+	incidenteventsystemcomponentDescCreatedAt := incidenteventsystemcomponentFields[4].Descriptor()
+	// incidenteventsystemcomponent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidenteventsystemcomponent.DefaultCreatedAt = incidenteventsystemcomponentDescCreatedAt.Default.(func() time.Time)
+	// incidenteventsystemcomponentDescID is the schema descriptor for id field.
+	incidenteventsystemcomponentDescID := incidenteventsystemcomponentFields[0].Descriptor()
+	// incidenteventsystemcomponent.DefaultID holds the default value on creation for the id field.
+	incidenteventsystemcomponent.DefaultID = incidenteventsystemcomponentDescID.Default.(func() uuid.UUID)
 	incidentfieldMixin := schema.IncidentField{}.Mixin()
 	incidentfieldMixinHooks0 := incidentfieldMixin[0].Hooks()
 	incidentfield.Hooks[0] = incidentfieldMixinHooks0[0]
@@ -237,6 +249,16 @@ func init() {
 	incidentseverityDescID := incidentseverityFields[0].Descriptor()
 	// incidentseverity.DefaultID holds the default value on creation for the id field.
 	incidentseverity.DefaultID = incidentseverityDescID.Default.(func() uuid.UUID)
+	incidentsystemcomponentFields := schema.IncidentSystemComponent{}.Fields()
+	_ = incidentsystemcomponentFields
+	// incidentsystemcomponentDescCreatedAt is the schema descriptor for created_at field.
+	incidentsystemcomponentDescCreatedAt := incidentsystemcomponentFields[4].Descriptor()
+	// incidentsystemcomponent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidentsystemcomponent.DefaultCreatedAt = incidentsystemcomponentDescCreatedAt.Default.(func() time.Time)
+	// incidentsystemcomponentDescID is the schema descriptor for id field.
+	incidentsystemcomponentDescID := incidentsystemcomponentFields[0].Descriptor()
+	// incidentsystemcomponent.DefaultID holds the default value on creation for the id field.
+	incidentsystemcomponent.DefaultID = incidentsystemcomponentDescID.Default.(func() uuid.UUID)
 	incidenttagMixin := schema.IncidentTag{}.Mixin()
 	incidenttagMixinHooks0 := incidenttagMixin[0].Hooks()
 	incidenttag.Hooks[0] = incidenttagMixinHooks0[0]

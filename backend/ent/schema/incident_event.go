@@ -60,12 +60,11 @@ func (IncidentEvent) Edges() []ent.Edge {
 			Unique(),
 		edge.To("factors", IncidentEventContributingFactor.Type),
 		edge.To("evidence", IncidentEventEvidence.Type),
-		//edge.To("system_components", SystemComponent.Type).
-		//	Through("event_components", IncidentEventSystemComponent.Type),
+		edge.To("system_components", SystemComponent.Type).
+			Through("event_components", IncidentEventSystemComponent.Type),
 	}
 }
 
-/*
 type IncidentEventSystemComponent struct {
 	ent.Schema
 }
@@ -89,4 +88,3 @@ func (IncidentEventSystemComponent) Edges() []ent.Edge {
 		edge.To("system_component", SystemComponent.Type).Unique().Required().Field("system_component_id"),
 	}
 }
-*/

@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -30,6 +31,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -80,6 +82,7 @@ const (
 	TypeIncidentEventContext                = "IncidentEventContext"
 	TypeIncidentEventContributingFactor     = "IncidentEventContributingFactor"
 	TypeIncidentEventEvidence               = "IncidentEventEvidence"
+	TypeIncidentEventSystemComponent        = "IncidentEventSystemComponent"
 	TypeIncidentField                       = "IncidentField"
 	TypeIncidentFieldOption                 = "IncidentFieldOption"
 	TypeIncidentLink                        = "IncidentLink"
@@ -87,6 +90,7 @@ const (
 	TypeIncidentRole                        = "IncidentRole"
 	TypeIncidentRoleAssignment              = "IncidentRoleAssignment"
 	TypeIncidentSeverity                    = "IncidentSeverity"
+	TypeIncidentSystemComponent             = "IncidentSystemComponent"
 	TypeIncidentTag                         = "IncidentTag"
 	TypeIncidentTeamAssignment              = "IncidentTeamAssignment"
 	TypeIncidentType                        = "IncidentType"
@@ -952,64 +956,70 @@ func (m *FunctionalityMutation) ResetEdge(name string) error {
 // IncidentMutation represents an operation that mutates the Incident nodes in the graph.
 type IncidentMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	slug                    *string
-	title                   *string
-	private                 *bool
-	summary                 *string
-	opened_at               *time.Time
-	modified_at             *time.Time
-	closed_at               *time.Time
-	provider_id             *string
-	chat_channel_id         *string
-	clearedFields           map[string]struct{}
-	environments            map[uuid.UUID]struct{}
-	removedenvironments     map[uuid.UUID]struct{}
-	clearedenvironments     bool
-	severity                *uuid.UUID
-	clearedseverity         bool
-	_type                   *uuid.UUID
-	cleared_type            bool
-	team_assignments        map[int]struct{}
-	removedteam_assignments map[int]struct{}
-	clearedteam_assignments bool
-	role_assignments        map[uuid.UUID]struct{}
-	removedrole_assignments map[uuid.UUID]struct{}
-	clearedrole_assignments bool
-	linked_incidents        map[uuid.UUID]struct{}
-	removedlinked_incidents map[uuid.UUID]struct{}
-	clearedlinked_incidents bool
-	retrospective           *uuid.UUID
-	clearedretrospective    bool
-	milestones              map[uuid.UUID]struct{}
-	removedmilestones       map[uuid.UUID]struct{}
-	clearedmilestones       bool
-	events                  map[uuid.UUID]struct{}
-	removedevents           map[uuid.UUID]struct{}
-	clearedevents           bool
-	field_selections        map[uuid.UUID]struct{}
-	removedfield_selections map[uuid.UUID]struct{}
-	clearedfield_selections bool
-	tasks                   map[uuid.UUID]struct{}
-	removedtasks            map[uuid.UUID]struct{}
-	clearedtasks            bool
-	tag_assignments         map[uuid.UUID]struct{}
-	removedtag_assignments  map[uuid.UUID]struct{}
-	clearedtag_assignments  bool
-	debriefs                map[uuid.UUID]struct{}
-	removeddebriefs         map[uuid.UUID]struct{}
-	cleareddebriefs         bool
-	review_sessions         map[uuid.UUID]struct{}
-	removedreview_sessions  map[uuid.UUID]struct{}
-	clearedreview_sessions  bool
-	incident_links          map[int]struct{}
-	removedincident_links   map[int]struct{}
-	clearedincident_links   bool
-	done                    bool
-	oldValue                func(context.Context) (*Incident, error)
-	predicates              []predicate.Incident
+	op                                Op
+	typ                               string
+	id                                *uuid.UUID
+	slug                              *string
+	title                             *string
+	private                           *bool
+	summary                           *string
+	opened_at                         *time.Time
+	modified_at                       *time.Time
+	closed_at                         *time.Time
+	provider_id                       *string
+	chat_channel_id                   *string
+	clearedFields                     map[string]struct{}
+	environments                      map[uuid.UUID]struct{}
+	removedenvironments               map[uuid.UUID]struct{}
+	clearedenvironments               bool
+	severity                          *uuid.UUID
+	clearedseverity                   bool
+	_type                             *uuid.UUID
+	cleared_type                      bool
+	team_assignments                  map[int]struct{}
+	removedteam_assignments           map[int]struct{}
+	clearedteam_assignments           bool
+	role_assignments                  map[uuid.UUID]struct{}
+	removedrole_assignments           map[uuid.UUID]struct{}
+	clearedrole_assignments           bool
+	system_components                 map[uuid.UUID]struct{}
+	removedsystem_components          map[uuid.UUID]struct{}
+	clearedsystem_components          bool
+	linked_incidents                  map[uuid.UUID]struct{}
+	removedlinked_incidents           map[uuid.UUID]struct{}
+	clearedlinked_incidents           bool
+	retrospective                     *uuid.UUID
+	clearedretrospective              bool
+	milestones                        map[uuid.UUID]struct{}
+	removedmilestones                 map[uuid.UUID]struct{}
+	clearedmilestones                 bool
+	events                            map[uuid.UUID]struct{}
+	removedevents                     map[uuid.UUID]struct{}
+	clearedevents                     bool
+	field_selections                  map[uuid.UUID]struct{}
+	removedfield_selections           map[uuid.UUID]struct{}
+	clearedfield_selections           bool
+	tasks                             map[uuid.UUID]struct{}
+	removedtasks                      map[uuid.UUID]struct{}
+	clearedtasks                      bool
+	tag_assignments                   map[uuid.UUID]struct{}
+	removedtag_assignments            map[uuid.UUID]struct{}
+	clearedtag_assignments            bool
+	debriefs                          map[uuid.UUID]struct{}
+	removeddebriefs                   map[uuid.UUID]struct{}
+	cleareddebriefs                   bool
+	review_sessions                   map[uuid.UUID]struct{}
+	removedreview_sessions            map[uuid.UUID]struct{}
+	clearedreview_sessions            bool
+	incident_system_components        map[uuid.UUID]struct{}
+	removedincident_system_components map[uuid.UUID]struct{}
+	clearedincident_system_components bool
+	incident_links                    map[int]struct{}
+	removedincident_links             map[int]struct{}
+	clearedincident_links             bool
+	done                              bool
+	oldValue                          func(context.Context) (*Incident, error)
+	predicates                        []predicate.Incident
 }
 
 var _ ent.Mutation = (*IncidentMutation)(nil)
@@ -1767,6 +1777,60 @@ func (m *IncidentMutation) ResetRoleAssignments() {
 	m.removedrole_assignments = nil
 }
 
+// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by ids.
+func (m *IncidentMutation) AddSystemComponentIDs(ids ...uuid.UUID) {
+	if m.system_components == nil {
+		m.system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.system_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSystemComponents clears the "system_components" edge to the SystemComponent entity.
+func (m *IncidentMutation) ClearSystemComponents() {
+	m.clearedsystem_components = true
+}
+
+// SystemComponentsCleared reports if the "system_components" edge to the SystemComponent entity was cleared.
+func (m *IncidentMutation) SystemComponentsCleared() bool {
+	return m.clearedsystem_components
+}
+
+// RemoveSystemComponentIDs removes the "system_components" edge to the SystemComponent entity by IDs.
+func (m *IncidentMutation) RemoveSystemComponentIDs(ids ...uuid.UUID) {
+	if m.removedsystem_components == nil {
+		m.removedsystem_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.system_components, ids[i])
+		m.removedsystem_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSystemComponents returns the removed IDs of the "system_components" edge to the SystemComponent entity.
+func (m *IncidentMutation) RemovedSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SystemComponentsIDs returns the "system_components" edge IDs in the mutation.
+func (m *IncidentMutation) SystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSystemComponents resets all changes to the "system_components" edge.
+func (m *IncidentMutation) ResetSystemComponents() {
+	m.system_components = nil
+	m.clearedsystem_components = false
+	m.removedsystem_components = nil
+}
+
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by ids.
 func (m *IncidentMutation) AddLinkedIncidentIDs(ids ...uuid.UUID) {
 	if m.linked_incidents == nil {
@@ -2238,6 +2302,60 @@ func (m *IncidentMutation) ResetReviewSessions() {
 	m.removedreview_sessions = nil
 }
 
+// AddIncidentSystemComponentIDs adds the "incident_system_components" edge to the IncidentSystemComponent entity by ids.
+func (m *IncidentMutation) AddIncidentSystemComponentIDs(ids ...uuid.UUID) {
+	if m.incident_system_components == nil {
+		m.incident_system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incident_system_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncidentSystemComponents clears the "incident_system_components" edge to the IncidentSystemComponent entity.
+func (m *IncidentMutation) ClearIncidentSystemComponents() {
+	m.clearedincident_system_components = true
+}
+
+// IncidentSystemComponentsCleared reports if the "incident_system_components" edge to the IncidentSystemComponent entity was cleared.
+func (m *IncidentMutation) IncidentSystemComponentsCleared() bool {
+	return m.clearedincident_system_components
+}
+
+// RemoveIncidentSystemComponentIDs removes the "incident_system_components" edge to the IncidentSystemComponent entity by IDs.
+func (m *IncidentMutation) RemoveIncidentSystemComponentIDs(ids ...uuid.UUID) {
+	if m.removedincident_system_components == nil {
+		m.removedincident_system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incident_system_components, ids[i])
+		m.removedincident_system_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncidentSystemComponents returns the removed IDs of the "incident_system_components" edge to the IncidentSystemComponent entity.
+func (m *IncidentMutation) RemovedIncidentSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedincident_system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncidentSystemComponentsIDs returns the "incident_system_components" edge IDs in the mutation.
+func (m *IncidentMutation) IncidentSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.incident_system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncidentSystemComponents resets all changes to the "incident_system_components" edge.
+func (m *IncidentMutation) ResetIncidentSystemComponents() {
+	m.incident_system_components = nil
+	m.clearedincident_system_components = false
+	m.removedincident_system_components = nil
+}
+
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by ids.
 func (m *IncidentMutation) AddIncidentLinkIDs(ids ...int) {
 	if m.incident_links == nil {
@@ -2616,7 +2734,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.environments != nil {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -2631,6 +2749,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.role_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
+	}
+	if m.system_components != nil {
+		edges = append(edges, incident.EdgeSystemComponents)
 	}
 	if m.linked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -2658,6 +2779,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.review_sessions != nil {
 		edges = append(edges, incident.EdgeReviewSessions)
+	}
+	if m.incident_system_components != nil {
+		edges = append(edges, incident.EdgeIncidentSystemComponents)
 	}
 	if m.incident_links != nil {
 		edges = append(edges, incident.EdgeIncidentLinks)
@@ -2692,6 +2816,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 	case incident.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.role_assignments))
 		for id := range m.role_assignments {
+			ids = append(ids, id)
+		}
+		return ids
+	case incident.EdgeSystemComponents:
+		ids := make([]ent.Value, 0, len(m.system_components))
+		for id := range m.system_components {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2747,6 +2877,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeIncidentSystemComponents:
+		ids := make([]ent.Value, 0, len(m.incident_system_components))
+		for id := range m.incident_system_components {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeIncidentLinks:
 		ids := make([]ent.Value, 0, len(m.incident_links))
 		for id := range m.incident_links {
@@ -2759,7 +2895,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.removedenvironments != nil {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -2768,6 +2904,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedrole_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
+	}
+	if m.removedsystem_components != nil {
+		edges = append(edges, incident.EdgeSystemComponents)
 	}
 	if m.removedlinked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -2792,6 +2931,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedreview_sessions != nil {
 		edges = append(edges, incident.EdgeReviewSessions)
+	}
+	if m.removedincident_system_components != nil {
+		edges = append(edges, incident.EdgeIncidentSystemComponents)
 	}
 	if m.removedincident_links != nil {
 		edges = append(edges, incident.EdgeIncidentLinks)
@@ -2818,6 +2960,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 	case incident.EdgeRoleAssignments:
 		ids := make([]ent.Value, 0, len(m.removedrole_assignments))
 		for id := range m.removedrole_assignments {
+			ids = append(ids, id)
+		}
+		return ids
+	case incident.EdgeSystemComponents:
+		ids := make([]ent.Value, 0, len(m.removedsystem_components))
+		for id := range m.removedsystem_components {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2869,6 +3017,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeIncidentSystemComponents:
+		ids := make([]ent.Value, 0, len(m.removedincident_system_components))
+		for id := range m.removedincident_system_components {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeIncidentLinks:
 		ids := make([]ent.Value, 0, len(m.removedincident_links))
 		for id := range m.removedincident_links {
@@ -2881,7 +3035,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 15)
+	edges := make([]string, 0, 17)
 	if m.clearedenvironments {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -2896,6 +3050,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.clearedrole_assignments {
 		edges = append(edges, incident.EdgeRoleAssignments)
+	}
+	if m.clearedsystem_components {
+		edges = append(edges, incident.EdgeSystemComponents)
 	}
 	if m.clearedlinked_incidents {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -2924,6 +3081,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedreview_sessions {
 		edges = append(edges, incident.EdgeReviewSessions)
 	}
+	if m.clearedincident_system_components {
+		edges = append(edges, incident.EdgeIncidentSystemComponents)
+	}
 	if m.clearedincident_links {
 		edges = append(edges, incident.EdgeIncidentLinks)
 	}
@@ -2944,6 +3104,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedteam_assignments
 	case incident.EdgeRoleAssignments:
 		return m.clearedrole_assignments
+	case incident.EdgeSystemComponents:
+		return m.clearedsystem_components
 	case incident.EdgeLinkedIncidents:
 		return m.clearedlinked_incidents
 	case incident.EdgeRetrospective:
@@ -2962,6 +3124,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.cleareddebriefs
 	case incident.EdgeReviewSessions:
 		return m.clearedreview_sessions
+	case incident.EdgeIncidentSystemComponents:
+		return m.clearedincident_system_components
 	case incident.EdgeIncidentLinks:
 		return m.clearedincident_links
 	}
@@ -3004,6 +3168,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeRoleAssignments:
 		m.ResetRoleAssignments()
 		return nil
+	case incident.EdgeSystemComponents:
+		m.ResetSystemComponents()
+		return nil
 	case incident.EdgeLinkedIncidents:
 		m.ResetLinkedIncidents()
 		return nil
@@ -3030,6 +3197,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeReviewSessions:
 		m.ResetReviewSessions()
+		return nil
+	case incident.EdgeIncidentSystemComponents:
+		m.ResetIncidentSystemComponents()
 		return nil
 	case incident.EdgeIncidentLinks:
 		m.ResetIncidentLinks()
@@ -5798,33 +5968,39 @@ func (m *IncidentDebriefSuggestionMutation) ResetEdge(name string) error {
 // IncidentEventMutation represents an operation that mutates the IncidentEvent nodes in the graph.
 type IncidentEventMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	timestamp       *time.Time
-	_type           *incidentevent.Type
-	title           *string
-	description     *string
-	created_at      *time.Time
-	updated_at      *time.Time
-	created_by      *uuid.UUID
-	sequence        *int
-	addsequence     *int
-	is_draft        *bool
-	clearedFields   map[string]struct{}
-	incident        *uuid.UUID
-	clearedincident bool
-	context         *uuid.UUID
-	clearedcontext  bool
-	factors         map[uuid.UUID]struct{}
-	removedfactors  map[uuid.UUID]struct{}
-	clearedfactors  bool
-	evidence        map[uuid.UUID]struct{}
-	removedevidence map[uuid.UUID]struct{}
-	clearedevidence bool
-	done            bool
-	oldValue        func(context.Context) (*IncidentEvent, error)
-	predicates      []predicate.IncidentEvent
+	op                       Op
+	typ                      string
+	id                       *uuid.UUID
+	timestamp                *time.Time
+	_type                    *incidentevent.Type
+	title                    *string
+	description              *string
+	created_at               *time.Time
+	updated_at               *time.Time
+	created_by               *uuid.UUID
+	sequence                 *int
+	addsequence              *int
+	is_draft                 *bool
+	clearedFields            map[string]struct{}
+	incident                 *uuid.UUID
+	clearedincident          bool
+	context                  *uuid.UUID
+	clearedcontext           bool
+	factors                  map[uuid.UUID]struct{}
+	removedfactors           map[uuid.UUID]struct{}
+	clearedfactors           bool
+	evidence                 map[uuid.UUID]struct{}
+	removedevidence          map[uuid.UUID]struct{}
+	clearedevidence          bool
+	system_components        map[uuid.UUID]struct{}
+	removedsystem_components map[uuid.UUID]struct{}
+	clearedsystem_components bool
+	event_components         map[uuid.UUID]struct{}
+	removedevent_components  map[uuid.UUID]struct{}
+	clearedevent_components  bool
+	done                     bool
+	oldValue                 func(context.Context) (*IncidentEvent, error)
+	predicates               []predicate.IncidentEvent
 }
 
 var _ ent.Mutation = (*IncidentEventMutation)(nil)
@@ -6511,6 +6687,114 @@ func (m *IncidentEventMutation) ResetEvidence() {
 	m.removedevidence = nil
 }
 
+// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by ids.
+func (m *IncidentEventMutation) AddSystemComponentIDs(ids ...uuid.UUID) {
+	if m.system_components == nil {
+		m.system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.system_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSystemComponents clears the "system_components" edge to the SystemComponent entity.
+func (m *IncidentEventMutation) ClearSystemComponents() {
+	m.clearedsystem_components = true
+}
+
+// SystemComponentsCleared reports if the "system_components" edge to the SystemComponent entity was cleared.
+func (m *IncidentEventMutation) SystemComponentsCleared() bool {
+	return m.clearedsystem_components
+}
+
+// RemoveSystemComponentIDs removes the "system_components" edge to the SystemComponent entity by IDs.
+func (m *IncidentEventMutation) RemoveSystemComponentIDs(ids ...uuid.UUID) {
+	if m.removedsystem_components == nil {
+		m.removedsystem_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.system_components, ids[i])
+		m.removedsystem_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSystemComponents returns the removed IDs of the "system_components" edge to the SystemComponent entity.
+func (m *IncidentEventMutation) RemovedSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SystemComponentsIDs returns the "system_components" edge IDs in the mutation.
+func (m *IncidentEventMutation) SystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSystemComponents resets all changes to the "system_components" edge.
+func (m *IncidentEventMutation) ResetSystemComponents() {
+	m.system_components = nil
+	m.clearedsystem_components = false
+	m.removedsystem_components = nil
+}
+
+// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by ids.
+func (m *IncidentEventMutation) AddEventComponentIDs(ids ...uuid.UUID) {
+	if m.event_components == nil {
+		m.event_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.event_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEventComponents clears the "event_components" edge to the IncidentEventSystemComponent entity.
+func (m *IncidentEventMutation) ClearEventComponents() {
+	m.clearedevent_components = true
+}
+
+// EventComponentsCleared reports if the "event_components" edge to the IncidentEventSystemComponent entity was cleared.
+func (m *IncidentEventMutation) EventComponentsCleared() bool {
+	return m.clearedevent_components
+}
+
+// RemoveEventComponentIDs removes the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
+func (m *IncidentEventMutation) RemoveEventComponentIDs(ids ...uuid.UUID) {
+	if m.removedevent_components == nil {
+		m.removedevent_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.event_components, ids[i])
+		m.removedevent_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEventComponents returns the removed IDs of the "event_components" edge to the IncidentEventSystemComponent entity.
+func (m *IncidentEventMutation) RemovedEventComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedevent_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EventComponentsIDs returns the "event_components" edge IDs in the mutation.
+func (m *IncidentEventMutation) EventComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.event_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEventComponents resets all changes to the "event_components" edge.
+func (m *IncidentEventMutation) ResetEventComponents() {
+	m.event_components = nil
+	m.clearedevent_components = false
+	m.removedevent_components = nil
+}
+
 // Where appends a list predicates to the IncidentEventMutation builder.
 func (m *IncidentEventMutation) Where(ps ...predicate.IncidentEvent) {
 	m.predicates = append(m.predicates, ps...)
@@ -6827,7 +7111,7 @@ func (m *IncidentEventMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentEventMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.incident != nil {
 		edges = append(edges, incidentevent.EdgeIncident)
 	}
@@ -6839,6 +7123,12 @@ func (m *IncidentEventMutation) AddedEdges() []string {
 	}
 	if m.evidence != nil {
 		edges = append(edges, incidentevent.EdgeEvidence)
+	}
+	if m.system_components != nil {
+		edges = append(edges, incidentevent.EdgeSystemComponents)
+	}
+	if m.event_components != nil {
+		edges = append(edges, incidentevent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -6867,18 +7157,36 @@ func (m *IncidentEventMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incidentevent.EdgeSystemComponents:
+		ids := make([]ent.Value, 0, len(m.system_components))
+		for id := range m.system_components {
+			ids = append(ids, id)
+		}
+		return ids
+	case incidentevent.EdgeEventComponents:
+		ids := make([]ent.Value, 0, len(m.event_components))
+		for id := range m.event_components {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentEventMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.removedfactors != nil {
 		edges = append(edges, incidentevent.EdgeFactors)
 	}
 	if m.removedevidence != nil {
 		edges = append(edges, incidentevent.EdgeEvidence)
+	}
+	if m.removedsystem_components != nil {
+		edges = append(edges, incidentevent.EdgeSystemComponents)
+	}
+	if m.removedevent_components != nil {
+		edges = append(edges, incidentevent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -6899,13 +7207,25 @@ func (m *IncidentEventMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incidentevent.EdgeSystemComponents:
+		ids := make([]ent.Value, 0, len(m.removedsystem_components))
+		for id := range m.removedsystem_components {
+			ids = append(ids, id)
+		}
+		return ids
+	case incidentevent.EdgeEventComponents:
+		ids := make([]ent.Value, 0, len(m.removedevent_components))
+		for id := range m.removedevent_components {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentEventMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 6)
 	if m.clearedincident {
 		edges = append(edges, incidentevent.EdgeIncident)
 	}
@@ -6917,6 +7237,12 @@ func (m *IncidentEventMutation) ClearedEdges() []string {
 	}
 	if m.clearedevidence {
 		edges = append(edges, incidentevent.EdgeEvidence)
+	}
+	if m.clearedsystem_components {
+		edges = append(edges, incidentevent.EdgeSystemComponents)
+	}
+	if m.clearedevent_components {
+		edges = append(edges, incidentevent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -6933,6 +7259,10 @@ func (m *IncidentEventMutation) EdgeCleared(name string) bool {
 		return m.clearedfactors
 	case incidentevent.EdgeEvidence:
 		return m.clearedevidence
+	case incidentevent.EdgeSystemComponents:
+		return m.clearedsystem_components
+	case incidentevent.EdgeEventComponents:
+		return m.clearedevent_components
 	}
 	return false
 }
@@ -6966,6 +7296,12 @@ func (m *IncidentEventMutation) ResetEdge(name string) error {
 		return nil
 	case incidentevent.EdgeEvidence:
 		m.ResetEvidence()
+		return nil
+	case incidentevent.EdgeSystemComponents:
+		m.ResetSystemComponents()
+		return nil
+	case incidentevent.EdgeEventComponents:
+		m.ResetEventComponents()
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentEvent edge %s", name)
@@ -8863,6 +9199,613 @@ func (m *IncidentEventEvidenceMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentEventEvidence edge %s", name)
+}
+
+// IncidentEventSystemComponentMutation represents an operation that mutates the IncidentEventSystemComponent nodes in the graph.
+type IncidentEventSystemComponentMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	relationship            *incidenteventsystemcomponent.Relationship
+	created_at              *time.Time
+	clearedFields           map[string]struct{}
+	event                   *uuid.UUID
+	clearedevent            bool
+	system_component        *uuid.UUID
+	clearedsystem_component bool
+	done                    bool
+	oldValue                func(context.Context) (*IncidentEventSystemComponent, error)
+	predicates              []predicate.IncidentEventSystemComponent
+}
+
+var _ ent.Mutation = (*IncidentEventSystemComponentMutation)(nil)
+
+// incidenteventsystemcomponentOption allows management of the mutation configuration using functional options.
+type incidenteventsystemcomponentOption func(*IncidentEventSystemComponentMutation)
+
+// newIncidentEventSystemComponentMutation creates new mutation for the IncidentEventSystemComponent entity.
+func newIncidentEventSystemComponentMutation(c config, op Op, opts ...incidenteventsystemcomponentOption) *IncidentEventSystemComponentMutation {
+	m := &IncidentEventSystemComponentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIncidentEventSystemComponent,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIncidentEventSystemComponentID sets the ID field of the mutation.
+func withIncidentEventSystemComponentID(id uuid.UUID) incidenteventsystemcomponentOption {
+	return func(m *IncidentEventSystemComponentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IncidentEventSystemComponent
+		)
+		m.oldValue = func(ctx context.Context) (*IncidentEventSystemComponent, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IncidentEventSystemComponent.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIncidentEventSystemComponent sets the old IncidentEventSystemComponent of the mutation.
+func withIncidentEventSystemComponent(node *IncidentEventSystemComponent) incidenteventsystemcomponentOption {
+	return func(m *IncidentEventSystemComponentMutation) {
+		m.oldValue = func(context.Context) (*IncidentEventSystemComponent, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IncidentEventSystemComponentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IncidentEventSystemComponentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IncidentEventSystemComponent entities.
+func (m *IncidentEventSystemComponentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IncidentEventSystemComponentMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IncidentEventSystemComponentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IncidentEventSystemComponent.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetIncidentEventID sets the "incident_event_id" field.
+func (m *IncidentEventSystemComponentMutation) SetIncidentEventID(u uuid.UUID) {
+	m.event = &u
+}
+
+// IncidentEventID returns the value of the "incident_event_id" field in the mutation.
+func (m *IncidentEventSystemComponentMutation) IncidentEventID() (r uuid.UUID, exists bool) {
+	v := m.event
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentEventID returns the old "incident_event_id" field's value of the IncidentEventSystemComponent entity.
+// If the IncidentEventSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventSystemComponentMutation) OldIncidentEventID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentEventID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentEventID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentEventID: %w", err)
+	}
+	return oldValue.IncidentEventID, nil
+}
+
+// ResetIncidentEventID resets all changes to the "incident_event_id" field.
+func (m *IncidentEventSystemComponentMutation) ResetIncidentEventID() {
+	m.event = nil
+}
+
+// SetSystemComponentID sets the "system_component_id" field.
+func (m *IncidentEventSystemComponentMutation) SetSystemComponentID(u uuid.UUID) {
+	m.system_component = &u
+}
+
+// SystemComponentID returns the value of the "system_component_id" field in the mutation.
+func (m *IncidentEventSystemComponentMutation) SystemComponentID() (r uuid.UUID, exists bool) {
+	v := m.system_component
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemComponentID returns the old "system_component_id" field's value of the IncidentEventSystemComponent entity.
+// If the IncidentEventSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventSystemComponentMutation) OldSystemComponentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemComponentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemComponentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemComponentID: %w", err)
+	}
+	return oldValue.SystemComponentID, nil
+}
+
+// ResetSystemComponentID resets all changes to the "system_component_id" field.
+func (m *IncidentEventSystemComponentMutation) ResetSystemComponentID() {
+	m.system_component = nil
+}
+
+// SetRelationship sets the "relationship" field.
+func (m *IncidentEventSystemComponentMutation) SetRelationship(i incidenteventsystemcomponent.Relationship) {
+	m.relationship = &i
+}
+
+// Relationship returns the value of the "relationship" field in the mutation.
+func (m *IncidentEventSystemComponentMutation) Relationship() (r incidenteventsystemcomponent.Relationship, exists bool) {
+	v := m.relationship
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRelationship returns the old "relationship" field's value of the IncidentEventSystemComponent entity.
+// If the IncidentEventSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventSystemComponentMutation) OldRelationship(ctx context.Context) (v incidenteventsystemcomponent.Relationship, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRelationship is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRelationship requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRelationship: %w", err)
+	}
+	return oldValue.Relationship, nil
+}
+
+// ResetRelationship resets all changes to the "relationship" field.
+func (m *IncidentEventSystemComponentMutation) ResetRelationship() {
+	m.relationship = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *IncidentEventSystemComponentMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IncidentEventSystemComponentMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the IncidentEventSystemComponent entity.
+// If the IncidentEventSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventSystemComponentMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IncidentEventSystemComponentMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetEventID sets the "event" edge to the IncidentEventSystemComponent entity by id.
+func (m *IncidentEventSystemComponentMutation) SetEventID(id uuid.UUID) {
+	m.event = &id
+}
+
+// ClearEvent clears the "event" edge to the IncidentEventSystemComponent entity.
+func (m *IncidentEventSystemComponentMutation) ClearEvent() {
+	m.clearedevent = true
+	m.clearedFields[incidenteventsystemcomponent.FieldIncidentEventID] = struct{}{}
+}
+
+// EventCleared reports if the "event" edge to the IncidentEventSystemComponent entity was cleared.
+func (m *IncidentEventSystemComponentMutation) EventCleared() bool {
+	return m.clearedevent
+}
+
+// EventID returns the "event" edge ID in the mutation.
+func (m *IncidentEventSystemComponentMutation) EventID() (id uuid.UUID, exists bool) {
+	if m.event != nil {
+		return *m.event, true
+	}
+	return
+}
+
+// EventIDs returns the "event" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EventID instead. It exists only for internal usage by the builders.
+func (m *IncidentEventSystemComponentMutation) EventIDs() (ids []uuid.UUID) {
+	if id := m.event; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEvent resets all changes to the "event" edge.
+func (m *IncidentEventSystemComponentMutation) ResetEvent() {
+	m.event = nil
+	m.clearedevent = false
+}
+
+// ClearSystemComponent clears the "system_component" edge to the SystemComponent entity.
+func (m *IncidentEventSystemComponentMutation) ClearSystemComponent() {
+	m.clearedsystem_component = true
+	m.clearedFields[incidenteventsystemcomponent.FieldSystemComponentID] = struct{}{}
+}
+
+// SystemComponentCleared reports if the "system_component" edge to the SystemComponent entity was cleared.
+func (m *IncidentEventSystemComponentMutation) SystemComponentCleared() bool {
+	return m.clearedsystem_component
+}
+
+// SystemComponentIDs returns the "system_component" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SystemComponentID instead. It exists only for internal usage by the builders.
+func (m *IncidentEventSystemComponentMutation) SystemComponentIDs() (ids []uuid.UUID) {
+	if id := m.system_component; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSystemComponent resets all changes to the "system_component" edge.
+func (m *IncidentEventSystemComponentMutation) ResetSystemComponent() {
+	m.system_component = nil
+	m.clearedsystem_component = false
+}
+
+// Where appends a list predicates to the IncidentEventSystemComponentMutation builder.
+func (m *IncidentEventSystemComponentMutation) Where(ps ...predicate.IncidentEventSystemComponent) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IncidentEventSystemComponentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IncidentEventSystemComponentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IncidentEventSystemComponent, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IncidentEventSystemComponentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IncidentEventSystemComponentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IncidentEventSystemComponent).
+func (m *IncidentEventSystemComponentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IncidentEventSystemComponentMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.event != nil {
+		fields = append(fields, incidenteventsystemcomponent.FieldIncidentEventID)
+	}
+	if m.system_component != nil {
+		fields = append(fields, incidenteventsystemcomponent.FieldSystemComponentID)
+	}
+	if m.relationship != nil {
+		fields = append(fields, incidenteventsystemcomponent.FieldRelationship)
+	}
+	if m.created_at != nil {
+		fields = append(fields, incidenteventsystemcomponent.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IncidentEventSystemComponentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case incidenteventsystemcomponent.FieldIncidentEventID:
+		return m.IncidentEventID()
+	case incidenteventsystemcomponent.FieldSystemComponentID:
+		return m.SystemComponentID()
+	case incidenteventsystemcomponent.FieldRelationship:
+		return m.Relationship()
+	case incidenteventsystemcomponent.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IncidentEventSystemComponentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case incidenteventsystemcomponent.FieldIncidentEventID:
+		return m.OldIncidentEventID(ctx)
+	case incidenteventsystemcomponent.FieldSystemComponentID:
+		return m.OldSystemComponentID(ctx)
+	case incidenteventsystemcomponent.FieldRelationship:
+		return m.OldRelationship(ctx)
+	case incidenteventsystemcomponent.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown IncidentEventSystemComponent field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentEventSystemComponentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case incidenteventsystemcomponent.FieldIncidentEventID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentEventID(v)
+		return nil
+	case incidenteventsystemcomponent.FieldSystemComponentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemComponentID(v)
+		return nil
+	case incidenteventsystemcomponent.FieldRelationship:
+		v, ok := value.(incidenteventsystemcomponent.Relationship)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRelationship(v)
+		return nil
+	case incidenteventsystemcomponent.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentEventSystemComponent field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IncidentEventSystemComponentMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IncidentEventSystemComponentMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentEventSystemComponentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown IncidentEventSystemComponent numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IncidentEventSystemComponentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IncidentEventSystemComponentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IncidentEventSystemComponentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown IncidentEventSystemComponent nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IncidentEventSystemComponentMutation) ResetField(name string) error {
+	switch name {
+	case incidenteventsystemcomponent.FieldIncidentEventID:
+		m.ResetIncidentEventID()
+		return nil
+	case incidenteventsystemcomponent.FieldSystemComponentID:
+		m.ResetSystemComponentID()
+		return nil
+	case incidenteventsystemcomponent.FieldRelationship:
+		m.ResetRelationship()
+		return nil
+	case incidenteventsystemcomponent.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentEventSystemComponent field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IncidentEventSystemComponentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.event != nil {
+		edges = append(edges, incidenteventsystemcomponent.EdgeEvent)
+	}
+	if m.system_component != nil {
+		edges = append(edges, incidenteventsystemcomponent.EdgeSystemComponent)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IncidentEventSystemComponentMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case incidenteventsystemcomponent.EdgeEvent:
+		if id := m.event; id != nil {
+			return []ent.Value{*id}
+		}
+	case incidenteventsystemcomponent.EdgeSystemComponent:
+		if id := m.system_component; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IncidentEventSystemComponentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IncidentEventSystemComponentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IncidentEventSystemComponentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedevent {
+		edges = append(edges, incidenteventsystemcomponent.EdgeEvent)
+	}
+	if m.clearedsystem_component {
+		edges = append(edges, incidenteventsystemcomponent.EdgeSystemComponent)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IncidentEventSystemComponentMutation) EdgeCleared(name string) bool {
+	switch name {
+	case incidenteventsystemcomponent.EdgeEvent:
+		return m.clearedevent
+	case incidenteventsystemcomponent.EdgeSystemComponent:
+		return m.clearedsystem_component
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IncidentEventSystemComponentMutation) ClearEdge(name string) error {
+	switch name {
+	case incidenteventsystemcomponent.EdgeEvent:
+		m.ClearEvent()
+		return nil
+	case incidenteventsystemcomponent.EdgeSystemComponent:
+		m.ClearSystemComponent()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentEventSystemComponent unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IncidentEventSystemComponentMutation) ResetEdge(name string) error {
+	switch name {
+	case incidenteventsystemcomponent.EdgeEvent:
+		m.ResetEvent()
+		return nil
+	case incidenteventsystemcomponent.EdgeSystemComponent:
+		m.ResetSystemComponent()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentEventSystemComponent edge %s", name)
 }
 
 // IncidentFieldMutation represents an operation that mutates the IncidentField nodes in the graph.
@@ -13214,6 +14157,600 @@ func (m *IncidentSeverityMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentSeverity edge %s", name)
+}
+
+// IncidentSystemComponentMutation represents an operation that mutates the IncidentSystemComponent nodes in the graph.
+type IncidentSystemComponentMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	role                    *incidentsystemcomponent.Role
+	created_at              *time.Time
+	clearedFields           map[string]struct{}
+	incident                *uuid.UUID
+	clearedincident         bool
+	system_component        *uuid.UUID
+	clearedsystem_component bool
+	done                    bool
+	oldValue                func(context.Context) (*IncidentSystemComponent, error)
+	predicates              []predicate.IncidentSystemComponent
+}
+
+var _ ent.Mutation = (*IncidentSystemComponentMutation)(nil)
+
+// incidentsystemcomponentOption allows management of the mutation configuration using functional options.
+type incidentsystemcomponentOption func(*IncidentSystemComponentMutation)
+
+// newIncidentSystemComponentMutation creates new mutation for the IncidentSystemComponent entity.
+func newIncidentSystemComponentMutation(c config, op Op, opts ...incidentsystemcomponentOption) *IncidentSystemComponentMutation {
+	m := &IncidentSystemComponentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIncidentSystemComponent,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIncidentSystemComponentID sets the ID field of the mutation.
+func withIncidentSystemComponentID(id uuid.UUID) incidentsystemcomponentOption {
+	return func(m *IncidentSystemComponentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IncidentSystemComponent
+		)
+		m.oldValue = func(ctx context.Context) (*IncidentSystemComponent, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IncidentSystemComponent.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIncidentSystemComponent sets the old IncidentSystemComponent of the mutation.
+func withIncidentSystemComponent(node *IncidentSystemComponent) incidentsystemcomponentOption {
+	return func(m *IncidentSystemComponentMutation) {
+		m.oldValue = func(context.Context) (*IncidentSystemComponent, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IncidentSystemComponentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IncidentSystemComponentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IncidentSystemComponent entities.
+func (m *IncidentSystemComponentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IncidentSystemComponentMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IncidentSystemComponentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IncidentSystemComponent.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetIncidentID sets the "incident_id" field.
+func (m *IncidentSystemComponentMutation) SetIncidentID(u uuid.UUID) {
+	m.incident = &u
+}
+
+// IncidentID returns the value of the "incident_id" field in the mutation.
+func (m *IncidentSystemComponentMutation) IncidentID() (r uuid.UUID, exists bool) {
+	v := m.incident
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentID returns the old "incident_id" field's value of the IncidentSystemComponent entity.
+// If the IncidentSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSystemComponentMutation) OldIncidentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentID: %w", err)
+	}
+	return oldValue.IncidentID, nil
+}
+
+// ResetIncidentID resets all changes to the "incident_id" field.
+func (m *IncidentSystemComponentMutation) ResetIncidentID() {
+	m.incident = nil
+}
+
+// SetSystemComponentID sets the "system_component_id" field.
+func (m *IncidentSystemComponentMutation) SetSystemComponentID(u uuid.UUID) {
+	m.system_component = &u
+}
+
+// SystemComponentID returns the value of the "system_component_id" field in the mutation.
+func (m *IncidentSystemComponentMutation) SystemComponentID() (r uuid.UUID, exists bool) {
+	v := m.system_component
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemComponentID returns the old "system_component_id" field's value of the IncidentSystemComponent entity.
+// If the IncidentSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSystemComponentMutation) OldSystemComponentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemComponentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemComponentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemComponentID: %w", err)
+	}
+	return oldValue.SystemComponentID, nil
+}
+
+// ResetSystemComponentID resets all changes to the "system_component_id" field.
+func (m *IncidentSystemComponentMutation) ResetSystemComponentID() {
+	m.system_component = nil
+}
+
+// SetRole sets the "role" field.
+func (m *IncidentSystemComponentMutation) SetRole(i incidentsystemcomponent.Role) {
+	m.role = &i
+}
+
+// Role returns the value of the "role" field in the mutation.
+func (m *IncidentSystemComponentMutation) Role() (r incidentsystemcomponent.Role, exists bool) {
+	v := m.role
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRole returns the old "role" field's value of the IncidentSystemComponent entity.
+// If the IncidentSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSystemComponentMutation) OldRole(ctx context.Context) (v incidentsystemcomponent.Role, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRole requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+	}
+	return oldValue.Role, nil
+}
+
+// ResetRole resets all changes to the "role" field.
+func (m *IncidentSystemComponentMutation) ResetRole() {
+	m.role = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *IncidentSystemComponentMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IncidentSystemComponentMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the IncidentSystemComponent entity.
+// If the IncidentSystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSystemComponentMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IncidentSystemComponentMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (m *IncidentSystemComponentMutation) ClearIncident() {
+	m.clearedincident = true
+	m.clearedFields[incidentsystemcomponent.FieldIncidentID] = struct{}{}
+}
+
+// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
+func (m *IncidentSystemComponentMutation) IncidentCleared() bool {
+	return m.clearedincident
+}
+
+// IncidentIDs returns the "incident" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IncidentID instead. It exists only for internal usage by the builders.
+func (m *IncidentSystemComponentMutation) IncidentIDs() (ids []uuid.UUID) {
+	if id := m.incident; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIncident resets all changes to the "incident" edge.
+func (m *IncidentSystemComponentMutation) ResetIncident() {
+	m.incident = nil
+	m.clearedincident = false
+}
+
+// ClearSystemComponent clears the "system_component" edge to the SystemComponent entity.
+func (m *IncidentSystemComponentMutation) ClearSystemComponent() {
+	m.clearedsystem_component = true
+	m.clearedFields[incidentsystemcomponent.FieldSystemComponentID] = struct{}{}
+}
+
+// SystemComponentCleared reports if the "system_component" edge to the SystemComponent entity was cleared.
+func (m *IncidentSystemComponentMutation) SystemComponentCleared() bool {
+	return m.clearedsystem_component
+}
+
+// SystemComponentIDs returns the "system_component" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SystemComponentID instead. It exists only for internal usage by the builders.
+func (m *IncidentSystemComponentMutation) SystemComponentIDs() (ids []uuid.UUID) {
+	if id := m.system_component; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSystemComponent resets all changes to the "system_component" edge.
+func (m *IncidentSystemComponentMutation) ResetSystemComponent() {
+	m.system_component = nil
+	m.clearedsystem_component = false
+}
+
+// Where appends a list predicates to the IncidentSystemComponentMutation builder.
+func (m *IncidentSystemComponentMutation) Where(ps ...predicate.IncidentSystemComponent) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IncidentSystemComponentMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IncidentSystemComponentMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IncidentSystemComponent, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IncidentSystemComponentMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IncidentSystemComponentMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IncidentSystemComponent).
+func (m *IncidentSystemComponentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IncidentSystemComponentMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.incident != nil {
+		fields = append(fields, incidentsystemcomponent.FieldIncidentID)
+	}
+	if m.system_component != nil {
+		fields = append(fields, incidentsystemcomponent.FieldSystemComponentID)
+	}
+	if m.role != nil {
+		fields = append(fields, incidentsystemcomponent.FieldRole)
+	}
+	if m.created_at != nil {
+		fields = append(fields, incidentsystemcomponent.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IncidentSystemComponentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case incidentsystemcomponent.FieldIncidentID:
+		return m.IncidentID()
+	case incidentsystemcomponent.FieldSystemComponentID:
+		return m.SystemComponentID()
+	case incidentsystemcomponent.FieldRole:
+		return m.Role()
+	case incidentsystemcomponent.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IncidentSystemComponentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case incidentsystemcomponent.FieldIncidentID:
+		return m.OldIncidentID(ctx)
+	case incidentsystemcomponent.FieldSystemComponentID:
+		return m.OldSystemComponentID(ctx)
+	case incidentsystemcomponent.FieldRole:
+		return m.OldRole(ctx)
+	case incidentsystemcomponent.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown IncidentSystemComponent field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentSystemComponentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case incidentsystemcomponent.FieldIncidentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentID(v)
+		return nil
+	case incidentsystemcomponent.FieldSystemComponentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemComponentID(v)
+		return nil
+	case incidentsystemcomponent.FieldRole:
+		v, ok := value.(incidentsystemcomponent.Role)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRole(v)
+		return nil
+	case incidentsystemcomponent.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentSystemComponent field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IncidentSystemComponentMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IncidentSystemComponentMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentSystemComponentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown IncidentSystemComponent numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IncidentSystemComponentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IncidentSystemComponentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IncidentSystemComponentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown IncidentSystemComponent nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IncidentSystemComponentMutation) ResetField(name string) error {
+	switch name {
+	case incidentsystemcomponent.FieldIncidentID:
+		m.ResetIncidentID()
+		return nil
+	case incidentsystemcomponent.FieldSystemComponentID:
+		m.ResetSystemComponentID()
+		return nil
+	case incidentsystemcomponent.FieldRole:
+		m.ResetRole()
+		return nil
+	case incidentsystemcomponent.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentSystemComponent field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IncidentSystemComponentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.incident != nil {
+		edges = append(edges, incidentsystemcomponent.EdgeIncident)
+	}
+	if m.system_component != nil {
+		edges = append(edges, incidentsystemcomponent.EdgeSystemComponent)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IncidentSystemComponentMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case incidentsystemcomponent.EdgeIncident:
+		if id := m.incident; id != nil {
+			return []ent.Value{*id}
+		}
+	case incidentsystemcomponent.EdgeSystemComponent:
+		if id := m.system_component; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IncidentSystemComponentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IncidentSystemComponentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IncidentSystemComponentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedincident {
+		edges = append(edges, incidentsystemcomponent.EdgeIncident)
+	}
+	if m.clearedsystem_component {
+		edges = append(edges, incidentsystemcomponent.EdgeSystemComponent)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IncidentSystemComponentMutation) EdgeCleared(name string) bool {
+	switch name {
+	case incidentsystemcomponent.EdgeIncident:
+		return m.clearedincident
+	case incidentsystemcomponent.EdgeSystemComponent:
+		return m.clearedsystem_component
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IncidentSystemComponentMutation) ClearEdge(name string) error {
+	switch name {
+	case incidentsystemcomponent.EdgeIncident:
+		m.ClearIncident()
+		return nil
+	case incidentsystemcomponent.EdgeSystemComponent:
+		m.ClearSystemComponent()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentSystemComponent unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IncidentSystemComponentMutation) ResetEdge(name string) error {
+	switch name {
+	case incidentsystemcomponent.EdgeIncident:
+		m.ResetIncident()
+		return nil
+	case incidentsystemcomponent.EdgeSystemComponent:
+		m.ResetSystemComponent()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentSystemComponent edge %s", name)
 }
 
 // IncidentTagMutation represents an operation that mutates the IncidentTag nodes in the graph.
@@ -27613,36 +29150,48 @@ func (m *RetrospectiveReviewMutation) ResetEdge(name string) error {
 // SystemComponentMutation represents an operation that mutates the SystemComponent nodes in the graph.
 type SystemComponentMutation struct {
 	config
-	op                            Op
-	typ                           string
-	id                            *uuid.UUID
-	name                          *string
-	_type                         *systemcomponent.Type
-	description                   *string
-	properties                    *map[string]interface{}
-	created_at                    *time.Time
-	updated_at                    *time.Time
-	clearedFields                 map[string]struct{}
-	parent                        *uuid.UUID
-	clearedparent                 bool
-	children                      map[uuid.UUID]struct{}
-	removedchildren               map[uuid.UUID]struct{}
-	clearedchildren               bool
-	controls                      map[uuid.UUID]struct{}
-	removedcontrols               map[uuid.UUID]struct{}
-	clearedcontrols               bool
-	feedback_to                   map[uuid.UUID]struct{}
-	removedfeedback_to            map[uuid.UUID]struct{}
-	clearedfeedback_to            bool
-	control_relationships         map[uuid.UUID]struct{}
-	removedcontrol_relationships  map[uuid.UUID]struct{}
-	clearedcontrol_relationships  bool
-	feedback_relationships        map[uuid.UUID]struct{}
-	removedfeedback_relationships map[uuid.UUID]struct{}
-	clearedfeedback_relationships bool
-	done                          bool
-	oldValue                      func(context.Context) (*SystemComponent, error)
-	predicates                    []predicate.SystemComponent
+	op                                Op
+	typ                               string
+	id                                *uuid.UUID
+	name                              *string
+	_type                             *systemcomponent.Type
+	description                       *string
+	properties                        *map[string]interface{}
+	created_at                        *time.Time
+	updated_at                        *time.Time
+	clearedFields                     map[string]struct{}
+	parent                            *uuid.UUID
+	clearedparent                     bool
+	children                          map[uuid.UUID]struct{}
+	removedchildren                   map[uuid.UUID]struct{}
+	clearedchildren                   bool
+	controls                          map[uuid.UUID]struct{}
+	removedcontrols                   map[uuid.UUID]struct{}
+	clearedcontrols                   bool
+	feedback_to                       map[uuid.UUID]struct{}
+	removedfeedback_to                map[uuid.UUID]struct{}
+	clearedfeedback_to                bool
+	incidents                         map[uuid.UUID]struct{}
+	removedincidents                  map[uuid.UUID]struct{}
+	clearedincidents                  bool
+	events                            map[uuid.UUID]struct{}
+	removedevents                     map[uuid.UUID]struct{}
+	clearedevents                     bool
+	control_relationships             map[uuid.UUID]struct{}
+	removedcontrol_relationships      map[uuid.UUID]struct{}
+	clearedcontrol_relationships      bool
+	feedback_relationships            map[uuid.UUID]struct{}
+	removedfeedback_relationships     map[uuid.UUID]struct{}
+	clearedfeedback_relationships     bool
+	incident_system_components        map[uuid.UUID]struct{}
+	removedincident_system_components map[uuid.UUID]struct{}
+	clearedincident_system_components bool
+	event_components                  map[uuid.UUID]struct{}
+	removedevent_components           map[uuid.UUID]struct{}
+	clearedevent_components           bool
+	done                              bool
+	oldValue                          func(context.Context) (*SystemComponent, error)
+	predicates                        []predicate.SystemComponent
 }
 
 var _ ent.Mutation = (*SystemComponentMutation)(nil)
@@ -28192,6 +29741,114 @@ func (m *SystemComponentMutation) ResetFeedbackTo() {
 	m.removedfeedback_to = nil
 }
 
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
+func (m *SystemComponentMutation) AddIncidentIDs(ids ...uuid.UUID) {
+	if m.incidents == nil {
+		m.incidents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incidents[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncidents clears the "incidents" edge to the Incident entity.
+func (m *SystemComponentMutation) ClearIncidents() {
+	m.clearedincidents = true
+}
+
+// IncidentsCleared reports if the "incidents" edge to the Incident entity was cleared.
+func (m *SystemComponentMutation) IncidentsCleared() bool {
+	return m.clearedincidents
+}
+
+// RemoveIncidentIDs removes the "incidents" edge to the Incident entity by IDs.
+func (m *SystemComponentMutation) RemoveIncidentIDs(ids ...uuid.UUID) {
+	if m.removedincidents == nil {
+		m.removedincidents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incidents, ids[i])
+		m.removedincidents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncidents returns the removed IDs of the "incidents" edge to the Incident entity.
+func (m *SystemComponentMutation) RemovedIncidentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedincidents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncidentsIDs returns the "incidents" edge IDs in the mutation.
+func (m *SystemComponentMutation) IncidentsIDs() (ids []uuid.UUID) {
+	for id := range m.incidents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncidents resets all changes to the "incidents" edge.
+func (m *SystemComponentMutation) ResetIncidents() {
+	m.incidents = nil
+	m.clearedincidents = false
+	m.removedincidents = nil
+}
+
+// AddEventIDs adds the "events" edge to the IncidentEvent entity by ids.
+func (m *SystemComponentMutation) AddEventIDs(ids ...uuid.UUID) {
+	if m.events == nil {
+		m.events = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.events[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEvents clears the "events" edge to the IncidentEvent entity.
+func (m *SystemComponentMutation) ClearEvents() {
+	m.clearedevents = true
+}
+
+// EventsCleared reports if the "events" edge to the IncidentEvent entity was cleared.
+func (m *SystemComponentMutation) EventsCleared() bool {
+	return m.clearedevents
+}
+
+// RemoveEventIDs removes the "events" edge to the IncidentEvent entity by IDs.
+func (m *SystemComponentMutation) RemoveEventIDs(ids ...uuid.UUID) {
+	if m.removedevents == nil {
+		m.removedevents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.events, ids[i])
+		m.removedevents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEvents returns the removed IDs of the "events" edge to the IncidentEvent entity.
+func (m *SystemComponentMutation) RemovedEventsIDs() (ids []uuid.UUID) {
+	for id := range m.removedevents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EventsIDs returns the "events" edge IDs in the mutation.
+func (m *SystemComponentMutation) EventsIDs() (ids []uuid.UUID) {
+	for id := range m.events {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEvents resets all changes to the "events" edge.
+func (m *SystemComponentMutation) ResetEvents() {
+	m.events = nil
+	m.clearedevents = false
+	m.removedevents = nil
+}
+
 // AddControlRelationshipIDs adds the "control_relationships" edge to the SystemComponentControlRelationship entity by ids.
 func (m *SystemComponentMutation) AddControlRelationshipIDs(ids ...uuid.UUID) {
 	if m.control_relationships == nil {
@@ -28298,6 +29955,114 @@ func (m *SystemComponentMutation) ResetFeedbackRelationships() {
 	m.feedback_relationships = nil
 	m.clearedfeedback_relationships = false
 	m.removedfeedback_relationships = nil
+}
+
+// AddIncidentSystemComponentIDs adds the "incident_system_components" edge to the IncidentSystemComponent entity by ids.
+func (m *SystemComponentMutation) AddIncidentSystemComponentIDs(ids ...uuid.UUID) {
+	if m.incident_system_components == nil {
+		m.incident_system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.incident_system_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIncidentSystemComponents clears the "incident_system_components" edge to the IncidentSystemComponent entity.
+func (m *SystemComponentMutation) ClearIncidentSystemComponents() {
+	m.clearedincident_system_components = true
+}
+
+// IncidentSystemComponentsCleared reports if the "incident_system_components" edge to the IncidentSystemComponent entity was cleared.
+func (m *SystemComponentMutation) IncidentSystemComponentsCleared() bool {
+	return m.clearedincident_system_components
+}
+
+// RemoveIncidentSystemComponentIDs removes the "incident_system_components" edge to the IncidentSystemComponent entity by IDs.
+func (m *SystemComponentMutation) RemoveIncidentSystemComponentIDs(ids ...uuid.UUID) {
+	if m.removedincident_system_components == nil {
+		m.removedincident_system_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.incident_system_components, ids[i])
+		m.removedincident_system_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIncidentSystemComponents returns the removed IDs of the "incident_system_components" edge to the IncidentSystemComponent entity.
+func (m *SystemComponentMutation) RemovedIncidentSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedincident_system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IncidentSystemComponentsIDs returns the "incident_system_components" edge IDs in the mutation.
+func (m *SystemComponentMutation) IncidentSystemComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.incident_system_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIncidentSystemComponents resets all changes to the "incident_system_components" edge.
+func (m *SystemComponentMutation) ResetIncidentSystemComponents() {
+	m.incident_system_components = nil
+	m.clearedincident_system_components = false
+	m.removedincident_system_components = nil
+}
+
+// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by ids.
+func (m *SystemComponentMutation) AddEventComponentIDs(ids ...uuid.UUID) {
+	if m.event_components == nil {
+		m.event_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.event_components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearEventComponents clears the "event_components" edge to the IncidentEventSystemComponent entity.
+func (m *SystemComponentMutation) ClearEventComponents() {
+	m.clearedevent_components = true
+}
+
+// EventComponentsCleared reports if the "event_components" edge to the IncidentEventSystemComponent entity was cleared.
+func (m *SystemComponentMutation) EventComponentsCleared() bool {
+	return m.clearedevent_components
+}
+
+// RemoveEventComponentIDs removes the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
+func (m *SystemComponentMutation) RemoveEventComponentIDs(ids ...uuid.UUID) {
+	if m.removedevent_components == nil {
+		m.removedevent_components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.event_components, ids[i])
+		m.removedevent_components[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedEventComponents returns the removed IDs of the "event_components" edge to the IncidentEventSystemComponent entity.
+func (m *SystemComponentMutation) RemovedEventComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedevent_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// EventComponentsIDs returns the "event_components" edge IDs in the mutation.
+func (m *SystemComponentMutation) EventComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.event_components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetEventComponents resets all changes to the "event_components" edge.
+func (m *SystemComponentMutation) ResetEventComponents() {
+	m.event_components = nil
+	m.clearedevent_components = false
+	m.removedevent_components = nil
 }
 
 // Where appends a list predicates to the SystemComponentMutation builder.
@@ -28533,7 +30298,7 @@ func (m *SystemComponentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemComponentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 10)
 	if m.parent != nil {
 		edges = append(edges, systemcomponent.EdgeParent)
 	}
@@ -28546,11 +30311,23 @@ func (m *SystemComponentMutation) AddedEdges() []string {
 	if m.feedback_to != nil {
 		edges = append(edges, systemcomponent.EdgeFeedbackTo)
 	}
+	if m.incidents != nil {
+		edges = append(edges, systemcomponent.EdgeIncidents)
+	}
+	if m.events != nil {
+		edges = append(edges, systemcomponent.EdgeEvents)
+	}
 	if m.control_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeControlRelationships)
 	}
 	if m.feedback_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeFeedbackRelationships)
+	}
+	if m.incident_system_components != nil {
+		edges = append(edges, systemcomponent.EdgeIncidentSystemComponents)
+	}
+	if m.event_components != nil {
+		edges = append(edges, systemcomponent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -28581,6 +30358,18 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeIncidents:
+		ids := make([]ent.Value, 0, len(m.incidents))
+		for id := range m.incidents {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeEvents:
+		ids := make([]ent.Value, 0, len(m.events))
+		for id := range m.events {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemcomponent.EdgeControlRelationships:
 		ids := make([]ent.Value, 0, len(m.control_relationships))
 		for id := range m.control_relationships {
@@ -28593,13 +30382,25 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeIncidentSystemComponents:
+		ids := make([]ent.Value, 0, len(m.incident_system_components))
+		for id := range m.incident_system_components {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeEventComponents:
+		ids := make([]ent.Value, 0, len(m.event_components))
+		for id := range m.event_components {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemComponentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 10)
 	if m.removedchildren != nil {
 		edges = append(edges, systemcomponent.EdgeChildren)
 	}
@@ -28609,11 +30410,23 @@ func (m *SystemComponentMutation) RemovedEdges() []string {
 	if m.removedfeedback_to != nil {
 		edges = append(edges, systemcomponent.EdgeFeedbackTo)
 	}
+	if m.removedincidents != nil {
+		edges = append(edges, systemcomponent.EdgeIncidents)
+	}
+	if m.removedevents != nil {
+		edges = append(edges, systemcomponent.EdgeEvents)
+	}
 	if m.removedcontrol_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeControlRelationships)
 	}
 	if m.removedfeedback_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeFeedbackRelationships)
+	}
+	if m.removedincident_system_components != nil {
+		edges = append(edges, systemcomponent.EdgeIncidentSystemComponents)
+	}
+	if m.removedevent_components != nil {
+		edges = append(edges, systemcomponent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -28640,6 +30453,18 @@ func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeIncidents:
+		ids := make([]ent.Value, 0, len(m.removedincidents))
+		for id := range m.removedincidents {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeEvents:
+		ids := make([]ent.Value, 0, len(m.removedevents))
+		for id := range m.removedevents {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemcomponent.EdgeControlRelationships:
 		ids := make([]ent.Value, 0, len(m.removedcontrol_relationships))
 		for id := range m.removedcontrol_relationships {
@@ -28652,13 +30477,25 @@ func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeIncidentSystemComponents:
+		ids := make([]ent.Value, 0, len(m.removedincident_system_components))
+		for id := range m.removedincident_system_components {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeEventComponents:
+		ids := make([]ent.Value, 0, len(m.removedevent_components))
+		for id := range m.removedevent_components {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemComponentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 10)
 	if m.clearedparent {
 		edges = append(edges, systemcomponent.EdgeParent)
 	}
@@ -28671,11 +30508,23 @@ func (m *SystemComponentMutation) ClearedEdges() []string {
 	if m.clearedfeedback_to {
 		edges = append(edges, systemcomponent.EdgeFeedbackTo)
 	}
+	if m.clearedincidents {
+		edges = append(edges, systemcomponent.EdgeIncidents)
+	}
+	if m.clearedevents {
+		edges = append(edges, systemcomponent.EdgeEvents)
+	}
 	if m.clearedcontrol_relationships {
 		edges = append(edges, systemcomponent.EdgeControlRelationships)
 	}
 	if m.clearedfeedback_relationships {
 		edges = append(edges, systemcomponent.EdgeFeedbackRelationships)
+	}
+	if m.clearedincident_system_components {
+		edges = append(edges, systemcomponent.EdgeIncidentSystemComponents)
+	}
+	if m.clearedevent_components {
+		edges = append(edges, systemcomponent.EdgeEventComponents)
 	}
 	return edges
 }
@@ -28692,10 +30541,18 @@ func (m *SystemComponentMutation) EdgeCleared(name string) bool {
 		return m.clearedcontrols
 	case systemcomponent.EdgeFeedbackTo:
 		return m.clearedfeedback_to
+	case systemcomponent.EdgeIncidents:
+		return m.clearedincidents
+	case systemcomponent.EdgeEvents:
+		return m.clearedevents
 	case systemcomponent.EdgeControlRelationships:
 		return m.clearedcontrol_relationships
 	case systemcomponent.EdgeFeedbackRelationships:
 		return m.clearedfeedback_relationships
+	case systemcomponent.EdgeIncidentSystemComponents:
+		return m.clearedincident_system_components
+	case systemcomponent.EdgeEventComponents:
+		return m.clearedevent_components
 	}
 	return false
 }
@@ -28727,11 +30584,23 @@ func (m *SystemComponentMutation) ResetEdge(name string) error {
 	case systemcomponent.EdgeFeedbackTo:
 		m.ResetFeedbackTo()
 		return nil
+	case systemcomponent.EdgeIncidents:
+		m.ResetIncidents()
+		return nil
+	case systemcomponent.EdgeEvents:
+		m.ResetEvents()
+		return nil
 	case systemcomponent.EdgeControlRelationships:
 		m.ResetControlRelationships()
 		return nil
 	case systemcomponent.EdgeFeedbackRelationships:
 		m.ResetFeedbackRelationships()
+		return nil
+	case systemcomponent.EdgeIncidentSystemComponents:
+		m.ResetIncidentSystemComponents()
+		return nil
+	case systemcomponent.EdgeEventComponents:
+		m.ResetEventComponents()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponent edge %s", name)

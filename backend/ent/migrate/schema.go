@@ -260,6 +260,41 @@ var (
 			},
 		},
 	}
+	// IncidentEventSystemComponentsColumns holds the columns for the "incident_event_system_components" table.
+	IncidentEventSystemComponentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "relationship", Type: field.TypeEnum, Enums: []string{"primary", "affected", "contributing"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "incident_event_id", Type: field.TypeUUID, Unique: true, Nullable: true},
+		{Name: "system_component_id", Type: field.TypeUUID},
+	}
+	// IncidentEventSystemComponentsTable holds the schema information for the "incident_event_system_components" table.
+	IncidentEventSystemComponentsTable = &schema.Table{
+		Name:       "incident_event_system_components",
+		Columns:    IncidentEventSystemComponentsColumns,
+		PrimaryKey: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_event_system_components_incident_event_system_components_event",
+				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[3]},
+				RefColumns: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "incident_event_system_components_system_components_system_component",
+				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[4]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidenteventsystemcomponent_incident_event_id_system_component_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[3], IncidentEventSystemComponentsColumns[4]},
+			},
+		},
+	}
 	// IncidentFieldsColumns holds the columns for the "incident_fields" table.
 	IncidentFieldsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -410,6 +445,41 @@ var (
 		Name:       "incident_severities",
 		Columns:    IncidentSeveritiesColumns,
 		PrimaryKey: []*schema.Column{IncidentSeveritiesColumns[0]},
+	}
+	// IncidentSystemComponentsColumns holds the columns for the "incident_system_components" table.
+	IncidentSystemComponentsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"primary", "contributing", "affected", "mitigating"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "system_component_id", Type: field.TypeUUID},
+	}
+	// IncidentSystemComponentsTable holds the schema information for the "incident_system_components" table.
+	IncidentSystemComponentsTable = &schema.Table{
+		Name:       "incident_system_components",
+		Columns:    IncidentSystemComponentsColumns,
+		PrimaryKey: []*schema.Column{IncidentSystemComponentsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_system_components_incidents_incident",
+				Columns:    []*schema.Column{IncidentSystemComponentsColumns[3]},
+				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_system_components_system_components_system_component",
+				Columns:    []*schema.Column{IncidentSystemComponentsColumns[4]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentsystemcomponent_incident_id_system_component_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentSystemComponentsColumns[3], IncidentSystemComponentsColumns[4]},
+			},
+		},
 	}
 	// IncidentTagsColumns holds the columns for the "incident_tags" table.
 	IncidentTagsColumns = []*schema.Column{
@@ -1372,6 +1442,7 @@ var (
 		IncidentEventContextsTable,
 		IncidentEventContributingFactorsTable,
 		IncidentEventEvidencesTable,
+		IncidentEventSystemComponentsTable,
 		IncidentFieldsTable,
 		IncidentFieldOptionsTable,
 		IncidentLinksTable,
@@ -1379,6 +1450,7 @@ var (
 		IncidentRolesTable,
 		IncidentRoleAssignmentsTable,
 		IncidentSeveritiesTable,
+		IncidentSystemComponentsTable,
 		IncidentTagsTable,
 		IncidentTeamAssignmentsTable,
 		IncidentTypesTable,
@@ -1433,6 +1505,8 @@ func init() {
 	IncidentEventContextsTable.ForeignKeys[0].RefTable = IncidentEventsTable
 	IncidentEventContributingFactorsTable.ForeignKeys[0].RefTable = IncidentEventsTable
 	IncidentEventEvidencesTable.ForeignKeys[0].RefTable = IncidentEventsTable
+	IncidentEventSystemComponentsTable.ForeignKeys[0].RefTable = IncidentEventSystemComponentsTable
+	IncidentEventSystemComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
 	IncidentLinksTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentLinksTable.ForeignKeys[1].RefTable = IncidentsTable
@@ -1440,6 +1514,8 @@ func init() {
 	IncidentRoleAssignmentsTable.ForeignKeys[0].RefTable = IncidentRolesTable
 	IncidentRoleAssignmentsTable.ForeignKeys[1].RefTable = IncidentsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[2].RefTable = UsersTable
+	IncidentSystemComponentsTable.ForeignKeys[0].RefTable = IncidentsTable
+	IncidentSystemComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	IncidentTeamAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentTeamAssignmentsTable.ForeignKeys[1].RefTable = TeamsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = MeetingSchedulesTable

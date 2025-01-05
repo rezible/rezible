@@ -2,8 +2,8 @@
 
 import type { OptionsLegacyParser } from '@hey-api/client-fetch';
 import { queryOptions, infiniteQueryOptions, type InfiniteData, type MutationOptions } from '@tanstack/svelte-query';
-import type { ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, GetDebriefQuestionData, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, VerifyDocumentEditorSessionData, VerifyDocumentEditorSessionError, VerifyDocumentEditorSessionResponse, ListEnvironmentsData, ListEnvironmentsError, ListEnvironmentsResponse, CreateEnvironmentData, CreateEnvironmentError, CreateEnvironmentResponse, GetEnvironmentData, ArchiveEnvironmentData, ArchiveEnvironmentError, ArchiveEnvironmentResponse, UpdateEnvironmentData, UpdateEnvironmentError, UpdateEnvironmentResponse, ListFunctionalitiesData, ListFunctionalitiesError, ListFunctionalitiesResponse, CreateFunctionalityData, CreateFunctionalityError, CreateFunctionalityResponse, GetFunctionalityData, ArchiveFunctionalityData, ArchiveFunctionalityError, ArchiveFunctionalityResponse, UpdateFunctionalityData, UpdateFunctionalityError, UpdateFunctionalityResponse, GetIncidentDebriefData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ArchiveIncidentEventData, ArchiveIncidentEventError, ArchiveIncidentEventResponse, UpdateIncidentEventData, UpdateIncidentEventError, UpdateIncidentEventResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, GetIncidentFieldData, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, GetIncidentRoleData, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, GetIncidentSeverityData, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, GetIncidentTagData, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, GetIncidentTypeData, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, ListIncidentsData, ListIncidentsError, ListIncidentsResponse, CreateIncidentData, CreateIncidentError, CreateIncidentResponse, GetIncidentData, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentResponse, UpdateIncidentData, UpdateIncidentError, UpdateIncidentResponse, GetIncidentUserDebriefData, ListIncidentEventsData, CreateIncidentEventData, CreateIncidentEventError, CreateIncidentEventResponse, GetRetrospectiveForIncidentData, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, GetIntegrationData, ArchiveIntegrationData, ArchiveIntegrationError, ArchiveIntegrationResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, GetMeetingScheduleData, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, GetMeetingSessionData, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, ArchiveOncallShiftAnnotationData, ArchiveOncallShiftAnnotationError, ArchiveOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationData, UpdateOncallShiftAnnotationError, UpdateOncallShiftAnnotationResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, GetOncallShiftHandoverTemplateData, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, GetOncallRosterData, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, GetOncallShiftData, ListOncallShiftAlertsData, ListOncallShiftAlertsError, ListOncallShiftAlertsResponse, ListOncallShiftAnnotationsData, ListOncallShiftAnnotationsError, ListOncallShiftAnnotationsResponse, CreateOncallShiftAnnotationData, CreateOncallShiftAnnotationError, CreateOncallShiftAnnotationResponse, GetOncallShiftHandoverData, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, ListOncallShiftIncidentsData, ListOncallShiftIncidentsError, ListOncallShiftIncidentsResponse, GetNextOncallShiftData, GetUserOncallDetailsData, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, ListRetrospectiveTemplatesData, ListRetrospectiveTemplatesError, ListRetrospectiveTemplatesResponse, CreateRetrospectiveTemplateData, CreateRetrospectiveTemplateError, CreateRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateData, ArchiveRetrospectiveTemplateError, ArchiveRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateData, UpdateRetrospectiveTemplateError, UpdateRetrospectiveTemplateResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, GetRetrospectiveData, ListRetrospectiveDiscussionsData, ListRetrospectiveDiscussionsError, ListRetrospectiveDiscussionsResponse, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionError, CreateRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionData, AddRetrospectiveDiscussionReplyData, AddRetrospectiveDiscussionReplyError, AddRetrospectiveDiscussionReplyResponse, UpdateRetrospectiveDiscussionData, UpdateRetrospectiveDiscussionError, UpdateRetrospectiveDiscussionResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, ListServicesData, ListServicesError, ListServicesResponse, CreateServiceData, CreateServiceError, CreateServiceResponse, GetServiceData, ArchiveServiceData, ArchiveServiceError, ArchiveServiceResponse, UpdateServiceData, UpdateServiceError, UpdateServiceResponse, CreateSubscriptionData, CreateSubscriptionError, CreateSubscriptionResponse, GetSubscriptionData, ArchiveSubscriptionData, ArchiveSubscriptionError, ArchiveSubscriptionResponse, UpdateSubscriptionData, UpdateSubscriptionError, UpdateSubscriptionResponse, ListTasksData, ListTasksError, ListTasksResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, GetTaskData, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, GetTeamData, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, ListUserAssignmentsData, ListUserAssignmentsError, ListUserAssignmentsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, ListUsersData, ListUsersError, ListUsersResponse, GetUserData } from '../types.gen';
-import { client, listDebriefQuestions, createDebriefQuestion, getDebriefQuestion, archiveDebriefQuestion, updateDebriefQuestion, requestDocumentEditorSession, verifyDocumentEditorSession, listEnvironments, createEnvironment, getEnvironment, archiveEnvironment, updateEnvironment, listFunctionalities, createFunctionality, getFunctionality, archiveFunctionality, updateFunctionality, getIncidentDebrief, updateIncidentDebrief, listDebriefMessages, addIncidentDebriefUserMessage, listDebriefSuggestions, archiveIncidentEvent, updateIncidentEvent, listIncidentFields, createIncidentField, getIncidentField, archiveIncidentField, updateIncidentField, listIncidentRoles, createIncidentRole, getIncidentRole, archiveIncidentRole, updateIncidentRole, listIncidentSeverities, createIncidentSeverity, getIncidentSeverity, archiveIncidentSeverity, updateIncidentSeverity, listIncidentTags, createIncidentTag, getIncidentTag, archiveIncidentTag, updateIncidentTag, listIncidentTypes, createIncidentType, getIncidentType, archiveIncidentType, updateIncidentType, listIncidents, createIncident, getIncident, archiveIncident, updateIncident, getIncidentUserDebrief, listIncidentEvents, createIncidentEvent, getRetrospectiveForIncident, listIntegrations, createIntegration, getIntegration, archiveIntegration, updateIntegration, listMeetingSchedules, createMeetingSchedule, getMeetingSchedule, archiveMeetingSchedule, updateMeetingSchedule, listMeetingSessions, createMeetingSession, getMeetingSession, archiveMeetingSession, updateMeetingSession, archiveOncallShiftAnnotation, updateOncallShiftAnnotation, createOncallHandoverTemplate, getOncallShiftHandoverTemplate, archiveOncallHandoverTemplate, updateOncallHandoverTemplate, listOncallRosters, getOncallRoster, listOncallShifts, getOncallShift, listOncallShiftAlerts, listOncallShiftAnnotations, createOncallShiftAnnotation, getOncallShiftHandover, sendOncallShiftHandover, listOncallShiftIncidents, getNextOncallShift, getUserOncallDetails, archiveRetrospectiveReview, updateRetrospectiveReview, listRetrospectiveTemplates, createRetrospectiveTemplate, archiveRetrospectiveTemplate, updateRetrospectiveTemplate, listRetrospectives, getRetrospective, listRetrospectiveDiscussions, createRetrospectiveDiscussion, getRetrospectiveDiscussion, addRetrospectiveDiscussionReply, updateRetrospectiveDiscussion, listRetrospectiveReviews, createRetrospectiveReview, listServices, createService, getService, archiveService, updateService, listSubscriptions, createSubscription, getSubscription, archiveSubscription, updateSubscription, listTasks, createTask, getTask, archiveTask, updateTask, listTeams, createTeam, getTeam, archiveTeam, updateTeams, getCurrentUserSession, listUserAssignments, listUserNotifications, deleteUserNotification, listUsers, getUser } from '../sdk.gen';
+import type { ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, GetDebriefQuestionData, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, VerifyDocumentEditorSessionData, VerifyDocumentEditorSessionError, VerifyDocumentEditorSessionResponse, ListEnvironmentsData, ListEnvironmentsError, ListEnvironmentsResponse, CreateEnvironmentData, CreateEnvironmentError, CreateEnvironmentResponse, GetEnvironmentData, ArchiveEnvironmentData, ArchiveEnvironmentError, ArchiveEnvironmentResponse, UpdateEnvironmentData, UpdateEnvironmentError, UpdateEnvironmentResponse, ListFunctionalitiesData, ListFunctionalitiesError, ListFunctionalitiesResponse, CreateFunctionalityData, CreateFunctionalityError, CreateFunctionalityResponse, GetFunctionalityData, ArchiveFunctionalityData, ArchiveFunctionalityError, ArchiveFunctionalityResponse, UpdateFunctionalityData, UpdateFunctionalityError, UpdateFunctionalityResponse, GetIncidentDebriefData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, GetIncidentFieldData, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, ArchiveIncidentMilestoneData, ArchiveIncidentMilestoneError, ArchiveIncidentMilestoneResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, GetIncidentRoleData, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, GetIncidentSeverityData, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, GetIncidentTagData, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, GetIncidentTypeData, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, ListIncidentsData, ListIncidentsError, ListIncidentsResponse, CreateIncidentData, CreateIncidentError, CreateIncidentResponse, GetIncidentData, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentResponse, UpdateIncidentData, UpdateIncidentError, UpdateIncidentResponse, GetIncidentUserDebriefData, ListIncidentMilestonesData, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, GetRetrospectiveForIncidentData, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, GetIntegrationData, ArchiveIntegrationData, ArchiveIntegrationError, ArchiveIntegrationResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, GetMeetingScheduleData, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, GetMeetingSessionData, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, ArchiveOncallShiftAnnotationData, ArchiveOncallShiftAnnotationError, ArchiveOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationData, UpdateOncallShiftAnnotationError, UpdateOncallShiftAnnotationResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, GetOncallShiftHandoverTemplateData, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, GetOncallRosterData, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, GetOncallShiftData, ListOncallShiftAlertsData, ListOncallShiftAlertsError, ListOncallShiftAlertsResponse, ListOncallShiftAnnotationsData, ListOncallShiftAnnotationsError, ListOncallShiftAnnotationsResponse, CreateOncallShiftAnnotationData, CreateOncallShiftAnnotationError, CreateOncallShiftAnnotationResponse, GetOncallShiftHandoverData, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, ListOncallShiftIncidentsData, ListOncallShiftIncidentsError, ListOncallShiftIncidentsResponse, GetNextOncallShiftData, GetUserOncallDetailsData, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, ListRetrospectiveTemplatesData, ListRetrospectiveTemplatesError, ListRetrospectiveTemplatesResponse, CreateRetrospectiveTemplateData, CreateRetrospectiveTemplateError, CreateRetrospectiveTemplateResponse, ArchiveRetrospectiveTemplateData, ArchiveRetrospectiveTemplateError, ArchiveRetrospectiveTemplateResponse, UpdateRetrospectiveTemplateData, UpdateRetrospectiveTemplateError, UpdateRetrospectiveTemplateResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, GetRetrospectiveData, ListRetrospectiveDiscussionsData, ListRetrospectiveDiscussionsError, ListRetrospectiveDiscussionsResponse, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionError, CreateRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionData, AddRetrospectiveDiscussionReplyData, AddRetrospectiveDiscussionReplyError, AddRetrospectiveDiscussionReplyResponse, UpdateRetrospectiveDiscussionData, UpdateRetrospectiveDiscussionError, UpdateRetrospectiveDiscussionResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, ListServicesData, ListServicesError, ListServicesResponse, CreateServiceData, CreateServiceError, CreateServiceResponse, GetServiceData, ArchiveServiceData, ArchiveServiceError, ArchiveServiceResponse, UpdateServiceData, UpdateServiceError, UpdateServiceResponse, ListTasksData, ListTasksError, ListTasksResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, GetTaskData, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, GetTeamData, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, ListUserAssignmentsData, ListUserAssignmentsError, ListUserAssignmentsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, ListUsersData, ListUsersError, ListUsersResponse, GetUserData } from '../types.gen';
+import { client, listDebriefQuestions, createDebriefQuestion, getDebriefQuestion, archiveDebriefQuestion, updateDebriefQuestion, requestDocumentEditorSession, verifyDocumentEditorSession, listEnvironments, createEnvironment, getEnvironment, archiveEnvironment, updateEnvironment, listFunctionalities, createFunctionality, getFunctionality, archiveFunctionality, updateFunctionality, getIncidentDebrief, updateIncidentDebrief, listDebriefMessages, addIncidentDebriefUserMessage, listDebriefSuggestions, listIncidentFields, createIncidentField, getIncidentField, archiveIncidentField, updateIncidentField, archiveIncidentMilestone, updateIncidentMilestone, listIncidentRoles, createIncidentRole, getIncidentRole, archiveIncidentRole, updateIncidentRole, listIncidentSeverities, createIncidentSeverity, getIncidentSeverity, archiveIncidentSeverity, updateIncidentSeverity, listIncidentTags, createIncidentTag, getIncidentTag, archiveIncidentTag, updateIncidentTag, listIncidentTypes, createIncidentType, getIncidentType, archiveIncidentType, updateIncidentType, listIncidents, createIncident, getIncident, archiveIncident, updateIncident, getIncidentUserDebrief, listIncidentMilestones, createIncidentMilestone, getRetrospectiveForIncident, listIntegrations, createIntegration, getIntegration, archiveIntegration, updateIntegration, listMeetingSchedules, createMeetingSchedule, getMeetingSchedule, archiveMeetingSchedule, updateMeetingSchedule, listMeetingSessions, createMeetingSession, getMeetingSession, archiveMeetingSession, updateMeetingSession, archiveOncallShiftAnnotation, updateOncallShiftAnnotation, createOncallHandoverTemplate, getOncallShiftHandoverTemplate, archiveOncallHandoverTemplate, updateOncallHandoverTemplate, listOncallRosters, getOncallRoster, listOncallShifts, getOncallShift, listOncallShiftAlerts, listOncallShiftAnnotations, createOncallShiftAnnotation, getOncallShiftHandover, sendOncallShiftHandover, listOncallShiftIncidents, getNextOncallShift, getUserOncallDetails, archiveRetrospectiveReview, updateRetrospectiveReview, listRetrospectiveTemplates, createRetrospectiveTemplate, archiveRetrospectiveTemplate, updateRetrospectiveTemplate, listRetrospectives, getRetrospective, listRetrospectiveDiscussions, createRetrospectiveDiscussion, getRetrospectiveDiscussion, addRetrospectiveDiscussionReply, updateRetrospectiveDiscussion, listRetrospectiveReviews, createRetrospectiveReview, listServices, createService, getService, archiveService, updateService, listTasks, createTask, getTask, archiveTask, updateTask, listTeams, createTeam, getTeam, archiveTeam, updateTeams, getCurrentUserSession, listUserAssignments, listUserNotifications, deleteUserNotification, listUsers, getUser } from '../sdk.gen';
 
 type QueryKey<TOptions extends OptionsLegacyParser> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -668,34 +668,6 @@ export const listDebriefSuggestionsInfiniteOptions = (options: OptionsLegacyPars
     });
 };
 
-export const archiveIncidentEventMutation = (options?: Partial<OptionsLegacyParser<ArchiveIncidentEventData>>) => {
-    const mutationOptions: MutationOptions<ArchiveIncidentEventResponse, ArchiveIncidentEventError, OptionsLegacyParser<ArchiveIncidentEventData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await archiveIncidentEvent({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const updateIncidentEventMutation = (options?: Partial<OptionsLegacyParser<UpdateIncidentEventData>>) => {
-    const mutationOptions: MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, OptionsLegacyParser<UpdateIncidentEventData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await updateIncidentEvent({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const listIncidentFieldsQueryKey = (options?: OptionsLegacyParser<ListIncidentFieldsData>) => [
     createQueryKey('listIncidentFields', options)
 ];
@@ -813,6 +785,34 @@ export const updateIncidentFieldMutation = (options?: Partial<OptionsLegacyParse
     const mutationOptions: MutationOptions<UpdateIncidentFieldResponse, UpdateIncidentFieldError, OptionsLegacyParser<UpdateIncidentFieldData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await updateIncidentField({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const archiveIncidentMilestoneMutation = (options?: Partial<OptionsLegacyParser<ArchiveIncidentMilestoneData>>) => {
+    const mutationOptions: MutationOptions<ArchiveIncidentMilestoneResponse, ArchiveIncidentMilestoneError, OptionsLegacyParser<ArchiveIncidentMilestoneData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await archiveIncidentMilestone({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const updateIncidentMilestoneMutation = (options?: Partial<OptionsLegacyParser<UpdateIncidentMilestoneData>>) => {
+    const mutationOptions: MutationOptions<UpdateIncidentMilestoneResponse, UpdateIncidentMilestoneError, OptionsLegacyParser<UpdateIncidentMilestoneData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateIncidentMilestone({
                 ...options,
                 ...localOptions,
                 throwOnError: true
@@ -1477,14 +1477,14 @@ export const getIncidentUserDebriefOptions = (options: OptionsLegacyParser<GetIn
     });
 };
 
-export const listIncidentEventsQueryKey = (options: OptionsLegacyParser<ListIncidentEventsData>) => [
-    createQueryKey('listIncidentEvents', options)
+export const listIncidentMilestonesQueryKey = (options: OptionsLegacyParser<ListIncidentMilestonesData>) => [
+    createQueryKey('listIncidentMilestones', options)
 ];
 
-export const listIncidentEventsOptions = (options: OptionsLegacyParser<ListIncidentEventsData>) => {
+export const listIncidentMilestonesOptions = (options: OptionsLegacyParser<ListIncidentMilestonesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentEvents({
+            const { data } = await listIncidentMilestones({
                 ...options,
                 ...queryKey[0],
                 signal,
@@ -1492,18 +1492,18 @@ export const listIncidentEventsOptions = (options: OptionsLegacyParser<ListIncid
             });
             return data;
         },
-        queryKey: listIncidentEventsQueryKey(options)
+        queryKey: listIncidentMilestonesQueryKey(options)
     });
 };
 
-export const createIncidentEventQueryKey = (options: OptionsLegacyParser<CreateIncidentEventData>) => [
-    createQueryKey('createIncidentEvent', options)
+export const createIncidentMilestoneQueryKey = (options: OptionsLegacyParser<CreateIncidentMilestoneData>) => [
+    createQueryKey('createIncidentMilestone', options)
 ];
 
-export const createIncidentEventOptions = (options: OptionsLegacyParser<CreateIncidentEventData>) => {
+export const createIncidentMilestoneOptions = (options: OptionsLegacyParser<CreateIncidentMilestoneData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
-            const { data } = await createIncidentEvent({
+            const { data } = await createIncidentMilestone({
                 ...options,
                 ...queryKey[0],
                 signal,
@@ -1511,14 +1511,14 @@ export const createIncidentEventOptions = (options: OptionsLegacyParser<CreateIn
             });
             return data;
         },
-        queryKey: createIncidentEventQueryKey(options)
+        queryKey: createIncidentMilestoneQueryKey(options)
     });
 };
 
-export const createIncidentEventMutation = (options?: Partial<OptionsLegacyParser<CreateIncidentEventData>>) => {
-    const mutationOptions: MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, OptionsLegacyParser<CreateIncidentEventData>> = {
+export const createIncidentMilestoneMutation = (options?: Partial<OptionsLegacyParser<CreateIncidentMilestoneData>>) => {
+    const mutationOptions: MutationOptions<CreateIncidentMilestoneResponse, CreateIncidentMilestoneError, OptionsLegacyParser<CreateIncidentMilestoneData>> = {
         mutationFn: async (localOptions) => {
-            const { data } = await createIncidentEvent({
+            const { data } = await createIncidentMilestone({
                 ...options,
                 ...localOptions,
                 throwOnError: true
@@ -2978,105 +2978,6 @@ export const updateServiceMutation = (options?: Partial<OptionsLegacyParser<Upda
     const mutationOptions: MutationOptions<UpdateServiceResponse, UpdateServiceError, OptionsLegacyParser<UpdateServiceData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await updateService({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const listSubscriptionsQueryKey = (options?: OptionsLegacyParser) => [
-    createQueryKey('listSubscriptions', options)
-];
-
-export const listSubscriptionsOptions = (options?: OptionsLegacyParser) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSubscriptions({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSubscriptionsQueryKey(options)
-    });
-};
-
-export const createSubscriptionQueryKey = (options: OptionsLegacyParser<CreateSubscriptionData>) => [
-    createQueryKey('createSubscription', options)
-];
-
-export const createSubscriptionOptions = (options: OptionsLegacyParser<CreateSubscriptionData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await createSubscription({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: createSubscriptionQueryKey(options)
-    });
-};
-
-export const createSubscriptionMutation = (options?: Partial<OptionsLegacyParser<CreateSubscriptionData>>) => {
-    const mutationOptions: MutationOptions<CreateSubscriptionResponse, CreateSubscriptionError, OptionsLegacyParser<CreateSubscriptionData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await createSubscription({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const getSubscriptionQueryKey = (options: OptionsLegacyParser<GetSubscriptionData>) => [
-    createQueryKey('getSubscription', options)
-];
-
-export const getSubscriptionOptions = (options: OptionsLegacyParser<GetSubscriptionData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await getSubscription({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: getSubscriptionQueryKey(options)
-    });
-};
-
-export const archiveSubscriptionMutation = (options?: Partial<OptionsLegacyParser<ArchiveSubscriptionData>>) => {
-    const mutationOptions: MutationOptions<ArchiveSubscriptionResponse, ArchiveSubscriptionError, OptionsLegacyParser<ArchiveSubscriptionData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await archiveSubscription({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const updateSubscriptionMutation = (options?: Partial<OptionsLegacyParser<UpdateSubscriptionData>>) => {
-    const mutationOptions: MutationOptions<UpdateSubscriptionResponse, UpdateSubscriptionError, OptionsLegacyParser<UpdateSubscriptionData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await updateSubscription({
                 ...options,
                 ...localOptions,
                 throwOnError: true

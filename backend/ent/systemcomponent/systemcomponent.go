@@ -36,10 +36,18 @@ const (
 	EdgeControls = "controls"
 	// EdgeFeedbackTo holds the string denoting the feedback_to edge name in mutations.
 	EdgeFeedbackTo = "feedback_to"
+	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
+	EdgeIncidents = "incidents"
+	// EdgeEvents holds the string denoting the events edge name in mutations.
+	EdgeEvents = "events"
 	// EdgeControlRelationships holds the string denoting the control_relationships edge name in mutations.
 	EdgeControlRelationships = "control_relationships"
 	// EdgeFeedbackRelationships holds the string denoting the feedback_relationships edge name in mutations.
 	EdgeFeedbackRelationships = "feedback_relationships"
+	// EdgeIncidentSystemComponents holds the string denoting the incident_system_components edge name in mutations.
+	EdgeIncidentSystemComponents = "incident_system_components"
+	// EdgeEventComponents holds the string denoting the event_components edge name in mutations.
+	EdgeEventComponents = "event_components"
 	// Table holds the table name of the systemcomponent in the database.
 	Table = "system_components"
 	// ParentTable is the table that holds the parent relation/edge.
@@ -54,6 +62,16 @@ const (
 	ControlsTable = "system_component_control_relationships"
 	// FeedbackToTable is the table that holds the feedback_to relation/edge. The primary key declared below.
 	FeedbackToTable = "system_component_feedback_relationships"
+	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
+	IncidentsTable = "incident_system_components"
+	// IncidentsInverseTable is the table name for the Incident entity.
+	// It exists in this package in order to avoid circular dependency with the "incident" package.
+	IncidentsInverseTable = "incidents"
+	// EventsTable is the table that holds the events relation/edge. The primary key declared below.
+	EventsTable = "incident_event_system_components"
+	// EventsInverseTable is the table name for the IncidentEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentevent" package.
+	EventsInverseTable = "incident_events"
 	// ControlRelationshipsTable is the table that holds the control_relationships relation/edge.
 	ControlRelationshipsTable = "system_component_control_relationships"
 	// ControlRelationshipsInverseTable is the table name for the SystemComponentControlRelationship entity.
@@ -68,6 +86,20 @@ const (
 	FeedbackRelationshipsInverseTable = "system_component_feedback_relationships"
 	// FeedbackRelationshipsColumn is the table column denoting the feedback_relationships relation/edge.
 	FeedbackRelationshipsColumn = "source_id"
+	// IncidentSystemComponentsTable is the table that holds the incident_system_components relation/edge.
+	IncidentSystemComponentsTable = "incident_system_components"
+	// IncidentSystemComponentsInverseTable is the table name for the IncidentSystemComponent entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentsystemcomponent" package.
+	IncidentSystemComponentsInverseTable = "incident_system_components"
+	// IncidentSystemComponentsColumn is the table column denoting the incident_system_components relation/edge.
+	IncidentSystemComponentsColumn = "system_component_id"
+	// EventComponentsTable is the table that holds the event_components relation/edge.
+	EventComponentsTable = "incident_event_system_components"
+	// EventComponentsInverseTable is the table name for the IncidentEventSystemComponent entity.
+	// It exists in this package in order to avoid circular dependency with the "incidenteventsystemcomponent" package.
+	EventComponentsInverseTable = "incident_event_system_components"
+	// EventComponentsColumn is the table column denoting the event_components relation/edge.
+	EventComponentsColumn = "system_component_id"
 )
 
 // Columns holds all SQL columns for systemcomponent fields.
@@ -94,6 +126,12 @@ var (
 	// FeedbackToPrimaryKey and FeedbackToColumn2 are the table columns denoting the
 	// primary key for the feedback_to relation (M2M).
 	FeedbackToPrimaryKey = []string{"source_id", "target_id"}
+	// IncidentsPrimaryKey and IncidentsColumn2 are the table columns denoting the
+	// primary key for the incidents relation (M2M).
+	IncidentsPrimaryKey = []string{"incident_id", "system_component_id"}
+	// EventsPrimaryKey and EventsColumn2 are the table columns denoting the
+	// primary key for the events relation (M2M).
+	EventsPrimaryKey = []string{"incident_event_id", "system_component_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -232,6 +270,34 @@ func ByFeedbackTo(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByIncidentsCount orders the results by incidents count.
+func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncidentsStep(), opts...)
+	}
+}
+
+// ByIncidents orders the results by incidents terms.
+func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByEventsCount orders the results by events count.
+func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+	}
+}
+
+// ByEvents orders the results by events terms.
+func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByControlRelationshipsCount orders the results by control_relationships count.
 func ByControlRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -257,6 +323,34 @@ func ByFeedbackRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByFeedbackRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newFeedbackRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIncidentSystemComponentsCount orders the results by incident_system_components count.
+func ByIncidentSystemComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIncidentSystemComponentsStep(), opts...)
+	}
+}
+
+// ByIncidentSystemComponents orders the results by incident_system_components terms.
+func ByIncidentSystemComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentSystemComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByEventComponentsCount orders the results by event_components count.
+func ByEventComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventComponentsStep(), opts...)
+	}
+}
+
+// ByEventComponents orders the results by event_components terms.
+func ByEventComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newParentStep() *sqlgraph.Step {
@@ -287,6 +381,20 @@ func newFeedbackToStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, false, FeedbackToTable, FeedbackToPrimaryKey...),
 	)
 }
+func newIncidentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
+	)
+}
+func newEventsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, EventsTable, EventsPrimaryKey...),
+	)
+}
 func newControlRelationshipsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -299,5 +407,19 @@ func newFeedbackRelationshipsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(FeedbackRelationshipsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackRelationshipsTable, FeedbackRelationshipsColumn),
+	)
+}
+func newIncidentSystemComponentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentSystemComponentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, IncidentSystemComponentsTable, IncidentSystemComponentsColumn),
+	)
+}
+func newEventComponentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventComponentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EventComponentsTable, EventComponentsColumn),
 	)
 }
