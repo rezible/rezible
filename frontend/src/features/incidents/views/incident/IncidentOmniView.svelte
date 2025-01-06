@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { watch } from "runed";
+	import { Header } from "svelte-ux";
     import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { type Incident, type Retrospective } from "$lib/api";
-	import { Header } from "svelte-ux";
 
 	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
+
     import IncidentTimeline from "$features/incidents/components/incident-timeline/IncidentTimeline.svelte";
     import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
-    import FindingsReport from "$features/incidents/components/findings-report/FindingsReport.svelte";
-	import SystemsAnalysis from "$features/incidents/components/systems-analysis/IncidentSystemsAnalysis.svelte";
+    import IncidentFindingsReport from "$features/incidents/components/incident-report/IncidentFindingsReport.svelte";
+	import IncidentAnalysis from "$features/incidents/components/incident-analysis/IncidentAnalysis.svelte";
 
 	type Props = {
         incident: Incident;
@@ -68,9 +69,9 @@
 		{:else if activeViewRoute === "timeline"}
 			<IncidentTimeline {incidentId} />
 		{:else if activeViewRoute === "analysis"}
-			<SystemsAnalysis />
+			<IncidentAnalysis />
 		{:else if activeViewRoute === "findings"}
-			<FindingsReport {incident} {retrospective} />
+			<IncidentFindingsReport {incident} {retrospective} />
 		{/if}
 	</div>
 
