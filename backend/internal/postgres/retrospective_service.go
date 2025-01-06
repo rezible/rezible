@@ -7,6 +7,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rs/zerolog/log"
 )
 
 type RetrospectiveService struct {
@@ -25,15 +26,26 @@ func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.Retrospective.Get(ctx, id)
 }
 
+func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context, inc *ent.Incident) (retrospective.Type, error) {
+	// TODO: base on severity?
+	return retrospective.TypeFull, nil
+}
+
 func (s *RetrospectiveService) GetByIncident(ctx context.Context, inc *ent.Incident, createMissing bool) (*ent.Retrospective, error) {
 	retro, retroErr := inc.QueryRetrospective().Only(ctx)
 	if retroErr == nil && retro != nil {
 		return retro, nil
 	}
 	if ent.IsNotFound(retroErr) && createMissing {
+		retroType, typeErr := s.getIncidentRetrospectiveType(ctx, inc)
+		if typeErr != nil {
+			retroType = retrospective.TypeFull
+			log.Error().Err(typeErr).Str("id", inc.ID.String()).Msgf("Failed to get retrospective type for incident")
+		}
 		return s.db.Retrospective.Create().
 			SetIncidentID(inc.ID).
 			SetDocumentName(inc.Slug + "-retrospective").
+			SetType(retroType).
 			SetState(retrospective.StateDraft).
 			Save(ctx)
 	}

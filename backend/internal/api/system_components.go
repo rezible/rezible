@@ -18,6 +18,12 @@ func (h *systemComponentsHandler) ListSystemComponents(ctx context.Context, requ
 	return &resp, nil
 }
 
+func (h *systemComponentsHandler) ListIncidentSystemComponents(ctx context.Context, request *oapi.ListIncidentSystemComponentsRequest) (*oapi.ListIncidentSystemComponentsResponse, error) {
+	var resp oapi.ListIncidentSystemComponentsResponse
+
+	return &resp, nil
+}
+
 func (h *systemComponentsHandler) CreateSystemComponent(ctx context.Context, request *oapi.CreateSystemComponentRequest) (*oapi.CreateSystemComponentResponse, error) {
 	var resp oapi.CreateSystemComponentResponse
 

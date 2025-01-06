@@ -1,7 +1,10 @@
-import { mount, unmount } from "svelte";
+import { mount, onMount, unmount } from "svelte";
 import { Timeline, type IdType, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
+import { watch } from "runed";
+import type { IncidentMilestone } from "$lib/api";
+import { incidentData } from "./incident-data.svelte";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
 
 export const createTimelineEventElement = (id: string) => {
@@ -22,23 +25,33 @@ export const createTimelineEventElement = (id: string) => {
 const createTimelineState = () => {
 	let timeline = $state<Timeline>();
 
-	const items = new DataSet<any>([
-		{
-			id: "A",
-			content: "Period A",
-			start: "2014-01-16",
-			end: "2014-01-22",
-			type: "background",
-		},
-		{
-			id: "B",
-			content: "Period B",
-			start: "2014-01-25",
-			end: "2014-01-30",
-			type: "background",
-			className: "negative",
-		},
-	]);
+	let milestoneItems = new DataSet<any>([]);
+	let eventItems = new DataSet<any>([]);
+
+	const items = new DataSet<any>([]);
+	const updateItems = () => {
+		// items = new DataSet()
+	}
+
+	const onMilestonesUpdated = (m: IncidentMilestone[]) => {
+		milestoneItems = new DataSet([
+			{
+				id: "A",
+				content: "Period A",
+				start: "2014-01-16",
+				end: "2014-01-22",
+				type: "background",
+			},
+			{
+				id: "B",
+				content: "Period B",
+				start: "2014-01-25",
+				end: "2014-01-30",
+				type: "background",
+				className: "negative",
+			}
+		]);
+	}
 
 	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
 	const addEvent = (id: IdType) => {
@@ -48,12 +61,12 @@ const createTimelineState = () => {
 	}
 
 	const mount = (container: HTMLElement) => {
-		addEvent("bleh");
-
 		const options: TimelineOptions = {
 			height: "100%",
 		};
 		timeline = new Timeline(container, items, options);
+
+		addEvent("bleh");
 	}
 
 	const unmount = () => {
@@ -63,10 +76,18 @@ const createTimelineState = () => {
 		items.clear();
 	}
 
+	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
+		watch(containerElFn, el => {
+			if (el) mount(el);
+		});
+		onMount(() => {return unmount});
+
+		watch(() => incidentData.milestones, onMilestonesUpdated);
+	}
+
 	return {
-		mount,
+		componentSetup,
 		addEvent,
-		unmount,
 	}
 }
 export const timeline = createTimelineState();

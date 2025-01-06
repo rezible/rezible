@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"context"
+	"github.com/rezible/rezible/ent"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -14,6 +15,8 @@ type SystemComponentsHandler interface {
 	GetSystemComponent(context.Context, *GetSystemComponentRequest) (*GetSystemComponentResponse, error)
 	UpdateSystemComponent(context.Context, *UpdateSystemComponentRequest) (*UpdateSystemComponentResponse, error)
 	ArchiveSystemComponent(context.Context, *ArchiveSystemComponentRequest) (*ArchiveSystemComponentResponse, error)
+
+	ListIncidentSystemComponents(context.Context, *ListIncidentSystemComponentsRequest) (*ListIncidentSystemComponentsResponse, error)
 }
 
 func (o operations) RegisterSystemComponents(api huma.API) {
@@ -22,25 +25,47 @@ func (o operations) RegisterSystemComponents(api huma.API) {
 	huma.Register(api, GetSystemComponent, o.GetSystemComponent)
 	huma.Register(api, UpdateSystemComponent, o.UpdateSystemComponent)
 	huma.Register(api, ArchiveSystemComponent, o.ArchiveSystemComponent)
+
+	huma.Register(api, ListIncidentSystemComponents, o.ListIncidentSystemComponents)
 }
 
-type SystemComponent struct {
-	Attributes SystemComponentAttributes `json:"attributes"`
-	Id         uuid.UUID                 `json:"id"`
+type (
+	SystemComponent struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes SystemComponentAttributes `json:"attributes"`
+	}
+
+	SystemComponentAttributes struct {
+		Name string `json:"name"`
+	}
+
+	IncidentSystemComponent struct {
+		Id         uuid.UUID                         `json:"id"`
+		Attributes IncidentSystemComponentAttributes `json:"attributes"`
+	}
+
+	IncidentSystemComponentAttributes struct {
+		Role string `json:"role"`
+	}
+)
+
+func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
+	return SystemComponent{
+		Id: sc.ID,
+		Attributes: SystemComponentAttributes{
+			Name: sc.Name,
+		},
+	}
 }
 
-type SystemComponentAttributes struct {
-	Name string `json:"name"`
+func IncidentSystemComponentFromEnt(isc *ent.IncidentSystemComponent) IncidentSystemComponent {
+	return IncidentSystemComponent{
+		Id: isc.ID,
+		Attributes: IncidentSystemComponentAttributes{
+			Role: isc.Role.String(),
+		},
+	}
 }
-
-//func SystemComponentFromEnt(serv *ent.SystemComponent) SystemComponent {
-//	return SystemComponent{
-//		Id: serv.ID,
-//		Attributes: SystemComponentAttributes{
-//			Name: serv.Name,
-//		},
-//	}
-//}
 
 var systemComponentsTags = []string{"System Components"}
 
@@ -59,6 +84,18 @@ type ListSystemComponentsRequest struct {
 	ListRequest
 }
 type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
+
+var ListIncidentSystemComponents = huma.Operation{
+	OperationID: "list-incident-system-components",
+	Method:      http.MethodGet,
+	Path:        "/incidents/{id}/components",
+	Summary:     "List System Components for Incident",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type ListIncidentSystemComponentsRequest ListIdRequest
+type ListIncidentSystemComponentsResponse PaginatedResponse[IncidentSystemComponent]
 
 var CreateSystemComponent = huma.Operation{
 	OperationID: "create-system-component",

@@ -1006,6 +1006,15 @@ export type IncidentSeverityAttributes = {
     name: string;
 };
 
+export type IncidentSystemComponent = {
+    attributes: IncidentSystemComponentAttributes;
+    id: string;
+};
+
+export type IncidentSystemComponentAttributes = {
+    role: string;
+};
+
 export type IncidentTag = {
     attributes: IncidentTagAttributes;
     id: string;
@@ -1124,6 +1133,15 @@ export type ListIncidentsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Incident>;
+    pagination: ResponsePagination;
+};
+
+export type ListIncidentSystemComponentsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentSystemComponent>;
     pagination: ResponsePagination;
 };
 
@@ -1522,7 +1540,6 @@ export type Retrospective = {
 };
 
 export type RetrospectiveAttributes = {
-    documentName: string;
     sections: Array<RetrospectiveSection>;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
     type: 'quick' | 'full';
@@ -2719,6 +2736,22 @@ export type UpdateIncidentData = {
 export type UpdateIncidentResponse = (UpdateIncidentResponseBody);
 
 export type UpdateIncidentError = (ErrorModel);
+
+export type ListIncidentSystemComponentsData = {
+    path: {
+        id: string;
+    };
+    query?: {
+        archived?: boolean;
+        limit?: number;
+        offset?: number;
+        search?: string;
+    };
+};
+
+export type ListIncidentSystemComponentsResponse = (ListIncidentSystemComponentsResponseBody);
+
+export type ListIncidentSystemComponentsError = (ErrorModel);
 
 export type GetIncidentUserDebriefData = {
     path: {

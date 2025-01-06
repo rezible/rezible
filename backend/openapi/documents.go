@@ -20,8 +20,8 @@ func (o operations) RegisterDocuments(api huma.API) {
 type (
 	DocumentEditorSession struct {
 		DocumentName  string `json:"documentName"`
-		Token         string `json:"token"`
 		ConnectionUrl string `json:"connectionUrl"`
+		Token         string `json:"token"`
 	}
 
 	DocumentEditorSessionAuth struct {

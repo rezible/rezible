@@ -1,3 +1,5 @@
+import { onMount } from "svelte";
+import { watch } from "runed";
 import { writable } from "svelte/store";
 
 import {
@@ -6,16 +8,12 @@ import {
 	MarkerType,
 } from "@xyflow/svelte";
 
-import type { ContextMenuProps } from "./ContextMenu.svelte";
+import type { IncidentSystemComponent, SystemComponent } from "$lib/api";
+import { incidentData } from "./incident-data.svelte";
+import type { ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
 
-type PaneClickEvent = MouseEvent | TouchEvent;
-type NodeClickEventDetail = {node: Node, event: PaneClickEvent};
-
-const createDiagramState = () => {
-	let containerEl = $state<HTMLElement>();
-	let ctxMenuProps = $state<ContextMenuProps>();
-
-	const nodes = writable<Node[]>([
+const translateSystemComponents = (components: IncidentSystemComponent[]) => {
+	const nodes: Node[] = [
 		{
 			id: "service-1",
 			data: { label: "API Service" },
@@ -26,9 +24,9 @@ const createDiagramState = () => {
 			data: { label: "Rate Limiter" },
 			position: { x: 100, y: 100 },
 		},
-	]);
+	];
 
-	const edges = writable<Edge[]>([
+	const edges: Edge[] = [
 		{
 			id: "e1",
 			source: "service-1",
@@ -39,14 +37,30 @@ const createDiagramState = () => {
 				type: MarkerType.ArrowClosed,
 			},
 		},
-	]);
+	];
 
-	const mount = (el: HTMLElement) => {
-		containerEl = el;
+	return {nodes, edges};
+}
+
+type PaneClickEvent = MouseEvent | TouchEvent;
+type NodeClickEventDetail = {node: Node, event: PaneClickEvent};
+
+const createDiagramState = () => {
+	let containerEl = $state<HTMLElement>();
+	let ctxMenuProps = $state<ContextMenuProps>();
+
+	const nodes = writable<Node[]>([]);
+	const edges = writable<Edge[]>([]);
+
+	const onIncidentSystemComponentsUpdated = (components: IncidentSystemComponent[]) => {
+		const translated = translateSystemComponents(components);
+		nodes.set(translated.nodes);
+		edges.set(translated.edges);
 	}
 
-	const unmount = () => {
-
+	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
+		onMount(() => {containerEl = containerElFn()});
+		watch(() => incidentData.incidentComponents, onIncidentSystemComponentsUpdated);
 	}
 
 	const handleNodeClicked = ({node, event}: NodeClickEventDetail) => {
@@ -75,8 +89,7 @@ const createDiagramState = () => {
 	};
 
 	return {
-		mount,
-		unmount,
+		componentSetup,
 		nodes,
 		edges,
 		get ctxMenuProps() { return ctxMenuProps },

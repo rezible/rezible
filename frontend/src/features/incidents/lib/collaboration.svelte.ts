@@ -21,12 +21,12 @@ const createCollaborationState = () => {
 
 	let collab = $state<CollaborationState>(emptyState);
 
-	const connect = async (documentName: string) => {
-		if (collab.documentName === documentName) return;
-		collab.documentName = documentName;
+	const connect = async (retrospectiveId: string) => {
+		if (collab.documentName === retrospectiveId) return;
+		collab.documentName = retrospectiveId;
 		
 		const res = await requestDocumentEditorSession({
-			body: {attributes: {documentName}},
+			body: {attributes: {documentName: retrospectiveId}},
 			throwOnError: false,
 		});
 

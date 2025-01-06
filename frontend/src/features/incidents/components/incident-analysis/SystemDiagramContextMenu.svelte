@@ -10,7 +10,6 @@
 </script>
 
 <script lang="ts">
-    import { diagram } from "./diagram.svelte";
 	import { useEdges, useNodes } from "@xyflow/svelte";
 
 	const { nodeId, top, left, right, bottom }: ContextMenuProps = $props();

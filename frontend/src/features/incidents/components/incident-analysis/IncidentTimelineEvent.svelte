@@ -11,8 +11,8 @@
 	let { label }: TimelineEventComponentProps = $props();
 
 	onMount(() => {
-		console.log("mounted");
-		return () => {console.log("unmounting")}
+		// console.log("mounted");
+		// return () => {console.log("unmounting")}
 	})
 </script>
 

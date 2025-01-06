@@ -11,6 +11,7 @@
     import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 
 	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
+    import NavigationMenu from "./NavigationMenu.svelte";
 
 	type Props = {
         incident: Incident;
@@ -19,58 +20,24 @@
     }
     const { incident, retrospective, viewParam }: Props = $props();
 
-	const fullRetroViewGroups = [
-		{label: "Timeline", route: "timeline"},
-		{label: "Analysis", route: "analysis"},
-		{label: "Report", route: "report"},
-	];
-	const quickRetroViewGroups = [
-		{label: "Report", route: "report"}
-	];
-
 	const retroType = $derived(retrospective.attributes.type);
-	const viewGroups = $derived([
-		{
-			label: "Details",
-			children: [{label: "Overview", route: ""}]
-		},
-		{
-			label: "Retrospective",
-			children: retroType === "full" ? fullRetroViewGroups : quickRetroViewGroups,
-		},
-	]);
-	const currRoute = $derived(viewParam || "");
 
-	const documentName = $derived(retrospective.attributes.documentName ?? "");
-	watch(() => documentName, (name: string) => {collaborationState.connect(name)});
+	const retrospectiveId = $derived(retrospective.id);
+	watch(() => retrospectiveId, (id: string) => {collaborationState.connect(id)});
 	onMount(() => {return () => {collaborationState.cleanup()}});
 </script>
 
 <div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">
-	<div class="w-40 flex flex-col gap-2 overflow-y-auto">
-		{#each viewGroups as g, i}
-			<div class="border p-2 bg-surface-200 flex flex-col gap-1">
-				<span class="text-surface-content/75">{g.label}</span>
-				{#each g.children as v}
-					{@const active = (v.route === currRoute)}
-					<a href="/incidents/{incident.attributes.slug}/{v.route}">
-						<div class="p-2 rounded border" class:border-r-4={active} class:bg-primary-600={active} class:text-primary-content={active}>
-							<span>{v.label}</span>
-						</div>
-					</a>
-				{/each}
-			</div>
-		{/each}
-	</div>
+	<NavigationMenu {incident} {retroType} {viewParam} />
 
 	<div class="flex-1 min-h-0 overflow-y-auto border p-2">
-		{#if currRoute === ""}
+		{#if viewParam === undefined}
 			<IncidentOverview {incident} />
-		{:else if currRoute === "timeline"}
+		{:else if viewParam === "timeline"}
 			<IncidentTimeline {incident} />
-		{:else if currRoute === "analysis"}
+		{:else if viewParam === "analysis"}
 			<IncidentAnalysis {incident} />
-		{:else if currRoute === "report"}
+		{:else if viewParam === "report"}
 			<IncidentFindingsReport {incident} {retrospective} />
 		{/if}
 	</div>

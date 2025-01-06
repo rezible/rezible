@@ -61,10 +61,9 @@ type (
 	}
 
 	RetrospectiveAttributes struct {
-		Type         RetrospectiveType      `json:"type" enum:"quick,full"`
-		DocumentName string                 `json:"documentName"`
-		Sections     []RetrospectiveSection `json:"sections"`
-		State        RetrospectiveState     `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
+		Type     RetrospectiveType      `json:"type" enum:"quick,full"`
+		Sections []RetrospectiveSection `json:"sections"`
+		State    RetrospectiveState     `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
 	}
 
 	RetrospectiveType  string
@@ -121,9 +120,8 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 	ret := Retrospective{
 		Id: r.ID,
 		Attributes: RetrospectiveAttributes{
-			DocumentName: r.DocumentName,
-			Type:         RetrospectiveType(r.Type.String()),
-			State:        RetrospectiveState(r.State.String()),
+			Type:  RetrospectiveType(r.Type.String()),
+			State: RetrospectiveState(r.State.String()),
 		},
 	}
 

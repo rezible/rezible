@@ -9,17 +9,11 @@
 
 	import "@xyflow/svelte/dist/style.css";
 
-	import ContextMenu from "./ContextMenu.svelte";
+	import ContextMenu from "./SystemDiagramContextMenu.svelte";
     import { diagram } from "./diagram.svelte";
-    import { onMount } from "svelte";
 
 	let containerEl = $state<HTMLElement>();
-
-	onMount(() => {
-		if (!containerEl) return;
-		diagram.mount(containerEl);
-		return () => diagram.unmount();
-	})
+	diagram.componentSetup(() => containerEl);
 </script>
 
 <div class="h-full w-full" bind:this={containerEl}>
