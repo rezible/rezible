@@ -6,8 +6,8 @@
     import { CreateMeetingFormSchema, getEmptyForm, weekdays, type CreateMeetingFormData, type Weekday } from './meetings';
     import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 
-    import DateTimePickerField from './DateTimePickerField.svelte';
-    import AttendeePickerField from './AttendeePickerField.svelte';
+    import DateTimePickerField from '$components/date-time-field/DateTimePickerField.svelte';
+    import UserPickerField from './UserPickerField.svelte';
 
 	type Props = {
 		open: boolean;
@@ -93,7 +93,7 @@
 				{/if}
 			</div>
 
-			<AttendeePickerField value={[]} />
+			<UserPickerField value={[]} />
 		</div>
 
 		<div class="flex flex-col gap-1">

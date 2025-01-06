@@ -8,9 +8,10 @@ import {
 	MarkerType,
 } from "@xyflow/svelte";
 
-import type { IncidentSystemComponent, SystemComponent } from "$lib/api";
-import { incidentData } from "./incident-data.svelte";
+import { listIncidentSystemComponentsOptions, type IncidentSystemComponent, type SystemComponent } from "$lib/api";
 import type { ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { incidentCtx } from '$features/incidents/lib/context.ts';
 
 const translateSystemComponents = (components: IncidentSystemComponent[]) => {
 	const nodes: Node[] = [
@@ -58,9 +59,12 @@ const createDiagramState = () => {
 		edges.set(translated.edges);
 	}
 
-	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
-		onMount(() => {containerEl = containerElFn()});
-		watch(() => incidentData.incidentComponents, onIncidentSystemComponentsUpdated);
+	const createQueries = () => {
+		const queryClient = useQueryClient();
+		const incidentId = incidentCtx.get().id;
+
+		const milestonesQuery = createQuery(() => listIncidentSystemComponentsOptions({path: {id: incidentId}}), queryClient);
+		watch(() => milestonesQuery, r => onIncidentSystemComponentsUpdated(r.data?.data ?? []));
 	}
 
 	const handleNodeClicked = ({node, event}: NodeClickEventDetail) => {
@@ -87,6 +91,11 @@ const createDiagramState = () => {
 	const handlePaneClicked = (event: PaneClickEvent) => {
 		ctxMenuProps = undefined;
 	};
+
+	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
+		onMount(() => {containerEl = containerElFn()});
+		createQueries();
+	}
 
 	return {
 		componentSetup,

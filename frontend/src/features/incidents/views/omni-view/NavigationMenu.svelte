@@ -3,11 +3,11 @@
     import type { IncidentViewRouteParam } from "$src/params/incidentView";
 
 	type Props = {
-		incident: Incident;
+		incidentSlug: string;
 		retroType: string;
 		viewParam: IncidentViewRouteParam;
 	}
-	const { incident, retroType, viewParam }: Props = $props();
+	const { incidentSlug, retroType, viewParam }: Props = $props();
 
 	const fullRetroViewGroups = [
 		{label: "Timeline", route: "timeline"},
@@ -38,7 +38,7 @@
 			<span class="text-surface-content/75">{g.label}</span>
 			{#each g.children as v}
 				{@const active = (v.route === currRoute)}
-				<a href="/incidents/{incident.attributes.slug}/{v.route}">
+				<a href="/incidents/{incidentSlug}/{v.route}">
 					<div class="p-2 rounded border" class:border-r-4={active} class:bg-primary-600={active} class:text-primary-content={active}>
 						<span>{v.label}</span>
 					</div>

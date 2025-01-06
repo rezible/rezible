@@ -1,23 +1,18 @@
 <script lang="ts">
 	import type { Incident } from "$lib/api";
-    import IncidentTimeline from "./IncidentTimeline.svelte";
     import SystemDiagram from "./SystemDiagram.svelte";
-    import { incidentData } from "./incident-data.svelte";
 
 	type Props = {
 		incident: Incident; 
 	}
 	const { incident }: Props = $props();
-	
-	incidentData.mount(() => incident.id);
 </script>
 
-<div class="h-full w-full">
-	<div style:height="40%">
-		<IncidentTimeline />
-	</div>
-
-	<div style:height="60%">
+<div class="flex flex-col h-full w-full overflow-y-hidden">
+	<div class="min-h-0 flex-1">
 		<SystemDiagram />
+	</div>
+	<div class="h-20">
+		actions
 	</div>
 </div>

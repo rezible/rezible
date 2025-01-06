@@ -36,8 +36,7 @@ func (IncidentEvent) Fields() []ent.Field {
 			UpdateDefault(time.Now),
 		field.UUID("created_by", uuid.UUID{}),
 		field.Int("sequence"),
-		field.Bool("is_draft").
-			Default(false),
+		field.Bool("is_draft").Default(false),
 	}
 }
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { slide } from 'svelte/transition';
 	import { mdiCalendar } from '@mdi/js';
-	import { Field, Dialog, DateSelect, DateToken, getSettings, PeriodType } from 'svelte-ux';
+	import { Field, Dialog, DateSelect, DateToken, getSettings, PeriodType, NumberStepper, Input } from 'svelte-ux';
 	import type { DateTimeAnchor } from "$lib/api";
     import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 
@@ -9,12 +9,14 @@
 		name?: string;
 		label: string;
 		current: DateTimeAnchor;
+		exactTime?: boolean;
 		onChange: (newValue: DateTimeAnchor) => void;
 	}
 	let {
 		name = "",
 		label,
 		current,
+		exactTime,
 		onChange,
 	}: Props = $props();
 
@@ -25,9 +27,12 @@
 		const timeParts = a.time.split(":");
 		const hour = Number.parseInt(timeParts[0]);
 		const minute = Number.parseInt(timeParts[1]);
+		const seconds = Number.parseInt(timeParts[2]);
 		return {
 			date: new Date(a.date),
-			hour, minute,
+			hour, 
+			minute,
+			seconds,
 			amPm: hour >= 12 ? "pm" : "am",
 			timezone: a.timezone,
 		}
@@ -58,8 +63,8 @@
 	const onConfirm = () => {
 		const hour24 = convertHour24()
 		const newValue = {
-			date: `${value.date.getFullYear()}-${pad(value.date.getMonth() + 1)}-${pad(value.date.getDate())}`,
-			time: `${pad(hour24)}:${pad(value.minute)}:00`,
+			date: value.date,// `${value.date.getFullYear()}-${pad(value.date.getMonth() + 1)}-${pad(value.date.getDate())}`,
+			time: `${pad(hour24)}:${pad(value.minute)}:${pad(value.seconds)}`,
 			timezone: value.timezone,
 		};
 		onChange(newValue);
@@ -110,21 +115,26 @@
 			/>
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
-				<select class={selectClasses} bind:value={value.hour}>
-					{#each ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"] as h}
-						{@const hourNum = Number.parseInt(h)}
-						<option selected={value.hour === hourNum} value={hourNum}>{h}</option>
-					{/each}
-				</select>
+				{#if exactTime}
+					<!-- https://time-picker.nouro.app/ -->
+					<Input mask="hhmmss" replace="hms" on:change={e => {console.log(e.detail.value)}} class="text-md w-8 border text-center" />
+				{:else}
+					<select class={selectClasses} bind:value={value.hour}>
+						{#each ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"] as h}
+							{@const hourNum = Number.parseInt(h)}
+							<option selected={value.hour === hourNum} value={hourNum}>{h}</option>
+						{/each}
+					</select>
 
-				<span>:</span>
+					<span>:</span>
 
-				<select class={selectClasses} bind:value={value.minute}>
-					{#each ["00", "15", "30", "45"] as m}
-						{@const minuteNum = Number.parseInt(m)}
-						<option selected={value.minute === minuteNum} value={minuteNum}>{m}</option>
-					{/each}
-				</select>
+					<select class={selectClasses} bind:value={value.minute}>
+						{#each ["00", "15", "30", "45"] as m}
+							{@const minuteNum = Number.parseInt(m)}
+							<option selected={value.minute === minuteNum} value={minuteNum}>{m}</option>
+						{/each}
+					</select>
+				{/if}
 
 				<select class={selectClasses} bind:value={value.amPm}>
 					<option selected={value.amPm==="am"} value="am">AM</option>

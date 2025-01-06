@@ -3,11 +3,10 @@
 	import { Button, Icon, TextField } from 'svelte-ux';
 	import { mdiLink, mdiPlus } from '@mdi/js';
 
-	interface Props { 
-		incident: Incident;
-		data: any[];
-	};
-	let { incident, data }: Props = $props();
+	type Props = {
+		onLinked: (id: string) => void;
+	}
+	const { onLinked }: Props = $props();
 </script>
 
 <TextField label="Link New Item" classes={{ input: 'text-sm' }}>

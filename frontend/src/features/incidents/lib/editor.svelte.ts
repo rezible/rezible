@@ -1,5 +1,6 @@
-import { isActive, type ChainedCommands, type Editor, type Extensions } from '@tiptap/core';
+import { isActive, type ChainedCommands, type Editor, type Extensions, type Content } from '@tiptap/core';
 import type { EditorState, Transaction } from '@tiptap/pm/state';
+import { Editor as SvelteEditor } from 'svelte-tiptap';
 
 import { debounce } from '$lib/utils.svelte';
 import { session } from '$lib/auth.svelte';
@@ -16,6 +17,20 @@ import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 
 import { RezUserSuggestion } from './user-suggestions/user-suggestion.svelte';
+
+export const createMentionEditor = (content: Content, classes = "") => {
+	const userMentions = configureUserMentionExtension(RezUserSuggestion);
+	const baseExtensions = configureBaseExtensions(true);
+	return new SvelteEditor({
+		content,
+		extensions: [...baseExtensions, userMentions],
+		editorProps: {
+			attributes: {
+				class: 'focus:outline-none ' + classes
+			}
+		}
+	})
+};
 
 export type ActiveStatus = {
 	focused?: boolean;

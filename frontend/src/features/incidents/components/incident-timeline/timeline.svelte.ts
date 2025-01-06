@@ -2,10 +2,12 @@ import { mount, onMount, unmount } from "svelte";
 import { Timeline, type IdType, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { watch } from "runed";
-import type { IncidentMilestone } from "$lib/api";
-import { incidentData } from "./incident-data.svelte";
+import { incidentCtx } from '$features/incidents/lib/context.ts';
+import { listIncidentMilestonesOptions, type IncidentMilestone, type ListIncidentMilestonesResponse } from "$lib/api";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
+import type { TimelineEvent } from "./types";
 
 export const createTimelineEventElement = (id: string) => {
 	let props = $state<TimelineEventComponentProps>({label: "initial"});
@@ -33,7 +35,7 @@ const createTimelineState = () => {
 		// items = new DataSet()
 	}
 
-	const onMilestonesUpdated = (m: IncidentMilestone[]) => {
+	const onMilestonesQueryDataUpdated = (m: IncidentMilestone[]) => {
 		milestoneItems = new DataSet([
 			{
 				id: "A",
@@ -51,6 +53,22 @@ const createTimelineState = () => {
 				className: "negative",
 			}
 		]);
+	};
+
+	const onEventsQueryDataUpdated = (events: any[]) => {
+		console.log("events updated");
+	};
+
+	const createQueries = () => {
+		const queryClient = useQueryClient();
+		const incidentId = incidentCtx.get().id;
+
+		const milestonesQuery = createQuery(() => listIncidentMilestonesOptions({path: {id: incidentId}}), queryClient);
+		watch(() => milestonesQuery, r => onMilestonesQueryDataUpdated(r.data?.data ?? []));
+
+		// TODO: swap this for correct query
+		const eventsQuery = createQuery(() => listIncidentMilestonesOptions({path: {id: incidentId}}), queryClient);
+		watch(() => eventsQuery, r => onEventsQueryDataUpdated(r.data?.data ?? []));
 	}
 
 	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
@@ -75,19 +93,20 @@ const createTimelineState = () => {
 		eventComponents.clear();
 		items.clear();
 	}
-
+	
 	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
 		watch(containerElFn, el => {
 			if (el) mount(el);
 		});
 		onMount(() => {return unmount});
-
-		watch(() => incidentData.milestones, onMilestonesUpdated);
+		createQueries();
 	}
+
+	let editingEvent = $state<TimelineEvent>();
 
 	return {
 		componentSetup,
-		addEvent,
+		get editingEvent() {return editingEvent},
 	}
 }
 export const timeline = createTimelineState();
