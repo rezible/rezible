@@ -436,44 +436,24 @@ export type CreateRetrospectiveReviewResponseBody = {
     data: RetrospectiveReview;
 };
 
-export type CreateRetrospectiveTemplateAttributes = {
-    sections?: Array<RetrospectiveSection>;
-};
-
-export type CreateRetrospectiveTemplateRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateRetrospectiveTemplateAttributes;
-};
-
-export type CreateRetrospectiveTemplateResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: RetrospectiveTemplate;
-};
-
-export type CreateServiceAttributes = {
+export type CreateSystemComponentAttributes = {
     name: string;
 };
 
-export type CreateServiceRequestBody = {
+export type CreateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateServiceAttributes;
+    attributes: CreateSystemComponentAttributes;
 };
 
-export type CreateServiceResponseBody = {
+export type CreateSystemComponentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Service;
+    data: SystemComponent;
 };
 
 export type CreateTaskAttributes = {
@@ -783,12 +763,12 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
-export type GetServiceResponseBody = {
+export type GetSystemComponentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Service;
+    data: SystemComponent;
 };
 
 export type GetTaskResponseBody = {
@@ -1273,21 +1253,12 @@ export type ListRetrospectivesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListRetrospectiveTemplatesResponseBody = {
+export type ListSystemComponentsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveTemplate>;
-    pagination: ResponsePagination;
-};
-
-export type ListServicesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Service>;
+    data: Array<SystemComponent>;
     pagination: ResponsePagination;
 };
 
@@ -1399,7 +1370,6 @@ export type OncallRosterAttributes = {
     handover_template_id: string;
     name: string;
     schedules: Array<OncallSchedule>;
-    services: Array<Service>;
     slug: string;
 };
 
@@ -1554,18 +1524,24 @@ export type Retrospective = {
 export type RetrospectiveAttributes = {
     documentName: string;
     sections: Array<RetrospectiveSection>;
-    status: 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
-    summary: string;
-    title: string;
+    state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
+    type: 'quick' | 'full';
 };
 
-export type status = 'open' | 'in_review' | 'meeting_scheduled' | 'completed';
+export type state = 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
 
-export const status = {
-    OPEN: 'open',
+export const state = {
+    DRAFT: 'draft',
     IN_REVIEW: 'in_review',
     MEETING_SCHEDULED: 'meeting_scheduled',
     COMPLETED: 'completed'
+} as const;
+
+export type type4 = 'quick' | 'full';
+
+export const type4 = {
+    QUICK: 'quick',
+    FULL: 'full'
 } as const;
 
 export type RetrospectiveDiscussion = {
@@ -1606,21 +1582,12 @@ export type RetrospectiveSection = {
     type: 'field' | 'timeline';
 };
 
-export type type4 = 'field' | 'timeline';
+export type type5 = 'field' | 'timeline';
 
-export const type4 = {
+export const type5 = {
     FIELD: 'field',
     TIMELINE: 'timeline'
 } as const;
-
-export type RetrospectiveTemplate = {
-    attributes: RetrospectiveTemplateAttributes;
-    id: string;
-};
-
-export type RetrospectiveTemplateAttributes = {
-    sections: Array<RetrospectiveSection>;
-};
 
 export type SendOncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
@@ -1642,12 +1609,12 @@ export type SendOncallShiftHandoverResponseBody = {
     data: OncallShiftHandover;
 };
 
-export type Service = {
-    attributes: ServiceAttributes;
+export type SystemComponent = {
+    attributes: SystemComponentAttributes;
     id: string;
 };
 
-export type ServiceAttributes = {
+export type SystemComponentAttributes = {
     name: string;
 };
 
@@ -1724,9 +1691,9 @@ export type UpdateIncidentDebriefAttributes = {
     status: 'started' | 'completed';
 };
 
-export type status2 = 'started' | 'completed';
+export type status = 'started' | 'completed';
 
-export const status2 = {
+export const status = {
     STARTED: 'started',
     COMPLETED: 'completed'
 } as const;
@@ -2064,44 +2031,24 @@ export type UpdateRetrospectiveReviewResponseBody = {
     data: RetrospectiveReview;
 };
 
-export type UpdateRetrospectiveTemplateAttributes = {
-    sections?: Array<RetrospectiveSection>;
+export type UpdateSystemComponentAttributes = {
+    [key: string]: unknown;
 };
 
-export type UpdateRetrospectiveTemplateRequestBody = {
+export type UpdateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateRetrospectiveTemplateAttributes;
+    attributes: UpdateSystemComponentAttributes;
 };
 
-export type UpdateRetrospectiveTemplateResponseBody = {
+export type UpdateSystemComponentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: RetrospectiveTemplate;
-};
-
-export type UpdateServiceAttributes = {
-    name: (string) | null;
-};
-
-export type UpdateServiceRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateServiceAttributes;
-};
-
-export type UpdateServiceResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Service;
+    data: SystemComponent;
 };
 
 export type UpdateTaskAttributes = {
@@ -3207,48 +3154,6 @@ export type UpdateRetrospectiveReviewResponse = (UpdateRetrospectiveReviewRespon
 
 export type UpdateRetrospectiveReviewError = (ErrorModel);
 
-export type ListRetrospectiveTemplatesData = {
-    query?: {
-        archived?: boolean;
-        limit?: number;
-        offset?: number;
-        search?: string;
-    };
-};
-
-export type ListRetrospectiveTemplatesResponse = (ListRetrospectiveTemplatesResponseBody);
-
-export type ListRetrospectiveTemplatesError = (ErrorModel);
-
-export type CreateRetrospectiveTemplateData = {
-    body: CreateRetrospectiveTemplateRequestBody;
-};
-
-export type CreateRetrospectiveTemplateResponse = (CreateRetrospectiveTemplateResponseBody);
-
-export type CreateRetrospectiveTemplateError = (ErrorModel);
-
-export type ArchiveRetrospectiveTemplateData = {
-    path: {
-        id: string;
-    };
-};
-
-export type ArchiveRetrospectiveTemplateResponse = (void);
-
-export type ArchiveRetrospectiveTemplateError = (ErrorModel);
-
-export type UpdateRetrospectiveTemplateData = {
-    body: UpdateRetrospectiveTemplateRequestBody;
-    path: {
-        id: string;
-    };
-};
-
-export type UpdateRetrospectiveTemplateResponse = (UpdateRetrospectiveTemplateResponseBody);
-
-export type UpdateRetrospectiveTemplateError = (ErrorModel);
-
 export type ListRetrospectivesData = {
     query?: {
         archived?: boolean;
@@ -3350,58 +3255,57 @@ export type CreateRetrospectiveReviewResponse = (CreateRetrospectiveReviewRespon
 
 export type CreateRetrospectiveReviewError = (ErrorModel);
 
-export type ListServicesData = {
+export type ListSystemComponentsData = {
     query?: {
         archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
-        team_id?: string;
     };
 };
 
-export type ListServicesResponse = (ListServicesResponseBody);
+export type ListSystemComponentsResponse = (ListSystemComponentsResponseBody);
 
-export type ListServicesError = (ErrorModel);
+export type ListSystemComponentsError = (ErrorModel);
 
-export type CreateServiceData = {
-    body: CreateServiceRequestBody;
+export type CreateSystemComponentData = {
+    body: CreateSystemComponentRequestBody;
 };
 
-export type CreateServiceResponse = (CreateServiceResponseBody);
+export type CreateSystemComponentResponse = (CreateSystemComponentResponseBody);
 
-export type CreateServiceError = (ErrorModel);
+export type CreateSystemComponentError = (ErrorModel);
 
-export type GetServiceData = {
+export type GetSystemComponentData = {
     path: {
         id: string;
     };
 };
 
-export type GetServiceResponse = (GetServiceResponseBody);
+export type GetSystemComponentResponse = (GetSystemComponentResponseBody);
 
-export type GetServiceError = (ErrorModel);
+export type GetSystemComponentError = (ErrorModel);
 
-export type ArchiveServiceData = {
+export type ArchiveSystemComponentData = {
     path: {
         id: string;
     };
 };
 
-export type ArchiveServiceResponse = (void);
+export type ArchiveSystemComponentResponse = (void);
 
-export type ArchiveServiceError = (ErrorModel);
+export type ArchiveSystemComponentError = (ErrorModel);
 
-export type UpdateServiceData = {
-    body: UpdateServiceRequestBody;
+export type UpdateSystemComponentData = {
+    body: UpdateSystemComponentRequestBody;
     path: {
         id: string;
     };
 };
 
-export type UpdateServiceResponse = (UpdateServiceResponseBody);
+export type UpdateSystemComponentResponse = (UpdateSystemComponentResponseBody);
 
-export type UpdateServiceError = (ErrorModel);
+export type UpdateSystemComponentError = (ErrorModel);
 
 export type ListTasksData = {
     query?: {

@@ -84,26 +84,26 @@ func (h *retrospectivesHandler) ArchiveRetrospectiveReview(ctx context.Context, 
 	return &resp, nil
 }
 
-func (h *retrospectivesHandler) ListRetrospectiveTemplates(ctx context.Context, request *oapi.ListRetrospectiveTemplatesRequest) (*oapi.ListRetrospectiveTemplatesResponse, error) {
-	var resp oapi.ListRetrospectiveTemplatesResponse
-	// TODO
-	return &resp, nil
-}
-func (h *retrospectivesHandler) CreateRetrospectiveTemplate(ctx context.Context, request *oapi.CreateRetrospectiveTemplateRequest) (*oapi.CreateRetrospectiveTemplateResponse, error) {
-	var resp oapi.CreateRetrospectiveTemplateResponse
-	// TODO
-	return &resp, nil
-}
-func (h *retrospectivesHandler) UpdateRetrospectiveTemplate(ctx context.Context, request *oapi.UpdateRetrospectiveTemplateRequest) (*oapi.UpdateRetrospectiveTemplateResponse, error) {
-	var resp oapi.UpdateRetrospectiveTemplateResponse
-	// TODO
-	return &resp, nil
-}
-func (h *retrospectivesHandler) ArchiveRetrospectiveTemplate(ctx context.Context, request *oapi.ArchiveRetrospectiveTemplateRequest) (*oapi.ArchiveRetrospectiveTemplateResponse, error) {
-	var resp oapi.ArchiveRetrospectiveTemplateResponse
-	// TODO
-	return &resp, nil
-}
+//func (h *retrospectivesHandler) ListRetrospectiveTemplates(ctx context.Context, request *oapi.ListRetrospectiveTemplatesRequest) (*oapi.ListRetrospectiveTemplatesResponse, error) {
+//	var resp oapi.ListRetrospectiveTemplatesResponse
+//	// TODO
+//	return &resp, nil
+//}
+//func (h *retrospectivesHandler) CreateRetrospectiveTemplate(ctx context.Context, request *oapi.CreateRetrospectiveTemplateRequest) (*oapi.CreateRetrospectiveTemplateResponse, error) {
+//	var resp oapi.CreateRetrospectiveTemplateResponse
+//	// TODO
+//	return &resp, nil
+//}
+//func (h *retrospectivesHandler) UpdateRetrospectiveTemplate(ctx context.Context, request *oapi.UpdateRetrospectiveTemplateRequest) (*oapi.UpdateRetrospectiveTemplateResponse, error) {
+//	var resp oapi.UpdateRetrospectiveTemplateResponse
+//	// TODO
+//	return &resp, nil
+//}
+//func (h *retrospectivesHandler) ArchiveRetrospectiveTemplate(ctx context.Context, request *oapi.ArchiveRetrospectiveTemplateRequest) (*oapi.ArchiveRetrospectiveTemplateResponse, error) {
+//	var resp oapi.ArchiveRetrospectiveTemplateResponse
+//	// TODO
+//	return &resp, nil
+//}
 
 func (h *retrospectivesHandler) ListRetrospectiveDiscussions(ctx context.Context, request *oapi.ListRetrospectiveDiscussionsRequest) (*oapi.ListRetrospectiveDiscussionsResponse, error) {
 	var resp oapi.ListRetrospectiveDiscussionsResponse

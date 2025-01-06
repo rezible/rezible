@@ -124,6 +124,26 @@ func DocumentNameContainsFold(v string) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldContainsFold(FieldDocumentName, v))
 }
 
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v Type) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v Type) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...Type) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...Type) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldType, vs...))
+}
+
 // StateEQ applies the EQ predicate on the "state" field.
 func StateEQ(v State) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldState, v))

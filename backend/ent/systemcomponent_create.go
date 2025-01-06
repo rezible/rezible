@@ -325,6 +325,9 @@ func (scc *SystemComponentCreate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.type": %w`, err)}
 		}
 	}
+	if _, ok := scc.mutation.Properties(); !ok {
+		return &ValidationError{Name: "properties", err: errors.New(`ent: missing required field "SystemComponent.properties"`)}
+	}
 	if _, ok := scc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponent.created_at"`)}
 	}
@@ -686,12 +689,6 @@ func (u *SystemComponentUpsert) UpdateProperties() *SystemComponentUpsert {
 	return u
 }
 
-// ClearProperties clears the value of the "properties" field.
-func (u *SystemComponentUpsert) ClearProperties() *SystemComponentUpsert {
-	u.SetNull(systemcomponent.FieldProperties)
-	return u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *SystemComponentUpsert) SetCreatedAt(v time.Time) *SystemComponentUpsert {
 	u.Set(systemcomponent.FieldCreatedAt, v)
@@ -824,13 +821,6 @@ func (u *SystemComponentUpsertOne) SetProperties(v map[string]interface{}) *Syst
 func (u *SystemComponentUpsertOne) UpdateProperties() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *SystemComponentUpsertOne) ClearProperties() *SystemComponentUpsertOne {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearProperties()
 	})
 }
 
@@ -1137,13 +1127,6 @@ func (u *SystemComponentUpsertBulk) SetProperties(v map[string]interface{}) *Sys
 func (u *SystemComponentUpsertBulk) UpdateProperties() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *SystemComponentUpsertBulk) ClearProperties() *SystemComponentUpsertBulk {
-	return u.Update(func(s *SystemComponentUpsert) {
-		s.ClearProperties()
 	})
 }
 

@@ -90,12 +90,6 @@ func (scu *SystemComponentUpdate) SetProperties(m map[string]interface{}) *Syste
 	return scu
 }
 
-// ClearProperties clears the value of the "properties" field.
-func (scu *SystemComponentUpdate) ClearProperties() *SystemComponentUpdate {
-	scu.mutation.ClearProperties()
-	return scu
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (scu *SystemComponentUpdate) SetCreatedAt(t time.Time) *SystemComponentUpdate {
 	scu.mutation.SetCreatedAt(t)
@@ -553,9 +547,6 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if value, ok := scu.mutation.Properties(); ok {
 		_spec.SetField(systemcomponent.FieldProperties, field.TypeJSON, value)
-	}
-	if scu.mutation.PropertiesCleared() {
-		_spec.ClearField(systemcomponent.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := scu.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldCreatedAt, field.TypeTime, value)
@@ -1157,12 +1148,6 @@ func (scuo *SystemComponentUpdateOne) SetProperties(m map[string]interface{}) *S
 	return scuo
 }
 
-// ClearProperties clears the value of the "properties" field.
-func (scuo *SystemComponentUpdateOne) ClearProperties() *SystemComponentUpdateOne {
-	scuo.mutation.ClearProperties()
-	return scuo
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (scuo *SystemComponentUpdateOne) SetCreatedAt(t time.Time) *SystemComponentUpdateOne {
 	scuo.mutation.SetCreatedAt(t)
@@ -1650,9 +1635,6 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 	}
 	if value, ok := scuo.mutation.Properties(); ok {
 		_spec.SetField(systemcomponent.FieldProperties, field.TypeJSON, value)
-	}
-	if scuo.mutation.PropertiesCleared() {
-		_spec.ClearField(systemcomponent.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := scuo.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldCreatedAt, field.TypeTime, value)

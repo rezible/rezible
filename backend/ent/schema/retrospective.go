@@ -13,16 +13,13 @@ type Retrospective struct {
 	ent.Schema
 }
 
-var (
-	retrospectiveStates = []string{"debriefs", "draft", "in_review", "meeting", "closed"}
-)
-
 // Fields of the Retrospective.
 func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("document_name"),
-		field.Enum("state").Values(retrospectiveStates...),
+		field.Enum("type").Values("quick", "full"),
+		field.Enum("state").Values("draft", "in_review", "meeting", "closed"),
 	}
 }
 

@@ -236,16 +236,6 @@ func DescriptionContainsFold(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// PropertiesIsNil applies the IsNil predicate on the "properties" field.
-func PropertiesIsNil() predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldIsNull(FieldProperties))
-}
-
-// PropertiesNotNil applies the NotNil predicate on the "properties" field.
-func PropertiesNotNil() predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldNotNull(FieldProperties))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldCreatedAt, v))

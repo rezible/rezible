@@ -20,6 +20,8 @@ type Retrospective struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// DocumentName holds the value of the "document_name" field.
 	DocumentName string `json:"document_name,omitempty"`
+	// Type holds the value of the "type" field.
+	Type retrospective.Type `json:"type,omitempty"`
 	// State holds the value of the "state" field.
 	State retrospective.State `json:"state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -65,7 +67,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case retrospective.FieldDocumentName, retrospective.FieldState:
+		case retrospective.FieldDocumentName, retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
 		case retrospective.FieldID:
 			values[i] = new(uuid.UUID)
@@ -97,6 +99,12 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field document_name", values[i])
 			} else if value.Valid {
 				r.DocumentName = value.String
+			}
+		case retrospective.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				r.Type = retrospective.Type(value.String)
 			}
 		case retrospective.FieldState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -159,6 +167,9 @@ func (r *Retrospective) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
 	builder.WriteString("document_name=")
 	builder.WriteString(r.DocumentName)
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(fmt.Sprintf("%v", r.Type))
 	builder.WriteString(", ")
 	builder.WriteString("state=")
 	builder.WriteString(fmt.Sprintf("%v", r.State))

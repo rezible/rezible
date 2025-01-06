@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { watch } from "runed";
-	import { Header } from "svelte-ux";
     import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { type Incident, type Retrospective } from "$lib/api";
-
-	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
 
     import IncidentTimeline from "$features/incidents/components/incident-timeline/IncidentTimeline.svelte";
     import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
     import IncidentFindingsReport from "$features/incidents/components/incident-report/IncidentFindingsReport.svelte";
 	import IncidentAnalysis from "$features/incidents/components/incident-analysis/IncidentAnalysis.svelte";
+    import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
+
+	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
 
 	type Props = {
         incident: Incident;
@@ -37,13 +37,11 @@
 	];
 	const activeViewRoute = $derived(viewParam || "");
 
-	const incidentId = $derived(incident.id);
+	const retrospectiveType = $derived(retrospective.attributes.type);
 
 	const documentName = $derived(retrospective.attributes.documentName ?? "");
 	watch(() => documentName, (name: string) => {collaborationState.connect(name)});
-	onMount(() => {
-		return () => {collaborationState.cleanup()}
-	});
+	onMount(() => {return () => {collaborationState.cleanup()}});
 </script>
 
 <div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">
@@ -67,21 +65,13 @@
 		{#if activeViewRoute === ""}
 			<IncidentOverview {incident} />
 		{:else if activeViewRoute === "timeline"}
-			<IncidentTimeline {incidentId} />
+			<IncidentTimeline {incident} />
 		{:else if activeViewRoute === "analysis"}
-			<IncidentAnalysis />
+			<IncidentAnalysis {incident} />
 		{:else if activeViewRoute === "findings"}
 			<IncidentFindingsReport {incident} {retrospective} />
 		{/if}
 	</div>
 
-	<div class="w-64 border overflow-y-auto p-2">
-		<Header title="Context">
-			<div slot="actions">
-				<span>x</span>
-			</div>
-		</Header>
-		right sidebar
-		<span>connect: {collaborationState.status}</span>
-	</div>
+	<ContextSidebar />
 </div>

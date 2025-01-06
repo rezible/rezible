@@ -26766,6 +26766,7 @@ type RetrospectiveMutation struct {
 	typ                string
 	id                 *uuid.UUID
 	document_name      *string
+	_type              *retrospective.Type
 	state              *retrospective.State
 	clearedFields      map[string]struct{}
 	incident           *uuid.UUID
@@ -26916,6 +26917,42 @@ func (m *RetrospectiveMutation) OldDocumentName(ctx context.Context) (v string, 
 // ResetDocumentName resets all changes to the "document_name" field.
 func (m *RetrospectiveMutation) ResetDocumentName() {
 	m.document_name = nil
+}
+
+// SetType sets the "type" field.
+func (m *RetrospectiveMutation) SetType(r retrospective.Type) {
+	m._type = &r
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *RetrospectiveMutation) GetType() (r retrospective.Type, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldType(ctx context.Context) (v retrospective.Type, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *RetrospectiveMutation) ResetType() {
+	m._type = nil
 }
 
 // SetState sets the "state" field.
@@ -27081,9 +27118,12 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.document_name != nil {
 		fields = append(fields, retrospective.FieldDocumentName)
+	}
+	if m._type != nil {
+		fields = append(fields, retrospective.FieldType)
 	}
 	if m.state != nil {
 		fields = append(fields, retrospective.FieldState)
@@ -27098,6 +27138,8 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case retrospective.FieldDocumentName:
 		return m.DocumentName()
+	case retrospective.FieldType:
+		return m.GetType()
 	case retrospective.FieldState:
 		return m.State()
 	}
@@ -27111,6 +27153,8 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case retrospective.FieldDocumentName:
 		return m.OldDocumentName(ctx)
+	case retrospective.FieldType:
+		return m.OldType(ctx)
 	case retrospective.FieldState:
 		return m.OldState(ctx)
 	}
@@ -27128,6 +27172,13 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDocumentName(v)
+		return nil
+	case retrospective.FieldType:
+		v, ok := value.(retrospective.Type)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
 		return nil
 	case retrospective.FieldState:
 		v, ok := value.(retrospective.State)
@@ -27187,6 +27238,9 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 	switch name {
 	case retrospective.FieldDocumentName:
 		m.ResetDocumentName()
+		return nil
+	case retrospective.FieldType:
+		m.ResetType()
 		return nil
 	case retrospective.FieldState:
 		m.ResetState()
@@ -29450,22 +29504,9 @@ func (m *SystemComponentMutation) OldProperties(ctx context.Context) (v map[stri
 	return oldValue.Properties, nil
 }
 
-// ClearProperties clears the value of the "properties" field.
-func (m *SystemComponentMutation) ClearProperties() {
-	m.properties = nil
-	m.clearedFields[systemcomponent.FieldProperties] = struct{}{}
-}
-
-// PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *SystemComponentMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[systemcomponent.FieldProperties]
-	return ok
-}
-
 // ResetProperties resets all changes to the "properties" field.
 func (m *SystemComponentMutation) ResetProperties() {
 	m.properties = nil
-	delete(m.clearedFields, systemcomponent.FieldProperties)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -30243,9 +30284,6 @@ func (m *SystemComponentMutation) ClearedFields() []string {
 	if m.FieldCleared(systemcomponent.FieldDescription) {
 		fields = append(fields, systemcomponent.FieldDescription)
 	}
-	if m.FieldCleared(systemcomponent.FieldProperties) {
-		fields = append(fields, systemcomponent.FieldProperties)
-	}
 	return fields
 }
 
@@ -30262,9 +30300,6 @@ func (m *SystemComponentMutation) ClearField(name string) error {
 	switch name {
 	case systemcomponent.FieldDescription:
 		m.ClearDescription()
-		return nil
-	case systemcomponent.FieldProperties:
-		m.ClearProperties()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponent nullable field %s", name)

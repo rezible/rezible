@@ -24,12 +24,11 @@ func (SystemComponent) Fields() []ent.Field {
 				"control",          // e.g., rate limiter, circuit breaker
 				"feedback",         // e.g., monitoring, alerts
 				"interface",        // e.g., API endpoint, UI
-				"human_controller", // e.g., SRE team, operations
+				"human_controller", // e.g., team, operations
 			),
 		field.Text("description").
 			Optional(),
-		field.JSON("properties", map[string]any{}).
-			Optional(), // Flexible properties based on component type
+		field.JSON("properties", map[string]any{}), // Flexible properties based on component type
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
@@ -40,6 +39,7 @@ func (SystemComponent) Fields() []ent.Field {
 
 func (SystemComponent) Edges() []ent.Edge {
 	return []ent.Edge{
+		// Hierarchical relationships
 		edge.To("children", SystemComponent.Type).
 			From("parent").
 			Unique(),
@@ -55,7 +55,6 @@ func (SystemComponent) Edges() []ent.Edge {
 		edge.From("incidents", Incident.Type).
 			Ref("system_components").
 			Through("incident_system_components", IncidentSystemComponent.Type),
-		// Hierarchical relationships
 		// Timeline events this component was involved in
 		edge.From("events", IncidentEvent.Type).
 			Ref("system_components").

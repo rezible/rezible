@@ -17,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldDocumentName holds the string denoting the document_name field in the database.
 	FieldDocumentName = "document_name"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -45,6 +47,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldDocumentName,
+	FieldType,
 	FieldState,
 }
 
@@ -74,12 +77,34 @@ var (
 	DefaultID func() uuid.UUID
 )
 
+// Type defines the type for the "type" enum field.
+type Type string
+
+// Type values.
+const (
+	TypeQuick Type = "quick"
+	TypeFull  Type = "full"
+)
+
+func (_type Type) String() string {
+	return string(_type)
+}
+
+// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
+func TypeValidator(_type Type) error {
+	switch _type {
+	case TypeQuick, TypeFull:
+		return nil
+	default:
+		return fmt.Errorf("retrospective: invalid enum value for type field: %q", _type)
+	}
+}
+
 // State defines the type for the "state" enum field.
 type State string
 
 // State values.
 const (
-	StateDebriefs State = "debriefs"
 	StateDraft    State = "draft"
 	StateInReview State = "in_review"
 	StateMeeting  State = "meeting"
@@ -93,7 +118,7 @@ func (s State) String() string {
 // StateValidator is a validator for the "state" field enum values. It is called by the builders before save.
 func StateValidator(s State) error {
 	switch s {
-	case StateDebriefs, StateDraft, StateInReview, StateMeeting, StateClosed:
+	case StateDraft, StateInReview, StateMeeting, StateClosed:
 		return nil
 	default:
 		return fmt.Errorf("retrospective: invalid enum value for state field: %q", s)
@@ -111,6 +136,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByDocumentName orders the results by the document_name field.
 func ByDocumentName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentName, opts...).ToFunc()
+}
+
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
 // ByState orders the results by the state field.

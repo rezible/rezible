@@ -20,10 +20,10 @@ type RetrospectivesHandler interface {
 	UpdateRetrospectiveReview(context.Context, *UpdateRetrospectiveReviewRequest) (*UpdateRetrospectiveReviewResponse, error)
 	ArchiveRetrospectiveReview(context.Context, *ArchiveRetrospectiveReviewRequest) (*ArchiveRetrospectiveReviewResponse, error)
 
-	ListRetrospectiveTemplates(context.Context, *ListRetrospectiveTemplatesRequest) (*ListRetrospectiveTemplatesResponse, error)
-	CreateRetrospectiveTemplate(context.Context, *CreateRetrospectiveTemplateRequest) (*CreateRetrospectiveTemplateResponse, error)
-	UpdateRetrospectiveTemplate(context.Context, *UpdateRetrospectiveTemplateRequest) (*UpdateRetrospectiveTemplateResponse, error)
-	ArchiveRetrospectiveTemplate(context.Context, *ArchiveRetrospectiveTemplateRequest) (*ArchiveRetrospectiveTemplateResponse, error)
+	//ListRetrospectiveTemplates(context.Context, *ListRetrospectiveTemplatesRequest) (*ListRetrospectiveTemplatesResponse, error)
+	//CreateRetrospectiveTemplate(context.Context, *CreateRetrospectiveTemplateRequest) (*CreateRetrospectiveTemplateResponse, error)
+	//UpdateRetrospectiveTemplate(context.Context, *UpdateRetrospectiveTemplateRequest) (*UpdateRetrospectiveTemplateResponse, error)
+	//ArchiveRetrospectiveTemplate(context.Context, *ArchiveRetrospectiveTemplateRequest) (*ArchiveRetrospectiveTemplateResponse, error)
 
 	ListRetrospectiveDiscussions(context.Context, *ListRetrospectiveDiscussionsRequest) (*ListRetrospectiveDiscussionsResponse, error)
 	CreateRetrospectiveDiscussion(context.Context, *CreateRetrospectiveDiscussionRequest) (*CreateRetrospectiveDiscussionResponse, error)
@@ -42,10 +42,10 @@ func (o operations) RegisterRetrospectives(api huma.API) {
 	huma.Register(api, UpdateRetrospectiveReview, o.UpdateRetrospectiveReview)
 	huma.Register(api, ArchiveRetrospectiveReview, o.ArchiveRetrospectiveReview)
 
-	huma.Register(api, ListRetrospectiveTemplates, o.ListRetrospectiveTemplates)
-	huma.Register(api, CreateRetrospectiveTemplate, o.CreateRetrospectiveTemplate)
-	huma.Register(api, UpdateRetrospectiveTemplate, o.UpdateRetrospectiveTemplate)
-	huma.Register(api, ArchiveRetrospectiveTemplate, o.ArchiveRetrospectiveTemplate)
+	//huma.Register(api, ListRetrospectiveTemplates, o.ListRetrospectiveTemplates)
+	//huma.Register(api, CreateRetrospectiveTemplate, o.CreateRetrospectiveTemplate)
+	//huma.Register(api, UpdateRetrospectiveTemplate, o.UpdateRetrospectiveTemplate)
+	//huma.Register(api, ArchiveRetrospectiveTemplate, o.ArchiveRetrospectiveTemplate)
 
 	huma.Register(api, ListRetrospectiveDiscussions, o.ListRetrospectiveDiscussions)
 	huma.Register(api, CreateRetrospectiveDiscussion, o.CreateRetrospectiveDiscussion)
@@ -61,14 +61,14 @@ type (
 	}
 
 	RetrospectiveAttributes struct {
-		Title        string                 `json:"title"`
+		Type         RetrospectiveType      `json:"type" enum:"quick,full"`
 		DocumentName string                 `json:"documentName"`
-		Summary      string                 `json:"summary"`
 		Sections     []RetrospectiveSection `json:"sections"`
-		Status       RetrospectiveStatus    `json:"status" enum:"open,in_review,meeting_scheduled,completed"`
+		State        RetrospectiveState     `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
 	}
 
-	RetrospectiveStatus string
+	RetrospectiveType  string
+	RetrospectiveState string
 
 	RetrospectiveReview struct {
 		Id         uuid.UUID                     `json:"id"`
@@ -121,10 +121,9 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 	ret := Retrospective{
 		Id: r.ID,
 		Attributes: RetrospectiveAttributes{
-			Title:        "",
 			DocumentName: r.DocumentName,
-			Summary:      "",
-			Status:       "",
+			Type:         RetrospectiveType(r.Type.String()),
+			State:        RetrospectiveState(r.State.String()),
 		},
 	}
 
@@ -178,10 +177,6 @@ func RetrospectiveDiscussionReplyFromEnt(r *ent.RetrospectiveDiscussionReply) Re
 		},
 	}
 }
-
-var (
-	RetrospectiveStatusOpen = RetrospectiveStatus("open")
-)
 
 // Operations
 
@@ -274,6 +269,7 @@ var ArchiveRetrospectiveReview = huma.Operation{
 type ArchiveRetrospectiveReviewRequest ArchiveIdRequest
 type ArchiveRetrospectiveReviewResponse EmptyResponse
 
+/*
 var ListRetrospectiveTemplates = huma.Operation{
 	OperationID: "list-retrospective-templates",
 	Method:      http.MethodGet,
@@ -327,6 +323,7 @@ var ArchiveRetrospectiveTemplate = huma.Operation{
 
 type ArchiveRetrospectiveTemplateRequest ArchiveIdRequest
 type ArchiveRetrospectiveTemplateResponse EmptyResponse
+*/
 
 var ListRetrospectiveDiscussions = huma.Operation{
 	OperationID: "list-retrospective-discussions",

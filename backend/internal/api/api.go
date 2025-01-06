@@ -29,7 +29,7 @@ type Handler struct {
 	*meetingsHandler
 	*oncallHandler
 	*retrospectivesHandler
-	*servicesHandler
+	*systemComponentsHandler
 	*sessionsHandler
 	*subscriptionsHandler
 	*teamsHandler
@@ -68,7 +68,7 @@ func NewHandler(
 		meetingsHandler:           newMeetingsHandler(),
 		oncallHandler:             newOncallHandler(auth, users, incidents, oncall, alerts),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
-		servicesHandler:           newServicesHandler(),
+		systemComponentsHandler:   newSystemComponentsHandler(),
 		subscriptionsHandler:      newSubscriptionsHandler(),
 		teamsHandler:              newTeamsHandler(db.Team),
 		usersHandler:              newUsersHandler(users),

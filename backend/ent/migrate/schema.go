@@ -863,7 +863,8 @@ var (
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "document_name", Type: field.TypeString},
-		{Name: "state", Type: field.TypeEnum, Enums: []string{"debriefs", "draft", "in_review", "meeting", "closed"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"quick", "full"}},
+		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
 		{Name: "incident_retrospective", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
@@ -874,7 +875,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "retrospectives_incidents_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[3]},
+				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -974,7 +975,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"service", "control", "feedback", "interface", "human_controller"}},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "properties", Type: field.TypeJSON, Nullable: true},
+		{Name: "properties", Type: field.TypeJSON},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "system_component_children", Type: field.TypeUUID, Nullable: true},

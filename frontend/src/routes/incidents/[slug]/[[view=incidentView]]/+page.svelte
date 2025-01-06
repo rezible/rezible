@@ -4,7 +4,7 @@
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions, type Incident } from '$lib/api';
     import { convertIncidentViewParam } from '$src/params/incidentView';
 
-	import IncidentView from '$src/features/incidents/views/incident/IncidentOmniView.svelte';
+	import IncidentOmniView from '$src/features/incidents/views/omni-view/IncidentOmniView.svelte';
     import PageContainer, { type Breadcrumb } from '$components/page-container/PageContainer.svelte';
 
 	const { data } = $props();
@@ -27,7 +27,7 @@
 <PageContainer {breadcrumbs}>
 	{#if incident && retrospective}
 		{#key incident.id}
-			<IncidentView {incident} {retrospective} {viewParam} />
+			<IncidentOmniView {incident} {retrospective} {viewParam} />
 		{/key}
 	{/if}
 </PageContainer>

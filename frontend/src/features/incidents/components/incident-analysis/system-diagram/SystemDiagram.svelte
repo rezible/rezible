@@ -1,60 +1,41 @@
 <script lang="ts">
-	import { writable } from "svelte/store";
-
 	import {
 		SvelteFlow,
 		Controls,
 		Background,
 		BackgroundVariant,
 		MiniMap,
-		type SnapGrid,
-		type Node,
 	} from "@xyflow/svelte";
 
 	import "@xyflow/svelte/dist/style.css";
 
-	import ContextMenu, { type ContextMenuProps } from "./ContextMenu.svelte";
-    import { systemView } from "../analysis.svelte";
+	import ContextMenu from "./ContextMenu.svelte";
+    import { diagram } from "./diagram.svelte";
+    import { onMount } from "svelte";
 
-	let menu = $state<ContextMenuProps>();
-	let width = $state(0);
-	let height = $state(0);
+	let containerEl = $state<HTMLElement>();
 
-	const handleContextMenu = (node: Node, event: MouseEvent | TouchEvent) => {
-		event.preventDefault();
-		const clientX = "clientX" in event ? event.clientX : 0;
-		const clientY = "clientY" in event ? event.clientY : 0;
-
-		menu = {
-			id: node.id,
-			top: clientY < height - 200 ? clientY : undefined,
-			left: clientX < width - 200 ? clientX : undefined,
-			right: clientX >= width - 200 ? width - clientX : undefined,
-			bottom: clientY >= height - 200 ? height - clientY : undefined,
-		};
-	};
-
-	const handlePaneClick = () => {
-		menu = undefined;
-	};
+	onMount(() => {
+		if (!containerEl) return;
+		diagram.mount(containerEl);
+		return () => diagram.unmount();
+	})
 </script>
 
-<div class="h-full w-full" bind:clientWidth={width} bind:clientHeight={height}>
+<div class="h-full w-full" bind:this={containerEl}>
 	<SvelteFlow
-		nodes={systemView.nodes}
-		edges={systemView.edges}
+		nodes={diagram.nodes}
+		edges={diagram.edges}
 		snapGrid={[25, 25]}
 		fitView
 		proOptions={{ hideAttribution: true }}
-		on:nodeclick={(event) =>
-			console.log("on node click", event.detail.node)}
-		on:paneclick={handlePaneClick}
-		on:nodecontextmenu={(e) =>
-			handleContextMenu(e.detail.node, e.detail.event)}
+		on:nodeclick={e => diagram.handleNodeClicked(e.detail)}
+		on:paneclick={e => diagram.handlePaneClicked(e.detail.event)}
+		on:nodecontextmenu={e => diagram.handleNodeContextMenu(e.detail)}
 	>
 		<Background variant={BackgroundVariant.Dots} />
-		{#if !!menu}
-			<ContextMenu onClick={handlePaneClick} {...menu} />
+		{#if !!diagram.ctxMenuProps}
+			<ContextMenu {...diagram.ctxMenuProps} />
 		{/if}
 		<Controls />
 		<MiniMap />

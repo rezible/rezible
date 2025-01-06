@@ -4,14 +4,16 @@ import { DataSet } from "vis-data/esnext";
 
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
 
-export const createEventTemplateElement = (id: string) => {
+export const createTimelineEventElement = (id: string) => {
 	let props = $state<TimelineEventComponentProps>({label: "initial"});
-	const element = document.createElement("div");
-	element.setAttribute("event-id", id);
-	const component = mount(IncidentTimelineEvent, {target: element, props});
+	
+	const target = document.createElement("div");
+	target.setAttribute("event-id", id);
+
+	const component = mount(IncidentTimelineEvent, {target, props});
 	
 	return {
-		get element () {return element},
+		get element () {return target},
 		setLabel: (label: string) => {props.label = label},
 		unmount: () => {unmount(component)}
 	}
@@ -20,7 +22,7 @@ export const createEventTemplateElement = (id: string) => {
 const createTimelineState = () => {
 	let timeline = $state<Timeline>();
 
-	const items = $state(new DataSet<any>([
+	const items = new DataSet<any>([
 		{
 			id: "A",
 			content: "Period A",
@@ -36,21 +38,20 @@ const createTimelineState = () => {
 			type: "background",
 			className: "negative",
 		},
-	]));
+	]);
 
-	const eventComponents = new Map<IdType, ReturnType<typeof createEventTemplateElement>>();
-	const addItem = (id: IdType) => {
-		const created = createEventTemplateElement(id.toString());
+	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
+	const addEvent = (id: IdType) => {
+		const created = createTimelineEventElement(id.toString());
 		items.add({ id: 1, content: created.element, start: "2014-01-23" });
 		eventComponents.set(id, created);
 	}
 
 	const mount = (container: HTMLElement) => {
-		addItem("bleh");
+		addEvent("bleh");
 
 		const options: TimelineOptions = {
 			height: "100%",
-			// template: templateTimelineEvent,
 		};
 		timeline = new Timeline(container, items, options);
 	}
@@ -59,11 +60,12 @@ const createTimelineState = () => {
 		timeline?.destroy();
 		eventComponents.forEach(c => c.unmount());
 		eventComponents.clear();
+		items.clear();
 	}
 
 	return {
 		mount,
-		addItem,
+		addEvent,
 		unmount,
 	}
 }

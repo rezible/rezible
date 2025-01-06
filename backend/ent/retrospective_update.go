@@ -45,6 +45,20 @@ func (ru *RetrospectiveUpdate) SetNillableDocumentName(s *string) *Retrospective
 	return ru
 }
 
+// SetType sets the "type" field.
+func (ru *RetrospectiveUpdate) SetType(r retrospective.Type) *RetrospectiveUpdate {
+	ru.mutation.SetType(r)
+	return ru
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (ru *RetrospectiveUpdate) SetNillableType(r *retrospective.Type) *RetrospectiveUpdate {
+	if r != nil {
+		ru.SetType(*r)
+	}
+	return ru
+}
+
 // SetState sets the "state" field.
 func (ru *RetrospectiveUpdate) SetState(r retrospective.State) *RetrospectiveUpdate {
 	ru.mutation.SetState(r)
@@ -154,6 +168,11 @@ func (ru *RetrospectiveUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ru *RetrospectiveUpdate) check() error {
+	if v, ok := ru.mutation.GetType(); ok {
+		if err := retrospective.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
+		}
+	}
 	if v, ok := ru.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
@@ -182,6 +201,9 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.DocumentName(); ok {
 		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
+	}
+	if value, ok := ru.mutation.GetType(); ok {
+		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := ru.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
@@ -292,6 +314,20 @@ func (ruo *RetrospectiveUpdateOne) SetDocumentName(s string) *RetrospectiveUpdat
 func (ruo *RetrospectiveUpdateOne) SetNillableDocumentName(s *string) *RetrospectiveUpdateOne {
 	if s != nil {
 		ruo.SetDocumentName(*s)
+	}
+	return ruo
+}
+
+// SetType sets the "type" field.
+func (ruo *RetrospectiveUpdateOne) SetType(r retrospective.Type) *RetrospectiveUpdateOne {
+	ruo.mutation.SetType(r)
+	return ruo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (ruo *RetrospectiveUpdateOne) SetNillableType(r *retrospective.Type) *RetrospectiveUpdateOne {
+	if r != nil {
+		ruo.SetType(*r)
 	}
 	return ruo
 }
@@ -418,6 +454,11 @@ func (ruo *RetrospectiveUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ruo *RetrospectiveUpdateOne) check() error {
+	if v, ok := ruo.mutation.GetType(); ok {
+		if err := retrospective.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
+		}
+	}
 	if v, ok := ruo.mutation.State(); ok {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
@@ -463,6 +504,9 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if value, ok := ruo.mutation.DocumentName(); ok {
 		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
+	}
+	if value, ok := ruo.mutation.GetType(); ok {
+		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
 	}
 	if value, ok := ruo.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)

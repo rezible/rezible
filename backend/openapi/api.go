@@ -21,7 +21,7 @@ type Handler interface {
 	// GetMiddleware() []Middleware
 
 	EnvironmentsHandler
-	ServicesHandler
+	SystemComponentsHandler
 	FunctionalitiesHandler
 
 	IncidentsHandler
@@ -39,8 +39,6 @@ type Handler interface {
 	MeetingsHandler
 
 	OncallHandler
-
-	// LaddersHandler
 
 	UsersHandler
 	UserSessionsHandler

@@ -78,7 +78,6 @@ type (
 		Name               string           `json:"name"`
 		Slug               string           `json:"slug"`
 		Schedules          []OncallSchedule `json:"schedules"`
-		Services           []Service        `json:"services"`
 		HandoverTemplateId uuid.UUID        `json:"handover_template_id"`
 	}
 

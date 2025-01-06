@@ -31,6 +31,12 @@ func (rc *RetrospectiveCreate) SetDocumentName(s string) *RetrospectiveCreate {
 	return rc
 }
 
+// SetType sets the "type" field.
+func (rc *RetrospectiveCreate) SetType(r retrospective.Type) *RetrospectiveCreate {
+	rc.mutation.SetType(r)
+	return rc
+}
+
 // SetState sets the "state" field.
 func (rc *RetrospectiveCreate) SetState(r retrospective.State) *RetrospectiveCreate {
 	rc.mutation.SetState(r)
@@ -131,6 +137,14 @@ func (rc *RetrospectiveCreate) check() error {
 	if _, ok := rc.mutation.DocumentName(); !ok {
 		return &ValidationError{Name: "document_name", err: errors.New(`ent: missing required field "Retrospective.document_name"`)}
 	}
+	if _, ok := rc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Retrospective.type"`)}
+	}
+	if v, ok := rc.mutation.GetType(); ok {
+		if err := retrospective.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
+		}
+	}
 	if _, ok := rc.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "Retrospective.state"`)}
 	}
@@ -178,6 +192,10 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	if value, ok := rc.mutation.DocumentName(); ok {
 		_spec.SetField(retrospective.FieldDocumentName, field.TypeString, value)
 		_node.DocumentName = value
+	}
+	if value, ok := rc.mutation.GetType(); ok {
+		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
+		_node.Type = value
 	}
 	if value, ok := rc.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
@@ -280,6 +298,18 @@ func (u *RetrospectiveUpsert) UpdateDocumentName() *RetrospectiveUpsert {
 	return u
 }
 
+// SetType sets the "type" field.
+func (u *RetrospectiveUpsert) SetType(v retrospective.Type) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldType, v)
+	return u
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateType() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldType)
+	return u
+}
+
 // SetState sets the "state" field.
 func (u *RetrospectiveUpsert) SetState(v retrospective.State) *RetrospectiveUpsert {
 	u.Set(retrospective.FieldState, v)
@@ -351,6 +381,20 @@ func (u *RetrospectiveUpsertOne) SetDocumentName(v string) *RetrospectiveUpsertO
 func (u *RetrospectiveUpsertOne) UpdateDocumentName() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateDocumentName()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *RetrospectiveUpsertOne) SetType(v retrospective.Type) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateType() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateType()
 	})
 }
 
@@ -594,6 +638,20 @@ func (u *RetrospectiveUpsertBulk) SetDocumentName(v string) *RetrospectiveUpsert
 func (u *RetrospectiveUpsertBulk) UpdateDocumentName() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateDocumentName()
+	})
+}
+
+// SetType sets the "type" field.
+func (u *RetrospectiveUpsertBulk) SetType(v retrospective.Type) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetType(v)
+	})
+}
+
+// UpdateType sets the "type" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateType() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateType()
 	})
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts" module>
 	export type ContextMenuProps = {
-		id: string;
+		nodeId: string;
 		top?: number;
 		left?: number;
 		right?: number;
@@ -10,23 +10,21 @@
 </script>
 
 <script lang="ts">
+    import { diagram } from "./diagram.svelte";
 	import { useEdges, useNodes } from "@xyflow/svelte";
 
-	type Props = ContextMenuProps & {
-		onClick: () => void;
-	};
-	const { onClick, id, top, left, right, bottom }: Props = $props();
+	const { nodeId, top, left, right, bottom }: ContextMenuProps = $props();
 
 	const nodes = useNodes();
 	const edges = useEdges();
 
 	const duplicateNode = () => {
-		const node = $nodes.find((node) => node.id === id);
+		const node = $nodes.find((node) => node.id === nodeId);
 		if (node) {
 			$nodes.push({
 				...node,
-				// You should use a better id than this in production
-				id: `${id}-copy${Math.random()}`,
+				// TODO: use better id
+				id: `${nodeId}-copy${Math.random()}`,
 				position: {
 					x: node.position.x,
 					y: node.position.y + 50,
@@ -37,9 +35,9 @@
 	}
 
 	const deleteNode = () => {
-		$nodes = $nodes.filter((node) => node.id !== id);
+		$nodes = $nodes.filter((node) => node.id !== nodeId);
 		$edges = $edges.filter(
-			(edge) => edge.source !== id && edge.target !== id,
+			(edge) => edge.source !== nodeId && edge.target !== nodeId,
 		);
 	}
 </script>
@@ -49,11 +47,11 @@
 <div
 	style="top: {top}px; left: {left}px; right: {right}px; bottom: {bottom}px;"
 	class="absolute context-menu"
-	onclick={onClick}
+	onclick={() => {console.log("clicked")}}
 >
 	<p style="margin: 0.5em;">
 		<span>{top} {left}</span>
-		<small>node: {id}</small>
+		<small>node: {nodeId}</small>
 	</p>
 	<button onclick={duplicateNode}>duplicate</button>
 	<button onclick={deleteNode}>delete</button>
