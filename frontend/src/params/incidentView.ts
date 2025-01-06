@@ -1,7 +1,7 @@
 import type { ParamMatcher } from '@sveltejs/kit';
 
-const params = new Set([undefined, "timeline", "analysis", "findings"]);
-export type IncidentViewRouteParam = undefined | "timeline" | "analysis" | "findings";
+const params = new Set([undefined, "timeline", "analysis", "report"]);
+export type IncidentViewRouteParam = undefined | "timeline" | "analysis" | "report";
 export const convertIncidentViewParam = (param?: string): IncidentViewRouteParam => {
 	if (!params.has(param)) return undefined;
 	return param as IncidentViewRouteParam;

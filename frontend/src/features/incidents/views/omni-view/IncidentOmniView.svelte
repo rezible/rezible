@@ -19,25 +19,27 @@
     }
     const { incident, retrospective, viewParam }: Props = $props();
 
-	const viewGroups = [
+	const fullRetroViewGroups = [
+		{label: "Timeline", route: "timeline"},
+		{label: "Analysis", route: "analysis"},
+		{label: "Report", route: "report"},
+	];
+	const quickRetroViewGroups = [
+		{label: "Report", route: "report"}
+	];
+
+	const retroType = $derived(retrospective.attributes.type);
+	const viewGroups = $derived([
 		{
 			label: "Details",
-			children: [
-				{label: "Overview", route: ""}
-			]
+			children: [{label: "Overview", route: ""}]
 		},
 		{
 			label: "Retrospective",
-			children: [
-				{label: "Timeline", route: "timeline"},
-				{label: "Analysis", route: "analysis"},
-				{label: "Findings", route: "findings"},
-			]
+			children: retroType === "full" ? fullRetroViewGroups : quickRetroViewGroups,
 		},
-	];
-	const activeViewRoute = $derived(viewParam || "");
-
-	const retrospectiveType = $derived(retrospective.attributes.type);
+	]);
+	const currRoute = $derived(viewParam || "");
 
 	const documentName = $derived(retrospective.attributes.documentName ?? "");
 	watch(() => documentName, (name: string) => {collaborationState.connect(name)});
@@ -50,7 +52,7 @@
 			<div class="border p-2 bg-surface-200 flex flex-col gap-1">
 				<span class="text-surface-content/75">{g.label}</span>
 				{#each g.children as v}
-					{@const active = (v.route === activeViewRoute)}
+					{@const active = (v.route === currRoute)}
 					<a href="/incidents/{incident.attributes.slug}/{v.route}">
 						<div class="p-2 rounded border" class:border-r-4={active} class:bg-primary-600={active} class:text-primary-content={active}>
 							<span>{v.label}</span>
@@ -62,13 +64,13 @@
 	</div>
 
 	<div class="flex-1 min-h-0 overflow-y-auto border p-2">
-		{#if activeViewRoute === ""}
+		{#if currRoute === ""}
 			<IncidentOverview {incident} />
-		{:else if activeViewRoute === "timeline"}
+		{:else if currRoute === "timeline"}
 			<IncidentTimeline {incident} />
-		{:else if activeViewRoute === "analysis"}
+		{:else if currRoute === "analysis"}
 			<IncidentAnalysis {incident} />
-		{:else if activeViewRoute === "findings"}
+		{:else if currRoute === "report"}
 			<IncidentFindingsReport {incident} {retrospective} />
 		{/if}
 	</div>
