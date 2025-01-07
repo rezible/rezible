@@ -1,5 +1,4 @@
 <script lang="ts">
-    import type { Incident } from "$lib/api";
     import type { IncidentViewRouteParam } from "$src/params/incidentView";
 
 	type Props = {
@@ -10,8 +9,8 @@
 	const { incidentSlug, retroType, viewParam }: Props = $props();
 
 	const fullRetroViewGroups = [
+		{label: "System Analysis", route: "analysis"},
 		{label: "Timeline", route: "timeline"},
-		{label: "Analysis", route: "analysis"},
 		{label: "Report", route: "report"},
 	];
 	const quickRetroViewGroups = [

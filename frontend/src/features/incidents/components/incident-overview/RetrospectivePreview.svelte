@@ -9,9 +9,12 @@
 	import { Button, Header, Icon } from 'svelte-ux';
     import { createQuery } from '@tanstack/svelte-query';
 	import { getRetrospectiveForIncidentOptions, type Incident } from '$lib/api';
+    import { incidentCtx } from '$features/incidents/lib/context';
 
-	type Props = { incident: Incident };
-	let { incident }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
+
+	const incident = incidentCtx.get();
 
 	const retrospectiveQuery = createQuery(() => ({
 		...getRetrospectiveForIncidentOptions({path: {id: incident.id}}),
@@ -19,20 +22,20 @@
 	const retrospective = $derived(retrospectiveQuery.data?.data);
 
 	const status = $derived.by(() => {
-		switch (retrospective?.attributes.status) {
-			case 'open':
-				return { label: 'In Progress', icon: mdiProgressPencil, color: 'text-info-300' };
-			case 'in_review':
-				return { label: 'Awaiting Review', icon: mdiClipboard, color: 'text-accent-200' };
-			case 'meeting_scheduled':
-				return {
-					label: 'Incident Review Meeting Scheduled',
-					icon: mdiVideoAccount,
-					color: 'text-success-300'
-				};
-			case 'completed':
-				return { label: 'Completed', icon: mdiFileCheck, color: 'text-success-600' };
-		}
+		// switch (retrospective?.attributes.state) {
+		// 	case 'open':
+		// 		return { label: 'In Progress', icon: mdiProgressPencil, color: 'text-info-300' };
+		// 	case 'in_review':
+		// 		return { label: 'Awaiting Review', icon: mdiClipboard, color: 'text-accent-200' };
+		// 	case 'meeting_scheduled':
+		// 		return {
+		// 			label: 'Incident Review Meeting Scheduled',
+		// 			icon: mdiVideoAccount,
+		// 			color: 'text-success-300'
+		// 		};
+		// 	case 'completed':
+		// 		return { label: 'Completed', icon: mdiFileCheck, color: 'text-success-600' };
+		// }
 		return { label: "Loading", icon: mdiClipboard, color: "text-neutral" };
 	});
 </script>

@@ -4,9 +4,12 @@
 	import { mdiPencil, mdiPencilOutline } from '@mdi/js';
 	import { updateIncidentMutation, type Incident } from '$lib/api';
 	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
+    import { incidentCtx } from '$features/incidents/lib/context';
 
-	type Props = {incident: Incident;};
-	const { incident }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
+
+	const incident = incidentCtx.get();
 
 	let editing = $state(false);
 	let newPrivacy = $state(incident.attributes.private);

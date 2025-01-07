@@ -4,35 +4,35 @@
 	import IncidentSeverity from './IncidentSeverity.svelte';
 	import RoleAssignments from './RoleAssignments.svelte';
 	import TeamAssignments from './TeamAssignments.svelte';
-    import type { Incident } from '$lib/api';
 
-	type Props = {incident: Incident;};
-	const { incident }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
 </script>
 
 <div class="flex flex-col gap-2 overflow-y-auto">
+	<a href="/incidents/demo-incident">other</a>
 	<div class="grid grid-cols-2 gap-2">
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">
-				<RoleAssignments {incident} />
+				<RoleAssignments />
 			</div>
 
 			<div class="border rounded-lg p-2 group">
-				<TeamAssignments {incident} />
+				<TeamAssignments />
 			</div>
 
 			<div class="border rounded-lg p-2 group">
-				<LinkedIncidents {incident} />
+				<LinkedIncidents />
 			</div>
 		</div>
 
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">
-				<IncidentSeverity {incident} />
+				<IncidentSeverity />
 			</div>
 
 			<div class="border rounded-lg p-2 group">
-				<IncidentVisibility {incident} />
+				<IncidentVisibility />
 			</div>
 		</div>
 	</div>

@@ -1,10 +1,12 @@
 <script lang="ts">
-	import type { Incident } from '$lib/api';
 	import { mdiPencil } from '@mdi/js';
 	import { Header, Button, Icon } from 'svelte-ux';
+    import { incidentCtx } from '$features/incidents/lib/context';
 
-	interface Props { incident: Incident };
-	let { incident }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
+
+	const incident = incidentCtx.get();
 
 	let editing = $state(false);
 	const linkedIncidents = $derived(incident.attributes.linked_incidents);

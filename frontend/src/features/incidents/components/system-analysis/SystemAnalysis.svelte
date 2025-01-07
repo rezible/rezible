@@ -3,9 +3,9 @@
     import SystemDiagram from "./SystemDiagram.svelte";
 
 	type Props = {
-		incident: Incident; 
+
 	}
-	const { incident }: Props = $props();
+	const {  }: Props = $props();
 </script>
 
 <div class="flex flex-col h-full w-full overflow-y-hidden">

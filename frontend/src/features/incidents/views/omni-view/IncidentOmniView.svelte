@@ -6,7 +6,7 @@
 
     import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
     import IncidentTimeline from "$features/incidents/components/incident-timeline/IncidentTimeline.svelte";
-	import IncidentAnalysis from "$features/incidents/components/incident-analysis/IncidentAnalysis.svelte";
+	import SystemAnalysis from "$src/features/incidents/components/system-analysis/SystemAnalysis.svelte";
     import IncidentFindingsReport from "$features/incidents/components/incident-report/IncidentFindingsReport.svelte";
     import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 
@@ -21,12 +21,12 @@
     }
     const { incident, retrospective, viewParam }: Props = $props();
 
-	const retroType = $derived(retrospective.attributes.type);
-
 	incidentCtx.set(incident);
 
+	const retroType = $derived(retrospective.attributes.type);
+
 	const retrospectiveId = $derived(retrospective.id);
-	watch(() => retrospectiveId, (id: string) => {collaborationState.connect(id)});
+	watch(() => retrospectiveId, id => {collaborationState.connect(id)});
 	onMount(() => {return () => {collaborationState.cleanup()}});
 </script>
 
@@ -35,11 +35,11 @@
 
 	<div class="flex-1 min-h-0 overflow-y-auto border p-2">
 		{#if viewParam === undefined}
-			<IncidentOverview {incident} />
+			<IncidentOverview />
 		{:else if viewParam === "timeline"}
 			<IncidentTimeline />
 		{:else if viewParam === "analysis"}
-			<IncidentAnalysis {incident} />
+			<SystemAnalysis />
 		{:else if viewParam === "report"}
 			<IncidentFindingsReport {incident} {retrospective} />
 		{/if}

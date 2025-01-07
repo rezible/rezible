@@ -79,12 +79,12 @@ const createCollaborationState = () => {
 	};
 
 	return {
+		connect,
+		cleanup,
 		get awareness() { return collab.awareness },
 		get provider() { return collab.provider },
 		get status() { return collab.status },
 		get error() { return collab.error },
-		connect,
-		cleanup,
 	};
 };
 export const collaborationState = createCollaborationState();

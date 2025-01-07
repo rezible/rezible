@@ -4,9 +4,12 @@
 	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 	import { Button, Header, Icon } from 'svelte-ux';
 	import { mdiPencil } from '@mdi/js';
+    import { incidentCtx } from '$features/incidents/lib/context';
 
-	type Props = { incident: Incident };
-	const { incident }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
+
+	const incident = incidentCtx.get();
 
 	let incidentEnvironments: string[] = [];
 	let selectedEnvironments: string[] = $state([]);
