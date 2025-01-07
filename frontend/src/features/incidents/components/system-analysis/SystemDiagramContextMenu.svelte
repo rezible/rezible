@@ -1,12 +1,14 @@
 <script lang="ts" module>
 	export type ContextMenuProps = {
-		nodeId: string;
+		nodeId?: string;
 		top?: number;
 		left?: number;
 		right?: number;
 		bottom?: number;
 	}
 
+	export const ContextMenuWidth = 200;
+	export const ContextMenuHeight = 300;
 </script>
 
 <script lang="ts">
@@ -44,12 +46,11 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
-	style="top: {top}px; left: {left}px; right: {right}px; bottom: {bottom}px;"
-	class="absolute context-menu"
+	style="top: {top}px; left: {left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
+	class="absolute context-menu border bg-surface-200"
 	onclick={() => {console.log("clicked")}}
 >
 	<p style="margin: 0.5em;">
-		<span>{top} {left}</span>
 		<small>node: {nodeId}</small>
 	</p>
 	<button onclick={duplicateNode}>duplicate</button>
@@ -58,7 +59,6 @@
 
 <style>
 	.context-menu {
-		background: white;
 		border-style: solid;
 		box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
 		

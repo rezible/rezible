@@ -9,7 +9,7 @@ import {
 } from "@xyflow/svelte";
 
 import { listIncidentSystemComponentsOptions, type IncidentSystemComponent, type SystemComponent } from "$lib/api";
-import type { ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
+import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
 
@@ -72,20 +72,22 @@ const createDiagramState = () => {
 	}
 
 	const handleNodeContextMenu = ({node, event}: NodeClickEventDetail) => {
+		if (!containerEl) return;
+		if (!("clientX" in event)) {
+			return;
+		}
 		event.preventDefault();
-		const clientX = "clientX" in event ? event.clientX : 0;
-		const clientY = "clientY" in event ? event.clientY : 0;
 
-		const containerHeight = containerEl?.clientHeight ?? 0;
-		const containerWidth = containerEl?.clientWidth ?? 0;
+		const ex = event.pageX;
+		const ey = event.pageY;
+
+		const {x, y, width, height} = containerEl.getBoundingClientRect();
 
 		ctxMenuProps = {
-			nodeId: node.id,
-			top: clientY < containerHeight - 200 ? clientY : undefined,
-			left: clientX < containerWidth - 200 ? clientX : undefined,
-			right: clientX >= containerWidth - 200 ? containerWidth - clientX : undefined,
-			bottom: clientY >= containerHeight - 200 ? containerHeight - clientY : undefined,
-		};
+			nodeId: node.id,  
+			top: ey - y,
+			left: (ex + ContextMenuWidth) > (x + width) ? (width - ContextMenuWidth) : ex - x,
+		}
 	};
 
 	const handlePaneClicked = (event: PaneClickEvent) => {
