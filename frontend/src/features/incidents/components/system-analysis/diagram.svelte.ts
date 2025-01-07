@@ -71,22 +71,25 @@ const createDiagramState = () => {
 		console.log("node clicked", node);
 	}
 
-	const handleNodeContextMenu = ({node, event}: NodeClickEventDetail) => {
+	const handleContextMenu = (event: PaneClickEvent, node?: Node) => {
 		if (!containerEl) return;
 		if (!("clientX" in event)) {
 			return;
 		}
 		event.preventDefault();
 
-		const ex = event.pageX;
-		const ey = event.pageY;
-
 		const {x, y, width, height} = containerEl.getBoundingClientRect();
 
+		const posX = event.pageX - x;
+		const posY = event.pageY - y;
+
+		const boundLeft = width - ContextMenuWidth;
+		const boundTop = height - ContextMenuHeight;
+		
 		ctxMenuProps = {
-			nodeId: node.id,  
-			top: ey - y,
-			left: (ex + ContextMenuWidth) > (x + width) ? (width - ContextMenuWidth) : ex - x,
+			nodeId: node?.id,
+			top: posY > boundTop ? (height - ContextMenuHeight) : posY,
+			left: posX > boundLeft ? (posX - ContextMenuWidth) : posX,
 		}
 	};
 
@@ -104,8 +107,8 @@ const createDiagramState = () => {
 		nodes,
 		edges,
 		get ctxMenuProps() { return ctxMenuProps },
+		handleContextMenu,
 		handleNodeClicked,
-		handleNodeContextMenu,
 		handlePaneClicked,
 	}
 }

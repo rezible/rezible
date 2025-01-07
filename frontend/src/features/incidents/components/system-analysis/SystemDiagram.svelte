@@ -23,9 +23,10 @@
 		snapGrid={[25, 25]}
 		fitView
 		proOptions={{ hideAttribution: true }}
+		on:panecontextmenu={e => diagram.handleContextMenu(e.detail.event)}
+		on:nodecontextmenu={e => diagram.handleContextMenu(e.detail.event, e.detail.node)}
 		on:nodeclick={e => diagram.handleNodeClicked(e.detail)}
 		on:paneclick={e => diagram.handlePaneClicked(e.detail.event)}
-		on:nodecontextmenu={e => diagram.handleNodeContextMenu(e.detail)}
 	>
 		<Background variant={BackgroundVariant.Dots} />
 		{#if !!diagram.ctxMenuProps}

@@ -3,18 +3,16 @@
 		nodeId?: string;
 		top?: number;
 		left?: number;
-		right?: number;
-		bottom?: number;
 	}
 
-	export const ContextMenuWidth = 200;
-	export const ContextMenuHeight = 300;
+	export const ContextMenuWidth = 180;
+	export const ContextMenuHeight = 250;
 </script>
 
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
 
-	const { nodeId, top, left, right, bottom }: ContextMenuProps = $props();
+	const { nodeId, top, left }: ContextMenuProps = $props();
 
 	const nodes = useNodes();
 	const edges = useEdges();
@@ -43,12 +41,9 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	style="top: {top}px; left: {left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
 	class="absolute context-menu border bg-surface-200"
-	onclick={() => {console.log("clicked")}}
 >
 	<p style="margin: 0.5em;">
 		<small>node: {nodeId}</small>
