@@ -38,8 +38,6 @@ github.com/elimity-com/scim v0.0.0-20240320110924-172bf2aee9c8 h1:0+BTyxIYgiVAry
 github.com/elimity-com/scim v0.0.0-20240320110924-172bf2aee9c8/go.mod h1:JkjcmqbLW+khwt2fmBPJFBhx2zGZ8XobRZ+O0VhlwWo=
 github.com/go-chi/chi/v5 v5.1.0 h1:acVI1TYaD+hhedDJ3r54HyA6sExp3HfXq7QWEEY/xMw=
 github.com/go-chi/chi/v5 v5.1.0/go.mod h1:DslCQbL2OYiznFReuXYUmQ2hGd1aDpCnlMNITLSKoi8=
-github.com/go-faker/faker/v4 v4.5.0 h1:ARzAY2XoOL9tOUK+KSecUQzyXQsUaZHefjyF8x6YFHc=
-github.com/go-faker/faker/v4 v4.5.0/go.mod h1:p3oq1GRjG2PZ7yqeFFfQI20Xm61DoBDlCA8RiSyZ48M=
 github.com/go-json-experiment/json v0.0.0-20250103021031-ec932d8e20fe h1:ngptv0GA78Kxq3vBEtAAPx/QsNFPynltFMi3ml+SZwk=
 github.com/go-json-experiment/json v0.0.0-20250103021031-ec932d8e20fe/go.mod h1:BWmvoE1Xia34f3l/ibJweyhrT+aROb/FQ6d+37F0e2s=
 github.com/go-openapi/inflect v0.21.0 h1:FoBjBTQEcbg2cJUWX6uwL9OyIW8eqc9k4KhN4lfbeYk=
