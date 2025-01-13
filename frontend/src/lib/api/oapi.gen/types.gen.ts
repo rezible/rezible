@@ -440,6 +440,26 @@ export type CreateSystemComponentAttributes = {
     name: string;
 };
 
+export type CreateSystemComponentRelationshipRequestAttributes = {
+    otherId: string;
+};
+
+export type CreateSystemComponentRelationshipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentRelationshipRequestAttributes;
+};
+
+export type CreateSystemComponentRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentRelationship;
+};
+
 export type CreateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1012,6 +1032,7 @@ export type IncidentSystemComponent = {
 };
 
 export type IncidentSystemComponentAttributes = {
+    component: SystemComponent;
     role: string;
 };
 
@@ -1268,6 +1289,15 @@ export type ListRetrospectivesResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Retrospective>;
+    pagination: ResponsePagination;
+};
+
+export type ListSystemComponentRelationshipsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemComponentRelationship>;
     pagination: ResponsePagination;
 };
 
@@ -1632,7 +1662,63 @@ export type SystemComponent = {
 };
 
 export type SystemComponentAttributes = {
+    description: string;
+    kind: 'service';
     name: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    relationships: Array<SystemComponentRelationship>;
+};
+
+export type kind3 = 'service';
+
+export const kind3 = {
+    SERVICE: 'service'
+} as const;
+
+export type SystemComponentControlRelationshipAttributes = {
+    details: SystemComponentControlRelationshipDetails;
+    kind: 'control';
+};
+
+export type kind4 = 'control';
+
+export const kind4 = {
+    CONTROL: 'control'
+} as const;
+
+export type SystemComponentControlRelationshipDetails = {
+    control: string;
+    controlled_id: string;
+    controller_id: string;
+    description: string;
+};
+
+export type SystemComponentFeedbackRelationshipAttributes = {
+    details: SystemComponentFeedbackRelationshipDetails;
+    kind: 'feedback';
+};
+
+export type kind5 = 'feedback';
+
+export const kind5 = {
+    FEEDBACK: 'feedback'
+} as const;
+
+export type SystemComponentFeedbackRelationshipDetails = {
+    description: string;
+    feedback: string;
+    source_id: string;
+    target_id: string;
+};
+
+export type SystemComponentRelationship = {
+    /**
+     * Attributes specific to the kind of relationship
+     */
+    attributes: (SystemComponentControlRelationshipAttributes | SystemComponentFeedbackRelationshipAttributes);
+    id: string;
 };
 
 export type Task = {
@@ -2050,6 +2136,26 @@ export type UpdateRetrospectiveReviewResponseBody = {
 
 export type UpdateSystemComponentAttributes = {
     [key: string]: unknown;
+};
+
+export type UpdateSystemComponentRelationshipAttributes = {
+    [key: string]: unknown;
+};
+
+export type UpdateSystemComponentRelationshipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemComponentRelationshipAttributes;
+};
+
+export type UpdateSystemComponentRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentRelationship;
 };
 
 export type UpdateSystemComponentRequestBody = {
@@ -3288,6 +3394,27 @@ export type CreateRetrospectiveReviewResponse = (CreateRetrospectiveReviewRespon
 
 export type CreateRetrospectiveReviewError = (ErrorModel);
 
+export type ArchiveSystemComponentRelationshipData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ArchiveSystemComponentRelationshipResponse = (void);
+
+export type ArchiveSystemComponentRelationshipError = (ErrorModel);
+
+export type UpdateSystemComponentRelationshipData = {
+    body: UpdateSystemComponentRelationshipRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateSystemComponentRelationshipResponse = (UpdateSystemComponentRelationshipResponseBody);
+
+export type UpdateSystemComponentRelationshipError = (ErrorModel);
+
 export type ListSystemComponentsData = {
     query?: {
         archived?: boolean;
@@ -3339,6 +3466,33 @@ export type UpdateSystemComponentData = {
 export type UpdateSystemComponentResponse = (UpdateSystemComponentResponseBody);
 
 export type UpdateSystemComponentError = (ErrorModel);
+
+export type ListSystemComponentRelationshipsData = {
+    path: {
+        id: string;
+    };
+    query?: {
+        archived?: boolean;
+        limit?: number;
+        offset?: number;
+        search?: string;
+    };
+};
+
+export type ListSystemComponentRelationshipsResponse = (ListSystemComponentRelationshipsResponseBody);
+
+export type ListSystemComponentRelationshipsError = (ErrorModel);
+
+export type CreateSystemComponentRelationshipData = {
+    body: CreateSystemComponentRelationshipRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type CreateSystemComponentRelationshipResponse = (CreateSystemComponentRelationshipResponseBody);
+
+export type CreateSystemComponentRelationshipError = (ErrorModel);
 
 export type ListTasksData = {
     query?: {

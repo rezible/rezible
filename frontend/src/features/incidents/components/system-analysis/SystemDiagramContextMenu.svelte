@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	export type ContextMenuProps = {
 		nodeId?: string;
+		edgeId?: string;
 		top?: number;
 		left?: number;
 	}
@@ -12,10 +13,17 @@
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
 
-	const { nodeId, top, left }: ContextMenuProps = $props();
+	const {
+		nodeId,
+		edgeId,
+		top,
+		left
+	}: ContextMenuProps = $props();
 
 	const nodes = useNodes();
 	const edges = useEdges();
+
+	const active = $derived(!!top && !!left);
 
 	const duplicateNode = () => {
 		const node = $nodes.find((node) => node.id === nodeId);
@@ -41,16 +49,24 @@
 	}
 </script>
 
+{#if active}
 <div
 	style="top: {top}px; left: {left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
 	class="absolute context-menu border bg-surface-200"
 >
 	<p style="margin: 0.5em;">
-		<small>node: {nodeId}</small>
+		{#if nodeId}
+			<small>node: {nodeId}</small>
+		{:else if edgeId}
+			<small>edge: {edgeId}</small>
+		{:else}
+			<small>menu</small>
+		{/if}
 	</p>
 	<button onclick={duplicateNode}>duplicate</button>
 	<button onclick={deleteNode}>delete</button>
 </div>
+{/if}
 
 <style>
 	.context-menu {
