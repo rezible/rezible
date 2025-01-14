@@ -60,6 +60,12 @@ func (s systemAnalysisHandler) AddSystemAnalysisComponent(ctx context.Context, r
 	return &resp, nil
 }
 
+func (s systemAnalysisHandler) GetSystemAnalysisComponent(ctx context.Context, request *oapi.GetSystemAnalysisComponentRequest) (*oapi.GetSystemAnalysisComponentResponse, error) {
+	var resp oapi.GetSystemAnalysisComponentResponse
+
+	return &resp, nil
+}
+
 func (s systemAnalysisHandler) UpdateSystemAnalysisComponent(ctx context.Context, request *oapi.UpdateSystemAnalysisComponentRequest) (*oapi.UpdateSystemAnalysisComponentResponse, error) {
 	var resp oapi.UpdateSystemAnalysisComponentResponse
 
@@ -80,6 +86,12 @@ func (s systemAnalysisHandler) ListSystemAnalysisRelationships(ctx context.Conte
 
 func (s systemAnalysisHandler) CreateSystemAnalysisRelationship(ctx context.Context, request *oapi.CreateSystemAnalysisRelationshipRequest) (*oapi.CreateSystemAnalysisRelationshipResponse, error) {
 	var resp oapi.CreateSystemAnalysisRelationshipResponse
+
+	return &resp, nil
+}
+
+func (s systemAnalysisHandler) GetSystemAnalysisRelationship(ctx context.Context, request *oapi.GetSystemAnalysisRelationshipRequest) (*oapi.GetSystemAnalysisRelationshipResponse, error) {
+	var resp oapi.GetSystemAnalysisRelationshipResponse
 
 	return &resp, nil
 }

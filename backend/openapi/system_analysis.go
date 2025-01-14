@@ -19,11 +19,13 @@ type SystemAnalysisHandler interface {
 
 	ListSystemAnalysisComponents(context.Context, *ListSystemAnalysisComponentsRequest) (*ListSystemAnalysisComponentsResponse, error)
 	AddSystemAnalysisComponent(context.Context, *AddSystemAnalysisComponentRequest) (*AddSystemAnalysisComponentResponse, error)
+	GetSystemAnalysisComponent(context.Context, *GetSystemAnalysisComponentRequest) (*GetSystemAnalysisComponentResponse, error)
 	UpdateSystemAnalysisComponent(context.Context, *UpdateSystemAnalysisComponentRequest) (*UpdateSystemAnalysisComponentResponse, error)
 	DeleteSystemAnalysisComponent(context.Context, *DeleteSystemAnalysisComponentRequest) (*DeleteSystemAnalysisComponentResponse, error)
 
 	ListSystemAnalysisRelationships(context.Context, *ListSystemAnalysisRelationshipsRequest) (*ListSystemAnalysisRelationshipsResponse, error)
 	CreateSystemAnalysisRelationship(context.Context, *CreateSystemAnalysisRelationshipRequest) (*CreateSystemAnalysisRelationshipResponse, error)
+	GetSystemAnalysisRelationship(context.Context, *GetSystemAnalysisRelationshipRequest) (*GetSystemAnalysisRelationshipResponse, error)
 	UpdateSystemAnalysisRelationship(context.Context, *UpdateSystemAnalysisRelationshipRequest) (*UpdateSystemAnalysisRelationshipResponse, error)
 	DeleteSystemAnalysisRelationship(context.Context, *DeleteSystemAnalysisRelationshipRequest) (*DeleteSystemAnalysisRelationshipResponse, error)
 }
@@ -36,19 +38,18 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 	huma.Register(api, ArchiveSystemComponent, o.ArchiveSystemComponent)
 
 	huma.Register(api, GetSystemAnalysis, o.GetSystemAnalysis)
+
 	huma.Register(api, ListSystemAnalysisComponents, o.ListSystemAnalysisComponents)
 	huma.Register(api, AddSystemAnalysisComponent, o.AddSystemAnalysisComponent)
+	huma.Register(api, GetSystemAnalysisComponent, o.GetSystemAnalysisComponent)
 	huma.Register(api, UpdateSystemAnalysisComponent, o.UpdateSystemAnalysisComponent)
 	huma.Register(api, DeleteSystemAnalysisComponent, o.DeleteSystemAnalysisComponent)
+
 	huma.Register(api, ListSystemAnalysisRelationships, o.ListSystemAnalysisRelationships)
+	huma.Register(api, GetSystemAnalysisRelationship, o.GetSystemAnalysisRelationship)
 	huma.Register(api, CreateSystemAnalysisRelationship, o.CreateSystemAnalysisRelationship)
 	huma.Register(api, UpdateSystemAnalysisRelationship, o.UpdateSystemAnalysisRelationship)
 	huma.Register(api, DeleteSystemAnalysisRelationship, o.DeleteSystemAnalysisRelationship)
-
-	//huma.Register(api, ListSystemComponentRelationships, o.ListSystemComponentRelationships)
-	//huma.Register(api, CreateSystemComponentRelationship, o.CreateSystemComponentRelationship)
-	//huma.Register(api, UpdateSystemComponentRelationship, o.UpdateSystemComponentRelationship)
-	//huma.Register(api, ArchiveSystemComponentRelationship, o.ArchiveSystemComponentRelationship)
 }
 
 type (
@@ -214,8 +215,8 @@ var GetSystemAnalysis = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetSystemAnalysisRequest ListIdRequest
-type GetSystemAnalysisResponse PaginatedResponse[ScopedSystemAnalysis]
+type GetSystemAnalysisRequest GetIdRequest
+type GetSystemAnalysisResponse ItemResponse[ScopedSystemAnalysis]
 
 // analysis components
 
