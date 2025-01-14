@@ -10,11 +10,12 @@ import {
 	type XYPosition,
 } from "@xyflow/svelte";
 
-import { listIncidentSystemComponentsOptions, type IncidentSystemComponent, type SystemComponent, type SystemComponentRelationship } from "$lib/api";
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
+import { getSystemAnalysisOptions, type ScopedSystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
 
+/*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
 	const {kind, details} = attributes;
 	let source = "", target = "", label = "";
@@ -74,12 +75,53 @@ const translateIncidentComponents = (incidentComponents: IncidentSystemComponent
 
 	return {nodes, edges};
 }
+*/
+
+export type SystemComponentNodeData = {
+	analysisId: string;
+	component: SystemComponent;
+	role: string;
+}
+
+const translateSystemAnalysis = (an: ScopedSystemAnalysis) => {
+	let nodes: Node[] = [];
+	let edges: Edge[] = [];
+
+	an.attributes.components.forEach(({id, attributes}) => {
+		const {component, role, position} = attributes;
+
+		const data: SystemComponentNodeData = {
+			analysisId: id,
+			component,
+			role,
+		}
+
+		nodes.push({
+			id: component.id,
+			type: "component",
+			data,
+			position,
+		});
+	});
+
+	an.attributes.relationships.forEach(({id, attributes}) => {
+		edges.push({
+			id,
+			type: "relationship",
+			source: attributes.source_id,
+			target: attributes.target_id,
+			data: attributes,
+		})
+	});
+
+	return {nodes, edges};
+}
 
 type SvelteFlowEvents = SvelteFlow["$$events_def"];
 type SvelteFlowContextMenuEvent = SvelteFlowEvents["panecontextmenu"] | SvelteFlowEvents["nodecontextmenu"] | SvelteFlowEvents["edgecontextmenu"] | SvelteFlowEvents["selectioncontextmenu"];
 
 const createDiagramState = () => {
-	let incidentId = $state<string>();
+	let analysisId = $state<string>();
 	let containerEl = $state<HTMLElement>();
 	let ctxMenuProps = $state<ContextMenuProps>();
 
@@ -87,18 +129,19 @@ const createDiagramState = () => {
 	const edges = writable<Edge[]>([]);
 
 	const setup = (containerElFn: () => HTMLElement | undefined) => {
-		incidentId = incidentCtx.get().id;
+		analysisId = incidentCtx.get().attributes.system_analysis_id;
 		onMount(() => {containerEl = containerElFn()});
 		
 		const queryClient = useQueryClient();
 
-		const componentsQuery = createQuery(() => ({
-			...listIncidentSystemComponentsOptions({path: {id: incidentId ?? ""}}),
-			enabled: !!incidentId,
+		const analysisQuery = createQuery(() => ({
+			...getSystemAnalysisOptions({path: {id: analysisId ?? ""}}),
+			enabled: !!analysisId,
 		}), queryClient);
 
-		watch(() => componentsQuery.data, body => {
-			const translated = translateIncidentComponents(body ? $state.snapshot(body.data) : []);
+		watch(() => analysisQuery.data, body => {
+			if (!body?.data) return;
+			const translated = translateSystemAnalysis($state.snapshot(body.data));
 			nodes.set(translated.nodes);
 			edges.set(translated.edges);
 		});

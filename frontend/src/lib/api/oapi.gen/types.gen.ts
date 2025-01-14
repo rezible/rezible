@@ -804,13 +804,28 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
+export type GetSystemAnalysisComponentResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisComponent;
+};
+
+export type GetSystemAnalysisRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisRelationship;
+};
+
 export type GetSystemAnalysisResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<ScopedSystemAnalysis>;
-    pagination: ResponsePagination;
+    data: ScopedSystemAnalysis;
 };
 
 export type GetSystemComponentResponseBody = {
@@ -1688,8 +1703,20 @@ export type SendOncallShiftHandoverResponseBody = {
 };
 
 export type SystemAnalysisComponent = {
-    attributes: SystemAnalysisRelationshipAttributes;
+    attributes: SystemAnalysisComponentAttributes;
     id: string;
+};
+
+export type SystemAnalysisComponentAttributes = {
+    component: SystemComponent;
+    position: SystemAnalysisDiagramPosition;
+    role: string;
+};
+
+export type SystemAnalysisDiagramPosition = {
+    x: number;
+    y: number;
+    z?: number;
 };
 
 export type SystemAnalysisRelationship = {
@@ -1714,19 +1741,13 @@ export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
     controls: Array<SystemComponentControl>;
     description: string;
-    kind: 'service';
+    kind: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
     signals: Array<SystemComponentSignal>;
 };
-
-export type kind3 = 'service';
-
-export const kind3 = {
-    SERVICE: 'service'
-} as const;
 
 export type SystemComponentConstraint = {
     attributes: SystemComponentConstraintAttributes;
@@ -3435,6 +3456,17 @@ export type CreateRetrospectiveReviewResponse = (CreateRetrospectiveReviewRespon
 
 export type CreateRetrospectiveReviewError = (ErrorModel);
 
+export type GetSystemAnalysisComponentData = {
+    path: {
+        analysis_id: string;
+        entity_id: string;
+    };
+};
+
+export type GetSystemAnalysisComponentResponse = (GetSystemAnalysisComponentResponseBody);
+
+export type GetSystemAnalysisComponentError = (ErrorModel);
+
 export type DeleteSystemAnalysisComponentData = {
     path: {
         analysis_id: string;
@@ -3457,6 +3489,17 @@ export type UpdateSystemAnalysisComponentData = {
 export type UpdateSystemAnalysisComponentResponse = (UpdateSystemAnalysisComponentResponseBody);
 
 export type UpdateSystemAnalysisComponentError = (ErrorModel);
+
+export type GetSystemAnalysisRelationshipData = {
+    path: {
+        analysis_id: string;
+        entity_id: string;
+    };
+};
+
+export type GetSystemAnalysisRelationshipResponse = (GetSystemAnalysisRelationshipResponseBody);
+
+export type GetSystemAnalysisRelationshipError = (ErrorModel);
 
 export type DeleteSystemAnalysisRelationshipData = {
     path: {
@@ -3484,12 +3527,6 @@ export type UpdateSystemAnalysisRelationshipError = (ErrorModel);
 export type GetSystemAnalysisData = {
     path: {
         id: string;
-    };
-    query?: {
-        archived?: boolean;
-        limit?: number;
-        offset?: number;
-        search?: string;
     };
 };
 

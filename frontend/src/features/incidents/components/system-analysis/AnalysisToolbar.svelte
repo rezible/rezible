@@ -1,6 +1,9 @@
 <script lang="ts">
-	import { mdiPlusNetwork } from '@mdi/js';
+	import { mdiBug, mdiPlusNetwork } from '@mdi/js';
+    import { useNodes } from '@xyflow/svelte';
 	import { Button, Icon, Tooltip } from 'svelte-ux';
+
+	const nodes = useNodes();
 </script>
 
 <div class="absolute bottom-2 w-full">
@@ -9,6 +12,12 @@
 			<span class="flex items-center gap-2">
 				<span class="group-hover:inline hidden">Add Node</span>
 				<Icon data={mdiPlusNetwork} />
+			</span>
+		</Button>
+		<Button color="default" variant="fill" on:click={() => {console.log($nodes)}}>
+			<span class="flex items-center gap-2">
+				<span class="group-hover:inline hidden">log</span>
+				<Icon data={mdiBug} />
 			</span>
 		</Button>
 	</div>

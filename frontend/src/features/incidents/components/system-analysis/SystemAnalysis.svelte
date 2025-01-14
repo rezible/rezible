@@ -13,6 +13,7 @@
         type NodeTypes,
         type NodeProps,
         type EdgeProps,
+        type EdgeTypes,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
 
@@ -20,10 +21,7 @@
 	import ContextMenu from "./SystemDiagramContextMenu.svelte";
     import AnalysisToolbar from "./AnalysisToolbar.svelte";
     import ComponentNode from "./nodes/ComponentNode.svelte";
-    import type { SystemComponentAttributes, SystemComponentRelationship } from "$src/lib/api";
-    import type { Component } from "svelte";
-    import ControlEdge from "./edges/ControlEdge.svelte";
-    import FeedbackEdge from "./edges/FeedbackEdge.svelte";
+    import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 
 	type Props = {}
 	const {  }: Props = $props();
@@ -31,17 +29,17 @@
 	let containerEl = $state<HTMLElement>();
 	diagram.setup(() => containerEl);
 
-	const nodeTypes: Record<SystemComponentAttributes["kind"], Component<NodeProps>> = {
-		service: ComponentNode,
+	const nodeTypes: NodeTypes = {
+		// @ts-expect-error this will be resolved
+		default: ComponentNode, component: ComponentNode,
 	}
 
-	const edgeTypes: Record<SystemComponentRelationship["attributes"]["kind"], Component<EdgeProps>> = {
-		control: ControlEdge,
-		feedback: FeedbackEdge,
+	const edgeTypes: EdgeTypes = {
+		// @ts-expect-error this will be resolved
+		default: RelationshipEdge, relationship: RelationshipEdge,
 	}
 
 	const flowProps = $derived<SvelteFlowProps>({
-		// @ts-expect-error this will be resolved
 		nodeTypes, edgeTypes,
 		nodes: diagram.nodes,
 		edges: diagram.edges,

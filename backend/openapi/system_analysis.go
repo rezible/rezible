@@ -86,7 +86,7 @@ type (
 	}
 	SystemComponentAttributes struct {
 		Name        string                      `json:"name"`
-		Kind        string                      `json:"kind" enum:"service"`
+		Kind        string                      `json:"kind"`
 		Description string                      `json:"description"`
 		Properties  map[string]any              `json:"properties"`
 		Constraints []SystemComponentConstraint `json:"constraints"`
@@ -105,12 +105,19 @@ type (
 	}
 
 	SystemAnalysisComponent struct {
-		Id         uuid.UUID                            `json:"id"`
-		Attributes SystemAnalysisRelationshipAttributes `json:"attributes"`
+		Id         uuid.UUID                         `json:"id"`
+		Attributes SystemAnalysisComponentAttributes `json:"attributes"`
 	}
 	SystemAnalysisComponentAttributes struct {
-		ComponentId uuid.UUID `json:"component_id"`
-		Role        string    `json:"role"`
+		Component SystemComponent               `json:"component"`
+		Role      string                        `json:"role"`
+		Position  SystemAnalysisDiagramPosition `json:"position"`
+	}
+
+	SystemAnalysisDiagramPosition struct {
+		X float64  `json:"x"`
+		Y float64  `json:"y"`
+		Z *float64 `json:"z,omitempty"`
 	}
 
 	SystemAnalysisRelationship struct {

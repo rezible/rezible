@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { listIncidentSystemComponentsOptions } from "$lib/api";
+	import { listSystemAnalysisComponentsOptions } from "$lib/api";
 
 	import { incidentCtx } from "$features/incidents/lib/context";
 	import { Button, ListItem } from "svelte-ux";
 
-	const incidentId = incidentCtx.get().id;
+	const analysisId = incidentCtx.get().attributes.system_analysis_id;
 	const componentsQuery = createQuery(() =>
-		listIncidentSystemComponentsOptions({ path: { id: incidentId } }),
+		listSystemAnalysisComponentsOptions({ path: { id: analysisId } }),
 	);
 	const incidentComponents = $derived(componentsQuery.data?.data ?? []);
 </script>
