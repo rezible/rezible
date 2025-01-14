@@ -21,7 +21,7 @@ type Handler interface {
 	// GetMiddleware() []Middleware
 
 	EnvironmentsHandler
-	SystemComponentsHandler
+	SystemAnalysisHandler
 	FunctionalitiesHandler
 
 	IncidentsHandler

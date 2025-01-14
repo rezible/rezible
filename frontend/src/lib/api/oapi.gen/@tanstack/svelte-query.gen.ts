@@ -2,8 +2,8 @@
 
 import type { OptionsLegacyParser } from '@hey-api/client-fetch';
 import { queryOptions, infiniteQueryOptions, type InfiniteData, type MutationOptions } from '@tanstack/svelte-query';
-import type { ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, GetDebriefQuestionData, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, VerifyDocumentEditorSessionData, VerifyDocumentEditorSessionError, VerifyDocumentEditorSessionResponse, ListEnvironmentsData, ListEnvironmentsError, ListEnvironmentsResponse, CreateEnvironmentData, CreateEnvironmentError, CreateEnvironmentResponse, GetEnvironmentData, ArchiveEnvironmentData, ArchiveEnvironmentError, ArchiveEnvironmentResponse, UpdateEnvironmentData, UpdateEnvironmentError, UpdateEnvironmentResponse, ListFunctionalitiesData, ListFunctionalitiesError, ListFunctionalitiesResponse, CreateFunctionalityData, CreateFunctionalityError, CreateFunctionalityResponse, GetFunctionalityData, ArchiveFunctionalityData, ArchiveFunctionalityError, ArchiveFunctionalityResponse, UpdateFunctionalityData, UpdateFunctionalityError, UpdateFunctionalityResponse, GetIncidentDebriefData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, GetIncidentFieldData, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, ArchiveIncidentMilestoneData, ArchiveIncidentMilestoneError, ArchiveIncidentMilestoneResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, GetIncidentRoleData, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, GetIncidentSeverityData, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, GetIncidentTagData, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, GetIncidentTypeData, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, ListIncidentsData, ListIncidentsError, ListIncidentsResponse, CreateIncidentData, CreateIncidentError, CreateIncidentResponse, GetIncidentData, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentResponse, UpdateIncidentData, UpdateIncidentError, UpdateIncidentResponse, ListIncidentSystemComponentsData, ListIncidentSystemComponentsError, ListIncidentSystemComponentsResponse, GetIncidentUserDebriefData, ListIncidentMilestonesData, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, GetRetrospectiveForIncidentData, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, GetIntegrationData, ArchiveIntegrationData, ArchiveIntegrationError, ArchiveIntegrationResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, GetMeetingScheduleData, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, GetMeetingSessionData, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, ArchiveOncallShiftAnnotationData, ArchiveOncallShiftAnnotationError, ArchiveOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationData, UpdateOncallShiftAnnotationError, UpdateOncallShiftAnnotationResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, GetOncallShiftHandoverTemplateData, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, GetOncallRosterData, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, GetOncallShiftData, ListOncallShiftAlertsData, ListOncallShiftAlertsError, ListOncallShiftAlertsResponse, ListOncallShiftAnnotationsData, ListOncallShiftAnnotationsError, ListOncallShiftAnnotationsResponse, CreateOncallShiftAnnotationData, CreateOncallShiftAnnotationError, CreateOncallShiftAnnotationResponse, GetOncallShiftHandoverData, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, ListOncallShiftIncidentsData, ListOncallShiftIncidentsError, ListOncallShiftIncidentsResponse, GetNextOncallShiftData, GetUserOncallDetailsData, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, GetRetrospectiveData, ListRetrospectiveDiscussionsData, ListRetrospectiveDiscussionsError, ListRetrospectiveDiscussionsResponse, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionError, CreateRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionData, AddRetrospectiveDiscussionReplyData, AddRetrospectiveDiscussionReplyError, AddRetrospectiveDiscussionReplyResponse, UpdateRetrospectiveDiscussionData, UpdateRetrospectiveDiscussionError, UpdateRetrospectiveDiscussionResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipError, ArchiveSystemComponentRelationshipResponse, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipError, UpdateSystemComponentRelationshipResponse, ListSystemComponentsData, ListSystemComponentsError, ListSystemComponentsResponse, CreateSystemComponentData, CreateSystemComponentError, CreateSystemComponentResponse, GetSystemComponentData, ArchiveSystemComponentData, ArchiveSystemComponentError, ArchiveSystemComponentResponse, UpdateSystemComponentData, UpdateSystemComponentError, UpdateSystemComponentResponse, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsError, ListSystemComponentRelationshipsResponse, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipError, CreateSystemComponentRelationshipResponse, ListTasksData, ListTasksError, ListTasksResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, GetTaskData, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, GetTeamData, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, ListUserAssignmentsData, ListUserAssignmentsError, ListUserAssignmentsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, ListUsersData, ListUsersError, ListUsersResponse, GetUserData } from '../types.gen';
-import { client, listDebriefQuestions, createDebriefQuestion, getDebriefQuestion, archiveDebriefQuestion, updateDebriefQuestion, requestDocumentEditorSession, verifyDocumentEditorSession, listEnvironments, createEnvironment, getEnvironment, archiveEnvironment, updateEnvironment, listFunctionalities, createFunctionality, getFunctionality, archiveFunctionality, updateFunctionality, getIncidentDebrief, updateIncidentDebrief, listDebriefMessages, addIncidentDebriefUserMessage, listDebriefSuggestions, listIncidentFields, createIncidentField, getIncidentField, archiveIncidentField, updateIncidentField, archiveIncidentMilestone, updateIncidentMilestone, listIncidentRoles, createIncidentRole, getIncidentRole, archiveIncidentRole, updateIncidentRole, listIncidentSeverities, createIncidentSeverity, getIncidentSeverity, archiveIncidentSeverity, updateIncidentSeverity, listIncidentTags, createIncidentTag, getIncidentTag, archiveIncidentTag, updateIncidentTag, listIncidentTypes, createIncidentType, getIncidentType, archiveIncidentType, updateIncidentType, listIncidents, createIncident, getIncident, archiveIncident, updateIncident, listIncidentSystemComponents, getIncidentUserDebrief, listIncidentMilestones, createIncidentMilestone, getRetrospectiveForIncident, listIntegrations, createIntegration, getIntegration, archiveIntegration, updateIntegration, listMeetingSchedules, createMeetingSchedule, getMeetingSchedule, archiveMeetingSchedule, updateMeetingSchedule, listMeetingSessions, createMeetingSession, getMeetingSession, archiveMeetingSession, updateMeetingSession, archiveOncallShiftAnnotation, updateOncallShiftAnnotation, createOncallHandoverTemplate, getOncallShiftHandoverTemplate, archiveOncallHandoverTemplate, updateOncallHandoverTemplate, listOncallRosters, getOncallRoster, listOncallShifts, getOncallShift, listOncallShiftAlerts, listOncallShiftAnnotations, createOncallShiftAnnotation, getOncallShiftHandover, sendOncallShiftHandover, listOncallShiftIncidents, getNextOncallShift, getUserOncallDetails, archiveRetrospectiveReview, updateRetrospectiveReview, listRetrospectives, getRetrospective, listRetrospectiveDiscussions, createRetrospectiveDiscussion, getRetrospectiveDiscussion, addRetrospectiveDiscussionReply, updateRetrospectiveDiscussion, listRetrospectiveReviews, createRetrospectiveReview, archiveSystemComponentRelationship, updateSystemComponentRelationship, listSystemComponents, createSystemComponent, getSystemComponent, archiveSystemComponent, updateSystemComponent, listSystemComponentRelationships, createSystemComponentRelationship, listTasks, createTask, getTask, archiveTask, updateTask, listTeams, createTeam, getTeam, archiveTeam, updateTeams, getCurrentUserSession, listUserAssignments, listUserNotifications, deleteUserNotification, listUsers, getUser } from '../sdk.gen';
+import type { ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, GetDebriefQuestionData, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, RequestDocumentEditorSessionData, RequestDocumentEditorSessionError, RequestDocumentEditorSessionResponse, VerifyDocumentEditorSessionData, VerifyDocumentEditorSessionError, VerifyDocumentEditorSessionResponse, ListEnvironmentsData, ListEnvironmentsError, ListEnvironmentsResponse, CreateEnvironmentData, CreateEnvironmentError, CreateEnvironmentResponse, GetEnvironmentData, ArchiveEnvironmentData, ArchiveEnvironmentError, ArchiveEnvironmentResponse, UpdateEnvironmentData, UpdateEnvironmentError, UpdateEnvironmentResponse, ListFunctionalitiesData, ListFunctionalitiesError, ListFunctionalitiesResponse, CreateFunctionalityData, CreateFunctionalityError, CreateFunctionalityResponse, GetFunctionalityData, ArchiveFunctionalityData, ArchiveFunctionalityError, ArchiveFunctionalityResponse, UpdateFunctionalityData, UpdateFunctionalityError, UpdateFunctionalityResponse, GetIncidentDebriefData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, GetIncidentFieldData, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, ArchiveIncidentMilestoneData, ArchiveIncidentMilestoneError, ArchiveIncidentMilestoneResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, GetIncidentRoleData, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, GetIncidentSeverityData, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, GetIncidentTagData, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, GetIncidentTypeData, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, ListIncidentsData, ListIncidentsError, ListIncidentsResponse, CreateIncidentData, CreateIncidentError, CreateIncidentResponse, GetIncidentData, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentResponse, UpdateIncidentData, UpdateIncidentError, UpdateIncidentResponse, GetIncidentUserDebriefData, ListIncidentMilestonesData, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, GetRetrospectiveForIncidentData, ListIntegrationsData, ListIntegrationsError, ListIntegrationsResponse, CreateIntegrationData, CreateIntegrationError, CreateIntegrationResponse, GetIntegrationData, ArchiveIntegrationData, ArchiveIntegrationError, ArchiveIntegrationResponse, UpdateIntegrationData, UpdateIntegrationError, UpdateIntegrationResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, GetMeetingScheduleData, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, GetMeetingSessionData, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, ArchiveOncallShiftAnnotationData, ArchiveOncallShiftAnnotationError, ArchiveOncallShiftAnnotationResponse, UpdateOncallShiftAnnotationData, UpdateOncallShiftAnnotationError, UpdateOncallShiftAnnotationResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, GetOncallShiftHandoverTemplateData, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, GetOncallRosterData, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, GetOncallShiftData, ListOncallShiftAlertsData, ListOncallShiftAlertsError, ListOncallShiftAlertsResponse, ListOncallShiftAnnotationsData, ListOncallShiftAnnotationsError, ListOncallShiftAnnotationsResponse, CreateOncallShiftAnnotationData, CreateOncallShiftAnnotationError, CreateOncallShiftAnnotationResponse, GetOncallShiftHandoverData, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, ListOncallShiftIncidentsData, ListOncallShiftIncidentsError, ListOncallShiftIncidentsResponse, GetNextOncallShiftData, GetUserOncallDetailsData, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, GetRetrospectiveData, ListRetrospectiveDiscussionsData, ListRetrospectiveDiscussionsError, ListRetrospectiveDiscussionsResponse, CreateRetrospectiveDiscussionData, CreateRetrospectiveDiscussionError, CreateRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionData, AddRetrospectiveDiscussionReplyData, AddRetrospectiveDiscussionReplyError, AddRetrospectiveDiscussionReplyResponse, UpdateRetrospectiveDiscussionData, UpdateRetrospectiveDiscussionError, UpdateRetrospectiveDiscussionResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentError, DeleteSystemAnalysisComponentResponse, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentError, UpdateSystemAnalysisComponentResponse, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipError, DeleteSystemAnalysisRelationshipResponse, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipError, UpdateSystemAnalysisRelationshipResponse, GetSystemAnalysisData, GetSystemAnalysisError, GetSystemAnalysisResponse, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsError, ListSystemAnalysisComponentsResponse, AddSystemAnalysisComponentData, AddSystemAnalysisComponentError, AddSystemAnalysisComponentResponse, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsError, ListSystemAnalysisRelationshipsResponse, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipError, CreateSystemAnalysisRelationshipResponse, ListSystemComponentsData, ListSystemComponentsError, ListSystemComponentsResponse, CreateSystemComponentData, CreateSystemComponentError, CreateSystemComponentResponse, GetSystemComponentData, ArchiveSystemComponentData, ArchiveSystemComponentError, ArchiveSystemComponentResponse, UpdateSystemComponentData, UpdateSystemComponentError, UpdateSystemComponentResponse, ListTasksData, ListTasksError, ListTasksResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, GetTaskData, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, CreateTeamData, CreateTeamError, CreateTeamResponse, GetTeamData, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse, ListUserAssignmentsData, ListUserAssignmentsError, ListUserAssignmentsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, ListUsersData, ListUsersError, ListUsersResponse, GetUserData } from '../types.gen';
+import { client, listDebriefQuestions, createDebriefQuestion, getDebriefQuestion, archiveDebriefQuestion, updateDebriefQuestion, requestDocumentEditorSession, verifyDocumentEditorSession, listEnvironments, createEnvironment, getEnvironment, archiveEnvironment, updateEnvironment, listFunctionalities, createFunctionality, getFunctionality, archiveFunctionality, updateFunctionality, getIncidentDebrief, updateIncidentDebrief, listDebriefMessages, addIncidentDebriefUserMessage, listDebriefSuggestions, listIncidentFields, createIncidentField, getIncidentField, archiveIncidentField, updateIncidentField, archiveIncidentMilestone, updateIncidentMilestone, listIncidentRoles, createIncidentRole, getIncidentRole, archiveIncidentRole, updateIncidentRole, listIncidentSeverities, createIncidentSeverity, getIncidentSeverity, archiveIncidentSeverity, updateIncidentSeverity, listIncidentTags, createIncidentTag, getIncidentTag, archiveIncidentTag, updateIncidentTag, listIncidentTypes, createIncidentType, getIncidentType, archiveIncidentType, updateIncidentType, listIncidents, createIncident, getIncident, archiveIncident, updateIncident, getIncidentUserDebrief, listIncidentMilestones, createIncidentMilestone, getRetrospectiveForIncident, listIntegrations, createIntegration, getIntegration, archiveIntegration, updateIntegration, listMeetingSchedules, createMeetingSchedule, getMeetingSchedule, archiveMeetingSchedule, updateMeetingSchedule, listMeetingSessions, createMeetingSession, getMeetingSession, archiveMeetingSession, updateMeetingSession, archiveOncallShiftAnnotation, updateOncallShiftAnnotation, createOncallHandoverTemplate, getOncallShiftHandoverTemplate, archiveOncallHandoverTemplate, updateOncallHandoverTemplate, listOncallRosters, getOncallRoster, listOncallShifts, getOncallShift, listOncallShiftAlerts, listOncallShiftAnnotations, createOncallShiftAnnotation, getOncallShiftHandover, sendOncallShiftHandover, listOncallShiftIncidents, getNextOncallShift, getUserOncallDetails, archiveRetrospectiveReview, updateRetrospectiveReview, listRetrospectives, getRetrospective, listRetrospectiveDiscussions, createRetrospectiveDiscussion, getRetrospectiveDiscussion, addRetrospectiveDiscussionReply, updateRetrospectiveDiscussion, listRetrospectiveReviews, createRetrospectiveReview, deleteSystemAnalysisComponent, updateSystemAnalysisComponent, deleteSystemAnalysisRelationship, updateSystemAnalysisRelationship, getSystemAnalysis, listSystemAnalysisComponents, addSystemAnalysisComponent, listSystemAnalysisRelationships, createSystemAnalysisRelationship, listSystemComponents, createSystemComponent, getSystemComponent, archiveSystemComponent, updateSystemComponent, listTasks, createTask, getTask, archiveTask, updateTask, listTeams, createTeam, getTeam, archiveTeam, updateTeams, getCurrentUserSession, listUserAssignments, listUserNotifications, deleteUserNotification, listUsers, getUser } from '../sdk.gen';
 
 type QueryKey<TOptions extends OptionsLegacyParser> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -1458,53 +1458,6 @@ export const updateIncidentMutation = (options?: Partial<OptionsLegacyParser<Upd
     return mutationOptions;
 };
 
-export const listIncidentSystemComponentsQueryKey = (options: OptionsLegacyParser<ListIncidentSystemComponentsData>) => [
-    createQueryKey('listIncidentSystemComponents', options)
-];
-
-export const listIncidentSystemComponentsOptions = (options: OptionsLegacyParser<ListIncidentSystemComponentsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listIncidentSystemComponents({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentSystemComponentsQueryKey(options)
-    });
-};
-
-export const listIncidentSystemComponentsInfiniteQueryKey = (options: OptionsLegacyParser<ListIncidentSystemComponentsData>): QueryKey<OptionsLegacyParser<ListIncidentSystemComponentsData>> => [
-    createQueryKey('listIncidentSystemComponents', options, true)
-];
-
-export const listIncidentSystemComponentsInfiniteOptions = (options: OptionsLegacyParser<ListIncidentSystemComponentsData>) => {
-    return infiniteQueryOptions<ListIncidentSystemComponentsResponse, ListIncidentSystemComponentsError, InfiniteData<ListIncidentSystemComponentsResponse>, QueryKey<OptionsLegacyParser<ListIncidentSystemComponentsData>>, number | Pick<QueryKey<OptionsLegacyParser<ListIncidentSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<OptionsLegacyParser<ListIncidentSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listIncidentSystemComponents({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listIncidentSystemComponentsInfiniteQueryKey(options)
-    });
-};
-
 export const getIncidentUserDebriefQueryKey = (options: OptionsLegacyParser<GetIncidentUserDebriefData>) => [
     createQueryKey('getIncidentUserDebrief', options)
 ];
@@ -2800,10 +2753,10 @@ export const createRetrospectiveReviewMutation = (options?: Partial<OptionsLegac
     return mutationOptions;
 };
 
-export const archiveSystemComponentRelationshipMutation = (options?: Partial<OptionsLegacyParser<ArchiveSystemComponentRelationshipData>>) => {
-    const mutationOptions: MutationOptions<ArchiveSystemComponentRelationshipResponse, ArchiveSystemComponentRelationshipError, OptionsLegacyParser<ArchiveSystemComponentRelationshipData>> = {
+export const deleteSystemAnalysisComponentMutation = (options?: Partial<OptionsLegacyParser<DeleteSystemAnalysisComponentData>>) => {
+    const mutationOptions: MutationOptions<DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisComponentError, OptionsLegacyParser<DeleteSystemAnalysisComponentData>> = {
         mutationFn: async (localOptions) => {
-            const { data } = await archiveSystemComponentRelationship({
+            const { data } = await deleteSystemAnalysisComponent({
                 ...options,
                 ...localOptions,
                 throwOnError: true
@@ -2814,10 +2767,245 @@ export const archiveSystemComponentRelationshipMutation = (options?: Partial<Opt
     return mutationOptions;
 };
 
-export const updateSystemComponentRelationshipMutation = (options?: Partial<OptionsLegacyParser<UpdateSystemComponentRelationshipData>>) => {
-    const mutationOptions: MutationOptions<UpdateSystemComponentRelationshipResponse, UpdateSystemComponentRelationshipError, OptionsLegacyParser<UpdateSystemComponentRelationshipData>> = {
+export const updateSystemAnalysisComponentMutation = (options?: Partial<OptionsLegacyParser<UpdateSystemAnalysisComponentData>>) => {
+    const mutationOptions: MutationOptions<UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisComponentError, OptionsLegacyParser<UpdateSystemAnalysisComponentData>> = {
         mutationFn: async (localOptions) => {
-            const { data } = await updateSystemComponentRelationship({
+            const { data } = await updateSystemAnalysisComponent({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const deleteSystemAnalysisRelationshipMutation = (options?: Partial<OptionsLegacyParser<DeleteSystemAnalysisRelationshipData>>) => {
+    const mutationOptions: MutationOptions<DeleteSystemAnalysisRelationshipResponse, DeleteSystemAnalysisRelationshipError, OptionsLegacyParser<DeleteSystemAnalysisRelationshipData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await deleteSystemAnalysisRelationship({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const updateSystemAnalysisRelationshipMutation = (options?: Partial<OptionsLegacyParser<UpdateSystemAnalysisRelationshipData>>) => {
+    const mutationOptions: MutationOptions<UpdateSystemAnalysisRelationshipResponse, UpdateSystemAnalysisRelationshipError, OptionsLegacyParser<UpdateSystemAnalysisRelationshipData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await updateSystemAnalysisRelationship({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const getSystemAnalysisQueryKey = (options: OptionsLegacyParser<GetSystemAnalysisData>) => [
+    createQueryKey('getSystemAnalysis', options)
+];
+
+export const getSystemAnalysisOptions = (options: OptionsLegacyParser<GetSystemAnalysisData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await getSystemAnalysis({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getSystemAnalysisQueryKey(options)
+    });
+};
+
+export const getSystemAnalysisInfiniteQueryKey = (options: OptionsLegacyParser<GetSystemAnalysisData>): QueryKey<OptionsLegacyParser<GetSystemAnalysisData>> => [
+    createQueryKey('getSystemAnalysis', options, true)
+];
+
+export const getSystemAnalysisInfiniteOptions = (options: OptionsLegacyParser<GetSystemAnalysisData>) => {
+    return infiniteQueryOptions<GetSystemAnalysisResponse, GetSystemAnalysisError, InfiniteData<GetSystemAnalysisResponse>, QueryKey<OptionsLegacyParser<GetSystemAnalysisData>>, number | Pick<QueryKey<OptionsLegacyParser<GetSystemAnalysisData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<OptionsLegacyParser<GetSystemAnalysisData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await getSystemAnalysis({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: getSystemAnalysisInfiniteQueryKey(options)
+    });
+};
+
+export const listSystemAnalysisComponentsQueryKey = (options: OptionsLegacyParser<ListSystemAnalysisComponentsData>) => [
+    createQueryKey('listSystemAnalysisComponents', options)
+];
+
+export const listSystemAnalysisComponentsOptions = (options: OptionsLegacyParser<ListSystemAnalysisComponentsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listSystemAnalysisComponents({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSystemAnalysisComponentsQueryKey(options)
+    });
+};
+
+export const listSystemAnalysisComponentsInfiniteQueryKey = (options: OptionsLegacyParser<ListSystemAnalysisComponentsData>): QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>> => [
+    createQueryKey('listSystemAnalysisComponents', options, true)
+];
+
+export const listSystemAnalysisComponentsInfiniteOptions = (options: OptionsLegacyParser<ListSystemAnalysisComponentsData>) => {
+    return infiniteQueryOptions<ListSystemAnalysisComponentsResponse, ListSystemAnalysisComponentsError, InfiniteData<ListSystemAnalysisComponentsResponse>, QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>, number | Pick<QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listSystemAnalysisComponents({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSystemAnalysisComponentsInfiniteQueryKey(options)
+    });
+};
+
+export const addSystemAnalysisComponentQueryKey = (options: OptionsLegacyParser<AddSystemAnalysisComponentData>) => [
+    createQueryKey('addSystemAnalysisComponent', options)
+];
+
+export const addSystemAnalysisComponentOptions = (options: OptionsLegacyParser<AddSystemAnalysisComponentData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await addSystemAnalysisComponent({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: addSystemAnalysisComponentQueryKey(options)
+    });
+};
+
+export const addSystemAnalysisComponentMutation = (options?: Partial<OptionsLegacyParser<AddSystemAnalysisComponentData>>) => {
+    const mutationOptions: MutationOptions<AddSystemAnalysisComponentResponse, AddSystemAnalysisComponentError, OptionsLegacyParser<AddSystemAnalysisComponentData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await addSystemAnalysisComponent({
+                ...options,
+                ...localOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listSystemAnalysisRelationshipsQueryKey = (options: OptionsLegacyParser<ListSystemAnalysisRelationshipsData>) => [
+    createQueryKey('listSystemAnalysisRelationships', options)
+];
+
+export const listSystemAnalysisRelationshipsOptions = (options: OptionsLegacyParser<ListSystemAnalysisRelationshipsData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await listSystemAnalysisRelationships({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSystemAnalysisRelationshipsQueryKey(options)
+    });
+};
+
+export const listSystemAnalysisRelationshipsInfiniteQueryKey = (options: OptionsLegacyParser<ListSystemAnalysisRelationshipsData>): QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>> => [
+    createQueryKey('listSystemAnalysisRelationships', options, true)
+];
+
+export const listSystemAnalysisRelationshipsInfiniteOptions = (options: OptionsLegacyParser<ListSystemAnalysisRelationshipsData>) => {
+    return infiniteQueryOptions<ListSystemAnalysisRelationshipsResponse, ListSystemAnalysisRelationshipsError, InfiniteData<ListSystemAnalysisRelationshipsResponse>, QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>, number | Pick<QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+    // @ts-ignore
+    {
+        queryFn: async ({ pageParam, queryKey, signal }) => {
+            // @ts-ignore
+            const page: Pick<QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+                query: {
+                    offset: pageParam
+                }
+            };
+            const params = createInfiniteParams(queryKey, page);
+            const { data } = await listSystemAnalysisRelationships({
+                ...options,
+                ...params,
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: listSystemAnalysisRelationshipsInfiniteQueryKey(options)
+    });
+};
+
+export const createSystemAnalysisRelationshipQueryKey = (options: OptionsLegacyParser<CreateSystemAnalysisRelationshipData>) => [
+    createQueryKey('createSystemAnalysisRelationship', options)
+];
+
+export const createSystemAnalysisRelationshipOptions = (options: OptionsLegacyParser<CreateSystemAnalysisRelationshipData>) => {
+    return queryOptions({
+        queryFn: async ({ queryKey, signal }) => {
+            const { data } = await createSystemAnalysisRelationship({
+                ...options,
+                ...queryKey[0],
+                signal,
+                throwOnError: true
+            });
+            return data;
+        },
+        queryKey: createSystemAnalysisRelationshipQueryKey(options)
+    });
+};
+
+export const createSystemAnalysisRelationshipMutation = (options?: Partial<OptionsLegacyParser<CreateSystemAnalysisRelationshipData>>) => {
+    const mutationOptions: MutationOptions<CreateSystemAnalysisRelationshipResponse, CreateSystemAnalysisRelationshipError, OptionsLegacyParser<CreateSystemAnalysisRelationshipData>> = {
+        mutationFn: async (localOptions) => {
+            const { data } = await createSystemAnalysisRelationship({
                 ...options,
                 ...localOptions,
                 throwOnError: true
@@ -2945,86 +3133,6 @@ export const updateSystemComponentMutation = (options?: Partial<OptionsLegacyPar
     const mutationOptions: MutationOptions<UpdateSystemComponentResponse, UpdateSystemComponentError, OptionsLegacyParser<UpdateSystemComponentData>> = {
         mutationFn: async (localOptions) => {
             const { data } = await updateSystemComponent({
-                ...options,
-                ...localOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-export const listSystemComponentRelationshipsQueryKey = (options: OptionsLegacyParser<ListSystemComponentRelationshipsData>) => [
-    createQueryKey('listSystemComponentRelationships', options)
-];
-
-export const listSystemComponentRelationshipsOptions = (options: OptionsLegacyParser<ListSystemComponentRelationshipsData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await listSystemComponentRelationships({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentRelationshipsQueryKey(options)
-    });
-};
-
-export const listSystemComponentRelationshipsInfiniteQueryKey = (options: OptionsLegacyParser<ListSystemComponentRelationshipsData>): QueryKey<OptionsLegacyParser<ListSystemComponentRelationshipsData>> => [
-    createQueryKey('listSystemComponentRelationships', options, true)
-];
-
-export const listSystemComponentRelationshipsInfiniteOptions = (options: OptionsLegacyParser<ListSystemComponentRelationshipsData>) => {
-    return infiniteQueryOptions<ListSystemComponentRelationshipsResponse, ListSystemComponentRelationshipsError, InfiniteData<ListSystemComponentRelationshipsResponse>, QueryKey<OptionsLegacyParser<ListSystemComponentRelationshipsData>>, number | Pick<QueryKey<OptionsLegacyParser<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-    // @ts-ignore
-    {
-        queryFn: async ({ pageParam, queryKey, signal }) => {
-            // @ts-ignore
-            const page: Pick<QueryKey<OptionsLegacyParser<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-                query: {
-                    offset: pageParam
-                }
-            };
-            const params = createInfiniteParams(queryKey, page);
-            const { data } = await listSystemComponentRelationships({
-                ...options,
-                ...params,
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: listSystemComponentRelationshipsInfiniteQueryKey(options)
-    });
-};
-
-export const createSystemComponentRelationshipQueryKey = (options: OptionsLegacyParser<CreateSystemComponentRelationshipData>) => [
-    createQueryKey('createSystemComponentRelationship', options)
-];
-
-export const createSystemComponentRelationshipOptions = (options: OptionsLegacyParser<CreateSystemComponentRelationshipData>) => {
-    return queryOptions({
-        queryFn: async ({ queryKey, signal }) => {
-            const { data } = await createSystemComponentRelationship({
-                ...options,
-                ...queryKey[0],
-                signal,
-                throwOnError: true
-            });
-            return data;
-        },
-        queryKey: createSystemComponentRelationshipQueryKey(options)
-    });
-};
-
-export const createSystemComponentRelationshipMutation = (options?: Partial<OptionsLegacyParser<CreateSystemComponentRelationshipData>>) => {
-    const mutationOptions: MutationOptions<CreateSystemComponentRelationshipResponse, CreateSystemComponentRelationshipError, OptionsLegacyParser<CreateSystemComponentRelationshipData>> = {
-        mutationFn: async (localOptions) => {
-            const { data } = await createSystemComponentRelationship({
                 ...options,
                 ...localOptions,
                 throwOnError: true
