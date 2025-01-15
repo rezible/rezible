@@ -6,28 +6,29 @@
 		Background,
 		BackgroundVariant,
 		MiniMap,
-        type BackgroundProps,
-        type ControlsProps,
-        type MiniMapProps,
-        type SvelteFlowProps,
-        type NodeTypes,
-        type NodeProps,
-        type EdgeProps,
-        type EdgeTypes,
+		type BackgroundProps,
+		type ControlsProps,
+		type MiniMapProps,
+		type SvelteFlowProps,
+		type NodeTypes,
+		type EdgeTypes,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
 
-    import { diagram } from "./diagram.svelte";
+	import { diagram } from "./diagram.svelte";
 	import ContextMenu from "./SystemDiagramContextMenu.svelte";
-    import AnalysisToolbar from "./AnalysisToolbar.svelte";
-    import ComponentNode from "./nodes/ComponentNode.svelte";
-    import RelationshipEdge from "./edges/RelationshipEdge.svelte";
+	import SystemDiagramToolbar from "./SystemDiagramToolbar.svelte";
+	import ComponentNode from "./nodes/ComponentNode.svelte";
+	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
+    import SystemDiagramConnectionLine from "./SystemDiagramConnectionLine.svelte";
 
 	type Props = {}
-	const {  }: Props = $props();
+	const {}: Props = $props();
 
 	let containerEl = $state<HTMLElement>();
 	diagram.setup(() => containerEl);
+
+	const colorMode = $derived("dark"); // get from svelte-ux theme
 
 	const nodeTypes: NodeTypes = {
 		// @ts-expect-error this will be resolved
@@ -40,9 +41,11 @@
 	}
 
 	const flowProps = $derived<SvelteFlowProps>({
-		nodeTypes, edgeTypes,
+		nodeTypes, 
+		edgeTypes,
 		nodes: diagram.nodes,
 		edges: diagram.edges,
+		colorMode,
 		snapGrid: [25, 25],
 		fitView: true,
 		proOptions: {hideAttribution: true}
@@ -73,11 +76,12 @@
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={e => console.log("edge click", e)}
 		>
+			<SystemDiagramConnectionLine slot="connectionLine" />
 			<Background {...backgroundProps} />
 			<Controls {...controlsProps} />
 			<MiniMap {...minimapProps} />
 			<ContextMenu {...diagram.ctxMenuProps} />
 		</SvelteFlow>
-		<AnalysisToolbar />
+		<SystemDiagramToolbar />
 	</SvelteFlowProvider>
 </div>

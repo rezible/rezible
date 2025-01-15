@@ -13,8 +13,8 @@
 </script>
 
 <NodeToolbar>
-	<div class="border rounded-lg bg-surface-100/20 p-2">
-		<ButtonGroup variant="fill-light" color="neutral">
+	<div class="border rounded-lg bg-surface-100 p-2">
+		<ButtonGroup variant="fill-light" color="accent">
 			<Button>delete</Button>
 			<Button>copy</Button>
 			<Button>expand</Button>

@@ -1,6 +1,6 @@
 <script lang="ts">
     import type { SystemAnalysisRelationshipAttributes } from '$lib/api';
-	import { useEdges, type EdgeProps, getBezierPath, BaseEdge, type Edge, EdgeLabel } from '@xyflow/svelte';
+	import { useEdges, type EdgeProps, getBezierPath, BaseEdge, type Edge, EdgeLabelRenderer } from '@xyflow/svelte';
    
 	const {
 		data: arbitraryData,
@@ -52,9 +52,16 @@
 	}
 </script>
 
-<BaseEdge {path} {markerEnd} />
+<BaseEdge {path} {markerEnd} class="animated" />
 
+<EdgeLabelRenderer>
+	<div class="nodrag nopan relationship-label" style="transform: translate(-50%, -50%) translate({labelX}px, {labelY}px)">
+		{data.description}
+	</div>
+</EdgeLabelRenderer>
 
-<EdgeLabel x={labelX} y={labelY} style={labelStyle}>
-	{data.description}
-</EdgeLabel>
+<style lang="postcss">
+	.relationship-label {
+		@apply absolute p-2 rounded-lg border border-surface-200 text-sm;
+	}
+</style>
