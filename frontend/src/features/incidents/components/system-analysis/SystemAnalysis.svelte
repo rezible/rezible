@@ -76,10 +76,10 @@
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={e => console.log("edge click", e)}
 		>
-			<SystemDiagramConnectionLine slot="connectionLine" />
 			<Background {...backgroundProps} />
 			<Controls {...controlsProps} />
 			<MiniMap {...minimapProps} />
+			<SystemDiagramConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
 		</SvelteFlow>
 		<SystemDiagramToolbar />
