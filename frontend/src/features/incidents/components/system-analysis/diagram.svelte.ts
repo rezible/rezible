@@ -5,9 +5,11 @@ import { writable } from "svelte/store";
 import {
 	type Node,
 	type Edge,
-	type SvelteFlow,
 	MarkerType,
+	SvelteFlow,
 	type XYPosition,
+	useSvelteFlow,
+	type OnConnectEnd,
 } from "@xyflow/svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
@@ -129,6 +131,7 @@ const createDiagramState = () => {
 	const edges = writable<Edge[]>([]);
 
 	const setup = (containerElFn: () => HTMLElement | undefined) => {
+		// flow = useSvelteFlow();
 		analysisId = incidentCtx.get().attributes.system_analysis_id;
 		onMount(() => {containerEl = containerElFn()});
 		
@@ -181,6 +184,15 @@ const createDiagramState = () => {
 		}
 	};
 
+	const handleConnectEnd: OnConnectEnd = (event, connectionState) => {
+		if (connectionState.isValid) return;
+ 
+		const sourceNodeId = connectionState.fromNode?.id ?? '1';
+		const { clientX, clientY } = 'changedTouches' in event ? event.changedTouches[0] : event;
+	 
+		console.log("dropped", sourceNodeId, clientX, clientY);
+	}
+
 	return {
 		setup,
 		get nodes() { return nodes },
@@ -189,6 +201,7 @@ const createDiagramState = () => {
 		handleContextMenuEvent,
 		handleNodeClicked,
 		handlePaneClicked,
+		handleConnectEnd,
 	}
 }
 

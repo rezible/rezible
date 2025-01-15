@@ -12,7 +12,7 @@
 	const data = $derived(arbitraryData as SystemComponentNodeData);
 </script>
 
-<NodeToolbar>
+<NodeToolbar position={Position.Bottom}>
 	<div class="border rounded-lg bg-surface-100 p-2">
 		<ButtonGroup variant="fill-light" color="accent">
 			<Button>delete</Button>
@@ -22,8 +22,8 @@
 	</div>
 </NodeToolbar>
 
-<div class="node border bg-surface-100 rounded-lg p-3">
+<div class="node border bg-surface-100 rounded-lg p-3 group">
 	<span>{data.component.attributes.name}</span>
-	<Handle type="target" position={Position.Left} />
-	<Handle type="source" position={Position.Right} />
+	<Handle type="target" position={Position.Left} class="invisible group-hover:visible" />
+	<Handle type="source" position={Position.Right} class="invisible group-hover:visible" />
 </div>

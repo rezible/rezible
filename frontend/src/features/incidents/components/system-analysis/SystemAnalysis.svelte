@@ -18,6 +18,7 @@
 	import { diagram } from "./diagram.svelte";
 	import ContextMenu from "./SystemDiagramContextMenu.svelte";
 	import SystemDiagramToolbar from "./SystemDiagramToolbar.svelte";
+    import AddComponentDialog from "./AddComponentDialog.svelte";
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
     import SystemDiagramConnectionLine from "./SystemDiagramConnectionLine.svelte";
@@ -61,11 +62,13 @@
 
 	const minimapProps: MiniMapProps = {
 		position: "top-right",
-	}
+	};
+
+	let addComponentDialogOpen = $state(false);
 </script>
 
-<div class="h-full w-full overflow-hidden relative" role="presentation" bind:this={containerEl} oncontextmenu={e => e.preventDefault()}>
-	<SvelteFlowProvider>
+<SvelteFlowProvider>
+	<div class="h-full w-full overflow-hidden relative" role="presentation" bind:this={containerEl} oncontextmenu={e => e.preventDefault()}>
 		<SvelteFlow
 			{...flowProps}
 			on:panecontextmenu={diagram.handleContextMenuEvent}
@@ -75,6 +78,7 @@
 			on:nodeclick={diagram.handleNodeClicked}
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={e => console.log("edge click", e)}
+			onconnectend={diagram.handleConnectEnd}
 		>
 			<Background {...backgroundProps} />
 			<Controls {...controlsProps} />
@@ -82,6 +86,8 @@
 			<SystemDiagramConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
 		</SvelteFlow>
-		<SystemDiagramToolbar />
-	</SvelteFlowProvider>
-</div>
+		<SystemDiagramToolbar onAddNode={() => {addComponentDialogOpen = true}} />
+	</div>
+
+	<AddComponentDialog bind:open={addComponentDialogOpen} />
+</SvelteFlowProvider>

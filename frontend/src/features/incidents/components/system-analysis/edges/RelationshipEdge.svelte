@@ -22,22 +22,23 @@
 	const labelX = $derived((sourceX + targetX) / 2);
 	const labelY = $derived((sourceY + targetY) / 2);
    
-	const offset = 1;
+	const offsetX = 5;
+	const offsetY = 0.5;
 	const [path1] = $derived(getBezierPath({
 		sourcePosition,
 		targetPosition,
-		sourceX: sourceX - offset,
-		sourceY: sourceY + offset,
-		targetX: targetX + offset,
-		targetY: targetY + offset,
+		sourceX: sourceX - offsetX,
+		sourceY: sourceY + offsetY,
+		targetX: targetX + offsetX,
+		targetY: targetY + offsetY,
 	}));
 	const [path2] = $derived(getBezierPath({
 		sourcePosition,
 		targetPosition,
-		sourceX: sourceX - offset,
-		sourceY: sourceY - offset,
-		targetX: targetX + offset,
-		targetY: targetY - offset,
+		sourceX: sourceX - offsetX,
+		sourceY: sourceY - offsetY,
+		targetX: targetX + offsetX,
+		targetY: targetY - offsetY,
 	}));
 </script>
 

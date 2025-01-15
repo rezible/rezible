@@ -9,6 +9,5 @@
 			<span>x</span>
 		</div>
 	</Header>
-	right sidebar
-	<span>connect: {collaborationState.status}</span>
+	<span>status: {collaborationState.status}</span>
 </div>
