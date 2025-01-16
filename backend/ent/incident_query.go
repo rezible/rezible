@@ -22,42 +22,38 @@ import (
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/task"
 )
 
 // IncidentQuery is the builder for querying Incident entities.
 type IncidentQuery struct {
 	config
-	ctx                          *QueryContext
-	order                        []incident.OrderOption
-	inters                       []Interceptor
-	predicates                   []predicate.Incident
-	withEnvironments             *EnvironmentQuery
-	withSeverity                 *IncidentSeverityQuery
-	withType                     *IncidentTypeQuery
-	withTeamAssignments          *IncidentTeamAssignmentQuery
-	withRoleAssignments          *IncidentRoleAssignmentQuery
-	withSystemComponents         *SystemComponentQuery
-	withLinkedIncidents          *IncidentQuery
-	withRetrospective            *RetrospectiveQuery
-	withMilestones               *IncidentMilestoneQuery
-	withEvents                   *IncidentEventQuery
-	withFieldSelections          *IncidentFieldOptionQuery
-	withTasks                    *TaskQuery
-	withTagAssignments           *IncidentTagQuery
-	withDebriefs                 *IncidentDebriefQuery
-	withReviewSessions           *MeetingSessionQuery
-	withIncidentSystemComponents *IncidentSystemComponentQuery
-	withIncidentLinks            *IncidentLinkQuery
-	modifiers                    []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []incident.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Incident
+	withEnvironments    *EnvironmentQuery
+	withSeverity        *IncidentSeverityQuery
+	withType            *IncidentTypeQuery
+	withTeamAssignments *IncidentTeamAssignmentQuery
+	withRoleAssignments *IncidentRoleAssignmentQuery
+	withLinkedIncidents *IncidentQuery
+	withRetrospective   *RetrospectiveQuery
+	withMilestones      *IncidentMilestoneQuery
+	withEvents          *IncidentEventQuery
+	withFieldSelections *IncidentFieldOptionQuery
+	withTasks           *TaskQuery
+	withTagAssignments  *IncidentTagQuery
+	withDebriefs        *IncidentDebriefQuery
+	withReviewSessions  *MeetingSessionQuery
+	withIncidentLinks   *IncidentLinkQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -197,28 +193,6 @@ func (iq *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySystemComponents chains the current query on the "system_components" edge.
-func (iq *IncidentQuery) QuerySystemComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.SystemComponentsTable, incident.SystemComponentsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -417,28 +391,6 @@ func (iq *IncidentQuery) QueryReviewSessions() *MeetingSessionQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryIncidentSystemComponents chains the current query on the "incident_system_components" edge.
-func (iq *IncidentQuery) QueryIncidentSystemComponents() *IncidentSystemComponentQuery {
-	query := (&IncidentSystemComponentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.IncidentSystemComponentsTable, incident.IncidentSystemComponentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -655,28 +607,26 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		return nil
 	}
 	return &IncidentQuery{
-		config:                       iq.config,
-		ctx:                          iq.ctx.Clone(),
-		order:                        append([]incident.OrderOption{}, iq.order...),
-		inters:                       append([]Interceptor{}, iq.inters...),
-		predicates:                   append([]predicate.Incident{}, iq.predicates...),
-		withEnvironments:             iq.withEnvironments.Clone(),
-		withSeverity:                 iq.withSeverity.Clone(),
-		withType:                     iq.withType.Clone(),
-		withTeamAssignments:          iq.withTeamAssignments.Clone(),
-		withRoleAssignments:          iq.withRoleAssignments.Clone(),
-		withSystemComponents:         iq.withSystemComponents.Clone(),
-		withLinkedIncidents:          iq.withLinkedIncidents.Clone(),
-		withRetrospective:            iq.withRetrospective.Clone(),
-		withMilestones:               iq.withMilestones.Clone(),
-		withEvents:                   iq.withEvents.Clone(),
-		withFieldSelections:          iq.withFieldSelections.Clone(),
-		withTasks:                    iq.withTasks.Clone(),
-		withTagAssignments:           iq.withTagAssignments.Clone(),
-		withDebriefs:                 iq.withDebriefs.Clone(),
-		withReviewSessions:           iq.withReviewSessions.Clone(),
-		withIncidentSystemComponents: iq.withIncidentSystemComponents.Clone(),
-		withIncidentLinks:            iq.withIncidentLinks.Clone(),
+		config:              iq.config,
+		ctx:                 iq.ctx.Clone(),
+		order:               append([]incident.OrderOption{}, iq.order...),
+		inters:              append([]Interceptor{}, iq.inters...),
+		predicates:          append([]predicate.Incident{}, iq.predicates...),
+		withEnvironments:    iq.withEnvironments.Clone(),
+		withSeverity:        iq.withSeverity.Clone(),
+		withType:            iq.withType.Clone(),
+		withTeamAssignments: iq.withTeamAssignments.Clone(),
+		withRoleAssignments: iq.withRoleAssignments.Clone(),
+		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
+		withRetrospective:   iq.withRetrospective.Clone(),
+		withMilestones:      iq.withMilestones.Clone(),
+		withEvents:          iq.withEvents.Clone(),
+		withFieldSelections: iq.withFieldSelections.Clone(),
+		withTasks:           iq.withTasks.Clone(),
+		withTagAssignments:  iq.withTagAssignments.Clone(),
+		withDebriefs:        iq.withDebriefs.Clone(),
+		withReviewSessions:  iq.withReviewSessions.Clone(),
+		withIncidentLinks:   iq.withIncidentLinks.Clone(),
 		// clone intermediate query.
 		sql:       iq.sql.Clone(),
 		path:      iq.path,
@@ -736,17 +686,6 @@ func (iq *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmen
 		opt(query)
 	}
 	iq.withRoleAssignments = query
-	return iq
-}
-
-// WithSystemComponents tells the query-builder to eager-load the nodes that are connected to
-// the "system_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithSystemComponents(opts ...func(*SystemComponentQuery)) *IncidentQuery {
-	query := (&SystemComponentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withSystemComponents = query
 	return iq
 }
 
@@ -849,17 +788,6 @@ func (iq *IncidentQuery) WithReviewSessions(opts ...func(*MeetingSessionQuery)) 
 	return iq
 }
 
-// WithIncidentSystemComponents tells the query-builder to eager-load the nodes that are connected to
-// the "incident_system_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithIncidentSystemComponents(opts ...func(*IncidentSystemComponentQuery)) *IncidentQuery {
-	query := (&IncidentSystemComponentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withIncidentSystemComponents = query
-	return iq
-}
-
 // WithIncidentLinks tells the query-builder to eager-load the nodes that are connected to
 // the "incident_links" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *IncidentQuery) WithIncidentLinks(opts ...func(*IncidentLinkQuery)) *IncidentQuery {
@@ -949,13 +877,12 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [15]bool{
 			iq.withEnvironments != nil,
 			iq.withSeverity != nil,
 			iq.withType != nil,
 			iq.withTeamAssignments != nil,
 			iq.withRoleAssignments != nil,
-			iq.withSystemComponents != nil,
 			iq.withLinkedIncidents != nil,
 			iq.withRetrospective != nil,
 			iq.withMilestones != nil,
@@ -965,7 +892,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			iq.withTagAssignments != nil,
 			iq.withDebriefs != nil,
 			iq.withReviewSessions != nil,
-			iq.withIncidentSystemComponents != nil,
 			iq.withIncidentLinks != nil,
 		}
 	)
@@ -1024,13 +950,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			func(n *Incident, e *IncidentRoleAssignment) {
 				n.Edges.RoleAssignments = append(n.Edges.RoleAssignments, e)
 			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withSystemComponents; query != nil {
-		if err := iq.loadSystemComponents(ctx, query, nodes,
-			func(n *Incident) { n.Edges.SystemComponents = []*SystemComponent{} },
-			func(n *Incident, e *SystemComponent) { n.Edges.SystemComponents = append(n.Edges.SystemComponents, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1095,15 +1014,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := iq.loadReviewSessions(ctx, query, nodes,
 			func(n *Incident) { n.Edges.ReviewSessions = []*MeetingSession{} },
 			func(n *Incident, e *MeetingSession) { n.Edges.ReviewSessions = append(n.Edges.ReviewSessions, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withIncidentSystemComponents; query != nil {
-		if err := iq.loadIncidentSystemComponents(ctx, query, nodes,
-			func(n *Incident) { n.Edges.IncidentSystemComponents = []*IncidentSystemComponent{} },
-			func(n *Incident, e *IncidentSystemComponent) {
-				n.Edges.IncidentSystemComponents = append(n.Edges.IncidentSystemComponents, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1293,67 +1203,6 @@ func (iq *IncidentQuery) loadRoleAssignments(ctx context.Context, query *Inciden
 			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadSystemComponents(ctx context.Context, query *SystemComponentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *SystemComponent)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.SystemComponentsTable)
-		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(incident.SystemComponentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incident.SystemComponentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.SystemComponentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*SystemComponent](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "system_components" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
 	}
 	return nil
 }
@@ -1746,36 +1595,6 @@ func (iq *IncidentQuery) loadReviewSessions(ctx context.Context, query *MeetingS
 		for kn := range nodes {
 			assign(kn, n)
 		}
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadIncidentSystemComponents(ctx context.Context, query *IncidentSystemComponentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSystemComponent)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentsystemcomponent.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentSystemComponent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.IncidentSystemComponentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

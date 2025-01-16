@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 // Incident holds the schema definition for the Incident entity.
@@ -45,8 +44,8 @@ func (Incident) Edges() []ent.Edge {
 		edge.From("role_assignments", IncidentRoleAssignment.Type).
 			Ref("incident"),
 
-		edge.To("system_components", SystemComponent.Type).
-			Through("incident_system_components", IncidentSystemComponent.Type),
+		//edge.To("system_components", SystemComponent.Type).
+		//	Through("incident_system_components", IncidentSystemComponent.Type),
 		edge.To("linked_incidents", Incident.Type).
 			Through("incident_links", IncidentLink.Type),
 
@@ -61,6 +60,7 @@ func (Incident) Edges() []ent.Edge {
 	}
 }
 
+/*
 type IncidentSystemComponent struct {
 	ent.Schema
 }
@@ -89,3 +89,4 @@ func (IncidentSystemComponent) Edges() []ent.Edge {
 		edge.To("system_component", SystemComponent.Type).Unique().Required().Field("system_component_id"),
 	}
 }
+*/

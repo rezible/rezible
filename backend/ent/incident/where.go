@@ -751,29 +751,6 @@ func HasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate
 	})
 }
 
-// HasSystemComponents applies the HasEdge predicate on the "system_components" edge.
-func HasSystemComponents() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, SystemComponentsTable, SystemComponentsPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSystemComponentsWith applies the HasEdge predicate on the "system_components" edge with a given conditions (other predicates).
-func HasSystemComponentsWith(preds ...predicate.SystemComponent) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newSystemComponentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasLinkedIncidents applies the HasEdge predicate on the "linked_incidents" edge.
 func HasLinkedIncidents() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -973,29 +950,6 @@ func HasReviewSessions() predicate.Incident {
 func HasReviewSessionsWith(preds ...predicate.MeetingSession) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := newReviewSessionsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasIncidentSystemComponents applies the HasEdge predicate on the "incident_system_components" edge.
-func HasIncidentSystemComponents() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, IncidentSystemComponentsTable, IncidentSystemComponentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasIncidentSystemComponentsWith applies the HasEdge predicate on the "incident_system_components" edge with a given conditions (other predicates).
-func HasIncidentSystemComponentsWith(preds ...predicate.IncidentSystemComponent) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newIncidentSystemComponentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -61,8 +61,6 @@ type IncidentEdges struct {
 	TeamAssignments []*IncidentTeamAssignment `json:"team_assignments,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
-	// SystemComponents holds the value of the system_components edge.
-	SystemComponents []*SystemComponent `json:"system_components,omitempty"`
 	// LinkedIncidents holds the value of the linked_incidents edge.
 	LinkedIncidents []*Incident `json:"linked_incidents,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
@@ -81,13 +79,11 @@ type IncidentEdges struct {
 	Debriefs []*IncidentDebrief `json:"debriefs,omitempty"`
 	// ReviewSessions holds the value of the review_sessions edge.
 	ReviewSessions []*MeetingSession `json:"review_sessions,omitempty"`
-	// IncidentSystemComponents holds the value of the incident_system_components edge.
-	IncidentSystemComponents []*IncidentSystemComponent `json:"incident_system_components,omitempty"`
 	// IncidentLinks holds the value of the incident_links edge.
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [15]bool
 }
 
 // EnvironmentsOrErr returns the Environments value or an error if the edge
@@ -139,19 +135,10 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 	return nil, &NotLoadedError{edge: "role_assignments"}
 }
 
-// SystemComponentsOrErr returns the SystemComponents value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) SystemComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[5] {
-		return e.SystemComponents, nil
-	}
-	return nil, &NotLoadedError{edge: "system_components"}
-}
-
 // LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.LinkedIncidents, nil
 	}
 	return nil, &NotLoadedError{edge: "linked_incidents"}
@@ -162,7 +149,7 @@ func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
 func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[7] {
+	} else if e.loadedTypes[6] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
@@ -171,7 +158,7 @@ func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -180,7 +167,7 @@ func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
@@ -189,7 +176,7 @@ func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[9] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -198,7 +185,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[10] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -207,7 +194,7 @@ func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[11] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
@@ -216,7 +203,7 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[12] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -225,25 +212,16 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // ReviewSessionsOrErr returns the ReviewSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[13] {
 		return e.ReviewSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "review_sessions"}
 }
 
-// IncidentSystemComponentsOrErr returns the IncidentSystemComponents value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) IncidentSystemComponentsOrErr() ([]*IncidentSystemComponent, error) {
-	if e.loadedTypes[15] {
-		return e.IncidentSystemComponents, nil
-	}
-	return nil, &NotLoadedError{edge: "incident_system_components"}
-}
-
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[14] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -387,11 +365,6 @@ func (i *Incident) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return NewIncidentClient(i.config).QueryRoleAssignments(i)
 }
 
-// QuerySystemComponents queries the "system_components" edge of the Incident entity.
-func (i *Incident) QuerySystemComponents() *SystemComponentQuery {
-	return NewIncidentClient(i.config).QuerySystemComponents(i)
-}
-
 // QueryLinkedIncidents queries the "linked_incidents" edge of the Incident entity.
 func (i *Incident) QueryLinkedIncidents() *IncidentQuery {
 	return NewIncidentClient(i.config).QueryLinkedIncidents(i)
@@ -435,11 +408,6 @@ func (i *Incident) QueryDebriefs() *IncidentDebriefQuery {
 // QueryReviewSessions queries the "review_sessions" edge of the Incident entity.
 func (i *Incident) QueryReviewSessions() *MeetingSessionQuery {
 	return NewIncidentClient(i.config).QueryReviewSessions(i)
-}
-
-// QueryIncidentSystemComponents queries the "incident_system_components" edge of the Incident entity.
-func (i *Incident) QueryIncidentSystemComponents() *IncidentSystemComponentQuery {
-	return NewIncidentClient(i.config).QueryIncidentSystemComponents(i)
 }
 
 // QueryIncidentLinks queries the "incident_links" edge of the Incident entity.

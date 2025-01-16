@@ -237,18 +237,6 @@ func (f IncidentSeverityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentSeverityMutation", m)
 }
 
-// The IncidentSystemComponentFunc type is an adapter to allow the use of ordinary
-// function as IncidentSystemComponent mutator.
-type IncidentSystemComponentFunc func(context.Context, *ent.IncidentSystemComponentMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentSystemComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentSystemComponentMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentSystemComponentMutation", m)
-}
-
 // The IncidentTagFunc type is an adapter to allow the use of ordinary
 // function as IncidentTag mutator.
 type IncidentTagFunc func(context.Context, *ent.IncidentTagMutation) (ent.Value, error)
@@ -501,6 +489,30 @@ func (f RetrospectiveReviewFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RetrospectiveReviewMutation", m)
 }
 
+// The SystemAnalysisFunc type is an adapter to allow the use of ordinary
+// function as SystemAnalysis mutator.
+type SystemAnalysisFunc func(context.Context, *ent.SystemAnalysisMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemAnalysisFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemAnalysisMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisMutation", m)
+}
+
+// The SystemAnalysisComponentFunc type is an adapter to allow the use of ordinary
+// function as SystemAnalysisComponent mutator.
+type SystemAnalysisComponentFunc func(context.Context, *ent.SystemAnalysisComponentMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemAnalysisComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemAnalysisComponentMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisComponentMutation", m)
+}
+
 // The SystemComponentFunc type is an adapter to allow the use of ordinary
 // function as SystemComponent mutator.
 type SystemComponentFunc func(context.Context, *ent.SystemComponentMutation) (ent.Value, error)
@@ -513,28 +525,76 @@ func (f SystemComponentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentMutation", m)
 }
 
-// The SystemComponentControlRelationshipFunc type is an adapter to allow the use of ordinary
-// function as SystemComponentControlRelationship mutator.
-type SystemComponentControlRelationshipFunc func(context.Context, *ent.SystemComponentControlRelationshipMutation) (ent.Value, error)
+// The SystemComponentConstraintFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentConstraint mutator.
+type SystemComponentConstraintFunc func(context.Context, *ent.SystemComponentConstraintMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SystemComponentControlRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemComponentControlRelationshipMutation); ok {
+func (f SystemComponentConstraintFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentConstraintMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentControlRelationshipMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentConstraintMutation", m)
 }
 
-// The SystemComponentFeedbackRelationshipFunc type is an adapter to allow the use of ordinary
-// function as SystemComponentFeedbackRelationship mutator.
-type SystemComponentFeedbackRelationshipFunc func(context.Context, *ent.SystemComponentFeedbackRelationshipMutation) (ent.Value, error)
+// The SystemComponentControlFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentControl mutator.
+type SystemComponentControlFunc func(context.Context, *ent.SystemComponentControlMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SystemComponentFeedbackRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemComponentFeedbackRelationshipMutation); ok {
+func (f SystemComponentControlFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentControlMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentFeedbackRelationshipMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentControlMutation", m)
+}
+
+// The SystemComponentRelationshipFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentRelationship mutator.
+type SystemComponentRelationshipFunc func(context.Context, *ent.SystemComponentRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentRelationshipMutation", m)
+}
+
+// The SystemComponentRelationshipControlActionFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentRelationshipControlAction mutator.
+type SystemComponentRelationshipControlActionFunc func(context.Context, *ent.SystemComponentRelationshipControlActionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentRelationshipControlActionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentRelationshipControlActionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentRelationshipControlActionMutation", m)
+}
+
+// The SystemComponentRelationshipFeedbackFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentRelationshipFeedback mutator.
+type SystemComponentRelationshipFeedbackFunc func(context.Context, *ent.SystemComponentRelationshipFeedbackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentRelationshipFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentRelationshipFeedbackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentRelationshipFeedbackMutation", m)
+}
+
+// The SystemComponentSignalFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentSignal mutator.
+type SystemComponentSignalFunc func(context.Context, *ent.SystemComponentSignalMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentSignalFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentSignalMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentSignalMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary

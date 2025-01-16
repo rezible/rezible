@@ -31,7 +31,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -53,9 +52,15 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponentcontrolrelationship"
-	"github.com/rezible/rezible/ent/systemcomponentfeedbackrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentconstraint"
+	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemcomponentrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -119,53 +124,58 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			environment.Table:                         environment.ValidColumn,
-			functionality.Table:                       functionality.ValidColumn,
-			incident.Table:                            incident.ValidColumn,
-			incidentdebrief.Table:                     incidentdebrief.ValidColumn,
-			incidentdebriefmessage.Table:              incidentdebriefmessage.ValidColumn,
-			incidentdebriefquestion.Table:             incidentdebriefquestion.ValidColumn,
-			incidentdebriefsuggestion.Table:           incidentdebriefsuggestion.ValidColumn,
-			incidentevent.Table:                       incidentevent.ValidColumn,
-			incidenteventcontext.Table:                incidenteventcontext.ValidColumn,
-			incidenteventcontributingfactor.Table:     incidenteventcontributingfactor.ValidColumn,
-			incidenteventevidence.Table:               incidenteventevidence.ValidColumn,
-			incidenteventsystemcomponent.Table:        incidenteventsystemcomponent.ValidColumn,
-			incidentfield.Table:                       incidentfield.ValidColumn,
-			incidentfieldoption.Table:                 incidentfieldoption.ValidColumn,
-			incidentlink.Table:                        incidentlink.ValidColumn,
-			incidentmilestone.Table:                   incidentmilestone.ValidColumn,
-			incidentrole.Table:                        incidentrole.ValidColumn,
-			incidentroleassignment.Table:              incidentroleassignment.ValidColumn,
-			incidentseverity.Table:                    incidentseverity.ValidColumn,
-			incidentsystemcomponent.Table:             incidentsystemcomponent.ValidColumn,
-			incidenttag.Table:                         incidenttag.ValidColumn,
-			incidentteamassignment.Table:              incidentteamassignment.ValidColumn,
-			incidenttype.Table:                        incidenttype.ValidColumn,
-			meetingschedule.Table:                     meetingschedule.ValidColumn,
-			meetingsession.Table:                      meetingsession.ValidColumn,
-			oncallalert.Table:                         oncallalert.ValidColumn,
-			oncallalertinstance.Table:                 oncallalertinstance.ValidColumn,
-			oncallhandovertemplate.Table:              oncallhandovertemplate.ValidColumn,
-			oncallroster.Table:                        oncallroster.ValidColumn,
-			oncallschedule.Table:                      oncallschedule.ValidColumn,
-			oncallscheduleparticipant.Table:           oncallscheduleparticipant.ValidColumn,
-			oncallusershift.Table:                     oncallusershift.ValidColumn,
-			oncallusershiftannotation.Table:           oncallusershiftannotation.ValidColumn,
-			oncallusershiftcover.Table:                oncallusershiftcover.ValidColumn,
-			oncallusershifthandover.Table:             oncallusershifthandover.ValidColumn,
-			providerconfig.Table:                      providerconfig.ValidColumn,
-			providersynchistory.Table:                 providersynchistory.ValidColumn,
-			retrospective.Table:                       retrospective.ValidColumn,
-			retrospectivediscussion.Table:             retrospectivediscussion.ValidColumn,
-			retrospectivediscussionreply.Table:        retrospectivediscussionreply.ValidColumn,
-			retrospectivereview.Table:                 retrospectivereview.ValidColumn,
-			systemcomponent.Table:                     systemcomponent.ValidColumn,
-			systemcomponentcontrolrelationship.Table:  systemcomponentcontrolrelationship.ValidColumn,
-			systemcomponentfeedbackrelationship.Table: systemcomponentfeedbackrelationship.ValidColumn,
-			task.Table:                                task.ValidColumn,
-			team.Table:                                team.ValidColumn,
-			user.Table:                                user.ValidColumn,
+			environment.Table:                              environment.ValidColumn,
+			functionality.Table:                            functionality.ValidColumn,
+			incident.Table:                                 incident.ValidColumn,
+			incidentdebrief.Table:                          incidentdebrief.ValidColumn,
+			incidentdebriefmessage.Table:                   incidentdebriefmessage.ValidColumn,
+			incidentdebriefquestion.Table:                  incidentdebriefquestion.ValidColumn,
+			incidentdebriefsuggestion.Table:                incidentdebriefsuggestion.ValidColumn,
+			incidentevent.Table:                            incidentevent.ValidColumn,
+			incidenteventcontext.Table:                     incidenteventcontext.ValidColumn,
+			incidenteventcontributingfactor.Table:          incidenteventcontributingfactor.ValidColumn,
+			incidenteventevidence.Table:                    incidenteventevidence.ValidColumn,
+			incidenteventsystemcomponent.Table:             incidenteventsystemcomponent.ValidColumn,
+			incidentfield.Table:                            incidentfield.ValidColumn,
+			incidentfieldoption.Table:                      incidentfieldoption.ValidColumn,
+			incidentlink.Table:                             incidentlink.ValidColumn,
+			incidentmilestone.Table:                        incidentmilestone.ValidColumn,
+			incidentrole.Table:                             incidentrole.ValidColumn,
+			incidentroleassignment.Table:                   incidentroleassignment.ValidColumn,
+			incidentseverity.Table:                         incidentseverity.ValidColumn,
+			incidenttag.Table:                              incidenttag.ValidColumn,
+			incidentteamassignment.Table:                   incidentteamassignment.ValidColumn,
+			incidenttype.Table:                             incidenttype.ValidColumn,
+			meetingschedule.Table:                          meetingschedule.ValidColumn,
+			meetingsession.Table:                           meetingsession.ValidColumn,
+			oncallalert.Table:                              oncallalert.ValidColumn,
+			oncallalertinstance.Table:                      oncallalertinstance.ValidColumn,
+			oncallhandovertemplate.Table:                   oncallhandovertemplate.ValidColumn,
+			oncallroster.Table:                             oncallroster.ValidColumn,
+			oncallschedule.Table:                           oncallschedule.ValidColumn,
+			oncallscheduleparticipant.Table:                oncallscheduleparticipant.ValidColumn,
+			oncallusershift.Table:                          oncallusershift.ValidColumn,
+			oncallusershiftannotation.Table:                oncallusershiftannotation.ValidColumn,
+			oncallusershiftcover.Table:                     oncallusershiftcover.ValidColumn,
+			oncallusershifthandover.Table:                  oncallusershifthandover.ValidColumn,
+			providerconfig.Table:                           providerconfig.ValidColumn,
+			providersynchistory.Table:                      providersynchistory.ValidColumn,
+			retrospective.Table:                            retrospective.ValidColumn,
+			retrospectivediscussion.Table:                  retrospectivediscussion.ValidColumn,
+			retrospectivediscussionreply.Table:             retrospectivediscussionreply.ValidColumn,
+			retrospectivereview.Table:                      retrospectivereview.ValidColumn,
+			systemanalysis.Table:                           systemanalysis.ValidColumn,
+			systemanalysiscomponent.Table:                  systemanalysiscomponent.ValidColumn,
+			systemcomponent.Table:                          systemcomponent.ValidColumn,
+			systemcomponentconstraint.Table:                systemcomponentconstraint.ValidColumn,
+			systemcomponentcontrol.Table:                   systemcomponentcontrol.ValidColumn,
+			systemcomponentrelationship.Table:              systemcomponentrelationship.ValidColumn,
+			systemcomponentrelationshipcontrolaction.Table: systemcomponentrelationshipcontrolaction.ValidColumn,
+			systemcomponentrelationshipfeedback.Table:      systemcomponentrelationshipfeedback.ValidColumn,
+			systemcomponentsignal.Table:                    systemcomponentsignal.ValidColumn,
+			task.Table:                                     task.ValidColumn,
+			team.Table:                                     team.ValidColumn,
+			user.Table:                                     user.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

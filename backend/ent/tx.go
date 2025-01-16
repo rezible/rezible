@@ -50,8 +50,6 @@ type Tx struct {
 	IncidentRoleAssignment *IncidentRoleAssignmentClient
 	// IncidentSeverity is the client for interacting with the IncidentSeverity builders.
 	IncidentSeverity *IncidentSeverityClient
-	// IncidentSystemComponent is the client for interacting with the IncidentSystemComponent builders.
-	IncidentSystemComponent *IncidentSystemComponentClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
 	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
@@ -94,12 +92,24 @@ type Tx struct {
 	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
+	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
+	SystemAnalysis *SystemAnalysisClient
+	// SystemAnalysisComponent is the client for interacting with the SystemAnalysisComponent builders.
+	SystemAnalysisComponent *SystemAnalysisComponentClient
 	// SystemComponent is the client for interacting with the SystemComponent builders.
 	SystemComponent *SystemComponentClient
-	// SystemComponentControlRelationship is the client for interacting with the SystemComponentControlRelationship builders.
-	SystemComponentControlRelationship *SystemComponentControlRelationshipClient
-	// SystemComponentFeedbackRelationship is the client for interacting with the SystemComponentFeedbackRelationship builders.
-	SystemComponentFeedbackRelationship *SystemComponentFeedbackRelationshipClient
+	// SystemComponentConstraint is the client for interacting with the SystemComponentConstraint builders.
+	SystemComponentConstraint *SystemComponentConstraintClient
+	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
+	SystemComponentControl *SystemComponentControlClient
+	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
+	SystemComponentRelationship *SystemComponentRelationshipClient
+	// SystemComponentRelationshipControlAction is the client for interacting with the SystemComponentRelationshipControlAction builders.
+	SystemComponentRelationshipControlAction *SystemComponentRelationshipControlActionClient
+	// SystemComponentRelationshipFeedback is the client for interacting with the SystemComponentRelationshipFeedback builders.
+	SystemComponentRelationshipFeedback *SystemComponentRelationshipFeedbackClient
+	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
+	SystemComponentSignal *SystemComponentSignalClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -256,7 +266,6 @@ func (tx *Tx) init() {
 	tx.IncidentRole = NewIncidentRoleClient(tx.config)
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
-	tx.IncidentSystemComponent = NewIncidentSystemComponentClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
 	tx.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
@@ -278,9 +287,15 @@ func (tx *Tx) init() {
 	tx.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(tx.config)
 	tx.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
+	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
+	tx.SystemAnalysisComponent = NewSystemAnalysisComponentClient(tx.config)
 	tx.SystemComponent = NewSystemComponentClient(tx.config)
-	tx.SystemComponentControlRelationship = NewSystemComponentControlRelationshipClient(tx.config)
-	tx.SystemComponentFeedbackRelationship = NewSystemComponentFeedbackRelationshipClient(tx.config)
+	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
+	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
+	tx.SystemComponentRelationship = NewSystemComponentRelationshipClient(tx.config)
+	tx.SystemComponentRelationshipControlAction = NewSystemComponentRelationshipControlActionClient(tx.config)
+	tx.SystemComponentRelationshipFeedback = NewSystemComponentRelationshipFeedbackClient(tx.config)
+	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.User = NewUserClient(tx.config)

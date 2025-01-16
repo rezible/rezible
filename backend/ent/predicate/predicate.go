@@ -63,9 +63,6 @@ type IncidentRoleAssignment func(*sql.Selector)
 // IncidentSeverity is the predicate function for incidentseverity builders.
 type IncidentSeverity func(*sql.Selector)
 
-// IncidentSystemComponent is the predicate function for incidentsystemcomponent builders.
-type IncidentSystemComponent func(*sql.Selector)
-
 // IncidentTag is the predicate function for incidenttag builders.
 type IncidentTag func(*sql.Selector)
 
@@ -129,14 +126,32 @@ type RetrospectiveDiscussionReply func(*sql.Selector)
 // RetrospectiveReview is the predicate function for retrospectivereview builders.
 type RetrospectiveReview func(*sql.Selector)
 
+// SystemAnalysis is the predicate function for systemanalysis builders.
+type SystemAnalysis func(*sql.Selector)
+
+// SystemAnalysisComponent is the predicate function for systemanalysiscomponent builders.
+type SystemAnalysisComponent func(*sql.Selector)
+
 // SystemComponent is the predicate function for systemcomponent builders.
 type SystemComponent func(*sql.Selector)
 
-// SystemComponentControlRelationship is the predicate function for systemcomponentcontrolrelationship builders.
-type SystemComponentControlRelationship func(*sql.Selector)
+// SystemComponentConstraint is the predicate function for systemcomponentconstraint builders.
+type SystemComponentConstraint func(*sql.Selector)
 
-// SystemComponentFeedbackRelationship is the predicate function for systemcomponentfeedbackrelationship builders.
-type SystemComponentFeedbackRelationship func(*sql.Selector)
+// SystemComponentControl is the predicate function for systemcomponentcontrol builders.
+type SystemComponentControl func(*sql.Selector)
+
+// SystemComponentRelationship is the predicate function for systemcomponentrelationship builders.
+type SystemComponentRelationship func(*sql.Selector)
+
+// SystemComponentRelationshipControlAction is the predicate function for systemcomponentrelationshipcontrolaction builders.
+type SystemComponentRelationshipControlAction func(*sql.Selector)
+
+// SystemComponentRelationshipFeedback is the predicate function for systemcomponentrelationshipfeedback builders.
+type SystemComponentRelationshipFeedback func(*sql.Selector)
+
+// SystemComponentSignal is the predicate function for systemcomponentsignal builders.
+type SystemComponentSignal func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

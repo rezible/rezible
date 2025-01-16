@@ -35,7 +35,6 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
@@ -57,9 +56,15 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponentcontrolrelationship"
-	"github.com/rezible/rezible/ent/systemcomponentfeedbackrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentconstraint"
+	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemcomponentrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemcomponentrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -108,8 +113,6 @@ type Client struct {
 	IncidentRoleAssignment *IncidentRoleAssignmentClient
 	// IncidentSeverity is the client for interacting with the IncidentSeverity builders.
 	IncidentSeverity *IncidentSeverityClient
-	// IncidentSystemComponent is the client for interacting with the IncidentSystemComponent builders.
-	IncidentSystemComponent *IncidentSystemComponentClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
 	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
@@ -152,12 +155,24 @@ type Client struct {
 	RetrospectiveDiscussionReply *RetrospectiveDiscussionReplyClient
 	// RetrospectiveReview is the client for interacting with the RetrospectiveReview builders.
 	RetrospectiveReview *RetrospectiveReviewClient
+	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
+	SystemAnalysis *SystemAnalysisClient
+	// SystemAnalysisComponent is the client for interacting with the SystemAnalysisComponent builders.
+	SystemAnalysisComponent *SystemAnalysisComponentClient
 	// SystemComponent is the client for interacting with the SystemComponent builders.
 	SystemComponent *SystemComponentClient
-	// SystemComponentControlRelationship is the client for interacting with the SystemComponentControlRelationship builders.
-	SystemComponentControlRelationship *SystemComponentControlRelationshipClient
-	// SystemComponentFeedbackRelationship is the client for interacting with the SystemComponentFeedbackRelationship builders.
-	SystemComponentFeedbackRelationship *SystemComponentFeedbackRelationshipClient
+	// SystemComponentConstraint is the client for interacting with the SystemComponentConstraint builders.
+	SystemComponentConstraint *SystemComponentConstraintClient
+	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
+	SystemComponentControl *SystemComponentControlClient
+	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
+	SystemComponentRelationship *SystemComponentRelationshipClient
+	// SystemComponentRelationshipControlAction is the client for interacting with the SystemComponentRelationshipControlAction builders.
+	SystemComponentRelationshipControlAction *SystemComponentRelationshipControlActionClient
+	// SystemComponentRelationshipFeedback is the client for interacting with the SystemComponentRelationshipFeedback builders.
+	SystemComponentRelationshipFeedback *SystemComponentRelationshipFeedbackClient
+	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
+	SystemComponentSignal *SystemComponentSignalClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -194,7 +209,6 @@ func (c *Client) init() {
 	c.IncidentRole = NewIncidentRoleClient(c.config)
 	c.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(c.config)
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
-	c.IncidentSystemComponent = NewIncidentSystemComponentClient(c.config)
 	c.IncidentTag = NewIncidentTagClient(c.config)
 	c.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
@@ -216,9 +230,15 @@ func (c *Client) init() {
 	c.RetrospectiveDiscussion = NewRetrospectiveDiscussionClient(c.config)
 	c.RetrospectiveDiscussionReply = NewRetrospectiveDiscussionReplyClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
+	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
+	c.SystemAnalysisComponent = NewSystemAnalysisComponentClient(c.config)
 	c.SystemComponent = NewSystemComponentClient(c.config)
-	c.SystemComponentControlRelationship = NewSystemComponentControlRelationshipClient(c.config)
-	c.SystemComponentFeedbackRelationship = NewSystemComponentFeedbackRelationshipClient(c.config)
+	c.SystemComponentConstraint = NewSystemComponentConstraintClient(c.config)
+	c.SystemComponentControl = NewSystemComponentControlClient(c.config)
+	c.SystemComponentRelationship = NewSystemComponentRelationshipClient(c.config)
+	c.SystemComponentRelationshipControlAction = NewSystemComponentRelationshipControlActionClient(c.config)
+	c.SystemComponentRelationshipFeedback = NewSystemComponentRelationshipFeedbackClient(c.config)
+	c.SystemComponentSignal = NewSystemComponentSignalClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
 	c.User = NewUserClient(c.config)
@@ -312,55 +332,60 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                                 ctx,
-		config:                              cfg,
-		Environment:                         NewEnvironmentClient(cfg),
-		Functionality:                       NewFunctionalityClient(cfg),
-		Incident:                            NewIncidentClient(cfg),
-		IncidentDebrief:                     NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:              NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:             NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:           NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                       NewIncidentEventClient(cfg),
-		IncidentEventContext:                NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:     NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:               NewIncidentEventEvidenceClient(cfg),
-		IncidentEventSystemComponent:        NewIncidentEventSystemComponentClient(cfg),
-		IncidentField:                       NewIncidentFieldClient(cfg),
-		IncidentFieldOption:                 NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                        NewIncidentLinkClient(cfg),
-		IncidentMilestone:                   NewIncidentMilestoneClient(cfg),
-		IncidentRole:                        NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:              NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                    NewIncidentSeverityClient(cfg),
-		IncidentSystemComponent:             NewIncidentSystemComponentClient(cfg),
-		IncidentTag:                         NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:              NewIncidentTeamAssignmentClient(cfg),
-		IncidentType:                        NewIncidentTypeClient(cfg),
-		MeetingSchedule:                     NewMeetingScheduleClient(cfg),
-		MeetingSession:                      NewMeetingSessionClient(cfg),
-		OncallAlert:                         NewOncallAlertClient(cfg),
-		OncallAlertInstance:                 NewOncallAlertInstanceClient(cfg),
-		OncallHandoverTemplate:              NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                        NewOncallRosterClient(cfg),
-		OncallSchedule:                      NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:           NewOncallScheduleParticipantClient(cfg),
-		OncallUserShift:                     NewOncallUserShiftClient(cfg),
-		OncallUserShiftAnnotation:           NewOncallUserShiftAnnotationClient(cfg),
-		OncallUserShiftCover:                NewOncallUserShiftCoverClient(cfg),
-		OncallUserShiftHandover:             NewOncallUserShiftHandoverClient(cfg),
-		ProviderConfig:                      NewProviderConfigClient(cfg),
-		ProviderSyncHistory:                 NewProviderSyncHistoryClient(cfg),
-		Retrospective:                       NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:             NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply:        NewRetrospectiveDiscussionReplyClient(cfg),
-		RetrospectiveReview:                 NewRetrospectiveReviewClient(cfg),
-		SystemComponent:                     NewSystemComponentClient(cfg),
-		SystemComponentControlRelationship:  NewSystemComponentControlRelationshipClient(cfg),
-		SystemComponentFeedbackRelationship: NewSystemComponentFeedbackRelationshipClient(cfg),
-		Task:                                NewTaskClient(cfg),
-		Team:                                NewTeamClient(cfg),
-		User:                                NewUserClient(cfg),
+		ctx:                                      ctx,
+		config:                                   cfg,
+		Environment:                              NewEnvironmentClient(cfg),
+		Functionality:                            NewFunctionalityClient(cfg),
+		Incident:                                 NewIncidentClient(cfg),
+		IncidentDebrief:                          NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:                   NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:                  NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:                NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                            NewIncidentEventClient(cfg),
+		IncidentEventContext:                     NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor:          NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:                    NewIncidentEventEvidenceClient(cfg),
+		IncidentEventSystemComponent:             NewIncidentEventSystemComponentClient(cfg),
+		IncidentField:                            NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                      NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                             NewIncidentLinkClient(cfg),
+		IncidentMilestone:                        NewIncidentMilestoneClient(cfg),
+		IncidentRole:                             NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:                   NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                         NewIncidentSeverityClient(cfg),
+		IncidentTag:                              NewIncidentTagClient(cfg),
+		IncidentTeamAssignment:                   NewIncidentTeamAssignmentClient(cfg),
+		IncidentType:                             NewIncidentTypeClient(cfg),
+		MeetingSchedule:                          NewMeetingScheduleClient(cfg),
+		MeetingSession:                           NewMeetingSessionClient(cfg),
+		OncallAlert:                              NewOncallAlertClient(cfg),
+		OncallAlertInstance:                      NewOncallAlertInstanceClient(cfg),
+		OncallHandoverTemplate:                   NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                             NewOncallRosterClient(cfg),
+		OncallSchedule:                           NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:                NewOncallScheduleParticipantClient(cfg),
+		OncallUserShift:                          NewOncallUserShiftClient(cfg),
+		OncallUserShiftAnnotation:                NewOncallUserShiftAnnotationClient(cfg),
+		OncallUserShiftCover:                     NewOncallUserShiftCoverClient(cfg),
+		OncallUserShiftHandover:                  NewOncallUserShiftHandoverClient(cfg),
+		ProviderConfig:                           NewProviderConfigClient(cfg),
+		ProviderSyncHistory:                      NewProviderSyncHistoryClient(cfg),
+		Retrospective:                            NewRetrospectiveClient(cfg),
+		RetrospectiveDiscussion:                  NewRetrospectiveDiscussionClient(cfg),
+		RetrospectiveDiscussionReply:             NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveReview:                      NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                           NewSystemAnalysisClient(cfg),
+		SystemAnalysisComponent:                  NewSystemAnalysisComponentClient(cfg),
+		SystemComponent:                          NewSystemComponentClient(cfg),
+		SystemComponentConstraint:                NewSystemComponentConstraintClient(cfg),
+		SystemComponentControl:                   NewSystemComponentControlClient(cfg),
+		SystemComponentRelationship:              NewSystemComponentRelationshipClient(cfg),
+		SystemComponentRelationshipControlAction: NewSystemComponentRelationshipControlActionClient(cfg),
+		SystemComponentRelationshipFeedback:      NewSystemComponentRelationshipFeedbackClient(cfg),
+		SystemComponentSignal:                    NewSystemComponentSignalClient(cfg),
+		Task:                                     NewTaskClient(cfg),
+		Team:                                     NewTeamClient(cfg),
+		User:                                     NewUserClient(cfg),
 	}, nil
 }
 
@@ -378,55 +403,60 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                                 ctx,
-		config:                              cfg,
-		Environment:                         NewEnvironmentClient(cfg),
-		Functionality:                       NewFunctionalityClient(cfg),
-		Incident:                            NewIncidentClient(cfg),
-		IncidentDebrief:                     NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:              NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:             NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:           NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                       NewIncidentEventClient(cfg),
-		IncidentEventContext:                NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:     NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:               NewIncidentEventEvidenceClient(cfg),
-		IncidentEventSystemComponent:        NewIncidentEventSystemComponentClient(cfg),
-		IncidentField:                       NewIncidentFieldClient(cfg),
-		IncidentFieldOption:                 NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                        NewIncidentLinkClient(cfg),
-		IncidentMilestone:                   NewIncidentMilestoneClient(cfg),
-		IncidentRole:                        NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:              NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                    NewIncidentSeverityClient(cfg),
-		IncidentSystemComponent:             NewIncidentSystemComponentClient(cfg),
-		IncidentTag:                         NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:              NewIncidentTeamAssignmentClient(cfg),
-		IncidentType:                        NewIncidentTypeClient(cfg),
-		MeetingSchedule:                     NewMeetingScheduleClient(cfg),
-		MeetingSession:                      NewMeetingSessionClient(cfg),
-		OncallAlert:                         NewOncallAlertClient(cfg),
-		OncallAlertInstance:                 NewOncallAlertInstanceClient(cfg),
-		OncallHandoverTemplate:              NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                        NewOncallRosterClient(cfg),
-		OncallSchedule:                      NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:           NewOncallScheduleParticipantClient(cfg),
-		OncallUserShift:                     NewOncallUserShiftClient(cfg),
-		OncallUserShiftAnnotation:           NewOncallUserShiftAnnotationClient(cfg),
-		OncallUserShiftCover:                NewOncallUserShiftCoverClient(cfg),
-		OncallUserShiftHandover:             NewOncallUserShiftHandoverClient(cfg),
-		ProviderConfig:                      NewProviderConfigClient(cfg),
-		ProviderSyncHistory:                 NewProviderSyncHistoryClient(cfg),
-		Retrospective:                       NewRetrospectiveClient(cfg),
-		RetrospectiveDiscussion:             NewRetrospectiveDiscussionClient(cfg),
-		RetrospectiveDiscussionReply:        NewRetrospectiveDiscussionReplyClient(cfg),
-		RetrospectiveReview:                 NewRetrospectiveReviewClient(cfg),
-		SystemComponent:                     NewSystemComponentClient(cfg),
-		SystemComponentControlRelationship:  NewSystemComponentControlRelationshipClient(cfg),
-		SystemComponentFeedbackRelationship: NewSystemComponentFeedbackRelationshipClient(cfg),
-		Task:                                NewTaskClient(cfg),
-		Team:                                NewTeamClient(cfg),
-		User:                                NewUserClient(cfg),
+		ctx:                                      ctx,
+		config:                                   cfg,
+		Environment:                              NewEnvironmentClient(cfg),
+		Functionality:                            NewFunctionalityClient(cfg),
+		Incident:                                 NewIncidentClient(cfg),
+		IncidentDebrief:                          NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:                   NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:                  NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:                NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                            NewIncidentEventClient(cfg),
+		IncidentEventContext:                     NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor:          NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:                    NewIncidentEventEvidenceClient(cfg),
+		IncidentEventSystemComponent:             NewIncidentEventSystemComponentClient(cfg),
+		IncidentField:                            NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                      NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                             NewIncidentLinkClient(cfg),
+		IncidentMilestone:                        NewIncidentMilestoneClient(cfg),
+		IncidentRole:                             NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:                   NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                         NewIncidentSeverityClient(cfg),
+		IncidentTag:                              NewIncidentTagClient(cfg),
+		IncidentTeamAssignment:                   NewIncidentTeamAssignmentClient(cfg),
+		IncidentType:                             NewIncidentTypeClient(cfg),
+		MeetingSchedule:                          NewMeetingScheduleClient(cfg),
+		MeetingSession:                           NewMeetingSessionClient(cfg),
+		OncallAlert:                              NewOncallAlertClient(cfg),
+		OncallAlertInstance:                      NewOncallAlertInstanceClient(cfg),
+		OncallHandoverTemplate:                   NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                             NewOncallRosterClient(cfg),
+		OncallSchedule:                           NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:                NewOncallScheduleParticipantClient(cfg),
+		OncallUserShift:                          NewOncallUserShiftClient(cfg),
+		OncallUserShiftAnnotation:                NewOncallUserShiftAnnotationClient(cfg),
+		OncallUserShiftCover:                     NewOncallUserShiftCoverClient(cfg),
+		OncallUserShiftHandover:                  NewOncallUserShiftHandoverClient(cfg),
+		ProviderConfig:                           NewProviderConfigClient(cfg),
+		ProviderSyncHistory:                      NewProviderSyncHistoryClient(cfg),
+		Retrospective:                            NewRetrospectiveClient(cfg),
+		RetrospectiveDiscussion:                  NewRetrospectiveDiscussionClient(cfg),
+		RetrospectiveDiscussionReply:             NewRetrospectiveDiscussionReplyClient(cfg),
+		RetrospectiveReview:                      NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                           NewSystemAnalysisClient(cfg),
+		SystemAnalysisComponent:                  NewSystemAnalysisComponentClient(cfg),
+		SystemComponent:                          NewSystemComponentClient(cfg),
+		SystemComponentConstraint:                NewSystemComponentConstraintClient(cfg),
+		SystemComponentControl:                   NewSystemComponentControlClient(cfg),
+		SystemComponentRelationship:              NewSystemComponentRelationshipClient(cfg),
+		SystemComponentRelationshipControlAction: NewSystemComponentRelationshipControlActionClient(cfg),
+		SystemComponentRelationshipFeedback:      NewSystemComponentRelationshipFeedbackClient(cfg),
+		SystemComponentSignal:                    NewSystemComponentSignalClient(cfg),
+		Task:                                     NewTaskClient(cfg),
+		Team:                                     NewTeamClient(cfg),
+		User:                                     NewUserClient(cfg),
 	}, nil
 }
 
@@ -462,15 +492,18 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentSystemComponent, c.IncidentTag,
-		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
-		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
-		c.OncallUserShiftAnnotation, c.OncallUserShiftCover, c.OncallUserShiftHandover,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemComponent, c.SystemComponentControlRelationship,
-		c.SystemComponentFeedbackRelationship, c.Task, c.Team, c.User,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAlertInstance,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftAnnotation,
+		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentRelationship,
+		c.SystemComponentRelationshipControlAction,
+		c.SystemComponentRelationshipFeedback, c.SystemComponentSignal, c.Task, c.Team,
+		c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -486,15 +519,18 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentSystemComponent, c.IncidentTag,
-		c.IncidentTeamAssignment, c.IncidentType, c.MeetingSchedule, c.MeetingSession,
-		c.OncallAlert, c.OncallAlertInstance, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
-		c.OncallUserShiftAnnotation, c.OncallUserShiftCover, c.OncallUserShiftHandover,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemComponent, c.SystemComponentControlRelationship,
-		c.SystemComponentFeedbackRelationship, c.Task, c.Team, c.User,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAlertInstance,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftAnnotation,
+		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentRelationship,
+		c.SystemComponentRelationshipControlAction,
+		c.SystemComponentRelationshipFeedback, c.SystemComponentSignal, c.Task, c.Team,
+		c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -541,8 +577,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentRoleAssignment.mutate(ctx, m)
 	case *IncidentSeverityMutation:
 		return c.IncidentSeverity.mutate(ctx, m)
-	case *IncidentSystemComponentMutation:
-		return c.IncidentSystemComponent.mutate(ctx, m)
 	case *IncidentTagMutation:
 		return c.IncidentTag.mutate(ctx, m)
 	case *IncidentTeamAssignmentMutation:
@@ -585,12 +619,24 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RetrospectiveDiscussionReply.mutate(ctx, m)
 	case *RetrospectiveReviewMutation:
 		return c.RetrospectiveReview.mutate(ctx, m)
+	case *SystemAnalysisMutation:
+		return c.SystemAnalysis.mutate(ctx, m)
+	case *SystemAnalysisComponentMutation:
+		return c.SystemAnalysisComponent.mutate(ctx, m)
 	case *SystemComponentMutation:
 		return c.SystemComponent.mutate(ctx, m)
-	case *SystemComponentControlRelationshipMutation:
-		return c.SystemComponentControlRelationship.mutate(ctx, m)
-	case *SystemComponentFeedbackRelationshipMutation:
-		return c.SystemComponentFeedbackRelationship.mutate(ctx, m)
+	case *SystemComponentConstraintMutation:
+		return c.SystemComponentConstraint.mutate(ctx, m)
+	case *SystemComponentControlMutation:
+		return c.SystemComponentControl.mutate(ctx, m)
+	case *SystemComponentRelationshipMutation:
+		return c.SystemComponentRelationship.mutate(ctx, m)
+	case *SystemComponentRelationshipControlActionMutation:
+		return c.SystemComponentRelationshipControlAction.mutate(ctx, m)
+	case *SystemComponentRelationshipFeedbackMutation:
+		return c.SystemComponentRelationshipFeedback.mutate(ctx, m)
+	case *SystemComponentSignalMutation:
+		return c.SystemComponentSignal.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
@@ -1074,22 +1120,6 @@ func (c *IncidentClient) QueryRoleAssignments(i *Incident) *IncidentRoleAssignme
 	return query
 }
 
-// QuerySystemComponents queries the system_components edge of a Incident.
-func (c *IncidentClient) QuerySystemComponents(i *Incident) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.SystemComponentsTable, incident.SystemComponentsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryLinkedIncidents queries the linked_incidents edge of a Incident.
 func (c *IncidentClient) QueryLinkedIncidents(i *Incident) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -1227,22 +1257,6 @@ func (c *IncidentClient) QueryReviewSessions(i *Incident) *MeetingSessionQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncidentSystemComponents queries the incident_system_components edge of a Incident.
-func (c *IncidentClient) QueryIncidentSystemComponents(i *Incident) *IncidentSystemComponentQuery {
-	query := (&IncidentSystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.IncidentSystemComponentsTable, incident.IncidentSystemComponentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -4032,171 +4046,6 @@ func (c *IncidentSeverityClient) mutate(ctx context.Context, m *IncidentSeverity
 		return (&IncidentSeverityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentSeverity mutation op: %q", m.Op())
-	}
-}
-
-// IncidentSystemComponentClient is a client for the IncidentSystemComponent schema.
-type IncidentSystemComponentClient struct {
-	config
-}
-
-// NewIncidentSystemComponentClient returns a client for the IncidentSystemComponent from the given config.
-func NewIncidentSystemComponentClient(c config) *IncidentSystemComponentClient {
-	return &IncidentSystemComponentClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidentsystemcomponent.Hooks(f(g(h())))`.
-func (c *IncidentSystemComponentClient) Use(hooks ...Hook) {
-	c.hooks.IncidentSystemComponent = append(c.hooks.IncidentSystemComponent, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidentsystemcomponent.Intercept(f(g(h())))`.
-func (c *IncidentSystemComponentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentSystemComponent = append(c.inters.IncidentSystemComponent, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentSystemComponent entity.
-func (c *IncidentSystemComponentClient) Create() *IncidentSystemComponentCreate {
-	mutation := newIncidentSystemComponentMutation(c.config, OpCreate)
-	return &IncidentSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentSystemComponent entities.
-func (c *IncidentSystemComponentClient) CreateBulk(builders ...*IncidentSystemComponentCreate) *IncidentSystemComponentCreateBulk {
-	return &IncidentSystemComponentCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentSystemComponentClient) MapCreateBulk(slice any, setFunc func(*IncidentSystemComponentCreate, int)) *IncidentSystemComponentCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentSystemComponentCreateBulk{err: fmt.Errorf("calling to IncidentSystemComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentSystemComponentCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentSystemComponentCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentSystemComponent.
-func (c *IncidentSystemComponentClient) Update() *IncidentSystemComponentUpdate {
-	mutation := newIncidentSystemComponentMutation(c.config, OpUpdate)
-	return &IncidentSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentSystemComponentClient) UpdateOne(isc *IncidentSystemComponent) *IncidentSystemComponentUpdateOne {
-	mutation := newIncidentSystemComponentMutation(c.config, OpUpdateOne, withIncidentSystemComponent(isc))
-	return &IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentSystemComponentClient) UpdateOneID(id uuid.UUID) *IncidentSystemComponentUpdateOne {
-	mutation := newIncidentSystemComponentMutation(c.config, OpUpdateOne, withIncidentSystemComponentID(id))
-	return &IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentSystemComponent.
-func (c *IncidentSystemComponentClient) Delete() *IncidentSystemComponentDelete {
-	mutation := newIncidentSystemComponentMutation(c.config, OpDelete)
-	return &IncidentSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentSystemComponentClient) DeleteOne(isc *IncidentSystemComponent) *IncidentSystemComponentDeleteOne {
-	return c.DeleteOneID(isc.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentSystemComponentClient) DeleteOneID(id uuid.UUID) *IncidentSystemComponentDeleteOne {
-	builder := c.Delete().Where(incidentsystemcomponent.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentSystemComponentDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentSystemComponent.
-func (c *IncidentSystemComponentClient) Query() *IncidentSystemComponentQuery {
-	return &IncidentSystemComponentQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentSystemComponent},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentSystemComponent entity by its id.
-func (c *IncidentSystemComponentClient) Get(ctx context.Context, id uuid.UUID) (*IncidentSystemComponent, error) {
-	return c.Query().Where(incidentsystemcomponent.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentSystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *IncidentSystemComponent {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryIncident queries the incident edge of a IncidentSystemComponent.
-func (c *IncidentSystemComponentClient) QueryIncident(isc *IncidentSystemComponent) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := isc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentsystemcomponent.IncidentTable, incidentsystemcomponent.IncidentColumn),
-		)
-		fromV = sqlgraph.Neighbors(isc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySystemComponent queries the system_component edge of a IncidentSystemComponent.
-func (c *IncidentSystemComponentClient) QuerySystemComponent(isc *IncidentSystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := isc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentsystemcomponent.SystemComponentTable, incidentsystemcomponent.SystemComponentColumn),
-		)
-		fromV = sqlgraph.Neighbors(isc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentSystemComponentClient) Hooks() []Hook {
-	return c.hooks.IncidentSystemComponent
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentSystemComponentClient) Interceptors() []Interceptor {
-	return c.inters.IncidentSystemComponent
-}
-
-func (c *IncidentSystemComponentClient) mutate(ctx context.Context, m *IncidentSystemComponentMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentSystemComponent mutation op: %q", m.Op())
 	}
 }
 
@@ -7705,6 +7554,336 @@ func (c *RetrospectiveReviewClient) mutate(ctx context.Context, m *Retrospective
 	}
 }
 
+// SystemAnalysisClient is a client for the SystemAnalysis schema.
+type SystemAnalysisClient struct {
+	config
+}
+
+// NewSystemAnalysisClient returns a client for the SystemAnalysis from the given config.
+func NewSystemAnalysisClient(c config) *SystemAnalysisClient {
+	return &SystemAnalysisClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemanalysis.Hooks(f(g(h())))`.
+func (c *SystemAnalysisClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysis = append(c.hooks.SystemAnalysis, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemanalysis.Intercept(f(g(h())))`.
+func (c *SystemAnalysisClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysis = append(c.inters.SystemAnalysis, interceptors...)
+}
+
+// Create returns a builder for creating a SystemAnalysis entity.
+func (c *SystemAnalysisClient) Create() *SystemAnalysisCreate {
+	mutation := newSystemAnalysisMutation(c.config, OpCreate)
+	return &SystemAnalysisCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemAnalysis entities.
+func (c *SystemAnalysisClient) CreateBulk(builders ...*SystemAnalysisCreate) *SystemAnalysisCreateBulk {
+	return &SystemAnalysisCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemAnalysisClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisCreate, int)) *SystemAnalysisCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemAnalysisCreateBulk{err: fmt.Errorf("calling to SystemAnalysisClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemAnalysisCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemAnalysisCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemAnalysis.
+func (c *SystemAnalysisClient) Update() *SystemAnalysisUpdate {
+	mutation := newSystemAnalysisMutation(c.config, OpUpdate)
+	return &SystemAnalysisUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemAnalysisClient) UpdateOne(sa *SystemAnalysis) *SystemAnalysisUpdateOne {
+	mutation := newSystemAnalysisMutation(c.config, OpUpdateOne, withSystemAnalysis(sa))
+	return &SystemAnalysisUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemAnalysisClient) UpdateOneID(id uuid.UUID) *SystemAnalysisUpdateOne {
+	mutation := newSystemAnalysisMutation(c.config, OpUpdateOne, withSystemAnalysisID(id))
+	return &SystemAnalysisUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemAnalysis.
+func (c *SystemAnalysisClient) Delete() *SystemAnalysisDelete {
+	mutation := newSystemAnalysisMutation(c.config, OpDelete)
+	return &SystemAnalysisDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemAnalysisClient) DeleteOne(sa *SystemAnalysis) *SystemAnalysisDeleteOne {
+	return c.DeleteOneID(sa.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemAnalysisClient) DeleteOneID(id uuid.UUID) *SystemAnalysisDeleteOne {
+	builder := c.Delete().Where(systemanalysis.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemAnalysisDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemAnalysis.
+func (c *SystemAnalysisClient) Query() *SystemAnalysisQuery {
+	return &SystemAnalysisQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemAnalysis},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemAnalysis entity by its id.
+func (c *SystemAnalysisClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysis, error) {
+	return c.Query().Where(systemanalysis.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemAnalysisClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysis {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryComponents queries the components edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryComponents(sa *SystemAnalysis) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisComponents queries the analysis_components edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryAnalysisComponents(sa *SystemAnalysis) *SystemAnalysisComponentQuery {
+	query := (&SystemAnalysisComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisComponentsTable, systemanalysis.AnalysisComponentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemAnalysisClient) Hooks() []Hook {
+	return c.hooks.SystemAnalysis
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemAnalysisClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysis
+}
+
+func (c *SystemAnalysisClient) mutate(ctx context.Context, m *SystemAnalysisMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemAnalysisCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemAnalysisUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemAnalysisUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemAnalysisDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemAnalysis mutation op: %q", m.Op())
+	}
+}
+
+// SystemAnalysisComponentClient is a client for the SystemAnalysisComponent schema.
+type SystemAnalysisComponentClient struct {
+	config
+}
+
+// NewSystemAnalysisComponentClient returns a client for the SystemAnalysisComponent from the given config.
+func NewSystemAnalysisComponentClient(c config) *SystemAnalysisComponentClient {
+	return &SystemAnalysisComponentClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemanalysiscomponent.Hooks(f(g(h())))`.
+func (c *SystemAnalysisComponentClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysisComponent = append(c.hooks.SystemAnalysisComponent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemanalysiscomponent.Intercept(f(g(h())))`.
+func (c *SystemAnalysisComponentClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysisComponent = append(c.inters.SystemAnalysisComponent, interceptors...)
+}
+
+// Create returns a builder for creating a SystemAnalysisComponent entity.
+func (c *SystemAnalysisComponentClient) Create() *SystemAnalysisComponentCreate {
+	mutation := newSystemAnalysisComponentMutation(c.config, OpCreate)
+	return &SystemAnalysisComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemAnalysisComponent entities.
+func (c *SystemAnalysisComponentClient) CreateBulk(builders ...*SystemAnalysisComponentCreate) *SystemAnalysisComponentCreateBulk {
+	return &SystemAnalysisComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemAnalysisComponentClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisComponentCreate, int)) *SystemAnalysisComponentCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemAnalysisComponentCreateBulk{err: fmt.Errorf("calling to SystemAnalysisComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemAnalysisComponentCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemAnalysisComponentCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) Update() *SystemAnalysisComponentUpdate {
+	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdate)
+	return &SystemAnalysisComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemAnalysisComponentClient) UpdateOne(sac *SystemAnalysisComponent) *SystemAnalysisComponentUpdateOne {
+	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdateOne, withSystemAnalysisComponent(sac))
+	return &SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemAnalysisComponentClient) UpdateOneID(id uuid.UUID) *SystemAnalysisComponentUpdateOne {
+	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdateOne, withSystemAnalysisComponentID(id))
+	return &SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) Delete() *SystemAnalysisComponentDelete {
+	mutation := newSystemAnalysisComponentMutation(c.config, OpDelete)
+	return &SystemAnalysisComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemAnalysisComponentClient) DeleteOne(sac *SystemAnalysisComponent) *SystemAnalysisComponentDeleteOne {
+	return c.DeleteOneID(sac.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemAnalysisComponentClient) DeleteOneID(id uuid.UUID) *SystemAnalysisComponentDeleteOne {
+	builder := c.Delete().Where(systemanalysiscomponent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemAnalysisComponentDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) Query() *SystemAnalysisComponentQuery {
+	return &SystemAnalysisComponentQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemAnalysisComponent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemAnalysisComponent entity by its id.
+func (c *SystemAnalysisComponentClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisComponent, error) {
+	return c.Query().Where(systemanalysiscomponent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemAnalysisComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisComponent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAnalysis queries the analysis edge of a SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) QueryAnalysis(sac *SystemAnalysisComponent) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sac.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.AnalysisTable, systemanalysiscomponent.AnalysisColumn),
+		)
+		fromV = sqlgraph.Neighbors(sac.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryComponent queries the component edge of a SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) QueryComponent(sac *SystemAnalysisComponent) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sac.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.ComponentTable, systemanalysiscomponent.ComponentColumn),
+		)
+		fromV = sqlgraph.Neighbors(sac.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemAnalysisComponentClient) Hooks() []Hook {
+	return c.hooks.SystemAnalysisComponent
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemAnalysisComponentClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysisComponent
+}
+
+func (c *SystemAnalysisComponentClient) mutate(ctx context.Context, m *SystemAnalysisComponentMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemAnalysisComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemAnalysisComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemAnalysisComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemAnalysisComponent mutation op: %q", m.Op())
+	}
+}
+
 // SystemComponentClient is a client for the SystemComponent schema.
 type SystemComponentClient struct {
 	config
@@ -7813,15 +7992,15 @@ func (c *SystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemC
 	return obj
 }
 
-// QueryParent queries the parent edge of a SystemComponent.
-func (c *SystemComponentClient) QueryParent(sc *SystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryAnalyses queries the analyses edge of a SystemComponent.
+func (c *SystemComponentClient) QueryAnalyses(sc *SystemComponent) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sc.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, systemcomponent.ParentTable, systemcomponent.ParentColumn),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.AnalysesTable, systemcomponent.AnalysesPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -7829,63 +8008,15 @@ func (c *SystemComponentClient) QueryParent(sc *SystemComponent) *SystemComponen
 	return query
 }
 
-// QueryChildren queries the children edge of a SystemComponent.
-func (c *SystemComponentClient) QueryChildren(sc *SystemComponent) *SystemComponentQuery {
+// QueryRelated queries the related edge of a SystemComponent.
+func (c *SystemComponentClient) QueryRelated(sc *SystemComponent) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sc.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, systemcomponent.ChildrenTable, systemcomponent.ChildrenColumn),
-		)
-		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControls queries the controls edge of a SystemComponent.
-func (c *SystemComponentClient) QueryControls(sc *SystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.ControlsTable, systemcomponent.ControlsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedbackTo queries the feedback_to edge of a SystemComponent.
-func (c *SystemComponentClient) QueryFeedbackTo(sc *SystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.FeedbackToTable, systemcomponent.FeedbackToPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncidents queries the incidents edge of a SystemComponent.
-func (c *SystemComponentClient) QueryIncidents(sc *SystemComponent) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.IncidentsTable, systemcomponent.IncidentsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.RelatedTable, systemcomponent.RelatedPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -7909,15 +8040,15 @@ func (c *SystemComponentClient) QueryEvents(sc *SystemComponent) *IncidentEventQ
 	return query
 }
 
-// QueryControlRelationships queries the control_relationships edge of a SystemComponent.
-func (c *SystemComponentClient) QueryControlRelationships(sc *SystemComponent) *SystemComponentControlRelationshipQuery {
-	query := (&SystemComponentControlRelationshipClient{config: c.config}).Query()
+// QueryConstraints queries the constraints edge of a SystemComponent.
+func (c *SystemComponentClient) QueryConstraints(sc *SystemComponent) *SystemComponentConstraintQuery {
+	query := (&SystemComponentConstraintClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sc.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentcontrolrelationship.Table, systemcomponentcontrolrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ControlRelationshipsTable, systemcomponent.ControlRelationshipsColumn),
+			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ConstraintsTable, systemcomponent.ConstraintsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -7925,15 +8056,15 @@ func (c *SystemComponentClient) QueryControlRelationships(sc *SystemComponent) *
 	return query
 }
 
-// QueryFeedbackRelationships queries the feedback_relationships edge of a SystemComponent.
-func (c *SystemComponentClient) QueryFeedbackRelationships(sc *SystemComponent) *SystemComponentFeedbackRelationshipQuery {
-	query := (&SystemComponentFeedbackRelationshipClient{config: c.config}).Query()
+// QueryControls queries the controls edge of a SystemComponent.
+func (c *SystemComponentClient) QueryControls(sc *SystemComponent) *SystemComponentControlQuery {
+	query := (&SystemComponentControlClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sc.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentfeedbackrelationship.Table, systemcomponentfeedbackrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.FeedbackRelationshipsTable, systemcomponent.FeedbackRelationshipsColumn),
+			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ControlsTable, systemcomponent.ControlsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -7941,15 +8072,47 @@ func (c *SystemComponentClient) QueryFeedbackRelationships(sc *SystemComponent) 
 	return query
 }
 
-// QueryIncidentSystemComponents queries the incident_system_components edge of a SystemComponent.
-func (c *SystemComponentClient) QueryIncidentSystemComponents(sc *SystemComponent) *IncidentSystemComponentQuery {
-	query := (&IncidentSystemComponentClient{config: c.config}).Query()
+// QuerySignals queries the signals edge of a SystemComponent.
+func (c *SystemComponentClient) QuerySignals(sc *SystemComponent) *SystemComponentSignalQuery {
+	query := (&SystemComponentSignalClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sc.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(incidentsystemcomponent.Table, incidentsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.IncidentSystemComponentsTable, systemcomponent.IncidentSystemComponentsColumn),
+			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SignalsTable, systemcomponent.SignalsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisComponents queries the analysis_components edge of a SystemComponent.
+func (c *SystemComponentClient) QueryAnalysisComponents(sc *SystemComponent) *SystemAnalysisComponentQuery {
+	query := (&SystemAnalysisComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.AnalysisComponentsTable, systemcomponent.AnalysisComponentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryComponentRelationships queries the component_relationships edge of a SystemComponent.
+func (c *SystemComponentClient) QueryComponentRelationships(sc *SystemComponent) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ComponentRelationshipsTable, systemcomponent.ComponentRelationshipsColumn),
 		)
 		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
 		return fromV, nil
@@ -7998,107 +8161,107 @@ func (c *SystemComponentClient) mutate(ctx context.Context, m *SystemComponentMu
 	}
 }
 
-// SystemComponentControlRelationshipClient is a client for the SystemComponentControlRelationship schema.
-type SystemComponentControlRelationshipClient struct {
+// SystemComponentConstraintClient is a client for the SystemComponentConstraint schema.
+type SystemComponentConstraintClient struct {
 	config
 }
 
-// NewSystemComponentControlRelationshipClient returns a client for the SystemComponentControlRelationship from the given config.
-func NewSystemComponentControlRelationshipClient(c config) *SystemComponentControlRelationshipClient {
-	return &SystemComponentControlRelationshipClient{config: c}
+// NewSystemComponentConstraintClient returns a client for the SystemComponentConstraint from the given config.
+func NewSystemComponentConstraintClient(c config) *SystemComponentConstraintClient {
+	return &SystemComponentConstraintClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentcontrolrelationship.Hooks(f(g(h())))`.
-func (c *SystemComponentControlRelationshipClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentControlRelationship = append(c.hooks.SystemComponentControlRelationship, hooks...)
+// A call to `Use(f, g, h)` equals to `systemcomponentconstraint.Hooks(f(g(h())))`.
+func (c *SystemComponentConstraintClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentConstraint = append(c.hooks.SystemComponentConstraint, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentcontrolrelationship.Intercept(f(g(h())))`.
-func (c *SystemComponentControlRelationshipClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentControlRelationship = append(c.inters.SystemComponentControlRelationship, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemcomponentconstraint.Intercept(f(g(h())))`.
+func (c *SystemComponentConstraintClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentConstraint = append(c.inters.SystemComponentConstraint, interceptors...)
 }
 
-// Create returns a builder for creating a SystemComponentControlRelationship entity.
-func (c *SystemComponentControlRelationshipClient) Create() *SystemComponentControlRelationshipCreate {
-	mutation := newSystemComponentControlRelationshipMutation(c.config, OpCreate)
-	return &SystemComponentControlRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemComponentConstraint entity.
+func (c *SystemComponentConstraintClient) Create() *SystemComponentConstraintCreate {
+	mutation := newSystemComponentConstraintMutation(c.config, OpCreate)
+	return &SystemComponentConstraintCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemComponentControlRelationship entities.
-func (c *SystemComponentControlRelationshipClient) CreateBulk(builders ...*SystemComponentControlRelationshipCreate) *SystemComponentControlRelationshipCreateBulk {
-	return &SystemComponentControlRelationshipCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemComponentConstraint entities.
+func (c *SystemComponentConstraintClient) CreateBulk(builders ...*SystemComponentConstraintCreate) *SystemComponentConstraintCreateBulk {
+	return &SystemComponentConstraintCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemComponentControlRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemComponentControlRelationshipCreate, int)) *SystemComponentControlRelationshipCreateBulk {
+func (c *SystemComponentConstraintClient) MapCreateBulk(slice any, setFunc func(*SystemComponentConstraintCreate, int)) *SystemComponentConstraintCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemComponentControlRelationshipCreateBulk{err: fmt.Errorf("calling to SystemComponentControlRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemComponentConstraintCreateBulk{err: fmt.Errorf("calling to SystemComponentConstraintClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemComponentControlRelationshipCreate, rv.Len())
+	builders := make([]*SystemComponentConstraintCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemComponentControlRelationshipCreateBulk{config: c.config, builders: builders}
+	return &SystemComponentConstraintCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemComponentControlRelationship.
-func (c *SystemComponentControlRelationshipClient) Update() *SystemComponentControlRelationshipUpdate {
-	mutation := newSystemComponentControlRelationshipMutation(c.config, OpUpdate)
-	return &SystemComponentControlRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) Update() *SystemComponentConstraintUpdate {
+	mutation := newSystemComponentConstraintMutation(c.config, OpUpdate)
+	return &SystemComponentConstraintUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentControlRelationshipClient) UpdateOne(sccr *SystemComponentControlRelationship) *SystemComponentControlRelationshipUpdateOne {
-	mutation := newSystemComponentControlRelationshipMutation(c.config, OpUpdateOne, withSystemComponentControlRelationship(sccr))
-	return &SystemComponentControlRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemComponentConstraintClient) UpdateOne(scc *SystemComponentConstraint) *SystemComponentConstraintUpdateOne {
+	mutation := newSystemComponentConstraintMutation(c.config, OpUpdateOne, withSystemComponentConstraint(scc))
+	return &SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentControlRelationshipClient) UpdateOneID(id uuid.UUID) *SystemComponentControlRelationshipUpdateOne {
-	mutation := newSystemComponentControlRelationshipMutation(c.config, OpUpdateOne, withSystemComponentControlRelationshipID(id))
-	return &SystemComponentControlRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemComponentConstraintClient) UpdateOneID(id uuid.UUID) *SystemComponentConstraintUpdateOne {
+	mutation := newSystemComponentConstraintMutation(c.config, OpUpdateOne, withSystemComponentConstraintID(id))
+	return &SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemComponentControlRelationship.
-func (c *SystemComponentControlRelationshipClient) Delete() *SystemComponentControlRelationshipDelete {
-	mutation := newSystemComponentControlRelationshipMutation(c.config, OpDelete)
-	return &SystemComponentControlRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) Delete() *SystemComponentConstraintDelete {
+	mutation := newSystemComponentConstraintMutation(c.config, OpDelete)
+	return &SystemComponentConstraintDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentControlRelationshipClient) DeleteOne(sccr *SystemComponentControlRelationship) *SystemComponentControlRelationshipDeleteOne {
-	return c.DeleteOneID(sccr.ID)
+func (c *SystemComponentConstraintClient) DeleteOne(scc *SystemComponentConstraint) *SystemComponentConstraintDeleteOne {
+	return c.DeleteOneID(scc.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentControlRelationshipClient) DeleteOneID(id uuid.UUID) *SystemComponentControlRelationshipDeleteOne {
-	builder := c.Delete().Where(systemcomponentcontrolrelationship.ID(id))
+func (c *SystemComponentConstraintClient) DeleteOneID(id uuid.UUID) *SystemComponentConstraintDeleteOne {
+	builder := c.Delete().Where(systemcomponentconstraint.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemComponentControlRelationshipDeleteOne{builder}
+	return &SystemComponentConstraintDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemComponentControlRelationship.
-func (c *SystemComponentControlRelationshipClient) Query() *SystemComponentControlRelationshipQuery {
-	return &SystemComponentControlRelationshipQuery{
+// Query returns a query builder for SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) Query() *SystemComponentConstraintQuery {
+	return &SystemComponentConstraintQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentControlRelationship},
+		ctx:    &QueryContext{Type: TypeSystemComponentConstraint},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemComponentControlRelationship entity by its id.
-func (c *SystemComponentControlRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentControlRelationship, error) {
-	return c.Query().Where(systemcomponentcontrolrelationship.ID(id)).Only(ctx)
+// Get returns a SystemComponentConstraint entity by its id.
+func (c *SystemComponentConstraintClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentConstraint, error) {
+	return c.Query().Where(systemcomponentconstraint.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentControlRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentControlRelationship {
+func (c *SystemComponentConstraintClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentConstraint {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -8106,164 +8269,148 @@ func (c *SystemComponentControlRelationshipClient) GetX(ctx context.Context, id 
 	return obj
 }
 
-// QueryController queries the controller edge of a SystemComponentControlRelationship.
-func (c *SystemComponentControlRelationshipClient) QueryController(sccr *SystemComponentControlRelationship) *SystemComponentQuery {
+// QueryComponent queries the component edge of a SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) QueryComponent(scc *SystemComponentConstraint) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sccr.ID
+		id := scc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrolrelationship.Table, systemcomponentcontrolrelationship.FieldID, id),
+			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrolrelationship.ControllerTable, systemcomponentcontrolrelationship.ControllerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.ComponentTable, systemcomponentconstraint.ComponentColumn),
 		)
-		fromV = sqlgraph.Neighbors(sccr.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControlled queries the controlled edge of a SystemComponentControlRelationship.
-func (c *SystemComponentControlRelationshipClient) QueryControlled(sccr *SystemComponentControlRelationship) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := sccr.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrolrelationship.Table, systemcomponentcontrolrelationship.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrolrelationship.ControlledTable, systemcomponentcontrolrelationship.ControlledColumn),
-		)
-		fromV = sqlgraph.Neighbors(sccr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *SystemComponentControlRelationshipClient) Hooks() []Hook {
-	return c.hooks.SystemComponentControlRelationship
+func (c *SystemComponentConstraintClient) Hooks() []Hook {
+	return c.hooks.SystemComponentConstraint
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemComponentControlRelationshipClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentControlRelationship
+func (c *SystemComponentConstraintClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentConstraint
 }
 
-func (c *SystemComponentControlRelationshipClient) mutate(ctx context.Context, m *SystemComponentControlRelationshipMutation) (Value, error) {
+func (c *SystemComponentConstraintClient) mutate(ctx context.Context, m *SystemComponentConstraintMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemComponentControlRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentConstraintCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemComponentControlRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentConstraintUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemComponentControlRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemComponentControlRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemComponentConstraintDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentControlRelationship mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemComponentConstraint mutation op: %q", m.Op())
 	}
 }
 
-// SystemComponentFeedbackRelationshipClient is a client for the SystemComponentFeedbackRelationship schema.
-type SystemComponentFeedbackRelationshipClient struct {
+// SystemComponentControlClient is a client for the SystemComponentControl schema.
+type SystemComponentControlClient struct {
 	config
 }
 
-// NewSystemComponentFeedbackRelationshipClient returns a client for the SystemComponentFeedbackRelationship from the given config.
-func NewSystemComponentFeedbackRelationshipClient(c config) *SystemComponentFeedbackRelationshipClient {
-	return &SystemComponentFeedbackRelationshipClient{config: c}
+// NewSystemComponentControlClient returns a client for the SystemComponentControl from the given config.
+func NewSystemComponentControlClient(c config) *SystemComponentControlClient {
+	return &SystemComponentControlClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentfeedbackrelationship.Hooks(f(g(h())))`.
-func (c *SystemComponentFeedbackRelationshipClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentFeedbackRelationship = append(c.hooks.SystemComponentFeedbackRelationship, hooks...)
+// A call to `Use(f, g, h)` equals to `systemcomponentcontrol.Hooks(f(g(h())))`.
+func (c *SystemComponentControlClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentControl = append(c.hooks.SystemComponentControl, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentfeedbackrelationship.Intercept(f(g(h())))`.
-func (c *SystemComponentFeedbackRelationshipClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentFeedbackRelationship = append(c.inters.SystemComponentFeedbackRelationship, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemcomponentcontrol.Intercept(f(g(h())))`.
+func (c *SystemComponentControlClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentControl = append(c.inters.SystemComponentControl, interceptors...)
 }
 
-// Create returns a builder for creating a SystemComponentFeedbackRelationship entity.
-func (c *SystemComponentFeedbackRelationshipClient) Create() *SystemComponentFeedbackRelationshipCreate {
-	mutation := newSystemComponentFeedbackRelationshipMutation(c.config, OpCreate)
-	return &SystemComponentFeedbackRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemComponentControl entity.
+func (c *SystemComponentControlClient) Create() *SystemComponentControlCreate {
+	mutation := newSystemComponentControlMutation(c.config, OpCreate)
+	return &SystemComponentControlCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemComponentFeedbackRelationship entities.
-func (c *SystemComponentFeedbackRelationshipClient) CreateBulk(builders ...*SystemComponentFeedbackRelationshipCreate) *SystemComponentFeedbackRelationshipCreateBulk {
-	return &SystemComponentFeedbackRelationshipCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemComponentControl entities.
+func (c *SystemComponentControlClient) CreateBulk(builders ...*SystemComponentControlCreate) *SystemComponentControlCreateBulk {
+	return &SystemComponentControlCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemComponentFeedbackRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemComponentFeedbackRelationshipCreate, int)) *SystemComponentFeedbackRelationshipCreateBulk {
+func (c *SystemComponentControlClient) MapCreateBulk(slice any, setFunc func(*SystemComponentControlCreate, int)) *SystemComponentControlCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemComponentFeedbackRelationshipCreateBulk{err: fmt.Errorf("calling to SystemComponentFeedbackRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemComponentControlCreateBulk{err: fmt.Errorf("calling to SystemComponentControlClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemComponentFeedbackRelationshipCreate, rv.Len())
+	builders := make([]*SystemComponentControlCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemComponentFeedbackRelationshipCreateBulk{config: c.config, builders: builders}
+	return &SystemComponentControlCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemComponentFeedbackRelationship.
-func (c *SystemComponentFeedbackRelationshipClient) Update() *SystemComponentFeedbackRelationshipUpdate {
-	mutation := newSystemComponentFeedbackRelationshipMutation(c.config, OpUpdate)
-	return &SystemComponentFeedbackRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemComponentControl.
+func (c *SystemComponentControlClient) Update() *SystemComponentControlUpdate {
+	mutation := newSystemComponentControlMutation(c.config, OpUpdate)
+	return &SystemComponentControlUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentFeedbackRelationshipClient) UpdateOne(scfr *SystemComponentFeedbackRelationship) *SystemComponentFeedbackRelationshipUpdateOne {
-	mutation := newSystemComponentFeedbackRelationshipMutation(c.config, OpUpdateOne, withSystemComponentFeedbackRelationship(scfr))
-	return &SystemComponentFeedbackRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemComponentControlClient) UpdateOne(scc *SystemComponentControl) *SystemComponentControlUpdateOne {
+	mutation := newSystemComponentControlMutation(c.config, OpUpdateOne, withSystemComponentControl(scc))
+	return &SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentFeedbackRelationshipClient) UpdateOneID(id uuid.UUID) *SystemComponentFeedbackRelationshipUpdateOne {
-	mutation := newSystemComponentFeedbackRelationshipMutation(c.config, OpUpdateOne, withSystemComponentFeedbackRelationshipID(id))
-	return &SystemComponentFeedbackRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemComponentControlClient) UpdateOneID(id uuid.UUID) *SystemComponentControlUpdateOne {
+	mutation := newSystemComponentControlMutation(c.config, OpUpdateOne, withSystemComponentControlID(id))
+	return &SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemComponentFeedbackRelationship.
-func (c *SystemComponentFeedbackRelationshipClient) Delete() *SystemComponentFeedbackRelationshipDelete {
-	mutation := newSystemComponentFeedbackRelationshipMutation(c.config, OpDelete)
-	return &SystemComponentFeedbackRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemComponentControl.
+func (c *SystemComponentControlClient) Delete() *SystemComponentControlDelete {
+	mutation := newSystemComponentControlMutation(c.config, OpDelete)
+	return &SystemComponentControlDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentFeedbackRelationshipClient) DeleteOne(scfr *SystemComponentFeedbackRelationship) *SystemComponentFeedbackRelationshipDeleteOne {
-	return c.DeleteOneID(scfr.ID)
+func (c *SystemComponentControlClient) DeleteOne(scc *SystemComponentControl) *SystemComponentControlDeleteOne {
+	return c.DeleteOneID(scc.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentFeedbackRelationshipClient) DeleteOneID(id uuid.UUID) *SystemComponentFeedbackRelationshipDeleteOne {
-	builder := c.Delete().Where(systemcomponentfeedbackrelationship.ID(id))
+func (c *SystemComponentControlClient) DeleteOneID(id uuid.UUID) *SystemComponentControlDeleteOne {
+	builder := c.Delete().Where(systemcomponentcontrol.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemComponentFeedbackRelationshipDeleteOne{builder}
+	return &SystemComponentControlDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemComponentFeedbackRelationship.
-func (c *SystemComponentFeedbackRelationshipClient) Query() *SystemComponentFeedbackRelationshipQuery {
-	return &SystemComponentFeedbackRelationshipQuery{
+// Query returns a query builder for SystemComponentControl.
+func (c *SystemComponentControlClient) Query() *SystemComponentControlQuery {
+	return &SystemComponentControlQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentFeedbackRelationship},
+		ctx:    &QueryContext{Type: TypeSystemComponentControl},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemComponentFeedbackRelationship entity by its id.
-func (c *SystemComponentFeedbackRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentFeedbackRelationship, error) {
-	return c.Query().Where(systemcomponentfeedbackrelationship.ID(id)).Only(ctx)
+// Get returns a SystemComponentControl entity by its id.
+func (c *SystemComponentControlClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentControl, error) {
+	return c.Query().Where(systemcomponentcontrol.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentFeedbackRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentFeedbackRelationship {
+func (c *SystemComponentControlClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentControl {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -8271,60 +8418,752 @@ func (c *SystemComponentFeedbackRelationshipClient) GetX(ctx context.Context, id
 	return obj
 }
 
-// QuerySource queries the source edge of a SystemComponentFeedbackRelationship.
-func (c *SystemComponentFeedbackRelationshipClient) QuerySource(scfr *SystemComponentFeedbackRelationship) *SystemComponentQuery {
+// QueryComponent queries the component edge of a SystemComponentControl.
+func (c *SystemComponentControlClient) QueryComponent(scc *SystemComponentControl) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := scfr.ID
+		id := scc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentfeedbackrelationship.Table, systemcomponentfeedbackrelationship.FieldID, id),
+			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentfeedbackrelationship.SourceTable, systemcomponentfeedbackrelationship.SourceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrol.ComponentTable, systemcomponentcontrol.ComponentColumn),
 		)
-		fromV = sqlgraph.Neighbors(scfr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryTarget queries the target edge of a SystemComponentFeedbackRelationship.
-func (c *SystemComponentFeedbackRelationshipClient) QueryTarget(scfr *SystemComponentFeedbackRelationship) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryControlActions queries the control_actions edge of a SystemComponentControl.
+func (c *SystemComponentControlClient) QueryControlActions(scc *SystemComponentControl) *SystemComponentRelationshipControlActionQuery {
+	query := (&SystemComponentRelationshipControlActionClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := scfr.ID
+		id := scc.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentfeedbackrelationship.Table, systemcomponentfeedbackrelationship.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentfeedbackrelationship.TargetTable, systemcomponentfeedbackrelationship.TargetColumn),
+			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
+			sqlgraph.To(systemcomponentrelationshipcontrolaction.Table, systemcomponentrelationshipcontrolaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentcontrol.ControlActionsTable, systemcomponentcontrol.ControlActionsColumn),
 		)
-		fromV = sqlgraph.Neighbors(scfr.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *SystemComponentFeedbackRelationshipClient) Hooks() []Hook {
-	return c.hooks.SystemComponentFeedbackRelationship
+func (c *SystemComponentControlClient) Hooks() []Hook {
+	return c.hooks.SystemComponentControl
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemComponentFeedbackRelationshipClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentFeedbackRelationship
+func (c *SystemComponentControlClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentControl
 }
 
-func (c *SystemComponentFeedbackRelationshipClient) mutate(ctx context.Context, m *SystemComponentFeedbackRelationshipMutation) (Value, error) {
+func (c *SystemComponentControlClient) mutate(ctx context.Context, m *SystemComponentControlMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemComponentFeedbackRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentControlCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemComponentFeedbackRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentControlUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemComponentFeedbackRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemComponentFeedbackRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemComponentControlDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentFeedbackRelationship mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemComponentControl mutation op: %q", m.Op())
+	}
+}
+
+// SystemComponentRelationshipClient is a client for the SystemComponentRelationship schema.
+type SystemComponentRelationshipClient struct {
+	config
+}
+
+// NewSystemComponentRelationshipClient returns a client for the SystemComponentRelationship from the given config.
+func NewSystemComponentRelationshipClient(c config) *SystemComponentRelationshipClient {
+	return &SystemComponentRelationshipClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemcomponentrelationship.Hooks(f(g(h())))`.
+func (c *SystemComponentRelationshipClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentRelationship = append(c.hooks.SystemComponentRelationship, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemcomponentrelationship.Intercept(f(g(h())))`.
+func (c *SystemComponentRelationshipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentRelationship = append(c.inters.SystemComponentRelationship, interceptors...)
+}
+
+// Create returns a builder for creating a SystemComponentRelationship entity.
+func (c *SystemComponentRelationshipClient) Create() *SystemComponentRelationshipCreate {
+	mutation := newSystemComponentRelationshipMutation(c.config, OpCreate)
+	return &SystemComponentRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemComponentRelationship entities.
+func (c *SystemComponentRelationshipClient) CreateBulk(builders ...*SystemComponentRelationshipCreate) *SystemComponentRelationshipCreateBulk {
+	return &SystemComponentRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemComponentRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemComponentRelationshipCreate, int)) *SystemComponentRelationshipCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemComponentRelationshipCreateBulk{err: fmt.Errorf("calling to SystemComponentRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemComponentRelationshipCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemComponentRelationshipCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) Update() *SystemComponentRelationshipUpdate {
+	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdate)
+	return &SystemComponentRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemComponentRelationshipClient) UpdateOne(scr *SystemComponentRelationship) *SystemComponentRelationshipUpdateOne {
+	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdateOne, withSystemComponentRelationship(scr))
+	return &SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemComponentRelationshipClient) UpdateOneID(id uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdateOne, withSystemComponentRelationshipID(id))
+	return &SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) Delete() *SystemComponentRelationshipDelete {
+	mutation := newSystemComponentRelationshipMutation(c.config, OpDelete)
+	return &SystemComponentRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemComponentRelationshipClient) DeleteOne(scr *SystemComponentRelationship) *SystemComponentRelationshipDeleteOne {
+	return c.DeleteOneID(scr.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemComponentRelationshipClient) DeleteOneID(id uuid.UUID) *SystemComponentRelationshipDeleteOne {
+	builder := c.Delete().Where(systemcomponentrelationship.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemComponentRelationshipDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) Query() *SystemComponentRelationshipQuery {
+	return &SystemComponentRelationshipQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemComponentRelationship},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemComponentRelationship entity by its id.
+func (c *SystemComponentRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentRelationship, error) {
+	return c.Query().Where(systemcomponentrelationship.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemComponentRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentRelationship {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySource queries the source edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QuerySource(scr *SystemComponentRelationship) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.SourceTable, systemcomponentrelationship.SourceColumn),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTarget queries the target edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryTarget(scr *SystemComponentRelationship) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TargetTable, systemcomponentrelationship.TargetColumn),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryControlActions queries the control_actions edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryControlActions(scr *SystemComponentRelationship) *SystemComponentRelationshipControlActionQuery {
+	query := (&SystemComponentRelationshipControlActionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponentrelationshipcontrolaction.Table, systemcomponentrelationshipcontrolaction.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, systemcomponentrelationship.ControlActionsTable, systemcomponentrelationship.ControlActionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedback queries the feedback edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryFeedback(scr *SystemComponentRelationship) *SystemComponentRelationshipFeedbackQuery {
+	query := (&SystemComponentRelationshipFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemcomponentrelationshipfeedback.Table, systemcomponentrelationshipfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, systemcomponentrelationship.FeedbackTable, systemcomponentrelationship.FeedbackColumn),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemComponentRelationshipClient) Hooks() []Hook {
+	return c.hooks.SystemComponentRelationship
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemComponentRelationshipClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentRelationship
+}
+
+func (c *SystemComponentRelationshipClient) mutate(ctx context.Context, m *SystemComponentRelationshipMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemComponentRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemComponentRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemComponentRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemComponentRelationship mutation op: %q", m.Op())
+	}
+}
+
+// SystemComponentRelationshipControlActionClient is a client for the SystemComponentRelationshipControlAction schema.
+type SystemComponentRelationshipControlActionClient struct {
+	config
+}
+
+// NewSystemComponentRelationshipControlActionClient returns a client for the SystemComponentRelationshipControlAction from the given config.
+func NewSystemComponentRelationshipControlActionClient(c config) *SystemComponentRelationshipControlActionClient {
+	return &SystemComponentRelationshipControlActionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemcomponentrelationshipcontrolaction.Hooks(f(g(h())))`.
+func (c *SystemComponentRelationshipControlActionClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentRelationshipControlAction = append(c.hooks.SystemComponentRelationshipControlAction, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemcomponentrelationshipcontrolaction.Intercept(f(g(h())))`.
+func (c *SystemComponentRelationshipControlActionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentRelationshipControlAction = append(c.inters.SystemComponentRelationshipControlAction, interceptors...)
+}
+
+// Create returns a builder for creating a SystemComponentRelationshipControlAction entity.
+func (c *SystemComponentRelationshipControlActionClient) Create() *SystemComponentRelationshipControlActionCreate {
+	mutation := newSystemComponentRelationshipControlActionMutation(c.config, OpCreate)
+	return &SystemComponentRelationshipControlActionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemComponentRelationshipControlAction entities.
+func (c *SystemComponentRelationshipControlActionClient) CreateBulk(builders ...*SystemComponentRelationshipControlActionCreate) *SystemComponentRelationshipControlActionCreateBulk {
+	return &SystemComponentRelationshipControlActionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemComponentRelationshipControlActionClient) MapCreateBulk(slice any, setFunc func(*SystemComponentRelationshipControlActionCreate, int)) *SystemComponentRelationshipControlActionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemComponentRelationshipControlActionCreateBulk{err: fmt.Errorf("calling to SystemComponentRelationshipControlActionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemComponentRelationshipControlActionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemComponentRelationshipControlActionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemComponentRelationshipControlAction.
+func (c *SystemComponentRelationshipControlActionClient) Update() *SystemComponentRelationshipControlActionUpdate {
+	mutation := newSystemComponentRelationshipControlActionMutation(c.config, OpUpdate)
+	return &SystemComponentRelationshipControlActionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemComponentRelationshipControlActionClient) UpdateOne(scrca *SystemComponentRelationshipControlAction) *SystemComponentRelationshipControlActionUpdateOne {
+	mutation := newSystemComponentRelationshipControlActionMutation(c.config, OpUpdateOne, withSystemComponentRelationshipControlAction(scrca))
+	return &SystemComponentRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemComponentRelationshipControlActionClient) UpdateOneID(id uuid.UUID) *SystemComponentRelationshipControlActionUpdateOne {
+	mutation := newSystemComponentRelationshipControlActionMutation(c.config, OpUpdateOne, withSystemComponentRelationshipControlActionID(id))
+	return &SystemComponentRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemComponentRelationshipControlAction.
+func (c *SystemComponentRelationshipControlActionClient) Delete() *SystemComponentRelationshipControlActionDelete {
+	mutation := newSystemComponentRelationshipControlActionMutation(c.config, OpDelete)
+	return &SystemComponentRelationshipControlActionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemComponentRelationshipControlActionClient) DeleteOne(scrca *SystemComponentRelationshipControlAction) *SystemComponentRelationshipControlActionDeleteOne {
+	return c.DeleteOneID(scrca.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemComponentRelationshipControlActionClient) DeleteOneID(id uuid.UUID) *SystemComponentRelationshipControlActionDeleteOne {
+	builder := c.Delete().Where(systemcomponentrelationshipcontrolaction.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemComponentRelationshipControlActionDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemComponentRelationshipControlAction.
+func (c *SystemComponentRelationshipControlActionClient) Query() *SystemComponentRelationshipControlActionQuery {
+	return &SystemComponentRelationshipControlActionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemComponentRelationshipControlAction},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemComponentRelationshipControlAction entity by its id.
+func (c *SystemComponentRelationshipControlActionClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentRelationshipControlAction, error) {
+	return c.Query().Where(systemcomponentrelationshipcontrolaction.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemComponentRelationshipControlActionClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentRelationshipControlAction {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryControl queries the control edge of a SystemComponentRelationshipControlAction.
+func (c *SystemComponentRelationshipControlActionClient) QueryControl(scrca *SystemComponentRelationshipControlAction) *SystemComponentControlQuery {
+	query := (&SystemComponentControlClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scrca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationshipcontrolaction.Table, systemcomponentrelationshipcontrolaction.FieldID, id),
+			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationshipcontrolaction.ControlTable, systemcomponentrelationshipcontrolaction.ControlColumn),
+		)
+		fromV = sqlgraph.Neighbors(scrca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRelationship queries the relationship edge of a SystemComponentRelationshipControlAction.
+func (c *SystemComponentRelationshipControlActionClient) QueryRelationship(scrca *SystemComponentRelationshipControlAction) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scrca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationshipcontrolaction.Table, systemcomponentrelationshipcontrolaction.FieldID, id),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, systemcomponentrelationshipcontrolaction.RelationshipTable, systemcomponentrelationshipcontrolaction.RelationshipColumn),
+		)
+		fromV = sqlgraph.Neighbors(scrca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemComponentRelationshipControlActionClient) Hooks() []Hook {
+	return c.hooks.SystemComponentRelationshipControlAction
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemComponentRelationshipControlActionClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentRelationshipControlAction
+}
+
+func (c *SystemComponentRelationshipControlActionClient) mutate(ctx context.Context, m *SystemComponentRelationshipControlActionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemComponentRelationshipControlActionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemComponentRelationshipControlActionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemComponentRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemComponentRelationshipControlActionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemComponentRelationshipControlAction mutation op: %q", m.Op())
+	}
+}
+
+// SystemComponentRelationshipFeedbackClient is a client for the SystemComponentRelationshipFeedback schema.
+type SystemComponentRelationshipFeedbackClient struct {
+	config
+}
+
+// NewSystemComponentRelationshipFeedbackClient returns a client for the SystemComponentRelationshipFeedback from the given config.
+func NewSystemComponentRelationshipFeedbackClient(c config) *SystemComponentRelationshipFeedbackClient {
+	return &SystemComponentRelationshipFeedbackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemcomponentrelationshipfeedback.Hooks(f(g(h())))`.
+func (c *SystemComponentRelationshipFeedbackClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentRelationshipFeedback = append(c.hooks.SystemComponentRelationshipFeedback, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemcomponentrelationshipfeedback.Intercept(f(g(h())))`.
+func (c *SystemComponentRelationshipFeedbackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentRelationshipFeedback = append(c.inters.SystemComponentRelationshipFeedback, interceptors...)
+}
+
+// Create returns a builder for creating a SystemComponentRelationshipFeedback entity.
+func (c *SystemComponentRelationshipFeedbackClient) Create() *SystemComponentRelationshipFeedbackCreate {
+	mutation := newSystemComponentRelationshipFeedbackMutation(c.config, OpCreate)
+	return &SystemComponentRelationshipFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemComponentRelationshipFeedback entities.
+func (c *SystemComponentRelationshipFeedbackClient) CreateBulk(builders ...*SystemComponentRelationshipFeedbackCreate) *SystemComponentRelationshipFeedbackCreateBulk {
+	return &SystemComponentRelationshipFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemComponentRelationshipFeedbackClient) MapCreateBulk(slice any, setFunc func(*SystemComponentRelationshipFeedbackCreate, int)) *SystemComponentRelationshipFeedbackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemComponentRelationshipFeedbackCreateBulk{err: fmt.Errorf("calling to SystemComponentRelationshipFeedbackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemComponentRelationshipFeedbackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemComponentRelationshipFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemComponentRelationshipFeedback.
+func (c *SystemComponentRelationshipFeedbackClient) Update() *SystemComponentRelationshipFeedbackUpdate {
+	mutation := newSystemComponentRelationshipFeedbackMutation(c.config, OpUpdate)
+	return &SystemComponentRelationshipFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemComponentRelationshipFeedbackClient) UpdateOne(scrf *SystemComponentRelationshipFeedback) *SystemComponentRelationshipFeedbackUpdateOne {
+	mutation := newSystemComponentRelationshipFeedbackMutation(c.config, OpUpdateOne, withSystemComponentRelationshipFeedback(scrf))
+	return &SystemComponentRelationshipFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemComponentRelationshipFeedbackClient) UpdateOneID(id uuid.UUID) *SystemComponentRelationshipFeedbackUpdateOne {
+	mutation := newSystemComponentRelationshipFeedbackMutation(c.config, OpUpdateOne, withSystemComponentRelationshipFeedbackID(id))
+	return &SystemComponentRelationshipFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemComponentRelationshipFeedback.
+func (c *SystemComponentRelationshipFeedbackClient) Delete() *SystemComponentRelationshipFeedbackDelete {
+	mutation := newSystemComponentRelationshipFeedbackMutation(c.config, OpDelete)
+	return &SystemComponentRelationshipFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemComponentRelationshipFeedbackClient) DeleteOne(scrf *SystemComponentRelationshipFeedback) *SystemComponentRelationshipFeedbackDeleteOne {
+	return c.DeleteOneID(scrf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemComponentRelationshipFeedbackClient) DeleteOneID(id uuid.UUID) *SystemComponentRelationshipFeedbackDeleteOne {
+	builder := c.Delete().Where(systemcomponentrelationshipfeedback.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemComponentRelationshipFeedbackDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemComponentRelationshipFeedback.
+func (c *SystemComponentRelationshipFeedbackClient) Query() *SystemComponentRelationshipFeedbackQuery {
+	return &SystemComponentRelationshipFeedbackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemComponentRelationshipFeedback},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemComponentRelationshipFeedback entity by its id.
+func (c *SystemComponentRelationshipFeedbackClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentRelationshipFeedback, error) {
+	return c.Query().Where(systemcomponentrelationshipfeedback.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemComponentRelationshipFeedbackClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentRelationshipFeedback {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySignal queries the signal edge of a SystemComponentRelationshipFeedback.
+func (c *SystemComponentRelationshipFeedbackClient) QuerySignal(scrf *SystemComponentRelationshipFeedback) *SystemComponentSignalQuery {
+	query := (&SystemComponentSignalClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scrf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationshipfeedback.Table, systemcomponentrelationshipfeedback.FieldID, id),
+			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationshipfeedback.SignalTable, systemcomponentrelationshipfeedback.SignalColumn),
+		)
+		fromV = sqlgraph.Neighbors(scrf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRelationship queries the relationship edge of a SystemComponentRelationshipFeedback.
+func (c *SystemComponentRelationshipFeedbackClient) QueryRelationship(scrf *SystemComponentRelationshipFeedback) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scrf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationshipfeedback.Table, systemcomponentrelationshipfeedback.FieldID, id),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, systemcomponentrelationshipfeedback.RelationshipTable, systemcomponentrelationshipfeedback.RelationshipColumn),
+		)
+		fromV = sqlgraph.Neighbors(scrf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemComponentRelationshipFeedbackClient) Hooks() []Hook {
+	return c.hooks.SystemComponentRelationshipFeedback
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemComponentRelationshipFeedbackClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentRelationshipFeedback
+}
+
+func (c *SystemComponentRelationshipFeedbackClient) mutate(ctx context.Context, m *SystemComponentRelationshipFeedbackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemComponentRelationshipFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemComponentRelationshipFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemComponentRelationshipFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemComponentRelationshipFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemComponentRelationshipFeedback mutation op: %q", m.Op())
+	}
+}
+
+// SystemComponentSignalClient is a client for the SystemComponentSignal schema.
+type SystemComponentSignalClient struct {
+	config
+}
+
+// NewSystemComponentSignalClient returns a client for the SystemComponentSignal from the given config.
+func NewSystemComponentSignalClient(c config) *SystemComponentSignalClient {
+	return &SystemComponentSignalClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemcomponentsignal.Hooks(f(g(h())))`.
+func (c *SystemComponentSignalClient) Use(hooks ...Hook) {
+	c.hooks.SystemComponentSignal = append(c.hooks.SystemComponentSignal, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemcomponentsignal.Intercept(f(g(h())))`.
+func (c *SystemComponentSignalClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemComponentSignal = append(c.inters.SystemComponentSignal, interceptors...)
+}
+
+// Create returns a builder for creating a SystemComponentSignal entity.
+func (c *SystemComponentSignalClient) Create() *SystemComponentSignalCreate {
+	mutation := newSystemComponentSignalMutation(c.config, OpCreate)
+	return &SystemComponentSignalCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemComponentSignal entities.
+func (c *SystemComponentSignalClient) CreateBulk(builders ...*SystemComponentSignalCreate) *SystemComponentSignalCreateBulk {
+	return &SystemComponentSignalCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemComponentSignalClient) MapCreateBulk(slice any, setFunc func(*SystemComponentSignalCreate, int)) *SystemComponentSignalCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemComponentSignalCreateBulk{err: fmt.Errorf("calling to SystemComponentSignalClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemComponentSignalCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemComponentSignalCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemComponentSignal.
+func (c *SystemComponentSignalClient) Update() *SystemComponentSignalUpdate {
+	mutation := newSystemComponentSignalMutation(c.config, OpUpdate)
+	return &SystemComponentSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemComponentSignalClient) UpdateOne(scs *SystemComponentSignal) *SystemComponentSignalUpdateOne {
+	mutation := newSystemComponentSignalMutation(c.config, OpUpdateOne, withSystemComponentSignal(scs))
+	return &SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemComponentSignalClient) UpdateOneID(id uuid.UUID) *SystemComponentSignalUpdateOne {
+	mutation := newSystemComponentSignalMutation(c.config, OpUpdateOne, withSystemComponentSignalID(id))
+	return &SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemComponentSignal.
+func (c *SystemComponentSignalClient) Delete() *SystemComponentSignalDelete {
+	mutation := newSystemComponentSignalMutation(c.config, OpDelete)
+	return &SystemComponentSignalDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemComponentSignalClient) DeleteOne(scs *SystemComponentSignal) *SystemComponentSignalDeleteOne {
+	return c.DeleteOneID(scs.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemComponentSignalClient) DeleteOneID(id uuid.UUID) *SystemComponentSignalDeleteOne {
+	builder := c.Delete().Where(systemcomponentsignal.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemComponentSignalDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemComponentSignal.
+func (c *SystemComponentSignalClient) Query() *SystemComponentSignalQuery {
+	return &SystemComponentSignalQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemComponentSignal},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemComponentSignal entity by its id.
+func (c *SystemComponentSignalClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentSignal, error) {
+	return c.Query().Where(systemcomponentsignal.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemComponentSignalClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentSignal {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryComponent queries the component edge of a SystemComponentSignal.
+func (c *SystemComponentSignalClient) QueryComponent(scs *SystemComponentSignal) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.ComponentTable, systemcomponentsignal.ComponentColumn),
+		)
+		fromV = sqlgraph.Neighbors(scs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedbackSignals queries the feedback_signals edge of a SystemComponentSignal.
+func (c *SystemComponentSignalClient) QueryFeedbackSignals(scs *SystemComponentSignal) *SystemComponentRelationshipFeedbackQuery {
+	query := (&SystemComponentRelationshipFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
+			sqlgraph.To(systemcomponentrelationshipfeedback.Table, systemcomponentrelationshipfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentsignal.FeedbackSignalsTable, systemcomponentsignal.FeedbackSignalsColumn),
+		)
+		fromV = sqlgraph.Neighbors(scs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemComponentSignalClient) Hooks() []Hook {
+	return c.hooks.SystemComponentSignal
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemComponentSignalClient) Interceptors() []Interceptor {
+	return c.inters.SystemComponentSignal
+}
+
+func (c *SystemComponentSignalClient) mutate(ctx context.Context, m *SystemComponentSignalMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemComponentSignalCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemComponentSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemComponentSignalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemComponentSignal mutation op: %q", m.Op())
 	}
 }
 
@@ -9023,15 +9862,16 @@ type (
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentSystemComponent, IncidentTag, IncidentTeamAssignment, IncidentType,
-		MeetingSchedule, MeetingSession, OncallAlert, OncallAlertInstance,
-		OncallHandoverTemplate, OncallRoster, OncallSchedule,
-		OncallScheduleParticipant, OncallUserShift, OncallUserShiftAnnotation,
-		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemComponent,
-		SystemComponentControlRelationship, SystemComponentFeedbackRelationship, Task,
-		Team, User []ent.Hook
+		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
+		MeetingSession, OncallAlert, OncallAlertInstance, OncallHandoverTemplate,
+		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
+		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentRelationship,
+		SystemComponentRelationshipControlAction, SystemComponentRelationshipFeedback,
+		SystemComponentSignal, Task, Team, User []ent.Hook
 	}
 	inters struct {
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
@@ -9039,14 +9879,15 @@ type (
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentSystemComponent, IncidentTag, IncidentTeamAssignment, IncidentType,
-		MeetingSchedule, MeetingSession, OncallAlert, OncallAlertInstance,
-		OncallHandoverTemplate, OncallRoster, OncallSchedule,
-		OncallScheduleParticipant, OncallUserShift, OncallUserShiftAnnotation,
-		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemComponent,
-		SystemComponentControlRelationship, SystemComponentFeedbackRelationship, Task,
-		Team, User []ent.Interceptor
+		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
+		MeetingSession, OncallAlert, OncallAlertInstance, OncallHandoverTemplate,
+		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
+		OncallUserShiftAnnotation, OncallUserShiftCover, OncallUserShiftHandover,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentRelationship,
+		SystemComponentRelationshipControlAction, SystemComponentRelationshipFeedback,
+		SystemComponentSignal, Task, Team, User []ent.Interceptor
 	}
 )

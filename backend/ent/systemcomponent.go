@@ -33,125 +33,111 @@ type SystemComponent struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SystemComponentQuery when eager-loading is set.
-	Edges                     SystemComponentEdges `json:"edges"`
-	system_component_children *uuid.UUID
-	selectValues              sql.SelectValues
+	Edges        SystemComponentEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // SystemComponentEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentEdges struct {
-	// Parent holds the value of the parent edge.
-	Parent *SystemComponent `json:"parent,omitempty"`
-	// Children holds the value of the children edge.
-	Children []*SystemComponent `json:"children,omitempty"`
-	// Controls holds the value of the controls edge.
-	Controls []*SystemComponent `json:"controls,omitempty"`
-	// FeedbackTo holds the value of the feedback_to edge.
-	FeedbackTo []*SystemComponent `json:"feedback_to,omitempty"`
-	// Incidents holds the value of the incidents edge.
-	Incidents []*Incident `json:"incidents,omitempty"`
+	// Analyses holds the value of the analyses edge.
+	Analyses []*SystemAnalysis `json:"analyses,omitempty"`
+	// Related holds the value of the related edge.
+	Related []*SystemComponent `json:"related,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*IncidentEvent `json:"events,omitempty"`
-	// ControlRelationships holds the value of the control_relationships edge.
-	ControlRelationships []*SystemComponentControlRelationship `json:"control_relationships,omitempty"`
-	// FeedbackRelationships holds the value of the feedback_relationships edge.
-	FeedbackRelationships []*SystemComponentFeedbackRelationship `json:"feedback_relationships,omitempty"`
-	// IncidentSystemComponents holds the value of the incident_system_components edge.
-	IncidentSystemComponents []*IncidentSystemComponent `json:"incident_system_components,omitempty"`
+	// Constraints holds the value of the constraints edge.
+	Constraints []*SystemComponentConstraint `json:"constraints,omitempty"`
+	// Controls holds the value of the controls edge.
+	Controls []*SystemComponentControl `json:"controls,omitempty"`
+	// Signals holds the value of the signals edge.
+	Signals []*SystemComponentSignal `json:"signals,omitempty"`
+	// AnalysisComponents holds the value of the analysis_components edge.
+	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
+	// ComponentRelationships holds the value of the component_relationships edge.
+	ComponentRelationships []*SystemComponentRelationship `json:"component_relationships,omitempty"`
 	// EventComponents holds the value of the event_components edge.
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [9]bool
 }
 
-// ParentOrErr returns the Parent value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SystemComponentEdges) ParentOrErr() (*SystemComponent, error) {
-	if e.Parent != nil {
-		return e.Parent, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: systemcomponent.Label}
-	}
-	return nil, &NotLoadedError{edge: "parent"}
-}
-
-// ChildrenOrErr returns the Children value or an error if the edge
+// AnalysesOrErr returns the Analyses value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) ChildrenOrErr() ([]*SystemComponent, error) {
+func (e SystemComponentEdges) AnalysesOrErr() ([]*SystemAnalysis, error) {
+	if e.loadedTypes[0] {
+		return e.Analyses, nil
+	}
+	return nil, &NotLoadedError{edge: "analyses"}
+}
+
+// RelatedOrErr returns the Related value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) RelatedOrErr() ([]*SystemComponent, error) {
 	if e.loadedTypes[1] {
-		return e.Children, nil
+		return e.Related, nil
 	}
-	return nil, &NotLoadedError{edge: "children"}
-}
-
-// ControlsOrErr returns the Controls value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemComponentEdges) ControlsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[2] {
-		return e.Controls, nil
-	}
-	return nil, &NotLoadedError{edge: "controls"}
-}
-
-// FeedbackToOrErr returns the FeedbackTo value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemComponentEdges) FeedbackToOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[3] {
-		return e.FeedbackTo, nil
-	}
-	return nil, &NotLoadedError{edge: "feedback_to"}
-}
-
-// IncidentsOrErr returns the Incidents value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemComponentEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[4] {
-		return e.Incidents, nil
-	}
-	return nil, &NotLoadedError{edge: "incidents"}
+	return nil, &NotLoadedError{edge: "related"}
 }
 
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[2] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
 }
 
-// ControlRelationshipsOrErr returns the ControlRelationships value or an error if the edge
+// ConstraintsOrErr returns the Constraints value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) ControlRelationshipsOrErr() ([]*SystemComponentControlRelationship, error) {
+func (e SystemComponentEdges) ConstraintsOrErr() ([]*SystemComponentConstraint, error) {
+	if e.loadedTypes[3] {
+		return e.Constraints, nil
+	}
+	return nil, &NotLoadedError{edge: "constraints"}
+}
+
+// ControlsOrErr returns the Controls value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) ControlsOrErr() ([]*SystemComponentControl, error) {
+	if e.loadedTypes[4] {
+		return e.Controls, nil
+	}
+	return nil, &NotLoadedError{edge: "controls"}
+}
+
+// SignalsOrErr returns the Signals value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
+	if e.loadedTypes[5] {
+		return e.Signals, nil
+	}
+	return nil, &NotLoadedError{edge: "signals"}
+}
+
+// AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
 	if e.loadedTypes[6] {
-		return e.ControlRelationships, nil
+		return e.AnalysisComponents, nil
 	}
-	return nil, &NotLoadedError{edge: "control_relationships"}
+	return nil, &NotLoadedError{edge: "analysis_components"}
 }
 
-// FeedbackRelationshipsOrErr returns the FeedbackRelationships value or an error if the edge
+// ComponentRelationshipsOrErr returns the ComponentRelationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) FeedbackRelationshipsOrErr() ([]*SystemComponentFeedbackRelationship, error) {
+func (e SystemComponentEdges) ComponentRelationshipsOrErr() ([]*SystemComponentRelationship, error) {
 	if e.loadedTypes[7] {
-		return e.FeedbackRelationships, nil
+		return e.ComponentRelationships, nil
 	}
-	return nil, &NotLoadedError{edge: "feedback_relationships"}
-}
-
-// IncidentSystemComponentsOrErr returns the IncidentSystemComponents value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemComponentEdges) IncidentSystemComponentsOrErr() ([]*IncidentSystemComponent, error) {
-	if e.loadedTypes[8] {
-		return e.IncidentSystemComponents, nil
-	}
-	return nil, &NotLoadedError{edge: "incident_system_components"}
+	return nil, &NotLoadedError{edge: "component_relationships"}
 }
 
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[8] {
 		return e.EventComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "event_components"}
@@ -170,8 +156,6 @@ func (*SystemComponent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case systemcomponent.FieldID:
 			values[i] = new(uuid.UUID)
-		case systemcomponent.ForeignKeys[0]: // system_component_children
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -231,13 +215,6 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				sc.UpdatedAt = value.Time
 			}
-		case systemcomponent.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field system_component_children", values[i])
-			} else if value.Valid {
-				sc.system_component_children = new(uuid.UUID)
-				*sc.system_component_children = *value.S.(*uuid.UUID)
-			}
 		default:
 			sc.selectValues.Set(columns[i], values[i])
 		}
@@ -251,29 +228,14 @@ func (sc *SystemComponent) Value(name string) (ent.Value, error) {
 	return sc.selectValues.Get(name)
 }
 
-// QueryParent queries the "parent" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryParent() *SystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryParent(sc)
+// QueryAnalyses queries the "analyses" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryAnalyses() *SystemAnalysisQuery {
+	return NewSystemComponentClient(sc.config).QueryAnalyses(sc)
 }
 
-// QueryChildren queries the "children" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryChildren() *SystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryChildren(sc)
-}
-
-// QueryControls queries the "controls" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryControls() *SystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryControls(sc)
-}
-
-// QueryFeedbackTo queries the "feedback_to" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryFeedbackTo() *SystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryFeedbackTo(sc)
-}
-
-// QueryIncidents queries the "incidents" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryIncidents() *IncidentQuery {
-	return NewSystemComponentClient(sc.config).QueryIncidents(sc)
+// QueryRelated queries the "related" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryRelated() *SystemComponentQuery {
+	return NewSystemComponentClient(sc.config).QueryRelated(sc)
 }
 
 // QueryEvents queries the "events" edge of the SystemComponent entity.
@@ -281,19 +243,29 @@ func (sc *SystemComponent) QueryEvents() *IncidentEventQuery {
 	return NewSystemComponentClient(sc.config).QueryEvents(sc)
 }
 
-// QueryControlRelationships queries the "control_relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryControlRelationships() *SystemComponentControlRelationshipQuery {
-	return NewSystemComponentClient(sc.config).QueryControlRelationships(sc)
+// QueryConstraints queries the "constraints" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryConstraints() *SystemComponentConstraintQuery {
+	return NewSystemComponentClient(sc.config).QueryConstraints(sc)
 }
 
-// QueryFeedbackRelationships queries the "feedback_relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryFeedbackRelationships() *SystemComponentFeedbackRelationshipQuery {
-	return NewSystemComponentClient(sc.config).QueryFeedbackRelationships(sc)
+// QueryControls queries the "controls" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryControls() *SystemComponentControlQuery {
+	return NewSystemComponentClient(sc.config).QueryControls(sc)
 }
 
-// QueryIncidentSystemComponents queries the "incident_system_components" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryIncidentSystemComponents() *IncidentSystemComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryIncidentSystemComponents(sc)
+// QuerySignals queries the "signals" edge of the SystemComponent entity.
+func (sc *SystemComponent) QuerySignals() *SystemComponentSignalQuery {
+	return NewSystemComponentClient(sc.config).QuerySignals(sc)
+}
+
+// QueryAnalysisComponents queries the "analysis_components" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
+	return NewSystemComponentClient(sc.config).QueryAnalysisComponents(sc)
+}
+
+// QueryComponentRelationships queries the "component_relationships" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryComponentRelationships() *SystemComponentRelationshipQuery {
+	return NewSystemComponentClient(sc.config).QueryComponentRelationships(sc)
 }
 
 // QueryEventComponents queries the "event_components" edge of the SystemComponent entity.

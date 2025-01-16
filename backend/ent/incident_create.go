@@ -22,13 +22,11 @@ import (
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidentsystemcomponent"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -207,21 +205,6 @@ func (ic *IncidentCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *Inci
 	return ic.AddRoleAssignmentIDs(ids...)
 }
 
-// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (ic *IncidentCreate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddSystemComponentIDs(ids...)
-	return ic
-}
-
-// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (ic *IncidentCreate) AddSystemComponents(s ...*SystemComponent) *IncidentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ic.AddSystemComponentIDs(ids...)
-}
-
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
 func (ic *IncidentCreate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentCreate {
 	ic.mutation.AddLinkedIncidentIDs(ids...)
@@ -359,21 +342,6 @@ func (ic *IncidentCreate) AddReviewSessions(m ...*MeetingSession) *IncidentCreat
 		ids[i] = m[i].ID
 	}
 	return ic.AddReviewSessionIDs(ids...)
-}
-
-// AddIncidentSystemComponentIDs adds the "incident_system_components" edge to the IncidentSystemComponent entity by IDs.
-func (ic *IncidentCreate) AddIncidentSystemComponentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddIncidentSystemComponentIDs(ids...)
-	return ic
-}
-
-// AddIncidentSystemComponents adds the "incident_system_components" edges to the IncidentSystemComponent entity.
-func (ic *IncidentCreate) AddIncidentSystemComponents(i ...*IncidentSystemComponent) *IncidentCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ic.AddIncidentSystemComponentIDs(ids...)
 }
 
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by IDs.
@@ -616,29 +584,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ic.mutation.SystemComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.SystemComponentsTable,
-			Columns: incident.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentSystemComponentCreate{config: ic.config, mutation: newIncidentSystemComponentMutation(ic.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ic.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -776,22 +721,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.IncidentSystemComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.IncidentSystemComponentsTable,
-			Columns: []string{incident.IncidentSystemComponentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentsystemcomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
