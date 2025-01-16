@@ -90,16 +90,16 @@ type (
 		Description string                      `json:"description"`
 		Properties  map[string]any              `json:"properties"`
 		Constraints []SystemComponentConstraint `json:"constraints"`
-		Signals     []SystemComponentSignal     `json:"signals"`
-		Controls    []SystemComponentControl    `json:"controls"`
+		//Signals     []SystemComponentSignal     `json:"signals"`
+		//Controls    []SystemComponentControl    `json:"controls"`
 	}
 
-	ScopedSystemAnalysis struct {
-		Id         uuid.UUID                      `json:"id"`
-		Attributes ScopedSystemAnalysisAttributes `json:"attributes"`
+	SystemAnalysis struct {
+		Id         uuid.UUID                `json:"id"`
+		Attributes SystemAnalysisAttributes `json:"attributes"`
 	}
 
-	ScopedSystemAnalysisAttributes struct {
+	SystemAnalysisAttributes struct {
 		Components    []SystemAnalysisComponent    `json:"components"`
 		Relationships []SystemAnalysisRelationship `json:"relationships"`
 	}
@@ -125,11 +125,11 @@ type (
 		Attributes SystemAnalysisRelationshipAttributes `json:"attributes"`
 	}
 	SystemAnalysisRelationshipAttributes struct {
-		SourceId          uuid.UUID   `json:"source_id"`
-		TargetId          uuid.UUID   `json:"target_id"`
-		Description       string      `json:"description"`
-		FeedbackSignalIds []uuid.UUID `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
-		ControlActionIds  []uuid.UUID `json:"control_actions"`  // IDs of SystemComponentControl from source to target
+		SourceId        uuid.UUID                `json:"source_id"`
+		TargetId        uuid.UUID                `json:"target_id"`
+		Description     string                   `json:"description"`
+		FeedbackSignals []SystemComponentSignal  `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
+		ControlActions  []SystemComponentControl `json:"control_actions"`  // IDs of SystemComponentControl from source to target
 	}
 )
 
@@ -223,7 +223,7 @@ var GetSystemAnalysis = huma.Operation{
 }
 
 type GetSystemAnalysisRequest GetIdRequest
-type GetSystemAnalysisResponse ItemResponse[ScopedSystemAnalysis]
+type GetSystemAnalysisResponse ItemResponse[SystemAnalysis]
 
 // analysis components
 

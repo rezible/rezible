@@ -43,7 +43,7 @@ func (s systemAnalysisHandler) ArchiveSystemComponent(ctx context.Context, reque
 	return &resp, nil
 }
 
-func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
+func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 	makeConstraint := func(label, desc string) oapi.SystemComponentConstraint {
 		attr := oapi.SystemComponentConstraintAttributes{Label: label, Description: desc}
 		return oapi.SystemComponentConstraint{Id: uuid.New(), Attributes: attr}
@@ -53,14 +53,14 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 		return oapi.SystemAnalysisDiagramPosition{X: x, Y: y}
 	}
 
-	makeSignal := func(label, desc string) oapi.SystemComponentSignal {
+	makeSignal := func(label, desc string) *oapi.SystemComponentSignal {
 		attr := oapi.SystemComponentSignalAttributes{Label: label, Description: desc}
-		return oapi.SystemComponentSignal{Id: uuid.New(), Attributes: attr}
+		return &oapi.SystemComponentSignal{Id: uuid.New(), Attributes: attr}
 	}
 
-	makeControl := func(label, desc string) oapi.SystemComponentControl {
+	makeControl := func(label, desc string) *oapi.SystemComponentControl {
 		attr := oapi.SystemComponentControlAttributes{Label: label, Description: desc}
-		return oapi.SystemComponentControl{Id: uuid.New(), Attributes: attr}
+		return &oapi.SystemComponentControl{Id: uuid.New(), Attributes: attr}
 	}
 
 	makeAnalysisComponent := func(cmp oapi.SystemComponent, pos oapi.SystemAnalysisDiagramPosition) oapi.SystemAnalysisComponent {
@@ -68,13 +68,19 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 		return oapi.SystemAnalysisComponent{Id: uuid.New(), Attributes: attr}
 	}
 
-	makeRelationship := func(sId, tId uuid.UUID, desc string, feedback, controls []uuid.UUID) oapi.SystemAnalysisRelationship {
+	makeRelationship := func(sId, tId uuid.UUID, desc string, feedback *oapi.SystemComponentSignal, control *oapi.SystemComponentControl) oapi.SystemAnalysisRelationship {
 		attr := oapi.SystemAnalysisRelationshipAttributes{
-			SourceId:          sId,
-			TargetId:          tId,
-			Description:       desc,
-			FeedbackSignalIds: feedback,
-			ControlActionIds:  controls,
+			SourceId:        sId,
+			TargetId:        tId,
+			Description:     desc,
+			FeedbackSignals: make([]oapi.SystemComponentSignal, 0, 1),
+			ControlActions:  make([]oapi.SystemComponentControl, 0, 1),
+		}
+		if feedback != nil {
+			attr.FeedbackSignals = append(attr.FeedbackSignals, *feedback)
+		}
+		if control != nil {
+			attr.ControlActions = append(attr.ControlActions, *control)
 		}
 		return oapi.SystemAnalysisRelationship{Id: uuid.New(), Attributes: attr}
 	}
@@ -90,11 +96,11 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Validated Input", "Must validate the users form input"),
 				makeConstraint("Shows Error Feedback", "Must show feedback in the case of an error"),
 			},
-			Controls: []oapi.SystemComponentControl{
-				makeControl("Input Validation", "validates input with Zod"),
-				feErrHandlingControl,
-			},
-			Signals: []oapi.SystemComponentSignal{},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Input Validation", "validates input with Zod"),
+			//	feErrHandlingControl,
+			//},
+			//Signals: []oapi.SystemComponentSignal{},
 		},
 	}
 
@@ -110,18 +116,17 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Rate Limiting", "Rate limits requests to 1000 req/sec"),
 				makeConstraint("Request Timeouts", "Enforces 30s timeout"),
 			},
-			Controls: []oapi.SystemComponentControl{
-				makeControl("Request Throttling", "Configurable request throttling"),
-				circuitBreakerCtrl,
-			},
-			Signals: []oapi.SystemComponentSignal{
-				makeSignal("Validated Requests", "Requests allowed through gateway"),
-				apiErrorsSignal,
-			},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Request Throttling", "Configurable request throttling"),
+			//	circuitBreakerCtrl,
+			//},
+			//Signals: []oapi.SystemComponentSignal{
+			//	makeSignal("Validated Requests", "Requests allowed through gateway"),
+			//	apiErrorsSignal,
+			//},
 		},
 	}
 
-	transControl := makeControl("Transaction Verification", "Can verify transaction success")
 	retryControl := makeControl("Retry Mechanism", "Can retry requests")
 	paymentErrorSignal := makeSignal("Failed Payment", "payment request failed")
 	paymentSvc := oapi.SystemComponent{
@@ -134,11 +139,14 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Time Limit", "Must process requests within 5s"),
 				makeConstraint("Transactions Verified", "Must verify all transactions"),
 			},
-			Controls: []oapi.SystemComponentControl{transControl, retryControl},
-			Signals: []oapi.SystemComponentSignal{
-				makeSignal("Transaction Records", "Completed transaction data"),
-				paymentErrorSignal,
-			},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Transaction Verification", "Can verify transaction success"),
+			//	retryControl,
+			//},
+			//Signals: []oapi.SystemComponentSignal{
+			//	makeSignal("Transaction Records", "Completed transaction data"),
+			//	paymentErrorSignal,
+			//},
 		},
 	}
 
@@ -153,14 +161,14 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Connection Limit", "Max 100 connections"),
 				makeConstraint("ACID properties", "Must maintain ACID compliance"),
 			},
-			Controls: []oapi.SystemComponentControl{
-				makeControl("Connection Pooling", "configurable pool of connections"),
-				makeControl("Transaction Management", "group operations in transaction"),
-			},
-			Signals: []oapi.SystemComponentSignal{
-				transactionSignal,
-				makeSignal("Connection Status", "state of connection"),
-			},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Connection Pooling", "configurable pool of connections"),
+			//	makeControl("Transaction Management", "group operations in transaction"),
+			//},
+			//Signals: []oapi.SystemComponentSignal{
+			//	transactionSignal,
+			//	makeSignal("Connection Status", "state of connection"),
+			//},
 		},
 	}
 
@@ -174,13 +182,13 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Alerts Within 30s", "Must alert"),
 				makeConstraint("Tracks all transaction", "Must track all transactions"),
 			},
-			Controls: []oapi.SystemComponentControl{
-				makeControl("Alerting Configuration", "configurable alert rules"),
-				makeControl("Metric Collection", "Collects metrics"),
-			},
-			Signals: []oapi.SystemComponentSignal{
-				makeSignal("Alerts", "Alerts when rules met"),
-			},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Alerting Configuration", "configurable alert rules"),
+			//	makeControl("Metric Collection", "Collects metrics"),
+			//},
+			//Signals: []oapi.SystemComponentSignal{
+			//	makeSignal("Alerts", "Alerts when rules met"),
+			//},
 		},
 	}
 
@@ -195,14 +203,14 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 				makeConstraint("Uptime SLA", "99.99%"),
 				makeConstraint("Latency SLA", "2s response time"),
 			},
-			Controls: []oapi.SystemComponentControl{
-				makeControl("Failover", "able to change provider"),
-				makeControl("Health Checks", "scrape health status"),
-			},
-			Signals: []oapi.SystemComponentSignal{
-				transResultSignal,
-				makeSignal("Provider Status", "health status"),
-			},
+			//Controls: []oapi.SystemComponentControl{
+			//	makeControl("Failover", "able to change provider"),
+			//	makeControl("Health Checks", "scrape health status"),
+			//},
+			//Signals: []oapi.SystemComponentSignal{
+			//	transResultSignal,
+			//	makeSignal("Provider Status", "health status"),
+			//},
 		},
 	}
 
@@ -216,16 +224,16 @@ func makeFakeSystemAnalysis() oapi.ScopedSystemAnalysis {
 	}
 
 	relationships := []oapi.SystemAnalysisRelationship{
-		makeRelationship(paymentUi.Id, apiGateway.Id, "User Payment Requests", []uuid.UUID{apiErrorsSignal.Id}, []uuid.UUID{feErrHandlingControl.Id}),
-		makeRelationship(apiGateway.Id, paymentSvc.Id, "Validated Payment Requests", []uuid.UUID{paymentErrorSignal.Id}, []uuid.UUID{circuitBreakerCtrl.Id}),
-		makeRelationship(paymentSvc.Id, db.Id, "transaction records", []uuid.UUID{transactionSignal.Id}, []uuid.UUID{retryControl.Id}),
-		makeRelationship(paymentSvc.Id, paymentsMonitor.Id, "metrics", []uuid.UUID{}, []uuid.UUID{}),
-		makeRelationship(paymentSvc.Id, extPaymentsProvider.Id, "provider API calls", []uuid.UUID{transResultSignal.Id}, []uuid.UUID{}),
+		makeRelationship(paymentUi.Id, apiGateway.Id, "User Payment Requests", apiErrorsSignal, feErrHandlingControl),
+		makeRelationship(apiGateway.Id, paymentSvc.Id, "Validated Payment Requests", paymentErrorSignal, circuitBreakerCtrl),
+		makeRelationship(paymentSvc.Id, db.Id, "transaction records", transactionSignal, retryControl),
+		makeRelationship(paymentSvc.Id, paymentsMonitor.Id, "metrics", nil, nil),
+		makeRelationship(paymentSvc.Id, extPaymentsProvider.Id, "provider API calls", transResultSignal, nil),
 	}
 
-	return oapi.ScopedSystemAnalysis{
+	return oapi.SystemAnalysis{
 		Id: uuid.New(),
-		Attributes: oapi.ScopedSystemAnalysisAttributes{
+		Attributes: oapi.SystemAnalysisAttributes{
 			Components:    components,
 			Relationships: relationships,
 		},
