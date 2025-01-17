@@ -91,36 +91,6 @@ func IncidentIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldNotIn(FieldIncidentID, vs...))
 }
 
-// IncidentIDGT applies the GT predicate on the "incident_id" field.
-func IncidentIDGT(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldGT(FieldIncidentID, v))
-}
-
-// IncidentIDGTE applies the GTE predicate on the "incident_id" field.
-func IncidentIDGTE(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldGTE(FieldIncidentID, v))
-}
-
-// IncidentIDLT applies the LT predicate on the "incident_id" field.
-func IncidentIDLT(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldLT(FieldIncidentID, v))
-}
-
-// IncidentIDLTE applies the LTE predicate on the "incident_id" field.
-func IncidentIDLTE(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldLTE(FieldIncidentID, v))
-}
-
-// IncidentIDIsNil applies the IsNil predicate on the "incident_id" field.
-func IncidentIDIsNil() predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldIsNull(FieldIncidentID))
-}
-
-// IncidentIDNotNil applies the NotNil predicate on the "incident_id" field.
-func IncidentIDNotNil() predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNotNull(FieldIncidentID))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldCreatedAt, v))
@@ -199,6 +169,29 @@ func UpdatedAtLT(v time.Time) predicate.SystemAnalysis {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasIncident applies the HasEdge predicate on the "incident" edge.
+func HasIncident() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIncidentWith applies the HasEdge predicate on the "incident" edge with a given conditions (other predicates).
+func HasIncidentWith(preds ...predicate.Incident) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newIncidentStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasComponents applies the HasEdge predicate on the "components" edge.

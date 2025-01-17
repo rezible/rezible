@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -26,6 +27,7 @@ type SystemAnalysisQuery struct {
 	order                  []systemanalysis.OrderOption
 	inters                 []Interceptor
 	predicates             []predicate.SystemAnalysis
+	withIncident           *IncidentQuery
 	withComponents         *SystemComponentQuery
 	withAnalysisComponents *SystemAnalysisComponentQuery
 	modifiers              []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (saq *SystemAnalysisQuery) Unique(unique bool) *SystemAnalysisQuery {
 func (saq *SystemAnalysisQuery) Order(o ...systemanalysis.OrderOption) *SystemAnalysisQuery {
 	saq.order = append(saq.order, o...)
 	return saq
+}
+
+// QueryIncident chains the current query on the "incident" edge.
+func (saq *SystemAnalysisQuery) QueryIncident() *IncidentQuery {
+	query := (&IncidentClient{config: saq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := saq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := saq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.IncidentTable, systemanalysis.IncidentColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
@@ -301,6 +325,7 @@ func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		order:                  append([]systemanalysis.OrderOption{}, saq.order...),
 		inters:                 append([]Interceptor{}, saq.inters...),
 		predicates:             append([]predicate.SystemAnalysis{}, saq.predicates...),
+		withIncident:           saq.withIncident.Clone(),
 		withComponents:         saq.withComponents.Clone(),
 		withAnalysisComponents: saq.withAnalysisComponents.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		path:      saq.path,
 		modifiers: append([]func(*sql.Selector){}, saq.modifiers...),
 	}
+}
+
+// WithIncident tells the query-builder to eager-load the nodes that are connected to
+// the "incident" edge. The optional arguments are used to configure the query builder of the edge.
+func (saq *SystemAnalysisQuery) WithIncident(opts ...func(*IncidentQuery)) *SystemAnalysisQuery {
+	query := (&IncidentClient{config: saq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	saq.withIncident = query
+	return saq
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
@@ -410,7 +446,8 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*SystemAnalysis{}
 		_spec       = saq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			saq.withIncident != nil,
 			saq.withComponents != nil,
 			saq.withAnalysisComponents != nil,
 		}
@@ -436,6 +473,12 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := saq.withIncident; query != nil {
+		if err := saq.loadIncident(ctx, query, nodes, nil,
+			func(n *SystemAnalysis, e *Incident) { n.Edges.Incident = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := saq.withComponents; query != nil {
 		if err := saq.loadComponents(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Components = []*SystemComponent{} },
@@ -455,6 +498,35 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
+func (saq *SystemAnalysisQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Incident)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemAnalysis)
+	for i := range nodes {
+		fk := nodes[i].IncidentID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(incident.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (saq *SystemAnalysisQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemComponent)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemAnalysis)
@@ -574,6 +646,9 @@ func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemanalysis.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if saq.withIncident != nil {
+			_spec.Node.AddColumnOnce(systemanalysis.FieldIncidentID)
 		}
 	}
 	if ps := saq.predicates; len(ps) > 0 {

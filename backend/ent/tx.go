@@ -102,14 +102,14 @@ type Tx struct {
 	SystemComponentConstraint *SystemComponentConstraintClient
 	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
 	SystemComponentControl *SystemComponentControlClient
-	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
-	SystemComponentRelationship *SystemComponentRelationshipClient
-	// SystemComponentRelationshipControlAction is the client for interacting with the SystemComponentRelationshipControlAction builders.
-	SystemComponentRelationshipControlAction *SystemComponentRelationshipControlActionClient
-	// SystemComponentRelationshipFeedback is the client for interacting with the SystemComponentRelationshipFeedback builders.
-	SystemComponentRelationshipFeedback *SystemComponentRelationshipFeedbackClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
+	// SystemRelationship is the client for interacting with the SystemRelationship builders.
+	SystemRelationship *SystemRelationshipClient
+	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
+	SystemRelationshipControlAction *SystemRelationshipControlActionClient
+	// SystemRelationshipFeedback is the client for interacting with the SystemRelationshipFeedback builders.
+	SystemRelationshipFeedback *SystemRelationshipFeedbackClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -292,10 +292,10 @@ func (tx *Tx) init() {
 	tx.SystemComponent = NewSystemComponentClient(tx.config)
 	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
 	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
-	tx.SystemComponentRelationship = NewSystemComponentRelationshipClient(tx.config)
-	tx.SystemComponentRelationshipControlAction = NewSystemComponentRelationshipControlActionClient(tx.config)
-	tx.SystemComponentRelationshipFeedback = NewSystemComponentRelationshipFeedbackClient(tx.config)
 	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
+	tx.SystemRelationship = NewSystemRelationshipClient(tx.config)
+	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
+	tx.SystemRelationshipFeedback = NewSystemRelationshipFeedbackClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.User = NewUserClient(tx.config)

@@ -35,6 +35,8 @@ const (
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
+	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
+	FieldAnalysisID = "analysis_id"
 	// EdgeEnvironments holds the string denoting the environments edge name in mutations.
 	EdgeEnvironments = "environments"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
@@ -45,14 +47,16 @@ const (
 	EdgeTeamAssignments = "team_assignments"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
-	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
-	EdgeLinkedIncidents = "linked_incidents"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
+	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
+	EdgeSystemAnalysis = "system_analysis"
+	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
+	EdgeLinkedIncidents = "linked_incidents"
 	// EdgeFieldSelections holds the string denoting the field_selections edge name in mutations.
 	EdgeFieldSelections = "field_selections"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
@@ -100,8 +104,6 @@ const (
 	RoleAssignmentsInverseTable = "incident_role_assignments"
 	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
 	RoleAssignmentsColumn = "incident_id"
-	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
-	LinkedIncidentsTable = "incident_links"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -123,6 +125,15 @@ const (
 	EventsInverseTable = "incident_events"
 	// EventsColumn is the table column denoting the events relation/edge.
 	EventsColumn = "incident_id"
+	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
+	SystemAnalysisTable = "system_analyses"
+	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
+	SystemAnalysisInverseTable = "system_analyses"
+	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
+	SystemAnalysisColumn = "incident_id"
+	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
+	LinkedIncidentsTable = "incident_links"
 	// FieldSelectionsTable is the table that holds the field_selections relation/edge. The primary key declared below.
 	FieldSelectionsTable = "incident_field_selections"
 	// FieldSelectionsInverseTable is the table name for the IncidentFieldOption entity.
@@ -175,6 +186,7 @@ var Columns = []string{
 	FieldChatChannelID,
 	FieldSeverityID,
 	FieldTypeID,
+	FieldAnalysisID,
 }
 
 var (
@@ -275,6 +287,11 @@ func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
 }
 
+// ByAnalysisID orders the results by the analysis_id field.
+func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
+}
+
 // ByEnvironmentsCount orders the results by environments count.
 func ByEnvironmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -331,24 +348,17 @@ func ByRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByLinkedIncidentsCount orders the results by linked_incidents count.
-func ByLinkedIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRetrospectiveCount orders the results by retrospective count.
+func ByRetrospectiveCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newLinkedIncidentsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveStep(), opts...)
 	}
 }
 
-// ByLinkedIncidents orders the results by linked_incidents terms.
-func ByLinkedIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByRetrospective orders the results by retrospective terms.
+func ByRetrospective(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newLinkedIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByRetrospectiveField orders the results by retrospective field.
-func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -377,6 +387,34 @@ func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySystemAnalysisCount orders the results by system_analysis count.
+func BySystemAnalysisCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysisStep(), opts...)
+	}
+}
+
+// BySystemAnalysis orders the results by system_analysis terms.
+func BySystemAnalysis(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByLinkedIncidentsCount orders the results by linked_incidents count.
+func ByLinkedIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newLinkedIncidentsStep(), opts...)
+	}
+}
+
+// ByLinkedIncidents orders the results by linked_incidents terms.
+func ByLinkedIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLinkedIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -498,18 +536,11 @@ func newRoleAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
 	)
 }
-func newLinkedIncidentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
-	)
-}
 func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
+		sqlgraph.Edge(sqlgraph.O2M, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
 func newMilestonesStep() *sqlgraph.Step {
@@ -524,6 +555,20 @@ func newEventsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
+	)
+}
+func newSystemAnalysisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
+	)
+}
+func newLinkedIncidentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
 	)
 }
 func newFieldSelectionsStep() *sqlgraph.Step {

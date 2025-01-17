@@ -210,7 +210,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ru.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
@@ -223,7 +223,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := ru.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
@@ -513,7 +513,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if ruo.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
@@ -526,7 +526,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if nodes := ruo.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.M2O,
 			Inverse: true,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},

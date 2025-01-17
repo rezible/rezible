@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
@@ -32,19 +33,32 @@ type SystemAnalysis struct {
 
 // SystemAnalysisEdges holds the relations/edges for other nodes in the graph.
 type SystemAnalysisEdges struct {
+	// Incident holds the value of the incident edge.
+	Incident *Incident `json:"incident,omitempty"`
 	// Components holds the value of the components edge.
 	Components []*SystemComponent `json:"components,omitempty"`
 	// AnalysisComponents holds the value of the analysis_components edge.
 	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// IncidentOrErr returns the Incident value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEdges) IncidentOrErr() (*Incident, error) {
+	if e.Incident != nil {
+		return e.Incident, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: incident.Label}
+	}
+	return nil, &NotLoadedError{edge: "incident"}
 }
 
 // ComponentsOrErr returns the Components value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) ComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Components, nil
 	}
 	return nil, &NotLoadedError{edge: "components"}
@@ -53,7 +67,7 @@ func (e SystemAnalysisEdges) ComponentsOrErr() ([]*SystemComponent, error) {
 // AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.AnalysisComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "analysis_components"}
@@ -118,6 +132,11 @@ func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (sa *SystemAnalysis) Value(name string) (ent.Value, error) {
 	return sa.selectValues.Get(name)
+}
+
+// QueryIncident queries the "incident" edge of the SystemAnalysis entity.
+func (sa *SystemAnalysis) QueryIncident() *IncidentQuery {
+	return NewSystemAnalysisClient(sa.config).QueryIncident(sa)
 }
 
 // QueryComponents queries the "components" edge of the SystemAnalysis entity.

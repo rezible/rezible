@@ -28,6 +28,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -43,10 +44,11 @@ type IncidentQuery struct {
 	withType            *IncidentTypeQuery
 	withTeamAssignments *IncidentTeamAssignmentQuery
 	withRoleAssignments *IncidentRoleAssignmentQuery
-	withLinkedIncidents *IncidentQuery
 	withRetrospective   *RetrospectiveQuery
 	withMilestones      *IncidentMilestoneQuery
 	withEvents          *IncidentEventQuery
+	withSystemAnalysis  *SystemAnalysisQuery
+	withLinkedIncidents *IncidentQuery
 	withFieldSelections *IncidentFieldOptionQuery
 	withTasks           *TaskQuery
 	withTagAssignments  *IncidentTagQuery
@@ -200,28 +202,6 @@ func (iq *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return query
 }
 
-// QueryLinkedIncidents chains the current query on the "linked_incidents" edge.
-func (iq *IncidentQuery) QueryLinkedIncidents() *IncidentQuery {
-	query := (&IncidentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.LinkedIncidentsTable, incident.LinkedIncidentsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryRetrospective chains the current query on the "retrospective" edge.
 func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: iq.config}).Query()
@@ -236,7 +216,7 @@ func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -281,6 +261,50 @@ func (iq *IncidentQuery) QueryEvents() *IncidentEventQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySystemAnalysis chains the current query on the "system_analysis" edge.
+func (iq *IncidentQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.SystemAnalysisTable, incident.SystemAnalysisColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryLinkedIncidents chains the current query on the "linked_incidents" edge.
+func (iq *IncidentQuery) QueryLinkedIncidents() *IncidentQuery {
+	query := (&IncidentClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, incident.LinkedIncidentsTable, incident.LinkedIncidentsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -617,10 +641,11 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		withType:            iq.withType.Clone(),
 		withTeamAssignments: iq.withTeamAssignments.Clone(),
 		withRoleAssignments: iq.withRoleAssignments.Clone(),
-		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
 		withRetrospective:   iq.withRetrospective.Clone(),
 		withMilestones:      iq.withMilestones.Clone(),
 		withEvents:          iq.withEvents.Clone(),
+		withSystemAnalysis:  iq.withSystemAnalysis.Clone(),
+		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
 		withFieldSelections: iq.withFieldSelections.Clone(),
 		withTasks:           iq.withTasks.Clone(),
 		withTagAssignments:  iq.withTagAssignments.Clone(),
@@ -689,17 +714,6 @@ func (iq *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmen
 	return iq
 }
 
-// WithLinkedIncidents tells the query-builder to eager-load the nodes that are connected to
-// the "linked_incidents" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithLinkedIncidents(opts ...func(*IncidentQuery)) *IncidentQuery {
-	query := (&IncidentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withLinkedIncidents = query
-	return iq
-}
-
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
 // the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *IncidentQuery {
@@ -730,6 +744,28 @@ func (iq *IncidentQuery) WithEvents(opts ...func(*IncidentEventQuery)) *Incident
 		opt(query)
 	}
 	iq.withEvents = query
+	return iq
+}
+
+// WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
+// the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *IncidentQuery {
+	query := (&SystemAnalysisClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withSystemAnalysis = query
+	return iq
+}
+
+// WithLinkedIncidents tells the query-builder to eager-load the nodes that are connected to
+// the "linked_incidents" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithLinkedIncidents(opts ...func(*IncidentQuery)) *IncidentQuery {
+	query := (&IncidentClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withLinkedIncidents = query
 	return iq
 }
 
@@ -877,16 +913,17 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [15]bool{
+		loadedTypes = [16]bool{
 			iq.withEnvironments != nil,
 			iq.withSeverity != nil,
 			iq.withType != nil,
 			iq.withTeamAssignments != nil,
 			iq.withRoleAssignments != nil,
-			iq.withLinkedIncidents != nil,
 			iq.withRetrospective != nil,
 			iq.withMilestones != nil,
 			iq.withEvents != nil,
+			iq.withSystemAnalysis != nil,
+			iq.withLinkedIncidents != nil,
 			iq.withFieldSelections != nil,
 			iq.withTasks != nil,
 			iq.withTagAssignments != nil,
@@ -953,16 +990,10 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := iq.withLinkedIncidents; query != nil {
-		if err := iq.loadLinkedIncidents(ctx, query, nodes,
-			func(n *Incident) { n.Edges.LinkedIncidents = []*Incident{} },
-			func(n *Incident, e *Incident) { n.Edges.LinkedIncidents = append(n.Edges.LinkedIncidents, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := iq.withRetrospective; query != nil {
-		if err := iq.loadRetrospective(ctx, query, nodes, nil,
-			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
+		if err := iq.loadRetrospective(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
+			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -977,6 +1008,20 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := iq.loadEvents(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Events = []*IncidentEvent{} },
 			func(n *Incident, e *IncidentEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withSystemAnalysis; query != nil {
+		if err := iq.loadSystemAnalysis(ctx, query, nodes,
+			func(n *Incident) { n.Edges.SystemAnalysis = []*SystemAnalysis{} },
+			func(n *Incident, e *SystemAnalysis) { n.Edges.SystemAnalysis = append(n.Edges.SystemAnalysis, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withLinkedIncidents; query != nil {
+		if err := iq.loadLinkedIncidents(ctx, query, nodes,
+			func(n *Incident) { n.Edges.LinkedIncidents = []*Incident{} },
+			func(n *Incident, e *Incident) { n.Edges.LinkedIncidents = append(n.Edges.LinkedIncidents, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1206,73 +1251,15 @@ func (iq *IncidentQuery) loadRoleAssignments(ctx context.Context, query *Inciden
 	}
 	return nil
 }
-func (iq *IncidentQuery) loadLinkedIncidents(ctx context.Context, query *IncidentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Incident)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.LinkedIncidentsTable)
-		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(incident.LinkedIncidentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incident.LinkedIncidentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.LinkedIncidentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Incident](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "linked_incidents" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Retrospective)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
 	}
 	query.withFKs = true
 	query.Where(predicate.Retrospective(func(s *sql.Selector) {
@@ -1352,6 +1339,97 @@ func (iq *IncidentQuery) loadEvents(ctx context.Context, query *IncidentEventQue
 			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *SystemAnalysis)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(systemanalysis.FieldIncidentID)
+	}
+	query.Where(predicate.SystemAnalysis(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.SystemAnalysisColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadLinkedIncidents(ctx context.Context, query *IncidentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Incident)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Incident)
+	nids := make(map[uuid.UUID]map[*Incident]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(incident.LinkedIncidentsTable)
+		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(incident.LinkedIncidentsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(incident.LinkedIncidentsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(incident.LinkedIncidentsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Incident](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "linked_incidents" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

@@ -111,6 +111,11 @@ func TypeID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTypeID, v))
 }
 
+// AnalysisID applies equality check predicate on the "analysis_id" field. It's identical to AnalysisIDEQ.
+func AnalysisID(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldAnalysisID, v))
+}
+
 // SlugEQ applies the EQ predicate on the "slug" field.
 func SlugEQ(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
@@ -636,6 +641,46 @@ func TypeIDNotNil() predicate.Incident {
 	return predicate.Incident(sql.FieldNotNull(FieldTypeID))
 }
 
+// AnalysisIDEQ applies the EQ predicate on the "analysis_id" field.
+func AnalysisIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldAnalysisID, v))
+}
+
+// AnalysisIDNEQ applies the NEQ predicate on the "analysis_id" field.
+func AnalysisIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldAnalysisID, v))
+}
+
+// AnalysisIDIn applies the In predicate on the "analysis_id" field.
+func AnalysisIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldAnalysisID, vs...))
+}
+
+// AnalysisIDNotIn applies the NotIn predicate on the "analysis_id" field.
+func AnalysisIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldAnalysisID, vs...))
+}
+
+// AnalysisIDGT applies the GT predicate on the "analysis_id" field.
+func AnalysisIDGT(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldAnalysisID, v))
+}
+
+// AnalysisIDGTE applies the GTE predicate on the "analysis_id" field.
+func AnalysisIDGTE(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldAnalysisID, v))
+}
+
+// AnalysisIDLT applies the LT predicate on the "analysis_id" field.
+func AnalysisIDLT(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldAnalysisID, v))
+}
+
+// AnalysisIDLTE applies the LTE predicate on the "analysis_id" field.
+func AnalysisIDLTE(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldAnalysisID, v))
+}
+
 // HasEnvironments applies the HasEdge predicate on the "environments" edge.
 func HasEnvironments() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -751,35 +796,12 @@ func HasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate
 	})
 }
 
-// HasLinkedIncidents applies the HasEdge predicate on the "linked_incidents" edge.
-func HasLinkedIncidents() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasLinkedIncidentsWith applies the HasEdge predicate on the "linked_incidents" edge with a given conditions (other predicates).
-func HasLinkedIncidentsWith(preds ...predicate.Incident) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newLinkedIncidentsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
 func HasRetrospective() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, RetrospectiveTable, RetrospectiveColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -835,6 +857,52 @@ func HasEvents() predicate.Incident {
 func HasEventsWith(preds ...predicate.IncidentEvent) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := newEventsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
+func HasSystemAnalysis() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
+func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newSystemAnalysisStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasLinkedIncidents applies the HasEdge predicate on the "linked_incidents" edge.
+func HasLinkedIncidents() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, LinkedIncidentsTable, LinkedIncidentsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasLinkedIncidentsWith applies the HasEdge predicate on the "linked_incidents" edge with a given conditions (other predicates).
+func HasLinkedIncidentsWith(preds ...predicate.Incident) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newLinkedIncidentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

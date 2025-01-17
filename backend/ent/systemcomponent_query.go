@@ -21,27 +21,27 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemrelationship"
 )
 
 // SystemComponentQuery is the builder for querying SystemComponent entities.
 type SystemComponentQuery struct {
 	config
-	ctx                        *QueryContext
-	order                      []systemcomponent.OrderOption
-	inters                     []Interceptor
-	predicates                 []predicate.SystemComponent
-	withAnalyses               *SystemAnalysisQuery
-	withRelated                *SystemComponentQuery
-	withEvents                 *IncidentEventQuery
-	withConstraints            *SystemComponentConstraintQuery
-	withControls               *SystemComponentControlQuery
-	withSignals                *SystemComponentSignalQuery
-	withAnalysisComponents     *SystemAnalysisComponentQuery
-	withComponentRelationships *SystemComponentRelationshipQuery
-	withEventComponents        *IncidentEventSystemComponentQuery
-	modifiers                  []func(*sql.Selector)
+	ctx                    *QueryContext
+	order                  []systemcomponent.OrderOption
+	inters                 []Interceptor
+	predicates             []predicate.SystemComponent
+	withAnalyses           *SystemAnalysisQuery
+	withRelated            *SystemComponentQuery
+	withEvents             *IncidentEventQuery
+	withConstraints        *SystemComponentConstraintQuery
+	withControls           *SystemComponentControlQuery
+	withSignals            *SystemComponentSignalQuery
+	withAnalysisComponents *SystemAnalysisComponentQuery
+	withRelationships      *SystemRelationshipQuery
+	withEventComponents    *IncidentEventSystemComponentQuery
+	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -232,9 +232,9 @@ func (scq *SystemComponentQuery) QueryAnalysisComponents() *SystemAnalysisCompon
 	return query
 }
 
-// QueryComponentRelationships chains the current query on the "component_relationships" edge.
-func (scq *SystemComponentQuery) QueryComponentRelationships() *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: scq.config}).Query()
+// QueryRelationships chains the current query on the "relationships" edge.
+func (scq *SystemComponentQuery) QueryRelationships() *SystemRelationshipQuery {
+	query := (&SystemRelationshipClient{config: scq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := scq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -245,8 +245,8 @@ func (scq *SystemComponentQuery) QueryComponentRelationships() *SystemComponentR
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, selector),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ComponentRelationshipsTable, systemcomponent.ComponentRelationshipsColumn),
+			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.RelationshipsTable, systemcomponent.RelationshipsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
 		return fromU, nil
@@ -463,20 +463,20 @@ func (scq *SystemComponentQuery) Clone() *SystemComponentQuery {
 		return nil
 	}
 	return &SystemComponentQuery{
-		config:                     scq.config,
-		ctx:                        scq.ctx.Clone(),
-		order:                      append([]systemcomponent.OrderOption{}, scq.order...),
-		inters:                     append([]Interceptor{}, scq.inters...),
-		predicates:                 append([]predicate.SystemComponent{}, scq.predicates...),
-		withAnalyses:               scq.withAnalyses.Clone(),
-		withRelated:                scq.withRelated.Clone(),
-		withEvents:                 scq.withEvents.Clone(),
-		withConstraints:            scq.withConstraints.Clone(),
-		withControls:               scq.withControls.Clone(),
-		withSignals:                scq.withSignals.Clone(),
-		withAnalysisComponents:     scq.withAnalysisComponents.Clone(),
-		withComponentRelationships: scq.withComponentRelationships.Clone(),
-		withEventComponents:        scq.withEventComponents.Clone(),
+		config:                 scq.config,
+		ctx:                    scq.ctx.Clone(),
+		order:                  append([]systemcomponent.OrderOption{}, scq.order...),
+		inters:                 append([]Interceptor{}, scq.inters...),
+		predicates:             append([]predicate.SystemComponent{}, scq.predicates...),
+		withAnalyses:           scq.withAnalyses.Clone(),
+		withRelated:            scq.withRelated.Clone(),
+		withEvents:             scq.withEvents.Clone(),
+		withConstraints:        scq.withConstraints.Clone(),
+		withControls:           scq.withControls.Clone(),
+		withSignals:            scq.withSignals.Clone(),
+		withAnalysisComponents: scq.withAnalysisComponents.Clone(),
+		withRelationships:      scq.withRelationships.Clone(),
+		withEventComponents:    scq.withEventComponents.Clone(),
 		// clone intermediate query.
 		sql:       scq.sql.Clone(),
 		path:      scq.path,
@@ -561,14 +561,14 @@ func (scq *SystemComponentQuery) WithAnalysisComponents(opts ...func(*SystemAnal
 	return scq
 }
 
-// WithComponentRelationships tells the query-builder to eager-load the nodes that are connected to
-// the "component_relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (scq *SystemComponentQuery) WithComponentRelationships(opts ...func(*SystemComponentRelationshipQuery)) *SystemComponentQuery {
-	query := (&SystemComponentRelationshipClient{config: scq.config}).Query()
+// WithRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (scq *SystemComponentQuery) WithRelationships(opts ...func(*SystemRelationshipQuery)) *SystemComponentQuery {
+	query := (&SystemRelationshipClient{config: scq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	scq.withComponentRelationships = query
+	scq.withRelationships = query
 	return scq
 }
 
@@ -669,7 +669,7 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 			scq.withControls != nil,
 			scq.withSignals != nil,
 			scq.withAnalysisComponents != nil,
-			scq.withComponentRelationships != nil,
+			scq.withRelationships != nil,
 			scq.withEventComponents != nil,
 		}
 	)
@@ -747,11 +747,11 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 			return nil, err
 		}
 	}
-	if query := scq.withComponentRelationships; query != nil {
-		if err := scq.loadComponentRelationships(ctx, query, nodes,
-			func(n *SystemComponent) { n.Edges.ComponentRelationships = []*SystemComponentRelationship{} },
-			func(n *SystemComponent, e *SystemComponentRelationship) {
-				n.Edges.ComponentRelationships = append(n.Edges.ComponentRelationships, e)
+	if query := scq.withRelationships; query != nil {
+		if err := scq.loadRelationships(ctx, query, nodes,
+			func(n *SystemComponent) { n.Edges.Relationships = []*SystemRelationship{} },
+			func(n *SystemComponent, e *SystemRelationship) {
+				n.Edges.Relationships = append(n.Edges.Relationships, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -1071,7 +1071,7 @@ func (scq *SystemComponentQuery) loadAnalysisComponents(ctx context.Context, que
 	}
 	return nil
 }
-func (scq *SystemComponentQuery) loadComponentRelationships(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemComponent, init func(*SystemComponent), assign func(*SystemComponent, *SystemComponentRelationship)) error {
+func (scq *SystemComponentQuery) loadRelationships(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemComponent, init func(*SystemComponent), assign func(*SystemComponent, *SystemRelationship)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponent)
 	for i := range nodes {
@@ -1082,20 +1082,20 @@ func (scq *SystemComponentQuery) loadComponentRelationships(ctx context.Context,
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemcomponentrelationship.FieldSourceID)
+		query.ctx.AppendFieldOnce(systemrelationship.FieldSourceComponentID)
 	}
-	query.Where(predicate.SystemComponentRelationship(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemcomponent.ComponentRelationshipsColumn), fks...))
+	query.Where(predicate.SystemRelationship(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemcomponent.RelationshipsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.SourceID
+		fk := n.SourceComponentID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "source_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "source_component_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

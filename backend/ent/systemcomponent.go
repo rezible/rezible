@@ -53,8 +53,8 @@ type SystemComponentEdges struct {
 	Signals []*SystemComponentSignal `json:"signals,omitempty"`
 	// AnalysisComponents holds the value of the analysis_components edge.
 	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
-	// ComponentRelationships holds the value of the component_relationships edge.
-	ComponentRelationships []*SystemComponentRelationship `json:"component_relationships,omitempty"`
+	// Relationships holds the value of the relationships edge.
+	Relationships []*SystemRelationship `json:"relationships,omitempty"`
 	// EventComponents holds the value of the event_components edge.
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -125,13 +125,13 @@ func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisCompon
 	return nil, &NotLoadedError{edge: "analysis_components"}
 }
 
-// ComponentRelationshipsOrErr returns the ComponentRelationships value or an error if the edge
+// RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) ComponentRelationshipsOrErr() ([]*SystemComponentRelationship, error) {
+func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemRelationship, error) {
 	if e.loadedTypes[7] {
-		return e.ComponentRelationships, nil
+		return e.Relationships, nil
 	}
-	return nil, &NotLoadedError{edge: "component_relationships"}
+	return nil, &NotLoadedError{edge: "relationships"}
 }
 
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
@@ -263,9 +263,9 @@ func (sc *SystemComponent) QueryAnalysisComponents() *SystemAnalysisComponentQue
 	return NewSystemComponentClient(sc.config).QueryAnalysisComponents(sc)
 }
 
-// QueryComponentRelationships queries the "component_relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryComponentRelationships() *SystemComponentRelationshipQuery {
-	return NewSystemComponentClient(sc.config).QueryComponentRelationships(sc)
+// QueryRelationships queries the "relationships" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryRelationships() *SystemRelationshipQuery {
+	return NewSystemComponentClient(sc.config).QueryRelationships(sc)
 }
 
 // QueryEventComponents queries the "event_components" edge of the SystemComponent entity.

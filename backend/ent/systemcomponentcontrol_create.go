@@ -15,7 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemcomponentrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemrelationship"
+	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
 // SystemComponentControlCreate is the builder for creating a SystemComponentControl entity.
@@ -79,14 +80,29 @@ func (sccc *SystemComponentControlCreate) SetComponent(s *SystemComponent) *Syst
 	return sccc.SetComponentID(s.ID)
 }
 
-// AddControlActionIDs adds the "control_actions" edge to the SystemComponentRelationshipControlAction entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemRelationship entity by IDs.
+func (sccc *SystemComponentControlCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlCreate {
+	sccc.mutation.AddRelationshipIDs(ids...)
+	return sccc
+}
+
+// AddRelationships adds the "relationships" edges to the SystemRelationship entity.
+func (sccc *SystemComponentControlCreate) AddRelationships(s ...*SystemRelationship) *SystemComponentControlCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccc.AddRelationshipIDs(ids...)
+}
+
+// AddControlActionIDs adds the "control_actions" edge to the SystemRelationshipControlAction entity by IDs.
 func (sccc *SystemComponentControlCreate) AddControlActionIDs(ids ...uuid.UUID) *SystemComponentControlCreate {
 	sccc.mutation.AddControlActionIDs(ids...)
 	return sccc
 }
 
-// AddControlActions adds the "control_actions" edges to the SystemComponentRelationshipControlAction entity.
-func (sccc *SystemComponentControlCreate) AddControlActions(s ...*SystemComponentRelationshipControlAction) *SystemComponentControlCreate {
+// AddControlActions adds the "control_actions" edges to the SystemRelationshipControlAction entity.
+func (sccc *SystemComponentControlCreate) AddControlActions(s ...*SystemRelationshipControlAction) *SystemComponentControlCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -211,6 +227,29 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 		_node.ComponentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := sccc.mutation.RelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentcontrol.RelationshipsTable,
+			Columns: systemcomponentcontrol.RelationshipsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipControlActionCreate{config: sccc.config, mutation: newSystemRelationshipControlActionMutation(sccc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := sccc.mutation.ControlActionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -219,7 +258,7 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 			Columns: []string{systemcomponentcontrol.ControlActionsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationshipcontrolaction.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

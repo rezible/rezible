@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -136,6 +137,12 @@ func (ic *IncidentCreate) SetNillableTypeID(u *uuid.UUID) *IncidentCreate {
 	return ic
 }
 
+// SetAnalysisID sets the "analysis_id" field.
+func (ic *IncidentCreate) SetAnalysisID(u uuid.UUID) *IncidentCreate {
+	ic.mutation.SetAnalysisID(u)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *IncidentCreate) SetID(u uuid.UUID) *IncidentCreate {
 	ic.mutation.SetID(u)
@@ -205,38 +212,19 @@ func (ic *IncidentCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *Inci
 	return ic.AddRoleAssignmentIDs(ids...)
 }
 
-// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
-func (ic *IncidentCreate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddLinkedIncidentIDs(ids...)
+// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
+func (ic *IncidentCreate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddRetrospectiveIDs(ids...)
 	return ic
 }
 
-// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
-func (ic *IncidentCreate) AddLinkedIncidents(i ...*Incident) *IncidentCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
+func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return ic.AddLinkedIncidentIDs(ids...)
-}
-
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (ic *IncidentCreate) SetRetrospectiveID(id uuid.UUID) *IncidentCreate {
-	ic.mutation.SetRetrospectiveID(id)
-	return ic
-}
-
-// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (ic *IncidentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentCreate {
-	if id != nil {
-		ic = ic.SetRetrospectiveID(*id)
-	}
-	return ic
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (ic *IncidentCreate) SetRetrospective(r *Retrospective) *IncidentCreate {
-	return ic.SetRetrospectiveID(r.ID)
+	return ic.AddRetrospectiveIDs(ids...)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -267,6 +255,36 @@ func (ic *IncidentCreate) AddEvents(i ...*IncidentEvent) *IncidentCreate {
 		ids[j] = i[j].ID
 	}
 	return ic.AddEventIDs(ids...)
+}
+
+// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
+func (ic *IncidentCreate) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddSystemAnalysiIDs(ids...)
+	return ic
+}
+
+// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
+func (ic *IncidentCreate) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ic.AddSystemAnalysiIDs(ids...)
+}
+
+// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
+func (ic *IncidentCreate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddLinkedIncidentIDs(ids...)
+	return ic
+}
+
+// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
+func (ic *IncidentCreate) AddLinkedIncidents(i ...*Incident) *IncidentCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ic.AddLinkedIncidentIDs(ids...)
 }
 
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
@@ -430,6 +448,9 @@ func (ic *IncidentCreate) check() error {
 	if _, ok := ic.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Incident.provider_id"`)}
 	}
+	if _, ok := ic.mutation.AnalysisID(); !ok {
+		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "Incident.analysis_id"`)}
+	}
 	return nil
 }
 
@@ -501,6 +522,10 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
+	}
+	if value, ok := ic.mutation.AnalysisID(); ok {
+		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
+		_node.AnalysisID = value
 	}
 	if nodes := ic.mutation.EnvironmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -584,25 +609,9 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ic.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ic.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
@@ -641,6 +650,38 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -946,6 +987,18 @@ func (u *IncidentUpsert) ClearTypeID() *IncidentUpsert {
 	return u
 }
 
+// SetAnalysisID sets the "analysis_id" field.
+func (u *IncidentUpsert) SetAnalysisID(v uuid.UUID) *IncidentUpsert {
+	u.Set(incident.FieldAnalysisID, v)
+	return u
+}
+
+// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateAnalysisID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldAnalysisID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1166,6 +1219,20 @@ func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearTypeID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
+	})
+}
+
+// SetAnalysisID sets the "analysis_id" field.
+func (u *IncidentUpsertOne) SetAnalysisID(v uuid.UUID) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetAnalysisID(v)
+	})
+}
+
+// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateAnalysisID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateAnalysisID()
 	})
 }
 
@@ -1556,6 +1623,20 @@ func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearTypeID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
+	})
+}
+
+// SetAnalysisID sets the "analysis_id" field.
+func (u *IncidentUpsertBulk) SetAnalysisID(v uuid.UUID) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetAnalysisID(v)
+	})
+}
+
+// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateAnalysisID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateAnalysisID()
 	})
 }
 

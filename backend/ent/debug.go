@@ -364,36 +364,36 @@ func (c *SystemComponentControlClient) Debug() *SystemComponentControlClient {
 	return &SystemComponentControlClient{config: cfg}
 }
 
-func (c *SystemComponentRelationshipClient) Debug() *SystemComponentRelationshipClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemComponentRelationshipClient{config: cfg}
-}
-
-func (c *SystemComponentRelationshipControlActionClient) Debug() *SystemComponentRelationshipControlActionClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemComponentRelationshipControlActionClient{config: cfg}
-}
-
-func (c *SystemComponentRelationshipFeedbackClient) Debug() *SystemComponentRelationshipFeedbackClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemComponentRelationshipFeedbackClient{config: cfg}
-}
-
 func (c *SystemComponentSignalClient) Debug() *SystemComponentSignalClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &SystemComponentSignalClient{config: cfg}
+}
+
+func (c *SystemRelationshipClient) Debug() *SystemRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemRelationshipClient{config: cfg}
+}
+
+func (c *SystemRelationshipControlActionClient) Debug() *SystemRelationshipControlActionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemRelationshipControlActionClient{config: cfg}
+}
+
+func (c *SystemRelationshipFeedbackClient) Debug() *SystemRelationshipFeedbackClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemRelationshipFeedbackClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {

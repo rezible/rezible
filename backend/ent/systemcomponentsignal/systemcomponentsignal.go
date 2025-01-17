@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeComponent holds the string denoting the component edge name in mutations.
 	EdgeComponent = "component"
+	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
+	EdgeRelationships = "relationships"
 	// EdgeFeedbackSignals holds the string denoting the feedback_signals edge name in mutations.
 	EdgeFeedbackSignals = "feedback_signals"
 	// Table holds the table name of the systemcomponentsignal in the database.
@@ -34,11 +36,16 @@ const (
 	ComponentInverseTable = "system_components"
 	// ComponentColumn is the table column denoting the component relation/edge.
 	ComponentColumn = "component_id"
+	// RelationshipsTable is the table that holds the relationships relation/edge. The primary key declared below.
+	RelationshipsTable = "system_relationship_feedbacks"
+	// RelationshipsInverseTable is the table name for the SystemRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
+	RelationshipsInverseTable = "system_relationships"
 	// FeedbackSignalsTable is the table that holds the feedback_signals relation/edge.
-	FeedbackSignalsTable = "system_component_relationship_feedbacks"
-	// FeedbackSignalsInverseTable is the table name for the SystemComponentRelationshipFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationshipfeedback" package.
-	FeedbackSignalsInverseTable = "system_component_relationship_feedbacks"
+	FeedbackSignalsTable = "system_relationship_feedbacks"
+	// FeedbackSignalsInverseTable is the table name for the SystemRelationshipFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationshipfeedback" package.
+	FeedbackSignalsInverseTable = "system_relationship_feedbacks"
 	// FeedbackSignalsColumn is the table column denoting the feedback_signals relation/edge.
 	FeedbackSignalsColumn = "signal_id"
 )
@@ -50,6 +57,12 @@ var Columns = []string{
 	FieldDescription,
 	FieldCreatedAt,
 }
+
+var (
+	// RelationshipsPrimaryKey and RelationshipsColumn2 are the table columns denoting the
+	// primary key for the relationships relation (M2M).
+	RelationshipsPrimaryKey = []string{"relationship_id", "signal_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -98,6 +111,20 @@ func ByComponentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByRelationshipsCount orders the results by relationships count.
+func ByRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRelationshipsStep(), opts...)
+	}
+}
+
+// ByRelationships orders the results by relationships terms.
+func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByFeedbackSignalsCount orders the results by feedback_signals count.
 func ByFeedbackSignalsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -116,6 +143,13 @@ func newComponentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ComponentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
+	)
+}
+func newRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
 	)
 }
 func newFeedbackSignalsStep() *sqlgraph.Step {

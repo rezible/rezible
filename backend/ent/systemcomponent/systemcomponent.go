@@ -42,8 +42,8 @@ const (
 	EdgeSignals = "signals"
 	// EdgeAnalysisComponents holds the string denoting the analysis_components edge name in mutations.
 	EdgeAnalysisComponents = "analysis_components"
-	// EdgeComponentRelationships holds the string denoting the component_relationships edge name in mutations.
-	EdgeComponentRelationships = "component_relationships"
+	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
+	EdgeRelationships = "relationships"
 	// EdgeEventComponents holds the string denoting the event_components edge name in mutations.
 	EdgeEventComponents = "event_components"
 	// Table holds the table name of the systemcomponent in the database.
@@ -54,7 +54,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
 	AnalysesInverseTable = "system_analyses"
 	// RelatedTable is the table that holds the related relation/edge. The primary key declared below.
-	RelatedTable = "system_component_relationships"
+	RelatedTable = "system_relationships"
 	// EventsTable is the table that holds the events relation/edge. The primary key declared below.
 	EventsTable = "incident_event_system_components"
 	// EventsInverseTable is the table name for the IncidentEvent entity.
@@ -88,13 +88,13 @@ const (
 	AnalysisComponentsInverseTable = "system_analysis_components"
 	// AnalysisComponentsColumn is the table column denoting the analysis_components relation/edge.
 	AnalysisComponentsColumn = "component_id"
-	// ComponentRelationshipsTable is the table that holds the component_relationships relation/edge.
-	ComponentRelationshipsTable = "system_component_relationships"
-	// ComponentRelationshipsInverseTable is the table name for the SystemComponentRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationship" package.
-	ComponentRelationshipsInverseTable = "system_component_relationships"
-	// ComponentRelationshipsColumn is the table column denoting the component_relationships relation/edge.
-	ComponentRelationshipsColumn = "source_id"
+	// RelationshipsTable is the table that holds the relationships relation/edge.
+	RelationshipsTable = "system_relationships"
+	// RelationshipsInverseTable is the table name for the SystemRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
+	RelationshipsInverseTable = "system_relationships"
+	// RelationshipsColumn is the table column denoting the relationships relation/edge.
+	RelationshipsColumn = "source_component_id"
 	// EventComponentsTable is the table that holds the event_components relation/edge.
 	EventComponentsTable = "incident_event_system_components"
 	// EventComponentsInverseTable is the table name for the IncidentEventSystemComponent entity.
@@ -121,7 +121,7 @@ var (
 	AnalysesPrimaryKey = []string{"component_id", "analysis_id"}
 	// RelatedPrimaryKey and RelatedColumn2 are the table columns denoting the
 	// primary key for the related relation (M2M).
-	RelatedPrimaryKey = []string{"source_id", "target_id"}
+	RelatedPrimaryKey = []string{"source_component_id", "target_component_id"}
 	// EventsPrimaryKey and EventsColumn2 are the table columns denoting the
 	// primary key for the events relation (M2M).
 	EventsPrimaryKey = []string{"incident_event_id", "system_component_id"}
@@ -307,17 +307,17 @@ func ByAnalysisComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOptio
 	}
 }
 
-// ByComponentRelationshipsCount orders the results by component_relationships count.
-func ByComponentRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRelationshipsCount orders the results by relationships count.
+func ByRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newComponentRelationshipsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newRelationshipsStep(), opts...)
 	}
 }
 
-// ByComponentRelationships orders the results by component_relationships terms.
-func ByComponentRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByRelationships orders the results by relationships terms.
+func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newComponentRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -383,11 +383,11 @@ func newAnalysisComponentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisComponentsTable, AnalysisComponentsColumn),
 	)
 }
-func newComponentRelationshipsStep() *sqlgraph.Step {
+func newRelationshipsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ComponentRelationshipsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ComponentRelationshipsTable, ComponentRelationshipsColumn),
+		sqlgraph.To(RelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
 	)
 }
 func newEventComponentsStep() *sqlgraph.Step {

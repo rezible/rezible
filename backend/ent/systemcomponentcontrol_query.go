@@ -16,7 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemcomponentrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/systemrelationship"
+	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
 // SystemComponentControlQuery is the builder for querying SystemComponentControl entities.
@@ -27,7 +28,8 @@ type SystemComponentControlQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.SystemComponentControl
 	withComponent      *SystemComponentQuery
-	withControlActions *SystemComponentRelationshipControlActionQuery
+	withRelationships  *SystemRelationshipQuery
+	withControlActions *SystemRelationshipControlActionQuery
 	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -87,9 +89,9 @@ func (sccq *SystemComponentControlQuery) QueryComponent() *SystemComponentQuery 
 	return query
 }
 
-// QueryControlActions chains the current query on the "control_actions" edge.
-func (sccq *SystemComponentControlQuery) QueryControlActions() *SystemComponentRelationshipControlActionQuery {
-	query := (&SystemComponentRelationshipControlActionClient{config: sccq.config}).Query()
+// QueryRelationships chains the current query on the "relationships" edge.
+func (sccq *SystemComponentControlQuery) QueryRelationships() *SystemRelationshipQuery {
+	query := (&SystemRelationshipClient{config: sccq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sccq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -100,7 +102,29 @@ func (sccq *SystemComponentControlQuery) QueryControlActions() *SystemComponentR
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, selector),
-			sqlgraph.To(systemcomponentrelationshipcontrolaction.Table, systemcomponentrelationshipcontrolaction.FieldID),
+			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentcontrol.RelationshipsTable, systemcomponentcontrol.RelationshipsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(sccq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryControlActions chains the current query on the "control_actions" edge.
+func (sccq *SystemComponentControlQuery) QueryControlActions() *SystemRelationshipControlActionQuery {
+	query := (&SystemRelationshipControlActionClient{config: sccq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sccq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sccq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, selector),
+			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentcontrol.ControlActionsTable, systemcomponentcontrol.ControlActionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sccq.driver.Dialect(), step)
@@ -302,6 +326,7 @@ func (sccq *SystemComponentControlQuery) Clone() *SystemComponentControlQuery {
 		inters:             append([]Interceptor{}, sccq.inters...),
 		predicates:         append([]predicate.SystemComponentControl{}, sccq.predicates...),
 		withComponent:      sccq.withComponent.Clone(),
+		withRelationships:  sccq.withRelationships.Clone(),
 		withControlActions: sccq.withControlActions.Clone(),
 		// clone intermediate query.
 		sql:       sccq.sql.Clone(),
@@ -321,10 +346,21 @@ func (sccq *SystemComponentControlQuery) WithComponent(opts ...func(*SystemCompo
 	return sccq
 }
 
+// WithRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (sccq *SystemComponentControlQuery) WithRelationships(opts ...func(*SystemRelationshipQuery)) *SystemComponentControlQuery {
+	query := (&SystemRelationshipClient{config: sccq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sccq.withRelationships = query
+	return sccq
+}
+
 // WithControlActions tells the query-builder to eager-load the nodes that are connected to
 // the "control_actions" edge. The optional arguments are used to configure the query builder of the edge.
-func (sccq *SystemComponentControlQuery) WithControlActions(opts ...func(*SystemComponentRelationshipControlActionQuery)) *SystemComponentControlQuery {
-	query := (&SystemComponentRelationshipControlActionClient{config: sccq.config}).Query()
+func (sccq *SystemComponentControlQuery) WithControlActions(opts ...func(*SystemRelationshipControlActionQuery)) *SystemComponentControlQuery {
+	query := (&SystemRelationshipControlActionClient{config: sccq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -410,8 +446,9 @@ func (sccq *SystemComponentControlQuery) sqlAll(ctx context.Context, hooks ...qu
 	var (
 		nodes       = []*SystemComponentControl{}
 		_spec       = sccq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			sccq.withComponent != nil,
+			sccq.withRelationships != nil,
 			sccq.withControlActions != nil,
 		}
 	)
@@ -442,12 +479,19 @@ func (sccq *SystemComponentControlQuery) sqlAll(ctx context.Context, hooks ...qu
 			return nil, err
 		}
 	}
+	if query := sccq.withRelationships; query != nil {
+		if err := sccq.loadRelationships(ctx, query, nodes,
+			func(n *SystemComponentControl) { n.Edges.Relationships = []*SystemRelationship{} },
+			func(n *SystemComponentControl, e *SystemRelationship) {
+				n.Edges.Relationships = append(n.Edges.Relationships, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	if query := sccq.withControlActions; query != nil {
 		if err := sccq.loadControlActions(ctx, query, nodes,
-			func(n *SystemComponentControl) {
-				n.Edges.ControlActions = []*SystemComponentRelationshipControlAction{}
-			},
-			func(n *SystemComponentControl, e *SystemComponentRelationshipControlAction) {
+			func(n *SystemComponentControl) { n.Edges.ControlActions = []*SystemRelationshipControlAction{} },
+			func(n *SystemComponentControl, e *SystemRelationshipControlAction) {
 				n.Edges.ControlActions = append(n.Edges.ControlActions, e)
 			}); err != nil {
 			return nil, err
@@ -485,7 +529,68 @@ func (sccq *SystemComponentControlQuery) loadComponent(ctx context.Context, quer
 	}
 	return nil
 }
-func (sccq *SystemComponentControlQuery) loadControlActions(ctx context.Context, query *SystemComponentRelationshipControlActionQuery, nodes []*SystemComponentControl, init func(*SystemComponentControl), assign func(*SystemComponentControl, *SystemComponentRelationshipControlAction)) error {
+func (sccq *SystemComponentControlQuery) loadRelationships(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemComponentControl, init func(*SystemComponentControl), assign func(*SystemComponentControl, *SystemRelationship)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*SystemComponentControl)
+	nids := make(map[uuid.UUID]map[*SystemComponentControl]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(systemcomponentcontrol.RelationshipsTable)
+		s.Join(joinT).On(s.C(systemrelationship.FieldID), joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*SystemComponentControl]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*SystemRelationship](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "relationships" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (sccq *SystemComponentControlQuery) loadControlActions(ctx context.Context, query *SystemRelationshipControlActionQuery, nodes []*SystemComponentControl, init func(*SystemComponentControl), assign func(*SystemComponentControl, *SystemRelationshipControlAction)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentControl)
 	for i := range nodes {
@@ -496,9 +601,9 @@ func (sccq *SystemComponentControlQuery) loadControlActions(ctx context.Context,
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemcomponentrelationshipcontrolaction.FieldControlID)
+		query.ctx.AppendFieldOnce(systemrelationshipcontrolaction.FieldControlID)
 	}
-	query.Where(predicate.SystemComponentRelationshipControlAction(func(s *sql.Selector) {
+	query.Where(predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(systemcomponentcontrol.ControlActionsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)

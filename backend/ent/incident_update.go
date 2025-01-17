@@ -27,6 +27,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -216,6 +217,20 @@ func (iu *IncidentUpdate) ClearTypeID() *IncidentUpdate {
 	return iu
 }
 
+// SetAnalysisID sets the "analysis_id" field.
+func (iu *IncidentUpdate) SetAnalysisID(u uuid.UUID) *IncidentUpdate {
+	iu.mutation.SetAnalysisID(u)
+	return iu
+}
+
+// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
+func (iu *IncidentUpdate) SetNillableAnalysisID(u *uuid.UUID) *IncidentUpdate {
+	if u != nil {
+		iu.SetAnalysisID(*u)
+	}
+	return iu
+}
+
 // AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
 func (iu *IncidentUpdate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdate {
 	iu.mutation.AddEnvironmentIDs(ids...)
@@ -271,38 +286,19 @@ func (iu *IncidentUpdate) AddRoleAssignments(i ...*IncidentRoleAssignment) *Inci
 	return iu.AddRoleAssignmentIDs(ids...)
 }
 
-// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
-func (iu *IncidentUpdate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.AddLinkedIncidentIDs(ids...)
+// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
+func (iu *IncidentUpdate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.AddRetrospectiveIDs(ids...)
 	return iu
 }
 
-// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
-func (iu *IncidentUpdate) AddLinkedIncidents(i ...*Incident) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
+func (iu *IncidentUpdate) AddRetrospective(r ...*Retrospective) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return iu.AddLinkedIncidentIDs(ids...)
-}
-
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (iu *IncidentUpdate) SetRetrospectiveID(id uuid.UUID) *IncidentUpdate {
-	iu.mutation.SetRetrospectiveID(id)
-	return iu
-}
-
-// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (iu *IncidentUpdate) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentUpdate {
-	if id != nil {
-		iu = iu.SetRetrospectiveID(*id)
-	}
-	return iu
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (iu *IncidentUpdate) SetRetrospective(r *Retrospective) *IncidentUpdate {
-	return iu.SetRetrospectiveID(r.ID)
+	return iu.AddRetrospectiveIDs(ids...)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -333,6 +329,36 @@ func (iu *IncidentUpdate) AddEvents(i ...*IncidentEvent) *IncidentUpdate {
 		ids[j] = i[j].ID
 	}
 	return iu.AddEventIDs(ids...)
+}
+
+// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
+func (iu *IncidentUpdate) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.AddSystemAnalysiIDs(ids...)
+	return iu
+}
+
+// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
+func (iu *IncidentUpdate) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iu.AddSystemAnalysiIDs(ids...)
+}
+
+// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
+func (iu *IncidentUpdate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.AddLinkedIncidentIDs(ids...)
+	return iu
+}
+
+// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
+func (iu *IncidentUpdate) AddLinkedIncidents(i ...*Incident) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iu.AddLinkedIncidentIDs(ids...)
 }
 
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
@@ -505,31 +531,25 @@ func (iu *IncidentUpdate) RemoveRoleAssignments(i ...*IncidentRoleAssignment) *I
 	return iu.RemoveRoleAssignmentIDs(ids...)
 }
 
-// ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
-func (iu *IncidentUpdate) ClearLinkedIncidents() *IncidentUpdate {
-	iu.mutation.ClearLinkedIncidents()
-	return iu
-}
-
-// RemoveLinkedIncidentIDs removes the "linked_incidents" edge to Incident entities by IDs.
-func (iu *IncidentUpdate) RemoveLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.RemoveLinkedIncidentIDs(ids...)
-	return iu
-}
-
-// RemoveLinkedIncidents removes "linked_incidents" edges to Incident entities.
-func (iu *IncidentUpdate) RemoveLinkedIncidents(i ...*Incident) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return iu.RemoveLinkedIncidentIDs(ids...)
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+// ClearRetrospective clears all "retrospective" edges to the Retrospective entity.
 func (iu *IncidentUpdate) ClearRetrospective() *IncidentUpdate {
 	iu.mutation.ClearRetrospective()
 	return iu
+}
+
+// RemoveRetrospectiveIDs removes the "retrospective" edge to Retrospective entities by IDs.
+func (iu *IncidentUpdate) RemoveRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.RemoveRetrospectiveIDs(ids...)
+	return iu
+}
+
+// RemoveRetrospective removes "retrospective" edges to Retrospective entities.
+func (iu *IncidentUpdate) RemoveRetrospective(r ...*Retrospective) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return iu.RemoveRetrospectiveIDs(ids...)
 }
 
 // ClearMilestones clears all "milestones" edges to the IncidentMilestone entity.
@@ -572,6 +592,48 @@ func (iu *IncidentUpdate) RemoveEvents(i ...*IncidentEvent) *IncidentUpdate {
 		ids[j] = i[j].ID
 	}
 	return iu.RemoveEventIDs(ids...)
+}
+
+// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
+func (iu *IncidentUpdate) ClearSystemAnalysis() *IncidentUpdate {
+	iu.mutation.ClearSystemAnalysis()
+	return iu
+}
+
+// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
+func (iu *IncidentUpdate) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.RemoveSystemAnalysiIDs(ids...)
+	return iu
+}
+
+// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
+func (iu *IncidentUpdate) RemoveSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iu.RemoveSystemAnalysiIDs(ids...)
+}
+
+// ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
+func (iu *IncidentUpdate) ClearLinkedIncidents() *IncidentUpdate {
+	iu.mutation.ClearLinkedIncidents()
+	return iu
+}
+
+// RemoveLinkedIncidentIDs removes the "linked_incidents" edge to Incident entities by IDs.
+func (iu *IncidentUpdate) RemoveLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdate {
+	iu.mutation.RemoveLinkedIncidentIDs(ids...)
+	return iu
+}
+
+// RemoveLinkedIncidents removes "linked_incidents" edges to Incident entities.
+func (iu *IncidentUpdate) RemoveLinkedIncidents(i ...*Incident) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iu.RemoveLinkedIncidentIDs(ids...)
 }
 
 // ClearFieldSelections clears all "field_selections" edges to the IncidentFieldOption entity.
@@ -772,6 +834,9 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if iu.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
+	if value, ok := iu.mutation.AnalysisID(); ok {
+		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
+	}
 	if iu.mutation.EnvironmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -965,54 +1030,9 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iu.mutation.LinkedIncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedLinkedIncidentsIDs(); len(nodes) > 0 && !iu.mutation.LinkedIncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if iu.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
@@ -1023,9 +1043,25 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := iu.mutation.RemovedRetrospectiveIDs(); len(nodes) > 0 && !iu.mutation.RetrospectiveCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.RetrospectiveTable,
+			Columns: []string{incident.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := iu.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
@@ -1122,6 +1158,96 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !iu.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iu.mutation.LinkedIncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.RemovedLinkedIncidentsIDs(); len(nodes) > 0 && !iu.mutation.LinkedIncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iu.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1593,6 +1719,20 @@ func (iuo *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
 	return iuo
 }
 
+// SetAnalysisID sets the "analysis_id" field.
+func (iuo *IncidentUpdateOne) SetAnalysisID(u uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.SetAnalysisID(u)
+	return iuo
+}
+
+// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
+func (iuo *IncidentUpdateOne) SetNillableAnalysisID(u *uuid.UUID) *IncidentUpdateOne {
+	if u != nil {
+		iuo.SetAnalysisID(*u)
+	}
+	return iuo
+}
+
 // AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
 func (iuo *IncidentUpdateOne) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	iuo.mutation.AddEnvironmentIDs(ids...)
@@ -1648,38 +1788,19 @@ func (iuo *IncidentUpdateOne) AddRoleAssignments(i ...*IncidentRoleAssignment) *
 	return iuo.AddRoleAssignmentIDs(ids...)
 }
 
-// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
-func (iuo *IncidentUpdateOne) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.AddLinkedIncidentIDs(ids...)
+// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
+func (iuo *IncidentUpdateOne) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.AddRetrospectiveIDs(ids...)
 	return iuo
 }
 
-// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
-func (iuo *IncidentUpdateOne) AddLinkedIncidents(i ...*Incident) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
+func (iuo *IncidentUpdateOne) AddRetrospective(r ...*Retrospective) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
 	}
-	return iuo.AddLinkedIncidentIDs(ids...)
-}
-
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
-func (iuo *IncidentUpdateOne) SetRetrospectiveID(id uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.SetRetrospectiveID(id)
-	return iuo
-}
-
-// SetNillableRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID if the given value is not nil.
-func (iuo *IncidentUpdateOne) SetNillableRetrospectiveID(id *uuid.UUID) *IncidentUpdateOne {
-	if id != nil {
-		iuo = iuo.SetRetrospectiveID(*id)
-	}
-	return iuo
-}
-
-// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
-func (iuo *IncidentUpdateOne) SetRetrospective(r *Retrospective) *IncidentUpdateOne {
-	return iuo.SetRetrospectiveID(r.ID)
+	return iuo.AddRetrospectiveIDs(ids...)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -1710,6 +1831,36 @@ func (iuo *IncidentUpdateOne) AddEvents(i ...*IncidentEvent) *IncidentUpdateOne 
 		ids[j] = i[j].ID
 	}
 	return iuo.AddEventIDs(ids...)
+}
+
+// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
+func (iuo *IncidentUpdateOne) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.AddSystemAnalysiIDs(ids...)
+	return iuo
+}
+
+// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
+func (iuo *IncidentUpdateOne) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iuo.AddSystemAnalysiIDs(ids...)
+}
+
+// AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
+func (iuo *IncidentUpdateOne) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.AddLinkedIncidentIDs(ids...)
+	return iuo
+}
+
+// AddLinkedIncidents adds the "linked_incidents" edges to the Incident entity.
+func (iuo *IncidentUpdateOne) AddLinkedIncidents(i ...*Incident) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iuo.AddLinkedIncidentIDs(ids...)
 }
 
 // AddFieldSelectionIDs adds the "field_selections" edge to the IncidentFieldOption entity by IDs.
@@ -1882,31 +2033,25 @@ func (iuo *IncidentUpdateOne) RemoveRoleAssignments(i ...*IncidentRoleAssignment
 	return iuo.RemoveRoleAssignmentIDs(ids...)
 }
 
-// ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
-func (iuo *IncidentUpdateOne) ClearLinkedIncidents() *IncidentUpdateOne {
-	iuo.mutation.ClearLinkedIncidents()
-	return iuo
-}
-
-// RemoveLinkedIncidentIDs removes the "linked_incidents" edge to Incident entities by IDs.
-func (iuo *IncidentUpdateOne) RemoveLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.RemoveLinkedIncidentIDs(ids...)
-	return iuo
-}
-
-// RemoveLinkedIncidents removes "linked_incidents" edges to Incident entities.
-func (iuo *IncidentUpdateOne) RemoveLinkedIncidents(i ...*Incident) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return iuo.RemoveLinkedIncidentIDs(ids...)
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+// ClearRetrospective clears all "retrospective" edges to the Retrospective entity.
 func (iuo *IncidentUpdateOne) ClearRetrospective() *IncidentUpdateOne {
 	iuo.mutation.ClearRetrospective()
 	return iuo
+}
+
+// RemoveRetrospectiveIDs removes the "retrospective" edge to Retrospective entities by IDs.
+func (iuo *IncidentUpdateOne) RemoveRetrospectiveIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.RemoveRetrospectiveIDs(ids...)
+	return iuo
+}
+
+// RemoveRetrospective removes "retrospective" edges to Retrospective entities.
+func (iuo *IncidentUpdateOne) RemoveRetrospective(r ...*Retrospective) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return iuo.RemoveRetrospectiveIDs(ids...)
 }
 
 // ClearMilestones clears all "milestones" edges to the IncidentMilestone entity.
@@ -1949,6 +2094,48 @@ func (iuo *IncidentUpdateOne) RemoveEvents(i ...*IncidentEvent) *IncidentUpdateO
 		ids[j] = i[j].ID
 	}
 	return iuo.RemoveEventIDs(ids...)
+}
+
+// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
+func (iuo *IncidentUpdateOne) ClearSystemAnalysis() *IncidentUpdateOne {
+	iuo.mutation.ClearSystemAnalysis()
+	return iuo
+}
+
+// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
+func (iuo *IncidentUpdateOne) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.RemoveSystemAnalysiIDs(ids...)
+	return iuo
+}
+
+// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
+func (iuo *IncidentUpdateOne) RemoveSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iuo.RemoveSystemAnalysiIDs(ids...)
+}
+
+// ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
+func (iuo *IncidentUpdateOne) ClearLinkedIncidents() *IncidentUpdateOne {
+	iuo.mutation.ClearLinkedIncidents()
+	return iuo
+}
+
+// RemoveLinkedIncidentIDs removes the "linked_incidents" edge to Incident entities by IDs.
+func (iuo *IncidentUpdateOne) RemoveLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	iuo.mutation.RemoveLinkedIncidentIDs(ids...)
+	return iuo
+}
+
+// RemoveLinkedIncidents removes "linked_incidents" edges to Incident entities.
+func (iuo *IncidentUpdateOne) RemoveLinkedIncidents(i ...*Incident) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return iuo.RemoveLinkedIncidentIDs(ids...)
 }
 
 // ClearFieldSelections clears all "field_selections" edges to the IncidentFieldOption entity.
@@ -2179,6 +2366,9 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 	if iuo.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
 	}
+	if value, ok := iuo.mutation.AnalysisID(); ok {
+		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
+	}
 	if iuo.mutation.EnvironmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -2372,54 +2562,9 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if iuo.mutation.LinkedIncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedLinkedIncidentsIDs(); len(nodes) > 0 && !iuo.mutation.LinkedIncidentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.LinkedIncidentsTable,
-			Columns: incident.LinkedIncidentsPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if iuo.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
@@ -2430,9 +2575,25 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
+	if nodes := iuo.mutation.RemovedRetrospectiveIDs(); len(nodes) > 0 && !iuo.mutation.RetrospectiveCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   incident.RetrospectiveTable,
+			Columns: []string{incident.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
 	if nodes := iuo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
 			Table:   incident.RetrospectiveTable,
 			Columns: []string{incident.RetrospectiveColumn},
@@ -2529,6 +2690,96 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !iuo.mutation.SystemAnalysisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.SystemAnalysisTable,
+			Columns: []string{incident.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if iuo.mutation.LinkedIncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.RemovedLinkedIncidentsIDs(); len(nodes) > 0 && !iuo.mutation.LinkedIncidentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := iuo.mutation.LinkedIncidentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   incident.LinkedIncidentsTable,
+			Columns: incident.LinkedIncidentsPrimaryKey,
+			Bidi:    true,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

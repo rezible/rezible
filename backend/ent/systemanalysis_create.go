@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
@@ -29,14 +30,6 @@ type SystemAnalysisCreate struct {
 // SetIncidentID sets the "incident_id" field.
 func (sac *SystemAnalysisCreate) SetIncidentID(u uuid.UUID) *SystemAnalysisCreate {
 	sac.mutation.SetIncidentID(u)
-	return sac
-}
-
-// SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (sac *SystemAnalysisCreate) SetNillableIncidentID(u *uuid.UUID) *SystemAnalysisCreate {
-	if u != nil {
-		sac.SetIncidentID(*u)
-	}
 	return sac
 }
 
@@ -80,6 +73,11 @@ func (sac *SystemAnalysisCreate) SetNillableID(u *uuid.UUID) *SystemAnalysisCrea
 		sac.SetID(*u)
 	}
 	return sac
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (sac *SystemAnalysisCreate) SetIncident(i *Incident) *SystemAnalysisCreate {
+	return sac.SetIncidentID(i.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -163,11 +161,17 @@ func (sac *SystemAnalysisCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sac *SystemAnalysisCreate) check() error {
+	if _, ok := sac.mutation.IncidentID(); !ok {
+		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "SystemAnalysis.incident_id"`)}
+	}
 	if _, ok := sac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysis.created_at"`)}
 	}
 	if _, ok := sac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemAnalysis.updated_at"`)}
+	}
+	if len(sac.mutation.IncidentIDs()) == 0 {
+		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "SystemAnalysis.incident"`)}
 	}
 	return nil
 }
@@ -205,10 +209,6 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := sac.mutation.IncidentID(); ok {
-		_spec.SetField(systemanalysis.FieldIncidentID, field.TypeUUID, value)
-		_node.IncidentID = value
-	}
 	if value, ok := sac.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -216,6 +216,23 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 	if value, ok := sac.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := sac.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.IncidentTable,
+			Columns: []string{systemanalysis.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.IncidentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sac.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -320,12 +337,6 @@ func (u *SystemAnalysisUpsert) UpdateIncidentID() *SystemAnalysisUpsert {
 	return u
 }
 
-// ClearIncidentID clears the value of the "incident_id" field.
-func (u *SystemAnalysisUpsert) ClearIncidentID() *SystemAnalysisUpsert {
-	u.SetNull(systemanalysis.FieldIncidentID)
-	return u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *SystemAnalysisUpsert) SetCreatedAt(v time.Time) *SystemAnalysisUpsert {
 	u.Set(systemanalysis.FieldCreatedAt, v)
@@ -409,13 +420,6 @@ func (u *SystemAnalysisUpsertOne) SetIncidentID(v uuid.UUID) *SystemAnalysisUpse
 func (u *SystemAnalysisUpsertOne) UpdateIncidentID() *SystemAnalysisUpsertOne {
 	return u.Update(func(s *SystemAnalysisUpsert) {
 		s.UpdateIncidentID()
-	})
-}
-
-// ClearIncidentID clears the value of the "incident_id" field.
-func (u *SystemAnalysisUpsertOne) ClearIncidentID() *SystemAnalysisUpsertOne {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.ClearIncidentID()
 	})
 }
 
@@ -673,13 +677,6 @@ func (u *SystemAnalysisUpsertBulk) SetIncidentID(v uuid.UUID) *SystemAnalysisUps
 func (u *SystemAnalysisUpsertBulk) UpdateIncidentID() *SystemAnalysisUpsertBulk {
 	return u.Update(func(s *SystemAnalysisUpsert) {
 		s.UpdateIncidentID()
-	})
-}
-
-// ClearIncidentID clears the value of the "incident_id" field.
-func (u *SystemAnalysisUpsertBulk) ClearIncidentID() *SystemAnalysisUpsertBulk {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.ClearIncidentID()
 	})
 }
 

@@ -14,8 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponentrelationshipfeedback"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemrelationship"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
 )
 
 // SystemComponentSignalCreate is the builder for creating a SystemComponentSignal entity.
@@ -79,14 +80,29 @@ func (scsc *SystemComponentSignalCreate) SetComponent(s *SystemComponent) *Syste
 	return scsc.SetComponentID(s.ID)
 }
 
-// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemComponentRelationshipFeedback entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemRelationship entity by IDs.
+func (scsc *SystemComponentSignalCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
+	scsc.mutation.AddRelationshipIDs(ids...)
+	return scsc
+}
+
+// AddRelationships adds the "relationships" edges to the SystemRelationship entity.
+func (scsc *SystemComponentSignalCreate) AddRelationships(s ...*SystemRelationship) *SystemComponentSignalCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scsc.AddRelationshipIDs(ids...)
+}
+
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedback entity by IDs.
 func (scsc *SystemComponentSignalCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
 	scsc.mutation.AddFeedbackSignalIDs(ids...)
 	return scsc
 }
 
-// AddFeedbackSignals adds the "feedback_signals" edges to the SystemComponentRelationshipFeedback entity.
-func (scsc *SystemComponentSignalCreate) AddFeedbackSignals(s ...*SystemComponentRelationshipFeedback) *SystemComponentSignalCreate {
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedback entity.
+func (scsc *SystemComponentSignalCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -211,6 +227,29 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		_node.ComponentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := scsc.mutation.RelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentsignal.RelationshipsTable,
+			Columns: systemcomponentsignal.RelationshipsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemRelationshipFeedbackCreate{config: scsc.config, mutation: newSystemRelationshipFeedbackMutation(scsc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := scsc.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -219,7 +258,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

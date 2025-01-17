@@ -47,8 +47,10 @@ func (SystemComponent) Edges() []ent.Edge {
 			Through("analysis_components", SystemAnalysisComponent.Type),
 		// relationships
 		edge.To("related", SystemComponent.Type).
-			StorageKey(edge.Table("system_component_relationship"), edge.Columns("source_id", "target_id")).
-			Through("component_relationships", SystemComponentRelationship.Type),
+			StorageKey(
+				edge.Table("system_relationship"),
+				edge.Columns("source_component_id", "target_component_id")).
+			Through("relationships", SystemRelationship.Type),
 		//edge.To("controls", SystemComponent.Type).
 		//	StorageKey(edge.Table("system_component_control_relationship"), edge.Columns("controller_id", "controlled_id")).
 		//	Through("control_relationships", SystemComponentControlRelationship.Type),
@@ -65,7 +67,6 @@ func (SystemComponent) Edges() []ent.Edge {
 			Ref("system_components").
 			Through("event_components", IncidentEventSystemComponent.Type),
 
-		// TODO: constraints
 		edge.From("constraints", SystemComponentConstraint.Type).
 			Ref("component"),
 		edge.From("controls", SystemComponentControl.Type).
@@ -112,8 +113,9 @@ func (SystemComponentSignal) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("feedback_signals", SystemComponentRelationshipFeedback.Type).
-			Ref("signal"),
+		edge.From("relationships", SystemRelationship.Type).
+			Ref("signals").
+			Through("feedback_signals", SystemRelationshipFeedback.Type),
 	}
 }
 
@@ -134,90 +136,8 @@ func (SystemComponentControl) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("control_actions", SystemComponentRelationshipControlAction.Type).
-			Ref("control"),
-	}
-}
-
-type SystemComponentRelationship struct {
-	ent.Schema
-}
-
-func (SystemComponentRelationship) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("source_id", uuid.UUID{}),
-		field.UUID("target_id", uuid.UUID{}),
-		field.Text("description").Optional(),
-		field.Time("created_at").Default(time.Now),
-	}
-}
-
-func (SystemComponentRelationship) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("source", SystemComponent.Type).
-			Required().Unique().Field("source_id"),
-		edge.To("target", SystemComponent.Type).
-			Required().Unique().Field("target_id"),
-		edge.To("control_actions", SystemComponentRelationshipControlAction.Type),
-		edge.To("feedback", SystemComponentRelationshipFeedback.Type),
-	}
-}
-
-type SystemComponentRelationshipControlAction struct {
-	ent.Schema
-}
-
-func (SystemComponentRelationshipControlAction) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
-		field.UUID("control_id", uuid.UUID{}),
-		field.UUID("relationship_id", uuid.UUID{}),
-		field.String("type").
-			NotEmpty(), // e.g., "rate_limits", "circuit_breaks"
-		field.Text("description").
-			Optional(),
-		field.Time("created_at").
-			Default(time.Now),
-	}
-}
-
-func (SystemComponentRelationshipControlAction) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("control", SystemComponentControl.Type).
-			Unique().Required().Field("control_id"),
-		edge.From("relationship", SystemComponentRelationship.Type).
-			Ref("control_actions").
-			Unique().Required().Field("relationship_id"),
-	}
-}
-
-type SystemComponentRelationshipFeedback struct {
-	ent.Schema
-}
-
-func (SystemComponentRelationshipFeedback) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
-		field.UUID("relationship_id", uuid.UUID{}),
-		field.UUID("signal_id", uuid.UUID{}),
-		field.String("type").
-			NotEmpty(), // e.g., "metrics", "alerts", "logs"
-		field.Text("description").
-			Optional(),
-		field.Time("created_at").
-			Default(time.Now),
-	}
-}
-
-func (SystemComponentRelationshipFeedback) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("signal", SystemComponentSignal.Type).
-			Unique().Required().Field("signal_id"),
-		edge.From("relationship", SystemComponentRelationship.Type).
-			Ref("feedback").
-			Unique().Required().Field("relationship_id"),
+		edge.From("relationships", SystemRelationship.Type).
+			Ref("controls").
+			Through("control_actions", SystemRelationshipControlAction.Type),
 	}
 }

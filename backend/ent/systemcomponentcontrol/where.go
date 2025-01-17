@@ -229,6 +229,29 @@ func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemCompon
 	})
 }
 
+// HasRelationships applies the HasEdge predicate on the "relationships" edge.
+func HasRelationships() predicate.SystemComponentControl {
+	return predicate.SystemComponentControl(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRelationshipsWith applies the HasEdge predicate on the "relationships" edge with a given conditions (other predicates).
+func HasRelationshipsWith(preds ...predicate.SystemRelationship) predicate.SystemComponentControl {
+	return predicate.SystemComponentControl(func(s *sql.Selector) {
+		step := newRelationshipsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasControlActions applies the HasEdge predicate on the "control_actions" edge.
 func HasControlActions() predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
@@ -241,7 +264,7 @@ func HasControlActions() predicate.SystemComponentControl {
 }
 
 // HasControlActionsWith applies the HasEdge predicate on the "control_actions" edge with a given conditions (other predicates).
-func HasControlActionsWith(preds ...predicate.SystemComponentRelationshipControlAction) predicate.SystemComponentControl {
+func HasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newControlActionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

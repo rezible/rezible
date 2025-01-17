@@ -35,11 +35,13 @@ type SystemComponentControl struct {
 type SystemComponentControlEdges struct {
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
+	// Relationships holds the value of the relationships edge.
+	Relationships []*SystemRelationship `json:"relationships,omitempty"`
 	// ControlActions holds the value of the control_actions edge.
-	ControlActions []*SystemComponentRelationshipControlAction `json:"control_actions,omitempty"`
+	ControlActions []*SystemRelationshipControlAction `json:"control_actions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ComponentOrErr returns the Component value or an error if the edge
@@ -53,10 +55,19 @@ func (e SystemComponentControlEdges) ComponentOrErr() (*SystemComponent, error) 
 	return nil, &NotLoadedError{edge: "component"}
 }
 
+// RelationshipsOrErr returns the Relationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentControlEdges) RelationshipsOrErr() ([]*SystemRelationship, error) {
+	if e.loadedTypes[1] {
+		return e.Relationships, nil
+	}
+	return nil, &NotLoadedError{edge: "relationships"}
+}
+
 // ControlActionsOrErr returns the ControlActions value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentControlEdges) ControlActionsOrErr() ([]*SystemComponentRelationshipControlAction, error) {
-	if e.loadedTypes[1] {
+func (e SystemComponentControlEdges) ControlActionsOrErr() ([]*SystemRelationshipControlAction, error) {
+	if e.loadedTypes[2] {
 		return e.ControlActions, nil
 	}
 	return nil, &NotLoadedError{edge: "control_actions"}
@@ -130,8 +141,13 @@ func (scc *SystemComponentControl) QueryComponent() *SystemComponentQuery {
 	return NewSystemComponentControlClient(scc.config).QueryComponent(scc)
 }
 
+// QueryRelationships queries the "relationships" edge of the SystemComponentControl entity.
+func (scc *SystemComponentControl) QueryRelationships() *SystemRelationshipQuery {
+	return NewSystemComponentControlClient(scc.config).QueryRelationships(scc)
+}
+
 // QueryControlActions queries the "control_actions" edge of the SystemComponentControl entity.
-func (scc *SystemComponentControl) QueryControlActions() *SystemComponentRelationshipControlActionQuery {
+func (scc *SystemComponentControl) QueryControlActions() *SystemRelationshipControlActionQuery {
 	return NewSystemComponentControlClient(scc.config).QueryControlActions(scc)
 }
 

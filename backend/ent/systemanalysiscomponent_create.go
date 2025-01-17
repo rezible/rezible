@@ -52,6 +52,34 @@ func (sacc *SystemAnalysisComponentCreate) SetNillableDescription(s *string) *Sy
 	return sacc
 }
 
+// SetPosX sets the "pos_x" field.
+func (sacc *SystemAnalysisComponentCreate) SetPosX(i int) *SystemAnalysisComponentCreate {
+	sacc.mutation.SetPosX(i)
+	return sacc
+}
+
+// SetNillablePosX sets the "pos_x" field if the given value is not nil.
+func (sacc *SystemAnalysisComponentCreate) SetNillablePosX(i *int) *SystemAnalysisComponentCreate {
+	if i != nil {
+		sacc.SetPosX(*i)
+	}
+	return sacc
+}
+
+// SetPosY sets the "pos_y" field.
+func (sacc *SystemAnalysisComponentCreate) SetPosY(i int) *SystemAnalysisComponentCreate {
+	sacc.mutation.SetPosY(i)
+	return sacc
+}
+
+// SetNillablePosY sets the "pos_y" field if the given value is not nil.
+func (sacc *SystemAnalysisComponentCreate) SetNillablePosY(i *int) *SystemAnalysisComponentCreate {
+	if i != nil {
+		sacc.SetPosY(*i)
+	}
+	return sacc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (sacc *SystemAnalysisComponentCreate) SetCreatedAt(t time.Time) *SystemAnalysisComponentCreate {
 	sacc.mutation.SetCreatedAt(t)
@@ -125,6 +153,14 @@ func (sacc *SystemAnalysisComponentCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (sacc *SystemAnalysisComponentCreate) defaults() {
+	if _, ok := sacc.mutation.PosX(); !ok {
+		v := systemanalysiscomponent.DefaultPosX
+		sacc.mutation.SetPosX(v)
+	}
+	if _, ok := sacc.mutation.PosY(); !ok {
+		v := systemanalysiscomponent.DefaultPosY
+		sacc.mutation.SetPosY(v)
+	}
 	if _, ok := sacc.mutation.CreatedAt(); !ok {
 		v := systemanalysiscomponent.DefaultCreatedAt()
 		sacc.mutation.SetCreatedAt(v)
@@ -142,6 +178,12 @@ func (sacc *SystemAnalysisComponentCreate) check() error {
 	}
 	if _, ok := sacc.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.component_id"`)}
+	}
+	if _, ok := sacc.mutation.PosX(); !ok {
+		return &ValidationError{Name: "pos_x", err: errors.New(`ent: missing required field "SystemAnalysisComponent.pos_x"`)}
+	}
+	if _, ok := sacc.mutation.PosY(); !ok {
+		return &ValidationError{Name: "pos_y", err: errors.New(`ent: missing required field "SystemAnalysisComponent.pos_y"`)}
 	}
 	if _, ok := sacc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisComponent.created_at"`)}
@@ -191,6 +233,14 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 	if value, ok := sacc.mutation.Description(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if value, ok := sacc.mutation.PosX(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+		_node.PosX = value
+	}
+	if value, ok := sacc.mutation.PosY(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
+		_node.PosY = value
 	}
 	if value, ok := sacc.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
@@ -324,6 +374,42 @@ func (u *SystemAnalysisComponentUpsert) ClearDescription() *SystemAnalysisCompon
 	return u
 }
 
+// SetPosX sets the "pos_x" field.
+func (u *SystemAnalysisComponentUpsert) SetPosX(v int) *SystemAnalysisComponentUpsert {
+	u.Set(systemanalysiscomponent.FieldPosX, v)
+	return u
+}
+
+// UpdatePosX sets the "pos_x" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsert) UpdatePosX() *SystemAnalysisComponentUpsert {
+	u.SetExcluded(systemanalysiscomponent.FieldPosX)
+	return u
+}
+
+// AddPosX adds v to the "pos_x" field.
+func (u *SystemAnalysisComponentUpsert) AddPosX(v int) *SystemAnalysisComponentUpsert {
+	u.Add(systemanalysiscomponent.FieldPosX, v)
+	return u
+}
+
+// SetPosY sets the "pos_y" field.
+func (u *SystemAnalysisComponentUpsert) SetPosY(v int) *SystemAnalysisComponentUpsert {
+	u.Set(systemanalysiscomponent.FieldPosY, v)
+	return u
+}
+
+// UpdatePosY sets the "pos_y" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsert) UpdatePosY() *SystemAnalysisComponentUpsert {
+	u.SetExcluded(systemanalysiscomponent.FieldPosY)
+	return u
+}
+
+// AddPosY adds v to the "pos_y" field.
+func (u *SystemAnalysisComponentUpsert) AddPosY(v int) *SystemAnalysisComponentUpsert {
+	u.Add(systemanalysiscomponent.FieldPosY, v)
+	return u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *SystemAnalysisComponentUpsert) SetCreatedAt(v time.Time) *SystemAnalysisComponentUpsert {
 	u.Set(systemanalysiscomponent.FieldCreatedAt, v)
@@ -430,6 +516,48 @@ func (u *SystemAnalysisComponentUpsertOne) UpdateDescription() *SystemAnalysisCo
 func (u *SystemAnalysisComponentUpsertOne) ClearDescription() *SystemAnalysisComponentUpsertOne {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetPosX sets the "pos_x" field.
+func (u *SystemAnalysisComponentUpsertOne) SetPosX(v int) *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.SetPosX(v)
+	})
+}
+
+// AddPosX adds v to the "pos_x" field.
+func (u *SystemAnalysisComponentUpsertOne) AddPosX(v int) *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.AddPosX(v)
+	})
+}
+
+// UpdatePosX sets the "pos_x" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsertOne) UpdatePosX() *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.UpdatePosX()
+	})
+}
+
+// SetPosY sets the "pos_y" field.
+func (u *SystemAnalysisComponentUpsertOne) SetPosY(v int) *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.SetPosY(v)
+	})
+}
+
+// AddPosY adds v to the "pos_y" field.
+func (u *SystemAnalysisComponentUpsertOne) AddPosY(v int) *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.AddPosY(v)
+	})
+}
+
+// UpdatePosY sets the "pos_y" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsertOne) UpdatePosY() *SystemAnalysisComponentUpsertOne {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.UpdatePosY()
 	})
 }
 
@@ -708,6 +836,48 @@ func (u *SystemAnalysisComponentUpsertBulk) UpdateDescription() *SystemAnalysisC
 func (u *SystemAnalysisComponentUpsertBulk) ClearDescription() *SystemAnalysisComponentUpsertBulk {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetPosX sets the "pos_x" field.
+func (u *SystemAnalysisComponentUpsertBulk) SetPosX(v int) *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.SetPosX(v)
+	})
+}
+
+// AddPosX adds v to the "pos_x" field.
+func (u *SystemAnalysisComponentUpsertBulk) AddPosX(v int) *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.AddPosX(v)
+	})
+}
+
+// UpdatePosX sets the "pos_x" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsertBulk) UpdatePosX() *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.UpdatePosX()
+	})
+}
+
+// SetPosY sets the "pos_y" field.
+func (u *SystemAnalysisComponentUpsertBulk) SetPosY(v int) *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.SetPosY(v)
+	})
+}
+
+// AddPosY adds v to the "pos_y" field.
+func (u *SystemAnalysisComponentUpsertBulk) AddPosY(v int) *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.AddPosY(v)
+	})
+}
+
+// UpdatePosY sets the "pos_y" field to the value that was provided on create.
+func (u *SystemAnalysisComponentUpsertBulk) UpdatePosY() *SystemAnalysisComponentUpsertBulk {
+	return u.Update(func(s *SystemAnalysisComponentUpsert) {
+		s.UpdatePosY()
 	})
 }
 

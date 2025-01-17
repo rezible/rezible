@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeComponent holds the string denoting the component edge name in mutations.
 	EdgeComponent = "component"
+	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
+	EdgeRelationships = "relationships"
 	// EdgeControlActions holds the string denoting the control_actions edge name in mutations.
 	EdgeControlActions = "control_actions"
 	// Table holds the table name of the systemcomponentcontrol in the database.
@@ -34,11 +36,16 @@ const (
 	ComponentInverseTable = "system_components"
 	// ComponentColumn is the table column denoting the component relation/edge.
 	ComponentColumn = "component_id"
+	// RelationshipsTable is the table that holds the relationships relation/edge. The primary key declared below.
+	RelationshipsTable = "system_relationship_control_actions"
+	// RelationshipsInverseTable is the table name for the SystemRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
+	RelationshipsInverseTable = "system_relationships"
 	// ControlActionsTable is the table that holds the control_actions relation/edge.
-	ControlActionsTable = "system_component_relationship_control_actions"
-	// ControlActionsInverseTable is the table name for the SystemComponentRelationshipControlAction entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationshipcontrolaction" package.
-	ControlActionsInverseTable = "system_component_relationship_control_actions"
+	ControlActionsTable = "system_relationship_control_actions"
+	// ControlActionsInverseTable is the table name for the SystemRelationshipControlAction entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationshipcontrolaction" package.
+	ControlActionsInverseTable = "system_relationship_control_actions"
 	// ControlActionsColumn is the table column denoting the control_actions relation/edge.
 	ControlActionsColumn = "control_id"
 )
@@ -50,6 +57,12 @@ var Columns = []string{
 	FieldDescription,
 	FieldCreatedAt,
 }
+
+var (
+	// RelationshipsPrimaryKey and RelationshipsColumn2 are the table columns denoting the
+	// primary key for the relationships relation (M2M).
+	RelationshipsPrimaryKey = []string{"relationship_id", "control_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -98,6 +111,20 @@ func ByComponentField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByRelationshipsCount orders the results by relationships count.
+func ByRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRelationshipsStep(), opts...)
+	}
+}
+
+// ByRelationships orders the results by relationships terms.
+func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByControlActionsCount orders the results by control_actions count.
 func ByControlActionsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -116,6 +143,13 @@ func newComponentStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ComponentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
+	)
+}
+func newRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
 	)
 }
 func newControlActionsStep() *sqlgraph.Step {

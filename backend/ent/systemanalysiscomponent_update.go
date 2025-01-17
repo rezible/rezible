@@ -80,6 +80,48 @@ func (sacu *SystemAnalysisComponentUpdate) ClearDescription() *SystemAnalysisCom
 	return sacu
 }
 
+// SetPosX sets the "pos_x" field.
+func (sacu *SystemAnalysisComponentUpdate) SetPosX(i int) *SystemAnalysisComponentUpdate {
+	sacu.mutation.ResetPosX()
+	sacu.mutation.SetPosX(i)
+	return sacu
+}
+
+// SetNillablePosX sets the "pos_x" field if the given value is not nil.
+func (sacu *SystemAnalysisComponentUpdate) SetNillablePosX(i *int) *SystemAnalysisComponentUpdate {
+	if i != nil {
+		sacu.SetPosX(*i)
+	}
+	return sacu
+}
+
+// AddPosX adds i to the "pos_x" field.
+func (sacu *SystemAnalysisComponentUpdate) AddPosX(i int) *SystemAnalysisComponentUpdate {
+	sacu.mutation.AddPosX(i)
+	return sacu
+}
+
+// SetPosY sets the "pos_y" field.
+func (sacu *SystemAnalysisComponentUpdate) SetPosY(i int) *SystemAnalysisComponentUpdate {
+	sacu.mutation.ResetPosY()
+	sacu.mutation.SetPosY(i)
+	return sacu
+}
+
+// SetNillablePosY sets the "pos_y" field if the given value is not nil.
+func (sacu *SystemAnalysisComponentUpdate) SetNillablePosY(i *int) *SystemAnalysisComponentUpdate {
+	if i != nil {
+		sacu.SetPosY(*i)
+	}
+	return sacu
+}
+
+// AddPosY adds i to the "pos_y" field.
+func (sacu *SystemAnalysisComponentUpdate) AddPosY(i int) *SystemAnalysisComponentUpdate {
+	sacu.mutation.AddPosY(i)
+	return sacu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (sacu *SystemAnalysisComponentUpdate) SetCreatedAt(t time.Time) *SystemAnalysisComponentUpdate {
 	sacu.mutation.SetCreatedAt(t)
@@ -182,6 +224,18 @@ func (sacu *SystemAnalysisComponentUpdate) sqlSave(ctx context.Context) (n int, 
 	}
 	if sacu.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysiscomponent.FieldDescription, field.TypeString)
+	}
+	if value, ok := sacu.mutation.PosX(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+	}
+	if value, ok := sacu.mutation.AddedPosX(); ok {
+		_spec.AddField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+	}
+	if value, ok := sacu.mutation.PosY(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
+	}
+	if value, ok := sacu.mutation.AddedPosY(); ok {
+		_spec.AddField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
 	}
 	if value, ok := sacu.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
@@ -311,6 +365,48 @@ func (sacuo *SystemAnalysisComponentUpdateOne) SetNillableDescription(s *string)
 // ClearDescription clears the value of the "description" field.
 func (sacuo *SystemAnalysisComponentUpdateOne) ClearDescription() *SystemAnalysisComponentUpdateOne {
 	sacuo.mutation.ClearDescription()
+	return sacuo
+}
+
+// SetPosX sets the "pos_x" field.
+func (sacuo *SystemAnalysisComponentUpdateOne) SetPosX(i int) *SystemAnalysisComponentUpdateOne {
+	sacuo.mutation.ResetPosX()
+	sacuo.mutation.SetPosX(i)
+	return sacuo
+}
+
+// SetNillablePosX sets the "pos_x" field if the given value is not nil.
+func (sacuo *SystemAnalysisComponentUpdateOne) SetNillablePosX(i *int) *SystemAnalysisComponentUpdateOne {
+	if i != nil {
+		sacuo.SetPosX(*i)
+	}
+	return sacuo
+}
+
+// AddPosX adds i to the "pos_x" field.
+func (sacuo *SystemAnalysisComponentUpdateOne) AddPosX(i int) *SystemAnalysisComponentUpdateOne {
+	sacuo.mutation.AddPosX(i)
+	return sacuo
+}
+
+// SetPosY sets the "pos_y" field.
+func (sacuo *SystemAnalysisComponentUpdateOne) SetPosY(i int) *SystemAnalysisComponentUpdateOne {
+	sacuo.mutation.ResetPosY()
+	sacuo.mutation.SetPosY(i)
+	return sacuo
+}
+
+// SetNillablePosY sets the "pos_y" field if the given value is not nil.
+func (sacuo *SystemAnalysisComponentUpdateOne) SetNillablePosY(i *int) *SystemAnalysisComponentUpdateOne {
+	if i != nil {
+		sacuo.SetPosY(*i)
+	}
+	return sacuo
+}
+
+// AddPosY adds i to the "pos_y" field.
+func (sacuo *SystemAnalysisComponentUpdateOne) AddPosY(i int) *SystemAnalysisComponentUpdateOne {
+	sacuo.mutation.AddPosY(i)
 	return sacuo
 }
 
@@ -446,6 +542,18 @@ func (sacuo *SystemAnalysisComponentUpdateOne) sqlSave(ctx context.Context) (_no
 	}
 	if sacuo.mutation.DescriptionCleared() {
 		_spec.ClearField(systemanalysiscomponent.FieldDescription, field.TypeString)
+	}
+	if value, ok := sacuo.mutation.PosX(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+	}
+	if value, ok := sacuo.mutation.AddedPosX(); ok {
+		_spec.AddField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+	}
+	if value, ok := sacuo.mutation.PosY(); ok {
+		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
+	}
+	if value, ok := sacuo.mutation.AddedPosY(); ok {
+		_spec.AddField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
 	}
 	if value, ok := sacuo.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)

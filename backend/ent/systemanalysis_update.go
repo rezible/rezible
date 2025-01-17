@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -46,12 +47,6 @@ func (sau *SystemAnalysisUpdate) SetNillableIncidentID(u *uuid.UUID) *SystemAnal
 	return sau
 }
 
-// ClearIncidentID clears the value of the "incident_id" field.
-func (sau *SystemAnalysisUpdate) ClearIncidentID() *SystemAnalysisUpdate {
-	sau.mutation.ClearIncidentID()
-	return sau
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (sau *SystemAnalysisUpdate) SetCreatedAt(t time.Time) *SystemAnalysisUpdate {
 	sau.mutation.SetCreatedAt(t)
@@ -70,6 +65,11 @@ func (sau *SystemAnalysisUpdate) SetNillableCreatedAt(t *time.Time) *SystemAnaly
 func (sau *SystemAnalysisUpdate) SetUpdatedAt(t time.Time) *SystemAnalysisUpdate {
 	sau.mutation.SetUpdatedAt(t)
 	return sau
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (sau *SystemAnalysisUpdate) SetIncident(i *Incident) *SystemAnalysisUpdate {
+	return sau.SetIncidentID(i.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -105,6 +105,12 @@ func (sau *SystemAnalysisUpdate) AddAnalysisComponents(s ...*SystemAnalysisCompo
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (sau *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
 	return sau.mutation
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (sau *SystemAnalysisUpdate) ClearIncident() *SystemAnalysisUpdate {
+	sau.mutation.ClearIncident()
+	return sau
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
@@ -185,6 +191,14 @@ func (sau *SystemAnalysisUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (sau *SystemAnalysisUpdate) check() error {
+	if sau.mutation.IncidentCleared() && len(sau.mutation.IncidentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.incident"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (sau *SystemAnalysisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdate {
 	sau.modifiers = append(sau.modifiers, modifiers...)
@@ -192,6 +206,9 @@ func (sau *SystemAnalysisUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder))
 }
 
 func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := sau.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysis.Table, systemanalysis.Columns, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
 	if ps := sau.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -200,17 +217,40 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 			}
 		}
 	}
-	if value, ok := sau.mutation.IncidentID(); ok {
-		_spec.SetField(systemanalysis.FieldIncidentID, field.TypeUUID, value)
-	}
-	if sau.mutation.IncidentIDCleared() {
-		_spec.ClearField(systemanalysis.FieldIncidentID, field.TypeUUID)
-	}
 	if value, ok := sau.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := sau.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if sau.mutation.IncidentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.IncidentTable,
+			Columns: []string{systemanalysis.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sau.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.IncidentTable,
+			Columns: []string{systemanalysis.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if sau.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -359,12 +399,6 @@ func (sauo *SystemAnalysisUpdateOne) SetNillableIncidentID(u *uuid.UUID) *System
 	return sauo
 }
 
-// ClearIncidentID clears the value of the "incident_id" field.
-func (sauo *SystemAnalysisUpdateOne) ClearIncidentID() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearIncidentID()
-	return sauo
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (sauo *SystemAnalysisUpdateOne) SetCreatedAt(t time.Time) *SystemAnalysisUpdateOne {
 	sauo.mutation.SetCreatedAt(t)
@@ -383,6 +417,11 @@ func (sauo *SystemAnalysisUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemA
 func (sauo *SystemAnalysisUpdateOne) SetUpdatedAt(t time.Time) *SystemAnalysisUpdateOne {
 	sauo.mutation.SetUpdatedAt(t)
 	return sauo
+}
+
+// SetIncident sets the "incident" edge to the Incident entity.
+func (sauo *SystemAnalysisUpdateOne) SetIncident(i *Incident) *SystemAnalysisUpdateOne {
+	return sauo.SetIncidentID(i.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -418,6 +457,12 @@ func (sauo *SystemAnalysisUpdateOne) AddAnalysisComponents(s ...*SystemAnalysisC
 // Mutation returns the SystemAnalysisMutation object of the builder.
 func (sauo *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
 	return sauo.mutation
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (sauo *SystemAnalysisUpdateOne) ClearIncident() *SystemAnalysisUpdateOne {
+	sauo.mutation.ClearIncident()
+	return sauo
 }
 
 // ClearComponents clears all "components" edges to the SystemComponent entity.
@@ -511,6 +556,14 @@ func (sauo *SystemAnalysisUpdateOne) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (sauo *SystemAnalysisUpdateOne) check() error {
+	if sauo.mutation.IncidentCleared() && len(sauo.mutation.IncidentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.incident"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (sauo *SystemAnalysisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemAnalysisUpdateOne {
 	sauo.modifiers = append(sauo.modifiers, modifiers...)
@@ -518,6 +571,9 @@ func (sauo *SystemAnalysisUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuild
 }
 
 func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAnalysis, err error) {
+	if err := sauo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(systemanalysis.Table, systemanalysis.Columns, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
 	id, ok := sauo.mutation.ID()
 	if !ok {
@@ -543,17 +599,40 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 			}
 		}
 	}
-	if value, ok := sauo.mutation.IncidentID(); ok {
-		_spec.SetField(systemanalysis.FieldIncidentID, field.TypeUUID, value)
-	}
-	if sauo.mutation.IncidentIDCleared() {
-		_spec.ClearField(systemanalysis.FieldIncidentID, field.TypeUUID)
-	}
 	if value, ok := sauo.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := sauo.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if sauo.mutation.IncidentCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.IncidentTable,
+			Columns: []string{systemanalysis.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sauo.mutation.IncidentIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.IncidentTable,
+			Columns: []string{systemanalysis.IncidentColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if sauo.mutation.ComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

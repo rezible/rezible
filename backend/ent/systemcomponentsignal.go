@@ -35,11 +35,13 @@ type SystemComponentSignal struct {
 type SystemComponentSignalEdges struct {
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
+	// Relationships holds the value of the relationships edge.
+	Relationships []*SystemRelationship `json:"relationships,omitempty"`
 	// FeedbackSignals holds the value of the feedback_signals edge.
-	FeedbackSignals []*SystemComponentRelationshipFeedback `json:"feedback_signals,omitempty"`
+	FeedbackSignals []*SystemRelationshipFeedback `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // ComponentOrErr returns the Component value or an error if the edge
@@ -53,10 +55,19 @@ func (e SystemComponentSignalEdges) ComponentOrErr() (*SystemComponent, error) {
 	return nil, &NotLoadedError{edge: "component"}
 }
 
+// RelationshipsOrErr returns the Relationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemRelationship, error) {
+	if e.loadedTypes[1] {
+		return e.Relationships, nil
+	}
+	return nil, &NotLoadedError{edge: "relationships"}
+}
+
 // FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentSignalEdges) FeedbackSignalsOrErr() ([]*SystemComponentRelationshipFeedback, error) {
-	if e.loadedTypes[1] {
+func (e SystemComponentSignalEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedback, error) {
+	if e.loadedTypes[2] {
 		return e.FeedbackSignals, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback_signals"}
@@ -130,8 +141,13 @@ func (scs *SystemComponentSignal) QueryComponent() *SystemComponentQuery {
 	return NewSystemComponentSignalClient(scs.config).QueryComponent(scs)
 }
 
+// QueryRelationships queries the "relationships" edge of the SystemComponentSignal entity.
+func (scs *SystemComponentSignal) QueryRelationships() *SystemRelationshipQuery {
+	return NewSystemComponentSignalClient(scs.config).QueryRelationships(scs)
+}
+
 // QueryFeedbackSignals queries the "feedback_signals" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryFeedbackSignals() *SystemComponentRelationshipFeedbackQuery {
+func (scs *SystemComponentSignal) QueryFeedbackSignals() *SystemRelationshipFeedbackQuery {
 	return NewSystemComponentSignalClient(scs.config).QueryFeedbackSignals(scs)
 }
 

@@ -21,6 +21,10 @@ const (
 	FieldComponentID = "component_id"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldPosX holds the string denoting the pos_x field in the database.
+	FieldPosX = "pos_x"
+	// FieldPosY holds the string denoting the pos_y field in the database.
+	FieldPosY = "pos_y"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeAnalysis holds the string denoting the analysis edge name in mutations.
@@ -51,6 +55,8 @@ var Columns = []string{
 	FieldAnalysisID,
 	FieldComponentID,
 	FieldDescription,
+	FieldPosX,
+	FieldPosY,
 	FieldCreatedAt,
 }
 
@@ -65,6 +71,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultPosX holds the default value on creation for the "pos_x" field.
+	DefaultPosX int
+	// DefaultPosY holds the default value on creation for the "pos_y" field.
+	DefaultPosY int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -92,6 +102,16 @@ func ByComponentID(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByPosX orders the results by the pos_x field.
+func ByPosX(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPosX, opts...).ToFunc()
+}
+
+// ByPosY orders the results by the pos_y field.
+func ByPosY(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPosY, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

@@ -229,6 +229,29 @@ func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemCompon
 	})
 }
 
+// HasRelationships applies the HasEdge predicate on the "relationships" edge.
+func HasRelationships() predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRelationshipsWith applies the HasEdge predicate on the "relationships" edge with a given conditions (other predicates).
+func HasRelationshipsWith(preds ...predicate.SystemRelationship) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(func(s *sql.Selector) {
+		step := newRelationshipsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasFeedbackSignals applies the HasEdge predicate on the "feedback_signals" edge.
 func HasFeedbackSignals() predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
@@ -241,7 +264,7 @@ func HasFeedbackSignals() predicate.SystemComponentSignal {
 }
 
 // HasFeedbackSignalsWith applies the HasEdge predicate on the "feedback_signals" edge with a given conditions (other predicates).
-func HasFeedbackSignalsWith(preds ...predicate.SystemComponentRelationshipFeedback) predicate.SystemComponentSignal {
+func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedback) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newFeedbackSignalsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

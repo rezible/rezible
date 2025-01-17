@@ -26,6 +26,10 @@ type SystemAnalysisComponent struct {
 	ComponentID uuid.UUID `json:"component_id,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// PosX holds the value of the "pos_x" field.
+	PosX int `json:"pos_x,omitempty"`
+	// PosY holds the value of the "pos_y" field.
+	PosY int `json:"pos_y,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -72,6 +76,8 @@ func (*SystemAnalysisComponent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemanalysiscomponent.FieldPosX, systemanalysiscomponent.FieldPosY:
+			values[i] = new(sql.NullInt64)
 		case systemanalysiscomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemanalysiscomponent.FieldCreatedAt:
@@ -116,6 +122,18 @@ func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any)
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				sac.Description = value.String
+			}
+		case systemanalysiscomponent.FieldPosX:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field pos_x", values[i])
+			} else if value.Valid {
+				sac.PosX = int(value.Int64)
+			}
+		case systemanalysiscomponent.FieldPosY:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field pos_y", values[i])
+			} else if value.Valid {
+				sac.PosY = int(value.Int64)
 			}
 		case systemanalysiscomponent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -177,6 +195,12 @@ func (sac *SystemAnalysisComponent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(sac.Description)
+	builder.WriteString(", ")
+	builder.WriteString("pos_x=")
+	builder.WriteString(fmt.Sprintf("%v", sac.PosX))
+	builder.WriteString(", ")
+	builder.WriteString("pos_y=")
+	builder.WriteString(fmt.Sprintf("%v", sac.PosY))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(sac.CreatedAt.Format(time.ANSIC))

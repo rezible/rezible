@@ -13,7 +13,6 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/ent/retrospective"
 )
 
 // Incident is the model entity for the Incident schema.
@@ -43,6 +42,8 @@ type Incident struct {
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
 	TypeID uuid.UUID `json:"type_id,omitempty"`
+	// AnalysisID holds the value of the "analysis_id" field.
+	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentQuery when eager-loading is set.
 	Edges        IncidentEdges `json:"edges"`
@@ -61,14 +62,16 @@ type IncidentEdges struct {
 	TeamAssignments []*IncidentTeamAssignment `json:"team_assignments,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
-	// LinkedIncidents holds the value of the linked_incidents edge.
-	LinkedIncidents []*Incident `json:"linked_incidents,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
-	Retrospective *Retrospective `json:"retrospective,omitempty"`
+	Retrospective []*Retrospective `json:"retrospective,omitempty"`
 	// Milestones holds the value of the milestones edge.
 	Milestones []*IncidentMilestone `json:"milestones,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*IncidentEvent `json:"events,omitempty"`
+	// SystemAnalysis holds the value of the system_analysis edge.
+	SystemAnalysis []*SystemAnalysis `json:"system_analysis,omitempty"`
+	// LinkedIncidents holds the value of the linked_incidents edge.
+	LinkedIncidents []*Incident `json:"linked_incidents,omitempty"`
 	// FieldSelections holds the value of the field_selections edge.
 	FieldSelections []*IncidentFieldOption `json:"field_selections,omitempty"`
 	// Tasks holds the value of the tasks edge.
@@ -83,7 +86,7 @@ type IncidentEdges struct {
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [15]bool
+	loadedTypes [16]bool
 }
 
 // EnvironmentsOrErr returns the Environments value or an error if the edge
@@ -135,22 +138,11 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 	return nil, &NotLoadedError{edge: "role_assignments"}
 }
 
-// LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[5] {
-		return e.LinkedIncidents, nil
-	}
-	return nil, &NotLoadedError{edge: "linked_incidents"}
-}
-
 // RetrospectiveOrErr returns the Retrospective value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
-	if e.Retrospective != nil {
+// was not loaded in eager-loading.
+func (e IncidentEdges) RetrospectiveOrErr() ([]*Retrospective, error) {
+	if e.loadedTypes[5] {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[6] {
-		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
 }
@@ -158,7 +150,7 @@ func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -167,16 +159,34 @@ func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[7] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
 }
 
+// SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) SystemAnalysisOrErr() ([]*SystemAnalysis, error) {
+	if e.loadedTypes[8] {
+		return e.SystemAnalysis, nil
+	}
+	return nil, &NotLoadedError{edge: "system_analysis"}
+}
+
+// LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
+	if e.loadedTypes[9] {
+		return e.LinkedIncidents, nil
+	}
+	return nil, &NotLoadedError{edge: "linked_incidents"}
+}
+
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -185,7 +195,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -194,7 +204,7 @@ func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
@@ -203,7 +213,7 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -212,7 +222,7 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // ReviewSessionsOrErr returns the ReviewSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.ReviewSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "review_sessions"}
@@ -221,7 +231,7 @@ func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -238,7 +248,7 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incident.FieldOpenedAt, incident.FieldModifiedAt, incident.FieldClosedAt:
 			values[i] = new(sql.NullTime)
-		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
+		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID, incident.FieldAnalysisID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -327,6 +337,12 @@ func (i *Incident) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				i.TypeID = *value
 			}
+		case incident.FieldAnalysisID:
+			if value, ok := values[j].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field analysis_id", values[j])
+			} else if value != nil {
+				i.AnalysisID = *value
+			}
 		default:
 			i.selectValues.Set(columns[j], values[j])
 		}
@@ -365,11 +381,6 @@ func (i *Incident) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return NewIncidentClient(i.config).QueryRoleAssignments(i)
 }
 
-// QueryLinkedIncidents queries the "linked_incidents" edge of the Incident entity.
-func (i *Incident) QueryLinkedIncidents() *IncidentQuery {
-	return NewIncidentClient(i.config).QueryLinkedIncidents(i)
-}
-
 // QueryRetrospective queries the "retrospective" edge of the Incident entity.
 func (i *Incident) QueryRetrospective() *RetrospectiveQuery {
 	return NewIncidentClient(i.config).QueryRetrospective(i)
@@ -383,6 +394,16 @@ func (i *Incident) QueryMilestones() *IncidentMilestoneQuery {
 // QueryEvents queries the "events" edge of the Incident entity.
 func (i *Incident) QueryEvents() *IncidentEventQuery {
 	return NewIncidentClient(i.config).QueryEvents(i)
+}
+
+// QuerySystemAnalysis queries the "system_analysis" edge of the Incident entity.
+func (i *Incident) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewIncidentClient(i.config).QuerySystemAnalysis(i)
+}
+
+// QueryLinkedIncidents queries the "linked_incidents" edge of the Incident entity.
+func (i *Incident) QueryLinkedIncidents() *IncidentQuery {
+	return NewIncidentClient(i.config).QueryLinkedIncidents(i)
 }
 
 // QueryFieldSelections queries the "field_selections" edge of the Incident entity.
@@ -470,6 +491,9 @@ func (i *Incident) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("type_id=")
 	builder.WriteString(fmt.Sprintf("%v", i.TypeID))
+	builder.WriteString(", ")
+	builder.WriteString("analysis_id=")
+	builder.WriteString(fmt.Sprintf("%v", i.AnalysisID))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -15,8 +15,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponentrelationshipfeedback"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemrelationship"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
 )
 
 // SystemComponentSignalQuery is the builder for querying SystemComponentSignal entities.
@@ -27,7 +28,8 @@ type SystemComponentSignalQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.SystemComponentSignal
 	withComponent       *SystemComponentQuery
-	withFeedbackSignals *SystemComponentRelationshipFeedbackQuery
+	withRelationships   *SystemRelationshipQuery
+	withFeedbackSignals *SystemRelationshipFeedbackQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -87,9 +89,9 @@ func (scsq *SystemComponentSignalQuery) QueryComponent() *SystemComponentQuery {
 	return query
 }
 
-// QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
-func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemComponentRelationshipFeedbackQuery {
-	query := (&SystemComponentRelationshipFeedbackClient{config: scsq.config}).Query()
+// QueryRelationships chains the current query on the "relationships" edge.
+func (scsq *SystemComponentSignalQuery) QueryRelationships() *SystemRelationshipQuery {
+	query := (&SystemRelationshipClient{config: scsq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := scsq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -100,7 +102,29 @@ func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemComponentR
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, selector),
-			sqlgraph.To(systemcomponentrelationshipfeedback.Table, systemcomponentrelationshipfeedback.FieldID),
+			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentsignal.RelationshipsTable, systemcomponentsignal.RelationshipsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
+func (scsq *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackQuery {
+	query := (&SystemRelationshipFeedbackClient{config: scsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, selector),
+			sqlgraph.To(systemrelationshipfeedback.Table, systemrelationshipfeedback.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentsignal.FeedbackSignalsTable, systemcomponentsignal.FeedbackSignalsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
@@ -302,6 +326,7 @@ func (scsq *SystemComponentSignalQuery) Clone() *SystemComponentSignalQuery {
 		inters:              append([]Interceptor{}, scsq.inters...),
 		predicates:          append([]predicate.SystemComponentSignal{}, scsq.predicates...),
 		withComponent:       scsq.withComponent.Clone(),
+		withRelationships:   scsq.withRelationships.Clone(),
 		withFeedbackSignals: scsq.withFeedbackSignals.Clone(),
 		// clone intermediate query.
 		sql:       scsq.sql.Clone(),
@@ -321,10 +346,21 @@ func (scsq *SystemComponentSignalQuery) WithComponent(opts ...func(*SystemCompon
 	return scsq
 }
 
+// WithRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (scsq *SystemComponentSignalQuery) WithRelationships(opts ...func(*SystemRelationshipQuery)) *SystemComponentSignalQuery {
+	query := (&SystemRelationshipClient{config: scsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	scsq.withRelationships = query
+	return scsq
+}
+
 // WithFeedbackSignals tells the query-builder to eager-load the nodes that are connected to
 // the "feedback_signals" edge. The optional arguments are used to configure the query builder of the edge.
-func (scsq *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*SystemComponentRelationshipFeedbackQuery)) *SystemComponentSignalQuery {
-	query := (&SystemComponentRelationshipFeedbackClient{config: scsq.config}).Query()
+func (scsq *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackQuery)) *SystemComponentSignalQuery {
+	query := (&SystemRelationshipFeedbackClient{config: scsq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -410,8 +446,9 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 	var (
 		nodes       = []*SystemComponentSignal{}
 		_spec       = scsq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			scsq.withComponent != nil,
+			scsq.withRelationships != nil,
 			scsq.withFeedbackSignals != nil,
 		}
 	)
@@ -442,10 +479,19 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 			return nil, err
 		}
 	}
+	if query := scsq.withRelationships; query != nil {
+		if err := scsq.loadRelationships(ctx, query, nodes,
+			func(n *SystemComponentSignal) { n.Edges.Relationships = []*SystemRelationship{} },
+			func(n *SystemComponentSignal, e *SystemRelationship) {
+				n.Edges.Relationships = append(n.Edges.Relationships, e)
+			}); err != nil {
+			return nil, err
+		}
+	}
 	if query := scsq.withFeedbackSignals; query != nil {
 		if err := scsq.loadFeedbackSignals(ctx, query, nodes,
-			func(n *SystemComponentSignal) { n.Edges.FeedbackSignals = []*SystemComponentRelationshipFeedback{} },
-			func(n *SystemComponentSignal, e *SystemComponentRelationshipFeedback) {
+			func(n *SystemComponentSignal) { n.Edges.FeedbackSignals = []*SystemRelationshipFeedback{} },
+			func(n *SystemComponentSignal, e *SystemRelationshipFeedback) {
 				n.Edges.FeedbackSignals = append(n.Edges.FeedbackSignals, e)
 			}); err != nil {
 			return nil, err
@@ -483,7 +529,68 @@ func (scsq *SystemComponentSignalQuery) loadComponent(ctx context.Context, query
 	}
 	return nil
 }
-func (scsq *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context, query *SystemComponentRelationshipFeedbackQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemComponentRelationshipFeedback)) error {
+func (scsq *SystemComponentSignalQuery) loadRelationships(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemRelationship)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*SystemComponentSignal)
+	nids := make(map[uuid.UUID]map[*SystemComponentSignal]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(systemcomponentsignal.RelationshipsTable)
+		s.Join(joinT).On(s.C(systemrelationship.FieldID), joinT.C(systemcomponentsignal.RelationshipsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(systemcomponentsignal.RelationshipsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(systemcomponentsignal.RelationshipsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*SystemComponentSignal]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*SystemRelationship](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "relationships" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (scsq *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemRelationshipFeedback)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentSignal)
 	for i := range nodes {
@@ -494,9 +601,9 @@ func (scsq *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context,
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemcomponentrelationshipfeedback.FieldSignalID)
+		query.ctx.AppendFieldOnce(systemrelationshipfeedback.FieldSignalID)
 	}
-	query.Where(predicate.SystemComponentRelationshipFeedback(func(s *sql.Selector) {
+	query.Where(predicate.SystemRelationshipFeedback(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(systemcomponentsignal.FeedbackSignalsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)

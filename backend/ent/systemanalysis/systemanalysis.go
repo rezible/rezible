@@ -21,12 +21,21 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeIncident holds the string denoting the incident edge name in mutations.
+	EdgeIncident = "incident"
 	// EdgeComponents holds the string denoting the components edge name in mutations.
 	EdgeComponents = "components"
 	// EdgeAnalysisComponents holds the string denoting the analysis_components edge name in mutations.
 	EdgeAnalysisComponents = "analysis_components"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
+	// IncidentTable is the table that holds the incident relation/edge.
+	IncidentTable = "system_analyses"
+	// IncidentInverseTable is the table name for the Incident entity.
+	// It exists in this package in order to avoid circular dependency with the "incident" package.
+	IncidentInverseTable = "incidents"
+	// IncidentColumn is the table column denoting the incident relation/edge.
+	IncidentColumn = "incident_id"
 	// ComponentsTable is the table that holds the components relation/edge. The primary key declared below.
 	ComponentsTable = "system_analysis_components"
 	// ComponentsInverseTable is the table name for the SystemComponent entity.
@@ -99,6 +108,13 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByIncidentField orders the results by incident field.
+func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByComponentsCount orders the results by components count.
 func ByComponentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -125,6 +141,13 @@ func ByAnalysisComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOptio
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAnalysisComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newIncidentStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IncidentInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+	)
 }
 func newComponentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
