@@ -53,14 +53,14 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		return oapi.SystemAnalysisDiagramPosition{X: x, Y: y}
 	}
 
-	makeSignal := func(label, desc string) *oapi.SystemComponentSignal {
-		attr := oapi.SystemComponentSignalAttributes{Label: label, Description: desc}
-		return &oapi.SystemComponentSignal{Id: uuid.New(), Attributes: attr}
+	makeSignal := func(id uuid.UUID, desc string) *oapi.SystemAnalysisRelationshipFeedbackSignal {
+		attr := oapi.SystemAnalysisRelationshipFeedbackSignalAttributes{SignalId: id, Description: desc}
+		return &oapi.SystemAnalysisRelationshipFeedbackSignal{Id: uuid.New(), Attributes: attr}
 	}
 
-	makeControl := func(label, desc string) *oapi.SystemComponentControl {
-		attr := oapi.SystemComponentControlAttributes{Label: label, Description: desc}
-		return &oapi.SystemComponentControl{Id: uuid.New(), Attributes: attr}
+	makeControl := func(id uuid.UUID, desc string) *oapi.SystemAnalysisRelationshipControlAction {
+		attr := oapi.SystemAnalysisRelationshipControlActionAttributes{ControlId: id, Description: desc}
+		return &oapi.SystemAnalysisRelationshipControlAction{Id: uuid.New(), Attributes: attr}
 	}
 
 	makeAnalysisComponent := func(cmp oapi.SystemComponent, pos oapi.SystemAnalysisDiagramPosition) oapi.SystemAnalysisComponent {
@@ -68,13 +68,13 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		return oapi.SystemAnalysisComponent{Id: uuid.New(), Attributes: attr}
 	}
 
-	makeRelationship := func(sId, tId uuid.UUID, desc string, feedback *oapi.SystemComponentSignal, control *oapi.SystemComponentControl) oapi.SystemAnalysisRelationship {
+	makeRelationship := func(sId, tId uuid.UUID, desc string, feedback *oapi.SystemAnalysisRelationshipFeedbackSignal, control *oapi.SystemAnalysisRelationshipControlAction) oapi.SystemAnalysisRelationship {
 		attr := oapi.SystemAnalysisRelationshipAttributes{
 			SourceId:        sId,
 			TargetId:        tId,
 			Description:     desc,
-			FeedbackSignals: make([]oapi.SystemComponentSignal, 0, 1),
-			ControlActions:  make([]oapi.SystemComponentControl, 0, 1),
+			FeedbackSignals: make([]oapi.SystemAnalysisRelationshipFeedbackSignal, 0, 1),
+			ControlActions:  make([]oapi.SystemAnalysisRelationshipControlAction, 0, 1),
 		}
 		if feedback != nil {
 			attr.FeedbackSignals = append(attr.FeedbackSignals, *feedback)
@@ -85,7 +85,7 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		return oapi.SystemAnalysisRelationship{Id: uuid.New(), Attributes: attr}
 	}
 
-	feErrHandlingControl := makeControl("Error Handling", "catches and displays API errors")
+	feErrHandlingControl := makeControl(uuid.New(), "catches and displays API errors")
 	paymentUi := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
@@ -104,8 +104,10 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		},
 	}
 
-	apiErrorsSignal := makeSignal("Request Errors", "Failed Requests")
-	circuitBreakerCtrl := makeControl("Circuit Breaking", "Can trigger circuit breaker")
+	// apiErrorsSignal := makeSignal("Request Errors", "Failed Requests")
+	apiErrorsSignal := makeSignal(uuid.New(), "Failed Requests")
+	// circuitBreakerCtrl := makeControl("Circuit Breaking", "Can trigger circuit breaker")
+	circuitBreakerCtrl := makeControl(uuid.New(), "Can trigger circuit breaker")
 	apiGateway := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
@@ -127,8 +129,10 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		},
 	}
 
-	retryControl := makeControl("Retry Mechanism", "Can retry requests")
-	paymentErrorSignal := makeSignal("Failed Payment", "payment request failed")
+	//retryControl := makeControl("Retry Mechanism", "Can retry requests")
+	retryControl := makeControl(uuid.New(), "Can retry requests")
+	//paymentErrorSignal := makeSignal("Failed Payment", "payment request failed")
+	paymentErrorSignal := makeSignal(uuid.New(), "payment request failed")
 	paymentSvc := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
@@ -150,7 +154,8 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		},
 	}
 
-	transactionSignal := makeSignal("Transaction Status", "result of transactions")
+	// transactionSignal := makeSignal("Transaction Status", "result of transactions")
+	transactionSignal := makeSignal(uuid.New(), "result of transactions")
 	db := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
@@ -192,7 +197,8 @@ func makeFakeSystemAnalysis() oapi.SystemAnalysis {
 		},
 	}
 
-	transResultSignal := makeSignal("Transaction Results", "results of transaction")
+	// transResultSignal := makeSignal("Transaction Results", "results of transaction")
+	transResultSignal := makeSignal(uuid.New(), "results of transaction")
 	extPaymentsProvider := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{

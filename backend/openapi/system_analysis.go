@@ -90,8 +90,8 @@ type (
 		Description string                      `json:"description"`
 		Properties  map[string]any              `json:"properties"`
 		Constraints []SystemComponentConstraint `json:"constraints"`
-		//Signals     []SystemComponentSignal     `json:"signals"`
-		//Controls    []SystemComponentControl    `json:"controls"`
+		Signals     []SystemComponentSignal     `json:"signals"`
+		Controls    []SystemComponentControl    `json:"controls"`
 	}
 
 	SystemAnalysis struct {
@@ -125,11 +125,29 @@ type (
 		Attributes SystemAnalysisRelationshipAttributes `json:"attributes"`
 	}
 	SystemAnalysisRelationshipAttributes struct {
-		SourceId        uuid.UUID                `json:"source_id"`
-		TargetId        uuid.UUID                `json:"target_id"`
-		Description     string                   `json:"description"`
-		FeedbackSignals []SystemComponentSignal  `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
-		ControlActions  []SystemComponentControl `json:"control_actions"`  // IDs of SystemComponentControl from source to target
+		SourceId        uuid.UUID                                  `json:"source_id"`
+		TargetId        uuid.UUID                                  `json:"target_id"`
+		Description     string                                     `json:"description"`
+		FeedbackSignals []SystemAnalysisRelationshipFeedbackSignal `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
+		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"control_actions"`  // IDs of SystemComponentControl from source to target
+	}
+
+	SystemAnalysisRelationshipControlAction struct {
+		Id         uuid.UUID                                         `json:"id"`
+		Attributes SystemAnalysisRelationshipControlActionAttributes `json:"attributes"`
+	}
+	SystemAnalysisRelationshipControlActionAttributes struct {
+		ControlId   uuid.UUID `json:"control_id"`
+		Description string    `json:"description"`
+	}
+
+	SystemAnalysisRelationshipFeedbackSignal struct {
+		Id         uuid.UUID                                          `json:"id"`
+		Attributes SystemAnalysisRelationshipFeedbackSignalAttributes `json:"attributes"`
+	}
+	SystemAnalysisRelationshipFeedbackSignalAttributes struct {
+		SignalId    uuid.UUID `json:"signal_id"`
+		Description string    `json:"description"`
 	}
 )
 

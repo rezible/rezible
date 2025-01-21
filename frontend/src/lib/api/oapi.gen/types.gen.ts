@@ -1725,11 +1725,31 @@ export type SystemAnalysisRelationship = {
 };
 
 export type SystemAnalysisRelationshipAttributes = {
-    control_actions: Array<SystemComponentControl>;
+    control_actions: Array<SystemAnalysisRelationshipControlAction>;
     description: string;
-    feedback_signals: Array<SystemComponentSignal>;
+    feedback_signals: Array<SystemAnalysisRelationshipFeedbackSignal>;
     source_id: string;
     target_id: string;
+};
+
+export type SystemAnalysisRelationshipControlAction = {
+    attributes: SystemAnalysisRelationshipControlActionAttributes;
+    id: string;
+};
+
+export type SystemAnalysisRelationshipControlActionAttributes = {
+    control_id: string;
+    description: string;
+};
+
+export type SystemAnalysisRelationshipFeedbackSignal = {
+    attributes: SystemAnalysisRelationshipFeedbackSignalAttributes;
+    id: string;
+};
+
+export type SystemAnalysisRelationshipFeedbackSignalAttributes = {
+    description: string;
+    signal_id: string;
 };
 
 export type SystemComponent = {
@@ -1739,12 +1759,14 @@ export type SystemComponent = {
 
 export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
+    controls: Array<SystemComponentControl>;
     description: string;
     kind: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
+    signals: Array<SystemComponentSignal>;
 };
 
 export type SystemComponentConstraint = {
