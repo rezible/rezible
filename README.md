@@ -11,8 +11,8 @@
 ---
 
 # What is Rezible?
-Rezible is an open-source platform aiming to reduce the burden on oncall teams by streamlining operational 
-processes, while also collecting and visualising data on overall oncall health.
+Rezible is an open-source platform that streamlines & automates everyday operations tasks for oncall teams, 
+while collecting data and reporting on overall operational health. 
 
 > [!NOTE]  
 > Rezible is currently **under heavy development**.
@@ -22,15 +22,16 @@ processes, while also collecting and visualising data on overall oncall health.
 > We're also looking for early adopters - [leave your details here!](https://tally.so/r/wzrWkk)
 
 ## Features
-- 🔗 Easily integrates with the tools you already use
+- 🔗 Integrates with the tools you already use
 - 📋 Oncall shift event annotations & automated handovers
   - 🔎 Flag unhelpful alerts, 'invisible' toil work, and more
-- 🗣️ AI-powered post-incident debriefs & incident retrospectives with realtime collaboration
+- 🔥 Incident retrospectives with collaborative, interactive timelines & visual systems analysis
+- 🗣️ AI-powered post-incident debriefs
 - 📚 Searchable & discoverable knowledgebase, auto-populated from retrospectives
 - 🎓 Structured oncall training & onboarding
 - 🗓️ Scheduling & facilitation of cross-team meetings (e.g. incident review, operations review)
 - ☑️ Team oncall backlog task tracking
-- 📊 Data collection & visualisation - start reporting on your oncall health!
+- 📊 Data collection & visualisation - start reporting on your operational health!
 
 ## Motivation
 Despite being a critical role in keeping live software products running, oncall is often overlooked as a 
