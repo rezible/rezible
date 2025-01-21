@@ -137,12 +137,6 @@ func (ic *IncidentCreate) SetNillableTypeID(u *uuid.UUID) *IncidentCreate {
 	return ic
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (ic *IncidentCreate) SetAnalysisID(u uuid.UUID) *IncidentCreate {
-	ic.mutation.SetAnalysisID(u)
-	return ic
-}
-
 // SetID sets the "id" field.
 func (ic *IncidentCreate) SetID(u uuid.UUID) *IncidentCreate {
 	ic.mutation.SetID(u)
@@ -448,9 +442,6 @@ func (ic *IncidentCreate) check() error {
 	if _, ok := ic.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Incident.provider_id"`)}
 	}
-	if _, ok := ic.mutation.AnalysisID(); !ok {
-		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "Incident.analysis_id"`)}
-	}
 	return nil
 }
 
@@ -522,10 +513,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
-	}
-	if value, ok := ic.mutation.AnalysisID(); ok {
-		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
-		_node.AnalysisID = value
 	}
 	if nodes := ic.mutation.EnvironmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -987,18 +974,6 @@ func (u *IncidentUpsert) ClearTypeID() *IncidentUpsert {
 	return u
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (u *IncidentUpsert) SetAnalysisID(v uuid.UUID) *IncidentUpsert {
-	u.Set(incident.FieldAnalysisID, v)
-	return u
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateAnalysisID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldAnalysisID)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -1219,20 +1194,6 @@ func (u *IncidentUpsertOne) UpdateTypeID() *IncidentUpsertOne {
 func (u *IncidentUpsertOne) ClearTypeID() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *IncidentUpsertOne) SetAnalysisID(v uuid.UUID) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateAnalysisID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateAnalysisID()
 	})
 }
 
@@ -1623,20 +1584,6 @@ func (u *IncidentUpsertBulk) UpdateTypeID() *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) ClearTypeID() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.ClearTypeID()
-	})
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (u *IncidentUpsertBulk) SetAnalysisID(v uuid.UUID) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetAnalysisID(v)
-	})
-}
-
-// UpdateAnalysisID sets the "analysis_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateAnalysisID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateAnalysisID()
 	})
 }
 

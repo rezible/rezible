@@ -217,20 +217,6 @@ func (iu *IncidentUpdate) ClearTypeID() *IncidentUpdate {
 	return iu
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (iu *IncidentUpdate) SetAnalysisID(u uuid.UUID) *IncidentUpdate {
-	iu.mutation.SetAnalysisID(u)
-	return iu
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (iu *IncidentUpdate) SetNillableAnalysisID(u *uuid.UUID) *IncidentUpdate {
-	if u != nil {
-		iu.SetAnalysisID(*u)
-	}
-	return iu
-}
-
 // AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
 func (iu *IncidentUpdate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdate {
 	iu.mutation.AddEnvironmentIDs(ids...)
@@ -833,9 +819,6 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
-	}
-	if value, ok := iu.mutation.AnalysisID(); ok {
-		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
 	}
 	if iu.mutation.EnvironmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1719,20 +1702,6 @@ func (iuo *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
 	return iuo
 }
 
-// SetAnalysisID sets the "analysis_id" field.
-func (iuo *IncidentUpdateOne) SetAnalysisID(u uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.SetAnalysisID(u)
-	return iuo
-}
-
-// SetNillableAnalysisID sets the "analysis_id" field if the given value is not nil.
-func (iuo *IncidentUpdateOne) SetNillableAnalysisID(u *uuid.UUID) *IncidentUpdateOne {
-	if u != nil {
-		iuo.SetAnalysisID(*u)
-	}
-	return iuo
-}
-
 // AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
 func (iuo *IncidentUpdateOne) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	iuo.mutation.AddEnvironmentIDs(ids...)
@@ -2365,9 +2334,6 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 	}
 	if iuo.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
-	}
-	if value, ok := iuo.mutation.AnalysisID(); ok {
-		_spec.SetField(incident.FieldAnalysisID, field.TypeUUID, value)
 	}
 	if iuo.mutation.EnvironmentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

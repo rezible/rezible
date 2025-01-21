@@ -43,7 +43,6 @@ var (
 		{Name: "closed_at", Type: field.TypeTime},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
-		{Name: "analysis_id", Type: field.TypeUUID},
 		{Name: "severity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "type_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -55,13 +54,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incidents_incident_severities_severity",
-				Columns:    []*schema.Column{IncidentsColumns[11]},
+				Columns:    []*schema.Column{IncidentsColumns[10]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[12]},
+				Columns:    []*schema.Column{IncidentsColumns[11]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

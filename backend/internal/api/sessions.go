@@ -22,7 +22,7 @@ func (h *sessionsHandler) GetUserSession(ctx context.Context, input *oapi.GetUse
 	sess := mustGetAuthSession(ctx, h.auth)
 	user, userErr := h.users.GetById(ctx, sess.UserId)
 	if userErr != nil {
-		return nil, userErr
+		return nil, detailError("failed to get user", userErr)
 	}
 
 	resp.Body.Data = oapi.UserSession{

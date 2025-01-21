@@ -42,8 +42,6 @@ type Incident struct {
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
 	TypeID uuid.UUID `json:"type_id,omitempty"`
-	// AnalysisID holds the value of the "analysis_id" field.
-	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentQuery when eager-loading is set.
 	Edges        IncidentEdges `json:"edges"`
@@ -248,7 +246,7 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case incident.FieldOpenedAt, incident.FieldModifiedAt, incident.FieldClosedAt:
 			values[i] = new(sql.NullTime)
-		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID, incident.FieldAnalysisID:
+		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -336,12 +334,6 @@ func (i *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field type_id", values[j])
 			} else if value != nil {
 				i.TypeID = *value
-			}
-		case incident.FieldAnalysisID:
-			if value, ok := values[j].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field analysis_id", values[j])
-			} else if value != nil {
-				i.AnalysisID = *value
 			}
 		default:
 			i.selectValues.Set(columns[j], values[j])
@@ -491,9 +483,6 @@ func (i *Incident) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("type_id=")
 	builder.WriteString(fmt.Sprintf("%v", i.TypeID))
-	builder.WriteString(", ")
-	builder.WriteString("analysis_id=")
-	builder.WriteString(fmt.Sprintf("%v", i.AnalysisID))
 	builder.WriteByte(')')
 	return builder.String()
 }

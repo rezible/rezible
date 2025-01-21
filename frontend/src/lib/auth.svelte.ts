@@ -62,9 +62,9 @@ const createSession = () => {
 			if (authErr == "missing_user") {
 				newError = "no_user";
 			}
-		}
-		
-		if (status >= 500) {
+		} else if (status === 404) {
+			newError = "no_user";
+		} else if (status >= 500) {
 			// TODO
 			console.error("failed to get auth session", status, respError);
 		}

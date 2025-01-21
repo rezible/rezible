@@ -35,8 +35,6 @@ const (
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
-	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
-	FieldAnalysisID = "analysis_id"
 	// EdgeEnvironments holds the string denoting the environments edge name in mutations.
 	EdgeEnvironments = "environments"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
@@ -186,7 +184,6 @@ var Columns = []string{
 	FieldChatChannelID,
 	FieldSeverityID,
 	FieldTypeID,
-	FieldAnalysisID,
 }
 
 var (
@@ -285,11 +282,6 @@ func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTypeID orders the results by the type_id field.
 func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
-}
-
-// ByAnalysisID orders the results by the analysis_id field.
-func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
 }
 
 // ByEnvironmentsCount orders the results by environments count.

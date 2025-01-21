@@ -825,7 +825,7 @@ export type GetSystemAnalysisResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: ScopedSystemAnalysis;
+    data: SystemAnalysis;
 };
 
 export type GetSystemComponentResponseBody = {
@@ -1672,16 +1672,6 @@ export const type5 = {
     TIMELINE: 'timeline'
 } as const;
 
-export type ScopedSystemAnalysis = {
-    attributes: ScopedSystemAnalysisAttributes;
-    id: string;
-};
-
-export type ScopedSystemAnalysisAttributes = {
-    components: Array<SystemAnalysisComponent>;
-    relationships: Array<SystemAnalysisRelationship>;
-};
-
 export type SendOncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
 };
@@ -1700,6 +1690,16 @@ export type SendOncallShiftHandoverResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandover;
+};
+
+export type SystemAnalysis = {
+    attributes: SystemAnalysisAttributes;
+    id: string;
+};
+
+export type SystemAnalysisAttributes = {
+    components: Array<SystemAnalysisComponent>;
+    relationships: Array<SystemAnalysisRelationship>;
 };
 
 export type SystemAnalysisComponent = {
@@ -1725,9 +1725,9 @@ export type SystemAnalysisRelationship = {
 };
 
 export type SystemAnalysisRelationshipAttributes = {
-    control_actions: Array<(string)>;
+    control_actions: Array<SystemComponentControl>;
     description: string;
-    feedback_signals: Array<(string)>;
+    feedback_signals: Array<SystemComponentSignal>;
     source_id: string;
     target_id: string;
 };
@@ -1739,14 +1739,12 @@ export type SystemComponent = {
 
 export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
-    controls: Array<SystemComponentControl>;
     description: string;
     kind: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignal>;
 };
 
 export type SystemComponentConstraint = {

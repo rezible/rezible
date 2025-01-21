@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { session } from '$lib/auth.svelte';
 
+	console.log(session.error);
 	const errorText = $derived(session.error ?? "unknown");
 </script>
 

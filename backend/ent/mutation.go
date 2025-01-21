@@ -978,7 +978,6 @@ type IncidentMutation struct {
 	closed_at               *time.Time
 	provider_id             *string
 	chat_channel_id         *string
-	analysis_id             *uuid.UUID
 	clearedFields           map[string]struct{}
 	environments            map[uuid.UUID]struct{}
 	removedenvironments     map[uuid.UUID]struct{}
@@ -1568,42 +1567,6 @@ func (m *IncidentMutation) TypeIDCleared() bool {
 func (m *IncidentMutation) ResetTypeID() {
 	m._type = nil
 	delete(m.clearedFields, incident.FieldTypeID)
-}
-
-// SetAnalysisID sets the "analysis_id" field.
-func (m *IncidentMutation) SetAnalysisID(u uuid.UUID) {
-	m.analysis_id = &u
-}
-
-// AnalysisID returns the value of the "analysis_id" field in the mutation.
-func (m *IncidentMutation) AnalysisID() (r uuid.UUID, exists bool) {
-	v := m.analysis_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAnalysisID returns the old "analysis_id" field's value of the Incident entity.
-// If the Incident object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAnalysisID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAnalysisID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAnalysisID: %w", err)
-	}
-	return oldValue.AnalysisID, nil
-}
-
-// ResetAnalysisID resets all changes to the "analysis_id" field.
-func (m *IncidentMutation) ResetAnalysisID() {
-	m.analysis_id = nil
 }
 
 // AddEnvironmentIDs adds the "environments" edge to the Environment entity by ids.
@@ -2450,7 +2413,7 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 11)
 	if m.slug != nil {
 		fields = append(fields, incident.FieldSlug)
 	}
@@ -2484,9 +2447,6 @@ func (m *IncidentMutation) Fields() []string {
 	if m._type != nil {
 		fields = append(fields, incident.FieldTypeID)
 	}
-	if m.analysis_id != nil {
-		fields = append(fields, incident.FieldAnalysisID)
-	}
 	return fields
 }
 
@@ -2517,8 +2477,6 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.SeverityID()
 	case incident.FieldTypeID:
 		return m.TypeID()
-	case incident.FieldAnalysisID:
-		return m.AnalysisID()
 	}
 	return nil, false
 }
@@ -2550,8 +2508,6 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldSeverityID(ctx)
 	case incident.FieldTypeID:
 		return m.OldTypeID(ctx)
-	case incident.FieldAnalysisID:
-		return m.OldAnalysisID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Incident field %s", name)
 }
@@ -2637,13 +2593,6 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTypeID(v)
-		return nil
-	case incident.FieldAnalysisID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAnalysisID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)
@@ -2747,9 +2696,6 @@ func (m *IncidentMutation) ResetField(name string) error {
 		return nil
 	case incident.FieldTypeID:
 		m.ResetTypeID()
-		return nil
-	case incident.FieldAnalysisID:
-		m.ResetAnalysisID()
 		return nil
 	}
 	return fmt.Errorf("unknown Incident field %s", name)

@@ -28,7 +28,6 @@ func (Incident) Fields() []ent.Field {
 		field.UUID("severity_id", uuid.UUID{}).Optional(),
 		field.UUID("type_id", uuid.UUID{}).Optional(),
 		// field.UUID("retrospective_id", uuid.UUID{}),
-		field.UUID("analysis_id", uuid.UUID{}),
 	}
 }
 
