@@ -11,8 +11,9 @@
 ---
 
 # What is Rezible?
-Rezible is an open-source platform that streamlines & automates everyday operations tasks for oncall teams, 
-while collecting data and reporting on overall operational health. 
+Rezible is an open-source platform that streamlines & automates everyday operational tasks for oncall teams, 
+while collecting data and reporting on overall operational health. Think of it as "Oncall on Rails", helping
+teams worry less about the state of their oncall rosters!
 
 > [!NOTE]  
 > Rezible is currently **under heavy development**.
