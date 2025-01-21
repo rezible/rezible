@@ -15,7 +15,7 @@ import {
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
-import { getSystemAnalysisOptions, type ScopedSystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
+import { getSystemAnalysisOptions, type SystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -85,7 +85,7 @@ export type SystemComponentNodeData = {
 	role: string;
 }
 
-const translateSystemAnalysis = (an: ScopedSystemAnalysis) => {
+const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
 	let edges: Edge[] = [];
 

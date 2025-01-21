@@ -13,7 +13,7 @@
 	const nodes = useNodes();
 </script>
 
-<div class="absolute bottom-2 w-full">
+<div class="absolute bottom-2 right-2 w-fit mx-auto">
 	<div class="w-fit group flex gap-2 justify-center mx-auto p-2 rounded-lg border border-surface bg-surface-100/20">
 		<Button color="primary" variant="fill" on:click={() => onAddNode()}>
 			<span class="flex items-center gap-2">
