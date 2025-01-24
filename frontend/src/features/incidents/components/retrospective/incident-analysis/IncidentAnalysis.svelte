@@ -2,6 +2,7 @@
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
     import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
     import EditComponentDialog from "./EditComponentDialog.svelte";
+    import EditRelationshipDialog from "./EditRelationshipDialog.svelte";
 
 	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
     import { analysis } from "./analysis.svelte";
@@ -15,3 +16,4 @@
 </div>
 
 <EditComponentDialog />
+<EditRelationshipDialog />

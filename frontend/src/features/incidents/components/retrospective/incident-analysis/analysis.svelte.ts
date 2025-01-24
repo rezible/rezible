@@ -6,9 +6,10 @@ import { watch } from "runed";
 const createAnalysisState = () => {
 	let analysisId = $state<string>();
 	let data = $state<SystemAnalysis>();
+	let componentDialogOpen = $state(false);
 	let editingComponent = $state<SystemAnalysisComponent>();
+	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
-
 
 	const setup = () => {
 		analysisId = incidentCtx.get().attributes.system_analysis_id;
@@ -26,15 +27,24 @@ const createAnalysisState = () => {
 		});
 	}
 
-	const setEditingComponent = (c?: SystemAnalysisComponent) => {editingComponent = c};
-	const setEditingRelationship = (r?: SystemAnalysisRelationship) => {editingRelationship = r};
+	const setComponentDialogOpen = (open: boolean, editComponent?: SystemAnalysisComponent) => {
+		componentDialogOpen = open;
+		editingComponent = editComponent;
+	}
+
+	const setRelationshipDialogOpen = (open: boolean, editRel?: SystemAnalysisRelationship) => {
+		relationshipDialogOpen = open;
+		editingRelationship = editRel;
+	}
 
 	return {
 		setup,
 		get data() { return data },
-		setEditingComponent,
+		get componentDialogOpen() { return componentDialogOpen },
+		setComponentDialogOpen,
 		get editingComponent() { return editingComponent },
-		setEditingRelationship,
+		get relationshipDialogOpen() { return relationshipDialogOpen },
+		setRelationshipDialogOpen,
 		get editingRelationship() { return editingRelationship },
 	}
 }

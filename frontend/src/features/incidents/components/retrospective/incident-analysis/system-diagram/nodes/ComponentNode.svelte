@@ -16,7 +16,7 @@
 </script>
 
 <div data-is-selected={selected} class="node border bg-surface-100 data-[is-selected=true]:bg-surface-200 rounded-lg p-3 group">
-	<span>{data.component.attributes.name}</span>
+	<span>{data.component.attributes.component.attributes.name}</span>
 	<Handle type="target" position={Position.Left} class="invisible group-hover:visible" />
 	<Handle type="source" position={Position.Right} class="invisible group-hover:visible" />
 </div>

@@ -15,7 +15,7 @@ import {
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
-import { getSystemAnalysisOptions, type SystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
+import { getSystemAnalysisOptions, type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
 import { analysis } from "../analysis.svelte";
 
 /*
@@ -81,39 +81,48 @@ const translateIncidentComponents = (incidentComponents: IncidentSystemComponent
 */
 
 export type SystemComponentNodeData = {
-	analysisId: string;
-	component: SystemComponent;
+	component: SystemAnalysisComponent;
 	role: string;
 }
+
+export type SystemRelationshipEdgeData = {
+	relationship: SystemAnalysisRelationship;
+}
+
 
 const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
 	let edges: Edge[] = [];
 
-	an.attributes.components.forEach(({id, attributes}) => {
-		const {component, role, position} = attributes;
+	an.attributes.components.forEach(component => {
+		const {role, position} = component.attributes;
 
 		const data: SystemComponentNodeData = {
-			analysisId: id,
 			component,
 			role,
-		}
+		};
 
 		nodes.push({
-			id: component.id,
+			id: component.attributes.component.id,
 			type: "component",
 			data,
 			position,
 		});
 	});
 
-	an.attributes.relationships.forEach(({id, attributes}) => {
+	an.attributes.relationships.forEach(relationship => {
+		const {id, attributes} = relationship;
+
+		const data: SystemRelationshipEdgeData = {
+			relationship
+		};
+
 		edges.push({
 			id,
 			type: "relationship",
 			source: attributes.source_id,
 			target: attributes.target_id,
-			data: attributes,
+			data,
 		})
 	});
 
