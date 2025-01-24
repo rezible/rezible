@@ -4,8 +4,10 @@
     import type { SystemAnalysisComponent } from "$lib/api";
     import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 
-    type Props = {open: boolean}
-    let { open = $bindable() }: Props = $props();
+    type Props = {}
+    let { }: Props = $props();
+
+	let open = $state(false);
 </script>
 
 <Dialog

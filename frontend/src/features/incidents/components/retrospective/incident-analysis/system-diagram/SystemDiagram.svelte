@@ -16,12 +16,12 @@
 	import "@xyflow/svelte/dist/style.css";
 
 	import { diagram } from "./diagram.svelte";
-	import ContextMenu from "./SystemDiagramContextMenu.svelte";
-	import SystemDiagramToolbar from "./SystemDiagramToolbar.svelte";
+	import ContextMenu from "./ContextMenu.svelte";
+    import ConnectionLine from "./ConnectionLine.svelte";
+	import FloatingToolbar from "./FloatingToolbar.svelte";
     import AddComponentDialog from "./AddComponentDialog.svelte";
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
-    import SystemDiagramConnectionLine from "./SystemDiagramConnectionLine.svelte";
 
 	type Props = {}
 	const {}: Props = $props();
@@ -63,8 +63,6 @@
 	const minimapProps: MiniMapProps = {
 		position: "top-right",
 	};
-
-	let addComponentDialogOpen = $state(false);
 </script>
 
 <SvelteFlowProvider>
@@ -77,17 +75,19 @@
 			on:selectioncontextmenu={diagram.handleContextMenuEvent}
 			on:nodeclick={diagram.handleNodeClicked}
 			on:paneclick={diagram.handlePaneClicked}
-			on:edgeclick={e => console.log("edge click", e)}
+			on:edgeclick={diagram.handleEdgeClicked}
+			on:edgemouseenter={e => console.log("edge mouse enter")}
+			on:edgemouseleave={e => console.log("edgemouseleave")}
 			onconnectend={diagram.handleConnectEnd}
 		>
 			<Background {...backgroundProps} />
 			<Controls {...controlsProps} />
 			<MiniMap {...minimapProps} />
-			<SystemDiagramConnectionLine slot="connectionLine" />
+			<ConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
 		</SvelteFlow>
-		<SystemDiagramToolbar onAddNode={() => {addComponentDialogOpen = true}} />
+		<FloatingToolbar />
 	</div>
 
-	<AddComponentDialog bind:open={addComponentDialogOpen} />
+	<AddComponentDialog />
 </SvelteFlowProvider>

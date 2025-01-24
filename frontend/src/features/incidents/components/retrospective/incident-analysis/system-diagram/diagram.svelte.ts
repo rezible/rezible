@@ -1,6 +1,6 @@
 import { onMount } from "svelte";
 import { watch } from "runed";
-import { writable } from "svelte/store";
+import { writable, get } from "svelte/store";
 
 import {
 	type Node,
@@ -12,7 +12,7 @@ import {
 	type OnConnectEnd,
 } from "@xyflow/svelte";
 
-import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./SystemDiagramContextMenu.svelte";
+import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
 import { getSystemAnalysisOptions, type SystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
@@ -157,7 +157,13 @@ const createDiagramState = () => {
 
 	const handlePaneClicked = (e: SvelteFlowEvents["paneclick"]) => {
 		ctxMenuProps = undefined;
+		
 	};
+
+	const handleEdgeClicked = (e: SvelteFlowEvents["edgeclick"]) => {
+		const { event, edge } = e.detail;
+		console.log("edge clicked", edge);
+	}
 
 	const handleContextMenuEvent = (e: SvelteFlowContextMenuEvent) => {
 		if (!containerEl) return;
@@ -200,6 +206,7 @@ const createDiagramState = () => {
 		get ctxMenuProps() { return ctxMenuProps },
 		handleContextMenuEvent,
 		handleNodeClicked,
+		handleEdgeClicked,
 		handlePaneClicked,
 		handleConnectEnd,
 	}

@@ -4,10 +4,10 @@
 	import { Button, Icon } from 'svelte-ux';
 
     type Props = {
-		onAddNode: VoidFunction;
+		
 	}
     let { 
-		onAddNode,
+		
 	}: Props = $props();
 
 	const nodes = useNodes();
@@ -15,7 +15,7 @@
 
 <div class="absolute bottom-2 right-2 w-fit mx-auto">
 	<div class="w-fit group flex gap-2 justify-center mx-auto p-2 rounded-lg border border-surface bg-surface-100/20">
-		<Button color="primary" variant="fill" on:click={() => onAddNode()}>
+		<Button color="primary" variant="fill" on:click={() => console.log("add")}>
 			<span class="flex items-center gap-2">
 				<span class="group-hover:inline hidden">Add Node</span>
 				<Icon data={mdiPlusNetwork} />
