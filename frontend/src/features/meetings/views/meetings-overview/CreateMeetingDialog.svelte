@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { createMutation } from '@tanstack/svelte-query';
+	import { createMutation } from '@tanstack/svelte-query';
 	import { mdiArrowRight } from '@mdi/js';
 	import { Button, Dialog, Field, NumberStepper, TextField, ToggleGroup, ToggleOption, DatePickerField, Icon, Header } from 'svelte-ux';
-    import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from '$lib/api';
-    import { CreateMeetingFormSchema, getEmptyForm, weekdays, type CreateMeetingFormData, type Weekday } from './meetings';
-    import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
+	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from '$lib/api';
+	import { CreateMeetingFormSchema, getEmptyForm, weekdays, type CreateMeetingFormData, type Weekday } from './meetings';
+	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 
-    import DateTimePickerField from '$components/date-time-field/DateTimePickerField.svelte';
-    import UserPickerField from './UserPickerField.svelte';
+	import DateTimePickerField from '$components/date-time-field/DateTimePickerField.svelte';
+	import UserPickerField from './UserPickerField.svelte';
 
 	type Props = {
 		open: boolean;

@@ -8,16 +8,15 @@
     import type { AnnotationType } from './field-editor/BubbleMenu.svelte';
     import FieldEditorWrapper from './field-editor/FieldEditorWrapper.svelte';
 
+	import { incidentCtx, retrospectiveCtx } from '$features/incidents/lib/context.ts';
 	import type { Incident, Retrospective } from '$lib/api';
 	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
 
-	type Props = { 
-		incident: Incident;
-		retrospective: Retrospective;
-	};
-	let { incident, retrospective }: Props = $props();
+	type Props = {};
+	let { }: Props = $props();
 
-	const sections = $derived(retrospective?.attributes.sections);
+	const retrospective = retrospectiveCtx.get();
+	const sections = $derived(retrospective.attributes.sections);
 
 	let sectionsSidebarVisible = $state(false);
 

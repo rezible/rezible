@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Dialog } from "svelte-ux";
 	import ConfirmButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-    import { timeline } from "$features/incidents/components/incident-timeline/timeline.svelte";
+    import { timeline } from "$features/incidents/components/retrospective/incident-analysis/incident-timeline/timeline.svelte";
     import EventEditor from "./EventEditor.svelte";
 
 	type Props = {
