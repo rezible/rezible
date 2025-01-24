@@ -124,6 +124,8 @@ type SvelteFlowContextMenuEvent = SvelteFlowEvents["panecontextmenu"] | SvelteFl
 
 const createDiagramState = () => {
 	let analysisId = $state<string>();
+	let selectedNode = $state<Node>();
+	let selectedEdge = $state<Edge>();
 	let containerEl = $state<HTMLElement>();
 	let ctxMenuProps = $state<ContextMenuProps>();
 
@@ -150,18 +152,25 @@ const createDiagramState = () => {
 		});
 	}
 
+	const setSelected = ({ctxMenuProps, node, edge}: {ctxMenuProps?: ContextMenuProps, node?: Node, edge?: Edge}) => {
+		ctxMenuProps = ctxMenuProps;
+		selectedNode = node;
+		selectedEdge = edge;
+	}
+
 	const handleNodeClicked = (e: SvelteFlowEvents["nodeclick"]) => {
 		const { event, node } = e.detail;
+		setSelected({node});
 		console.log("node clicked", node);
 	}
 
 	const handlePaneClicked = (e: SvelteFlowEvents["paneclick"]) => {
-		ctxMenuProps = undefined;
-		
+		setSelected({});
 	};
 
 	const handleEdgeClicked = (e: SvelteFlowEvents["edgeclick"]) => {
 		const { event, edge } = e.detail;
+		setSelected({edge});
 		console.log("edge clicked", edge);
 	}
 
@@ -203,6 +212,8 @@ const createDiagramState = () => {
 		setup,
 		get nodes() { return nodes },
 		get edges() { return edges },
+		get selectedNode() { return selectedNode },
+		get selectedEdge() { return selectedEdge },
 		get ctxMenuProps() { return ctxMenuProps },
 		handleContextMenuEvent,
 		handleNodeClicked,

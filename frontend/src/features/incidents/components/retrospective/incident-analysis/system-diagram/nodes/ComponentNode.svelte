@@ -16,7 +16,7 @@
 	}: NodeProps = $props();
 	const data = $derived(arbitraryData as SystemComponentNodeData);
 
-	const nodes = useNodes();
+	let sourceHandlePos = $state();
 </script>
 
 <NodeToolbar position={Position.Bottom}>

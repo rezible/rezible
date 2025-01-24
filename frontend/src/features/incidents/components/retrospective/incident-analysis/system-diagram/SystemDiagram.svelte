@@ -22,6 +22,7 @@
     import AddComponentDialog from "./AddComponentDialog.svelte";
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
+	import EdgeToolbar from "./edges/EdgeToolbar.svelte";
 
 	type Props = {}
 	const {}: Props = $props();
@@ -76,8 +77,6 @@
 			on:nodeclick={diagram.handleNodeClicked}
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={diagram.handleEdgeClicked}
-			on:edgemouseenter={e => console.log("edge mouse enter")}
-			on:edgemouseleave={e => console.log("edgemouseleave")}
 			onconnectend={diagram.handleConnectEnd}
 		>
 			<Background {...backgroundProps} />
@@ -85,6 +84,7 @@
 			<MiniMap {...minimapProps} />
 			<ConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
+			<EdgeToolbar />
 		</SvelteFlow>
 		<FloatingToolbar />
 	</div>
