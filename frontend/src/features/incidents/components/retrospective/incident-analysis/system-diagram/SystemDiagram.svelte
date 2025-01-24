@@ -18,11 +18,10 @@
 	import { diagram } from "./diagram.svelte";
 	import ContextMenu from "./ContextMenu.svelte";
     import ConnectionLine from "./ConnectionLine.svelte";
-	import FloatingToolbar from "./FloatingToolbar.svelte";
-    import AddComponentDialog from "./AddComponentDialog.svelte";
+	import ActionsBar from "./SystemDiagramActionsBar.svelte";
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
-	import EdgeToolbar from "./edges/EdgeToolbar.svelte";
+	import EditToolbar from "./EditToolbar.svelte";
 
 	type Props = {}
 	const {}: Props = $props();
@@ -70,11 +69,14 @@
 	<div class="h-full w-full overflow-hidden relative" role="presentation" bind:this={containerEl} oncontextmenu={e => e.preventDefault()}>
 		<SvelteFlow
 			{...flowProps}
+			oninit={() => {diagram.onFlowInit()}}
 			on:panecontextmenu={diagram.handleContextMenuEvent}
 			on:edgecontextmenu={diagram.handleContextMenuEvent}
 			on:nodecontextmenu={diagram.handleContextMenuEvent}
 			on:selectioncontextmenu={diagram.handleContextMenuEvent}
 			on:nodeclick={diagram.handleNodeClicked}
+			on:nodedragstart={diagram.handleNodeDragStart}
+			on:nodedrag={diagram.handleNodeDrag}
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={diagram.handleEdgeClicked}
 			onconnectend={diagram.handleConnectEnd}
@@ -84,10 +86,9 @@
 			<MiniMap {...minimapProps} />
 			<ConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
-			<EdgeToolbar />
+			<EditToolbar />
 		</SvelteFlow>
-		<FloatingToolbar />
-	</div>
 
-	<AddComponentDialog />
+		<ActionsBar />
+	</div>
 </SvelteFlowProvider>

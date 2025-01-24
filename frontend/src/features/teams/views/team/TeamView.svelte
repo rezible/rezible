@@ -1,20 +1,18 @@
 <script lang="ts">
 	import { Card } from "svelte-ux";
 	import { createQuery } from '@tanstack/svelte-query';
-	import { listOncallRostersOptions, listServicesOptions, listUsersOptions, type OncallRoster, type Service, type Team, type User } from "$lib/api";
+	import { listOncallRostersOptions, listUsersOptions, type OncallRoster, type Team, type User } from "$lib/api";
 	
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 
 	import TeamUsers from './TeamUsers.svelte';
 	import TeamRosters from './TeamRosters.svelte';
-    import TeamServices from "./TeamServices.svelte";
 
 	interface Props { team: Team };
 	let { team }: Props = $props();
 
 	const usersQuery = createQuery(() => listUsersOptions({query: {team_id: team.id}}));
 	const rostersQuery = createQuery(() => listOncallRostersOptions({query: {team_id: team.id}}));
-	const servicesQuery = createQuery(() => listServicesOptions({query: {team_id: team.id}}));
 </script>
 
 <div class="flex gap-2">
@@ -44,7 +42,7 @@
 		</div>
 	</Card>
 
-	<Card title="Owned Services" class="max-w-lg" classes={{header: {title: "text-xl"}, headerContainer: "p-3"}}>
+	<!--Card title="Owned Services" class="max-w-lg" classes={{header: {title: "text-xl"}, headerContainer: "p-3"}}>
 		<div slot="contents">
 			<LoadingQueryWrapper query={servicesQuery}>
 				{#snippet view(services: Service[])}
@@ -55,5 +53,5 @@
 		<div slot="actions">
 			
 		</div>
-	</Card>
+	</Card-->
 </div>

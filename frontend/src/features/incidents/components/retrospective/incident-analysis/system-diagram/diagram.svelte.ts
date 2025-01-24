@@ -16,6 +16,7 @@ import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./Co
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from '$features/incidents/lib/context.ts';
 import { getSystemAnalysisOptions, type SystemAnalysis, type SystemAnalysisRelationship, type SystemAnalysisRelationshipAttributes, type SystemComponent } from "$lib/api";
+import { analysis } from "../analysis.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -121,11 +122,10 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 
 type SvelteFlowEvents = SvelteFlow["$$events_def"];
 type SvelteFlowContextMenuEvent = SvelteFlowEvents["panecontextmenu"] | SvelteFlowEvents["nodecontextmenu"] | SvelteFlowEvents["edgecontextmenu"] | SvelteFlowEvents["selectioncontextmenu"];
-
+type DiagramSelectionState = {node?: Node, edge?: Edge};
 const createDiagramState = () => {
-	let analysisId = $state<string>();
-	let selectedNode = $state<Node>();
-	let selectedEdge = $state<Edge>();
+	let selected = $state<DiagramSelectionState>({});
+	let toolbarPosition = $state<XYPosition>({x: 0, y: 0})
 	let containerEl = $state<HTMLElement>();
 	let ctxMenuProps = $state<ContextMenuProps>();
 
@@ -133,35 +133,58 @@ const createDiagramState = () => {
 	const edges = writable<Edge[]>([]);
 
 	const setup = (containerElFn: () => HTMLElement | undefined) => {
-		// flow = useSvelteFlow();
-		analysisId = incidentCtx.get().attributes.system_analysis_id;
 		onMount(() => {containerEl = containerElFn()});
-		
-		const queryClient = useQueryClient();
 
-		const analysisQuery = createQuery(() => ({
-			...getSystemAnalysisOptions({path: {id: analysisId ?? ""}}),
-			enabled: !!analysisId,
-		}), queryClient);
-
-		watch(() => analysisQuery.data, body => {
-			if (!body?.data) return;
-			const translated = translateSystemAnalysis($state.snapshot(body.data));
+		watch(() => analysis.data, data => {
+			if (!data) return;
+			const translated = translateSystemAnalysis($state.snapshot(data));
 			nodes.set(translated.nodes);
 			edges.set(translated.edges);
 		});
+	};
+
+	let flow: ReturnType<typeof useSvelteFlow> | undefined;
+	const onFlowInit = () => {flow = useSvelteFlow()}
+
+	const updateToolbarPosition = () => {
+		if (!flow) return;
+		const {node, edge} = selected;
+		if (edge) {
+			const {x, y, width, height} = flow.getNodesBounds([edge.source, edge.target]);
+			toolbarPosition = {
+				x: x + (width / 2),
+				y: y + (height / 2) + 40,
+			};
+		} else if (node) {
+			const {x, y, width, height} = flow.getNodesBounds([node]);
+			toolbarPosition = {
+				x: x + (width / 2),
+				y: y + height + 30,
+			};
+		} else {
+			toolbarPosition = {x: 0, y: 0};
+		}
 	}
 
-	const setSelected = ({ctxMenuProps, node, edge}: {ctxMenuProps?: ContextMenuProps, node?: Node, edge?: Edge}) => {
-		ctxMenuProps = ctxMenuProps;
-		selectedNode = node;
-		selectedEdge = edge;
+	const setSelected = (state: DiagramSelectionState) => {
+		ctxMenuProps = undefined;
+		selected = state;
+		updateToolbarPosition();
 	}
 
 	const handleNodeClicked = (e: SvelteFlowEvents["nodeclick"]) => {
 		const { event, node } = e.detail;
 		setSelected({node});
-		console.log("node clicked", node);
+	}
+
+	const handleNodeDragStart = (e: SvelteFlowEvents["nodedragstart"]) => {
+		setSelected({node: e.detail.targetNode ?? undefined});
+	}
+
+	const handleNodeDrag = (e: SvelteFlowEvents["nodedrag"]) => {
+		if (selected.node?.id === e.detail.targetNode?.id) {
+			updateToolbarPosition();
+		}
 	}
 
 	const handlePaneClicked = (e: SvelteFlowEvents["paneclick"]) => {
@@ -171,7 +194,6 @@ const createDiagramState = () => {
 	const handleEdgeClicked = (e: SvelteFlowEvents["edgeclick"]) => {
 		const { event, edge } = e.detail;
 		setSelected({edge});
-		console.log("edge clicked", edge);
 	}
 
 	const handleContextMenuEvent = (e: SvelteFlowContextMenuEvent) => {
@@ -210,13 +232,16 @@ const createDiagramState = () => {
 
 	return {
 		setup,
+		onFlowInit,
 		get nodes() { return nodes },
 		get edges() { return edges },
-		get selectedNode() { return selectedNode },
-		get selectedEdge() { return selectedEdge },
+		get selected() { return selected },
+		get toolbarPosition() { return toolbarPosition },
 		get ctxMenuProps() { return ctxMenuProps },
 		handleContextMenuEvent,
 		handleNodeClicked,
+		handleNodeDragStart,
+		handleNodeDrag,
 		handleEdgeClicked,
 		handlePaneClicked,
 		handleConnectEnd,
