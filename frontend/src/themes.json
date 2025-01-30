@@ -1,72 +1,72 @@
 {
-	"dark": {
-		"color-scheme": "dark",
-		"primary": "#2b4e72",
-		"secondary": "#94ba65",
-		"accent": "#2790b0",
-		"neutral": "#353432",
-		"surface-100": "hsl(210, 14%, 10%)",
-		"surface-200": "hsl(210, 14%, 6%)",
-		"surface-300": "hsl(210, 14%, 2%)"
-	},
-	"light-old": {
-		"color-scheme": "light",
-		"primary": "#B8431B",
-		"primary-content": "#f5dad2",
+  "dark": {
+    "color-scheme": "dark",
+    "primary": "#2b4e72",
+    "secondary": "#94ba65",
+    "accent": "#2790b0",
+    "neutral": "#353432",
+    "surface-100": "hsl(210, 14%, 10%)",
+    "surface-200": "hsl(210, 14%, 6%)",
+    "surface-300": "hsl(210, 14%, 2%)"
+  },
+  "light-old": {
+    "color-scheme": "light",
+    "primary": "#B8431B",
+    "primary-content": "#f5dad2",
 
-		"secondary": "#517664",
-		"secondary-content": "#dae2de",
+    "secondary": "#517664",
+    "secondary-content": "#dae2de",
 
-		"accent": "#388697",
-		"accent-content": "#010608",
+    "accent": "#388697",
+    "accent-content": "#010608",
 
-		"neutral": "#ccc5b9",
-		"neutral-content": "#0f0e0d",
+    "neutral": "#ccc5b9",
+    "neutral-content": "#0f0e0d",
 
-		"surface-100": "#211E1C",
-		"surface-200": "#1b1917",
-		"surface-300": "#161312",
-		"surface-content": "#cdcdcc",
+    "surface-100": "#211E1C",
+    "surface-200": "#1b1917",
+    "surface-300": "#161312",
+    "surface-content": "#cdcdcc",
 
-		"info": "#177e89",
-		"info-content": "#d4e4e7",
+    "info": "#177e89",
+    "info-content": "#d4e4e7",
 
-		"success": "#4d7c0f",
-		"success-content": "#d9e4d1",
+    "success": "#4d7c0f",
+    "success-content": "#d9e4d1",
 
-		"warning": "#ffc857",
-		"warning-content": "#160f02", 
+    "warning": "#ffc857",
+    "warning-content": "#160f02",
 
-		"danger": "#991b1b",  
-		"danger-content": "#efd3cf"
-	},
-	"dark-old": {
-		"color-scheme": "dark",
-		"primary": "#851F3F",
+    "danger": "#991b1b",
+    "danger-content": "#efd3cf"
+  },
+  "dark-old": {
+    "color-scheme": "dark",
+    "primary": "#851F3F",
 
-		"secondary": "#456789",
+    "secondary": "#456789",
 
-		"accent": "#388697",
-		"accent-content": "#010608",
+    "accent": "#388697",
+    "accent-content": "#010608",
 
-		"neutral": "#ccc5b9",
-		"neutral-content": "#0f0e0d",
+    "neutral": "#ccc5b9",
+    "neutral-content": "#0f0e0d",
 
-		"surface-100": "#211E1C",
-		"surface-200": "#1b1917",
-		"surface-300": "#161312",
-		"surface-content": "#cdcdcc",
+    "surface-100": "#211E1C",
+    "surface-200": "#1b1917",
+    "surface-300": "#161312",
+    "surface-content": "#cdcdcc",
 
-		"info": "#177e89",
-		"info-content": "#d4e4e7",
+    "info": "#177e89",
+    "info-content": "#d4e4e7",
 
-		"success": "#4d7c0f",
-		"success-content": "#d9e4d1",
+    "success": "#4d7c0f",
+    "success-content": "#d9e4d1",
 
-		"warning": "#ffc857",
-		"warning-content": "#160f02", 
+    "warning": "#ffc857",
+    "warning-content": "#160f02",
 
-		"danger": "#991b1b",  
-		"danger-content": "#efd3cf"
-	}
+    "danger": "#991b1b",
+    "danger-content": "#efd3cf"
+  }
 }

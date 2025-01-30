@@ -1,15 +1,15 @@
 // from layer chart examples
 
-import { addMinutes, startOfDay, startOfToday, subDays } from 'date-fns';
-import { cumsum } from 'd3-array';
-import { randomNormal } from 'd3-random';
+import { addMinutes, startOfDay, startOfToday, subDays } from "date-fns";
+import { cumsum } from "d3-array";
+import { randomNormal } from "d3-random";
 
 function degreesToRadians(degrees: number) {
-	return (degrees * Math.PI) / 180;
+  return (degrees * Math.PI) / 180;
 }
 
 function radiansToDegrees(radians: number) {
-	return radians * (180 / Math.PI);
+  return radians * (180 / Math.PI);
 }
 
 /**
@@ -44,23 +44,28 @@ export function createSeries<TKey extends string>(options: {
   min: number;
   max: number;
   keys?: TKey[];
-  value?: 'number' | 'integer';
+  value?: "number" | "integer";
 }) {
   const count = options.count ?? 10;
   const min = options.min;
   const max = options.max;
-  const keys = options.keys ?? ['y'];
+  const keys = options.keys ?? ["y"];
 
   return Array.from({ length: count }).map((_, i) => {
     return {
-      x: options.value === 'integer' ? getRandomInteger(min, max) : getRandomNumber(min, max),
+      x:
+        options.value === "integer"
+          ? getRandomInteger(min, max)
+          : getRandomNumber(min, max),
       ...Object.fromEntries(
         keys.map((key) => {
           return [
             key,
-            options.value === 'integer' ? getRandomInteger(min, max) : getRandomNumber(min, max),
+            options.value === "integer"
+              ? getRandomInteger(min, max)
+              : getRandomNumber(min, max),
           ];
-        })
+        }),
       ),
     } as { x: number } & { [K in TKey]: number };
   });
@@ -71,14 +76,14 @@ export function createDateSeries<TKey extends string>(options: {
   min: number;
   max: number;
   keys?: TKey[];
-  value?: 'number' | 'integer';
+  value?: "number" | "integer";
 }) {
   const now = startOfToday();
 
   const count = options.count ?? 10;
   const min = options.min;
   const max = options.max;
-  const keys = options.keys ?? ['value'];
+  const keys = options.keys ?? ["value"];
 
   return Array.from({ length: count }).map((_, i) => {
     return {
@@ -87,9 +92,11 @@ export function createDateSeries<TKey extends string>(options: {
         keys.map((key) => {
           return [
             key,
-            options.value === 'integer' ? getRandomInteger(min, max) : getRandomNumber(min, max),
+            options.value === "integer"
+              ? getRandomInteger(min, max)
+              : getRandomNumber(min, max),
           ];
-        })
+        }),
       ),
     } as { date: Date } & { [K in TKey]: number };
   });
@@ -100,12 +107,12 @@ export function createTimeSeries<TKey extends string>(options: {
   min: number;
   max: number;
   keys: TKey[];
-  value: 'number' | 'integer';
+  value: "number" | "integer";
 }) {
   const count = options.count ?? 10;
   const min = options.min;
   const max = options.max;
-  const keys = options.keys ?? ['value'];
+  const keys = options.keys ?? ["value"];
 
   let lastStartDate = startOfDay(new Date());
 
@@ -121,43 +128,47 @@ export function createTimeSeries<TKey extends string>(options: {
         keys.map((key) => {
           return [
             key,
-            options.value === 'integer' ? getRandomInteger(min, max) : getRandomNumber(min, max),
+            options.value === "integer"
+              ? getRandomInteger(min, max)
+              : getRandomNumber(min, max),
           ];
-        })
+        }),
       ),
-    } as { name: string; startDate: Date; endDate: Date } & { [K in TKey]: number };
+    } as { name: string; startDate: Date; endDate: Date } & {
+      [K in TKey]: number;
+    };
   });
 
   return timeSeries;
 }
 
 export const wideData = [
-  { year: '2019', apples: 3840, bananas: 1920, cherries: 960, dates: 400 },
-  { year: '2018', apples: 1600, bananas: 1440, cherries: 960, dates: 400 },
-  { year: '2017', apples: 820, bananas: 1000, cherries: 640, dates: 400 },
-  { year: '2016', apples: 820, bananas: 560, cherries: 720, dates: 400 },
+  { year: "2019", apples: 3840, bananas: 1920, cherries: 960, dates: 400 },
+  { year: "2018", apples: 1600, bananas: 1440, cherries: 960, dates: 400 },
+  { year: "2017", apples: 820, bananas: 1000, cherries: 640, dates: 400 },
+  { year: "2016", apples: 820, bananas: 560, cherries: 720, dates: 400 },
 ];
 
 export const longData = [
-  { year: '2019', basket: 1, fruit: 'apples', value: 3840 },
-  { year: '2019', basket: 1, fruit: 'bananas', value: 1920 },
-  { year: '2019', basket: 2, fruit: 'cherries', value: 960 },
-  { year: '2019', basket: 2, fruit: 'dates', value: 400 },
+  { year: "2019", basket: 1, fruit: "apples", value: 3840 },
+  { year: "2019", basket: 1, fruit: "bananas", value: 1920 },
+  { year: "2019", basket: 2, fruit: "cherries", value: 960 },
+  { year: "2019", basket: 2, fruit: "dates", value: 400 },
 
-  { year: '2018', basket: 1, fruit: 'apples', value: 1600 },
-  { year: '2018', basket: 1, fruit: 'bananas', value: 1440 },
-  { year: '2018', basket: 2, fruit: 'cherries', value: 960 },
-  { year: '2018', basket: 2, fruit: 'dates', value: 400 },
+  { year: "2018", basket: 1, fruit: "apples", value: 1600 },
+  { year: "2018", basket: 1, fruit: "bananas", value: 1440 },
+  { year: "2018", basket: 2, fruit: "cherries", value: 960 },
+  { year: "2018", basket: 2, fruit: "dates", value: 400 },
 
-  { year: '2017', basket: 1, fruit: 'apples', value: 820 },
-  { year: '2017', basket: 1, fruit: 'bananas', value: 1000 },
-  { year: '2017', basket: 2, fruit: 'cherries', value: 640 },
-  { year: '2017', basket: 2, fruit: 'dates', value: 400 },
+  { year: "2017", basket: 1, fruit: "apples", value: 820 },
+  { year: "2017", basket: 1, fruit: "bananas", value: 1000 },
+  { year: "2017", basket: 2, fruit: "cherries", value: 640 },
+  { year: "2017", basket: 2, fruit: "dates", value: 400 },
 
-  { year: '2016', basket: 1, fruit: 'apples', value: 820 },
-  { year: '2016', basket: 1, fruit: 'bananas', value: 560 },
-  { year: '2016', basket: 2, fruit: 'cherries', value: 720 },
-  { year: '2016', basket: 2, fruit: 'dates', value: 400 },
+  { year: "2016", basket: 1, fruit: "apples", value: 820 },
+  { year: "2016", basket: 1, fruit: "bananas", value: 560 },
+  { year: "2016", basket: 2, fruit: "cherries", value: 720 },
+  { year: "2016", basket: 2, fruit: "dates", value: 400 },
 ];
 
 export function getPhyllotaxis({
@@ -173,7 +184,13 @@ export function getPhyllotaxis({
 }) {
   // Phyllotaxis: https://www.youtube.com/watch?v=KWoJgHFYWxY
   const rads = Math.PI * (3 - Math.sqrt(5)); // ~2.4 rads or ~137.5 degrees
-  return getSpiral({ angle: radiansToDegrees(rads), radius, count, width, height });
+  return getSpiral({
+    angle: radiansToDegrees(rads),
+    radius,
+    count,
+    width,
+    height,
+  });
 }
 
 export function getSpiral({
