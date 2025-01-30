@@ -1,4 +1,4 @@
-import * as Y from "yjs";
+// import * as Y from "yjs";
 import {
   HocuspocusProvider,
   WebSocketStatus,
@@ -46,7 +46,7 @@ const createCollaborationState = () => {
 
     const sess = res.data.data;
     const config: HocuspocusProviderConfiguration = {
-      document: new Y.Doc(),
+      // document: new Y.Doc(),
       url: sess.connectionUrl,
       token: sess.token,
       name: sess.documentName,
