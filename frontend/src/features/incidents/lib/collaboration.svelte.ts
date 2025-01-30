@@ -6,6 +6,9 @@ import {
   type StatesArray,
 } from "@hocuspocus/provider";
 import { requestDocumentEditorSession } from "$lib/api/oapi.gen";
+import { onMount } from "svelte";
+import { watch } from "runed";
+import { retrospectiveCtx } from "./context";
 
 export type CollaborationState = {
   documentName?: string;
@@ -83,9 +86,15 @@ const createCollaborationState = () => {
     collab = emptyState;
   };
 
+  const componentMount = () => {
+	const retrospectiveId = retrospectiveCtx.get().id;
+	console.log(retrospectiveId);
+	watch(() => retrospectiveId, id => {connect(id)});
+	onMount(() => {return () => cleanup()});
+  }
+
   return {
-    connect,
-    cleanup,
+	componentMount,
     get awareness() {
       return collab.awareness;
     },
