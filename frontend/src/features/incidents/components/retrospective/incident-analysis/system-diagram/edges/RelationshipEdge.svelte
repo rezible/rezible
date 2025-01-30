@@ -56,7 +56,7 @@
 
 <EdgeLabelRenderer>
 	<div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
-		<span class="">{data.description}</span>
+		<span class="">{data.description}relationship</span>
 	</div>
 </EdgeLabelRenderer>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Header } from "svelte-ux";
-	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
+	import { collaboration } from '$features/incidents/lib/collaboration.svelte';
 </script>
 
 <div class="w-64 border overflow-y-auto p-2">
@@ -9,5 +9,5 @@
 			<span>x</span>
 		</div>
 	</Header>
-	<span>status: {collaborationState.status}</span>
+	<span>status: {collaboration.status}</span>
 </div>

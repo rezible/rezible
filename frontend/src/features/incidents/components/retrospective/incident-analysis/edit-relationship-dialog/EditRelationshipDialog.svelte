@@ -1,9 +1,8 @@
 <script lang="ts">
     import { mdiClose } from "@mdi/js";
     import { Button, Dialog, Header } from "svelte-ux";
-    import type { SystemAnalysisComponent } from "$lib/api";
     import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-    import { analysis } from "./analysis.svelte";
+    import { analysis } from "../analysis.svelte";
 
     type Props = {}
     let { }: Props = $props();

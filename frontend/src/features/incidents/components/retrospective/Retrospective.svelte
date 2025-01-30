@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
-	
+	import { collaboration } from '$features/incidents/lib/collaboration.svelte';
+
 	import IncidentAnalysis from "./incident-analysis/IncidentAnalysis.svelte";
     import IncidentReport from "./incident-report/IncidentReport.svelte";
     import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
@@ -10,7 +10,7 @@
     }
     const { view }: Props = $props();
 
-	collaborationState.componentMount();
+	collaboration.setup();
 </script>
 
 <div class="flex-1 min-h-0 overflow-y-auto border p-2">

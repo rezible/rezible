@@ -86,15 +86,14 @@ const createCollaborationState = () => {
     collab = emptyState;
   };
 
-  const componentMount = () => {
+  const setup = () => {
 	const retrospectiveId = retrospectiveCtx.get().id;
-	console.log(retrospectiveId);
 	watch(() => retrospectiveId, id => {connect(id)});
 	onMount(() => {return () => cleanup()});
   }
 
   return {
-	componentMount,
+	setup,
     get awareness() {
       return collab.awareness;
     },
@@ -109,4 +108,4 @@ const createCollaborationState = () => {
     },
   };
 };
-export const collaborationState = createCollaborationState();
+export const collaboration = createCollaborationState();

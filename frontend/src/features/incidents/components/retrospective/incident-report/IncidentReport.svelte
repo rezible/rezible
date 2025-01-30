@@ -10,7 +10,7 @@
 
 	import { incidentCtx, retrospectiveCtx } from '$features/incidents/lib/context.ts';
 	import type { Incident, Retrospective } from '$lib/api';
-	import { collaborationState } from '$features/incidents/lib/collaboration.svelte';
+	import { collaboration } from '$features/incidents/lib/collaboration.svelte';
 
 	type Props = {};
 	let { }: Props = $props();
@@ -40,12 +40,12 @@
 
 <div class="flex flex-col min-h-0 overflow-y-auto bg-surface-300 grow">
     <div class="w-full overflow-y-auto flex flex-col gap-4" bind:this={containerEl}>
-        {#if sections && collaborationState.provider}
+        {#if sections && collaboration.provider}
             {#each sections as section, i}
                 <div bind:this={sectionElements[section.field]}>
                     <FieldEditorWrapper
                         {section}
-						provider={collaborationState.provider}
+						provider={collaboration.provider}
                         setIsActive={activeEditor.set}
                         {onCreateAnnotation}
                         bind:focusEditor={focusSectionFn[section.field]} 
