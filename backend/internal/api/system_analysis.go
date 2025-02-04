@@ -16,6 +16,8 @@ func newSystemAnalysisHandler() *systemAnalysisHandler {
 func (s systemAnalysisHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
 	var resp oapi.ListSystemComponentsResponse
 
+	resp.Body.Data = make([]oapi.SystemComponent, 0)
+
 	return &resp, nil
 }
 

@@ -10,15 +10,6 @@ export default defineConfig({
 	client: {
 		name: "@hey-api/client-fetch",
 	},
-	// types: {
-	// 	enums: 'javascript',
-	// 	export: true,
-	// 	dates: false,
-	// },
-	// services: {
-	// 	asClass: false,
-	// },
-	// schemas: false,
 	plugins: [
 		{
 			name: "@hey-api/typescript",

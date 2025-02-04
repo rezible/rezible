@@ -12,6 +12,7 @@ const createAnalysisState = () => {
 	let analysisId = $state<string>();
 	let data = $state<SystemAnalysis>();
 	let componentDialogOpen = $state(false);
+	let addingComponent = $state<SystemAnalysisComponent>();
 	let editingComponent = $state<SystemAnalysisComponent>();
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
@@ -46,6 +47,10 @@ const createAnalysisState = () => {
 		editingComponent = editComponent;
 	};
 
+	const setAddingComponent = (c?: SystemAnalysisComponent) => {
+		addingComponent = c;
+	}
+
 	const setRelationshipDialogOpen = (
 		open: boolean,
 		editRel?: SystemAnalysisRelationship
@@ -63,6 +68,10 @@ const createAnalysisState = () => {
 			return componentDialogOpen;
 		},
 		setComponentDialogOpen,
+		get addingComponent() {
+			return addingComponent;
+		},
+		setAddingComponent,
 		get editingComponent() {
 			return editingComponent;
 		},

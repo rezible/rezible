@@ -53,6 +53,20 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 }
 
 type (
+	SystemComponent struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes SystemComponentAttributes `json:"attributes"`
+	}
+	SystemComponentAttributes struct {
+		Name        string                      `json:"name"`
+		Kind        string                      `json:"kind"`
+		Description string                      `json:"description"`
+		Properties  map[string]any              `json:"properties"`
+		Constraints []SystemComponentConstraint `json:"constraints"`
+		Signals     []SystemComponentSignal     `json:"signals"`
+		Controls    []SystemComponentControl    `json:"controls"`
+	}
+
 	SystemComponentSignal struct {
 		Id         uuid.UUID                       `json:"id"`
 		Attributes SystemComponentSignalAttributes `json:"attributes"`
@@ -78,20 +92,6 @@ type (
 	SystemComponentConstraintAttributes struct {
 		Label       string `json:"label"`
 		Description string `json:"description"`
-	}
-
-	SystemComponent struct {
-		Id         uuid.UUID                 `json:"id"`
-		Attributes SystemComponentAttributes `json:"attributes"`
-	}
-	SystemComponentAttributes struct {
-		Name        string                      `json:"name"`
-		Kind        string                      `json:"kind"`
-		Description string                      `json:"description"`
-		Properties  map[string]any              `json:"properties"`
-		Constraints []SystemComponentConstraint `json:"constraints"`
-		Signals     []SystemComponentSignal     `json:"signals"`
-		Controls    []SystemComponentControl    `json:"controls"`
 	}
 
 	SystemAnalysis struct {

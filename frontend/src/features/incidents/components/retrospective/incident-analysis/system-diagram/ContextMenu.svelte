@@ -20,27 +20,9 @@
 
 	const active = $derived(!!top && !!left);
 
-	const duplicateNode = () => {
-		const node = $nodes.find((node) => node.id === nodeId);
-		if (node) {
-			$nodes.push({
-				...node,
-				// TODO: use better id
-				id: `${nodeId}-copy${Math.random()}`,
-				position: {
-					x: node.position.x,
-					y: node.position.y + 50,
-				},
-			});
-		}
-		$nodes = $nodes;
-	};
-
 	const deleteNode = () => {
-		$nodes = $nodes.filter((node) => node.id !== nodeId);
-		$edges = $edges.filter(
-			(edge) => edge.source !== nodeId && edge.target !== nodeId
-		);
+		nodes.set($nodes.filter(({id}) => id !== nodeId));
+		edges.set($edges.filter(({source, target}) => source !== nodeId && target !== nodeId));
 	};
 </script>
 
@@ -49,19 +31,34 @@
 		style="top: {top}px; left: {left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
 		class="absolute context-menu border bg-surface-200"
 	>
-		<p style="margin: 0.5em;">
-			{#if nodeId}
-				<small>node: {nodeId}</small>
-			{:else if edgeId}
-				<small>edge: {edgeId}</small>
-			{:else}
-				<small>menu</small>
-			{/if}
-		</p>
-		<button onclick={duplicateNode}>duplicate</button>
-		<button onclick={deleteNode}>delete</button>
+		{#if nodeId}
+			{@render nodeMenu(nodeId)}
+		{:else if edgeId}
+			{@render edgeMenu(edgeId)}
+		{:else}
+			{@render paneMenu()}
+		{/if}
 	</div>
 {/if}
+
+{#snippet nodeMenu(id: string)}
+	<p style="margin: 0.5em;">
+		<small>node id: {id}</small>
+	</p>
+	<button onclick={deleteNode}>delete node</button>
+{/snippet}
+
+{#snippet edgeMenu(id: string)}
+	<p style="margin: 0.5em;">
+		<small>edge id: {id}</small>
+	</p>
+{/snippet}
+
+{#snippet paneMenu()}
+	<p style="margin: 0.5em;">
+		pane menu
+	</p>
+{/snippet}
 
 <style>
 	.context-menu {

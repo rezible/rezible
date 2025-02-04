@@ -146,6 +146,7 @@ type SvelteFlowContextMenuEvent =
 	| SvelteFlowEvents["edgecontextmenu"]
 	| SvelteFlowEvents["selectioncontextmenu"];
 type DiagramSelectionState = { node?: Node; edge?: Edge };
+
 const createDiagramState = () => {
 	let selected = $state<DiagramSelectionState>({});
 	let toolbarPosition = $state<XYPosition>({ x: 0, y: 0 });

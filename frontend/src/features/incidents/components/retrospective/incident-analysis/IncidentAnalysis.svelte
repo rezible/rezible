@@ -3,8 +3,8 @@
 
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
-	import EditComponentDialog from "./edit-component-dialog/EditComponentDialog.svelte";
-	import EditRelationshipDialog from "./edit-relationship-dialog/EditRelationshipDialog.svelte";
+	import ComponentDialog from "./component-dialog/ComponentDialog.svelte";
+	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
 
 	analysis.setup();
 </script>
@@ -14,5 +14,6 @@
 	<IncidentTimeline />
 </div>
 
-<EditComponentDialog />
-<EditRelationshipDialog />
+<ComponentDialog />
+
+<RelationshipDialog />

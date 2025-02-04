@@ -29,17 +29,19 @@
 	let containerEl = $state<HTMLElement>();
 	diagram.setup(() => containerEl);
 
-	const colorMode = $derived("dark"); // get from svelte-ux theme
+	const colorMode = $derived("dark"); // TODO: get from svelte-ux theme
 
 	const nodeTypes: NodeTypes = {
 		// @ts-expect-error this will be resolved
 		default: ComponentNode,
+		// @ts-expect-error this will be resolved
 		component: ComponentNode,
 	};
 
 	const edgeTypes: EdgeTypes = {
 		// @ts-expect-error this will be resolved
 		default: RelationshipEdge,
+		// @ts-expect-error this will be resolved
 		relationship: RelationshipEdge,
 	};
 
