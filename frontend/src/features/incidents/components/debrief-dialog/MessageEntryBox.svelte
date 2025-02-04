@@ -1,8 +1,12 @@
 <script lang="ts">
-	import { addIncidentDebriefUserMessageMutation, type IncidentDebrief, type IncidentDebriefMessage } from '$lib/api';
-	import { mdiArrowRight } from '@mdi/js';
-    import { useQueryClient, createMutation } from '@tanstack/svelte-query';
-	import { Button } from 'svelte-ux';
+	import {
+		addIncidentDebriefUserMessageMutation,
+		type IncidentDebrief,
+		type IncidentDebriefMessage,
+	} from "$lib/api";
+	import { mdiArrowRight } from "@mdi/js";
+	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
+	import { Button } from "svelte-ux";
 
 	type Props = {
 		debrief: IncidentDebrief;
@@ -12,16 +16,16 @@
 	};
 	let { debrief, disabled, lastMessage, onAdded }: Props = $props();
 
-    const addMessageMut = createMutation(() => ({
+	const addMessageMut = createMutation(() => ({
 		...addIncidentDebriefUserMessageMutation(),
-        onSuccess: ({data: msg}) => onAdded(msg),
-    }));
+		onSuccess: ({ data: msg }) => onAdded(msg),
+	}));
 
 	let value = $state("");
 	const sendMessage = () => {
 		const msgContent = $state.snapshot(value);
-		const body = {attributes: {message_content: msgContent}};
-		addMessageMut.mutate({path: {id: debrief.id}, body});
+		const body = { attributes: { message_content: msgContent } };
+		addMessageMut.mutate({ path: { id: debrief.id }, body });
 
 		value = "";
 	};

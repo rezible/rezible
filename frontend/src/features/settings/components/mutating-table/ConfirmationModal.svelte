@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Dialog } from 'svelte-ux';
-	import ConfirmButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
+	import { Dialog } from "svelte-ux";
+	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 
 	interface Props {
 		open: boolean;
@@ -9,7 +9,7 @@
 		loading?: boolean;
 		onConfirm: () => void;
 		onClose: () => void;
-	};
+	}
 	let { open, title, text, loading, onConfirm, onClose }: Props = $props();
 </script>
 

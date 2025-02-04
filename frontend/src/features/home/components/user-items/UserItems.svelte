@@ -1,17 +1,36 @@
 <script lang="ts">
-    import { listUserAssignmentsOptions, type ListUserAssignmentsData } from "$lib/api";
-    import { createQuery } from "@tanstack/svelte-query";
-    import { Icon, Header, ListItem, Button } from "svelte-ux";
-    import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
-    import { addDays, addHours, formatDate, formatDistanceToNow } from "date-fns";
+	import {
+		listUserAssignmentsOptions,
+		type ListUserAssignmentsData,
+	} from "$lib/api";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { Icon, Header, ListItem, Button } from "svelte-ux";
+	import {
+		mdiGhostOutline,
+		mdiFileDocument,
+		mdiChevronRight,
+		mdiVideo,
+	} from "@mdi/js";
+	import {
+		addDays,
+		addHours,
+		formatDate,
+		formatDistanceToNow,
+	} from "date-fns";
 
 	let params = $state<ListUserAssignmentsData["query"]>({});
-	const query = createQuery(() => listUserAssignmentsOptions({query: params}));
+	const query = createQuery(() =>
+		listUserAssignmentsOptions({ query: params })
+	);
 
 	const assignments = $derived(query.data?.data ?? []);
-	const incidents = $derived(assignments.filter(a => a.item_type === "incident"));
-	const shifts = $derived(assignments.filter(a => a.item_type === "oncall_shift"));
-	const tasks = $derived(assignments.filter(a => a.item_type === "tasks"));
+	const incidents = $derived(
+		assignments.filter((a) => a.item_type === "incident")
+	);
+	const shifts = $derived(
+		assignments.filter((a) => a.item_type === "oncall_shift")
+	);
+	const tasks = $derived(assignments.filter((a) => a.item_type === "tasks"));
 </script>
 
 <div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
@@ -19,35 +38,41 @@
 
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		{#each assignments as a, i (i)}
-				{#if a.item_type == "retrospective"}
-					<a href="/incidents/{a.item_id}/retrospective">
-						<ListItem 
-							title="{a.role} the Retrospective for {a.title}" 
-							subheading="Due in {formatDistanceToNow(a.deadline)}"
-							classes={{ root: 'hover:bg-primary-900/80' }} 
-							icon={mdiFileDocument}
-						>
-							<div slot="actions">
-								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
-							</div>
-						</ListItem>
-					</a>
-				{:else if a.item_type === "incident_review"}
-					<a href="/meetings/sessions/{a.item_id}">
-						<ListItem 
-							title="{a.role} {a.title} at Incident Review" 
-							subheading="In {formatDistanceToNow(a.deadline)}"
-							classes={{ root: 'hover:bg-primary-900/80' }} 
-							icon={mdiVideo}
-						>
-							<div slot="actions">
-								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
-							</div>
-						</ListItem>
-					</a>
-				{:else}
-					{JSON.stringify(a)}
-				{/if}
+			{#if a.item_type == "retrospective"}
+				<a href="/incidents/{a.item_id}/retrospective">
+					<ListItem
+						title="{a.role} the Retrospective for {a.title}"
+						subheading="Due in {formatDistanceToNow(a.deadline)}"
+						classes={{ root: "hover:bg-primary-900/80" }}
+						icon={mdiFileDocument}
+					>
+						<div slot="actions">
+							<Button
+								icon={mdiChevronRight}
+								class="p-2 text-surface-content/50"
+							/>
+						</div>
+					</ListItem>
+				</a>
+			{:else if a.item_type === "incident_review"}
+				<a href="/meetings/sessions/{a.item_id}">
+					<ListItem
+						title="{a.role} {a.title} at Incident Review"
+						subheading="In {formatDistanceToNow(a.deadline)}"
+						classes={{ root: "hover:bg-primary-900/80" }}
+						icon={mdiVideo}
+					>
+						<div slot="actions">
+							<Button
+								icon={mdiChevronRight}
+								class="p-2 text-surface-content/50"
+							/>
+						</div>
+					</ListItem>
+				</a>
+			{:else}
+				{JSON.stringify(a)}
+			{/if}
 		{/each}
 
 		{#if assignments.length === 0}
@@ -58,7 +83,6 @@
 		{/if}
 	</div>
 </div>
-
 
 <!--div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
 	<Header class="border-b">

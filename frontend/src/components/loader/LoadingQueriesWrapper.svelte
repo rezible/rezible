@@ -1,9 +1,9 @@
 <script lang="ts" generics="CombinedQueryResultData">
-	import { createQueries, type QueriesResults } from '@tanstack/svelte-query';
-	import LoadingIndicator from './LoadingIndicator.svelte';
-	import type { Snippet } from 'svelte';
-    import { tryUnwrapApiError, type ErrorModel } from '$lib/api';
-    import { Card } from 'svelte-ux';
+	import { createQueries, type QueriesResults } from "@tanstack/svelte-query";
+	import LoadingIndicator from "./LoadingIndicator.svelte";
+	import type { Snippet } from "svelte";
+	import { tryUnwrapApiError, type ErrorModel } from "$lib/api";
+	import { Card } from "svelte-ux";
 
 	// dont use this
 
@@ -15,19 +15,30 @@
 	};
 	const { queries, view, loading, error }: Props = $props();
 
-	const isLoading = $derived(!!queries.find(q => q.isLoading));
-	const isError = $derived(!!queries.find(q => q.isError));
-	const errors = $derived(queries.map(q => q.isError ? tryUnwrapApiError(q.error) : null));
-	const data = $derived(queries.map(q => q.data ?? null));
+	const isLoading = $derived(!!queries.find((q) => q.isLoading));
+	const isError = $derived(!!queries.find((q) => q.isError));
+	const errors = $derived(
+		queries.map((q) => (q.isError ? tryUnwrapApiError(q.error) : null))
+	);
+	const data = $derived(queries.map((q) => q.data ?? null));
 </script>
 
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
-		<Card title="Error {err.status} {err.title}" classes={{header: {title: "text-danger text-xl"}}}>
+		<Card
+			title="Error {err.status} {err.title}"
+			classes={{ header: { title: "text-danger text-xl" } }}
+		>
 			<div slot="contents" class="pb-3 flex flex-col">
 				<span class="text-lg">{err.detail}</span>
 				{#each err.errors ?? [] as d}
-					<span>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}<span class="text-neutral-content">{d.message}</span></span>
+					<span
+						>{d.location
+							? `[${d.location}: "${d.value}"]: `
+							: ""}<span class="text-neutral-content"
+							>{d.message}</span
+						></span
+					>
 				{/each}
 			</div>
 		</Card>

@@ -17,13 +17,13 @@
 
 	import { diagram } from "./diagram.svelte";
 	import ContextMenu from "./ContextMenu.svelte";
-    import ConnectionLine from "./ConnectionLine.svelte";
+	import ConnectionLine from "./ConnectionLine.svelte";
 	import ActionsBar from "./SystemDiagramActionsBar.svelte";
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
 
-	type Props = {}
+	type Props = {};
 	const {}: Props = $props();
 
 	let containerEl = $state<HTMLElement>();
@@ -33,23 +33,25 @@
 
 	const nodeTypes: NodeTypes = {
 		// @ts-expect-error this will be resolved
-		default: ComponentNode, component: ComponentNode,
-	}
+		default: ComponentNode,
+		component: ComponentNode,
+	};
 
 	const edgeTypes: EdgeTypes = {
 		// @ts-expect-error this will be resolved
-		default: RelationshipEdge, relationship: RelationshipEdge,
-	}
+		default: RelationshipEdge,
+		relationship: RelationshipEdge,
+	};
 
 	const flowProps = $derived<SvelteFlowProps>({
-		nodeTypes, 
+		nodeTypes,
 		edgeTypes,
 		nodes: diagram.nodes,
 		edges: diagram.edges,
 		colorMode,
 		snapGrid: [25, 25],
 		fitView: true,
-		proOptions: {hideAttribution: true}
+		proOptions: { hideAttribution: true },
 	});
 
 	const backgroundProps: BackgroundProps = {
@@ -58,7 +60,7 @@
 
 	const controlsProps: ControlsProps = {
 		position: "top-left",
-	}
+	};
 
 	const minimapProps: MiniMapProps = {
 		position: "top-right",
@@ -66,10 +68,17 @@
 </script>
 
 <SvelteFlowProvider>
-	<div class="h-full w-full overflow-hidden relative" role="presentation" bind:this={containerEl} oncontextmenu={e => e.preventDefault()}>
+	<div
+		class="h-full w-full overflow-hidden relative"
+		role="presentation"
+		bind:this={containerEl}
+		oncontextmenu={(e) => e.preventDefault()}
+	>
 		<SvelteFlow
 			{...flowProps}
-			oninit={() => {diagram.onFlowInit()}}
+			oninit={() => {
+				diagram.onFlowInit();
+			}}
 			on:panecontextmenu={diagram.handleContextMenuEvent}
 			on:edgecontextmenu={diagram.handleContextMenuEvent}
 			on:nodecontextmenu={diagram.handleContextMenuEvent}

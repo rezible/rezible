@@ -1,9 +1,13 @@
 <script lang="ts">
-    import type { MeetingSchedule, MeetingScheduleAttributes, MeetingScheduleTiming } from "$lib/api";
-    import Avatar from "$components/avatar/Avatar.svelte";
-    import ScheduleSessions from "./ScheduleSessions.svelte";
+	import type {
+		MeetingSchedule,
+		MeetingScheduleAttributes,
+		MeetingScheduleTiming,
+	} from "$lib/api";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import ScheduleSessions from "./ScheduleSessions.svelte";
 
-	type Props = {schedule: MeetingSchedule};
+	type Props = { schedule: MeetingSchedule };
 	const { schedule }: Props = $props();
 
 	const attr = $derived(schedule.attributes);
@@ -15,7 +19,7 @@
 
 		if (step <= 1) return rep;
 		return `${step} ${rep}s`;
-	}
+	};
 </script>
 
 <div class="grid grid-cols-3 gap-2 flex-1 min-h-0 overflow-y-hidden">
@@ -24,7 +28,7 @@
 	<div class="border p-2 flex flex-col gap-2 overflow-y-auto">
 		<ScheduleSessions {schedule} />
 	</div>
-	
+
 	<div class="border p-2 overflow-y-auto">
 		<div class="h-32">meeting document template</div>
 	</div>
@@ -57,7 +61,9 @@
 
 		<div class="border p-2 flex flex-col gap-2">
 			<span class="text-lg">Invites</span>
-			<span>{attr.attendees.private ? "Private" : "Open to everyone"}</span>
+			<span
+				>{attr.attendees.private ? "Private" : "Open to everyone"}</span
+			>
 			<span>Users: {JSON.stringify(attr.attendees.users)}</span>
 			<span>Teams: {JSON.stringify(attr.attendees.teams)}</span>
 		</div>

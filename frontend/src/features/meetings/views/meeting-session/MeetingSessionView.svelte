@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { createQuery } from "@tanstack/svelte-query";
-    import { Header } from "svelte-ux";
-    import { getMeetingSessionOptions, type MeetingSession } from "$lib/api";
-    import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	
-	type Props = {session: MeetingSession};
+	import { createQuery } from "@tanstack/svelte-query";
+	import { Header } from "svelte-ux";
+	import { getMeetingSessionOptions, type MeetingSession } from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+
+	type Props = { session: MeetingSession };
 	const { session }: Props = $props();
 
 	const attr = $derived(session.attributes);

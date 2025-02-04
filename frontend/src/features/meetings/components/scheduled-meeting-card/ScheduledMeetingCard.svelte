@@ -1,19 +1,19 @@
 <script lang="ts">
-    import type { MeetingSchedule, MeetingScheduleTiming } from "$lib/api";
-    import { addMinutes } from "date-fns";
-    import { Button, Card } from "svelte-ux";
+	import type { MeetingSchedule, MeetingScheduleTiming } from "$lib/api";
+	import { addMinutes } from "date-fns";
+	import { Button, Card } from "svelte-ux";
 
 	type Props = {
 		schedule: MeetingSchedule;
-	}	
+	};
 	const { schedule }: Props = $props();
 
-	const attr = $derived(schedule.attributes)
-	const href = `/meetings/scheduled/${schedule.id}`
+	const attr = $derived(schedule.attributes);
+	const href = `/meetings/scheduled/${schedule.id}`;
 
-    const getNextScheduled = (m: MeetingScheduleTiming) => {
-        return addMinutes(Date.now(), 60);
-    }
+	const getNextScheduled = (m: MeetingScheduleTiming) => {
+		return addMinutes(Date.now(), 60);
+	};
 </script>
 
 <Card title={attr.name} class="w-full">

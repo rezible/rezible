@@ -5,17 +5,17 @@
 </script>
 
 <script lang="ts" generics="DataType extends ApiDataObject, CreateAttributes">
-	import { z } from 'zod';
-	import type { ErrorModel } from '$lib/api';
-	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-	import LoadingSelect from '$components/loading-select/LoadingSelect.svelte';
+	import { z } from "zod";
+	import type { ErrorModel } from "$lib/api";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import LoadingSelect from "$components/loading-select/LoadingSelect.svelte";
 	import {
 		type FormFields,
 		type Field,
 		isSelectField,
 		unwrappedSchema,
-	} from './fields.svelte';
-	import { Field as UxField, Switch, TextField, Toggle } from 'svelte-ux';
+	} from "./fields.svelte";
+	import { Field as UxField, Switch, TextField, Toggle } from "svelte-ux";
 
 	type Props = {
 		fields: FormFields;
@@ -25,9 +25,9 @@
 		isPending: boolean;
 		mutationError: ErrorModel | null;
 		data?: DataType;
-	}
-	const { 
-		fields, 
+	};
+	const {
+		fields,
 		dataType,
 		onClose,
 		onMutate,
@@ -46,12 +46,16 @@
 	let apiError = $state<string | undefined>();
 
 	const clearErrors = () => {
-		fieldNames.forEach(name => {delete errors[name]});
+		fieldNames.forEach((name) => {
+			delete errors[name];
+		});
 		apiError = undefined;
 	};
 
 	const setValues = (data?: DataType) => {
-		fieldNames.forEach(name => {values[name] = data?.attributes[name]});
+		fieldNames.forEach((name) => {
+			values[name] = data?.attributes[name];
+		});
 		clearErrors();
 	};
 	setValues(data);
@@ -60,18 +64,18 @@
 		Object.entries(values).forEach(([name, value]) => {
 			const res = fields[name].schema.safeParse(values[name]);
 			if (res.error) {
-				errors[name] = res.error?.formErrors.formErrors.join('\n');
+				errors[name] = res.error?.formErrors.formErrors.join("\n");
 			} else {
 				delete errors[name];
 			}
-		})
-	}
+		});
+	};
 
 	// TODO: is this expensive?
 	const onFieldUpdate = (name: string) => {
 		const res = fields[name].schema.safeParse(values[name]);
 		if (res.error) {
-			errors[name] = res.error?.formErrors.formErrors.join('\n');
+			errors[name] = res.error?.formErrors.formErrors.join("\n");
 			submitEnabled = false;
 		} else {
 			delete errors[name];
@@ -80,12 +84,12 @@
 		const errorVals = Object.values(errors);
 		console.log(Object.keys(errors), errorVals);
 		submitEnabled = errorVals.length == 0;
-	}
+	};
 
 	const onError = (err: Error) => {
 		console.error(err);
 		if (true) {
-			apiError = 'Request failed: ' + err.message;
+			apiError = "Request failed: " + err.message;
 			return;
 		}
 		/*
@@ -103,12 +107,14 @@
 			errors[name] = e.message || "invalid";
 		});
 		*/
-	}
+	};
 </script>
 
-<form class="w-full bg-base-300 shadow-xl p-4 border-accent/20 border-2 rounded">
+<form
+	class="w-full bg-base-300 shadow-xl p-4 border-accent/20 border-2 rounded"
+>
 	<div class="flex flex-col gap-2">
-		<span>{editing ? 'Edit' : 'Create New'} {dataType}</span>
+		<span>{editing ? "Edit" : "Create New"} {dataType}</span>
 		{#each Object.entries(fields) as [name, field]}
 			{#if field.schema.isOptional()}
 				{@render optionalFormField(name, field)}
@@ -127,7 +133,7 @@
 
 	<div class="mt-2 w-full flex flex-row-reverse">
 		<ConfirmChangeButtons
-			confirmText={isPending ? 'Saving...' : 'Save'}
+			confirmText={isPending ? "Saving..." : "Save"}
 			closeText={"Cancel"}
 			loading={isPending}
 			saveEnabled={submitEnabled}
@@ -154,17 +160,29 @@
 {/snippet}
 
 {#snippet formField(name: string, field: Field)}
-	{@const id = `${editing ? 'edit' : 'create'}-${dataType}-${name}`}
+	{@const id = `${editing ? "edit" : "create"}-${dataType}-${name}`}
 	{@const label = field.label}
 	{@const error = errors[name]}
 	{@const schemaBase = unwrappedSchema(field.schema)}
 	{@const onChange = () => onFieldUpdate(name)}
 
 	{#if field.editor}
-		<field.editor {id} value={values[name]} onUpdate={(value => {values[name] = value; onChange()})} />
+		<field.editor
+			{id}
+			value={values[name]}
+			onUpdate={(value) => {
+				values[name] = value;
+				onChange();
+			}}
+		/>
 	{:else if isSelectField(field)}
 		{#if !Array.isArray(field.options)}
-			<LoadingSelect {id} bind:value={values[name]} options={field.options} {label} />
+			<LoadingSelect
+				{id}
+				bind:value={values[name]}
+				options={field.options}
+				{label}
+			/>
 		{:else}
 			<span>regular select</span>
 		{/if}
@@ -175,7 +193,10 @@
 			labelPlacement="float"
 			value={values[name]}
 			debounceChange={100}
-			on:change={({ detail }) => {values[name] = detail.value ?? ""; onChange()}}
+			on:change={({ detail }) => {
+				values[name] = detail.value ?? "";
+				onChange();
+			}}
 		/>
 	{:else if schemaBase instanceof z.ZodBoolean}
 		<UxField label={field.label} let:id {error}>

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { mdiPencil } from '@mdi/js';
-	import { Header, Button, Icon } from 'svelte-ux';
-    import { incidentCtx } from '$features/incidents/lib/context';
+	import { mdiPencil } from "@mdi/js";
+	import { Header, Button, Icon } from "svelte-ux";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -12,11 +12,14 @@
 	const linkedIncidents = $derived(incident.attributes.linked_incidents);
 </script>
 
-<Header title="Linked Incidents" classes={{ root: 'min-h-8', title: 'text-md text-neutral-100' }}>
+<Header
+	title="Linked Incidents"
+	classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
+>
 	<div slot="actions" class:hidden={editing}>
 		<Button
 			size="sm"
-			classes={{ root: 'h-8' }}
+			classes={{ root: "h-8" }}
 			on:click={() => {
 				editing = true;
 			}}

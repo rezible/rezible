@@ -1,9 +1,5 @@
 <script lang="ts">
-	let { 
-		durationMs = 2000,
-		size = 48,
-		pause = false,
-	 } = $props();
+	let { durationMs = 2000, size = 48, pause = false } = $props();
 </script>
 
 <div class="wrapper" style="--size: {size}px; --duration: {durationMs}ms;">
@@ -32,10 +28,12 @@
 		border-radius: 100%;
 	}
 	.rez-loading-ring.ring-one {
-		animation: var(--duration) linear 0s infinite normal none running ringOne;
+		animation: var(--duration) linear 0s infinite normal none running
+			ringOne;
 	}
 	.rez-loading-ring.ring-two {
-		animation: var(--duration) linear 0s infinite normal none running ringTwo;
+		animation: var(--duration) linear 0s infinite normal none running
+			ringTwo;
 	}
 	.pause-animation {
 		animation-play-state: paused;

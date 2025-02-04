@@ -9,20 +9,20 @@ export const prerender = false;
 export const csr = true;
 
 export const load: LayoutLoad = async ({ fetch }) => {
-  const authRedirect = await session.load(fetch);
-  if (authRedirect) return redirect(301, authRedirect);
+	const authRedirect = await session.load(fetch);
+	if (authRedirect) return redirect(301, authRedirect);
 
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: {
-        enabled: browser,
-        retry: false,
-        refetchOnWindowFocus: dev,
-        staleTime: 5000,
-      },
-    },
-  });
-  notifications.setQueryClient(queryClient);
+	const queryClient = new QueryClient({
+		defaultOptions: {
+			queries: {
+				enabled: browser,
+				retry: false,
+				refetchOnWindowFocus: dev,
+				staleTime: 5000,
+			},
+		},
+	});
+	notifications.setQueryClient(queryClient);
 
-  return { queryClient };
+	return { queryClient };
 };

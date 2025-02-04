@@ -3,11 +3,11 @@
 
 	const connection = useConnection();
 
-	let from = $state<XYPosition>({x: 0, y: 0});
-	let to = $state<XYPosition>({x: 0, y: 0});
+	let from = $state<XYPosition>({ x: 0, y: 0 });
+	let to = $state<XYPosition>({ x: 0, y: 0 });
 	let path = $state("");
 
-	connection.subscribe(c => {
+	connection.subscribe((c) => {
 		if (c.from && c.to) {
 			from = c.from;
 			to = c.to;
@@ -24,7 +24,6 @@
 			*/
 		}
 	});
-	
 </script>
 
 {#if path}

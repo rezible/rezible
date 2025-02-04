@@ -1,20 +1,20 @@
 <script lang="ts" module>
-	export type AnnotationType = 'draft-comment' | 'service';
+	export type AnnotationType = "draft-comment" | "service";
 </script>
 
 <script lang="ts">
-	import { Editor } from 'svelte-tiptap';
-	import { Button } from 'svelte-ux';
-	import { mdiComment, mdiMarker } from '@mdi/js';
-	import { PluginKey, type Selection } from '@tiptap/pm/state';
-	import { BubbleMenuPlugin } from '@tiptap/extension-bubble-menu';
-	import { onMount } from 'svelte';
+	import { Editor } from "svelte-tiptap";
+	import { Button } from "svelte-ux";
+	import { mdiComment, mdiMarker } from "@mdi/js";
+	import { PluginKey, type Selection } from "@tiptap/pm/state";
+	import { BubbleMenuPlugin } from "@tiptap/extension-bubble-menu";
+	import { onMount } from "svelte";
 
-	interface Props { 
+	interface Props {
 		editor: Editor;
 		field: string;
 		onCreate: (t: AnnotationType) => void;
-	};
+	}
 	let { editor, field, onCreate }: Props = $props();
 
 	const pluginKey = $derived(new PluginKey(`bubble-menu-${field}`));
@@ -24,7 +24,7 @@
 
 	const hideBubbleMenu = () => {
 		if (hideBubbleMenuFn) hideBubbleMenuFn();
-	}
+	};
 
 	const commentIsContainedInSelection = (selection: Selection) => {
 		return false;
@@ -62,7 +62,7 @@
 				element,
 				tippyOptions: {
 					duration: 100,
-					placement: 'right',
+					placement: "right",
 					hideOnClick: true,
 					onShow: (inst) => {
 						hideBubbleMenuFn = () => {
@@ -71,8 +71,8 @@
 					},
 					onHidden: () => {
 						hideBubbleMenuFn = undefined;
-					}
-				}
+					},
+				},
 				// shouldShow: shouldShowBubbleMenu,
 			})
 		);
@@ -83,7 +83,7 @@
 
 	onMount(() => {
 		if (!editor || editor.isDestroyed || !bubbleMenuElement) {
-			console.log('invalid editor for bubble menu');
+			console.log("invalid editor for bubble menu");
 			return;
 		}
 		return registerBubbleMenu(editor, bubbleMenuElement);
@@ -101,18 +101,22 @@
 </script>
 
 <div>
-	<div bind:this={bubbleMenuElement} style="visibility: hidden" class="flex flex-col gap-2 bg-surface-300 rounded-full border">
+	<div
+		bind:this={bubbleMenuElement}
+		style="visibility: hidden"
+		class="flex flex-col gap-2 bg-surface-300 rounded-full border"
+	>
 		<Button
 			iconOnly
 			icon={mdiComment}
-			classes={{ root: 'bg-surface-200 hover:bg-primary' }}
+			classes={{ root: "bg-surface-200 hover:bg-primary" }}
 			on:click={onCommentButtonClicked}
 		/>
 
 		<Button
 			iconOnly
 			icon={mdiMarker}
-			classes={{ root: 'bg-surface-200 hover:bg-primary' }}
+			classes={{ root: "bg-surface-200 hover:bg-primary" }}
 			on:click={onAnnotateButtonClicked}
 		/>
 	</div>

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { Button, Card } from 'svelte-ux';
+	import { page } from "$app/state";
+	import { Button, Card } from "svelte-ux";
 
 	const status = $derived(page.error?.status || "Unknown");
 	const message = $derived(page.error?.message || "Error");
-	
+
 	console.log("error view", page.error);
 </script>
 

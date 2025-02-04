@@ -1,22 +1,27 @@
 <script lang="ts">
-	import { Button, Header, Tooltip } from 'svelte-ux';
-	import { mdiCheck } from '@mdi/js';
-	import { activeDiscussion, createReplyEditor } from '$features/incidents/lib/discussions.svelte';
-	import { EditorContent, Editor as SvelteEditor } from 'svelte-tiptap';
-	import { onMount } from 'svelte';
-	import type { RetrospectiveDiscussion } from '$lib/api';
-	import type { JSONContent } from '@tiptap/core';
+	import { Button, Header, Tooltip } from "svelte-ux";
+	import { mdiCheck } from "@mdi/js";
+	import {
+		activeDiscussion,
+		createReplyEditor,
+	} from "$features/incidents/lib/discussions.svelte";
+	import { EditorContent, Editor as SvelteEditor } from "svelte-tiptap";
+	import { onMount } from "svelte";
+	import type { RetrospectiveDiscussion } from "$lib/api";
+	import type { JSONContent } from "@tiptap/core";
 
-	interface Props { 
+	interface Props {
 		discussion: RetrospectiveDiscussion;
-	};
+	}
 	let { discussion }: Props = $props();
 
 	const setActiveDiscussion = () => activeDiscussion.set(discussion.id);
 
 	let editor = $state<SvelteEditor>();
 	onMount(() => {
-		const content = JSON.parse(discussion.attributes.content) as JSONContent;
+		const content = JSON.parse(
+			discussion.attributes.content
+		) as JSONContent;
 		editor = createReplyEditor(content, false);
 		return () => {
 			if (editor) editor.destroy();
@@ -47,7 +52,5 @@
 		{/if}
 	</div>
 
-	<Button on:click={e => e.stopPropagation()}>
-		Add Reply
-	</Button>
+	<Button on:click={(e) => e.stopPropagation()}>Add Reply</Button>
 </div>

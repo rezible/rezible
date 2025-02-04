@@ -7,9 +7,9 @@
 </script>
 
 <script lang="ts">
-	import { mdiArchive, mdiArchiveMinus, mdiPlus, mdiTrashCan } from '@mdi/js';
-	import { createEventDispatcher } from 'svelte';
-	import { Button, TextField } from 'svelte-ux';
+	import { mdiArchive, mdiArchiveMinus, mdiPlus, mdiTrashCan } from "@mdi/js";
+	import { createEventDispatcher } from "svelte";
+	import { Button, TextField } from "svelte-ux";
 
 	export let id;
 	export let items: ListItemType[] = [];
@@ -17,17 +17,17 @@
 
 	const dispatch = createEventDispatcher();
 
-	let newVal = '';
+	let newVal = "";
 
 	const addNewItem = () => {
 		//items = [...items, {name: newVal, value: "", archived: false}];
-		dispatch('addItem', newVal);
-		newVal = '';
+		dispatch("addItem", newVal);
+		newVal = "";
 	};
 
 	const toggleArchiveItem = (idx: number) => {
 		//items[idx].archived = !items[idx].archived;
-		dispatch('toggleArchived', idx);
+		dispatch("toggleArchived", idx);
 	};
 
 	const getItemIcon = (isArchived: boolean) => {
@@ -59,7 +59,7 @@
 				icon={mdiPlus}
 				disabled={!newVal}
 				on:click={addNewItem}
-				classes={{ root: 'align-bottom' }}
+				classes={{ root: "align-bottom" }}
 			/>
 		</span>
 	</TextField>

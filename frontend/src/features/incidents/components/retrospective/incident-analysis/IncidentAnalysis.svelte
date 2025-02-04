@@ -1,10 +1,10 @@
 <script lang="ts">
-    import { analysis } from "./analysis.svelte";
-	
+	import { analysis } from "./analysis.svelte";
+
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
-    import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
-    import EditComponentDialog from "./edit-component-dialog/EditComponentDialog.svelte";
-    import EditRelationshipDialog from "./edit-relationship-dialog/EditRelationshipDialog.svelte";
+	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
+	import EditComponentDialog from "./edit-component-dialog/EditComponentDialog.svelte";
+	import EditRelationshipDialog from "./edit-relationship-dialog/EditRelationshipDialog.svelte";
 
 	analysis.setup();
 </script>

@@ -1,16 +1,23 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { createMutation } from '@tanstack/svelte-query';
-	import { EditorContent, type Editor as SvelteEditor } from 'svelte-tiptap';
-	import { Header } from 'svelte-ux';
-	import { createReplyEditor, draft } from '$features/incidents/lib/discussions.svelte';
-	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-	import { client, createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from '$lib/api';
+	import { onMount } from "svelte";
+	import { createMutation } from "@tanstack/svelte-query";
+	import { EditorContent, type Editor as SvelteEditor } from "svelte-tiptap";
+	import { Header } from "svelte-ux";
+	import {
+		createReplyEditor,
+		draft,
+	} from "$features/incidents/lib/discussions.svelte";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import {
+		client,
+		createRetrospectiveDiscussionMutation,
+		type RetrospectiveDiscussion,
+	} from "$lib/api";
 
 	type Props = {
 		retrospectiveId: string;
 		onDiscussionCreated: (discussion: RetrospectiveDiscussion) => void;
-	}
+	};
 	const { retrospectiveId, onDiscussionCreated }: Props = $props();
 
 	let draftEditor = $state<SvelteEditor>();
@@ -18,7 +25,7 @@
 
 	const createDiscussion = createMutation(() => ({
 		...createRetrospectiveDiscussionMutation(),
-		onSuccess({data}) {
+		onSuccess({ data }) {
 			onDiscussionCreated(data);
 		},
 		onError(error, variables, context) {
@@ -30,7 +37,10 @@
 		if (!draft.open || !draftEditor) return;
 
 		const content = draftEditor.getJSON();
-		createDiscussion.mutate({path: {id: retrospectiveId}, body: {attributes: {content}}});
+		createDiscussion.mutate({
+			path: { id: retrospectiveId },
+			body: { attributes: { content } },
+		});
 	};
 
 	const cancelDraft = () => {
@@ -39,12 +49,14 @@
 
 	onMount(() => {
 		draftEditor = createReplyEditor(null, true);
-		draftEditor.on("update", ({ editor }) => {contentSize = editor.$doc.content.size})
+		draftEditor.on("update", ({ editor }) => {
+			contentSize = editor.$doc.content.size;
+		});
 		return () => {
 			console.log("clearing");
 			// draft.clear(false);
-		    if (draftEditor) draftEditor.destroy();
-		}
+			if (draftEditor) draftEditor.destroy();
+		};
 	});
 </script>
 

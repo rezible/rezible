@@ -1,13 +1,18 @@
 <script lang="ts">
-    import { createQuery } from "@tanstack/svelte-query";
-    import { listOncallShiftsOptions } from "$lib/api";
-    import { session } from "$lib/auth.svelte";
-    import ShiftCard from "$features/home/components/shift-card/ShiftCard.svelte";
-    import UserItems from "$features/home/components/user-items/UserItems.svelte";
-    import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
-    import TeamInfo from "$features/home/components/events-overview/TeamInfo.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { listOncallShiftsOptions } from "$lib/api";
+	import { session } from "$lib/auth.svelte";
+	import ShiftCard from "$features/home/components/shift-card/ShiftCard.svelte";
+	import UserItems from "$features/home/components/user-items/UserItems.svelte";
+	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
+	import TeamInfo from "$features/home/components/events-overview/TeamInfo.svelte";
 
-	const userShiftsQuery = createQuery(() => ({...listOncallShiftsOptions({query: {user_id: session.userId, active: true}}), enabled: !!session.userId}));
+	const userShiftsQuery = createQuery(() => ({
+		...listOncallShiftsOptions({
+			query: { user_id: session.userId, active: true },
+		}),
+		enabled: !!session.userId,
+	}));
 	const currentShifts = $derived(userShiftsQuery.data?.data);
 </script>
 

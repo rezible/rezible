@@ -1,9 +1,9 @@
 <script lang="ts">
-	import LinkedIncidents from './LinkedIncidents.svelte';
-	import IncidentVisibility from './IncidentVisibility.svelte';
-	import IncidentSeverity from './IncidentSeverity.svelte';
-	import RoleAssignments from './RoleAssignments.svelte';
-	import TeamAssignments from './TeamAssignments.svelte';
+	import LinkedIncidents from "./LinkedIncidents.svelte";
+	import IncidentVisibility from "./IncidentVisibility.svelte";
+	import IncidentSeverity from "./IncidentSeverity.svelte";
+	import RoleAssignments from "./RoleAssignments.svelte";
+	import TeamAssignments from "./TeamAssignments.svelte";
 
 	type Props = {};
 	const {}: Props = $props();

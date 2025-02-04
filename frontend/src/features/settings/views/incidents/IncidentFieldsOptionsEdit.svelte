@@ -1,5 +1,7 @@
 <script lang="ts" module>
-	export type IncidentFieldOptions = CreateIncidentFieldOptionAttributes[] | UpdateIncidentFieldOptionAttributes[];
+	export type IncidentFieldOptions =
+		| CreateIncidentFieldOptionAttributes[]
+		| UpdateIncidentFieldOptionAttributes[];
 </script>
 
 <script lang="ts">
@@ -7,55 +9,63 @@
 		type UpdateIncidentFieldOptionAttributes,
 		type CreateIncidentFieldOptionAttributes,
 		type field_option_type as OptionType,
-	} from '$lib/api';
-	import EditableListGroup from '$components/editable-list/EditableList.svelte';
-	import type { EditorSnippetProps } from '$features/settings/components/mutating-table';
-	import { SelectField, ToggleGroup, ToggleOption, type MenuOption } from 'svelte-ux';
+	} from "$lib/api";
+	import EditableListGroup from "$components/editable-list/EditableList.svelte";
+	import type { EditorSnippetProps } from "$features/settings/components/mutating-table";
+	import {
+		SelectField,
+		ToggleGroup,
+		ToggleOption,
+		type MenuOption,
+	} from "svelte-ux";
 
-	type Props = EditorSnippetProps<IncidentFieldOptions>
-	const {
-		id,
-		value,
-		onUpdate,
-	}: Props = $props();
+	type Props = EditorSnippetProps<IncidentFieldOptions>;
+	const { id, value, onUpdate }: Props = $props();
 
 	const creating = $derived(!value);
 	const optionTypes: OptionType[] = ["custom", "derived"];
 	let optionsType = $state<OptionType>("derived");
 
-	type SelectCustomOptionType = MenuOption<string> & { label: string; archived: boolean };
+	type SelectCustomOptionType = MenuOption<string> & {
+		label: string;
+		archived: boolean;
+	};
 	let customOptions = $state<SelectCustomOptionType[]>([]);
 	const sources: MenuOption<string>[] = [
-		{ value: 'services-names', label: 'Services - Names' },
-		{ value: 'teams-names', label: 'Teams - Names' }
+		{ value: "services-names", label: "Services - Names" },
+		{ value: "teams-names", label: "Teams - Names" },
 	];
 	let derivedFieldId = $state<string>();
 	let derivationSource = $state<string>();
 
 	const valueChanged = () => {
-		let options: CreateIncidentFieldOptionAttributes[] | UpdateIncidentFieldOptionAttributes[] = [];
-		if (optionsType === 'custom') {
+		let options:
+			| CreateIncidentFieldOptionAttributes[]
+			| UpdateIncidentFieldOptionAttributes[] = [];
+		if (optionsType === "custom") {
 			options = customOptions.map((o) => ({
 				id: o.value.length > 0 ? o.value : undefined,
-				field_option_type: 'custom',
+				field_option_type: "custom",
 				value: o.label,
-				archived: creating ? undefined : o.archived
+				archived: creating ? undefined : o.archived,
 			}));
-		} else if (optionsType === 'derived' && !!derivationSource) {
+		} else if (optionsType === "derived" && !!derivationSource) {
 			if (creating) {
-				options = [{ field_option_type: 'derived', value: derivationSource }];
+				options = [
+					{ field_option_type: "derived", value: derivationSource },
+				];
 			} else {
 				options = [
 					{
 						id: derivedFieldId,
-						field_option_type: 'derived',
+						field_option_type: "derived",
 						value: derivationSource,
-						archived: false
-					}
+						archived: false,
+					},
 				];
 			}
 		} else {
-			console.log('invalid options type?');
+			console.log("invalid options type?");
 			return;
 		}
 		// onUpdate(options);
@@ -63,8 +73,11 @@
 
 	const customOptionAdded = (e: CustomEvent) => {
 		const val = e.detail as string;
-		customOptions = [...customOptions, { label: val, value: '', archived: false }];
-		console.log('add custom options');
+		customOptions = [
+			...customOptions,
+			{ label: val, value: "", archived: false },
+		];
+		console.log("add custom options");
 		valueChanged();
 	};
 
@@ -87,14 +100,18 @@
 	<div class="border p-2">
 		<div class="mb-2">
 			<span>Type:</span>
-			<ToggleGroup variant="outline" bind:value={optionsType} classes={{ root: 'w-64' }}>
+			<ToggleGroup
+				variant="outline"
+				bind:value={optionsType}
+				classes={{ root: "w-64" }}
+			>
 				{#each optionTypes as opt}
 					<ToggleOption value={opt}>{opt}</ToggleOption>
 				{/each}
 			</ToggleGroup>
 		</div>
 
-		<div class:hidden={optionsType !== 'custom'}>
+		<div class:hidden={optionsType !== "custom"}>
 			<EditableListGroup
 				{id}
 				bind:items={customOptions}
@@ -104,7 +121,7 @@
 			/>
 		</div>
 
-		<div class:hidden={optionsType !== 'derived'} class="">
+		<div class:hidden={optionsType !== "derived"} class="">
 			<SelectField
 				{id}
 				label="Source"

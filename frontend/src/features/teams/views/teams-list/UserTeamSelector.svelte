@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { listTeamsOptions, type ListTeamsData, type Team } from '$lib/api';
-    import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
-	import TeamCard from './TeamCard.svelte';
-	import { createQuery } from '@tanstack/svelte-query';
-	
-	let params = $state<ListTeamsData>({query: {limit: 1}});
+	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import TeamCard from "./TeamCard.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+
+	let params = $state<ListTeamsData>({ query: { limit: 1 } });
 	const userTeamsQuery = createQuery(() => listTeamsOptions(params));
 </script>
 

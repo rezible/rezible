@@ -2,7 +2,9 @@
 	import type { Service } from "$lib/api";
 	import { AvatarRing } from "svelte-boring-avatars";
 
-	interface Props { services: Service[] };
+	interface Props {
+		services: Service[];
+	}
 	let { services }: Props = $props();
 </script>
 

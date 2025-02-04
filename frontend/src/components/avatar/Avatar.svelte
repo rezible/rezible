@@ -10,23 +10,23 @@
 </script>
 
 <script lang="ts">
-	import Avatar from 'svelte-boring-avatars';
-	import { Badge } from 'svelte-ux';
+	import Avatar from "svelte-boring-avatars";
+	import { Badge } from "svelte-ux";
 
-	let { 
+	let {
 		kind,
 		id,
 		size = 38,
 		badge = false,
-		colors = ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'],
+		colors = ["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"],
 	}: AvatarProps = $props();
 
 	const variants: Record<AvatarKind, Avatar["$$prop_def"]["variant"]> = {
-		"team": "bauhaus",
-		"user": "marble",
-		"roster": "sunset",
-		"service": "pixel",
-	}
+		team: "bauhaus",
+		user: "marble",
+		roster: "sunset",
+		service: "pixel",
+	};
 	const variant = variants[kind];
 </script>
 
@@ -36,7 +36,13 @@
 
 {#key id}
 	{#if badge}
-		<Badge placement="top-right" value={1} dot circle class="bg-success-200">
+		<Badge
+			placement="top-right"
+			value={1}
+			dot
+			circle
+			class="bg-success-200"
+		>
 			{@render avatar()}
 		</Badge>
 	{:else}

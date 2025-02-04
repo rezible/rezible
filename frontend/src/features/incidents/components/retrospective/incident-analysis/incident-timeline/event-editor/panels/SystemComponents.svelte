@@ -7,7 +7,7 @@
 
 	const analysisId = incidentCtx.get().attributes.system_analysis_id;
 	const componentsQuery = createQuery(() =>
-		listSystemAnalysisComponentsOptions({ path: { id: analysisId } }),
+		listSystemAnalysisComponentsOptions({ path: { id: analysisId } })
 	);
 	const incidentComponents = $derived(componentsQuery.data?.data ?? []);
 </script>

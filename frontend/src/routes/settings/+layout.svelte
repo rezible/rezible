@@ -1,23 +1,32 @@
 <script lang="ts">
-	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiLayers, mdiPuzzle } from '@mdi/js';
-    import PageContainer, { type PageTabsProps } from "$components/page-container/PageContainer.svelte";
+	import {
+		mdiAccount,
+		mdiAccountGroup,
+		mdiCog,
+		mdiFire,
+		mdiLayers,
+		mdiPuzzle,
+	} from "@mdi/js";
+	import PageContainer, {
+		type PageTabsProps,
+	} from "$components/page-container/PageContainer.svelte";
 
 	const { children } = $props();
 
 	const tabs = $derived<PageTabsProps>({
 		pages: [
-			{ label: 'General', path: '', routeId: "/(general)", icon: mdiCog },
-			{ label: 'Incidents', path: '/incidents', icon: mdiFire },
-			{ label: 'Users', path: '/users', icon: mdiAccount },
-			{ label: 'Teams', path: '/teams', icon: mdiAccountGroup },
-			{ label: 'Integrations', path: '/integrations', icon: mdiPuzzle }
+			{ label: "General", path: "", routeId: "/(general)", icon: mdiCog },
+			{ label: "Incidents", path: "/incidents", icon: mdiFire },
+			{ label: "Users", path: "/users", icon: mdiAccount },
+			{ label: "Teams", path: "/teams", icon: mdiAccountGroup },
+			{ label: "Integrations", path: "/integrations", icon: mdiPuzzle },
 		],
 		basePath: `/settings`,
-		baseRouteId: "/settings"
+		baseRouteId: "/settings",
 	});
 </script>
 
-<PageContainer breadcrumbs={[{label: "Settings"}]} {tabs}>
+<PageContainer breadcrumbs={[{ label: "Settings" }]} {tabs}>
 	{@render children()}
 </PageContainer>
 

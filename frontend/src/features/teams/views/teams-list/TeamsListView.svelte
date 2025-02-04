@@ -1,15 +1,15 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiMagnify } from '@mdi/js';
-	import { createQuery } from '@tanstack/svelte-query';
-	import { Button, ListItem, TextField } from 'svelte-ux';
-	import Avatar from '$components/avatar/Avatar.svelte';
-	import { listTeamsOptions, type ListTeamsData, type Team } from '$lib/api';
-    import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
-    import UserTeamSelector from './UserTeamSelector.svelte';
+	import { mdiChevronRight, mdiMagnify } from "@mdi/js";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { Button, ListItem, TextField } from "svelte-ux";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import UserTeamSelector from "./UserTeamSelector.svelte";
 
 	type QueryParams = ListTeamsData["query"];
 	let params = $state<QueryParams>({});
-	const query = createQuery(() => listTeamsOptions({query: params}));
+	const query = createQuery(() => listTeamsOptions({ query: params }));
 
 	const maybeUpdateParams = (newParams: QueryParams) => {
 		let { limit, offset, search } = params || {};
@@ -19,7 +19,11 @@
 		const newOffset = newParams?.offset ?? offset;
 		const newSearch = newParams?.search ?? search;
 
-		if (limit !== newLimit || offset !== newOffset || search !== newSearch) {
+		if (
+			limit !== newLimit ||
+			offset !== newOffset ||
+			search !== newSearch
+		) {
 			// console.log('updateParams', { limit: newLimit, offset: newOffset, search: newSearch });
 		}
 	};
@@ -54,21 +58,30 @@
 			labelPlacement="float"
 			icon={mdiMagnify}
 			debounceChange={500}
-			on:change={({detail}) => maybeUpdateParams({ search: (detail.value ? String(detail.value) : undefined)})}
+			on:change={({ detail }) =>
+				maybeUpdateParams({
+					search: detail.value ? String(detail.value) : undefined,
+				})}
 		/>
 	</div>
-	
+
 	<LoadingQueryWrapper {query}>
 		{#snippet view(teams: Team[])}
 			<div class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-0">
 				{#each teams as team}
 					<a href="/teams/{team.attributes.slug}">
-						<ListItem title={team.attributes.name} classes={{ root: 'hover:bg-secondary-900' }}>
+						<ListItem
+							title={team.attributes.name}
+							classes={{ root: "hover:bg-secondary-900" }}
+						>
 							<svelte:fragment slot="avatar">
 								<Avatar kind="team" size={32} id={team.id} />
 							</svelte:fragment>
 							<div slot="actions">
-								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
+								<Button
+									icon={mdiChevronRight}
+									class="p-2 text-surface-content/50"
+								/>
 							</div>
 						</ListItem>
 					</a>

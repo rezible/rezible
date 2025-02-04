@@ -1,10 +1,14 @@
 <script lang="ts">
-	import { createMutation } from '@tanstack/svelte-query';
-	import { listEnvironmentsOptions, updateIncidentMutation, type Incident } from '$lib/api';
-	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-	import { Button, Header, Icon } from 'svelte-ux';
-	import { mdiPencil } from '@mdi/js';
-    import { incidentCtx } from '$features/incidents/lib/context';
+	import { createMutation } from "@tanstack/svelte-query";
+	import {
+		listEnvironmentsOptions,
+		updateIncidentMutation,
+		type Incident,
+	} from "$lib/api";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { mdiPencil } from "@mdi/js";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -17,7 +21,7 @@
 	let editing = $state(false);
 
 	const resetState = (inc: Incident) => {
-		const ids = inc.attributes.environments.map((e) => e.id)
+		const ids = inc.attributes.environments.map((e) => e.id);
 		incidentEnvironments = [...ids];
 		selectedEnvironments = [...ids];
 		changed = false;
@@ -29,11 +33,14 @@
 		...updateIncidentMutation(),
 		onSuccess: () => {
 			resetState(incident);
-		}
+		},
 	}));
 	const doEnvironmentUpdate = () => {
-		update.mutate({path: {id: incident.id}, body: {attributes: {environments: selectedEnvironments}}})
-	}
+		update.mutate({
+			path: { id: incident.id },
+			body: { attributes: { environments: selectedEnvironments } },
+		});
+	};
 
 	const arraysEqual = (a: string[], b: string[]) => {
 		if (a === b) return true;
@@ -42,18 +49,19 @@
 		return a.toSorted().every((val, idx) => val === sb[idx]);
 	};
 
-	const onChanged = () => (changed = !arraysEqual(selectedEnvironments, incidentEnvironments));
+	const onChanged = () =>
+		(changed = !arraysEqual(selectedEnvironments, incidentEnvironments));
 </script>
 
 {#if !editing}
 	<Header
 		title="Impacted Environments"
-		classes={{ root: 'min-h-8', title: 'text-md text-neutral-100' }}
+		classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
 	>
 		<div slot="actions" class:hidden={editing}>
 			<Button
 				size="sm"
-				classes={{ root: 'h-8' }}
+				classes={{ root: "h-8" }}
 				on:click={() => {
 					editing = true;
 				}}

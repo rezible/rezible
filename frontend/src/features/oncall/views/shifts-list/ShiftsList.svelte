@@ -1,14 +1,24 @@
 <script lang="ts">
-	import { Card, DateRangeField, Header, PeriodType, TextField } from 'svelte-ux';
-	import { mdiCalendarRange, mdiMagnify } from '@mdi/js';
-	import { formatDistanceToNow, subDays } from 'date-fns';
-	import type { DateRange as DateRangeType } from 'svelte-ux/utils/dateRange';
-    import { createQuery } from '@tanstack/svelte-query';
-    import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from '$lib/api';
-    import LoadingQueryWrapper from '$src/components/loader/LoadingQueryWrapper.svelte';
+	import {
+		Card,
+		DateRangeField,
+		Header,
+		PeriodType,
+		TextField,
+	} from "svelte-ux";
+	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
+	import { formatDistanceToNow, subDays } from "date-fns";
+	import type { DateRange as DateRangeType } from "svelte-ux/utils/dateRange";
+	import { createQuery } from "@tanstack/svelte-query";
+	import {
+		listOncallShiftsOptions,
+		type ListOncallShiftsData,
+		type OncallShift,
+	} from "$lib/api";
+	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 
-	type Props = {}
-	const { }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
 
 	let params = $state<ListOncallShiftsData>({});
 	const shiftsQuery = createQuery(() => listOncallShiftsOptions(params));
@@ -17,7 +27,7 @@
 	let dateRange = $state<DateRangeType>({
 		from: subDays(today, 3),
 		to: today,
-		periodType: PeriodType.Day
+		periodType: PeriodType.Day,
 	});
 
 	const periodTypes: PeriodType[] = [
@@ -26,7 +36,7 @@
 		PeriodType.BiWeek1,
 		PeriodType.Month,
 		PeriodType.Quarter,
-		PeriodType.CalendarYear
+		PeriodType.CalendarYear,
 	];
 
 	const updateDateRange = (newRange: DateRangeType) => {
@@ -64,14 +74,15 @@
 				{#each shifts as shift}
 					{@const attr = shift.attributes}
 					{@const roster = attr.roster.attributes}
-					<Card class="w-full" classes={{ headerContainer: 'py-2' }}>
+					<Card class="w-full" classes={{ headerContainer: "py-2" }}>
 						<div slot="header">
 							<Header title={roster.name}>
 								<div slot="title">
 									<span class="text-lg">{roster.name}</span>
 								</div>
 								<div slot="subheading">
-									<span class="text-sm text-surface-content/75"
+									<span
+										class="text-sm text-surface-content/75"
 										>{attr.role}</span
 									>
 								</div>

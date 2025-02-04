@@ -1,13 +1,13 @@
 <script lang="ts">
-    import { Field } from "svelte-ux";
+	import { Field } from "svelte-ux";
 
 	type Attendee = {
 		type: "person" | "team";
 		id: string;
-	}
+	};
 	type Props = {
-		value: Attendee[],
-	}
+		value: Attendee[];
+	};
 	let { value = $bindable() }: Props = $props();
 </script>
 
@@ -15,5 +15,4 @@
 	<Field label="Attendees">
 		<span>todo</span>
 	</Field>
-
 </div>

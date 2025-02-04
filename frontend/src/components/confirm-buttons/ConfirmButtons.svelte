@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import { Button } from 'svelte-ux';
+	import type { Snippet } from "svelte";
+	import { Button } from "svelte-ux";
 
 	type Props = {
 		onClose: VoidFunction;
@@ -30,7 +30,9 @@
 
 <div class="flex flex-row gap-2" class:justify-end={alignRight}>
 	<Button
-		on:click={() => {onClose()}}
+		on:click={() => {
+			onClose();
+		}}
 		disabled={disabled || loading}
 	>
 		{#if closeButtonContent}
@@ -43,7 +45,9 @@
 		{loading}
 		variant="fill"
 		color="warning"
-		on:click={() => {onConfirm()}}
+		on:click={() => {
+			onConfirm();
+		}}
 		disabled={!saveEnabled || disabled}
 	>
 		{#if confirmButtonContent}

@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { cls, Icon, Tooltip } from 'svelte-ux';
-	import type { IncidentEvent, IncidentMilestone, IncidentStage } from './events';
+	import { cls, Icon, Tooltip } from "svelte-ux";
+	import type {
+		IncidentEvent,
+		IncidentMilestone,
+		IncidentStage,
+	} from "./events";
 	import {
 		mdiAccountAlert,
 		mdiAlarmLight,
@@ -10,21 +14,21 @@
 		mdiMagnify,
 		mdiProgressWrench,
 		mdiThoughtBubble,
-		mdiWrench
-	} from '@mdi/js';
-	import { differenceInSeconds } from 'date-fns';
+		mdiWrench,
+	} from "@mdi/js";
+	import { differenceInSeconds } from "date-fns";
 
-	type Props = { 
+	type Props = {
 		events: IncidentEvent[];
 		selectedId?: string;
 		hoveringId?: string;
 		onEventClicked?: (eventId: string) => void;
 	};
-	let { 
+	let {
 		events,
 		selectedId,
 		hoveringId,
-		onEventClicked = (id) => {}
+		onEventClicked = (id) => {},
 	}: Props = $props();
 
 	type StageMarker = { stage: IncidentStage; start: Date; chunk: number };
@@ -51,27 +55,33 @@
 			if (i + 1 === stageEvents.length) {
 				chunk = 1 - chunksTotal;
 			} else {
-				chunk = differenceInSeconds(stageEvents[i + 1].start, e.start) / timelineDuration;
+				chunk =
+					differenceInSeconds(stageEvents[i + 1].start, e.start) /
+					timelineDuration;
 			}
 			chunksTotal += chunk;
 
 			if (e.stage_change) {
-				markers.push({ stage: e.stage_change, start: e.start, chunk: Math.round(100 * chunk) });
+				markers.push({
+					stage: e.stage_change,
+					start: e.start,
+					chunk: Math.round(100 * chunk),
+				});
 			}
 		}
 		return markers;
 	};
 
 	const icons: Record<IncidentMilestone, string> = {
-		"impact_start": mdiFire,
-		"metrics": mdiChartLine,
-		"alert": mdiAlarmLight,
-		"response_start": mdiAccountAlert,
-		"incident_detail": mdiMagnify,
-		"hypothesis": mdiThoughtBubble,
-		"mitigation_attempt": mdiProgressWrench,
-		"mitigated": mdiWrench,
-	}
+		impact_start: mdiFire,
+		metrics: mdiChartLine,
+		alert: mdiAlarmLight,
+		response_start: mdiAccountAlert,
+		incident_detail: mdiMagnify,
+		hypothesis: mdiThoughtBubble,
+		mitigation_attempt: mdiProgressWrench,
+		mitigated: mdiWrench,
+	};
 
 	type FormatEvent = {
 		id: string;
@@ -89,11 +99,14 @@
 
 		for (let i = 0; i < events.length; i++) {
 			const event = events[i];
-			const position = Math.round((differenceInSeconds(event.start, start) / timelineDuration) * 100);
+			const position = Math.round(
+				(differenceInSeconds(event.start, start) / timelineDuration) *
+					100
+			);
 
-			let title = '';
+			let title = "";
 			let icon = mdiFlag;
-			if (event.type === 'milestone') {
+			if (event.type === "milestone") {
 				title = event.milestone;
 				icon = icons[event.milestone];
 			} else {
@@ -106,18 +119,25 @@
 	};
 
 	const stageColors: Record<IncidentStage, string> = {
-		"impact":'border-danger-900/50 bg-danger-900/20',
-		'detection': 'border-warning-600/50 bg-warning-600/20',
-		'response': 'border-info-700/50 bg-info-700/20',
-		'mitigation': 'border-success-600/50 bg-success-600/20'
+		impact: "border-danger-900/50 bg-danger-900/20",
+		detection: "border-warning-600/50 bg-warning-600/20",
+		response: "border-info-700/50 bg-info-700/20",
+		mitigation: "border-success-600/50 bg-success-600/20",
 	};
 </script>
 
 <div class="w-full min-h-18 h-fit flex flex-col align-center pb-1">
 	<div class="w-full flex">
-		<div class="hidden bg-error-600/50 bg-warning-600/50 bg-info-700/50 bg-success-600/50"></div>
+		<div
+			class="hidden bg-error-600/50 bg-warning-600/50 bg-info-700/50 bg-success-600/50"
+		></div>
 		{#each getStageMarkers(events) as s}
-			<span class="inline-block px-1 leading-2 border-s-4 {stageColors[s.stage]}" style="width: {s.chunk}%">
+			<span
+				class="inline-block px-1 leading-2 border-s-4 {stageColors[
+					s.stage
+				]}"
+				style="width: {s.chunk}%"
+			>
 				{s.stage}
 			</span>
 		{/each}
@@ -128,9 +148,9 @@
 		{#each getFormattedEvents(events) as e (e.id)}
 			<div
 				class={cls(
-					'rounded-full border absolute',
-					e.id === hoveringId ? 'bg-secondary-900' : 'bg-surface-300',
-					e.id === selectedId ? 'bg-secondary-800' : ''
+					"rounded-full border absolute",
+					e.id === hoveringId ? "bg-secondary-900" : "bg-surface-300",
+					e.id === selectedId ? "bg-secondary-800" : ""
 				)}
 				style="left: clamp(0%, {e.position}%, calc(100% - 32px))"
 			>

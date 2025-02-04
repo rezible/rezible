@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { Incident } from '$lib/api';
-	import Avatar from '$components/avatar/Avatar.svelte';
-    import { Button, Header, Icon } from 'svelte-ux';
-    import { mdiPencil } from '@mdi/js';
-    import { incidentCtx } from '$features/incidents/lib/context';
+	import type { Incident } from "$lib/api";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { mdiPencil } from "@mdi/js";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -14,11 +14,14 @@
 	let editing = $state(false);
 </script>
 
-<Header title="Responders" classes={{ root: 'min-h-8', title: 'text-md text-neutral-100' }}>
+<Header
+	title="Responders"
+	classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
+>
 	<div slot="actions" class:hidden={editing}>
 		<Button
 			size="sm"
-			classes={{ root: 'h-8 text-neutral-200' }}
+			classes={{ root: "h-8 text-neutral-200" }}
 			on:click={() => {}}
 		>
 			<Icon data={mdiPencil} />
@@ -32,7 +35,9 @@
 			<Avatar kind="user" id={assignment.user.attributes.name} />
 			<div class="flex flex-col">
 				<span class="text-lg">{assignment.user.attributes.name}</span>
-				<span class="text-gray-700">{assignment.role.attributes.name}</span>
+				<span class="text-gray-700"
+					>{assignment.role.attributes.name}</span
+				>
 			</div>
 		</span>
 	</div>

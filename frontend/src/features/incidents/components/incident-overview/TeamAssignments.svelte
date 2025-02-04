@@ -1,23 +1,26 @@
 <script lang="ts">
-	import type { Incident } from '$lib/api';
-    import Avatar from '$components/avatar/Avatar.svelte';
-    import { Button, Header, Icon } from 'svelte-ux';
-    import { mdiPencil } from '@mdi/js';
-    import { incidentCtx } from '$features/incidents/lib/context';
+	import type { Incident } from "$lib/api";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { mdiPencil } from "@mdi/js";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
 
 	const incident = incidentCtx.get();
-	
+
 	const assignments = $derived(incident.attributes.teams);
 </script>
 
-<Header title="Teams" classes={{ root: 'min-h-8', title: 'text-md text-neutral-100' }}>
+<Header
+	title="Teams"
+	classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
+>
 	<div slot="actions">
 		<Button
 			size="sm"
-			classes={{ root: 'h-8 text-neutral-200' }}
+			classes={{ root: "h-8 text-neutral-200" }}
 			on:click={() => {}}
 		>
 			<Icon data={mdiPencil} />

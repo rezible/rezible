@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { collaboration } from '$features/incidents/lib/collaboration.svelte';
+	import { collaboration } from "$features/incidents/lib/collaboration.svelte";
 
 	import IncidentAnalysis from "./incident-analysis/IncidentAnalysis.svelte";
-    import IncidentReport from "./incident-report/IncidentReport.svelte";
-    import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
+	import IncidentReport from "./incident-report/IncidentReport.svelte";
+	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
 
 	type Props = {
 		view: "analysis" | "report";
-    }
-    const { view }: Props = $props();
+	};
+	const { view }: Props = $props();
 
 	collaboration.setup();
 </script>

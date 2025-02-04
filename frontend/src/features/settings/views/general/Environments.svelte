@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { z } from 'zod';
-	import { archiveEnvironmentMutation, createEnvironmentMutation, listEnvironmentsOptions, updateEnvironmentMutation, type Environment } from '$lib/api';
-	import MutatingTable, { makeField } from '$features/settings/components/mutating-table';
+	import { z } from "zod";
+	import {
+		archiveEnvironmentMutation,
+		createEnvironmentMutation,
+		listEnvironmentsOptions,
+		updateEnvironmentMutation,
+		type Environment,
+	} from "$lib/api";
+	import MutatingTable, {
+		makeField,
+	} from "$features/settings/components/mutating-table";
 
 	const fields = {
-		["name"]: makeField('Environment Name', z.string()),
+		["name"]: makeField("Environment Name", z.string()),
 	};
 
 	const queryOptions = {
@@ -12,13 +20,13 @@
 		create: createEnvironmentMutation,
 		update: updateEnvironmentMutation,
 		archive: archiveEnvironmentMutation,
-	}
+	};
 </script>
 
 <MutatingTable
 	dataType="Environment"
 	description="Specify the different operational environments services may operate in."
-	headers={['Name']}
+	headers={["Name"]}
 	{fields}
 	{queryOptions}
 >

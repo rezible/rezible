@@ -1,32 +1,55 @@
 <script lang="ts">
-	import { createOncallShiftAnnotationMutation, listOncallShiftAlertsOptions, listOncallShiftIncidentsOptions, type CreateOncallShiftAnnotationRequestBody } from '$lib/api';
-	import { mdiFilter, mdiClose, mdiChatPlus } from '@mdi/js';
-	import { Icon, Button, TextField, Header, Dialog } from 'svelte-ux';
-    import { createMutation, createQuery } from '@tanstack/svelte-query';
-    import ConfirmButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-    import { createTimeline, eventKindIcons, type ShiftTimelineEvent, type ShiftTimelineNode } from '$features/oncall/lib/handover-timeline';
+	import {
+		createOncallShiftAnnotationMutation,
+		listOncallShiftAlertsOptions,
+		listOncallShiftIncidentsOptions,
+		type CreateOncallShiftAnnotationRequestBody,
+	} from "$lib/api";
+	import { mdiFilter, mdiClose, mdiChatPlus } from "@mdi/js";
+	import { Icon, Button, TextField, Header, Dialog } from "svelte-ux";
+	import { createMutation, createQuery } from "@tanstack/svelte-query";
+	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import {
+		createTimeline,
+		eventKindIcons,
+		type ShiftTimelineEvent,
+		type ShiftTimelineNode,
+	} from "$features/oncall/lib/handover-timeline";
 
-	type Props = { 
+	type Props = {
 		shiftId: string;
 		annotatedEventIds: Set<string>;
 		open: boolean;
 		onCreated: VoidFunction;
 	};
-	let { shiftId, annotatedEventIds, open = $bindable(), onCreated }: Props = $props();
+	let {
+		shiftId,
+		annotatedEventIds,
+		open = $bindable(),
+		onCreated,
+	}: Props = $props();
 
-	const incidentsQuery = createQuery(() => ({...listOncallShiftIncidentsOptions({path: {id: shiftId}}), enabled: open}));
+	const incidentsQuery = createQuery(() => ({
+		...listOncallShiftIncidentsOptions({ path: { id: shiftId } }),
+		enabled: open,
+	}));
 	const incidents = $derived(incidentsQuery.data?.data);
 
-	const alertsQuery = createQuery(() => ({...listOncallShiftAlertsOptions({path: {id: shiftId}}), enabled: open}));
+	const alertsQuery = createQuery(() => ({
+		...listOncallShiftAlertsOptions({ path: { id: shiftId } }),
+		enabled: open,
+	}));
 	const alerts = $derived(alertsQuery.data?.data);
 
-	const timeline = $derived(createTimeline(annotatedEventIds, incidents, alerts));
+	const timeline = $derived(
+		createTimeline(annotatedEventIds, incidents, alerts)
+	);
 
 	type DraftAnnotation = {
 		event: ShiftTimelineEvent;
 		notes: string;
 		pinned: boolean;
-	}
+	};
 	let draftAnnotation = $state<DraftAnnotation>();
 
 	const setAnnotationEvent = (e: ShiftTimelineEvent) => {
@@ -34,17 +57,19 @@
 			event: e,
 			notes: "",
 			pinned: false,
-		}	
-	}
+		};
+	};
 
-	const clearAnnotation = () => {draftAnnotation = undefined};
+	const clearAnnotation = () => {
+		draftAnnotation = undefined;
+	};
 
 	const createAnnotationMutation = createMutation(() => ({
-		...createOncallShiftAnnotationMutation(), 
+		...createOncallShiftAnnotationMutation(),
 		onSuccess: () => {
 			onCreated();
 			clearAnnotation();
-		}
+		},
 	}));
 
 	const saveAnnotation = () => {
@@ -52,29 +77,37 @@
 		const d = $state.snapshot(draftAnnotation);
 		const body: CreateOncallShiftAnnotationRequestBody = {
 			attributes: {
-                event_id: d.event.eventId,
-                event_kind: d.event.kind,
-                notes: d.notes,
-                pinned: d.pinned,
-                minutes_occupied: 0,
-                occurred_at: d.event.occurred_at.toISOString(),
-                title: d.event.title,
-            }
-		}
-		createAnnotationMutation.mutate({path: {id: shiftId}, body});
-	}
+				event_id: d.event.eventId,
+				event_kind: d.event.kind,
+				notes: d.notes,
+				pinned: d.pinned,
+				minutes_occupied: 0,
+				occurred_at: d.event.occurred_at.toISOString(),
+				title: d.event.title,
+			},
+		};
+		createAnnotationMutation.mutate({ path: { id: shiftId }, body });
+	};
 </script>
 
-<Dialog 
+<Dialog
 	bind:open
 	loading={createAnnotationMutation.isPending}
-	persistent portal
-	classes={{ dialog: 'flex flex-col max-h-full w-5/6 max-w-7xl my-2', root: "p-4" }}
+	persistent
+	portal
+	classes={{
+		dialog: "flex flex-col max-h-full w-5/6 max-w-7xl my-2",
+		root: "p-4",
+	}}
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title={!!draftAnnotation ? "Annotating Event" : "Shift Events"}>
 			<svelte:fragment slot="actions">
-				<Button on:click={() => close({force: true})} iconOnly icon={mdiClose} />
+				<Button
+					on:click={() => close({ force: true })}
+					iconOnly
+					icon={mdiClose}
+				/>
 			</svelte:fragment>
 		</Header>
 	</div>
@@ -87,16 +120,32 @@
 {#snippet dialogBody()}
 	<div class="flex flex-col gap-2 overflow-y-auto p-2">
 		{#if draftAnnotation}
-			<Header title={draftAnnotation.event.title} subheading={draftAnnotation.event.occurred_at.toLocaleString()} />
+			<Header
+				title={draftAnnotation.event.title}
+				subheading={draftAnnotation.event.occurred_at.toLocaleString()}
+			/>
 			<div class="w-full border-t pt-2">
-				<TextField label="Notes" multiline bind:value={draftAnnotation.notes} placeholder="Any notes on this event" classes={{container: "bg-surface-300"}} />
+				<TextField
+					label="Notes"
+					multiline
+					bind:value={draftAnnotation.notes}
+					placeholder="Any notes on this event"
+					classes={{ container: "bg-surface-300" }}
+				/>
 			</div>
 			<div class="w-full flex justify-end">
-				<ConfirmButtons closeText="Cancel" onClose={clearAnnotation} onConfirm={saveAnnotation} confirmText="Save" />
+				<ConfirmButtons
+					closeText="Cancel"
+					onClose={clearAnnotation}
+					onConfirm={saveAnnotation}
+					confirmText="Save"
+				/>
 			</div>
 		{:else}
 			<div class="border-b pb-2">
-				<Button variant="fill-light">Filter <Icon data={mdiFilter} /></Button>
+				<Button variant="fill-light"
+					>Filter <Icon data={mdiFilter} /></Button
+				>
 			</div>
 
 			{#if timeline.length == 0}
@@ -113,10 +162,12 @@
 {/snippet}
 
 {#snippet timelineNode(node: ShiftTimelineNode)}
-{@const event = node.event}
-{@const icon = eventKindIcons[event.kind]}
-{@const isPinned = false}
-	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2 hover:bg-surface-100 bg-surface-200">
+	{@const event = node.event}
+	{@const icon = eventKindIcons[event.kind]}
+	{@const isPinned = false}
+	<div
+		class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2 hover:bg-surface-100 bg-surface-200"
+	>
 		<div class="justify-self-start">
 			<span class="flex items-center">
 				{event.occurred_at.toLocaleString()}
@@ -124,16 +175,24 @@
 		</div>
 
 		<div class="items-center static z-10">
-			<Icon data={icon} classes={{root: "bg-accent-900 rounded-full p-2 w-auto h-10"}} />
+			<Icon
+				data={icon}
+				classes={{ root: "bg-accent-900 rounded-full p-2 w-auto h-10" }}
+			/>
 		</div>
 
-		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
+		<div
+			class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2"
+		>
 			<div class="leading-none">{event.title}</div>
 			<div class="place-self-end">
-				<Button 
+				<Button
 					icon={mdiChatPlus}
-					iconOnly 
-					on:click={() => {setAnnotationEvent(event)}} />
+					iconOnly
+					on:click={() => {
+						setAnnotationEvent(event);
+					}}
+				/>
 			</div>
 		</div>
 	</div>

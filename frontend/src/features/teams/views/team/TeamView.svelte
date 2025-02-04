@@ -1,22 +1,38 @@
 <script lang="ts">
 	import { Card } from "svelte-ux";
-	import { createQuery } from '@tanstack/svelte-query';
-	import { listOncallRostersOptions, listUsersOptions, type OncallRoster, type Team, type User } from "$lib/api";
-	
+	import { createQuery } from "@tanstack/svelte-query";
+	import {
+		listOncallRostersOptions,
+		listUsersOptions,
+		type OncallRoster,
+		type Team,
+		type User,
+	} from "$lib/api";
+
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 
-	import TeamUsers from './TeamUsers.svelte';
-	import TeamRosters from './TeamRosters.svelte';
+	import TeamUsers from "./TeamUsers.svelte";
+	import TeamRosters from "./TeamRosters.svelte";
 
-	interface Props { team: Team };
+	interface Props {
+		team: Team;
+	}
 	let { team }: Props = $props();
 
-	const usersQuery = createQuery(() => listUsersOptions({query: {team_id: team.id}}));
-	const rostersQuery = createQuery(() => listOncallRostersOptions({query: {team_id: team.id}}));
+	const usersQuery = createQuery(() =>
+		listUsersOptions({ query: { team_id: team.id } })
+	);
+	const rostersQuery = createQuery(() =>
+		listOncallRostersOptions({ query: { team_id: team.id } })
+	);
 </script>
 
 <div class="flex gap-2">
-	<Card title="Users" class="max-w-lg" classes={{header: {title: "text-xl"}, headerContainer: "p-3"}}>
+	<Card
+		title="Users"
+		class="max-w-lg"
+		classes={{ header: { title: "text-xl" }, headerContainer: "p-3" }}
+	>
 		<div slot="contents">
 			<LoadingQueryWrapper query={usersQuery}>
 				{#snippet view(users: User[])}
@@ -24,12 +40,14 @@
 				{/snippet}
 			</LoadingQueryWrapper>
 		</div>
-		<div slot="actions">
-			
-		</div>
+		<div slot="actions"></div>
 	</Card>
 
-	<Card title="Oncall Rosters" class="max-w-lg" classes={{header: {title: "text-xl"}, headerContainer: "p-3"}}>
+	<Card
+		title="Oncall Rosters"
+		class="max-w-lg"
+		classes={{ header: { title: "text-xl" }, headerContainer: "p-3" }}
+	>
 		<div slot="contents">
 			<LoadingQueryWrapper query={rostersQuery}>
 				{#snippet view(rosters: OncallRoster[])}
@@ -37,9 +55,7 @@
 				{/snippet}
 			</LoadingQueryWrapper>
 		</div>
-		<div slot="actions">
-			
-		</div>
+		<div slot="actions"></div>
 	</Card>
 
 	<!--Card title="Owned Services" class="max-w-lg" classes={{header: {title: "text-xl"}, headerContainer: "p-3"}}>

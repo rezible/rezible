@@ -3,7 +3,7 @@
 	import { Button, Icon, SelectField } from "svelte-ux";
 	import Slack from "./data-sources/Slack.svelte";
 	// import Github from "./data-sources/Github.svelte";
-    import Url from "./data-sources/Url.svelte";
+	import Url from "./data-sources/Url.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -20,12 +20,14 @@
 		id: string;
 	};
 	let addingState = $state<DataEvidence>();
-	const SourceComponent = $derived(dataSources.find(s => s.value === addingState?.source)?.component);
+	const SourceComponent = $derived(
+		dataSources.find((s) => s.value === addingState?.source)?.component
+	);
 
 	const onEvidenceLinked = (id: string) => {
 		console.log(addingState?.source, id);
 		addingState = undefined;
-	}
+	};
 </script>
 
 <div class="flex flex-col gap-1 bg-surface-100">

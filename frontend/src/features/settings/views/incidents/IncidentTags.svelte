@@ -1,10 +1,18 @@
 <script lang="ts">
-	import { archiveIncidentTagMutation, createIncidentTagMutation, listIncidentTagsOptions, updateIncidentTagMutation, type IncidentTag } from '$lib/api';
-	import { z } from 'zod';
-	import MutatingTable, { makeField } from '$features/settings/components/mutating-table';
+	import {
+		archiveIncidentTagMutation,
+		createIncidentTagMutation,
+		listIncidentTagsOptions,
+		updateIncidentTagMutation,
+		type IncidentTag,
+	} from "$lib/api";
+	import { z } from "zod";
+	import MutatingTable, {
+		makeField,
+	} from "$features/settings/components/mutating-table";
 
 	const fields = {
-		["value"]: makeField('Value', z.string().min(4))
+		["value"]: makeField("Value", z.string().min(4)),
 	};
 
 	const queryOptions = {
@@ -12,13 +20,13 @@
 		create: createIncidentTagMutation,
 		update: updateIncidentTagMutation,
 		archive: archiveIncidentTagMutation,
-	}
+	};
 </script>
 
 <MutatingTable
 	dataType="Incident Tag"
 	description="Modify incident tags."
-	headers={['Value']}
+	headers={["Value"]}
 	{fields}
 	{queryOptions}
 >

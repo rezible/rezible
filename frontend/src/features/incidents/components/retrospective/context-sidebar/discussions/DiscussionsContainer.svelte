@@ -1,20 +1,25 @@
 <script lang="ts">
-	import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-	import { Button, Header } from 'svelte-ux';
-	import { listRetrospectiveDiscussionsOptions, type RetrospectiveDiscussion } from '$lib/api';
-    import LoadingQueryWrapper from '$components/loader/LoadingQueryWrapper.svelte';
-	import { draft } from '$features/incidents/lib/discussions.svelte';
-	import DiscussionThread from './DiscussionThread.svelte';
-	import NewDiscussionDrafter from './NewDiscussionDrafter.svelte';
+	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { Button, Header } from "svelte-ux";
+	import {
+		listRetrospectiveDiscussionsOptions,
+		type RetrospectiveDiscussion,
+	} from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import { draft } from "$features/incidents/lib/discussions.svelte";
+	import DiscussionThread from "./DiscussionThread.svelte";
+	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";
 
 	type Props = {
 		retrospectiveId: string;
-	}
+	};
 	let { retrospectiveId }: Props = $props();
 
 	const queryClient = useQueryClient();
 
-	const queryOptions = $derived(listRetrospectiveDiscussionsOptions({path: {id: retrospectiveId}}));
+	const queryOptions = $derived(
+		listRetrospectiveDiscussionsOptions({ path: { id: retrospectiveId } })
+	);
 	const query = createQuery(() => queryOptions);
 
 	const onDiscussionCreated = (d: RetrospectiveDiscussion) => {
@@ -23,21 +28,23 @@
 			draft.clear(true);
 		}
 		const { queryKey } = queryOptions;
-		queryClient.setQueryData(queryKey, data => {
-			if (!data) return {data: [d], pagination: {total: 1}};
+		queryClient.setQueryData(queryKey, (data) => {
+			if (!data) return { data: [d], pagination: { total: 1 } };
 			const newData = structuredClone(data);
 			newData.data.push(d);
 			return newData;
 		});
-		queryClient.invalidateQueries({queryKey});
-	}
+		queryClient.invalidateQueries({ queryKey });
+	};
 </script>
 
 <div class="col-span-3 flex flex-col gap-2 overflow-y-auto border p-2">
 	<Header title="Discuss" />
 
 	<div class="flex flex-row gap-2">
-		<span class="rounded-lg border px-3 py-1 bg-primary cursor-pointer">All</span>
+		<span class="rounded-lg border px-3 py-1 bg-primary cursor-pointer"
+			>All</span
+		>
 		<span class="rounded-lg border px-3 py-1">Comments</span>
 		<span class="rounded-lg border px-3 py-1">Action Items</span>
 	</div>

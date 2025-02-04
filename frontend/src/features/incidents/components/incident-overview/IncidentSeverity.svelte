@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { createMutation, useQueryClient } from '@tanstack/svelte-query';
-	import { Button, Icon, Header } from 'svelte-ux';
-	import { mdiPencil, mdiPencilOutline } from '@mdi/js';
-	import { updateIncidentMutation, type Incident } from '$lib/api';
-	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-    import { incidentCtx } from '$features/incidents/lib/context';
+	import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+	import { Button, Icon, Header } from "svelte-ux";
+	import { mdiPencil, mdiPencilOutline } from "@mdi/js";
+	import { updateIncidentMutation, type Incident } from "$lib/api";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -19,28 +19,33 @@
 		newSeverity = inc.attributes.severity.id;
 		editing = false;
 	};
-	$effect(() => {resetState(incident)})
+	$effect(() => {
+		resetState(incident);
+	});
 
 	const update = createMutation(() => ({
 		...updateIncidentMutation(),
 		onSuccess: () => {
 			resetState(incident);
-		}
+		},
 	}));
 	const doSeverityUpdate = () => {
-		update.mutate({path: {id: incident.id}, body: {attributes: {severity_id: newSeverity}}})
-	}
+		update.mutate({
+			path: { id: incident.id },
+			body: { attributes: { severity_id: newSeverity } },
+		});
+	};
 </script>
 
 {#if !editing}
 	<Header
 		title="Incident Severity"
-		classes={{ root: 'h-8', title: 'text-md text-neutral-100' }}
+		classes={{ root: "h-8", title: "text-md text-neutral-100" }}
 	>
 		<div slot="actions" class:hidden={editing}>
 			<Button
 				size="sm"
-				classes={{ root: 'h-8' }}
+				classes={{ root: "h-8" }}
 				on:click={() => {
 					editing = true;
 				}}

@@ -12,19 +12,19 @@
 		Dialog,
 		SelectField,
 	} from "svelte-ux";
-    import { searchState as search } from "./omni-search.svelte";
-    import { goto } from "$app/navigation";
+	import { searchState as search } from "./omni-search.svelte";
+	import { goto } from "$app/navigation";
 
 	let open = $state(false);
 
 	const closeSearch = () => {
 		open = false;
 		search.clear();
-	}
+	};
 
 	const onSearchClicked = () => {
 		open = true;
-	}
+	};
 
 	const onKeyDown = (e: KeyboardEvent) => {
 		if (open && e.key === "Escape") {
@@ -37,27 +37,31 @@
 		e.preventDefault();
 		open = true;
 		search.startSearch(typeResult);
-	}
+	};
 
 	const fieldActions = (node: any) => [autoFocus(node), selectOnFocus(node)];
 
 	const onInputChange = (value: string) => {
 		search.updateInput(value);
-	}
+	};
 
 	const onSelected = (value?: MenuOption<string> | null) => {
 		console.log(value);
-		goto("/teams/sit")
+		goto("/teams/sit");
 		closeSearch();
-	}
+	};
 
 	const onDialogClose = () => {
 		closeSearch();
-	}
+	};
 
 	const isGeneral = $derived(search.searchType === "general");
 	const title = $derived(isGeneral ? "Search For Anything" : "Oncall Search");
-	const placeholder = $derived(isGeneral ? "An Incident, Retrospective, Team Name..." : "Oncall Roster, Service, Username...");
+	const placeholder = $derived(
+		isGeneral
+			? "An Incident, Retrospective, Team Name..."
+			: "Oncall Roster, Service, Username..."
+	);
 </script>
 
 <svelte:window onkeydown={onKeyDown} />
@@ -68,7 +72,7 @@
 		iconOnly={!$smScreen}
 		on:click={onSearchClicked}
 		class={cls(
-			"sm:bg-surface-100/80 sm:hover:bg-surface-100/50 text-surface-content rounded-full sm:w-96 justify-start",
+			"sm:bg-surface-100/80 sm:hover:bg-surface-100/50 text-surface-content rounded-full sm:w-96 justify-start"
 		)}
 	>
 		<span class="flex-1 text-left max-sm:hidden">Search</span>
@@ -82,7 +86,7 @@
 	classes={{
 		root: cls("items-start mt-8 sm:mt-24 sm:ml-16"),
 		backdrop: "backdrop-blur-sm",
-		title: "bg-surface-200 text-secondary-600"
+		title: "bg-surface-200 text-secondary-600",
 	}}
 >
 	<div slot="title">
@@ -95,8 +99,8 @@
 		options={search.options}
 		{placeholder}
 		{fieldActions}
-		on:inputChange={e => onInputChange(e.detail)}
-		on:change={e => onSelected(e.detail.option)}
+		on:inputChange={(e) => onInputChange(e.detail)}
+		on:change={(e) => onSelected(e.detail.option)}
 		classes={{
 			root: "w-[420px] max-w-[95vw] py-1",
 			field: {

@@ -4,12 +4,15 @@
 		mdiFileCheck,
 		mdiOpenInNew,
 		mdiProgressPencil,
-		mdiVideoAccount
-	} from '@mdi/js';
-	import { Button, Header, Icon } from 'svelte-ux';
-    import { createQuery } from '@tanstack/svelte-query';
-	import { getRetrospectiveForIncidentOptions, type Incident } from '$lib/api';
-    import { incidentCtx } from '$features/incidents/lib/context';
+		mdiVideoAccount,
+	} from "@mdi/js";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { createQuery } from "@tanstack/svelte-query";
+	import {
+		getRetrospectiveForIncidentOptions,
+		type Incident,
+	} from "$lib/api";
+	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -17,7 +20,7 @@
 	const incident = incidentCtx.get();
 
 	const retrospectiveQuery = createQuery(() => ({
-		...getRetrospectiveForIncidentOptions({path: {id: incident.id}}),
+		...getRetrospectiveForIncidentOptions({ path: { id: incident.id } }),
 	}));
 	const retrospective = $derived(retrospectiveQuery.data?.data);
 
@@ -45,12 +48,15 @@
 	href="/incidents/{incident.attributes.slug}/retrospective"
 >
 	<div class="">
-		<Header title="Incident Retrospective" classes={{ title: 'text-lg text-neutral-50' }}>
+		<Header
+			title="Incident Retrospective"
+			classes={{ title: "text-lg text-neutral-50" }}
+		>
 			<div slot="actions" class="">
 				<Button
 					color="primary"
 					variant="text"
-					classes={{ root: 'text-primary-content' }}
+					classes={{ root: "text-primary-content" }}
 					href="/incidents/{incident.attributes.slug}/retrospective"
 				>
 					Open
@@ -67,7 +73,7 @@
 	<div
 		class="border border-surface-content/10 bg-surface-100 group-hover:bg-surface-200 rounded-lg shadow-lg p-2"
 	>
-		<Header title="Summary" classes={{ title: 'text-neutral-50' }} />
+		<Header title="Summary" classes={{ title: "text-neutral-50" }} />
 		<p class="text-sm">{incident.attributes.summary}</p>
 	</div>
 </a>

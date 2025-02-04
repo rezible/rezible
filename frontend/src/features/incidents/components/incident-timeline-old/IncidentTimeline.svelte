@@ -9,8 +9,8 @@
 		TimelineEvent,
 		Dialog,
 		Header,
-        Collapse
-	} from 'svelte-ux';
+		Collapse,
+	} from "svelte-ux";
 	import {
 		mdiAlarmLight,
 		mdiCircleMedium,
@@ -20,24 +20,24 @@
 		mdiFire,
 		mdiMagnify,
 		mdiPencil,
-		mdiPlus
-	} from '@mdi/js';
-	import type { Incident } from '$lib/api';
-	import ConfirmChangeButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
-	import { events, type EventType, type IncidentEvent } from './events';
+		mdiPlus,
+	} from "@mdi/js";
+	import type { Incident } from "$lib/api";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import { events, type EventType, type IncidentEvent } from "./events";
 	// import EventDetailsEdit from './EventEditor.svelte';
-	import TimelineSummary from './TimelineSummary.svelte';
+	import TimelineSummary from "./TimelineSummary.svelte";
 
-	interface Props { 
+	interface Props {
 		incident: Incident;
-	};
+	}
 	let { incident }: Props = $props();
 
 	const timelineElements: { [i: number]: HTMLElement } = {};
 
 	// https://visjs.github.io/vis-timeline/docs/timeline/
 
-	type EditMode = 'edit' | 'create';
+	type EditMode = "edit" | "create";
 	type EditState = {
 		event: IncidentEvent;
 		mode: EditMode;
@@ -61,8 +61,8 @@
 	};
 
 	const getDialogTitle = (mode?: EditMode) => {
-		if (!mode) return '';
-		if (mode === 'create') return 'Create Timeline Event';
+		if (!mode) return "";
+		if (mode === "create") return "Create Timeline Event";
 		return `Edit Timeline Event`;
 	};
 	const dialogTitle = $derived(getDialogTitle(editing?.mode));
@@ -70,19 +70,19 @@
 	const createEvent = () => {
 		// TODO: base this on last event?
 		const newEvent: IncidentEvent = {
-			id: '',
+			id: "",
 			title: "",
 			start: new Date(),
-			type: 'note',
+			type: "note",
 			description: "",
-			data: []
-		}
-		editing = {event: newEvent, mode: 'create', changed: false};
+			data: [],
+		};
+		editing = { event: newEvent, mode: "create", changed: false };
 		editorOpen = true;
 	};
 
 	const editEvent = (event: IncidentEvent) => {
-		editing = { event, mode: 'edit', changed: false };
+		editing = { event, mode: "edit", changed: false };
 		editorOpen = true;
 	};
 
@@ -97,8 +97,8 @@
 	};
 
 	const summaryEventClicked = (id: string) => {
-		selected = events.find(e => e.id === id);
-	}
+		selected = events.find((e) => e.id === id);
+	};
 
 	const eventHover = (event: IncidentEvent, hovering: boolean) => {
 		if (!hovering && hoveringId === event.id) hoveringId = undefined;
@@ -106,20 +106,26 @@
 	};
 </script>
 
-
 <div class="flex">
 	<div class="flex-1 flex items-center">
 		<span class="text-lg text-surface-content/80">Incident Timeline</span>
 	</div>
 	<div class="flex items-center">
-		<Button variant="fill-light" size="sm" rounded={false} on:click={createEvent}>
+		<Button
+			variant="fill-light"
+			size="sm"
+			rounded={false}
+			on:click={createEvent}
+		>
 			Add Event
 			<Icon data={mdiPlus} />
 		</Button>
 	</div>
 </div>
 
-<div class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 rounded-lg mt-1">
+<div
+	class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 rounded-lg mt-1"
+>
 	<TimelineSummary
 		{events}
 		selectedId={selected?.id}
@@ -141,7 +147,10 @@
 		bind:open={editorOpen}
 		persistent
 		portal
-		classes={{ root:"p-8", dialog: 'flex flex-col max-w-full max-w-4xl h-full' }}
+		classes={{
+			root: "p-8",
+			dialog: "flex flex-col max-w-full max-w-4xl h-full",
+		}}
 	>
 		<div slot="header" class="border-b p-2">
 			<span class="text-xl">{dialogTitle}</span>
@@ -162,51 +171,54 @@
 </div>
 
 {#snippet eventsList()}
-<div class="w-full flex gap-1">
-	<div class="overflow-y-auto max-h-72 bg-surface-100 flex-1 flex flex-col divide-y">
-		{#each events as e, i (i)}
-			<div
-				class="p-2 cursor-pointer {e.id === selected?.id
-					? 'bg-secondary-800'
-					: 'hover:bg-secondary-900'}"
-				role="none"
-				onmouseenter={() => {
-					eventHover(e, true);
-				}}
-				onmouseleave={() => {
-					eventHover(e, false);
-				}}
-				onclick={() => {
-					selected = e;
-				}}
-			>
-				{e.title}
-			</div>
-		{/each}
-	</div>
-	{#if selected}
-		<div class="border-2 w-1/2 p-2">
-			<Header title="Event Details" class="">
-				<div slot="actions">
-					<Button
-						icon={mdiPencil}
-						on:click={() => {
-							if (selected) editEvent($state.snapshot(selected));
-						}}
-					>
-						Edit
-					</Button>
-					<Button
-						iconOnly
-						icon={mdiClose}
-						on:click={() => {
-							selected = undefined;
-						}}
-					/>
+	<div class="w-full flex gap-1">
+		<div
+			class="overflow-y-auto max-h-72 bg-surface-100 flex-1 flex flex-col divide-y"
+		>
+			{#each events as e, i (i)}
+				<div
+					class="p-2 cursor-pointer {e.id === selected?.id
+						? 'bg-secondary-800'
+						: 'hover:bg-secondary-900'}"
+					role="none"
+					onmouseenter={() => {
+						eventHover(e, true);
+					}}
+					onmouseleave={() => {
+						eventHover(e, false);
+					}}
+					onclick={() => {
+						selected = e;
+					}}
+				>
+					{e.title}
 				</div>
-			</Header>
-			foo
+			{/each}
 		</div>
-	{/if}
-</div>
+		{#if selected}
+			<div class="border-2 w-1/2 p-2">
+				<Header title="Event Details" class="">
+					<div slot="actions">
+						<Button
+							icon={mdiPencil}
+							on:click={() => {
+								if (selected)
+									editEvent($state.snapshot(selected));
+							}}
+						>
+							Edit
+						</Button>
+						<Button
+							iconOnly
+							icon={mdiClose}
+							on:click={() => {
+								selected = undefined;
+							}}
+						/>
+					</div>
+				</Header>
+				foo
+			</div>
+		{/if}
+	</div>
 {/snippet}

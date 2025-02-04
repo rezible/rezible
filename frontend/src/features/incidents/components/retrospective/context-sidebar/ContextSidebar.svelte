@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Header } from "svelte-ux";
-	import { collaboration } from '$features/incidents/lib/collaboration.svelte';
+	import { collaboration } from "$features/incidents/lib/collaboration.svelte";
 </script>
 
 <div class="w-64 border overflow-y-auto p-2">

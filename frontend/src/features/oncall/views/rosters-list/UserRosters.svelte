@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { type OncallRoster } from '$lib/api';
-    import UserRosterCard from './UserRosterCard.svelte';
+	import { type OncallRoster } from "$lib/api";
+	import UserRosterCard from "./UserRosterCard.svelte";
 
 	type Props = {
 		rosters: OncallRoster[];
-	}
+	};
 	const { rosters }: Props = $props();
 </script>
 

@@ -10,8 +10,8 @@
 		cls,
 		ListItem,
 		MenuButton,
-        Toggle,
-        Menu,
+		Toggle,
+		Menu,
 	} from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { ContributingFactorCategories } from "../../types";
@@ -49,7 +49,7 @@
 	const selectedOption = $derived(
 		addingState
 			? options.find((opt) => opt.value === addingState?.category)
-			: undefined,
+			: undefined
 	);
 
 	const resetAddingState = () => {
@@ -84,7 +84,7 @@
 						class={cls(
 							index === highlightIndex && "bg-surface-content/5",
 							option === selected && "font-semibold",
-							option.group ? "px-4" : "px-2",
+							option.group ? "px-4" : "px-2"
 						)}
 						scrollIntoView={index === highlightIndex}
 					>

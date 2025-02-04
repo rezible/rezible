@@ -1,16 +1,13 @@
 <script lang="ts">
-	import type { OncallRoster } from '$lib/api';
-	import { mdiStar, mdiStarOutline, mdiArrowRight } from '@mdi/js';
-	import { Card, Header, Button, Icon } from 'svelte-ux';
+	import type { OncallRoster } from "$lib/api";
+	import { mdiStar, mdiStarOutline, mdiArrowRight } from "@mdi/js";
+	import { Card, Header, Button, Icon } from "svelte-ux";
 
 	interface Props {
 		roster: OncallRoster;
 		pinned?: boolean;
-	};
-	let { 
-		roster, 
-		pinned = false,
-	}: Props = $props();
+	}
+	let { roster, pinned = false }: Props = $props();
 </script>
 
 <Card class="">

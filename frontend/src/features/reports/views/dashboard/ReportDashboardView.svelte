@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Header } from "svelte-ux";
-    import IncidentsGraph from "$features/reports/components/incidents-graph/IncidentsGraph.svelte";
+	import IncidentsGraph from "$features/reports/components/incidents-graph/IncidentsGraph.svelte";
 </script>
 
 <div class="">

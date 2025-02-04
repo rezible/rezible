@@ -1,22 +1,28 @@
 <script lang="ts">
-	import { AvatarMarble } from 'svelte-boring-avatars';
+	import { AvatarMarble } from "svelte-boring-avatars";
 
-	const avatarColors = ['#92A1C6', '#146A7C', '#F0AB3D', '#C271B4', '#C20D90'];
+	const avatarColors = [
+		"#92A1C6",
+		"#146A7C",
+		"#F0AB3D",
+		"#C271B4",
+		"#C20D90",
+	];
 
 	type User = {
 		name: string;
 		role: string;
 	};
 	const users: User[] = [
-		{ name: 'Hart Hagerty', role: 'admin' },
-		{ name: 'Foo Bar', role: 'user' },
-		{ name: 'Foo Bar 2', role: 'user' },
-		{ name: 'Foo Bar 3', role: 'user' },
-		{ name: 'Foo Bar 4', role: 'user' },
-		{ name: 'Foo Bar 5', role: 'user' },
-		{ name: 'Foo Bar 6', role: 'user' },
-		{ name: 'Foo Bar 7', role: 'user' },
-		{ name: 'Foo Bar 8', role: 'user' }
+		{ name: "Hart Hagerty", role: "admin" },
+		{ name: "Foo Bar", role: "user" },
+		{ name: "Foo Bar 2", role: "user" },
+		{ name: "Foo Bar 3", role: "user" },
+		{ name: "Foo Bar 4", role: "user" },
+		{ name: "Foo Bar 5", role: "user" },
+		{ name: "Foo Bar 6", role: "user" },
+		{ name: "Foo Bar 7", role: "user" },
+		{ name: "Foo Bar 8", role: "user" },
 	];
 
 	let curPage = $state(0);
@@ -25,7 +31,9 @@
 	let pageSize = $state(10);
 
 	const pages = $derived(Math.ceil(users.length / pageSize));
-	const usersView = $derived(users.slice(pageSize * curPage, pageSize * (curPage + 1)));
+	const usersView = $derived(
+		users.slice(pageSize * curPage, pageSize * (curPage + 1))
+	);
 
 	const editUser = (index: number) => {
 		const userIndex = index + curPage * pageSize;
@@ -70,12 +78,17 @@
 			{#each usersView as user, i}
 				<tr>
 					<th>
-						<label><input type="checkbox" class="checkbox" /></label>
+						<label><input type="checkbox" class="checkbox" /></label
+						>
 					</th>
 					<td>
 						<div class="flex items-center space-x-3">
 							<div class="avatar">
-								<AvatarMarble size={20} name={user.name} colors={avatarColors} />
+								<AvatarMarble
+									size={20}
+									name={user.name}
+									colors={avatarColors}
+								/>
 							</div>
 							<div>
 								<div class="font-bold">{user.name}</div>
@@ -83,7 +96,9 @@
 						</div>
 					</td>
 					<td>
-						<span class="badge badge-ghost badge-sm">{user.role}</span>
+						<span class="badge badge-ghost badge-sm"
+							>{user.role}</span
+						>
 					</td>
 					<th>
 						<button
@@ -102,7 +117,8 @@
 <div class="flex items-center justify-between">
 	<div>
 		<span
-			>Showing {curPage * pageSize + 1} - {curPage * pageSize + usersView.length} of {users.length}</span
+			>Showing {curPage * pageSize + 1} - {curPage * pageSize +
+				usersView.length} of {users.length}</span
 		>
 	</div>
 
