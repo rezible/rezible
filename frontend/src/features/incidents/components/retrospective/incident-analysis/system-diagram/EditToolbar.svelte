@@ -5,6 +5,7 @@
 	import { analysis } from "../analysis.svelte";
 	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
 	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/componentDialog.svelte";
+	import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/relationshipDialog.svelte";
 
 	const { node, edge } = $derived(diagram.selected);
 	const component = $derived(node?.data ? (node.data.component as SystemAnalysisComponent) : undefined);
@@ -24,7 +25,7 @@
 	};
 
 	const openEditRelationshipDialog = () => {
-		if (relationship) alert("open dialog");
+		if (relationship) relationshipDialog.setEditing(relationship);
 	};
 </script>
 

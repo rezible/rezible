@@ -10,6 +10,8 @@ import {
 	type XYPosition,
 	useSvelteFlow,
 	type OnConnectEnd,
+	type OnConnect,
+	type Connection,
 } from "@xyflow/svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
@@ -264,14 +266,10 @@ const createDiagramState = () => {
 		};
 	};
 
-	const handleConnectEnd: OnConnectEnd = (event, connectionState) => {
-		if (connectionState.isValid) return;
-
-		const sourceNodeId = connectionState.fromNode?.id ?? "1";
-		const { clientX, clientY } = "changedTouches" in event ? event.changedTouches[0] : event;
-
-		console.log("dropped", sourceNodeId, clientX, clientY);
-	};
+	const onEdgeConnect = (conn: Connection) => {
+		console.log(conn);
+		alert("open create relationship dialog");
+	}
 
 	return {
 		setup,
@@ -297,7 +295,7 @@ const createDiagramState = () => {
 		handleNodeDrag,
 		handleEdgeClicked,
 		handlePaneClicked,
-		handleConnectEnd,
+		onEdgeConnect,
 	};
 };
 

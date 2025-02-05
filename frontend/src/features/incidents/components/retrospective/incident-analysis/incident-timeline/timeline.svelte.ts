@@ -100,9 +100,7 @@ const createTimelineState = () => {
 		eventComponents.set(id, created);
 	};
 
-	const mount = (container: HTMLElement) => {
-		console.log("mounted");
-		
+	const mount = (container: HTMLElement) => {	
 		const options: TimelineOptions = {
 			height: "100%",
 		};

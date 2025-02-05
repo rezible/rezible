@@ -23,6 +23,7 @@
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
 	import AddingComponentGhostNode from "./AddingComponentGhostNode.svelte";
+	import { analysis } from "../analysis.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -53,8 +54,10 @@
 		edges: diagram.edges,
 		colorMode,
 		snapGrid: [25, 25],
+		connectionRadius: 40,
 		fitView: true,
 		proOptions: { hideAttribution: true },
+		onconnect: diagram.onEdgeConnect,
 	});
 
 	const backgroundProps: BackgroundProps = {
@@ -91,7 +94,6 @@
 			on:nodedrag={diagram.handleNodeDrag}
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={diagram.handleEdgeClicked}
-			onconnectend={diagram.handleConnectEnd}
 		>
 			<Background {...backgroundProps} />
 			<Controls {...controlsProps} />
