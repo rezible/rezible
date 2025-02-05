@@ -12,9 +12,7 @@ const generalOptions: MenuOption<string>[] = [
 	{ label: "Demo Roster", value: "roster-id", icon: mdiPhoneLog },
 ];
 
-const oncallOptions: MenuOption<string>[] = [
-	{ label: "Recommendations Service", value: "foo-id" },
-];
+const oncallOptions: MenuOption<string>[] = [{ label: "Recommendations Service", value: "foo-id" }];
 
 const generalKey = "k";
 const oncallKey = "o";

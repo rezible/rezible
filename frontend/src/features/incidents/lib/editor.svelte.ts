@@ -1,10 +1,4 @@
-import {
-	isActive,
-	type ChainedCommands,
-	type Editor,
-	type Extensions,
-	type Content,
-} from "@tiptap/core";
+import { isActive, type ChainedCommands, type Editor, type Extensions, type Content } from "@tiptap/core";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
 import { Editor as SvelteEditor } from "svelte-tiptap";
 
@@ -200,10 +194,7 @@ const createActiveAnnotationIdState = () => {
 
 export const activeAnnotation = createActiveAnnotationIdState();
 
-export const configureEditorExtensions = (
-	field: string,
-	provider: HocuspocusProvider
-) => {
+export const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
 	const user = { name: session.username, color: session.accentColor };
 	const extensions: Extensions = [
 		...configureBaseExtensions(false),

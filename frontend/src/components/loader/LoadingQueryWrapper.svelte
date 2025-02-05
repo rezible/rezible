@@ -16,18 +16,13 @@
 
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
-		<Card
-			title="Error {err.status} {err.title}"
-			classes={{ header: { title: "text-danger text-xl" } }}
-		>
+		<Card title="Error {err.status} {err.title}" classes={{ header: { title: "text-danger text-xl" } }}>
 			<div slot="contents" class="pb-3 flex flex-col">
 				<span class="text-lg">{err.detail}</span>
 				{#each err.errors ?? [] as d}
 					<span
-						>{d.location
-							? `[${d.location}: "${d.value}"]: `
-							: ""}<span class="text-neutral-content"
-							>{d.message}</span
+						>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}<span
+							class="text-neutral-content">{d.message}</span
 						></span
 					>
 				{/each}

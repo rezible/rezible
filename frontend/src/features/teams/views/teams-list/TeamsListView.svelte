@@ -19,11 +19,7 @@
 		const newOffset = newParams?.offset ?? offset;
 		const newSearch = newParams?.search ?? search;
 
-		if (
-			limit !== newLimit ||
-			offset !== newOffset ||
-			search !== newSearch
-		) {
+		if (limit !== newLimit || offset !== newOffset || search !== newSearch) {
 			// console.log('updateParams', { limit: newLimit, offset: newOffset, search: newSearch });
 		}
 	};
@@ -70,18 +66,12 @@
 			<div class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-0">
 				{#each teams as team}
 					<a href="/teams/{team.attributes.slug}">
-						<ListItem
-							title={team.attributes.name}
-							classes={{ root: "hover:bg-secondary-900" }}
-						>
+						<ListItem title={team.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 							<svelte:fragment slot="avatar">
 								<Avatar kind="team" size={32} id={team.id} />
 							</svelte:fragment>
 							<div slot="actions">
-								<Button
-									icon={mdiChevronRight}
-									class="p-2 text-surface-content/50"
-								/>
+								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 							</div>
 						</ListItem>
 					</a>

@@ -16,9 +16,7 @@
 	const { crumbs }: Props = $props();
 </script>
 
-<span
-	class="text-xl text-surface-content/50 w-fit px-2 self-bottom flex gap-1 items-end"
->
+<span class="text-xl text-surface-content/50 w-fit px-2 self-bottom flex gap-1 items-end">
 	{#each crumbs as c, i}
 		{@const last = i === crumbs.length - 1}
 		{#if i > 0}
@@ -31,15 +29,9 @@
 			{/if}
 
 			{#if c.href}
-				<a
-					href={c.href}
-					class:text-2xl={last}
-					class:text-surface-content={last}>{c.label}</a
-				>
+				<a href={c.href} class:text-2xl={last} class:text-surface-content={last}>{c.label}</a>
 			{:else}
-				<span class:text-2xl={last} class:text-surface-content={last}
-					>{c.label}</span
-				>
+				<span class:text-2xl={last} class:text-surface-content={last}>{c.label}</span>
 			{/if}
 		</span>
 	{/each}

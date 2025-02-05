@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { Header, Icon } from "svelte-ux";
-	import {
-		mdiChevronRight,
-		mdiAlarmLight,
-		mdiFire,
-		mdiSleepOff,
-	} from "@mdi/js";
+	import { mdiChevronRight, mdiAlarmLight, mdiFire, mdiSleepOff } from "@mdi/js";
 	import type { OncallShift } from "$src/lib/api";
 
 	type Props = {
@@ -14,15 +9,11 @@
 	const { shift }: Props = $props();
 </script>
 
-<div
-	class="flex flex-col gap-2 flex-1 min-h-0 max-h-full overflow-y-auto border rounded-lg p-2"
->
+<div class="flex flex-col gap-2 flex-1 min-h-0 max-h-full overflow-y-auto border rounded-lg p-2">
 	<Header title="Stats" />
 
 	<div class="flex flex-row gap-4">
-		<div
-			class="flex items-center gap-4 bg-info-900/80 h-full p-2 px-6 rounded-xl w-fit"
-		>
+		<div class="flex items-center gap-4 bg-info-900/80 h-full p-2 px-6 rounded-xl w-fit">
 			<div class="">
 				<Icon data={mdiAlarmLight} />
 			</div>
@@ -31,9 +22,7 @@
 				<span class="text-surface-content/75">Normal</span>
 			</div>
 		</div>
-		<div
-			class="flex items-center gap-4 bg-accent-900/80 h-full p-3 rounded-xl w-fit"
-		>
+		<div class="flex items-center gap-4 bg-accent-900/80 h-full p-3 rounded-xl w-fit">
 			<div class="">
 				<Icon data={mdiSleepOff} />
 			</div>
@@ -42,9 +31,7 @@
 				<span class="text-surface-content/75">Above Average</span>
 			</div>
 		</div>
-		<div
-			class="flex items-center gap-4 bg-warning-900/80 h-full p-3 rounded-xl w-fit"
-		>
+		<div class="flex items-center gap-4 bg-warning-900/80 h-full p-3 rounded-xl w-fit">
 			<div class="">
 				<Icon data={mdiFire} />
 			</div>

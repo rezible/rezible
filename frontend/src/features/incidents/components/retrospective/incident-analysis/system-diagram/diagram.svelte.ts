@@ -12,11 +12,7 @@ import {
 	type OnConnectEnd,
 } from "@xyflow/svelte";
 
-import {
-	ContextMenuWidth,
-	ContextMenuHeight,
-	type ContextMenuProps,
-} from "./ContextMenu.svelte";
+import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
@@ -165,9 +161,7 @@ const createDiagramState = () => {
 			() => analysis.data,
 			(data) => {
 				if (!data) return;
-				const translated = translateSystemAnalysis(
-					$state.snapshot(data)
-				);
+				const translated = translateSystemAnalysis($state.snapshot(data));
 				nodes.set(translated.nodes);
 				edges.set(translated.edges);
 			}
@@ -183,10 +177,7 @@ const createDiagramState = () => {
 		if (!flow) return;
 		const { node, edge } = selected;
 		if (edge) {
-			const { x, y, width, height } = flow.getNodesBounds([
-				edge.source,
-				edge.target,
-			]);
+			const { x, y, width, height } = flow.getNodesBounds([edge.source, edge.target]);
 			toolbarPosition = {
 				x: x + width / 2,
 				y: y + height / 2 + 40,
@@ -261,8 +252,7 @@ const createDiagramState = () => {
 		if (connectionState.isValid) return;
 
 		const sourceNodeId = connectionState.fromNode?.id ?? "1";
-		const { clientX, clientY } =
-			"changedTouches" in event ? event.changedTouches[0] : event;
+		const { clientX, clientY } = "changedTouches" in event ? event.changedTouches[0] : event;
 
 		console.log("dropped", sourceNodeId, clientX, clientY);
 	};

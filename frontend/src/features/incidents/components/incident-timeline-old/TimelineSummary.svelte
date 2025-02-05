@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { cls, Icon, Tooltip } from "svelte-ux";
-	import type {
-		IncidentEvent,
-		IncidentMilestone,
-		IncidentStage,
-	} from "./events";
+	import type { IncidentEvent, IncidentMilestone, IncidentStage } from "./events";
 	import {
 		mdiAccountAlert,
 		mdiAlarmLight,
@@ -24,12 +20,7 @@
 		hoveringId?: string;
 		onEventClicked?: (eventId: string) => void;
 	};
-	let {
-		events,
-		selectedId,
-		hoveringId,
-		onEventClicked = (id) => {},
-	}: Props = $props();
+	let { events, selectedId, hoveringId, onEventClicked = (id) => {} }: Props = $props();
 
 	type StageMarker = { stage: IncidentStage; start: Date; chunk: number };
 	const getStageMarkers = (events: IncidentEvent[]) => {
@@ -55,9 +46,7 @@
 			if (i + 1 === stageEvents.length) {
 				chunk = 1 - chunksTotal;
 			} else {
-				chunk =
-					differenceInSeconds(stageEvents[i + 1].start, e.start) /
-					timelineDuration;
+				chunk = differenceInSeconds(stageEvents[i + 1].start, e.start) / timelineDuration;
 			}
 			chunksTotal += chunk;
 
@@ -99,10 +88,7 @@
 
 		for (let i = 0; i < events.length; i++) {
 			const event = events[i];
-			const position = Math.round(
-				(differenceInSeconds(event.start, start) / timelineDuration) *
-					100
-			);
+			const position = Math.round((differenceInSeconds(event.start, start) / timelineDuration) * 100);
 
 			let title = "";
 			let icon = mdiFlag;
@@ -128,14 +114,10 @@
 
 <div class="w-full min-h-18 h-fit flex flex-col align-center pb-1">
 	<div class="w-full flex">
-		<div
-			class="hidden bg-error-600/50 bg-warning-600/50 bg-info-700/50 bg-success-600/50"
-		></div>
+		<div class="hidden bg-error-600/50 bg-warning-600/50 bg-info-700/50 bg-success-600/50"></div>
 		{#each getStageMarkers(events) as s}
 			<span
-				class="inline-block px-1 leading-2 border-s-4 {stageColors[
-					s.stage
-				]}"
+				class="inline-block px-1 leading-2 border-s-4 {stageColors[s.stage]}"
 				style="width: {s.chunk}%"
 			>
 				{s.stage}

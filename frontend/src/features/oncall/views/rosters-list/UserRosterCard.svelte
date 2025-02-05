@@ -17,9 +17,7 @@
 <Button {href} class={"p-0 hover:bg-none text-left"} on:click={() => {}}>
 	<Card
 		class={cls(
-			viewing
-				? "border-secondary/40 bg-secondary/10"
-				: "hover:border-secondary hover:bg-secondary/25"
+			viewing ? "border-secondary/40 bg-secondary/10" : "hover:border-secondary hover:bg-secondary/25"
 		)}
 		classes={{ headerContainer: "py-3 px-4" }}
 	>

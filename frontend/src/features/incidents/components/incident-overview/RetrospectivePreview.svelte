@@ -1,17 +1,8 @@
 <script lang="ts">
-	import {
-		mdiClipboard,
-		mdiFileCheck,
-		mdiOpenInNew,
-		mdiProgressPencil,
-		mdiVideoAccount,
-	} from "@mdi/js";
+	import { mdiClipboard, mdiFileCheck, mdiOpenInNew, mdiProgressPencil, mdiVideoAccount } from "@mdi/js";
 	import { Button, Header, Icon } from "svelte-ux";
 	import { createQuery } from "@tanstack/svelte-query";
-	import {
-		getRetrospectiveForIncidentOptions,
-		type Incident,
-	} from "$lib/api";
+	import { getRetrospectiveForIncidentOptions, type Incident } from "$lib/api";
 	import { incidentCtx } from "$features/incidents/lib/context";
 
 	type Props = {};
@@ -48,10 +39,7 @@
 	href="/incidents/{incident.attributes.slug}/retrospective"
 >
 	<div class="">
-		<Header
-			title="Incident Retrospective"
-			classes={{ title: "text-lg text-neutral-50" }}
-		>
+		<Header title="Incident Retrospective" classes={{ title: "text-lg text-neutral-50" }}>
 			<div slot="actions" class="">
 				<Button
 					color="primary"

@@ -3,15 +3,7 @@
 	import { max, range } from "d3-array";
 	import { getDay, getWeek } from "date-fns";
 
-	import {
-		Axis,
-		Chart,
-		Circle,
-		Highlight,
-		Points,
-		Svg,
-		Tooltip,
-	} from "layerchart";
+	import { Axis, Chart, Circle, Highlight, Points, Svg, Tooltip } from "layerchart";
 	import { formatDate, PeriodType } from "svelte-ux";
 	import { createDateSeries } from "./genData";
 
@@ -21,15 +13,7 @@
 		max: 20,
 		value: "integer",
 	});
-	const daysOfWeek = [
-		"Sunday",
-		"Monday",
-		"Tuesday",
-		"Wednesday",
-		"Thursday",
-		"Friday",
-		"Saturday",
-	];
+	const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 	const hack = (d: unknown, fn: Function) => {
 		// @ts-ignore

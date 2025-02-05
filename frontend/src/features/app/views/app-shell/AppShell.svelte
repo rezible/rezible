@@ -8,9 +8,7 @@
 	setToastState();
 </script>
 
-<div
-	class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content"
->
+<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
 	<Sidebar />
 
 	<div class="grid grid-rows-layout flex-1">

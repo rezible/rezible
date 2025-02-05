@@ -1,15 +1,10 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import {
-		listOncallRostersOptions,
-		type ListOncallRostersData,
-	} from "$lib/api";
+	import { listOncallRostersOptions, type ListOncallRostersData } from "$lib/api";
 	import RosterCard from "./RosterCard.svelte";
 
 	let params = $state<ListOncallRostersData["query"]>({});
-	const query = createQuery(() =>
-		listOncallRostersOptions({ query: { ...params, pinned: true } })
-	);
+	const query = createQuery(() => listOncallRostersOptions({ query: { ...params, pinned: true } }));
 
 	const updateSearch = (value: any) => {
 		console.log(value);

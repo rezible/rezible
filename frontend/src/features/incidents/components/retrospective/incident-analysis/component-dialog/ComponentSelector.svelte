@@ -1,17 +1,6 @@
 <script lang="ts">
-	import {
-		Button,
-		Checkbox,
-		cls,
-		Header,
-		Icon,
-		ListItem,
-		TextField,
-	} from "svelte-ux";
-	import {
-		listSystemComponentsOptions,
-		type SystemComponent,
-	} from "$lib/api";
+	import { Button, Checkbox, cls, Header, Icon, ListItem, TextField } from "svelte-ux";
+	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiFilter, mdiPlus } from "@mdi/js";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
@@ -88,11 +77,7 @@
 					noShadow
 				>
 					<div slot="actions">
-						<Checkbox
-							circle
-							dense
-							checked={selected?.id == cmp.id}
-						/>
+						<Checkbox circle dense checked={selected?.id == cmp.id} />
 					</div>
 				</ListItem>
 			</div>

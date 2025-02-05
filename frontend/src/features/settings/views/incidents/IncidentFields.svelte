@@ -28,17 +28,10 @@
 
 	const fields = {
 		["name"]: makeField("Field Name", z.string().min(4)),
-		["options"]: makeCustomField(
-			"Field Options",
-			incidentFieldOptionsSchema,
-			IncidentFieldsOptionsEdit
-		),
+		["options"]: makeCustomField("Field Options", incidentFieldOptionsSchema, IncidentFieldsOptionsEdit),
 		["incident_type"]: makeSelectField(
 			"Incident Types",
-			z
-				.string()
-				.optional()
-				.describe("Restrict to Specific Incident Types?"),
+			z.string().optional().describe("Restrict to Specific Incident Types?"),
 			listIncidentTypesOptions
 		),
 		["required"]: makeField("Required", z.boolean()),

@@ -3,9 +3,7 @@
 	import ShiftsList from "$features/oncall/views/shifts-list/ShiftsList.svelte";
 </script>
 
-<PageContainer
-	breadcrumbs={[{ label: "Oncall", href: "/oncall" }, { label: "Shifts" }]}
->
+<PageContainer breadcrumbs={[{ label: "Oncall", href: "/oncall" }, { label: "Shifts" }]}>
 	<ShiftsList />
 </PageContainer>
 

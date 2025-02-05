@@ -7,9 +7,7 @@
 		type IncidentTag,
 	} from "$lib/api";
 	import { z } from "zod";
-	import MutatingTable, {
-		makeField,
-	} from "$features/settings/components/mutating-table";
+	import MutatingTable, { makeField } from "$features/settings/components/mutating-table";
 
 	const fields = {
 		["value"]: makeField("Value", z.string().min(4)),

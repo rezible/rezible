@@ -1,17 +1,10 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { EditorContent, Editor as SvelteEditor } from "svelte-tiptap";
-	import {
-		type Extensions,
-		type Editor,
-		type EditorOptions,
-	} from "@tiptap/core";
+	import { type Extensions, type Editor, type EditorOptions } from "@tiptap/core";
 	import { type RetrospectiveSection } from "$lib/api";
 	import MenuBar from "./MenuBar.svelte";
-	import {
-		activeEditor,
-		configureEditorExtensions,
-	} from "$features/incidents/lib/editor.svelte";
+	import { activeEditor, configureEditorExtensions } from "$features/incidents/lib/editor.svelte";
 	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
 	import type { HocuspocusProvider } from "@hocuspocus/provider";
 
@@ -22,13 +15,7 @@
 		onCreateAnnotation: (e: Editor, t: AnnotationType) => void;
 		focusEditor: () => void;
 	};
-	let {
-		section,
-		provider,
-		setIsActive,
-		onCreateAnnotation,
-		focusEditor = $bindable(),
-	}: Props = $props();
+	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
 
 	const editor = new SvelteEditor({
 		extensions: configureEditorExtensions(section.field, provider),

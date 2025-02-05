@@ -6,10 +6,7 @@
 </script>
 
 <script lang="ts" generics="DataType extends NamedApiDataObject">
-	import {
-		type ListQueryParameters,
-		type ListQueryOptionsFunc,
-	} from "$lib/api";
+	import { type ListQueryParameters, type ListQueryOptionsFunc } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { MultiSelectField, SelectField, type MenuOption } from "svelte-ux";
 
@@ -37,9 +34,7 @@
 	const params = $state<ListQueryParameters>({});
 	const query = createQuery(() => options({ query: params }));
 	const data = $derived(query.data?.data ?? []);
-	const canLoadMore = $derived(
-		(query.data?.pagination.total ?? 0) >= data.length
-	);
+	const canLoadMore = $derived((query.data?.pagination.total ?? 0) >= data.length);
 	const loadedOptions = $derived<MenuOption<string>[]>(
 		data.map((v) => ({ label: v.attributes.name, value: v.id }))
 	);

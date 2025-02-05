@@ -20,9 +20,7 @@
 		id: string;
 	};
 	let addingState = $state<DataEvidence>();
-	const SourceComponent = $derived(
-		dataSources.find((s) => s.value === addingState?.source)?.component
-	);
+	const SourceComponent = $derived(dataSources.find((s) => s.value === addingState?.source)?.component);
 
 	const onEvidenceLinked = (id: string) => {
 		console.log(addingState?.source, id);
@@ -32,11 +30,7 @@
 
 <div class="flex flex-col gap-1 bg-surface-100">
 	{#if addingState}
-		<SelectField
-			bind:value={addingState.source}
-			options={dataSources}
-			label="Data Source"
-		/>
+		<SelectField bind:value={addingState.source} options={dataSources} label="Data Source" />
 
 		{#if SourceComponent}
 			<SourceComponent onLinked={onEvidenceLinked} />

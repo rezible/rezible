@@ -15,8 +15,7 @@
 
 	let container = $state<HTMLElement>();
 	const scrollToLatestMessage = () => {
-		if (container)
-			container.scrollIntoView({ behavior: "instant", block: "end" });
+		if (container) container.scrollIntoView({ behavior: "instant", block: "end" });
 	};
 
 	const obs = new ResizeObserver(scrollToLatestMessage);
@@ -52,9 +51,7 @@
 </div>
 
 {#snippet userMessage(msg: IncidentDebriefMessage)}
-	<div
-		class="flex gap-2 px-2 w-2/3 self-end flex-row-reverse h-fit items-center"
-	>
+	<div class="flex gap-2 px-2 w-2/3 self-end flex-row-reverse h-fit items-center">
 		<Avatar kind="user" id={session.user?.id || ""} size={40} />
 		<div class="peer rounded p-2 border self-start bg-neutral">
 			<span>{msg.attributes.body}</span>

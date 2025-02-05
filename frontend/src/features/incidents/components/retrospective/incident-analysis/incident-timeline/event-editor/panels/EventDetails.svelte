@@ -10,13 +10,7 @@
 		Header,
 		DatePickerField,
 	} from "svelte-ux";
-	import {
-		mdiMagnify,
-		mdiExclamation,
-		mdiBook,
-		mdiBrain,
-		mdiCalendar,
-	} from "@mdi/js";
+	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiCalendar } from "@mdi/js";
 	import { onMount } from "svelte";
 	import type { TimelineEvent } from "$features/incidents/components/incident-timeline/types";
 	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
@@ -61,10 +55,7 @@
 		},
 	];
 
-	const descriptionEditor = createMentionEditor(
-		"",
-		"cursor-text focus:outline-none min-h-20"
-	);
+	const descriptionEditor = createMentionEditor("", "cursor-text focus:outline-none min-h-20");
 
 	onMount(() => {
 		return () => {
@@ -81,9 +72,7 @@
 			{#each eventTypeOptions as opt}
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
-						<span
-							class="flex items-center justify-center gap-2 px-2"
-						>
+						<span class="flex items-center justify-center gap-2 px-2">
 							<Icon data={opt.icon} />
 							{opt.label}
 						</span>

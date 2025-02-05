@@ -7,11 +7,7 @@
 	} from "$lib/api";
 	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical } from "@mdi/js";
 	import { Icon, Button, Header, Toggle, Menu, MenuItem } from "svelte-ux";
-	import {
-		createMutation,
-		createQuery,
-		useQueryClient,
-	} from "@tanstack/svelte-query";
+	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
 	import { eventKindIcons } from "$features/oncall/lib/handover-timeline";
 	import ShiftAnnotationEditorDialog from "./ShiftAnnotationEditorDialog.svelte";
@@ -23,23 +19,14 @@
 	const { shiftId, editable }: Props = $props();
 
 	const queryClient = useQueryClient();
-	const annotationQueryOpts = $derived(
-		listOncallShiftAnnotationsOptions({ path: { id: shiftId } })
-	);
+	const annotationQueryOpts = $derived(listOncallShiftAnnotationsOptions({ path: { id: shiftId } }));
 	const annotationsQuery = createQuery(() => annotationQueryOpts);
-	const invalidateAnnotationsQuery = () =>
-		queryClient.invalidateQueries(annotationQueryOpts);
+	const invalidateAnnotationsQuery = () => queryClient.invalidateQueries(annotationQueryOpts);
 
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
-	const annotatedEventIds = $derived(
-		new SvelteSet(annotations.map((a) => a.attributes.event_id))
-	);
-	const pinnedAnnotations = $derived(
-		annotations.filter((v) => v.attributes.pinned)
-	);
-	const unpinnedAnnotations = $derived(
-		annotations.filter((v) => !v.attributes.pinned)
-	);
+	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.event_id)));
+	const pinnedAnnotations = $derived(annotations.filter((v) => v.attributes.pinned));
+	const unpinnedAnnotations = $derived(annotations.filter((v) => !v.attributes.pinned));
 
 	let showEditorDialog = $state(false);
 
@@ -63,10 +50,7 @@
 </script>
 
 <div class="h-10 flex w-full gap-4 items-center px-2">
-	<Header
-		title="Shift Event Annotations"
-		classes={{ root: "w-full", container: "flex-1" }}
-	>
+	<Header title="Shift Event Annotations" classes={{ root: "w-full", container: "flex-1" }}>
 		<div slot="actions" class:hidden={!editable}>
 			<Button
 				color="primary"
@@ -90,17 +74,12 @@
 	/>
 {/if}
 
-<div
-	class="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3"
->
+<div class="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
 	{#if annotationsQuery.isLoading}
 		<span>loading</span>
 	{:else if annotations.length > 0}
 		{#if editable}
-			<Header
-				title="Pinned"
-				subheading="Included in the handover notes"
-			/>
+			<Header title="Pinned" subheading="Included in the handover notes" />
 		{/if}
 
 		{#each pinnedAnnotations as ann, i}
@@ -125,9 +104,7 @@
 
 {#snippet annotationListItem(ann: OncallShiftAnnotation)}
 	{@const occurredAt = new Date(Date.parse(ann.attributes.occurred_at))}
-	<div
-		class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2"
-	>
+	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
 				{occurredAt.toLocaleString()}
@@ -141,14 +118,9 @@
 			/>
 		</div>
 
-		<div
-			class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2"
-		>
+		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
 			<div class="leading-none">{ann.attributes.title}</div>
-			<div
-				class="place-self-end flex flex-row gap-2"
-				class:hidden={!editable}
-			>
+			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
 				<Button
 					disabled={updateAnnotationMut.isPending}
 					loading={updateAnnotationMut.isPending &&

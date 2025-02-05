@@ -2380,8 +2380,7 @@ export type ListDebriefQuestionsData = {
 	};
 };
 
-export type ListDebriefQuestionsResponse =
-	ListIncidentDebriefQuestionsResponseBody;
+export type ListDebriefQuestionsResponse = ListIncidentDebriefQuestionsResponseBody;
 
 export type ListDebriefQuestionsError = ErrorModel;
 
@@ -2389,8 +2388,7 @@ export type CreateDebriefQuestionData = {
 	body: CreateIncidentDebriefQuestionRequestBody;
 };
 
-export type CreateDebriefQuestionResponse =
-	CreateIncidentDebriefQuestionResponseBody;
+export type CreateDebriefQuestionResponse = CreateIncidentDebriefQuestionResponseBody;
 
 export type CreateDebriefQuestionError = ErrorModel;
 
@@ -2421,8 +2419,7 @@ export type UpdateDebriefQuestionData = {
 	};
 };
 
-export type UpdateDebriefQuestionResponse =
-	UpdateIncidentDebriefQuestionResponseBody;
+export type UpdateDebriefQuestionResponse = UpdateIncidentDebriefQuestionResponseBody;
 
 export type UpdateDebriefQuestionError = ErrorModel;
 
@@ -2430,8 +2427,7 @@ export type RequestDocumentEditorSessionData = {
 	body: RequestDocumentEditorSessionRequestBody;
 };
 
-export type RequestDocumentEditorSessionResponse =
-	RequestDocumentEditorSessionResponseBody;
+export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponseBody;
 
 export type RequestDocumentEditorSessionError = ErrorModel;
 
@@ -2439,8 +2435,7 @@ export type VerifyDocumentEditorSessionData = {
 	body: VerifyDocumentEditorSessionRequestBody;
 };
 
-export type VerifyDocumentEditorSessionResponse =
-	VerifyDocumentEditorSessionResponseBody;
+export type VerifyDocumentEditorSessionResponse = VerifyDocumentEditorSessionResponseBody;
 
 export type VerifyDocumentEditorSessionError = ErrorModel;
 
@@ -2581,8 +2576,7 @@ export type ListDebriefMessagesData = {
 	};
 };
 
-export type ListDebriefMessagesResponse =
-	ListIncidentDebriefMessagesResponseBody;
+export type ListDebriefMessagesResponse = ListIncidentDebriefMessagesResponseBody;
 
 export type ListDebriefMessagesError = ErrorModel;
 
@@ -2593,8 +2587,7 @@ export type AddIncidentDebriefUserMessageData = {
 	};
 };
 
-export type AddIncidentDebriefUserMessageResponse =
-	AddIncidentDebriefUserMessageResponseBody;
+export type AddIncidentDebriefUserMessageResponse = AddIncidentDebriefUserMessageResponseBody;
 
 export type AddIncidentDebriefUserMessageError = ErrorModel;
 
@@ -2610,8 +2603,7 @@ export type ListDebriefSuggestionsData = {
 	};
 };
 
-export type ListDebriefSuggestionsResponse =
-	ListIncidentDebriefSuggestionsResponseBody;
+export type ListDebriefSuggestionsResponse = ListIncidentDebriefSuggestionsResponseBody;
 
 export type ListDebriefSuggestionsError = ErrorModel;
 
@@ -2684,8 +2676,7 @@ export type UpdateIncidentMilestoneData = {
 	};
 };
 
-export type UpdateIncidentMilestoneResponse =
-	UpdateIncidentMilestoneResponseBody;
+export type UpdateIncidentMilestoneResponse = UpdateIncidentMilestoneResponseBody;
 
 export type UpdateIncidentMilestoneError = ErrorModel;
 
@@ -2977,8 +2968,7 @@ export type CreateIncidentMilestoneData = {
 	};
 };
 
-export type CreateIncidentMilestoneResponse =
-	CreateIncidentMilestoneResponseBody;
+export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponseBody;
 
 export type CreateIncidentMilestoneError = ErrorModel;
 
@@ -2988,8 +2978,7 @@ export type GetRetrospectiveForIncidentData = {
 	};
 };
 
-export type GetRetrospectiveForIncidentResponse =
-	GetRetrospectiveForIncidentResponseBody;
+export type GetRetrospectiveForIncidentResponse = GetRetrospectiveForIncidentResponseBody;
 
 export type GetRetrospectiveForIncidentError = ErrorModel;
 
@@ -3171,8 +3160,7 @@ export type UpdateOncallShiftAnnotationData = {
 	};
 };
 
-export type UpdateOncallShiftAnnotationResponse =
-	UpdateOncallShiftAnnotationResponseBody;
+export type UpdateOncallShiftAnnotationResponse = UpdateOncallShiftAnnotationResponseBody;
 
 export type UpdateOncallShiftAnnotationError = ErrorModel;
 
@@ -3180,8 +3168,7 @@ export type CreateOncallHandoverTemplateData = {
 	body: CreateOncallShiftHandoverTemplateRequestBody;
 };
 
-export type CreateOncallHandoverTemplateResponse =
-	CreateOncallShiftHandoverTemplateResponseBody;
+export type CreateOncallHandoverTemplateResponse = CreateOncallShiftHandoverTemplateResponseBody;
 
 export type CreateOncallHandoverTemplateError = ErrorModel;
 
@@ -3191,8 +3178,7 @@ export type GetOncallShiftHandoverTemplateData = {
 	};
 };
 
-export type GetOncallShiftHandoverTemplateResponse =
-	GetOncallShiftHandoverTemplateResponseBody;
+export type GetOncallShiftHandoverTemplateResponse = GetOncallShiftHandoverTemplateResponseBody;
 
 export type GetOncallShiftHandoverTemplateError = ErrorModel;
 
@@ -3213,8 +3199,7 @@ export type UpdateOncallHandoverTemplateData = {
 	};
 };
 
-export type UpdateOncallHandoverTemplateResponse =
-	UpdateOncallShiftHandoverTemplateResponseBody;
+export type UpdateOncallHandoverTemplateResponse = UpdateOncallShiftHandoverTemplateResponseBody;
 
 export type UpdateOncallHandoverTemplateError = ErrorModel;
 
@@ -3297,8 +3282,7 @@ export type ListOncallShiftAnnotationsData = {
 	};
 };
 
-export type ListOncallShiftAnnotationsResponse =
-	ListOncallShiftAnnotationsResponseBody;
+export type ListOncallShiftAnnotationsResponse = ListOncallShiftAnnotationsResponseBody;
 
 export type ListOncallShiftAnnotationsError = ErrorModel;
 
@@ -3309,8 +3293,7 @@ export type CreateOncallShiftAnnotationData = {
 	};
 };
 
-export type CreateOncallShiftAnnotationResponse =
-	CreateOncallShiftAnnotationResponseBody;
+export type CreateOncallShiftAnnotationResponse = CreateOncallShiftAnnotationResponseBody;
 
 export type CreateOncallShiftAnnotationError = ErrorModel;
 
@@ -3331,8 +3314,7 @@ export type SendOncallShiftHandoverData = {
 	};
 };
 
-export type SendOncallShiftHandoverResponse =
-	SendOncallShiftHandoverResponseBody;
+export type SendOncallShiftHandoverResponse = SendOncallShiftHandoverResponseBody;
 
 export type SendOncallShiftHandoverError = ErrorModel;
 
@@ -3348,8 +3330,7 @@ export type ListOncallShiftIncidentsData = {
 	};
 };
 
-export type ListOncallShiftIncidentsResponse =
-	ListOncallShiftIncidentsResponseBody;
+export type ListOncallShiftIncidentsResponse = ListOncallShiftIncidentsResponseBody;
 
 export type ListOncallShiftIncidentsError = ErrorModel;
 
@@ -3390,8 +3371,7 @@ export type UpdateRetrospectiveReviewData = {
 	};
 };
 
-export type UpdateRetrospectiveReviewResponse =
-	UpdateRetrospectiveReviewResponseBody;
+export type UpdateRetrospectiveReviewResponse = UpdateRetrospectiveReviewResponseBody;
 
 export type UpdateRetrospectiveReviewError = ErrorModel;
 
@@ -3430,8 +3410,7 @@ export type ListRetrospectiveDiscussionsData = {
 	};
 };
 
-export type ListRetrospectiveDiscussionsResponse =
-	ListRetrospectiveDiscussionsResponseBody;
+export type ListRetrospectiveDiscussionsResponse = ListRetrospectiveDiscussionsResponseBody;
 
 export type ListRetrospectiveDiscussionsError = ErrorModel;
 
@@ -3442,8 +3421,7 @@ export type CreateRetrospectiveDiscussionData = {
 	};
 };
 
-export type CreateRetrospectiveDiscussionResponse =
-	CreateRetrospectiveDiscussionResponseBody;
+export type CreateRetrospectiveDiscussionResponse = CreateRetrospectiveDiscussionResponseBody;
 
 export type CreateRetrospectiveDiscussionError = ErrorModel;
 
@@ -3454,8 +3432,7 @@ export type GetRetrospectiveDiscussionData = {
 	};
 };
 
-export type GetRetrospectiveDiscussionResponse =
-	GetRetrospectiveDiscussionResponseBody;
+export type GetRetrospectiveDiscussionResponse = GetRetrospectiveDiscussionResponseBody;
 
 export type GetRetrospectiveDiscussionError = ErrorModel;
 
@@ -3463,8 +3440,7 @@ export type AddRetrospectiveDiscussionReplyData = {
 	body: AddRetrospectiveDiscussionReplyRequestBody;
 };
 
-export type AddRetrospectiveDiscussionReplyResponse =
-	AddRetrospectiveDiscussionReplyResponseBody;
+export type AddRetrospectiveDiscussionReplyResponse = AddRetrospectiveDiscussionReplyResponseBody;
 
 export type AddRetrospectiveDiscussionReplyError = ErrorModel;
 
@@ -3472,8 +3448,7 @@ export type UpdateRetrospectiveDiscussionData = {
 	body: UpdateRetrospectiveDiscussionRequestBody;
 };
 
-export type UpdateRetrospectiveDiscussionResponse =
-	UpdateRetrospectiveDiscussionResponseBody;
+export type UpdateRetrospectiveDiscussionResponse = UpdateRetrospectiveDiscussionResponseBody;
 
 export type UpdateRetrospectiveDiscussionError = ErrorModel;
 
@@ -3486,8 +3461,7 @@ export type ListRetrospectiveReviewsData = {
 	};
 };
 
-export type ListRetrospectiveReviewsResponse =
-	ListRetrospectiveReviewsResponseBody;
+export type ListRetrospectiveReviewsResponse = ListRetrospectiveReviewsResponseBody;
 
 export type ListRetrospectiveReviewsError = ErrorModel;
 
@@ -3498,8 +3472,7 @@ export type CreateRetrospectiveReviewData = {
 	};
 };
 
-export type CreateRetrospectiveReviewResponse =
-	CreateRetrospectiveReviewResponseBody;
+export type CreateRetrospectiveReviewResponse = CreateRetrospectiveReviewResponseBody;
 
 export type CreateRetrospectiveReviewError = ErrorModel;
 
@@ -3510,8 +3483,7 @@ export type GetSystemAnalysisComponentData = {
 	};
 };
 
-export type GetSystemAnalysisComponentResponse =
-	GetSystemAnalysisComponentResponseBody;
+export type GetSystemAnalysisComponentResponse = GetSystemAnalysisComponentResponseBody;
 
 export type GetSystemAnalysisComponentError = ErrorModel;
 
@@ -3534,8 +3506,7 @@ export type UpdateSystemAnalysisComponentData = {
 	};
 };
 
-export type UpdateSystemAnalysisComponentResponse =
-	UpdateSystemAnalysisComponentResponseBody;
+export type UpdateSystemAnalysisComponentResponse = UpdateSystemAnalysisComponentResponseBody;
 
 export type UpdateSystemAnalysisComponentError = ErrorModel;
 
@@ -3546,8 +3517,7 @@ export type GetSystemAnalysisRelationshipData = {
 	};
 };
 
-export type GetSystemAnalysisRelationshipResponse =
-	GetSystemAnalysisRelationshipResponseBody;
+export type GetSystemAnalysisRelationshipResponse = GetSystemAnalysisRelationshipResponseBody;
 
 export type GetSystemAnalysisRelationshipError = ErrorModel;
 
@@ -3570,8 +3540,7 @@ export type UpdateSystemAnalysisRelationshipData = {
 	};
 };
 
-export type UpdateSystemAnalysisRelationshipResponse =
-	UpdateSystemAnalysisRelationshipResponseBody;
+export type UpdateSystemAnalysisRelationshipResponse = UpdateSystemAnalysisRelationshipResponseBody;
 
 export type UpdateSystemAnalysisRelationshipError = ErrorModel;
 
@@ -3597,8 +3566,7 @@ export type ListSystemAnalysisComponentsData = {
 	};
 };
 
-export type ListSystemAnalysisComponentsResponse =
-	ListSystemAnalysisComponentsResponseBody;
+export type ListSystemAnalysisComponentsResponse = ListSystemAnalysisComponentsResponseBody;
 
 export type ListSystemAnalysisComponentsError = ErrorModel;
 
@@ -3609,8 +3577,7 @@ export type AddSystemAnalysisComponentData = {
 	};
 };
 
-export type AddSystemAnalysisComponentResponse =
-	AddSystemAnalysisComponentResponseBody;
+export type AddSystemAnalysisComponentResponse = AddSystemAnalysisComponentResponseBody;
 
 export type AddSystemAnalysisComponentError = ErrorModel;
 
@@ -3626,8 +3593,7 @@ export type ListSystemAnalysisRelationshipsData = {
 	};
 };
 
-export type ListSystemAnalysisRelationshipsResponse =
-	ListSystemAnalysisRelationshipsResponseBody;
+export type ListSystemAnalysisRelationshipsResponse = ListSystemAnalysisRelationshipsResponseBody;
 
 export type ListSystemAnalysisRelationshipsError = ErrorModel;
 
@@ -3638,8 +3604,7 @@ export type CreateSystemAnalysisRelationshipData = {
 	};
 };
 
-export type CreateSystemAnalysisRelationshipResponse =
-	CreateSystemAnalysisRelationshipResponseBody;
+export type CreateSystemAnalysisRelationshipResponse = CreateSystemAnalysisRelationshipResponseBody;
 
 export type CreateSystemAnalysisRelationshipError = ErrorModel;
 
@@ -3864,17 +3829,13 @@ export type GetUserResponse = GetUserResponseBody;
 
 export type GetUserError = ErrorModel;
 
-export type ListDebriefMessagesResponseTransformer = (
-	data: any
-) => Promise<ListDebriefMessagesResponse>;
+export type ListDebriefMessagesResponseTransformer = (data: any) => Promise<ListDebriefMessagesResponse>;
 
 export type ListIncidentDebriefMessagesResponseBodyModelResponseTransformer = (
 	data: any
 ) => ListIncidentDebriefMessagesResponseBody;
 
-export type IncidentDebriefMessageModelResponseTransformer = (
-	data: any
-) => IncidentDebriefMessage;
+export type IncidentDebriefMessageModelResponseTransformer = (data: any) => IncidentDebriefMessage;
 
 export type IncidentDebriefMessageAttributesModelResponseTransformer = (
 	data: any
@@ -3891,9 +3852,7 @@ export const IncidentDebriefMessageAttributesModelResponseTransformer: IncidentD
 export const IncidentDebriefMessageModelResponseTransformer: IncidentDebriefMessageModelResponseTransformer =
 	(data) => {
 		if (data?.attributes) {
-			IncidentDebriefMessageAttributesModelResponseTransformer(
-				data.attributes
-			);
+			IncidentDebriefMessageAttributesModelResponseTransformer(data.attributes);
 		}
 		return data;
 	};
@@ -3906,18 +3865,20 @@ export const ListIncidentDebriefMessagesResponseBodyModelResponseTransformer: Li
 		return data;
 	};
 
-export const ListDebriefMessagesResponseTransformer: ListDebriefMessagesResponseTransformer =
-	async (data) => {
-		ListIncidentDebriefMessagesResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListDebriefMessagesResponseTransformer: ListDebriefMessagesResponseTransformer = async (
+	data
+) => {
+	ListIncidentDebriefMessagesResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type AddIncidentDebriefUserMessageResponseTransformer = (
 	data: any
 ) => Promise<AddIncidentDebriefUserMessageResponse>;
 
-export type AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer =
-	(data: any) => AddIncidentDebriefUserMessageResponseBody;
+export type AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer = (
+	data: any
+) => AddIncidentDebriefUserMessageResponseBody;
 
 export const AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer: AddIncidentDebriefUserMessageResponseBodyModelResponseTransformer =
 	(data) => {
@@ -3941,13 +3902,9 @@ export type UpdateIncidentMilestoneResponseBodyModelResponseTransformer = (
 	data: any
 ) => UpdateIncidentMilestoneResponseBody;
 
-export type IncidentMilestoneModelResponseTransformer = (
-	data: any
-) => IncidentMilestone;
+export type IncidentMilestoneModelResponseTransformer = (data: any) => IncidentMilestone;
 
-export type IncidentMilestoneAttributesModelResponseTransformer = (
-	data: any
-) => IncidentMilestoneAttributes;
+export type IncidentMilestoneAttributesModelResponseTransformer = (data: any) => IncidentMilestoneAttributes;
 
 export const IncidentMilestoneAttributesModelResponseTransformer: IncidentMilestoneAttributesModelResponseTransformer =
 	(data) => {
@@ -3957,15 +3914,14 @@ export const IncidentMilestoneAttributesModelResponseTransformer: IncidentMilest
 		return data;
 	};
 
-export const IncidentMilestoneModelResponseTransformer: IncidentMilestoneModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			IncidentMilestoneAttributesModelResponseTransformer(
-				data.attributes
-			);
-		}
-		return data;
-	};
+export const IncidentMilestoneModelResponseTransformer: IncidentMilestoneModelResponseTransformer = (
+	data
+) => {
+	if (data?.attributes) {
+		IncidentMilestoneAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const UpdateIncidentMilestoneResponseBodyModelResponseTransformer: UpdateIncidentMilestoneResponseBodyModelResponseTransformer =
 	(data) => {
@@ -3975,29 +3931,22 @@ export const UpdateIncidentMilestoneResponseBodyModelResponseTransformer: Update
 		return data;
 	};
 
-export const UpdateIncidentMilestoneResponseTransformer: UpdateIncidentMilestoneResponseTransformer =
-	async (data) => {
-		UpdateIncidentMilestoneResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const UpdateIncidentMilestoneResponseTransformer: UpdateIncidentMilestoneResponseTransformer = async (
+	data
+) => {
+	UpdateIncidentMilestoneResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListIncidentsResponseTransformer = (
-	data: any
-) => Promise<ListIncidentsResponse>;
+export type ListIncidentsResponseTransformer = (data: any) => Promise<ListIncidentsResponse>;
 
-export type ListIncidentsResponseBodyModelResponseTransformer = (
-	data: any
-) => ListIncidentsResponseBody;
+export type ListIncidentsResponseBodyModelResponseTransformer = (data: any) => ListIncidentsResponseBody;
 
 export type IncidentModelResponseTransformer = (data: any) => Incident;
 
-export type IncidentAttributesModelResponseTransformer = (
-	data: any
-) => IncidentAttributes;
+export type IncidentAttributesModelResponseTransformer = (data: any) => IncidentAttributes;
 
-export type IncidentRoleAssignmentModelResponseTransformer = (
-	data: any
-) => IncidentRoleAssignment;
+export type IncidentRoleAssignmentModelResponseTransformer = (data: any) => IncidentRoleAssignment;
 
 export const IncidentRoleAssignmentModelResponseTransformer: IncidentRoleAssignmentModelResponseTransformer =
 	(data) => {
@@ -4010,9 +3959,7 @@ export const IncidentRoleAssignmentModelResponseTransformer: IncidentRoleAssignm
 		return data;
 	};
 
-export type IncidentTeamAssignmentModelResponseTransformer = (
-	data: any
-) => IncidentTeamAssignment;
+export type IncidentTeamAssignmentModelResponseTransformer = (data: any) => IncidentTeamAssignment;
 
 export const IncidentTeamAssignmentModelResponseTransformer: IncidentTeamAssignmentModelResponseTransformer =
 	(data) => {
@@ -4025,30 +3972,30 @@ export const IncidentTeamAssignmentModelResponseTransformer: IncidentTeamAssignm
 		return data;
 	};
 
-export const IncidentAttributesModelResponseTransformer: IncidentAttributesModelResponseTransformer =
-	(data) => {
-		if (data?.closed_at) {
-			data.closed_at = new Date(data.closed_at);
-		}
-		if (data?.opened_at) {
-			data.opened_at = new Date(data.opened_at);
-		}
-		if (Array.isArray(data?.roles)) {
-			data.roles.forEach(IncidentRoleAssignmentModelResponseTransformer);
-		}
-		if (Array.isArray(data?.teams)) {
-			data.teams.forEach(IncidentTeamAssignmentModelResponseTransformer);
-		}
-		return data;
-	};
+export const IncidentAttributesModelResponseTransformer: IncidentAttributesModelResponseTransformer = (
+	data
+) => {
+	if (data?.closed_at) {
+		data.closed_at = new Date(data.closed_at);
+	}
+	if (data?.opened_at) {
+		data.opened_at = new Date(data.opened_at);
+	}
+	if (Array.isArray(data?.roles)) {
+		data.roles.forEach(IncidentRoleAssignmentModelResponseTransformer);
+	}
+	if (Array.isArray(data?.teams)) {
+		data.teams.forEach(IncidentTeamAssignmentModelResponseTransformer);
+	}
+	return data;
+};
 
-export const IncidentModelResponseTransformer: IncidentModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			IncidentAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const IncidentModelResponseTransformer: IncidentModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		IncidentAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListIncidentsResponseBodyModelResponseTransformer: ListIncidentsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4058,19 +4005,14 @@ export const ListIncidentsResponseBodyModelResponseTransformer: ListIncidentsRes
 		return data;
 	};
 
-export const ListIncidentsResponseTransformer: ListIncidentsResponseTransformer =
-	async (data) => {
-		ListIncidentsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListIncidentsResponseTransformer: ListIncidentsResponseTransformer = async (data) => {
+	ListIncidentsResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type CreateIncidentResponseTransformer = (
-	data: any
-) => Promise<CreateIncidentResponse>;
+export type CreateIncidentResponseTransformer = (data: any) => Promise<CreateIncidentResponse>;
 
-export type CreateIncidentResponseBodyModelResponseTransformer = (
-	data: any
-) => CreateIncidentResponseBody;
+export type CreateIncidentResponseBodyModelResponseTransformer = (data: any) => CreateIncidentResponseBody;
 
 export const CreateIncidentResponseBodyModelResponseTransformer: CreateIncidentResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4080,19 +4022,14 @@ export const CreateIncidentResponseBodyModelResponseTransformer: CreateIncidentR
 		return data;
 	};
 
-export const CreateIncidentResponseTransformer: CreateIncidentResponseTransformer =
-	async (data) => {
-		CreateIncidentResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const CreateIncidentResponseTransformer: CreateIncidentResponseTransformer = async (data) => {
+	CreateIncidentResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetIncidentResponseTransformer = (
-	data: any
-) => Promise<GetIncidentResponse>;
+export type GetIncidentResponseTransformer = (data: any) => Promise<GetIncidentResponse>;
 
-export type GetIncidentResponseBodyModelResponseTransformer = (
-	data: any
-) => GetIncidentResponseBody;
+export type GetIncidentResponseBodyModelResponseTransformer = (data: any) => GetIncidentResponseBody;
 
 export const GetIncidentResponseBodyModelResponseTransformer: GetIncidentResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4102,19 +4039,14 @@ export const GetIncidentResponseBodyModelResponseTransformer: GetIncidentRespons
 		return data;
 	};
 
-export const GetIncidentResponseTransformer: GetIncidentResponseTransformer =
-	async (data) => {
-		GetIncidentResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetIncidentResponseTransformer: GetIncidentResponseTransformer = async (data) => {
+	GetIncidentResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type UpdateIncidentResponseTransformer = (
-	data: any
-) => Promise<UpdateIncidentResponse>;
+export type UpdateIncidentResponseTransformer = (data: any) => Promise<UpdateIncidentResponse>;
 
-export type UpdateIncidentResponseBodyModelResponseTransformer = (
-	data: any
-) => UpdateIncidentResponseBody;
+export type UpdateIncidentResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentResponseBody;
 
 export const UpdateIncidentResponseBodyModelResponseTransformer: UpdateIncidentResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4124,11 +4056,10 @@ export const UpdateIncidentResponseBodyModelResponseTransformer: UpdateIncidentR
 		return data;
 	};
 
-export const UpdateIncidentResponseTransformer: UpdateIncidentResponseTransformer =
-	async (data) => {
-		UpdateIncidentResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const UpdateIncidentResponseTransformer: UpdateIncidentResponseTransformer = async (data) => {
+	UpdateIncidentResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type ListIncidentMilestonesResponseTransformer = (
 	data: any
@@ -4146,11 +4077,12 @@ export const ListIncidentMilestonesResponseBodyModelResponseTransformer: ListInc
 		return data;
 	};
 
-export const ListIncidentMilestonesResponseTransformer: ListIncidentMilestonesResponseTransformer =
-	async (data) => {
-		ListIncidentMilestonesResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListIncidentMilestonesResponseTransformer: ListIncidentMilestonesResponseTransformer = async (
+	data
+) => {
+	ListIncidentMilestonesResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type CreateIncidentMilestoneResponseTransformer = (
 	data: any
@@ -4168,39 +4100,33 @@ export const CreateIncidentMilestoneResponseBodyModelResponseTransformer: Create
 		return data;
 	};
 
-export const CreateIncidentMilestoneResponseTransformer: CreateIncidentMilestoneResponseTransformer =
-	async (data) => {
-		CreateIncidentMilestoneResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const CreateIncidentMilestoneResponseTransformer: CreateIncidentMilestoneResponseTransformer = async (
+	data
+) => {
+	CreateIncidentMilestoneResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListMeetingSchedulesResponseTransformer = (
-	data: any
-) => Promise<ListMeetingSchedulesResponse>;
+export type ListMeetingSchedulesResponseTransformer = (data: any) => Promise<ListMeetingSchedulesResponse>;
 
 export type ListMeetingSchedulesResponseBodyModelResponseTransformer = (
 	data: any
 ) => ListMeetingSchedulesResponseBody;
 
-export type MeetingScheduleModelResponseTransformer = (
-	data: any
-) => MeetingSchedule;
+export type MeetingScheduleModelResponseTransformer = (data: any) => MeetingSchedule;
 
-export type MeetingScheduleAttributesModelResponseTransformer = (
-	data: any
-) => MeetingScheduleAttributes;
+export type MeetingScheduleAttributesModelResponseTransformer = (data: any) => MeetingScheduleAttributes;
 
-export type MeetingScheduleTimingModelResponseTransformer = (
-	data: any
-) => MeetingScheduleTiming;
+export type MeetingScheduleTimingModelResponseTransformer = (data: any) => MeetingScheduleTiming;
 
-export const MeetingScheduleTimingModelResponseTransformer: MeetingScheduleTimingModelResponseTransformer =
-	(data) => {
-		if (data?.starts_at) {
-			data.starts_at = new Date(data.starts_at);
-		}
-		return data;
-	};
+export const MeetingScheduleTimingModelResponseTransformer: MeetingScheduleTimingModelResponseTransformer = (
+	data
+) => {
+	if (data?.starts_at) {
+		data.starts_at = new Date(data.starts_at);
+	}
+	return data;
+};
 
 export const MeetingScheduleAttributesModelResponseTransformer: MeetingScheduleAttributesModelResponseTransformer =
 	(data) => {
@@ -4210,13 +4136,12 @@ export const MeetingScheduleAttributesModelResponseTransformer: MeetingScheduleA
 		return data;
 	};
 
-export const MeetingScheduleModelResponseTransformer: MeetingScheduleModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			MeetingScheduleAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const MeetingScheduleModelResponseTransformer: MeetingScheduleModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		MeetingScheduleAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListMeetingSchedulesResponseBodyModelResponseTransformer: ListMeetingSchedulesResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4226,15 +4151,14 @@ export const ListMeetingSchedulesResponseBodyModelResponseTransformer: ListMeeti
 		return data;
 	};
 
-export const ListMeetingSchedulesResponseTransformer: ListMeetingSchedulesResponseTransformer =
-	async (data) => {
-		ListMeetingSchedulesResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListMeetingSchedulesResponseTransformer: ListMeetingSchedulesResponseTransformer = async (
+	data
+) => {
+	ListMeetingSchedulesResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type CreateMeetingScheduleResponseTransformer = (
-	data: any
-) => Promise<CreateMeetingScheduleResponse>;
+export type CreateMeetingScheduleResponseTransformer = (data: any) => Promise<CreateMeetingScheduleResponse>;
 
 export type CreateMeetingScheduleResponseBodyModelResponseTransformer = (
 	data: any
@@ -4248,15 +4172,14 @@ export const CreateMeetingScheduleResponseBodyModelResponseTransformer: CreateMe
 		return data;
 	};
 
-export const CreateMeetingScheduleResponseTransformer: CreateMeetingScheduleResponseTransformer =
-	async (data) => {
-		CreateMeetingScheduleResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const CreateMeetingScheduleResponseTransformer: CreateMeetingScheduleResponseTransformer = async (
+	data
+) => {
+	CreateMeetingScheduleResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetMeetingScheduleResponseTransformer = (
-	data: any
-) => Promise<GetMeetingScheduleResponse>;
+export type GetMeetingScheduleResponseTransformer = (data: any) => Promise<GetMeetingScheduleResponse>;
 
 export type GetMeetingScheduleResponseBodyModelResponseTransformer = (
 	data: any
@@ -4270,15 +4193,12 @@ export const GetMeetingScheduleResponseBodyModelResponseTransformer: GetMeetingS
 		return data;
 	};
 
-export const GetMeetingScheduleResponseTransformer: GetMeetingScheduleResponseTransformer =
-	async (data) => {
-		GetMeetingScheduleResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetMeetingScheduleResponseTransformer: GetMeetingScheduleResponseTransformer = async (data) => {
+	GetMeetingScheduleResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type UpdateMeetingScheduleResponseTransformer = (
-	data: any
-) => Promise<UpdateMeetingScheduleResponse>;
+export type UpdateMeetingScheduleResponseTransformer = (data: any) => Promise<UpdateMeetingScheduleResponse>;
 
 export type UpdateMeetingScheduleResponseBodyModelResponseTransformer = (
 	data: any
@@ -4292,27 +4212,22 @@ export const UpdateMeetingScheduleResponseBodyModelResponseTransformer: UpdateMe
 		return data;
 	};
 
-export const UpdateMeetingScheduleResponseTransformer: UpdateMeetingScheduleResponseTransformer =
-	async (data) => {
-		UpdateMeetingScheduleResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const UpdateMeetingScheduleResponseTransformer: UpdateMeetingScheduleResponseTransformer = async (
+	data
+) => {
+	UpdateMeetingScheduleResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListMeetingSessionsResponseTransformer = (
-	data: any
-) => Promise<ListMeetingSessionsResponse>;
+export type ListMeetingSessionsResponseTransformer = (data: any) => Promise<ListMeetingSessionsResponse>;
 
 export type ListMeetingSessionsResponseBodyModelResponseTransformer = (
 	data: any
 ) => ListMeetingSessionsResponseBody;
 
-export type MeetingSessionModelResponseTransformer = (
-	data: any
-) => MeetingSession;
+export type MeetingSessionModelResponseTransformer = (data: any) => MeetingSession;
 
-export type MeetingSessionAttributesModelResponseTransformer = (
-	data: any
-) => MeetingSessionAttributes;
+export type MeetingSessionAttributesModelResponseTransformer = (data: any) => MeetingSessionAttributes;
 
 export const MeetingSessionAttributesModelResponseTransformer: MeetingSessionAttributesModelResponseTransformer =
 	(data) => {
@@ -4322,13 +4237,12 @@ export const MeetingSessionAttributesModelResponseTransformer: MeetingSessionAtt
 		return data;
 	};
 
-export const MeetingSessionModelResponseTransformer: MeetingSessionModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			MeetingSessionAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const MeetingSessionModelResponseTransformer: MeetingSessionModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		MeetingSessionAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListMeetingSessionsResponseBodyModelResponseTransformer: ListMeetingSessionsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4338,15 +4252,14 @@ export const ListMeetingSessionsResponseBodyModelResponseTransformer: ListMeetin
 		return data;
 	};
 
-export const ListMeetingSessionsResponseTransformer: ListMeetingSessionsResponseTransformer =
-	async (data) => {
-		ListMeetingSessionsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListMeetingSessionsResponseTransformer: ListMeetingSessionsResponseTransformer = async (
+	data
+) => {
+	ListMeetingSessionsResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type CreateMeetingSessionResponseTransformer = (
-	data: any
-) => Promise<CreateMeetingSessionResponse>;
+export type CreateMeetingSessionResponseTransformer = (data: any) => Promise<CreateMeetingSessionResponse>;
 
 export type CreateMeetingSessionResponseBodyModelResponseTransformer = (
 	data: any
@@ -4360,15 +4273,14 @@ export const CreateMeetingSessionResponseBodyModelResponseTransformer: CreateMee
 		return data;
 	};
 
-export const CreateMeetingSessionResponseTransformer: CreateMeetingSessionResponseTransformer =
-	async (data) => {
-		CreateMeetingSessionResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const CreateMeetingSessionResponseTransformer: CreateMeetingSessionResponseTransformer = async (
+	data
+) => {
+	CreateMeetingSessionResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetMeetingSessionResponseTransformer = (
-	data: any
-) => Promise<GetMeetingSessionResponse>;
+export type GetMeetingSessionResponseTransformer = (data: any) => Promise<GetMeetingSessionResponse>;
 
 export type GetMeetingSessionResponseBodyModelResponseTransformer = (
 	data: any
@@ -4382,15 +4294,12 @@ export const GetMeetingSessionResponseBodyModelResponseTransformer: GetMeetingSe
 		return data;
 	};
 
-export const GetMeetingSessionResponseTransformer: GetMeetingSessionResponseTransformer =
-	async (data) => {
-		GetMeetingSessionResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetMeetingSessionResponseTransformer: GetMeetingSessionResponseTransformer = async (data) => {
+	GetMeetingSessionResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type UpdateMeetingSessionResponseTransformer = (
-	data: any
-) => Promise<UpdateMeetingSessionResponse>;
+export type UpdateMeetingSessionResponseTransformer = (data: any) => Promise<UpdateMeetingSessionResponse>;
 
 export type UpdateMeetingSessionResponseBodyModelResponseTransformer = (
 	data: any
@@ -4404,11 +4313,12 @@ export const UpdateMeetingSessionResponseBodyModelResponseTransformer: UpdateMee
 		return data;
 	};
 
-export const UpdateMeetingSessionResponseTransformer: UpdateMeetingSessionResponseTransformer =
-	async (data) => {
-		UpdateMeetingSessionResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const UpdateMeetingSessionResponseTransformer: UpdateMeetingSessionResponseTransformer = async (
+	data
+) => {
+	UpdateMeetingSessionResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type UpdateOncallShiftAnnotationResponseTransformer = (
 	data: any
@@ -4418,9 +4328,7 @@ export type UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer = (
 	data: any
 ) => UpdateOncallShiftAnnotationResponseBody;
 
-export type OncallShiftAnnotationModelResponseTransformer = (
-	data: any
-) => OncallShiftAnnotation;
+export type OncallShiftAnnotationModelResponseTransformer = (data: any) => OncallShiftAnnotation;
 
 export type OncallShiftAnnotationAttributesModelResponseTransformer = (
 	data: any
@@ -4434,15 +4342,14 @@ export const OncallShiftAnnotationAttributesModelResponseTransformer: OncallShif
 		return data;
 	};
 
-export const OncallShiftAnnotationModelResponseTransformer: OncallShiftAnnotationModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallShiftAnnotationAttributesModelResponseTransformer(
-				data.attributes
-			);
-		}
-		return data;
-	};
+export const OncallShiftAnnotationModelResponseTransformer: OncallShiftAnnotationModelResponseTransformer = (
+	data
+) => {
+	if (data?.attributes) {
+		OncallShiftAnnotationAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer: UpdateOncallShiftAnnotationResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4458,9 +4365,7 @@ export const UpdateOncallShiftAnnotationResponseTransformer: UpdateOncallShiftAn
 		return data;
 	};
 
-export type ListOncallRostersResponseTransformer = (
-	data: any
-) => Promise<ListOncallRostersResponse>;
+export type ListOncallRostersResponseTransformer = (data: any) => Promise<ListOncallRostersResponse>;
 
 export type ListOncallRostersResponseBodyModelResponseTransformer = (
 	data: any
@@ -4468,17 +4373,11 @@ export type ListOncallRostersResponseBodyModelResponseTransformer = (
 
 export type OncallRosterModelResponseTransformer = (data: any) => OncallRoster;
 
-export type OncallRosterAttributesModelResponseTransformer = (
-	data: any
-) => OncallRosterAttributes;
+export type OncallRosterAttributesModelResponseTransformer = (data: any) => OncallRosterAttributes;
 
-export type OncallScheduleModelResponseTransformer = (
-	data: any
-) => OncallSchedule;
+export type OncallScheduleModelResponseTransformer = (data: any) => OncallSchedule;
 
-export type OncallScheduleAttributesModelResponseTransformer = (
-	data: any
-) => OncallScheduleAttributes;
+export type OncallScheduleAttributesModelResponseTransformer = (data: any) => OncallScheduleAttributes;
 
 export const OncallScheduleAttributesModelResponseTransformer: OncallScheduleAttributesModelResponseTransformer =
 	(data) => {
@@ -4488,13 +4387,12 @@ export const OncallScheduleAttributesModelResponseTransformer: OncallScheduleAtt
 		return data;
 	};
 
-export const OncallScheduleModelResponseTransformer: OncallScheduleModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallScheduleAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const OncallScheduleModelResponseTransformer: OncallScheduleModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		OncallScheduleAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const OncallRosterAttributesModelResponseTransformer: OncallRosterAttributesModelResponseTransformer =
 	(data) => {
@@ -4504,13 +4402,12 @@ export const OncallRosterAttributesModelResponseTransformer: OncallRosterAttribu
 		return data;
 	};
 
-export const OncallRosterModelResponseTransformer: OncallRosterModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallRosterAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const OncallRosterModelResponseTransformer: OncallRosterModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		OncallRosterAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListOncallRostersResponseBodyModelResponseTransformer: ListOncallRostersResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4520,19 +4417,14 @@ export const ListOncallRostersResponseBodyModelResponseTransformer: ListOncallRo
 		return data;
 	};
 
-export const ListOncallRostersResponseTransformer: ListOncallRostersResponseTransformer =
-	async (data) => {
-		ListOncallRostersResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListOncallRostersResponseTransformer: ListOncallRostersResponseTransformer = async (data) => {
+	ListOncallRostersResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetOncallRosterResponseTransformer = (
-	data: any
-) => Promise<GetOncallRosterResponse>;
+export type GetOncallRosterResponseTransformer = (data: any) => Promise<GetOncallRosterResponse>;
 
-export type GetOncallRosterResponseBodyModelResponseTransformer = (
-	data: any
-) => GetOncallRosterResponseBody;
+export type GetOncallRosterResponseBodyModelResponseTransformer = (data: any) => GetOncallRosterResponseBody;
 
 export const GetOncallRosterResponseBodyModelResponseTransformer: GetOncallRosterResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4542,15 +4434,12 @@ export const GetOncallRosterResponseBodyModelResponseTransformer: GetOncallRoste
 		return data;
 	};
 
-export const GetOncallRosterResponseTransformer: GetOncallRosterResponseTransformer =
-	async (data) => {
-		GetOncallRosterResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetOncallRosterResponseTransformer: GetOncallRosterResponseTransformer = async (data) => {
+	GetOncallRosterResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListOncallShiftsResponseTransformer = (
-	data: any
-) => Promise<ListOncallShiftsResponse>;
+export type ListOncallShiftsResponseTransformer = (data: any) => Promise<ListOncallShiftsResponse>;
 
 export type ListOncallShiftsResponseBodyModelResponseTransformer = (
 	data: any
@@ -4558,17 +4447,11 @@ export type ListOncallShiftsResponseBodyModelResponseTransformer = (
 
 export type OncallShiftModelResponseTransformer = (data: any) => OncallShift;
 
-export type OncallShiftAttributesModelResponseTransformer = (
-	data: any
-) => OncallShiftAttributes;
+export type OncallShiftAttributesModelResponseTransformer = (data: any) => OncallShiftAttributes;
 
-export type OncallShiftCoverModelResponseTransformer = (
-	data: any
-) => OncallShiftCover;
+export type OncallShiftCoverModelResponseTransformer = (data: any) => OncallShiftCover;
 
-export type OncallShiftCoverAttributesModelResponseTransformer = (
-	data: any
-) => OncallShiftCoverAttributes;
+export type OncallShiftCoverAttributesModelResponseTransformer = (data: any) => OncallShiftCoverAttributes;
 
 export const OncallShiftCoverAttributesModelResponseTransformer: OncallShiftCoverAttributesModelResponseTransformer =
 	(data) => {
@@ -4581,38 +4464,37 @@ export const OncallShiftCoverAttributesModelResponseTransformer: OncallShiftCove
 		return data;
 	};
 
-export const OncallShiftCoverModelResponseTransformer: OncallShiftCoverModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallShiftCoverAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const OncallShiftCoverModelResponseTransformer: OncallShiftCoverModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		OncallShiftCoverAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
-export const OncallShiftAttributesModelResponseTransformer: OncallShiftAttributesModelResponseTransformer =
-	(data) => {
-		if (Array.isArray(data?.covers)) {
-			data.covers.forEach(OncallShiftCoverModelResponseTransformer);
-		}
-		if (data?.end_at) {
-			data.end_at = new Date(data.end_at);
-		}
-		if (data?.roster) {
-			OncallRosterModelResponseTransformer(data.roster);
-		}
-		if (data?.start_at) {
-			data.start_at = new Date(data.start_at);
-		}
-		return data;
-	};
+export const OncallShiftAttributesModelResponseTransformer: OncallShiftAttributesModelResponseTransformer = (
+	data
+) => {
+	if (Array.isArray(data?.covers)) {
+		data.covers.forEach(OncallShiftCoverModelResponseTransformer);
+	}
+	if (data?.end_at) {
+		data.end_at = new Date(data.end_at);
+	}
+	if (data?.roster) {
+		OncallRosterModelResponseTransformer(data.roster);
+	}
+	if (data?.start_at) {
+		data.start_at = new Date(data.start_at);
+	}
+	return data;
+};
 
-export const OncallShiftModelResponseTransformer: OncallShiftModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallShiftAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const OncallShiftModelResponseTransformer: OncallShiftModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		OncallShiftAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListOncallShiftsResponseBodyModelResponseTransformer: ListOncallShiftsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4622,19 +4504,14 @@ export const ListOncallShiftsResponseBodyModelResponseTransformer: ListOncallShi
 		return data;
 	};
 
-export const ListOncallShiftsResponseTransformer: ListOncallShiftsResponseTransformer =
-	async (data) => {
-		ListOncallShiftsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListOncallShiftsResponseTransformer: ListOncallShiftsResponseTransformer = async (data) => {
+	ListOncallShiftsResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetOncallShiftResponseTransformer = (
-	data: any
-) => Promise<GetOncallShiftResponse>;
+export type GetOncallShiftResponseTransformer = (data: any) => Promise<GetOncallShiftResponse>;
 
-export type GetOncallShiftResponseBodyModelResponseTransformer = (
-	data: any
-) => GetOncallShiftResponseBody;
+export type GetOncallShiftResponseBodyModelResponseTransformer = (data: any) => GetOncallShiftResponseBody;
 
 export const GetOncallShiftResponseBodyModelResponseTransformer: GetOncallShiftResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4644,15 +4521,12 @@ export const GetOncallShiftResponseBodyModelResponseTransformer: GetOncallShiftR
 		return data;
 	};
 
-export const GetOncallShiftResponseTransformer: GetOncallShiftResponseTransformer =
-	async (data) => {
-		GetOncallShiftResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetOncallShiftResponseTransformer: GetOncallShiftResponseTransformer = async (data) => {
+	GetOncallShiftResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListOncallShiftAlertsResponseTransformer = (
-	data: any
-) => Promise<ListOncallShiftAlertsResponse>;
+export type ListOncallShiftAlertsResponseTransformer = (data: any) => Promise<ListOncallShiftAlertsResponse>;
 
 export type ListOncallShiftAlertsResponseBodyModelResponseTransformer = (
 	data: any
@@ -4660,25 +4534,23 @@ export type ListOncallShiftAlertsResponseBodyModelResponseTransformer = (
 
 export type OncallAlertModelResponseTransformer = (data: any) => OncallAlert;
 
-export type OncallAlertAttributesModelResponseTransformer = (
-	data: any
-) => OncallAlertAttributes;
+export type OncallAlertAttributesModelResponseTransformer = (data: any) => OncallAlertAttributes;
 
-export const OncallAlertAttributesModelResponseTransformer: OncallAlertAttributesModelResponseTransformer =
-	(data) => {
-		if (data?.occurred_at) {
-			data.occurred_at = new Date(data.occurred_at);
-		}
-		return data;
-	};
+export const OncallAlertAttributesModelResponseTransformer: OncallAlertAttributesModelResponseTransformer = (
+	data
+) => {
+	if (data?.occurred_at) {
+		data.occurred_at = new Date(data.occurred_at);
+	}
+	return data;
+};
 
-export const OncallAlertModelResponseTransformer: OncallAlertModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallAlertAttributesModelResponseTransformer(data.attributes);
-		}
-		return data;
-	};
+export const OncallAlertModelResponseTransformer: OncallAlertModelResponseTransformer = (data) => {
+	if (data?.attributes) {
+		OncallAlertAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const ListOncallShiftAlertsResponseBodyModelResponseTransformer: ListOncallShiftAlertsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4688,11 +4560,12 @@ export const ListOncallShiftAlertsResponseBodyModelResponseTransformer: ListOnca
 		return data;
 	};
 
-export const ListOncallShiftAlertsResponseTransformer: ListOncallShiftAlertsResponseTransformer =
-	async (data) => {
-		ListOncallShiftAlertsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListOncallShiftAlertsResponseTransformer: ListOncallShiftAlertsResponseTransformer = async (
+	data
+) => {
+	ListOncallShiftAlertsResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type ListOncallShiftAnnotationsResponseTransformer = (
 	data: any
@@ -4746,9 +4619,7 @@ export type GetOncallShiftHandoverResponseBodyModelResponseTransformer = (
 	data: any
 ) => GetOncallShiftHandoverResponseBody;
 
-export type OncallShiftHandoverModelResponseTransformer = (
-	data: any
-) => OncallShiftHandover;
+export type OncallShiftHandoverModelResponseTransformer = (data: any) => OncallShiftHandover;
 
 export type OncallShiftHandoverAttributesModelResponseTransformer = (
 	data: any
@@ -4768,15 +4639,14 @@ export const OncallShiftHandoverAttributesModelResponseTransformer: OncallShiftH
 		return data;
 	};
 
-export const OncallShiftHandoverModelResponseTransformer: OncallShiftHandoverModelResponseTransformer =
-	(data) => {
-		if (data?.attributes) {
-			OncallShiftHandoverAttributesModelResponseTransformer(
-				data.attributes
-			);
-		}
-		return data;
-	};
+export const OncallShiftHandoverModelResponseTransformer: OncallShiftHandoverModelResponseTransformer = (
+	data
+) => {
+	if (data?.attributes) {
+		OncallShiftHandoverAttributesModelResponseTransformer(data.attributes);
+	}
+	return data;
+};
 
 export const GetOncallShiftHandoverResponseBodyModelResponseTransformer: GetOncallShiftHandoverResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4786,11 +4656,12 @@ export const GetOncallShiftHandoverResponseBodyModelResponseTransformer: GetOnca
 		return data;
 	};
 
-export const GetOncallShiftHandoverResponseTransformer: GetOncallShiftHandoverResponseTransformer =
-	async (data) => {
-		GetOncallShiftHandoverResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetOncallShiftHandoverResponseTransformer: GetOncallShiftHandoverResponseTransformer = async (
+	data
+) => {
+	GetOncallShiftHandoverResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type SendOncallShiftHandoverResponseTransformer = (
 	data: any
@@ -4808,11 +4679,12 @@ export const SendOncallShiftHandoverResponseBodyModelResponseTransformer: SendOn
 		return data;
 	};
 
-export const SendOncallShiftHandoverResponseTransformer: SendOncallShiftHandoverResponseTransformer =
-	async (data) => {
-		SendOncallShiftHandoverResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const SendOncallShiftHandoverResponseTransformer: SendOncallShiftHandoverResponseTransformer = async (
+	data
+) => {
+	SendOncallShiftHandoverResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type ListOncallShiftIncidentsResponseTransformer = (
 	data: any
@@ -4836,9 +4708,7 @@ export const ListOncallShiftIncidentsResponseTransformer: ListOncallShiftInciden
 		return data;
 	};
 
-export type GetNextOncallShiftResponseTransformer = (
-	data: any
-) => Promise<GetNextOncallShiftResponse>;
+export type GetNextOncallShiftResponseTransformer = (data: any) => Promise<GetNextOncallShiftResponse>;
 
 export type GetNextOncallShiftResponseBodyModelResponseTransformer = (
 	data: any
@@ -4852,40 +4722,36 @@ export const GetNextOncallShiftResponseBodyModelResponseTransformer: GetNextOnca
 		return data;
 	};
 
-export const GetNextOncallShiftResponseTransformer: GetNextOncallShiftResponseTransformer =
-	async (data) => {
-		GetNextOncallShiftResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetNextOncallShiftResponseTransformer: GetNextOncallShiftResponseTransformer = async (data) => {
+	GetNextOncallShiftResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type GetUserOncallDetailsResponseTransformer = (
-	data: any
-) => Promise<GetUserOncallDetailsResponse>;
+export type GetUserOncallDetailsResponseTransformer = (data: any) => Promise<GetUserOncallDetailsResponse>;
 
 export type GetUserOncallDetailsResponseBodyModelResponseTransformer = (
 	data: any
 ) => GetUserOncallDetailsResponseBody;
 
-export type UserOncallDetailsModelResponseTransformer = (
-	data: any
-) => UserOncallDetails;
+export type UserOncallDetailsModelResponseTransformer = (data: any) => UserOncallDetails;
 
-export const UserOncallDetailsModelResponseTransformer: UserOncallDetailsModelResponseTransformer =
-	(data) => {
-		if (Array.isArray(data?.active_shifts)) {
-			data.active_shifts.forEach(OncallShiftModelResponseTransformer);
-		}
-		if (Array.isArray(data?.past_shifts)) {
-			data.past_shifts.forEach(OncallShiftModelResponseTransformer);
-		}
-		if (Array.isArray(data?.rosters)) {
-			data.rosters.forEach(OncallRosterModelResponseTransformer);
-		}
-		if (Array.isArray(data?.upcoming_shifts)) {
-			data.upcoming_shifts.forEach(OncallShiftModelResponseTransformer);
-		}
-		return data;
-	};
+export const UserOncallDetailsModelResponseTransformer: UserOncallDetailsModelResponseTransformer = (
+	data
+) => {
+	if (Array.isArray(data?.active_shifts)) {
+		data.active_shifts.forEach(OncallShiftModelResponseTransformer);
+	}
+	if (Array.isArray(data?.past_shifts)) {
+		data.past_shifts.forEach(OncallShiftModelResponseTransformer);
+	}
+	if (Array.isArray(data?.rosters)) {
+		data.rosters.forEach(OncallRosterModelResponseTransformer);
+	}
+	if (Array.isArray(data?.upcoming_shifts)) {
+		data.upcoming_shifts.forEach(OncallShiftModelResponseTransformer);
+	}
+	return data;
+};
 
 export const GetUserOncallDetailsResponseBodyModelResponseTransformer: GetUserOncallDetailsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -4895,11 +4761,12 @@ export const GetUserOncallDetailsResponseBodyModelResponseTransformer: GetUserOn
 		return data;
 	};
 
-export const GetUserOncallDetailsResponseTransformer: GetUserOncallDetailsResponseTransformer =
-	async (data) => {
-		GetUserOncallDetailsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetUserOncallDetailsResponseTransformer: GetUserOncallDetailsResponseTransformer = async (
+	data
+) => {
+	GetUserOncallDetailsResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
 export type ListRetrospectiveDiscussionsResponseTransformer = (
 	data: any
@@ -4909,9 +4776,7 @@ export type ListRetrospectiveDiscussionsResponseBodyModelResponseTransformer = (
 	data: any
 ) => ListRetrospectiveDiscussionsResponseBody;
 
-export type RetrospectiveDiscussionModelResponseTransformer = (
-	data: any
-) => RetrospectiveDiscussion;
+export type RetrospectiveDiscussionModelResponseTransformer = (data: any) => RetrospectiveDiscussion;
 
 export type RetrospectiveDiscussionAttributesModelResponseTransformer = (
 	data: any
@@ -4928,9 +4793,7 @@ export type RetrospectiveDiscussionReplyAttributesModelResponseTransformer = (
 export const RetrospectiveDiscussionReplyAttributesModelResponseTransformer: RetrospectiveDiscussionReplyAttributesModelResponseTransformer =
 	(data) => {
 		if (Array.isArray(data?.replies)) {
-			data.replies.forEach(
-				RetrospectiveDiscussionReplyModelResponseTransformer
-			);
+			data.replies.forEach(RetrospectiveDiscussionReplyModelResponseTransformer);
 		}
 		return data;
 	};
@@ -4938,9 +4801,7 @@ export const RetrospectiveDiscussionReplyAttributesModelResponseTransformer: Ret
 export const RetrospectiveDiscussionReplyModelResponseTransformer: RetrospectiveDiscussionReplyModelResponseTransformer =
 	(data) => {
 		if (data?.attributes) {
-			RetrospectiveDiscussionReplyAttributesModelResponseTransformer(
-				data.attributes
-			);
+			RetrospectiveDiscussionReplyAttributesModelResponseTransformer(data.attributes);
 		}
 		return data;
 	};
@@ -4948,9 +4809,7 @@ export const RetrospectiveDiscussionReplyModelResponseTransformer: Retrospective
 export const RetrospectiveDiscussionAttributesModelResponseTransformer: RetrospectiveDiscussionAttributesModelResponseTransformer =
 	(data) => {
 		if (Array.isArray(data?.replies)) {
-			data.replies.forEach(
-				RetrospectiveDiscussionReplyModelResponseTransformer
-			);
+			data.replies.forEach(RetrospectiveDiscussionReplyModelResponseTransformer);
 		}
 		return data;
 	};
@@ -4958,9 +4817,7 @@ export const RetrospectiveDiscussionAttributesModelResponseTransformer: Retrospe
 export const RetrospectiveDiscussionModelResponseTransformer: RetrospectiveDiscussionModelResponseTransformer =
 	(data) => {
 		if (data?.attributes) {
-			RetrospectiveDiscussionAttributesModelResponseTransformer(
-				data.attributes
-			);
+			RetrospectiveDiscussionAttributesModelResponseTransformer(data.attributes);
 		}
 		return data;
 	};
@@ -4983,8 +4840,9 @@ export type CreateRetrospectiveDiscussionResponseTransformer = (
 	data: any
 ) => Promise<CreateRetrospectiveDiscussionResponse>;
 
-export type CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer =
-	(data: any) => CreateRetrospectiveDiscussionResponseBody;
+export type CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer = (
+	data: any
+) => CreateRetrospectiveDiscussionResponseBody;
 
 export const CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer: CreateRetrospectiveDiscussionResponseBodyModelResponseTransformer =
 	(data) => {
@@ -5026,8 +4884,9 @@ export type AddRetrospectiveDiscussionReplyResponseTransformer = (
 	data: any
 ) => Promise<AddRetrospectiveDiscussionReplyResponse>;
 
-export type AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer =
-	(data: any) => AddRetrospectiveDiscussionReplyResponseBody;
+export type AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer = (
+	data: any
+) => AddRetrospectiveDiscussionReplyResponseBody;
 
 export const AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer: AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer =
 	(data) => {
@@ -5039,9 +4898,7 @@ export const AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer
 
 export const AddRetrospectiveDiscussionReplyResponseTransformer: AddRetrospectiveDiscussionReplyResponseTransformer =
 	async (data) => {
-		AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer(
-			data
-		);
+		AddRetrospectiveDiscussionReplyResponseBodyModelResponseTransformer(data);
 		return data;
 	};
 
@@ -5049,8 +4906,9 @@ export type UpdateRetrospectiveDiscussionResponseTransformer = (
 	data: any
 ) => Promise<UpdateRetrospectiveDiscussionResponse>;
 
-export type UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer =
-	(data: any) => UpdateRetrospectiveDiscussionResponseBody;
+export type UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer = (
+	data: any
+) => UpdateRetrospectiveDiscussionResponseBody;
 
 export const UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer: UpdateRetrospectiveDiscussionResponseBodyModelResponseTransformer =
 	(data) => {
@@ -5066,23 +4924,18 @@ export const UpdateRetrospectiveDiscussionResponseTransformer: UpdateRetrospecti
 		return data;
 	};
 
-export type GetCurrentUserSessionResponseTransformer = (
-	data: any
-) => Promise<GetCurrentUserSessionResponse>;
+export type GetCurrentUserSessionResponseTransformer = (data: any) => Promise<GetCurrentUserSessionResponse>;
 
-export type GetUserSessionResponseBodyModelResponseTransformer = (
-	data: any
-) => GetUserSessionResponseBody;
+export type GetUserSessionResponseBodyModelResponseTransformer = (data: any) => GetUserSessionResponseBody;
 
 export type UserSessionModelResponseTransformer = (data: any) => UserSession;
 
-export const UserSessionModelResponseTransformer: UserSessionModelResponseTransformer =
-	(data) => {
-		if (data?.expires_at) {
-			data.expires_at = new Date(data.expires_at);
-		}
-		return data;
-	};
+export const UserSessionModelResponseTransformer: UserSessionModelResponseTransformer = (data) => {
+	if (data?.expires_at) {
+		data.expires_at = new Date(data.expires_at);
+	}
+	return data;
+};
 
 export const GetUserSessionResponseBodyModelResponseTransformer: GetUserSessionResponseBodyModelResponseTransformer =
 	(data) => {
@@ -5092,31 +4945,27 @@ export const GetUserSessionResponseBodyModelResponseTransformer: GetUserSessionR
 		return data;
 	};
 
-export const GetCurrentUserSessionResponseTransformer: GetCurrentUserSessionResponseTransformer =
-	async (data) => {
-		GetUserSessionResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const GetCurrentUserSessionResponseTransformer: GetCurrentUserSessionResponseTransformer = async (
+	data
+) => {
+	GetUserSessionResponseBodyModelResponseTransformer(data);
+	return data;
+};
 
-export type ListUserAssignmentsResponseTransformer = (
-	data: any
-) => Promise<ListUserAssignmentsResponse>;
+export type ListUserAssignmentsResponseTransformer = (data: any) => Promise<ListUserAssignmentsResponse>;
 
 export type ListUserAssignmentsResponseBodyModelResponseTransformer = (
 	data: any
 ) => ListUserAssignmentsResponseBody;
 
-export type UserAssignmentModelResponseTransformer = (
-	data: any
-) => UserAssignment;
+export type UserAssignmentModelResponseTransformer = (data: any) => UserAssignment;
 
-export const UserAssignmentModelResponseTransformer: UserAssignmentModelResponseTransformer =
-	(data) => {
-		if (data?.deadline) {
-			data.deadline = new Date(data.deadline);
-		}
-		return data;
-	};
+export const UserAssignmentModelResponseTransformer: UserAssignmentModelResponseTransformer = (data) => {
+	if (data?.deadline) {
+		data.deadline = new Date(data.deadline);
+	}
+	return data;
+};
 
 export const ListUserAssignmentsResponseBodyModelResponseTransformer: ListUserAssignmentsResponseBodyModelResponseTransformer =
 	(data) => {
@@ -5126,8 +4975,9 @@ export const ListUserAssignmentsResponseBodyModelResponseTransformer: ListUserAs
 		return data;
 	};
 
-export const ListUserAssignmentsResponseTransformer: ListUserAssignmentsResponseTransformer =
-	async (data) => {
-		ListUserAssignmentsResponseBodyModelResponseTransformer(data);
-		return data;
-	};
+export const ListUserAssignmentsResponseTransformer: ListUserAssignmentsResponseTransformer = async (
+	data
+) => {
+	ListUserAssignmentsResponseBodyModelResponseTransformer(data);
+	return data;
+};

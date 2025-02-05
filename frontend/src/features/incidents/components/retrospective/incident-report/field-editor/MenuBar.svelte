@@ -15,10 +15,7 @@
 		mdiChevronDown,
 		mdiFormatListCheckbox,
 	} from "@mdi/js";
-	import {
-		activeEditor,
-		activeStatus,
-	} from "$features/incidents/lib/editor.svelte";
+	import { activeEditor, activeStatus } from "$features/incidents/lib/editor.svelte";
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;
@@ -38,12 +35,7 @@
 </script>
 
 <div class="flex items-center w-full divide-x divide-surface-100 h-8">
-	{#snippet formatMenuItem(
-		name: string,
-		active: boolean,
-		icon: string,
-		cmd: VoidFunction
-	)}
+	{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
 		<MenuItem {icon} on:click={() => cmd()} selected={active}>
 			{name}
 		</MenuItem>
@@ -82,12 +74,7 @@
 		</Button>
 	</Toggle>
 
-	{#snippet markButton(
-		tooltip: string,
-		active: boolean,
-		icon: string,
-		cmd: VoidFunction
-	)}
+	{#snippet markButton(tooltip: string, active: boolean, icon: string, cmd: VoidFunction)}
 		<Tooltip title={tooltip}>
 			<Button
 				classes={{ root: "size-8" }}

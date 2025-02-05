@@ -2,13 +2,7 @@
 	import { Button, Card, Header, Icon, ProgressCircle } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { fade } from "svelte/transition";
-	import {
-		mdiCircleMedium,
-		mdiAlarmLight,
-		mdiSleepOff,
-		mdiFire,
-		mdiClose,
-	} from "@mdi/js";
+	import { mdiCircleMedium, mdiAlarmLight, mdiSleepOff, mdiFire, mdiClose } from "@mdi/js";
 	import HandoverOverview from "./HandoverOverview.svelte";
 
 	type Props = {
@@ -17,9 +11,7 @@
 	let { expanded = $bindable() }: Props = $props();
 </script>
 
-<div
-	class="rounded-lg bg-success-900/10 p-2 pr-3 flex flex-col gap-2 min-h-0 w-full overflow-auto"
->
+<div class="rounded-lg bg-success-900/10 p-2 pr-3 flex flex-col gap-2 min-h-0 w-full overflow-auto">
 	<div class="flex justify-between items-center">
 		<div class="flex items-center gap-1">
 			<Button href="/oncall/rosters/search" classes={{ root: "p-1" }}>

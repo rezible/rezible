@@ -47,9 +47,7 @@
 
 	let addingState = $state<EventFactor>();
 	const selectedOption = $derived(
-		addingState
-			? options.find((opt) => opt.value === addingState?.category)
-			: undefined
+		addingState ? options.find((opt) => opt.value === addingState?.category) : undefined
 	);
 
 	const resetAddingState = () => {
@@ -65,18 +63,8 @@
 <div class="flex flex-col gap-1 bg-surface-100">
 	{#if addingState}
 		<div class="flex flex-col gap-2 border rounded p-2">
-			<SelectField
-				bind:value={addingState.category}
-				{options}
-				label="Factor Type"
-			>
-				<svelte:fragment
-					slot="option"
-					let:option
-					let:index
-					let:selected
-					let:highlightIndex
-				>
+			<SelectField bind:value={addingState.category} {options} label="Factor Type">
+				<svelte:fragment slot="option" let:option let:index let:selected let:highlightIndex>
 					<MenuItem
 						on:click={() => {
 							console.log("selected", option);
@@ -117,8 +105,7 @@
 	{:else}
 		{#each contributingFactors as fct, i}
 			{@const categoryName =
-				ContributingFactorCategories.find((c) => c.id === fct.category)
-					?.name ?? "Unknown Category"}
+				ContributingFactorCategories.find((c) => c.id === fct.category)?.name ?? "Unknown Category"}
 			<ListItem
 				title={fct.description}
 				subheading={categoryName}

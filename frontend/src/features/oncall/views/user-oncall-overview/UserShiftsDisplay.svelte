@@ -4,11 +4,7 @@
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { mdiChevronRight } from "@mdi/js";
-	import {
-		formatDuration,
-		minutesToHours,
-		differenceInMinutes,
-	} from "date-fns";
+	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 
 	interface Props {
 		activeShifts: OncallShift[];
@@ -30,10 +26,7 @@
 		const hours = minutesToHours(minutes);
 		const remainingMinutes = minutes - hours * 60;
 		if (hours < 24)
-			return formatDuration(
-				{ hours, minutes: remainingMinutes },
-				{ format: ["hours", "minutes"] }
-			);
+			return formatDuration({ hours, minutes: remainingMinutes }, { format: ["hours", "minutes"] });
 		const days = Math.floor(hours / 24);
 		const remainingHours = hours - days * 24;
 		return formatDuration(
@@ -80,10 +73,7 @@
 		<div class="flex flex-col min-h-0 border rounded-lg p-2">
 			<Header title="Past" subheading="Last 30 days">
 				<svelte:fragment slot="actions">
-					<Button
-						href="/oncall/shifts"
-						classes={{ root: "flex items-center" }}
-					>
+					<Button href="/oncall/shifts" classes={{ root: "flex items-center" }}>
 						<span>View All</span>
 					</Button>
 				</svelte:fragment>
@@ -104,10 +94,7 @@
 	{@const roster = shift.attributes.roster}
 	{@const duration = formatShiftDuration(shift)}
 	<a href="/oncall/shifts/{shift.id}">
-		<ListItem
-			title={roster.attributes.name}
-			classes={{ root: "hover:bg-secondary-900" }}
-		>
+		<ListItem title={roster.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 			<svelte:fragment slot="avatar">
 				<Avatar kind="roster" size={32} id={roster.id} />
 			</svelte:fragment>

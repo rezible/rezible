@@ -1,8 +1,5 @@
 <script lang="ts">
-	import type {
-		SuggestionKeyDownProps,
-		SuggestionProps,
-	} from "@tiptap/suggestion";
+	import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
 	import { cls } from "svelte-ux";
 
 	const { items, command }: SuggestionProps<string, any> = $props();
@@ -54,10 +51,7 @@
 		{#each items as item, i}
 			<button
 				onclick={() => acceptUser(i)}
-				class={cls(
-					"px-2",
-					highlighted === i ? "bg-accent text-accent-content" : ""
-				)}
+				class={cls("px-2", highlighted === i ? "bg-accent text-accent-content" : "")}
 			>
 				{item}
 			</button>

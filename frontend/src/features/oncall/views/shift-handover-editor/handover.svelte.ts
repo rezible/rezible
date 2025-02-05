@@ -1,10 +1,7 @@
 import type { Content, Editor, HTMLContent, JSONContent } from "@tiptap/core";
 import { Editor as SvelteEditor } from "svelte-tiptap";
 import { debounce } from "$lib/utils.svelte";
-import {
-	configureBaseExtensions,
-	getHandoverExtensions,
-} from "@rezible/documents/tiptap-extensions";
+import { configureBaseExtensions, getHandoverExtensions } from "@rezible/documents/tiptap-extensions";
 import type {
 	OncallShiftHandover,
 	OncallShiftHandoverSection,
@@ -30,10 +27,7 @@ type HandoverIncidentsSection = {
 	kind: "incidents";
 };
 
-export type HandoverSection =
-	| HandoverEditorSection
-	| HandoverAnnotationsSection
-	| HandoverIncidentsSection;
+export type HandoverSection = HandoverEditorSection | HandoverAnnotationsSection | HandoverIncidentsSection;
 
 const createHandoverState = () => {
 	let sent = $state(false);
@@ -145,10 +139,7 @@ const createHandoverState = () => {
 
 	const getSectionContent = (): OncallShiftHandoverSection[] => {
 		return sections.map((s) => {
-			const jsonContent =
-				s.kind === "regular"
-					? JSON.stringify(s.editor.getJSON())
-					: undefined;
+			const jsonContent = s.kind === "regular" ? JSON.stringify(s.editor.getJSON()) : undefined;
 			return { header: s.header, kind: s.kind, jsonContent };
 		});
 	};

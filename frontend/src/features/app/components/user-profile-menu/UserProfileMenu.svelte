@@ -19,11 +19,7 @@
 		<span>{session.username}</span>
 		{#each accountLinks as l}
 			<a href={l.href} class="">
-				<ListItem
-					title={l.title}
-					icon={l.icon}
-					classes={{ root: "hover:bg-accent" }}
-				/>
+				<ListItem title={l.title} icon={l.icon} classes={{ root: "hover:bg-accent" }} />
 			</a>
 		{/each}
 		<Button

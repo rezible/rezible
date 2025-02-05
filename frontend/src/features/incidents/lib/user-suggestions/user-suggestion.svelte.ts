@@ -1,13 +1,6 @@
 import type { Content } from "@tiptap/core";
-import tippy, {
-	type Instance as TippyInstance,
-	type Props as TippyProps,
-} from "tippy.js";
-import type {
-	SuggestionKeyDownProps,
-	SuggestionOptions,
-	SuggestionProps,
-} from "@tiptap/suggestion";
+import tippy, { type Instance as TippyInstance, type Props as TippyProps } from "tippy.js";
+import type { SuggestionKeyDownProps, SuggestionOptions, SuggestionProps } from "@tiptap/suggestion";
 import { mount, unmount } from "svelte";
 import SuggestionPopup from "./UserSuggestionPopup.svelte";
 
@@ -73,11 +66,7 @@ export const RezUserSuggestion: Partial<SuggestionOptions<string, any>> = {
 	},
 
 	items: async ({ query }) => {
-		return userList
-			.filter((item) =>
-				item.toLowerCase().startsWith(query.toLowerCase())
-			)
-			.slice(0, 5);
+		return userList.filter((item) => item.toLowerCase().startsWith(query.toLowerCase())).slice(0, 5);
 	},
 
 	render: () => {

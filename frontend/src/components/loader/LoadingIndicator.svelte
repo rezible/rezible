@@ -28,12 +28,10 @@
 		border-radius: 100%;
 	}
 	.rez-loading-ring.ring-one {
-		animation: var(--duration) linear 0s infinite normal none running
-			ringOne;
+		animation: var(--duration) linear 0s infinite normal none running ringOne;
 	}
 	.rez-loading-ring.ring-two {
-		animation: var(--duration) linear 0s infinite normal none running
-			ringTwo;
+		animation: var(--duration) linear 0s infinite normal none running ringTwo;
 	}
 	.pause-animation {
 		animation-play-state: paused;

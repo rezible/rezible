@@ -11,13 +11,7 @@
 		sectionElements: Record<string, HTMLElement>;
 		onSectionClicked: (field: string) => void;
 	};
-	let {
-		visible = $bindable(),
-		containerEl,
-		sections,
-		sectionElements,
-		onSectionClicked,
-	}: Props = $props();
+	let { visible = $bindable(), containerEl, sections, sectionElements, onSectionClicked }: Props = $props();
 
 	let progressBarContainerEl = $state<HTMLElement>();
 
@@ -31,22 +25,15 @@
 	const updateHeights = () => {
 		scrollHeight = containerEl.scrollHeight;
 		clientHeight = containerEl.clientHeight;
-		progessBarContainerHeight =
-			progressBarContainerEl?.scrollHeight || clientHeight;
+		progessBarContainerHeight = progressBarContainerEl?.scrollHeight || clientHeight;
 		const isScrolling = scrollHeight > clientHeight;
 		if (isScrolling != visible) visible = isScrolling;
 	};
 
-	const windowHeight = $derived(
-		progessBarContainerHeight * (clientHeight / scrollHeight)
-	);
-	const scrollAmount = $derived(
-		100 * ((clientHeight + scrollTop) / scrollHeight)
-	);
+	const windowHeight = $derived(progessBarContainerHeight * (clientHeight / scrollHeight));
+	const scrollAmount = $derived(100 * ((clientHeight + scrollTop) / scrollHeight));
 	const sectionSizes = $derived(
-		sections.map(
-			(s) => (sectionElements[s.field]?.scrollHeight ?? 0) / scrollHeight
-		)
+		sections.map((s) => (sectionElements[s.field]?.scrollHeight ?? 0) / scrollHeight)
 	);
 
 	const observer = new ResizeObserver(updateHeights);
@@ -85,9 +72,7 @@
 			></div>
 
 			<!-- progress bar unfilled -->
-			<div
-				style="width: 1px; flex: calc(100% - var(--scrollAmount))"
-			></div>
+			<div style="width: 1px; flex: calc(100% - var(--scrollAmount))"></div>
 		</div>
 		<!-- elements -->
 		<div class="flex flex-col grow">
@@ -101,9 +86,7 @@
 					<!--div class="grid grid-cols-2 items-center"-->
 					<div class="flex flex-row">
 						<!-- dot -->
-						<div
-							class="text-surface-content z-1 h-6 w-6 font-sm ml-[2px]"
-						>
+						<div class="text-surface-content z-1 h-6 w-6 font-sm ml-[2px]">
 							{#if i < 0}
 								<Icon data={mdiCircleMedium} size={11} />
 							{/if}
@@ -112,9 +95,7 @@
 							class="relative flex flex-col-reverse pl-0"
 							class:text-primary-content={i === -1}
 						>
-							<button
-								class="text-left"
-								onclick={() => onSectionClicked(section.field)}
+							<button class="text-left" onclick={() => onSectionClicked(section.field)}
 								>{section.title}</button
 							>
 						</div>

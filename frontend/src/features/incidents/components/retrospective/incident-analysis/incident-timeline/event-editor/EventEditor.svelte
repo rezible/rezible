@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { Collapse, Header, ListItem } from "svelte-ux";
-	import {
-		mdiGraphOutline,
-		mdiLayers,
-		mdiLink,
-		mdiStateMachine,
-	} from "@mdi/js";
+	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
 	import type { TimelineEvent } from "../types";
 
 	import EventDetailsPanel from "./panels/EventDetails.svelte";
@@ -33,17 +28,9 @@
 	<div class="flex flex-col gap-2 overflow-y-auto flex-1">
 		<Header title="Context" />
 
-		{#snippet panel(
-			title: string,
-			subheading: string,
-			icon: string,
-			PanelComponent: Component
-		)}
+		{#snippet panel(title: string, subheading: string, icon: string, PanelComponent: Component)}
 			<div class="p-2 border rounded">
-				<Collapse
-					open
-					classes={{ root: "overflow-x-hidden", content: "p-2" }}
-				>
+				<Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 					<ListItem
 						slot="trigger"
 						{title}

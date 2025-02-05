@@ -40,12 +40,7 @@
 	</svelte:fragment>
 
 	<div slot="actions">
-		<ConfirmButtons
-			closeText="Skip"
-			onClose={skipReview}
-			onConfirm={saveReview}
-			confirmText="Submit"
-		/>
+		<ConfirmButtons closeText="Skip" onClose={skipReview} onConfirm={saveReview} confirmText="Submit" />
 	</div>
 </Dialog>
 

@@ -13,11 +13,7 @@
 		Icon,
 		Header,
 	} from "svelte-ux";
-	import {
-		createMeetingScheduleMutation,
-		createMeetingSessionMutation,
-		type ErrorModel,
-	} from "$lib/api";
+	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
 	import {
 		CreateMeetingFormSchema,
 		getEmptyForm,
@@ -44,19 +40,11 @@
 		formData.week_days = structuredClone(formData.week_days);
 	};
 
-	const dayOfWeek = $derived(
-		weekdays[new Date(formData.start.date).getDay()].label
-	);
-	const daySelected = $derived<boolean[]>(
-		weekdays.map((v) => formData.week_days.has(v.value))
-	);
-	const pluralSuffix = $derived(
-		formData.repeats !== "daily" && formData.repetition_step > 1 ? "s" : ""
-	);
+	const dayOfWeek = $derived(weekdays[new Date(formData.start.date).getDay()].label);
+	const daySelected = $derived<boolean[]>(weekdays.map((v) => formData.week_days.has(v.value)));
+	const pluralSuffix = $derived(formData.repeats !== "daily" && formData.repetition_step > 1 ? "s" : "");
 
-	const parsedForm = $derived(
-		open ? CreateMeetingFormSchema.safeParse(formData) : null
-	);
+	const parsedForm = $derived(open ? CreateMeetingFormSchema.safeParse(formData) : null);
 
 	const onSuccess = () => {
 		onCreated();
@@ -79,9 +67,7 @@
 		onError,
 	}));
 
-	const isPending = $derived(
-		createScheduleMutation.isPending || createSessionMutation.isPending
-	);
+	const isPending = $derived(createScheduleMutation.isPending || createSessionMutation.isPending);
 	// const error = $derived(createScheduleMutation.error || createSessionMutation.error);
 
 	const tryCreateMeeting = () => {
@@ -119,12 +105,7 @@
 
 			<div class="flex flex-row gap-2 items-center">
 				<Field label="Repeating">
-					<ToggleGroup
-						variant="outline"
-						inset
-						class="w-full"
-						bind:value={formData.repeats}
-					>
+					<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.repeats}>
 						<ToggleOption value="once">Once</ToggleOption>
 						<ToggleOption value="daily">Daily</ToggleOption>
 						<ToggleOption value="weekly">Weeky</ToggleOption>
@@ -132,10 +113,7 @@
 					</ToggleGroup>
 				</Field>
 				{#if formData.repeats !== "once"}
-					<Icon
-						data={mdiArrowRight}
-						classes={{ root: "text-secondary" }}
-					/>
+					<Icon data={mdiArrowRight} classes={{ root: "text-secondary" }} />
 				{/if}
 			</div>
 
@@ -191,31 +169,17 @@
 		</Field>
 	{:else if formData.repeats === "monthly"}
 		<Field label="On the Same">
-			<ToggleGroup
-				variant="outline"
-				inset
-				class="w-full"
-				bind:value={formData.monthly_on}
-			>
+			<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.monthly_on}>
 				<ToggleOption value="same_day">Day of the Month</ToggleOption>
-				<ToggleOption value="same_weekday"
-					>Weekday ({dayOfWeek})</ToggleOption
-				>
+				<ToggleOption value="same_weekday">Weekday ({dayOfWeek})</ToggleOption>
 			</ToggleGroup>
 		</Field>
 	{/if}
 
 	<Field label="Until">
-		<ToggleGroup
-			variant="outline"
-			inset
-			class="w-full"
-			bind:value={formData.until_type}
-		>
+		<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.until_type}>
 			<ToggleOption value="indefinite">Indefinitely</ToggleOption>
-			<ToggleOption value="num_repetitions"
-				>Number of Repetitions</ToggleOption
-			>
+			<ToggleOption value="num_repetitions">Number of Repetitions</ToggleOption>
 			<ToggleOption value="date">Date Reached</ToggleOption>
 		</ToggleGroup>
 	</Field>
@@ -226,10 +190,7 @@
 		</Field>
 	{:else if formData.until_type === "date"}
 		<div>
-			<DatePickerField
-				label="End after"
-				bind:value={formData.until_date}
-			/>
+			<DatePickerField label="End after" bind:value={formData.until_date} />
 		</div>
 	{/if}
 {/snippet}

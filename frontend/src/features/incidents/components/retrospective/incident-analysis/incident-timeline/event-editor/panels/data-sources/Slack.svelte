@@ -43,9 +43,7 @@
 	<div slot="content" let:value class="">
 		{@const messages = getMessages(value)}
 		{#each messages as msg, i}
-			<ListItem
-				classes={{ root: "!elevation-0 hover:bg-surface-300/20" }}
-			>
+			<ListItem classes={{ root: "!elevation-0 hover:bg-surface-300/20" }}>
 				<div slot="avatar" class="flex flex-col">
 					<Icon data={msg.avatar} />
 				</div>

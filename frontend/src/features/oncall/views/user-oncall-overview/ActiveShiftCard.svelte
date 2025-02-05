@@ -1,23 +1,9 @@
 <script lang="ts">
 	import type { OncallShift } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
-	import {
-		addMinutes,
-		isFuture,
-		differenceInMinutes,
-		formatDistanceToNowStrict,
-		isPast,
-	} from "date-fns";
+	import { addMinutes, isFuture, differenceInMinutes, formatDistanceToNowStrict, isPast } from "date-fns";
 
-	import {
-		cls,
-		Card,
-		Button,
-		Header,
-		ProgressCircle,
-		Tooltip,
-		Icon,
-	} from "svelte-ux";
+	import { cls, Card, Button, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
 	import { mdiCircleMedium, mdiChevronRight } from "@mdi/js";
 
 	interface Props {
@@ -29,9 +15,7 @@
 
 	const start = $derived(new Date(attr.start_at));
 	const end = $derived(new Date(attr.end_at));
-	const progress = $derived(
-		(Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf())
-	);
+	const progress = $derived((Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf()));
 	const minutesLeft = $derived(differenceInMinutes(end, Date.now()));
 
 	const isUpcoming = $derived(isFuture(start));
@@ -61,9 +45,7 @@
 {#snippet cardHeader()}
 	<Header>
 		<div slot="title">
-			<span class="text-lg font-semibold"
-				>{attr.roster.attributes.name}</span
-			>
+			<span class="text-lg font-semibold">{attr.roster.attributes.name}</span>
 		</div>
 		<div slot="subheading" class="flex flex-col">
 			<span class="">{attr.role ?? "unknown role"}</span>
@@ -78,10 +60,7 @@
 				>
 					<Icon data={mdiCircleMedium} class="animate-pulse" />
 				</ProgressCircle>
-				<div
-					slot="title"
-					class="bg-neutral border text-sm text-surface-content p-2 rounded-lg"
-				>
+				<div slot="title" class="bg-neutral border text-sm text-surface-content p-2 rounded-lg">
 					<div class="flex flex-col gap-2">
 						<span>{minutesLeft} minutes left</span>
 						<div>

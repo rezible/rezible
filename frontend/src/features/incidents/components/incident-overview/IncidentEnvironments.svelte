@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { createMutation } from "@tanstack/svelte-query";
-	import {
-		listEnvironmentsOptions,
-		updateIncidentMutation,
-		type Incident,
-	} from "$lib/api";
+	import { listEnvironmentsOptions, updateIncidentMutation, type Incident } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { Button, Header, Icon } from "svelte-ux";
 	import { mdiPencil } from "@mdi/js";
@@ -49,15 +45,11 @@
 		return a.toSorted().every((val, idx) => val === sb[idx]);
 	};
 
-	const onChanged = () =>
-		(changed = !arraysEqual(selectedEnvironments, incidentEnvironments));
+	const onChanged = () => (changed = !arraysEqual(selectedEnvironments, incidentEnvironments));
 </script>
 
 {#if !editing}
-	<Header
-		title="Impacted Environments"
-		classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
-	>
+	<Header title="Impacted Environments" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 		<div slot="actions" class:hidden={editing}>
 			<Button
 				size="sm"

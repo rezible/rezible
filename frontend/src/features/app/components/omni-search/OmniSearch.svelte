@@ -58,9 +58,7 @@
 	const isGeneral = $derived(search.searchType === "general");
 	const title = $derived(isGeneral ? "Search For Anything" : "Oncall Search");
 	const placeholder = $derived(
-		isGeneral
-			? "An Incident, Retrospective, Team Name..."
-			: "Oncall Roster, Service, Username..."
+		isGeneral ? "An Incident, Retrospective, Team Name..." : "Oncall Roster, Service, Username..."
 	);
 </script>
 
@@ -104,8 +102,7 @@
 		classes={{
 			root: "w-[420px] max-w-[95vw] py-1",
 			field: {
-				container:
-					"border-none hover:shadow-none group-focus-within:shadow-none",
+				container: "border-none hover:shadow-none group-focus-within:shadow-none",
 			},
 			options: "overflow-auto max-h-[min(90dvh,380px)]",
 			group: "capitalize",

@@ -19,20 +19,12 @@
 	}
 	let { team }: Props = $props();
 
-	const usersQuery = createQuery(() =>
-		listUsersOptions({ query: { team_id: team.id } })
-	);
-	const rostersQuery = createQuery(() =>
-		listOncallRostersOptions({ query: { team_id: team.id } })
-	);
+	const usersQuery = createQuery(() => listUsersOptions({ query: { team_id: team.id } }));
+	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { team_id: team.id } }));
 </script>
 
 <div class="flex gap-2">
-	<Card
-		title="Users"
-		class="max-w-lg"
-		classes={{ header: { title: "text-xl" }, headerContainer: "p-3" }}
-	>
+	<Card title="Users" class="max-w-lg" classes={{ header: { title: "text-xl" }, headerContainer: "p-3" }}>
 		<div slot="contents">
 			<LoadingQueryWrapper query={usersQuery}>
 				{#snippet view(users: User[])}

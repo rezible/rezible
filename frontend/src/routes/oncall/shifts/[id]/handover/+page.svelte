@@ -11,21 +11,13 @@
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 
 	const shiftId = $derived(page.params.id);
-	const shiftQuery = createQuery(() =>
-		getOncallShiftOptions({ path: { id: shiftId } })
-	);
+	const shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
 
-	const handoverQuery = createQuery(() =>
-		getOncallShiftHandoverOptions({ path: { id: shiftId } })
-	);
+	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shiftId } }));
 	const handover = $derived(handoverQuery.data?.data);
 
-	const handoverQueryError = $derived(
-		handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : null
-	);
-	const isSent = $derived(
-		handover && Date.parse(handover.attributes.sent_at) > 0
-	);
+	const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : null);
+	const isSent = $derived(handover && Date.parse(handover.attributes.sent_at) > 0);
 </script>
 
 {#key shiftId}

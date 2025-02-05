@@ -18,9 +18,7 @@
 	const { breadcrumbs, tabs, children }: Props = $props();
 </script>
 
-<div
-	class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2"
->
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2">
 	<div class="flex flex-col border-b" class:gap-1={!!tabs}>
 		<PageBreadcrumbs crumbs={breadcrumbs} />
 

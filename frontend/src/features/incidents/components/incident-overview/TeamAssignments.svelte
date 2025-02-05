@@ -13,16 +13,9 @@
 	const assignments = $derived(incident.attributes.teams);
 </script>
 
-<Header
-	title="Teams"
-	classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
->
+<Header title="Teams" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 	<div slot="actions">
-		<Button
-			size="sm"
-			classes={{ root: "h-8 text-neutral-200" }}
-			on:click={() => {}}
-		>
+		<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 			<Icon data={mdiPencil} />
 		</Button>
 	</div>

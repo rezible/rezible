@@ -42,9 +42,7 @@
 				<Header title="User" />
 
 				<a href="/users/{user.id}" class="flex-1">
-					<div
-						class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2"
-					>
+					<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
 						<Avatar kind="user" size={32} id={user.id} />
 						<div class="flex flex-col">
 							<span class="text-lg">{user.attributes.name}</span>
@@ -61,9 +59,7 @@
 				<Header title="Roster" />
 
 				<a href="/oncall/rosters/{roster.id}" class="flex-1">
-					<div
-						class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2"
-					>
+					<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
 						<Avatar kind="roster" size={32} id={roster.id} />
 						<span class="text-lg">{roster.attributes.name}</span>
 						<div class="flex-1 grid justify-items-end">

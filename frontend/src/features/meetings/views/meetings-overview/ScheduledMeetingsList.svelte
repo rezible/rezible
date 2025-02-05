@@ -11,9 +11,7 @@
 	import ScheduledMeetingCard from "$features/meetings/components/scheduled-meeting-card/ScheduledMeetingCard.svelte";
 
 	let queryParams = $state<ListMeetingSchedulesData["query"]>({});
-	const query = createQuery(() =>
-		listMeetingSchedulesOptions({ query: { ...queryParams } })
-	);
+	const query = createQuery(() => listMeetingSchedulesOptions({ query: { ...queryParams } }));
 </script>
 
 <div class="flex flex-col gap-2 min-h-0 h-full">

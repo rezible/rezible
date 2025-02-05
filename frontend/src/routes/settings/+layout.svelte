@@ -1,15 +1,6 @@
 <script lang="ts">
-	import {
-		mdiAccount,
-		mdiAccountGroup,
-		mdiCog,
-		mdiFire,
-		mdiLayers,
-		mdiPuzzle,
-	} from "@mdi/js";
-	import PageContainer, {
-		type PageTabsProps,
-	} from "$components/page-container/PageContainer.svelte";
+	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiLayers, mdiPuzzle } from "@mdi/js";
+	import PageContainer, { type PageTabsProps } from "$components/page-container/PageContainer.svelte";
 
 	const { children } = $props();
 

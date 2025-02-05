@@ -33,21 +33,12 @@
 			<div class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-0">
 				{#each incidents as inc, i}
 					<a href="/incidents/{inc.attributes.slug}">
-						<ListItem
-							title={inc.attributes.title}
-							classes={{ root: "hover:bg-secondary-900" }}
-						>
+						<ListItem title={inc.attributes.title} classes={{ root: "hover:bg-secondary-900" }}>
 							<svelte:fragment slot="avatar">
-								<span
-									>{inc.attributes.severity.attributes
-										.name}</span
-								>
+								<span>{inc.attributes.severity.attributes.name}</span>
 							</svelte:fragment>
 							<div slot="actions">
-								<Button
-									icon={mdiChevronRight}
-									class="p-2 text-surface-content/50"
-								/>
+								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 							</div>
 						</ListItem>
 					</a>

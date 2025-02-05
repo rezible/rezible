@@ -14,16 +14,9 @@
 	let editing = $state(false);
 </script>
 
-<Header
-	title="Responders"
-	classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
->
+<Header title="Responders" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 	<div slot="actions" class:hidden={editing}>
-		<Button
-			size="sm"
-			classes={{ root: "h-8 text-neutral-200" }}
-			on:click={() => {}}
-		>
+		<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 			<Icon data={mdiPencil} />
 		</Button>
 	</div>
@@ -35,9 +28,7 @@
 			<Avatar kind="user" id={assignment.user.attributes.name} />
 			<div class="flex flex-col">
 				<span class="text-lg">{assignment.user.attributes.name}</span>
-				<span class="text-gray-700"
-					>{assignment.role.attributes.name}</span
-				>
+				<span class="text-gray-700">{assignment.role.attributes.name}</span>
 			</div>
 		</span>
 	</div>

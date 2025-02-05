@@ -53,17 +53,12 @@ export function createSeries<TKey extends string>(options: {
 
 	return Array.from({ length: count }).map((_, i) => {
 		return {
-			x:
-				options.value === "integer"
-					? getRandomInteger(min, max)
-					: getRandomNumber(min, max),
+			x: options.value === "integer" ? getRandomInteger(min, max) : getRandomNumber(min, max),
 			...Object.fromEntries(
 				keys.map((key) => {
 					return [
 						key,
-						options.value === "integer"
-							? getRandomInteger(min, max)
-							: getRandomNumber(min, max),
+						options.value === "integer" ? getRandomInteger(min, max) : getRandomNumber(min, max),
 					];
 				})
 			),
@@ -92,9 +87,7 @@ export function createDateSeries<TKey extends string>(options: {
 				keys.map((key) => {
 					return [
 						key,
-						options.value === "integer"
-							? getRandomInteger(min, max)
-							: getRandomNumber(min, max),
+						options.value === "integer" ? getRandomInteger(min, max) : getRandomNumber(min, max),
 					];
 				})
 			),
@@ -128,9 +121,7 @@ export function createTimeSeries<TKey extends string>(options: {
 				keys.map((key) => {
 					return [
 						key,
-						options.value === "integer"
-							? getRandomInteger(min, max)
-							: getRandomNumber(min, max),
+						options.value === "integer" ? getRandomInteger(min, max) : getRandomNumber(min, max),
 					];
 				})
 			),

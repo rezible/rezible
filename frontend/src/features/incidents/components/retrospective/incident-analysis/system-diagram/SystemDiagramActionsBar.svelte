@@ -14,11 +14,7 @@
 	<div
 		class="w-fit group flex gap-2 justify-center mx-auto p-2 rounded-lg border border-surface bg-surface-100/20"
 	>
-		<Button
-			color="primary"
-			variant="fill"
-			on:click={() => analysis.setComponentDialogOpen(true)}
-		>
+		<Button color="primary" variant="fill" on:click={() => analysis.setComponentDialogOpen(true)}>
 			<span class="flex items-center gap-2">
 				<span class="group-hover:inline hidden">Add Component</span>
 				<Icon data={mdiPlusNetwork} />

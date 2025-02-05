@@ -4,11 +4,7 @@ const checkInterval = 5000;
 
 const createAuthSessionCheck = (client: QueryClient) => {};
 
-const createBackgroundTask = (
-	fn: Function,
-	interval = 5000,
-	immediate = true
-): VoidFunction => {
+const createBackgroundTask = (fn: Function, interval = 5000, immediate = true): VoidFunction => {
 	if (immediate) fn();
 	const i = setInterval(fn, interval);
 	return () => {

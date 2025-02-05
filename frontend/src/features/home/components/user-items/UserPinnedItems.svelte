@@ -14,10 +14,7 @@
 				icon={mdiChartBar}
 			>
 				<div slot="actions">
-					<Button
-						icon={mdiChevronRight}
-						class="p-2 text-surface-content/50"
-					/>
+					<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 				</div>
 			</ListItem>
 		</a>

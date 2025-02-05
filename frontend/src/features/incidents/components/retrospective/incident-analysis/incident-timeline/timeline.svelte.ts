@@ -1,9 +1,5 @@
 import { mount, onMount, unmount } from "svelte";
-import {
-	Timeline,
-	type IdType,
-	type TimelineOptions,
-} from "vis-timeline/esnext";
+import { Timeline, type IdType, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
@@ -14,9 +10,7 @@ import {
 	type IncidentMilestone,
 	type ListIncidentMilestonesResponse,
 } from "$lib/api";
-import IncidentTimelineEvent, {
-	type TimelineEventComponentProps,
-} from "./IncidentTimelineEvent.svelte";
+import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
 import type { TimelineEvent } from "./types";
 
 export const createTimelineEventElement = (id: string) => {
@@ -99,10 +93,7 @@ const createTimelineState = () => {
 		);
 	};
 
-	const eventComponents = new Map<
-		IdType,
-		ReturnType<typeof createTimelineEventElement>
-	>();
+	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
 	const addEvent = (id: IdType) => {
 		const created = createTimelineEventElement(id.toString());
 		items.add({ id: 1, content: created.element, start: "2014-01-23" });

@@ -17,26 +17,19 @@
 
 	const isLoading = $derived(!!queries.find((q) => q.isLoading));
 	const isError = $derived(!!queries.find((q) => q.isError));
-	const errors = $derived(
-		queries.map((q) => (q.isError ? tryUnwrapApiError(q.error) : null))
-	);
+	const errors = $derived(queries.map((q) => (q.isError ? tryUnwrapApiError(q.error) : null)));
 	const data = $derived(queries.map((q) => q.data ?? null));
 </script>
 
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
-		<Card
-			title="Error {err.status} {err.title}"
-			classes={{ header: { title: "text-danger text-xl" } }}
-		>
+		<Card title="Error {err.status} {err.title}" classes={{ header: { title: "text-danger text-xl" } }}>
 			<div slot="contents" class="pb-3 flex flex-col">
 				<span class="text-lg">{err.detail}</span>
 				{#each err.errors ?? [] as d}
 					<span
-						>{d.location
-							? `[${d.location}: "${d.value}"]: `
-							: ""}<span class="text-neutral-content"
-							>{d.message}</span
+						>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}<span
+							class="text-neutral-content">{d.message}</span
 						></span
 					>
 				{/each}

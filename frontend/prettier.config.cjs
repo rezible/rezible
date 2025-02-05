@@ -10,4 +10,5 @@ module.exports = {
 	semi: true,
 	singleQuote: false,
 	useTabs: true,
+	printWidth: 110,
 };

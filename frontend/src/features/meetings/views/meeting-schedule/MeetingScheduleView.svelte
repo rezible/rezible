@@ -1,9 +1,5 @@
 <script lang="ts">
-	import type {
-		MeetingSchedule,
-		MeetingScheduleAttributes,
-		MeetingScheduleTiming,
-	} from "$lib/api";
+	import type { MeetingSchedule, MeetingScheduleAttributes, MeetingScheduleTiming } from "$lib/api";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ScheduleSessions from "./ScheduleSessions.svelte";
 
@@ -61,9 +57,7 @@
 
 		<div class="border p-2 flex flex-col gap-2">
 			<span class="text-lg">Invites</span>
-			<span
-				>{attr.attendees.private ? "Private" : "Open to everyone"}</span
-			>
+			<span>{attr.attendees.private ? "Private" : "Open to everyone"}</span>
 			<span>Users: {JSON.stringify(attr.attendees.users)}</span>
 			<span>Teams: {JSON.stringify(attr.attendees.teams)}</span>
 		</div>

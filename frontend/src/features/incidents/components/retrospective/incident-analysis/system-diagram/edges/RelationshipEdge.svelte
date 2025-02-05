@@ -1,10 +1,6 @@
 <script lang="ts">
 	import type { SystemAnalysisRelationshipAttributes } from "$lib/api";
-	import {
-		type EdgeProps,
-		EdgeLabelRenderer,
-		getSmoothStepPath,
-	} from "@xyflow/svelte";
+	import { type EdgeProps, EdgeLabelRenderer, getSmoothStepPath } from "@xyflow/svelte";
 
 	const props: EdgeProps = $props();
 	const data = $derived(props.data as SystemAnalysisRelationshipAttributes);
@@ -16,9 +12,7 @@
 	const sourceX = $derived(props.sourceX - offset);
 	const targetX = $derived(props.targetX + offset);
 
-	const centerXOffset = $derived(
-		props.sourceY > props.targetY ? offset : offset * -1
-	);
+	const centerXOffset = $derived(props.sourceY > props.targetY ? offset : offset * -1);
 
 	const [pathOut] = $derived(
 		getSmoothStepPath({
@@ -92,10 +86,7 @@
 {@render edgePath(pathIn, "in")}
 
 <EdgeLabelRenderer>
-	<div
-		class="nodrag nopan relationship-label flex flex-col gap-2"
-		style={labelTransformStyle}
-	>
+	<div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
 		<span class="">{data.description}relationship</span>
 	</div>
 </EdgeLabelRenderer>

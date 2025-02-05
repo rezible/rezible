@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button, Header } from "svelte-ux";
-	import {
-		listMeetingSessionsOptions,
-		type MeetingSchedule,
-		type MeetingSession,
-	} from "$lib/api";
+	import { listMeetingSessionsOptions, type MeetingSchedule, type MeetingSession } from "$lib/api";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 

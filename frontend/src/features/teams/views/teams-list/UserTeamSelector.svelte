@@ -17,10 +17,7 @@
 			<LoadingQueryWrapper query={userTeamsQuery}>
 				{#snippet view(userTeams: Team[])}
 					{#each userTeams as team}
-						<TeamCard
-							title={team.attributes.name}
-							teamId={team.id}
-						/>
+						<TeamCard title={team.attributes.name} teamId={team.id} />
 					{/each}
 				{/snippet}
 			</LoadingQueryWrapper>

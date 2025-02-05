@@ -2,18 +2,12 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button, Card, Header } from "svelte-ux";
 	import { mdiFilter } from "@mdi/js";
-	import {
-		listMeetingSessionsOptions,
-		type ListMeetingSessionsData,
-		type MeetingSession,
-	} from "$lib/api";
+	import { listMeetingSessionsOptions, type ListMeetingSessionsData, type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 
 	let queryParams = $state<ListMeetingSessionsData["query"]>({});
-	const query = createQuery(() =>
-		listMeetingSessionsOptions({ query: queryParams })
-	);
+	const query = createQuery(() => listMeetingSessionsOptions({ query: queryParams }));
 </script>
 
 <div class="flex flex-col gap-2 min-h-0 h-full">

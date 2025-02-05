@@ -21,16 +21,12 @@
 	};
 	const { shift, template, handover }: Props = $props();
 
-	const annotationsQuery = createQuery(() =>
-		listOncallShiftAnnotationsOptions({ path: { id: shift.id } })
-	);
+	const annotationsQuery = createQuery(() => listOncallShiftAnnotationsOptions({ path: { id: shift.id } }));
 	const pinnedAnnotations = $derived(
 		annotationsQuery.data?.data.filter((ann) => ann.attributes.pinned) ?? []
 	);
 
-	const incidentsEnabled = $derived(
-		handoverState.sections.some((s) => s.kind === "incidents")
-	);
+	const incidentsEnabled = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
 	const incidentsQuery = createQuery(() => ({
 		...listOncallShiftIncidentsOptions({ path: { id: shift.id } }),
 		enabled: incidentsEnabled,
@@ -59,8 +55,7 @@
 		if (!focus && focusIdx === idx) {
 			if (e.relatedTarget) {
 				const btn = e.relatedTarget as HTMLButtonElement;
-				const isMenuButton =
-					btn.parentElement?.dataset["menu"] == String(idx);
+				const isMenuButton = btn.parentElement?.dataset["menu"] == String(idx);
 				if (isMenuButton) return;
 			}
 			focusIdx = -1;
@@ -72,10 +67,7 @@
 	<div class="flex flex-col">
 		{#if section.header}
 			<div class="flex w-full gap-4 items-center">
-				<Header
-					title={section.header}
-					classes={{ root: "w-full", container: "flex-1" }}
-				/>
+				<Header title={section.header} classes={{ root: "w-full", container: "flex-1" }} />
 			</div>
 		{/if}
 
@@ -93,9 +85,7 @@
 							<li>{ann.attributes.title}</li>
 							<ul class="pl-5">
 								<li>
-									<span class="italic"
-										>{ann.attributes.notes}</span
-									>
+									<span class="italic">{ann.attributes.notes}</span>
 								</li>
 							</ul>
 						{/each}
@@ -112,10 +102,8 @@
 					<ul class="list-disc pl-5">
 						{#each incidents as inc (inc.id)}
 							<li>
-								<a
-									class="link"
-									href="/incidents/{inc.id}"
-									target="_blank">{inc.attributes.title}</a
+								<a class="link" href="/incidents/{inc.id}" target="_blank"
+									>{inc.attributes.title}</a
 								>
 							</li>
 						{/each}
@@ -126,8 +114,7 @@
 
 		{#if section.kind === "regular"}
 			{@const activeStatus = section.activeStatus}
-			{@const isActive =
-				handoverState.activeEditor == section.editor && focusIdx === i}
+			{@const isActive = handoverState.activeEditor == section.editor && focusIdx === i}
 			<div
 				class="bg-surface-100 p-1 h-fit"
 				class:cursor-text={!handoverState.sent}
@@ -145,12 +132,7 @@
 					class:hidden={handoverState.sent}
 					data-menu={i}
 				>
-					{#snippet formatMenuItem(
-						name: string,
-						active: boolean,
-						icon: string,
-						cmd: VoidFunction
-					)}
+					{#snippet formatMenuItem(name: string, active: boolean, icon: string, cmd: VoidFunction)}
 						<MenuItem {icon} on:click={cmd} selected={active}>
 							{name}
 						</MenuItem>
@@ -180,9 +162,7 @@
 						rounded={false}
 						size="sm"
 						disabled={!isActive}
-						variant={isActive && activeStatus.get("bold")
-							? "fill"
-							: "fill-light"}
+						variant={isActive && activeStatus.get("bold") ? "fill" : "fill-light"}
 						on:click={runEditorCmd((c) => c.toggleBold())}
 					/>
 
@@ -191,9 +171,7 @@
 						rounded={false}
 						size="sm"
 						disabled={!isActive}
-						variant={isActive && activeStatus.get("bulletList")
-							? "fill"
-							: "fill-light"}
+						variant={isActive && activeStatus.get("bulletList") ? "fill" : "fill-light"}
 						on:click={runEditorCmd((c) => c.toggleBulletList())}
 					/>
 				</div>

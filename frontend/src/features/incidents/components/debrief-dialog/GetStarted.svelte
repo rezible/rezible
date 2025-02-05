@@ -35,19 +35,13 @@
 		});
 </script>
 
-<div
-	class="p-2 text-surface-content overflow-y-auto shrink"
-	class:hidden={start.isSuccess}
->
+<div class="p-2 text-surface-content overflow-y-auto shrink" class:hidden={start.isSuccess}>
 	<p class="">
-		A post-incident debrief brings teams together to learn from service
-		disruptions and make our systems more resilient.
+		A post-incident debrief brings teams together to learn from service disruptions and make our systems
+		more resilient.
 	</p>
 
-	<p>
-		We'll work through this together in a blameless environment focused on
-		improvement.
-	</p>
+	<p>We'll work through this together in a blameless environment focused on improvement.</p>
 
 	<h2 class="text-xl font-semibold mt-6 mb-3">What We'll Cover</h2>
 	<ul class="list-disc pl-6 mb-4">
@@ -66,10 +60,7 @@
 </div>
 
 <div class="bg-success-900/50 textcontent p-4 rounded-lg">
-	<p class="text-sm">
-		Best Practice: Complete the debrief within 72 hours while details are
-		fresh.
-	</p>
+	<p class="text-sm">Best Practice: Complete the debrief within 72 hours while details are fresh.</p>
 </div>
 
 <div class="border-t h-0 my-2"></div>

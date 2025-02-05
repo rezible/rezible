@@ -36,13 +36,7 @@
 
 {#key id}
 	{#if badge}
-		<Badge
-			placement="top-right"
-			value={1}
-			dot
-			circle
-			class="bg-success-200"
-		>
+		<Badge placement="top-right" value={1} dot circle class="bg-success-200">
 			{@render avatar()}
 		</Badge>
 	{:else}

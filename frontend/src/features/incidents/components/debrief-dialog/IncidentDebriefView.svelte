@@ -1,10 +1,5 @@
 <script lang="ts">
-	import {
-		createQuery,
-		queryOptions,
-		useQueryClient,
-		type QueryState,
-	} from "@tanstack/svelte-query";
+	import { createQuery, queryOptions, useQueryClient, type QueryState } from "@tanstack/svelte-query";
 	import {
 		listDebriefMessagesOptions,
 		type Incident,
@@ -39,20 +34,15 @@
 	};
 	const sortMessages = (messages: IncidentDebriefMessage[]) => {
 		return messages.toSorted((a, b) => {
-			const older =
-				Date.parse(a.attributes.createdAt) <
-				Date.parse(b.attributes.createdAt);
+			const older = Date.parse(a.attributes.createdAt) < Date.parse(b.attributes.createdAt);
 			return older ? -1 : 1;
 		});
 	};
 
-	const isUserMessage = (msg: IncidentDebriefMessage) =>
-		msg.attributes.type === "user";
+	const isUserMessage = (msg: IncidentDebriefMessage) => msg.attributes.type === "user";
 
 	const REFETCH_INTEVAL_MS = 1000;
-	const shouldQueryPoll = (
-		state: QueryState<ListIncidentDebriefMessagesResponseBody, Error>
-	) => {
+	const shouldQueryPoll = (state: QueryState<ListIncidentDebriefMessagesResponseBody, Error>) => {
 		if (state.error) return false;
 
 		const latestMessage = getLatestMessage(state.data?.data ?? []);
@@ -64,8 +54,7 @@
 		queryOptions({
 			...listDebriefMessagesOptions({ path: { id: debrief.id } }),
 			select: (res) => sortMessages(res.data),
-			refetchInterval: ({ state }) =>
-				shouldQueryPoll(state) ? REFETCH_INTEVAL_MS : false,
+			refetchInterval: ({ state }) => (shouldQueryPoll(state) ? REFETCH_INTEVAL_MS : false),
 			enabled: started,
 		})
 	);
@@ -73,12 +62,8 @@
 	const messagesQuery = createQuery(() => messagesQueryOptions);
 
 	const messages = $derived(messagesQuery.data ?? []);
-	const lastMessage = $derived(
-		messages.length > 0 ? messages[messages.length - 1] : undefined
-	);
-	const waitingForResponse = $derived(
-		!lastMessage || isUserMessage(lastMessage)
-	);
+	const lastMessage = $derived(messages.length > 0 ? messages[messages.length - 1] : undefined);
+	const waitingForResponse = $derived(!lastMessage || isUserMessage(lastMessage));
 
 	const onMessageAdded = (msg: IncidentDebriefMessage) =>
 		queryClient.setQueryData(queryKey, (curData) => {

@@ -1,20 +1,10 @@
 <script lang="ts">
-	import {
-		Card,
-		DateRangeField,
-		Header,
-		PeriodType,
-		TextField,
-	} from "svelte-ux";
+	import { Card, DateRangeField, Header, PeriodType, TextField } from "svelte-ux";
 	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
 	import { formatDistanceToNow, subDays } from "date-fns";
 	import type { DateRange as DateRangeType } from "svelte-ux/utils/dateRange";
 	import { createQuery } from "@tanstack/svelte-query";
-	import {
-		listOncallShiftsOptions,
-		type ListOncallShiftsData,
-		type OncallShift,
-	} from "$lib/api";
+	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 
 	type Props = {};
@@ -81,10 +71,7 @@
 									<span class="text-lg">{roster.name}</span>
 								</div>
 								<div slot="subheading">
-									<span
-										class="text-sm text-surface-content/75"
-										>{attr.role}</span
-									>
+									<span class="text-sm text-surface-content/75">{attr.role}</span>
 								</div>
 								<div slot="actions"></div>
 							</Header>

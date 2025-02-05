@@ -66,8 +66,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "time_pressure",
 				title: "Time Pressure",
-				description:
-					"Team was pushing to meet end-of-sprint commitments, leading to rushed testing",
+				description: "Team was pushing to meet end-of-sprint commitments, leading to rushed testing",
 				examples: [
 					"End of quarter release pressure",
 					"Multiple concurrent project deadlines",
@@ -77,8 +76,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "resource_constraints",
 				title: "Resource Constraints",
-				description:
-					"Only one engineer familiar with the system was available during the incident",
+				description: "Only one engineer familiar with the system was available during the incident",
 				examples: [
 					"Team understaffing",
 					"Limited expert availability",
@@ -104,13 +102,8 @@ export const ContributingFactorCategories = [
 			{
 				id: "monitoring_gaps",
 				title: "Monitoring Gap",
-				description:
-					"No alerts existed for gradual database connection pool exhaustion",
-				examples: [
-					"Insufficient metrics coverage",
-					"Missing threshold alerts",
-					"Incomplete logging",
-				],
+				description: "No alerts existed for gradual database connection pool exhaustion",
+				examples: ["Insufficient metrics coverage", "Missing threshold alerts", "Incomplete logging"],
 			},
 		],
 	},
@@ -121,8 +114,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "communication_breakdown",
 				title: "Communication Breakdown",
-				description:
-					"Team wasn't sure when to involve senior engineers or wake up team leads",
+				description: "Team wasn't sure when to involve senior engineers or wake up team leads",
 				examples: [
 					"Unclear escalation path",
 					"Unclear incident roles",
@@ -133,8 +125,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "process_uncertainty",
 				title: "Process Uncertainty",
-				description:
-					"No clear threshold for when to revert the deployment vs. trying to fix forward",
+				description: "No clear threshold for when to revert the deployment vs. trying to fix forward",
 				examples: [
 					"Missing playbooks",
 					"Undefined rollback criteria",
@@ -163,8 +154,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "technical_debt",
 				title: "Technical Debt",
-				description:
-					"Old monitoring system couldn't be easily updated to catch new failure modes",
+				description: "Old monitoring system couldn't be easily updated to catch new failure modes",
 				examples: [
 					"Legacy system constraints",
 					"Outdated infrastructure",
@@ -181,8 +171,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "configuration_complexity",
 				title: "Configuration Complexity",
-				description:
-					"Multiple similar configuration parameters made it easy to modify the wrong one",
+				description: "Multiple similar configuration parameters made it easy to modify the wrong one",
 				examples: [
 					"Risky configuration surface",
 					"Complex configuration options",
@@ -193,13 +182,8 @@ export const ContributingFactorCategories = [
 			{
 				id: "testing_limitations",
 				title: "Testing Limitations",
-				description:
-					"Test environment didn't accurately reflect production load patterns",
-				examples: [
-					"Missing test coverage",
-					"Environment differences",
-					"Limited load testing",
-				],
+				description: "Test environment didn't accurately reflect production load patterns",
+				examples: ["Missing test coverage", "Environment differences", "Limited load testing"],
 			},
 		],
 	},
@@ -210,8 +194,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "cognitive_load",
 				title: "Cognitive Load",
-				description:
-					"High volume of low-priority alerts led to missing critical warnings",
+				description: "High volume of low-priority alerts led to missing critical warnings",
 				examples: [
 					"Alert fatigue",
 					"Information overload",
@@ -222,8 +205,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "experience_mismatch",
 				title: "Experience Mismatch",
-				description:
-					"Engineer was handling an incident in a system they rarely work with",
+				description: "Engineer was handling an incident in a system they rarely work with",
 				examples: [
 					"Unfamiliar territory",
 					"New team members",
@@ -240,8 +222,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "vendor_issues",
 				title: "Vendor Issues",
-				description:
-					"Unable to quickly scale due to cloud provider quota restrictions",
+				description: "Unable to quickly scale due to cloud provider quota restrictions",
 				examples: [
 					"Cloud provider limitations",
 					"Provider outages",
@@ -252,8 +233,7 @@ export const ContributingFactorCategories = [
 			{
 				id: "customer_behavior",
 				title: "Customer Behaviour",
-				description:
-					"New customer onboarding caused unexpected load spikes",
+				description: "New customer onboarding caused unexpected load spikes",
 				examples: [
 					"Unexpected/Changed usage patterns",
 					"Traffic spikes",

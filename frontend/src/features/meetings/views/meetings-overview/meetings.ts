@@ -82,49 +82,44 @@ type TransformedSessionFormData = {
 	requestType: "session";
 	body: CreateMeetingSessionRequestBody;
 };
-export type TransformedFormData =
-	| TransformedScheduleFormData
-	| TransformedSessionFormData;
+export type TransformedFormData = TransformedScheduleFormData | TransformedSessionFormData;
 
-export const CreateMeetingFormSchema = meetingFormSchema.transform(
-	(form, ctx): TransformedFormData => {
-		if (form.repeats === "once") {
-			const body: CreateMeetingSessionRequestBody = {
-				attributes: {
-					title: form.name,
-					description: form.description,
-					attendees: {
-						private: false,
-						teams: [],
-						users: [],
-					},
-					document_template_id: undefined,
-					starts_at: form.start,
-					duration_minutes: form.duration_minutes,
-				},
-			};
-			return { requestType: "session", body };
-		}
-		const body: CreateMeetingScheduleRequestBody = {
+export const CreateMeetingFormSchema = meetingFormSchema.transform((form, ctx): TransformedFormData => {
+	if (form.repeats === "once") {
+		const body: CreateMeetingSessionRequestBody = {
 			attributes: {
-				name: form.name,
-				session_title: form.session_title,
+				title: form.name,
 				description: form.description,
 				attendees: {
 					private: false,
 					teams: [],
 					users: [],
 				},
+				document_template_id: undefined,
 				starts_at: form.start,
 				duration_minutes: form.duration_minutes,
-				repeats: form.repeats,
-				repeat_monthly_on: form.monthly_on,
-				num_repetitions:
-					form.num_repetitions > 1 ? form.num_repetitions : undefined,
-				repetition_step: form.repetition_step,
-				until_date: !!form.until_date ? form.until_date : undefined,
 			},
 		};
-		return { requestType: "schedule", body };
+		return { requestType: "session", body };
 	}
-);
+	const body: CreateMeetingScheduleRequestBody = {
+		attributes: {
+			name: form.name,
+			session_title: form.session_title,
+			description: form.description,
+			attendees: {
+				private: false,
+				teams: [],
+				users: [],
+			},
+			starts_at: form.start,
+			duration_minutes: form.duration_minutes,
+			repeats: form.repeats,
+			repeat_monthly_on: form.monthly_on,
+			num_repetitions: form.num_repetitions > 1 ? form.num_repetitions : undefined,
+			repetition_step: form.repetition_step,
+			until_date: !!form.until_date ? form.until_date : undefined,
+		},
+	};
+	return { requestType: "schedule", body };
+});

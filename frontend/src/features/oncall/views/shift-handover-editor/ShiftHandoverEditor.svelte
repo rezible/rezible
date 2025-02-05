@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		createMutation,
-		createQuery,
-		useQueryClient,
-	} from "@tanstack/svelte-query";
+	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { Button, Icon } from "svelte-ux";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import {
@@ -29,17 +25,13 @@
 
 	const shiftId = $derived(shift.id);
 
-	const templateId = $derived(
-		shift.attributes.roster.attributes.handover_template_id
-	);
+	const templateId = $derived(shift.attributes.roster.attributes.handover_template_id);
 	const templateQuery = createQuery(() =>
 		getOncallShiftHandoverTemplateOptions({ path: { id: templateId } })
 	);
 
 	const queryClient = useQueryClient();
-	const nextShiftQuery = createQuery(() =>
-		getNextOncallShiftOptions({ path: { id: shiftId } })
-	);
+	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
 	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);
 
 	const toastState = getToastState();
@@ -49,14 +41,8 @@
 		...sendOncallShiftHandoverMutation(),
 		onSuccess: () => {
 			handoverState.setSent();
-			toastState.add(
-				"Handover Sent",
-				"Sent oncall shift handover",
-				mdiPhoneForward
-			);
-			queryClient.invalidateQueries(
-				getOncallShiftHandoverOptions({ path: { id: shiftId } })
-			);
+			toastState.add("Handover Sent", "Sent oncall shift handover", mdiPhoneForward);
+			queryClient.invalidateQueries(getOncallShiftHandoverOptions({ path: { id: shiftId } }));
 			// showReviewDialog = true;
 		},
 	}));
@@ -75,12 +61,8 @@
 
 <div class="px-3 flex-1 flex flex-col gap-2 max-h-full min-h-0 overflow-y-auto">
 	<div class="flex gap-2">
-		<div
-			class="flex items-center gap-2 bg-neutral rounded w-fit h-full p-2 px-3 text-lg"
-		>
-			<span class=""
-				>{handoverState.sent ? "Handed" : "Handing"} over to</span
-			>
+		<div class="flex items-center gap-2 bg-neutral rounded w-fit h-full p-2 px-3 text-lg">
+			<span class="">{handoverState.sent ? "Handed" : "Handing"} over to</span>
 			<span class="font-bold flex gap-2 items-center">
 				{nextUser?.attributes.name ?? ""}
 				<Avatar kind="user" size={22} id={nextUser?.id ?? ""} />

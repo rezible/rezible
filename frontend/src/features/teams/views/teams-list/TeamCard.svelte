@@ -11,10 +11,7 @@
 </script>
 
 <Button href="/teams/{teamId}" class="p-0">
-	<Card
-		class={"hover:border-primary-600"}
-		classes={{ headerContainer: "py-3 px-4" }}
-	>
+	<Card class={"hover:border-primary-600"} classes={{ headerContainer: "py-3 px-4" }}>
 		<Header {title} slot="header">
 			<div slot="avatar">
 				{#if teamId}

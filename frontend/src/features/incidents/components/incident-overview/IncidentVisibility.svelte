@@ -36,10 +36,7 @@
 </script>
 
 {#if !editing}
-	<Header
-		title="Incident Visibility"
-		classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}
-	>
+	<Header title="Incident Visibility" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
 		<div slot="actions" class:hidden={editing}>
 			<Button
 				size="sm"

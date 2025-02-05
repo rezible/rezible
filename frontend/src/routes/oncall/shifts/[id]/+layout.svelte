@@ -10,9 +10,7 @@
 	const { children } = $props();
 
 	const shiftId = $derived(page.params.id);
-	const query = createQuery(() =>
-		getOncallShiftOptions({ path: { id: shiftId } })
-	);
+	const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
 	const shift = $derived(query.data?.data);
 
 	const formatShiftDates = (shift: OncallShift) => {
@@ -22,9 +20,7 @@
 		return `${rosterName} - ${start.toDateString()} to ${end.toDateString()}`;
 	};
 
-	const isHandover = $derived(
-		page.route.id === "/oncall/shifts/[id]/handover"
-	);
+	const isHandover = $derived(page.route.id === "/oncall/shifts/[id]/handover");
 
 	const baseCrumbs: Breadcrumb[] = [
 		{ label: "Oncall", href: "/oncall" },
@@ -42,9 +38,7 @@
 		label: "Handover",
 		href: `/oncall/shifts/${shiftId}/handover`,
 	});
-	const shiftCrumbs: Breadcrumb[] = $derived(
-		isHandover ? [shiftCrumb, handoverCrumb] : [shiftCrumb]
-	);
+	const shiftCrumbs: Breadcrumb[] = $derived(isHandover ? [shiftCrumb, handoverCrumb] : [shiftCrumb]);
 
 	const breadcrumbs = $derived<Breadcrumb[]>([...baseCrumbs, ...shiftCrumbs]);
 </script>

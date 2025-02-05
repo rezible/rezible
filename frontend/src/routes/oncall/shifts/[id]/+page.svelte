@@ -6,9 +6,7 @@
 	import ShiftView from "$features/oncall/views/shift/ShiftView.svelte";
 
 	const shiftId = $derived(page.params.id);
-	const query = createQuery(() =>
-		getOncallShiftOptions({ path: { id: shiftId } })
-	);
+	const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
 </script>
 
 <LoadingQueryWrapper {query}>

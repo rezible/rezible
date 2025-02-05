@@ -34,12 +34,5 @@
 		stroke={$connection.fromHandle?.id}
 		d={path}
 	/>
-	<circle
-		cx={to.x}
-		cy={to.y}
-		fill="#fff"
-		r={3}
-		stroke={$connection.fromHandle?.id}
-		stroke-width={1.5}
-	/>
+	<circle cx={to.x} cy={to.y} fill="#fff" r={3} stroke={$connection.fromHandle?.id} stroke-width={1.5} />
 {/if}

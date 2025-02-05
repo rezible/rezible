@@ -19,9 +19,7 @@
 	<div class="flex-0 flex items-center gap-3 h-16">
 		<div class="inline-block">
 			<Popover bind:open={inboxOpen}>
-				<div
-					class="bg-surface-100 border shadow flex flex-col gap-1 p-2"
-				>
+				<div class="bg-surface-100 border shadow flex flex-col gap-1 p-2">
 					{#each inbox as item (item.id)}
 						<span>{item.attributes.text}</span>
 					{/each}
@@ -31,11 +29,7 @@
 				</div>
 			</Popover>
 			<Badge value={inbox.length}>
-				<Button
-					iconOnly
-					onclick={() => (inboxOpen = !inboxOpen)}
-					classes={{ root: "p-2" }}
-				>
+				<Button iconOnly onclick={() => (inboxOpen = !inboxOpen)} classes={{ root: "p-2" }}>
 					<Icon size={28} data={mdiInbox} />
 				</Button>
 			</Badge>

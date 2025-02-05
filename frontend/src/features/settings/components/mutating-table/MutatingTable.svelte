@@ -15,20 +15,8 @@
 		useQueryClient,
 		type MutationOptions,
 	} from "@tanstack/svelte-query";
-	import {
-		Button,
-		Card,
-		Pagination,
-		paginationStore,
-		Table,
-		type ColumnDef,
-	} from "svelte-ux";
-	import type {
-		PaginatedResponse,
-		ErrorModel,
-		ListQueryOptionsFunc,
-		ListFuncQueryOptions,
-	} from "$lib/api";
+	import { Button, Card, Pagination, paginationStore, Table, type ColumnDef } from "svelte-ux";
+	import type { PaginatedResponse, ErrorModel, ListQueryOptionsFunc, ListFuncQueryOptions } from "$lib/api";
 	import { mdiArchive, mdiArchiveMinus, mdiPencil, mdiPlus } from "@mdi/js";
 	import type { FormFields } from "./fields.svelte";
 	import MutationForm from "./MutationForm.svelte";
@@ -72,14 +60,11 @@
 	let editItem = $state<DataType>();
 
 	const archiveItemName = $derived(
-		!!archiveItem && "name" in archiveItem
-			? `${dataType} '${archiveItem.name}`
-			: dataType
+		!!archiveItem && "name" in archiveItem ? `${dataType} '${archiveItem.name}` : dataType
 	);
 
 	const query = createQuery(listQueryOptions);
-	const invalidateQuery = () =>
-		queryClient.invalidateQueries(listQueryOptions());
+	const invalidateQuery = () => queryClient.invalidateQueries(listQueryOptions());
 
 	const onMutationSuccess = () => {
 		// TODO: optimistic update
@@ -105,9 +90,7 @@
 		onSettled: onMutationSettled,
 	}));
 
-	let archiveLoading = $derived(
-		updateMutation.isPending || archiveMutation.isPending
-	);
+	let archiveLoading = $derived(updateMutation.isPending || archiveMutation.isPending);
 	const toggleArchival = async () => {
 		if (!archiveItem || archiveLoading) return;
 		if (archiveItem.attributes.archived) {
@@ -267,13 +250,7 @@
 				Restore
 			</Button>
 		{:else}
-			<Button
-				icon={mdiPencil}
-				{disabled}
-				on:click={() => setEditItem(data)}
-			>
-				Edit
-			</Button>
+			<Button icon={mdiPencil} {disabled} on:click={() => setEditItem(data)}>Edit</Button>
 			<Button
 				icon={mdiArchive}
 				{disabled}
@@ -310,8 +287,7 @@
 				<MutationForm
 					{dataType}
 					{fields}
-					onMutate={(attributes) =>
-						createItemMutation.mutate({ body: { attributes } })}
+					onMutate={(attributes) => createItemMutation.mutate({ body: { attributes } })}
 					isPending={createItemMutation.isPending}
 					mutationError={createItemMutation.error}
 					onClose={() => setCreating(false)}
@@ -332,9 +308,7 @@
 
 <ConfirmationModal
 	open={!!archiveItem}
-	title="{archiveItem?.attributes.archived
-		? 'Restore'
-		: 'Archive'} {dataType}"
+	title="{archiveItem?.attributes.archived ? 'Restore' : 'Archive'} {dataType}"
 	text="Are you sure you want to {archiveItem?.attributes.archived
 		? 'restore'
 		: 'archive'} the {archiveItemName}?"

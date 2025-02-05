@@ -7,11 +7,7 @@ import {
 	type User,
 } from "$lib/api";
 import { getCurrentUserSession } from "./api/oapi.gen";
-import {
-	QueryClient,
-	QueryObserver,
-	queryOptions,
-} from "@tanstack/svelte-query";
+import { QueryClient, QueryObserver, queryOptions } from "@tanstack/svelte-query";
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
 
 // TODO: load this
@@ -24,9 +20,7 @@ type AuthSession = {
 	expiresAt: Date;
 	user: User;
 };
-const parseUserSessionResponse = ({
-	data,
-}: GetCurrentUserSessionResponse): AuthSession => {
+const parseUserSessionResponse = ({ data }: GetCurrentUserSessionResponse): AuthSession => {
 	return {
 		user: data.user,
 		expiresAt: data.expires_at,
@@ -139,13 +133,8 @@ const startRefetchQuery = (client: QueryClient) => {
 		if (status.isSuccess) {
 			const sess = parseUserSessionResponse(status.data);
 			const now = new Date(Date.now());
-			if (
-				sess.expiresAt &&
-				differenceInSeconds(sess.expiresAt, now) < refreshWindowSecs
-			) {
-				console.log(
-					`less than ${refreshWindowSecs / 60} minutes left until auth expires`
-				);
+			if (sess.expiresAt && differenceInSeconds(sess.expiresAt, now) < refreshWindowSecs) {
+				console.log(`less than ${refreshWindowSecs / 60} minutes left until auth expires`);
 			}
 		}
 	});

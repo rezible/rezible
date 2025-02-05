@@ -18,17 +18,10 @@
 	import { page } from "$app/state";
 	import { cls, Icon } from "svelte-ux";
 
-	const {
-		pages,
-		baseRouteId,
-		basePath,
-		end = false,
-	}: PageTabsProps = $props();
+	const { pages, baseRouteId, basePath, end = false }: PageTabsProps = $props();
 
 	const activePath = $derived(page.route.id?.replace(baseRouteId, "") ?? "");
-	const activePageIdx = $derived(
-		pages.findIndex((p) => (p.routeId ?? p.path) === activePath)
-	);
+	const activePageIdx = $derived(pages.findIndex((p) => (p.routeId ?? p.path) === activePath));
 </script>
 
 <ul class="flex space-y-0 -mb-px w-fit" class:self-end={end}>

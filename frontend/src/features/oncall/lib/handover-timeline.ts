@@ -19,8 +19,7 @@ export type ShiftTimelineNode = {
 	event: ShiftTimelineEvent;
 };
 
-export type ShiftEventKind =
-	CreateOncallShiftAnnotationRequestAttributes["event_kind"];
+export type ShiftEventKind = CreateOncallShiftAnnotationRequestAttributes["event_kind"];
 
 export type ShiftTimelineEvent = {
 	eventId: string;
@@ -87,17 +86,11 @@ export const createTimeline = (
 	const timeline: ShiftTimelineNode[] = [];
 
 	const merged: MergedEvent[] = [];
-	incidents.forEach((incident) =>
-		merged.push({ timestamp: incident.attributes.opened_at, incident })
-	);
-	alerts.forEach((alert) =>
-		merged.push({ timestamp: alert.attributes.occurred_at, alert })
-	);
+	incidents.forEach((incident) => merged.push({ timestamp: incident.attributes.opened_at, incident }));
+	alerts.forEach((alert) => merged.push({ timestamp: alert.attributes.occurred_at, alert }));
 	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurred_at), annotation}));
 
-	const sorted = merged.toSorted((a, b) =>
-		a.timestamp < b.timestamp ? 1 : -1
-	);
+	const sorted = merged.toSorted((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
 
 	for (let i = 0; i < sorted.length; i++) {
 		const event = convertMergedEvent(sorted[i]);
@@ -112,8 +105,7 @@ export const createTimeline = (
 		// }
 		// if (event.kind === "incident") href = `/incidents/${event.eventId}`;
 		let height = 80;
-		if (i < sorted.length - 1)
-			height = getIntervalHeight(sorted[i], sorted[i + 1]);
+		if (i < sorted.length - 1) height = getIntervalHeight(sorted[i], sorted[i + 1]);
 		timeline.push({ event, height });
 	}
 

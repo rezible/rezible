@@ -12,12 +12,7 @@
 	} from "$lib/api";
 	import EditableListGroup from "$components/editable-list/EditableList.svelte";
 	import type { EditorSnippetProps } from "$features/settings/components/mutating-table";
-	import {
-		SelectField,
-		ToggleGroup,
-		ToggleOption,
-		type MenuOption,
-	} from "svelte-ux";
+	import { SelectField, ToggleGroup, ToggleOption, type MenuOption } from "svelte-ux";
 
 	type Props = EditorSnippetProps<IncidentFieldOptions>;
 	const { id, value, onUpdate }: Props = $props();
@@ -39,9 +34,7 @@
 	let derivationSource = $state<string>();
 
 	const valueChanged = () => {
-		let options:
-			| CreateIncidentFieldOptionAttributes[]
-			| UpdateIncidentFieldOptionAttributes[] = [];
+		let options: CreateIncidentFieldOptionAttributes[] | UpdateIncidentFieldOptionAttributes[] = [];
 		if (optionsType === "custom") {
 			options = customOptions.map((o) => ({
 				id: o.value.length > 0 ? o.value : undefined,
@@ -51,9 +44,7 @@
 			}));
 		} else if (optionsType === "derived" && !!derivationSource) {
 			if (creating) {
-				options = [
-					{ field_option_type: "derived", value: derivationSource },
-				];
+				options = [{ field_option_type: "derived", value: derivationSource }];
 			} else {
 				options = [
 					{
@@ -73,10 +64,7 @@
 
 	const customOptionAdded = (e: CustomEvent) => {
 		const val = e.detail as string;
-		customOptions = [
-			...customOptions,
-			{ label: val, value: "", archived: false },
-		];
+		customOptions = [...customOptions, { label: val, value: "", archived: false }];
 		console.log("add custom options");
 		valueChanged();
 	};
@@ -100,11 +88,7 @@
 	<div class="border p-2">
 		<div class="mb-2">
 			<span>Type:</span>
-			<ToggleGroup
-				variant="outline"
-				bind:value={optionsType}
-				classes={{ root: "w-64" }}
-			>
+			<ToggleGroup variant="outline" bind:value={optionsType} classes={{ root: "w-64" }}>
 				{#each optionTypes as opt}
 					<ToggleOption value={opt}>{opt}</ToggleOption>
 				{/each}

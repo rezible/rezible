@@ -21,8 +21,8 @@
 	const active = $derived(!!top && !!left);
 
 	const deleteNode = () => {
-		nodes.set($nodes.filter(({id}) => id !== nodeId));
-		edges.set($edges.filter(({source, target}) => source !== nodeId && target !== nodeId));
+		nodes.set($nodes.filter(({ id }) => id !== nodeId));
+		edges.set($edges.filter(({ source, target }) => source !== nodeId && target !== nodeId));
 	};
 </script>
 
@@ -55,9 +55,7 @@
 {/snippet}
 
 {#snippet paneMenu()}
-	<p style="margin: 0.5em;">
-		pane menu
-	</p>
+	<p style="margin: 0.5em;">pane menu</p>
 {/snippet}
 
 <style>

@@ -39,22 +39,16 @@ const createAnalysisState = () => {
 		);
 	};
 
-	const setComponentDialogOpen = (
-		open: boolean,
-		editComponent?: SystemAnalysisComponent
-	) => {
+	const setComponentDialogOpen = (open: boolean, editComponent?: SystemAnalysisComponent) => {
 		componentDialogOpen = open;
 		editingComponent = editComponent;
 	};
 
 	const setAddingComponent = (c?: SystemAnalysisComponent) => {
 		addingComponent = c;
-	}
+	};
 
-	const setRelationshipDialogOpen = (
-		open: boolean,
-		editRel?: SystemAnalysisRelationship
-	) => {
+	const setRelationshipDialogOpen = (open: boolean, editRel?: SystemAnalysisRelationship) => {
 		relationshipDialogOpen = open;
 		editingRelationship = editRel;
 	};

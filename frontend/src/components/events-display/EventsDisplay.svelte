@@ -23,9 +23,7 @@
 		for (let i = 0; i < 7; i++) {
 			const date = new Date(currentDate);
 			date.setDate(currentDate.getDate() + i);
-			const dayEvents = events.filter((event) =>
-				isSameDay(event.start, date)
-			);
+			const dayEvents = events.filter((event) => isSameDay(event.start, date));
 			days.push({ date, dayEvents });
 		}
 		return days;
@@ -50,9 +48,7 @@
 
 <div class="grid grid-cols-7 gap-1 p-2 bg-surface-100">
 	{#each weekDays as day}
-		<div
-			class="surface-100 border rounded-container-token p-2 min-h-[120px]"
-		>
+		<div class="surface-100 border rounded-container-token p-2 min-h-[120px]">
 			<div class="text-xs font-medium text-surface-600 mb-2">
 				{getDayName(day.date)}
 				{day.date.getDate()}

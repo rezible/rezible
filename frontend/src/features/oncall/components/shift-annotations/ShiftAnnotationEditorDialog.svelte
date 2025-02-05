@@ -22,12 +22,7 @@
 		open: boolean;
 		onCreated: VoidFunction;
 	};
-	let {
-		shiftId,
-		annotatedEventIds,
-		open = $bindable(),
-		onCreated,
-	}: Props = $props();
+	let { shiftId, annotatedEventIds, open = $bindable(), onCreated }: Props = $props();
 
 	const incidentsQuery = createQuery(() => ({
 		...listOncallShiftIncidentsOptions({ path: { id: shiftId } }),
@@ -41,9 +36,7 @@
 	}));
 	const alerts = $derived(alertsQuery.data?.data);
 
-	const timeline = $derived(
-		createTimeline(annotatedEventIds, incidents, alerts)
-	);
+	const timeline = $derived(createTimeline(annotatedEventIds, incidents, alerts));
 
 	type DraftAnnotation = {
 		event: ShiftTimelineEvent;
@@ -103,11 +96,7 @@
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title={!!draftAnnotation ? "Annotating Event" : "Shift Events"}>
 			<svelte:fragment slot="actions">
-				<Button
-					on:click={() => close({ force: true })}
-					iconOnly
-					icon={mdiClose}
-				/>
+				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
 			</svelte:fragment>
 		</Header>
 	</div>
@@ -143,9 +132,7 @@
 			</div>
 		{:else}
 			<div class="border-b pb-2">
-				<Button variant="fill-light"
-					>Filter <Icon data={mdiFilter} /></Button
-				>
+				<Button variant="fill-light">Filter <Icon data={mdiFilter} /></Button>
 			</div>
 
 			{#if timeline.length == 0}
@@ -175,15 +162,10 @@
 		</div>
 
 		<div class="items-center static z-10">
-			<Icon
-				data={icon}
-				classes={{ root: "bg-accent-900 rounded-full p-2 w-auto h-10" }}
-			/>
+			<Icon data={icon} classes={{ root: "bg-accent-900 rounded-full p-2 w-auto h-10" }} />
 		</div>
 
-		<div
-			class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2"
-		>
+		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
 			<div class="leading-none">{event.title}</div>
 			<div class="place-self-end">
 				<Button

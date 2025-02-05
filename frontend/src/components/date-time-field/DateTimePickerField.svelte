@@ -45,23 +45,15 @@
 	let value = $state(getTimes(current));
 
 	const periodType = PeriodType.Day;
-	const primaryFormat = [
-		DateToken.Month_long,
-		DateToken.DayOfMonth_withOrdinal,
-		DateToken.Year_numeric,
-	];
+	const primaryFormat = [DateToken.Month_long, DateToken.DayOfMonth_withOrdinal, DateToken.Year_numeric];
 	let secondaryFormat = DateToken.DayOfWeek_long;
 
 	const pad = (n: number) => String(n).padStart(2, "0");
 
 	const formatHourMinute = $derived(`${value.hour}:${pad(value.minute)}`);
 	const formatTime = $derived(formatHourMinute + value.amPm);
-	const formatDayOfWeek = $derived(
-		$format(value.date, PeriodType.Day, { custom: secondaryFormat })
-	);
-	const formatDate = $derived(
-		$format(value.date, PeriodType.Day, { custom: primaryFormat })
-	);
+	const formatDayOfWeek = $derived($format(value.date, PeriodType.Day, { custom: secondaryFormat }));
+	const formatDate = $derived($format(value.date, PeriodType.Day, { custom: primaryFormat }));
 
 	const convertHour24 = () => {
 		const hour = value.hour === 12 ? 0 : value.hour;
@@ -147,10 +139,7 @@
 					<select class={selectClasses} bind:value={value.hour}>
 						{#each ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"] as h}
 							{@const hourNum = Number.parseInt(h)}
-							<option
-								selected={value.hour === hourNum}
-								value={hourNum}>{h}</option
-							>
+							<option selected={value.hour === hourNum} value={hourNum}>{h}</option>
 						{/each}
 					</select>
 
@@ -159,19 +148,14 @@
 					<select class={selectClasses} bind:value={value.minute}>
 						{#each ["00", "15", "30", "45"] as m}
 							{@const minuteNum = Number.parseInt(m)}
-							<option
-								selected={value.minute === minuteNum}
-								value={minuteNum}>{m}</option
-							>
+							<option selected={value.minute === minuteNum} value={minuteNum}>{m}</option>
 						{/each}
 					</select>
 				{/if}
 
 				<select class={selectClasses} bind:value={value.amPm}>
-					<option selected={value.amPm === "am"} value="am">AM</option
-					>
-					<option selected={value.amPm === "pm"} value="pm">PM</option
-					>
+					<option selected={value.amPm === "am"} value="am">AM</option>
+					<option selected={value.amPm === "pm"} value="pm">PM</option>
 				</select>
 			</div>
 		</div>

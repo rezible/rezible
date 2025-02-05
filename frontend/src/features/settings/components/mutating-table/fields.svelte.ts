@@ -18,9 +18,7 @@ type BaseField<T> = {
 
 export type Field = BaseField<any>;
 
-export type SelectFieldOptions =
-	| MenuOption<string>[]
-	| ListQueryOptionsFunc<any>;
+export type SelectFieldOptions = MenuOption<string>[] | ListQueryOptionsFunc<any>;
 
 type SelectFieldValueType = string | string[] | undefined;
 export type SelectField<T extends SelectFieldValueType> = BaseField<T> & {
@@ -33,17 +31,15 @@ export const unwrappedSchema = (s: z.ZodTypeAny): z.ZodTypeAny => {
 	if (s instanceof z.ZodNullable) return unwrappedSchema(s.unwrap());
 	return s;
 };
-export const isSelectField = (
-	f: Field
-): f is SelectField<SelectFieldValueType> => "options" in f;
+export const isSelectField = (f: Field): f is SelectField<SelectFieldValueType> => "options" in f;
 
 // export type FormFields = { [name: string]: Field };
 export type FormFields = Record<string, BaseField<any>>;
 
-export const makeField = <T>(
-	label: string,
-	schema: z.ZodType<T>
-): BaseField<T> => ({ label, schema });
+export const makeField = <T>(label: string, schema: z.ZodType<T>): BaseField<T> => ({
+	label,
+	schema,
+});
 
 export const makeSelectField = <T extends SelectFieldValueType>(
 	label: string,

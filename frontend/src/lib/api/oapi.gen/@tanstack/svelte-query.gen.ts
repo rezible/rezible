@@ -518,13 +518,11 @@ const createQueryKey = <TOptions extends OptionsLegacyParser>(
 	return params;
 };
 
-export const listDebriefQuestionsQueryKey = (
-	options?: OptionsLegacyParser<ListDebriefQuestionsData>
-) => [createQueryKey("listDebriefQuestions", options)];
+export const listDebriefQuestionsQueryKey = (options?: OptionsLegacyParser<ListDebriefQuestionsData>) => [
+	createQueryKey("listDebriefQuestions", options),
+];
 
-export const listDebriefQuestionsOptions = (
-	options?: OptionsLegacyParser<ListDebriefQuestionsData>
-) => {
+export const listDebriefQuestionsOptions = (options?: OptionsLegacyParser<ListDebriefQuestionsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listDebriefQuestions({
@@ -540,10 +538,7 @@ export const listDebriefQuestionsOptions = (
 };
 
 const createInfiniteParams = <
-	K extends Pick<
-		QueryKey<OptionsLegacyParser>[0],
-		"body" | "headers" | "path" | "query"
-	>,
+	K extends Pick<QueryKey<OptionsLegacyParser>[0], "body" | "headers" | "path" | "query">,
 >(
 	queryKey: QueryKey<OptionsLegacyParser>,
 	page: K
@@ -625,13 +620,11 @@ export const listDebriefQuestionsInfiniteOptions = (
 	);
 };
 
-export const createDebriefQuestionQueryKey = (
-	options: OptionsLegacyParser<CreateDebriefQuestionData>
-) => [createQueryKey("createDebriefQuestion", options)];
+export const createDebriefQuestionQueryKey = (options: OptionsLegacyParser<CreateDebriefQuestionData>) => [
+	createQueryKey("createDebriefQuestion", options),
+];
 
-export const createDebriefQuestionOptions = (
-	options: OptionsLegacyParser<CreateDebriefQuestionData>
-) => {
+export const createDebriefQuestionOptions = (options: OptionsLegacyParser<CreateDebriefQuestionData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createDebriefQuestion({
@@ -666,13 +659,11 @@ export const createDebriefQuestionMutation = (
 	return mutationOptions;
 };
 
-export const getDebriefQuestionQueryKey = (
-	options: OptionsLegacyParser<GetDebriefQuestionData>
-) => [createQueryKey("getDebriefQuestion", options)];
+export const getDebriefQuestionQueryKey = (options: OptionsLegacyParser<GetDebriefQuestionData>) => [
+	createQueryKey("getDebriefQuestion", options),
+];
 
-export const getDebriefQuestionOptions = (
-	options: OptionsLegacyParser<GetDebriefQuestionData>
-) => {
+export const getDebriefQuestionOptions = (options: OptionsLegacyParser<GetDebriefQuestionData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getDebriefQuestion({
@@ -809,13 +800,11 @@ export const verifyDocumentEditorSessionMutation = (
 	return mutationOptions;
 };
 
-export const listEnvironmentsQueryKey = (
-	options?: OptionsLegacyParser<ListEnvironmentsData>
-) => [createQueryKey("listEnvironments", options)];
+export const listEnvironmentsQueryKey = (options?: OptionsLegacyParser<ListEnvironmentsData>) => [
+	createQueryKey("listEnvironments", options),
+];
 
-export const listEnvironmentsOptions = (
-	options?: OptionsLegacyParser<ListEnvironmentsData>
-) => {
+export const listEnvironmentsOptions = (options?: OptionsLegacyParser<ListEnvironmentsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listEnvironments({
@@ -832,23 +821,16 @@ export const listEnvironmentsOptions = (
 
 export const listEnvironmentsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListEnvironmentsData>
-): QueryKey<OptionsLegacyParser<ListEnvironmentsData>> => [
-	createQueryKey("listEnvironments", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListEnvironmentsData>> => [createQueryKey("listEnvironments", options, true)];
 
-export const listEnvironmentsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListEnvironmentsData>
-) => {
+export const listEnvironmentsInfiniteOptions = (options?: OptionsLegacyParser<ListEnvironmentsData>) => {
 	return infiniteQueryOptions<
 		ListEnvironmentsResponse,
 		ListEnvironmentsError,
 		InfiniteData<ListEnvironmentsResponse>,
 		QueryKey<OptionsLegacyParser<ListEnvironmentsData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListEnvironmentsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListEnvironmentsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -879,13 +861,11 @@ export const listEnvironmentsInfiniteOptions = (
 	);
 };
 
-export const createEnvironmentQueryKey = (
-	options: OptionsLegacyParser<CreateEnvironmentData>
-) => [createQueryKey("createEnvironment", options)];
+export const createEnvironmentQueryKey = (options: OptionsLegacyParser<CreateEnvironmentData>) => [
+	createQueryKey("createEnvironment", options),
+];
 
-export const createEnvironmentOptions = (
-	options: OptionsLegacyParser<CreateEnvironmentData>
-) => {
+export const createEnvironmentOptions = (options: OptionsLegacyParser<CreateEnvironmentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createEnvironment({
@@ -900,9 +880,7 @@ export const createEnvironmentOptions = (
 	});
 };
 
-export const createEnvironmentMutation = (
-	options?: Partial<OptionsLegacyParser<CreateEnvironmentData>>
-) => {
+export const createEnvironmentMutation = (options?: Partial<OptionsLegacyParser<CreateEnvironmentData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateEnvironmentResponse,
 		CreateEnvironmentError,
@@ -920,13 +898,11 @@ export const createEnvironmentMutation = (
 	return mutationOptions;
 };
 
-export const getEnvironmentQueryKey = (
-	options: OptionsLegacyParser<GetEnvironmentData>
-) => [createQueryKey("getEnvironment", options)];
+export const getEnvironmentQueryKey = (options: OptionsLegacyParser<GetEnvironmentData>) => [
+	createQueryKey("getEnvironment", options),
+];
 
-export const getEnvironmentOptions = (
-	options: OptionsLegacyParser<GetEnvironmentData>
-) => {
+export const getEnvironmentOptions = (options: OptionsLegacyParser<GetEnvironmentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getEnvironment({
@@ -961,9 +937,7 @@ export const archiveEnvironmentMutation = (
 	return mutationOptions;
 };
 
-export const updateEnvironmentMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateEnvironmentData>>
-) => {
+export const updateEnvironmentMutation = (options?: Partial<OptionsLegacyParser<UpdateEnvironmentData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateEnvironmentResponse,
 		UpdateEnvironmentError,
@@ -981,13 +955,11 @@ export const updateEnvironmentMutation = (
 	return mutationOptions;
 };
 
-export const listFunctionalitiesQueryKey = (
-	options?: OptionsLegacyParser<ListFunctionalitiesData>
-) => [createQueryKey("listFunctionalities", options)];
+export const listFunctionalitiesQueryKey = (options?: OptionsLegacyParser<ListFunctionalitiesData>) => [
+	createQueryKey("listFunctionalities", options),
+];
 
-export const listFunctionalitiesOptions = (
-	options?: OptionsLegacyParser<ListFunctionalitiesData>
-) => {
+export const listFunctionalitiesOptions = (options?: OptionsLegacyParser<ListFunctionalitiesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listFunctionalities({
@@ -1051,13 +1023,11 @@ export const listFunctionalitiesInfiniteOptions = (
 	);
 };
 
-export const createFunctionalityQueryKey = (
-	options: OptionsLegacyParser<CreateFunctionalityData>
-) => [createQueryKey("createFunctionality", options)];
+export const createFunctionalityQueryKey = (options: OptionsLegacyParser<CreateFunctionalityData>) => [
+	createQueryKey("createFunctionality", options),
+];
 
-export const createFunctionalityOptions = (
-	options: OptionsLegacyParser<CreateFunctionalityData>
-) => {
+export const createFunctionalityOptions = (options: OptionsLegacyParser<CreateFunctionalityData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createFunctionality({
@@ -1092,13 +1062,11 @@ export const createFunctionalityMutation = (
 	return mutationOptions;
 };
 
-export const getFunctionalityQueryKey = (
-	options: OptionsLegacyParser<GetFunctionalityData>
-) => [createQueryKey("getFunctionality", options)];
+export const getFunctionalityQueryKey = (options: OptionsLegacyParser<GetFunctionalityData>) => [
+	createQueryKey("getFunctionality", options),
+];
 
-export const getFunctionalityOptions = (
-	options: OptionsLegacyParser<GetFunctionalityData>
-) => {
+export const getFunctionalityOptions = (options: OptionsLegacyParser<GetFunctionalityData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getFunctionality({
@@ -1153,13 +1121,11 @@ export const updateFunctionalityMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentDebriefQueryKey = (
-	options: OptionsLegacyParser<GetIncidentDebriefData>
-) => [createQueryKey("getIncidentDebrief", options)];
+export const getIncidentDebriefQueryKey = (options: OptionsLegacyParser<GetIncidentDebriefData>) => [
+	createQueryKey("getIncidentDebrief", options),
+];
 
-export const getIncidentDebriefOptions = (
-	options: OptionsLegacyParser<GetIncidentDebriefData>
-) => {
+export const getIncidentDebriefOptions = (options: OptionsLegacyParser<GetIncidentDebriefData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentDebrief({
@@ -1194,13 +1160,11 @@ export const updateIncidentDebriefMutation = (
 	return mutationOptions;
 };
 
-export const listDebriefMessagesQueryKey = (
-	options: OptionsLegacyParser<ListDebriefMessagesData>
-) => [createQueryKey("listDebriefMessages", options)];
+export const listDebriefMessagesQueryKey = (options: OptionsLegacyParser<ListDebriefMessagesData>) => [
+	createQueryKey("listDebriefMessages", options),
+];
 
-export const listDebriefMessagesOptions = (
-	options: OptionsLegacyParser<ListDebriefMessagesData>
-) => {
+export const listDebriefMessagesOptions = (options: OptionsLegacyParser<ListDebriefMessagesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listDebriefMessages({
@@ -1221,9 +1185,7 @@ export const listDebriefMessagesInfiniteQueryKey = (
 	createQueryKey("listDebriefMessages", options, true),
 ];
 
-export const listDebriefMessagesInfiniteOptions = (
-	options: OptionsLegacyParser<ListDebriefMessagesData>
-) => {
+export const listDebriefMessagesInfiniteOptions = (options: OptionsLegacyParser<ListDebriefMessagesData>) => {
 	return infiniteQueryOptions<
 		ListDebriefMessagesResponse,
 		ListDebriefMessagesError,
@@ -1305,13 +1267,11 @@ export const addIncidentDebriefUserMessageMutation = (
 	return mutationOptions;
 };
 
-export const listDebriefSuggestionsQueryKey = (
-	options: OptionsLegacyParser<ListDebriefSuggestionsData>
-) => [createQueryKey("listDebriefSuggestions", options)];
+export const listDebriefSuggestionsQueryKey = (options: OptionsLegacyParser<ListDebriefSuggestionsData>) => [
+	createQueryKey("listDebriefSuggestions", options),
+];
 
-export const listDebriefSuggestionsOptions = (
-	options: OptionsLegacyParser<ListDebriefSuggestionsData>
-) => {
+export const listDebriefSuggestionsOptions = (options: OptionsLegacyParser<ListDebriefSuggestionsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listDebriefSuggestions({
@@ -1351,9 +1311,7 @@ export const listDebriefSuggestionsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListDebriefSuggestionsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListDebriefSuggestionsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -1377,13 +1335,11 @@ export const listDebriefSuggestionsInfiniteOptions = (
 	);
 };
 
-export const listIncidentFieldsQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentFieldsData>
-) => [createQueryKey("listIncidentFields", options)];
+export const listIncidentFieldsQueryKey = (options?: OptionsLegacyParser<ListIncidentFieldsData>) => [
+	createQueryKey("listIncidentFields", options),
+];
 
-export const listIncidentFieldsOptions = (
-	options?: OptionsLegacyParser<ListIncidentFieldsData>
-) => {
+export const listIncidentFieldsOptions = (options?: OptionsLegacyParser<ListIncidentFieldsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentFields({
@@ -1404,9 +1360,7 @@ export const listIncidentFieldsInfiniteQueryKey = (
 	createQueryKey("listIncidentFields", options, true),
 ];
 
-export const listIncidentFieldsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIncidentFieldsData>
-) => {
+export const listIncidentFieldsInfiniteOptions = (options?: OptionsLegacyParser<ListIncidentFieldsData>) => {
 	return infiniteQueryOptions<
 		ListIncidentFieldsResponse,
 		ListIncidentFieldsError,
@@ -1447,13 +1401,11 @@ export const listIncidentFieldsInfiniteOptions = (
 	);
 };
 
-export const createIncidentFieldQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentFieldData>
-) => [createQueryKey("createIncidentField", options)];
+export const createIncidentFieldQueryKey = (options: OptionsLegacyParser<CreateIncidentFieldData>) => [
+	createQueryKey("createIncidentField", options),
+];
 
-export const createIncidentFieldOptions = (
-	options: OptionsLegacyParser<CreateIncidentFieldData>
-) => {
+export const createIncidentFieldOptions = (options: OptionsLegacyParser<CreateIncidentFieldData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentField({
@@ -1488,13 +1440,11 @@ export const createIncidentFieldMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentFieldQueryKey = (
-	options: OptionsLegacyParser<GetIncidentFieldData>
-) => [createQueryKey("getIncidentField", options)];
+export const getIncidentFieldQueryKey = (options: OptionsLegacyParser<GetIncidentFieldData>) => [
+	createQueryKey("getIncidentField", options),
+];
 
-export const getIncidentFieldOptions = (
-	options: OptionsLegacyParser<GetIncidentFieldData>
-) => {
+export const getIncidentFieldOptions = (options: OptionsLegacyParser<GetIncidentFieldData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentField({
@@ -1589,13 +1539,11 @@ export const updateIncidentMilestoneMutation = (
 	return mutationOptions;
 };
 
-export const listIncidentRolesQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentRolesData>
-) => [createQueryKey("listIncidentRoles", options)];
+export const listIncidentRolesQueryKey = (options?: OptionsLegacyParser<ListIncidentRolesData>) => [
+	createQueryKey("listIncidentRoles", options),
+];
 
-export const listIncidentRolesOptions = (
-	options?: OptionsLegacyParser<ListIncidentRolesData>
-) => {
+export const listIncidentRolesOptions = (options?: OptionsLegacyParser<ListIncidentRolesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentRoles({
@@ -1616,19 +1564,14 @@ export const listIncidentRolesInfiniteQueryKey = (
 	createQueryKey("listIncidentRoles", options, true),
 ];
 
-export const listIncidentRolesInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIncidentRolesData>
-) => {
+export const listIncidentRolesInfiniteOptions = (options?: OptionsLegacyParser<ListIncidentRolesData>) => {
 	return infiniteQueryOptions<
 		ListIncidentRolesResponse,
 		ListIncidentRolesError,
 		InfiniteData<ListIncidentRolesResponse>,
 		QueryKey<OptionsLegacyParser<ListIncidentRolesData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListIncidentRolesData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListIncidentRolesData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -1659,13 +1602,11 @@ export const listIncidentRolesInfiniteOptions = (
 	);
 };
 
-export const createIncidentRoleQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentRoleData>
-) => [createQueryKey("createIncidentRole", options)];
+export const createIncidentRoleQueryKey = (options: OptionsLegacyParser<CreateIncidentRoleData>) => [
+	createQueryKey("createIncidentRole", options),
+];
 
-export const createIncidentRoleOptions = (
-	options: OptionsLegacyParser<CreateIncidentRoleData>
-) => {
+export const createIncidentRoleOptions = (options: OptionsLegacyParser<CreateIncidentRoleData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentRole({
@@ -1700,13 +1641,11 @@ export const createIncidentRoleMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentRoleQueryKey = (
-	options: OptionsLegacyParser<GetIncidentRoleData>
-) => [createQueryKey("getIncidentRole", options)];
+export const getIncidentRoleQueryKey = (options: OptionsLegacyParser<GetIncidentRoleData>) => [
+	createQueryKey("getIncidentRole", options),
+];
 
-export const getIncidentRoleOptions = (
-	options: OptionsLegacyParser<GetIncidentRoleData>
-) => {
+export const getIncidentRoleOptions = (options: OptionsLegacyParser<GetIncidentRoleData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentRole({
@@ -1761,13 +1700,11 @@ export const updateIncidentRoleMutation = (
 	return mutationOptions;
 };
 
-export const listIncidentSeveritiesQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentSeveritiesData>
-) => [createQueryKey("listIncidentSeverities", options)];
+export const listIncidentSeveritiesQueryKey = (options?: OptionsLegacyParser<ListIncidentSeveritiesData>) => [
+	createQueryKey("listIncidentSeverities", options),
+];
 
-export const listIncidentSeveritiesOptions = (
-	options?: OptionsLegacyParser<ListIncidentSeveritiesData>
-) => {
+export const listIncidentSeveritiesOptions = (options?: OptionsLegacyParser<ListIncidentSeveritiesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentSeverities({
@@ -1807,9 +1744,7 @@ export const listIncidentSeveritiesInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListIncidentSeveritiesData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListIncidentSeveritiesData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -1833,13 +1768,11 @@ export const listIncidentSeveritiesInfiniteOptions = (
 	);
 };
 
-export const createIncidentSeverityQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentSeverityData>
-) => [createQueryKey("createIncidentSeverity", options)];
+export const createIncidentSeverityQueryKey = (options: OptionsLegacyParser<CreateIncidentSeverityData>) => [
+	createQueryKey("createIncidentSeverity", options),
+];
 
-export const createIncidentSeverityOptions = (
-	options: OptionsLegacyParser<CreateIncidentSeverityData>
-) => {
+export const createIncidentSeverityOptions = (options: OptionsLegacyParser<CreateIncidentSeverityData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentSeverity({
@@ -1874,13 +1807,11 @@ export const createIncidentSeverityMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentSeverityQueryKey = (
-	options: OptionsLegacyParser<GetIncidentSeverityData>
-) => [createQueryKey("getIncidentSeverity", options)];
+export const getIncidentSeverityQueryKey = (options: OptionsLegacyParser<GetIncidentSeverityData>) => [
+	createQueryKey("getIncidentSeverity", options),
+];
 
-export const getIncidentSeverityOptions = (
-	options: OptionsLegacyParser<GetIncidentSeverityData>
-) => {
+export const getIncidentSeverityOptions = (options: OptionsLegacyParser<GetIncidentSeverityData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentSeverity({
@@ -1935,13 +1866,11 @@ export const updateIncidentSeverityMutation = (
 	return mutationOptions;
 };
 
-export const listIncidentTagsQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentTagsData>
-) => [createQueryKey("listIncidentTags", options)];
+export const listIncidentTagsQueryKey = (options?: OptionsLegacyParser<ListIncidentTagsData>) => [
+	createQueryKey("listIncidentTags", options),
+];
 
-export const listIncidentTagsOptions = (
-	options?: OptionsLegacyParser<ListIncidentTagsData>
-) => {
+export const listIncidentTagsOptions = (options?: OptionsLegacyParser<ListIncidentTagsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentTags({
@@ -1958,23 +1887,16 @@ export const listIncidentTagsOptions = (
 
 export const listIncidentTagsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListIncidentTagsData>
-): QueryKey<OptionsLegacyParser<ListIncidentTagsData>> => [
-	createQueryKey("listIncidentTags", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListIncidentTagsData>> => [createQueryKey("listIncidentTags", options, true)];
 
-export const listIncidentTagsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIncidentTagsData>
-) => {
+export const listIncidentTagsInfiniteOptions = (options?: OptionsLegacyParser<ListIncidentTagsData>) => {
 	return infiniteQueryOptions<
 		ListIncidentTagsResponse,
 		ListIncidentTagsError,
 		InfiniteData<ListIncidentTagsResponse>,
 		QueryKey<OptionsLegacyParser<ListIncidentTagsData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListIncidentTagsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListIncidentTagsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -2005,13 +1927,11 @@ export const listIncidentTagsInfiniteOptions = (
 	);
 };
 
-export const createIncidentTagQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentTagData>
-) => [createQueryKey("createIncidentTag", options)];
+export const createIncidentTagQueryKey = (options: OptionsLegacyParser<CreateIncidentTagData>) => [
+	createQueryKey("createIncidentTag", options),
+];
 
-export const createIncidentTagOptions = (
-	options: OptionsLegacyParser<CreateIncidentTagData>
-) => {
+export const createIncidentTagOptions = (options: OptionsLegacyParser<CreateIncidentTagData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentTag({
@@ -2026,9 +1946,7 @@ export const createIncidentTagOptions = (
 	});
 };
 
-export const createIncidentTagMutation = (
-	options?: Partial<OptionsLegacyParser<CreateIncidentTagData>>
-) => {
+export const createIncidentTagMutation = (options?: Partial<OptionsLegacyParser<CreateIncidentTagData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateIncidentTagResponse,
 		CreateIncidentTagError,
@@ -2046,13 +1964,11 @@ export const createIncidentTagMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentTagQueryKey = (
-	options: OptionsLegacyParser<GetIncidentTagData>
-) => [createQueryKey("getIncidentTag", options)];
+export const getIncidentTagQueryKey = (options: OptionsLegacyParser<GetIncidentTagData>) => [
+	createQueryKey("getIncidentTag", options),
+];
 
-export const getIncidentTagOptions = (
-	options: OptionsLegacyParser<GetIncidentTagData>
-) => {
+export const getIncidentTagOptions = (options: OptionsLegacyParser<GetIncidentTagData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentTag({
@@ -2087,9 +2003,7 @@ export const archiveIncidentTagMutation = (
 	return mutationOptions;
 };
 
-export const updateIncidentTagMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateIncidentTagData>>
-) => {
+export const updateIncidentTagMutation = (options?: Partial<OptionsLegacyParser<UpdateIncidentTagData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateIncidentTagResponse,
 		UpdateIncidentTagError,
@@ -2107,13 +2021,11 @@ export const updateIncidentTagMutation = (
 	return mutationOptions;
 };
 
-export const listIncidentTypesQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentTypesData>
-) => [createQueryKey("listIncidentTypes", options)];
+export const listIncidentTypesQueryKey = (options?: OptionsLegacyParser<ListIncidentTypesData>) => [
+	createQueryKey("listIncidentTypes", options),
+];
 
-export const listIncidentTypesOptions = (
-	options?: OptionsLegacyParser<ListIncidentTypesData>
-) => {
+export const listIncidentTypesOptions = (options?: OptionsLegacyParser<ListIncidentTypesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentTypes({
@@ -2134,19 +2046,14 @@ export const listIncidentTypesInfiniteQueryKey = (
 	createQueryKey("listIncidentTypes", options, true),
 ];
 
-export const listIncidentTypesInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIncidentTypesData>
-) => {
+export const listIncidentTypesInfiniteOptions = (options?: OptionsLegacyParser<ListIncidentTypesData>) => {
 	return infiniteQueryOptions<
 		ListIncidentTypesResponse,
 		ListIncidentTypesError,
 		InfiniteData<ListIncidentTypesResponse>,
 		QueryKey<OptionsLegacyParser<ListIncidentTypesData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListIncidentTypesData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListIncidentTypesData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -2177,13 +2084,11 @@ export const listIncidentTypesInfiniteOptions = (
 	);
 };
 
-export const createIncidentTypeQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentTypeData>
-) => [createQueryKey("createIncidentType", options)];
+export const createIncidentTypeQueryKey = (options: OptionsLegacyParser<CreateIncidentTypeData>) => [
+	createQueryKey("createIncidentType", options),
+];
 
-export const createIncidentTypeOptions = (
-	options: OptionsLegacyParser<CreateIncidentTypeData>
-) => {
+export const createIncidentTypeOptions = (options: OptionsLegacyParser<CreateIncidentTypeData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentType({
@@ -2218,13 +2123,11 @@ export const createIncidentTypeMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentTypeQueryKey = (
-	options: OptionsLegacyParser<GetIncidentTypeData>
-) => [createQueryKey("getIncidentType", options)];
+export const getIncidentTypeQueryKey = (options: OptionsLegacyParser<GetIncidentTypeData>) => [
+	createQueryKey("getIncidentType", options),
+];
 
-export const getIncidentTypeOptions = (
-	options: OptionsLegacyParser<GetIncidentTypeData>
-) => {
+export const getIncidentTypeOptions = (options: OptionsLegacyParser<GetIncidentTypeData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentType({
@@ -2279,13 +2182,11 @@ export const updateIncidentTypeMutation = (
 	return mutationOptions;
 };
 
-export const listIncidentsQueryKey = (
-	options?: OptionsLegacyParser<ListIncidentsData>
-) => [createQueryKey("listIncidents", options)];
+export const listIncidentsQueryKey = (options?: OptionsLegacyParser<ListIncidentsData>) => [
+	createQueryKey("listIncidents", options),
+];
 
-export const listIncidentsOptions = (
-	options?: OptionsLegacyParser<ListIncidentsData>
-) => {
+export const listIncidentsOptions = (options?: OptionsLegacyParser<ListIncidentsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidents({
@@ -2302,23 +2203,16 @@ export const listIncidentsOptions = (
 
 export const listIncidentsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListIncidentsData>
-): QueryKey<OptionsLegacyParser<ListIncidentsData>> => [
-	createQueryKey("listIncidents", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListIncidentsData>> => [createQueryKey("listIncidents", options, true)];
 
-export const listIncidentsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIncidentsData>
-) => {
+export const listIncidentsInfiniteOptions = (options?: OptionsLegacyParser<ListIncidentsData>) => {
 	return infiniteQueryOptions<
 		ListIncidentsResponse,
 		ListIncidentsError,
 		InfiniteData<ListIncidentsResponse>,
 		QueryKey<OptionsLegacyParser<ListIncidentsData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListIncidentsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListIncidentsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -2349,13 +2243,11 @@ export const listIncidentsInfiniteOptions = (
 	);
 };
 
-export const createIncidentQueryKey = (
-	options: OptionsLegacyParser<CreateIncidentData>
-) => [createQueryKey("createIncident", options)];
+export const createIncidentQueryKey = (options: OptionsLegacyParser<CreateIncidentData>) => [
+	createQueryKey("createIncident", options),
+];
 
-export const createIncidentOptions = (
-	options: OptionsLegacyParser<CreateIncidentData>
-) => {
+export const createIncidentOptions = (options: OptionsLegacyParser<CreateIncidentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncident({
@@ -2370,9 +2262,7 @@ export const createIncidentOptions = (
 	});
 };
 
-export const createIncidentMutation = (
-	options?: Partial<OptionsLegacyParser<CreateIncidentData>>
-) => {
+export const createIncidentMutation = (options?: Partial<OptionsLegacyParser<CreateIncidentData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateIncidentResponse,
 		CreateIncidentError,
@@ -2390,13 +2280,11 @@ export const createIncidentMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentQueryKey = (
-	options: OptionsLegacyParser<GetIncidentData>
-) => [createQueryKey("getIncident", options)];
+export const getIncidentQueryKey = (options: OptionsLegacyParser<GetIncidentData>) => [
+	createQueryKey("getIncident", options),
+];
 
-export const getIncidentOptions = (
-	options: OptionsLegacyParser<GetIncidentData>
-) => {
+export const getIncidentOptions = (options: OptionsLegacyParser<GetIncidentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncident({
@@ -2411,9 +2299,7 @@ export const getIncidentOptions = (
 	});
 };
 
-export const archiveIncidentMutation = (
-	options?: Partial<OptionsLegacyParser<ArchiveIncidentData>>
-) => {
+export const archiveIncidentMutation = (options?: Partial<OptionsLegacyParser<ArchiveIncidentData>>) => {
 	const mutationOptions: MutationOptions<
 		ArchiveIncidentResponse,
 		ArchiveIncidentError,
@@ -2431,9 +2317,7 @@ export const archiveIncidentMutation = (
 	return mutationOptions;
 };
 
-export const updateIncidentMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateIncidentData>>
-) => {
+export const updateIncidentMutation = (options?: Partial<OptionsLegacyParser<UpdateIncidentData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateIncidentResponse,
 		UpdateIncidentError,
@@ -2451,13 +2335,11 @@ export const updateIncidentMutation = (
 	return mutationOptions;
 };
 
-export const getIncidentUserDebriefQueryKey = (
-	options: OptionsLegacyParser<GetIncidentUserDebriefData>
-) => [createQueryKey("getIncidentUserDebrief", options)];
+export const getIncidentUserDebriefQueryKey = (options: OptionsLegacyParser<GetIncidentUserDebriefData>) => [
+	createQueryKey("getIncidentUserDebrief", options),
+];
 
-export const getIncidentUserDebriefOptions = (
-	options: OptionsLegacyParser<GetIncidentUserDebriefData>
-) => {
+export const getIncidentUserDebriefOptions = (options: OptionsLegacyParser<GetIncidentUserDebriefData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIncidentUserDebrief({
@@ -2472,13 +2354,11 @@ export const getIncidentUserDebriefOptions = (
 	});
 };
 
-export const listIncidentMilestonesQueryKey = (
-	options: OptionsLegacyParser<ListIncidentMilestonesData>
-) => [createQueryKey("listIncidentMilestones", options)];
+export const listIncidentMilestonesQueryKey = (options: OptionsLegacyParser<ListIncidentMilestonesData>) => [
+	createQueryKey("listIncidentMilestones", options),
+];
 
-export const listIncidentMilestonesOptions = (
-	options: OptionsLegacyParser<ListIncidentMilestonesData>
-) => {
+export const listIncidentMilestonesOptions = (options: OptionsLegacyParser<ListIncidentMilestonesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIncidentMilestones({
@@ -2497,9 +2377,7 @@ export const createIncidentMilestoneQueryKey = (
 	options: OptionsLegacyParser<CreateIncidentMilestoneData>
 ) => [createQueryKey("createIncidentMilestone", options)];
 
-export const createIncidentMilestoneOptions = (
-	options: OptionsLegacyParser<CreateIncidentMilestoneData>
-) => {
+export const createIncidentMilestoneOptions = (options: OptionsLegacyParser<CreateIncidentMilestoneData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIncidentMilestone({
@@ -2555,13 +2433,11 @@ export const getRetrospectiveForIncidentOptions = (
 	});
 };
 
-export const listIntegrationsQueryKey = (
-	options?: OptionsLegacyParser<ListIntegrationsData>
-) => [createQueryKey("listIntegrations", options)];
+export const listIntegrationsQueryKey = (options?: OptionsLegacyParser<ListIntegrationsData>) => [
+	createQueryKey("listIntegrations", options),
+];
 
-export const listIntegrationsOptions = (
-	options?: OptionsLegacyParser<ListIntegrationsData>
-) => {
+export const listIntegrationsOptions = (options?: OptionsLegacyParser<ListIntegrationsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listIntegrations({
@@ -2578,23 +2454,16 @@ export const listIntegrationsOptions = (
 
 export const listIntegrationsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListIntegrationsData>
-): QueryKey<OptionsLegacyParser<ListIntegrationsData>> => [
-	createQueryKey("listIntegrations", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListIntegrationsData>> => [createQueryKey("listIntegrations", options, true)];
 
-export const listIntegrationsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListIntegrationsData>
-) => {
+export const listIntegrationsInfiniteOptions = (options?: OptionsLegacyParser<ListIntegrationsData>) => {
 	return infiniteQueryOptions<
 		ListIntegrationsResponse,
 		ListIntegrationsError,
 		InfiniteData<ListIntegrationsResponse>,
 		QueryKey<OptionsLegacyParser<ListIntegrationsData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListIntegrationsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListIntegrationsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -2625,13 +2494,11 @@ export const listIntegrationsInfiniteOptions = (
 	);
 };
 
-export const createIntegrationQueryKey = (
-	options: OptionsLegacyParser<CreateIntegrationData>
-) => [createQueryKey("createIntegration", options)];
+export const createIntegrationQueryKey = (options: OptionsLegacyParser<CreateIntegrationData>) => [
+	createQueryKey("createIntegration", options),
+];
 
-export const createIntegrationOptions = (
-	options: OptionsLegacyParser<CreateIntegrationData>
-) => {
+export const createIntegrationOptions = (options: OptionsLegacyParser<CreateIntegrationData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createIntegration({
@@ -2646,9 +2513,7 @@ export const createIntegrationOptions = (
 	});
 };
 
-export const createIntegrationMutation = (
-	options?: Partial<OptionsLegacyParser<CreateIntegrationData>>
-) => {
+export const createIntegrationMutation = (options?: Partial<OptionsLegacyParser<CreateIntegrationData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateIntegrationResponse,
 		CreateIntegrationError,
@@ -2666,13 +2531,11 @@ export const createIntegrationMutation = (
 	return mutationOptions;
 };
 
-export const getIntegrationQueryKey = (
-	options: OptionsLegacyParser<GetIntegrationData>
-) => [createQueryKey("getIntegration", options)];
+export const getIntegrationQueryKey = (options: OptionsLegacyParser<GetIntegrationData>) => [
+	createQueryKey("getIntegration", options),
+];
 
-export const getIntegrationOptions = (
-	options: OptionsLegacyParser<GetIntegrationData>
-) => {
+export const getIntegrationOptions = (options: OptionsLegacyParser<GetIntegrationData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getIntegration({
@@ -2707,9 +2570,7 @@ export const archiveIntegrationMutation = (
 	return mutationOptions;
 };
 
-export const updateIntegrationMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateIntegrationData>>
-) => {
+export const updateIntegrationMutation = (options?: Partial<OptionsLegacyParser<UpdateIntegrationData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateIntegrationResponse,
 		UpdateIntegrationError,
@@ -2727,13 +2588,11 @@ export const updateIntegrationMutation = (
 	return mutationOptions;
 };
 
-export const listMeetingSchedulesQueryKey = (
-	options?: OptionsLegacyParser<ListMeetingSchedulesData>
-) => [createQueryKey("listMeetingSchedules", options)];
+export const listMeetingSchedulesQueryKey = (options?: OptionsLegacyParser<ListMeetingSchedulesData>) => [
+	createQueryKey("listMeetingSchedules", options),
+];
 
-export const listMeetingSchedulesOptions = (
-	options?: OptionsLegacyParser<ListMeetingSchedulesData>
-) => {
+export const listMeetingSchedulesOptions = (options?: OptionsLegacyParser<ListMeetingSchedulesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listMeetingSchedules({
@@ -2797,13 +2656,11 @@ export const listMeetingSchedulesInfiniteOptions = (
 	);
 };
 
-export const createMeetingScheduleQueryKey = (
-	options: OptionsLegacyParser<CreateMeetingScheduleData>
-) => [createQueryKey("createMeetingSchedule", options)];
+export const createMeetingScheduleQueryKey = (options: OptionsLegacyParser<CreateMeetingScheduleData>) => [
+	createQueryKey("createMeetingSchedule", options),
+];
 
-export const createMeetingScheduleOptions = (
-	options: OptionsLegacyParser<CreateMeetingScheduleData>
-) => {
+export const createMeetingScheduleOptions = (options: OptionsLegacyParser<CreateMeetingScheduleData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createMeetingSchedule({
@@ -2838,13 +2695,11 @@ export const createMeetingScheduleMutation = (
 	return mutationOptions;
 };
 
-export const getMeetingScheduleQueryKey = (
-	options: OptionsLegacyParser<GetMeetingScheduleData>
-) => [createQueryKey("getMeetingSchedule", options)];
+export const getMeetingScheduleQueryKey = (options: OptionsLegacyParser<GetMeetingScheduleData>) => [
+	createQueryKey("getMeetingSchedule", options),
+];
 
-export const getMeetingScheduleOptions = (
-	options: OptionsLegacyParser<GetMeetingScheduleData>
-) => {
+export const getMeetingScheduleOptions = (options: OptionsLegacyParser<GetMeetingScheduleData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getMeetingSchedule({
@@ -2899,13 +2754,11 @@ export const updateMeetingScheduleMutation = (
 	return mutationOptions;
 };
 
-export const listMeetingSessionsQueryKey = (
-	options?: OptionsLegacyParser<ListMeetingSessionsData>
-) => [createQueryKey("listMeetingSessions", options)];
+export const listMeetingSessionsQueryKey = (options?: OptionsLegacyParser<ListMeetingSessionsData>) => [
+	createQueryKey("listMeetingSessions", options),
+];
 
-export const listMeetingSessionsOptions = (
-	options?: OptionsLegacyParser<ListMeetingSessionsData>
-) => {
+export const listMeetingSessionsOptions = (options?: OptionsLegacyParser<ListMeetingSessionsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listMeetingSessions({
@@ -2969,13 +2822,11 @@ export const listMeetingSessionsInfiniteOptions = (
 	);
 };
 
-export const createMeetingSessionQueryKey = (
-	options: OptionsLegacyParser<CreateMeetingSessionData>
-) => [createQueryKey("createMeetingSession", options)];
+export const createMeetingSessionQueryKey = (options: OptionsLegacyParser<CreateMeetingSessionData>) => [
+	createQueryKey("createMeetingSession", options),
+];
 
-export const createMeetingSessionOptions = (
-	options: OptionsLegacyParser<CreateMeetingSessionData>
-) => {
+export const createMeetingSessionOptions = (options: OptionsLegacyParser<CreateMeetingSessionData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createMeetingSession({
@@ -3010,13 +2861,11 @@ export const createMeetingSessionMutation = (
 	return mutationOptions;
 };
 
-export const getMeetingSessionQueryKey = (
-	options: OptionsLegacyParser<GetMeetingSessionData>
-) => [createQueryKey("getMeetingSession", options)];
+export const getMeetingSessionQueryKey = (options: OptionsLegacyParser<GetMeetingSessionData>) => [
+	createQueryKey("getMeetingSession", options),
+];
 
-export const getMeetingSessionOptions = (
-	options: OptionsLegacyParser<GetMeetingSessionData>
-) => {
+export const getMeetingSessionOptions = (options: OptionsLegacyParser<GetMeetingSessionData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getMeetingSession({
@@ -3213,13 +3062,11 @@ export const updateOncallHandoverTemplateMutation = (
 	return mutationOptions;
 };
 
-export const listOncallRostersQueryKey = (
-	options?: OptionsLegacyParser<ListOncallRostersData>
-) => [createQueryKey("listOncallRosters", options)];
+export const listOncallRostersQueryKey = (options?: OptionsLegacyParser<ListOncallRostersData>) => [
+	createQueryKey("listOncallRosters", options),
+];
 
-export const listOncallRostersOptions = (
-	options?: OptionsLegacyParser<ListOncallRostersData>
-) => {
+export const listOncallRostersOptions = (options?: OptionsLegacyParser<ListOncallRostersData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listOncallRosters({
@@ -3240,19 +3087,14 @@ export const listOncallRostersInfiniteQueryKey = (
 	createQueryKey("listOncallRosters", options, true),
 ];
 
-export const listOncallRostersInfiniteOptions = (
-	options?: OptionsLegacyParser<ListOncallRostersData>
-) => {
+export const listOncallRostersInfiniteOptions = (options?: OptionsLegacyParser<ListOncallRostersData>) => {
 	return infiniteQueryOptions<
 		ListOncallRostersResponse,
 		ListOncallRostersError,
 		InfiniteData<ListOncallRostersResponse>,
 		QueryKey<OptionsLegacyParser<ListOncallRostersData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListOncallRostersData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListOncallRostersData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -3283,13 +3125,11 @@ export const listOncallRostersInfiniteOptions = (
 	);
 };
 
-export const getOncallRosterQueryKey = (
-	options: OptionsLegacyParser<GetOncallRosterData>
-) => [createQueryKey("getOncallRoster", options)];
+export const getOncallRosterQueryKey = (options: OptionsLegacyParser<GetOncallRosterData>) => [
+	createQueryKey("getOncallRoster", options),
+];
 
-export const getOncallRosterOptions = (
-	options: OptionsLegacyParser<GetOncallRosterData>
-) => {
+export const getOncallRosterOptions = (options: OptionsLegacyParser<GetOncallRosterData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getOncallRoster({
@@ -3304,13 +3144,11 @@ export const getOncallRosterOptions = (
 	});
 };
 
-export const listOncallShiftsQueryKey = (
-	options?: OptionsLegacyParser<ListOncallShiftsData>
-) => [createQueryKey("listOncallShifts", options)];
+export const listOncallShiftsQueryKey = (options?: OptionsLegacyParser<ListOncallShiftsData>) => [
+	createQueryKey("listOncallShifts", options),
+];
 
-export const listOncallShiftsOptions = (
-	options?: OptionsLegacyParser<ListOncallShiftsData>
-) => {
+export const listOncallShiftsOptions = (options?: OptionsLegacyParser<ListOncallShiftsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listOncallShifts({
@@ -3327,23 +3165,16 @@ export const listOncallShiftsOptions = (
 
 export const listOncallShiftsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListOncallShiftsData>
-): QueryKey<OptionsLegacyParser<ListOncallShiftsData>> => [
-	createQueryKey("listOncallShifts", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListOncallShiftsData>> => [createQueryKey("listOncallShifts", options, true)];
 
-export const listOncallShiftsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListOncallShiftsData>
-) => {
+export const listOncallShiftsInfiniteOptions = (options?: OptionsLegacyParser<ListOncallShiftsData>) => {
 	return infiniteQueryOptions<
 		ListOncallShiftsResponse,
 		ListOncallShiftsError,
 		InfiniteData<ListOncallShiftsResponse>,
 		QueryKey<OptionsLegacyParser<ListOncallShiftsData>>,
 		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListOncallShiftsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		| Pick<QueryKey<OptionsLegacyParser<ListOncallShiftsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -3374,13 +3205,11 @@ export const listOncallShiftsInfiniteOptions = (
 	);
 };
 
-export const getOncallShiftQueryKey = (
-	options: OptionsLegacyParser<GetOncallShiftData>
-) => [createQueryKey("getOncallShift", options)];
+export const getOncallShiftQueryKey = (options: OptionsLegacyParser<GetOncallShiftData>) => [
+	createQueryKey("getOncallShift", options),
+];
 
-export const getOncallShiftOptions = (
-	options: OptionsLegacyParser<GetOncallShiftData>
-) => {
+export const getOncallShiftOptions = (options: OptionsLegacyParser<GetOncallShiftData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getOncallShift({
@@ -3395,13 +3224,11 @@ export const getOncallShiftOptions = (
 	});
 };
 
-export const listOncallShiftAlertsQueryKey = (
-	options: OptionsLegacyParser<ListOncallShiftAlertsData>
-) => [createQueryKey("listOncallShiftAlerts", options)];
+export const listOncallShiftAlertsQueryKey = (options: OptionsLegacyParser<ListOncallShiftAlertsData>) => [
+	createQueryKey("listOncallShiftAlerts", options),
+];
 
-export const listOncallShiftAlertsOptions = (
-	options: OptionsLegacyParser<ListOncallShiftAlertsData>
-) => {
+export const listOncallShiftAlertsOptions = (options: OptionsLegacyParser<ListOncallShiftAlertsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listOncallShiftAlerts({
@@ -3502,9 +3329,7 @@ export const listOncallShiftAnnotationsInfiniteOptions = (
 		QueryKey<OptionsLegacyParser<ListOncallShiftAnnotationsData>>,
 		| number
 		| Pick<
-				QueryKey<
-					OptionsLegacyParser<ListOncallShiftAnnotationsData>
-				>[0],
+				QueryKey<OptionsLegacyParser<ListOncallShiftAnnotationsData>>[0],
 				"body" | "headers" | "path" | "query"
 		  >
 	>(
@@ -3513,9 +3338,7 @@ export const listOncallShiftAnnotationsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListOncallShiftAnnotationsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListOncallShiftAnnotationsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -3580,13 +3403,11 @@ export const createOncallShiftAnnotationMutation = (
 	return mutationOptions;
 };
 
-export const getOncallShiftHandoverQueryKey = (
-	options: OptionsLegacyParser<GetOncallShiftHandoverData>
-) => [createQueryKey("getOncallShiftHandover", options)];
+export const getOncallShiftHandoverQueryKey = (options: OptionsLegacyParser<GetOncallShiftHandoverData>) => [
+	createQueryKey("getOncallShiftHandover", options),
+];
 
-export const getOncallShiftHandoverOptions = (
-	options: OptionsLegacyParser<GetOncallShiftHandoverData>
-) => {
+export const getOncallShiftHandoverOptions = (options: OptionsLegacyParser<GetOncallShiftHandoverData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getOncallShiftHandover({
@@ -3605,9 +3426,7 @@ export const sendOncallShiftHandoverQueryKey = (
 	options: OptionsLegacyParser<SendOncallShiftHandoverData>
 ) => [createQueryKey("sendOncallShiftHandover", options)];
 
-export const sendOncallShiftHandoverOptions = (
-	options: OptionsLegacyParser<SendOncallShiftHandoverData>
-) => {
+export const sendOncallShiftHandoverOptions = (options: OptionsLegacyParser<SendOncallShiftHandoverData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await sendOncallShiftHandover({
@@ -3688,9 +3507,7 @@ export const listOncallShiftIncidentsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListOncallShiftIncidentsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListOncallShiftIncidentsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -3714,13 +3531,11 @@ export const listOncallShiftIncidentsInfiniteOptions = (
 	);
 };
 
-export const getNextOncallShiftQueryKey = (
-	options: OptionsLegacyParser<GetNextOncallShiftData>
-) => [createQueryKey("getNextOncallShift", options)];
+export const getNextOncallShiftQueryKey = (options: OptionsLegacyParser<GetNextOncallShiftData>) => [
+	createQueryKey("getNextOncallShift", options),
+];
 
-export const getNextOncallShiftOptions = (
-	options: OptionsLegacyParser<GetNextOncallShiftData>
-) => {
+export const getNextOncallShiftOptions = (options: OptionsLegacyParser<GetNextOncallShiftData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getNextOncallShift({
@@ -3735,13 +3550,11 @@ export const getNextOncallShiftOptions = (
 	});
 };
 
-export const getUserOncallDetailsQueryKey = (
-	options?: OptionsLegacyParser<GetUserOncallDetailsData>
-) => [createQueryKey("getUserOncallDetails", options)];
+export const getUserOncallDetailsQueryKey = (options?: OptionsLegacyParser<GetUserOncallDetailsData>) => [
+	createQueryKey("getUserOncallDetails", options),
+];
 
-export const getUserOncallDetailsOptions = (
-	options?: OptionsLegacyParser<GetUserOncallDetailsData>
-) => {
+export const getUserOncallDetailsOptions = (options?: OptionsLegacyParser<GetUserOncallDetailsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getUserOncallDetails({
@@ -3796,13 +3609,11 @@ export const updateRetrospectiveReviewMutation = (
 	return mutationOptions;
 };
 
-export const listRetrospectivesQueryKey = (
-	options?: OptionsLegacyParser<ListRetrospectivesData>
-) => [createQueryKey("listRetrospectives", options)];
+export const listRetrospectivesQueryKey = (options?: OptionsLegacyParser<ListRetrospectivesData>) => [
+	createQueryKey("listRetrospectives", options),
+];
 
-export const listRetrospectivesOptions = (
-	options?: OptionsLegacyParser<ListRetrospectivesData>
-) => {
+export const listRetrospectivesOptions = (options?: OptionsLegacyParser<ListRetrospectivesData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listRetrospectives({
@@ -3823,9 +3634,7 @@ export const listRetrospectivesInfiniteQueryKey = (
 	createQueryKey("listRetrospectives", options, true),
 ];
 
-export const listRetrospectivesInfiniteOptions = (
-	options?: OptionsLegacyParser<ListRetrospectivesData>
-) => {
+export const listRetrospectivesInfiniteOptions = (options?: OptionsLegacyParser<ListRetrospectivesData>) => {
 	return infiniteQueryOptions<
 		ListRetrospectivesResponse,
 		ListRetrospectivesError,
@@ -3866,13 +3675,11 @@ export const listRetrospectivesInfiniteOptions = (
 	);
 };
 
-export const getRetrospectiveQueryKey = (
-	options: OptionsLegacyParser<GetRetrospectiveData>
-) => [createQueryKey("getRetrospective", options)];
+export const getRetrospectiveQueryKey = (options: OptionsLegacyParser<GetRetrospectiveData>) => [
+	createQueryKey("getRetrospective", options),
+];
 
-export const getRetrospectiveOptions = (
-	options: OptionsLegacyParser<GetRetrospectiveData>
-) => {
+export const getRetrospectiveOptions = (options: OptionsLegacyParser<GetRetrospectiveData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getRetrospective({
@@ -3924,9 +3731,7 @@ export const listRetrospectiveDiscussionsInfiniteOptions = (
 		QueryKey<OptionsLegacyParser<ListRetrospectiveDiscussionsData>>,
 		| number
 		| Pick<
-				QueryKey<
-					OptionsLegacyParser<ListRetrospectiveDiscussionsData>
-				>[0],
+				QueryKey<OptionsLegacyParser<ListRetrospectiveDiscussionsData>>[0],
 				"body" | "headers" | "path" | "query"
 		  >
 	>(
@@ -3935,9 +3740,7 @@ export const listRetrospectiveDiscussionsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListRetrospectiveDiscussionsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListRetrospectiveDiscussionsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -4130,9 +3933,7 @@ export const listRetrospectiveReviewsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListRetrospectiveReviewsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListRetrospectiveReviewsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -4319,13 +4120,11 @@ export const updateSystemAnalysisRelationshipMutation = (
 	return mutationOptions;
 };
 
-export const getSystemAnalysisQueryKey = (
-	options: OptionsLegacyParser<GetSystemAnalysisData>
-) => [createQueryKey("getSystemAnalysis", options)];
+export const getSystemAnalysisQueryKey = (options: OptionsLegacyParser<GetSystemAnalysisData>) => [
+	createQueryKey("getSystemAnalysis", options),
+];
 
-export const getSystemAnalysisOptions = (
-	options: OptionsLegacyParser<GetSystemAnalysisData>
-) => {
+export const getSystemAnalysisOptions = (options: OptionsLegacyParser<GetSystemAnalysisData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getSystemAnalysis({
@@ -4377,9 +4176,7 @@ export const listSystemAnalysisComponentsInfiniteOptions = (
 		QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>,
 		| number
 		| Pick<
-				QueryKey<
-					OptionsLegacyParser<ListSystemAnalysisComponentsData>
-				>[0],
+				QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>[0],
 				"body" | "headers" | "path" | "query"
 		  >
 	>(
@@ -4388,9 +4185,7 @@ export const listSystemAnalysisComponentsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListSystemAnalysisComponentsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListSystemAnalysisComponentsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -4492,9 +4287,7 @@ export const listSystemAnalysisRelationshipsInfiniteOptions = (
 		QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>,
 		| number
 		| Pick<
-				QueryKey<
-					OptionsLegacyParser<ListSystemAnalysisRelationshipsData>
-				>[0],
+				QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>[0],
 				"body" | "headers" | "path" | "query"
 		  >
 	>(
@@ -4503,9 +4296,7 @@ export const listSystemAnalysisRelationshipsInfiniteOptions = (
 			queryFn: async ({ pageParam, queryKey, signal }) => {
 				// @ts-ignore
 				const page: Pick<
-					QueryKey<
-						OptionsLegacyParser<ListSystemAnalysisRelationshipsData>
-					>[0],
+					QueryKey<OptionsLegacyParser<ListSystemAnalysisRelationshipsData>>[0],
 					"body" | "headers" | "path" | "query"
 				> =
 					typeof pageParam === "object"
@@ -4570,13 +4361,11 @@ export const createSystemAnalysisRelationshipMutation = (
 	return mutationOptions;
 };
 
-export const listSystemComponentsQueryKey = (
-	options?: OptionsLegacyParser<ListSystemComponentsData>
-) => [createQueryKey("listSystemComponents", options)];
+export const listSystemComponentsQueryKey = (options?: OptionsLegacyParser<ListSystemComponentsData>) => [
+	createQueryKey("listSystemComponents", options),
+];
 
-export const listSystemComponentsOptions = (
-	options?: OptionsLegacyParser<ListSystemComponentsData>
-) => {
+export const listSystemComponentsOptions = (options?: OptionsLegacyParser<ListSystemComponentsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listSystemComponents({
@@ -4640,13 +4429,11 @@ export const listSystemComponentsInfiniteOptions = (
 	);
 };
 
-export const createSystemComponentQueryKey = (
-	options: OptionsLegacyParser<CreateSystemComponentData>
-) => [createQueryKey("createSystemComponent", options)];
+export const createSystemComponentQueryKey = (options: OptionsLegacyParser<CreateSystemComponentData>) => [
+	createQueryKey("createSystemComponent", options),
+];
 
-export const createSystemComponentOptions = (
-	options: OptionsLegacyParser<CreateSystemComponentData>
-) => {
+export const createSystemComponentOptions = (options: OptionsLegacyParser<CreateSystemComponentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createSystemComponent({
@@ -4681,13 +4468,11 @@ export const createSystemComponentMutation = (
 	return mutationOptions;
 };
 
-export const getSystemComponentQueryKey = (
-	options: OptionsLegacyParser<GetSystemComponentData>
-) => [createQueryKey("getSystemComponent", options)];
+export const getSystemComponentQueryKey = (options: OptionsLegacyParser<GetSystemComponentData>) => [
+	createQueryKey("getSystemComponent", options),
+];
 
-export const getSystemComponentOptions = (
-	options: OptionsLegacyParser<GetSystemComponentData>
-) => {
+export const getSystemComponentOptions = (options: OptionsLegacyParser<GetSystemComponentData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await getSystemComponent({
@@ -4742,13 +4527,11 @@ export const updateSystemComponentMutation = (
 	return mutationOptions;
 };
 
-export const listTasksQueryKey = (
-	options?: OptionsLegacyParser<ListTasksData>
-) => [createQueryKey("listTasks", options)];
+export const listTasksQueryKey = (options?: OptionsLegacyParser<ListTasksData>) => [
+	createQueryKey("listTasks", options),
+];
 
-export const listTasksOptions = (
-	options?: OptionsLegacyParser<ListTasksData>
-) => {
+export const listTasksOptions = (options?: OptionsLegacyParser<ListTasksData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listTasks({
@@ -4765,23 +4548,15 @@ export const listTasksOptions = (
 
 export const listTasksInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListTasksData>
-): QueryKey<OptionsLegacyParser<ListTasksData>> => [
-	createQueryKey("listTasks", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListTasksData>> => [createQueryKey("listTasks", options, true)];
 
-export const listTasksInfiniteOptions = (
-	options?: OptionsLegacyParser<ListTasksData>
-) => {
+export const listTasksInfiniteOptions = (options?: OptionsLegacyParser<ListTasksData>) => {
 	return infiniteQueryOptions<
 		ListTasksResponse,
 		ListTasksError,
 		InfiniteData<ListTasksResponse>,
 		QueryKey<OptionsLegacyParser<ListTasksData>>,
-		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListTasksData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		number | Pick<QueryKey<OptionsLegacyParser<ListTasksData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -4812,13 +4587,11 @@ export const listTasksInfiniteOptions = (
 	);
 };
 
-export const createTaskQueryKey = (
-	options: OptionsLegacyParser<CreateTaskData>
-) => [createQueryKey("createTask", options)];
+export const createTaskQueryKey = (options: OptionsLegacyParser<CreateTaskData>) => [
+	createQueryKey("createTask", options),
+];
 
-export const createTaskOptions = (
-	options: OptionsLegacyParser<CreateTaskData>
-) => {
+export const createTaskOptions = (options: OptionsLegacyParser<CreateTaskData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createTask({
@@ -4833,9 +4606,7 @@ export const createTaskOptions = (
 	});
 };
 
-export const createTaskMutation = (
-	options?: Partial<OptionsLegacyParser<CreateTaskData>>
-) => {
+export const createTaskMutation = (options?: Partial<OptionsLegacyParser<CreateTaskData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateTaskResponse,
 		CreateTaskError,
@@ -4872,9 +4643,7 @@ export const getTaskOptions = (options: OptionsLegacyParser<GetTaskData>) => {
 	});
 };
 
-export const archiveTaskMutation = (
-	options?: Partial<OptionsLegacyParser<ArchiveTaskData>>
-) => {
+export const archiveTaskMutation = (options?: Partial<OptionsLegacyParser<ArchiveTaskData>>) => {
 	const mutationOptions: MutationOptions<
 		ArchiveTaskResponse,
 		ArchiveTaskError,
@@ -4892,9 +4661,7 @@ export const archiveTaskMutation = (
 	return mutationOptions;
 };
 
-export const updateTaskMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateTaskData>>
-) => {
+export const updateTaskMutation = (options?: Partial<OptionsLegacyParser<UpdateTaskData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateTaskResponse,
 		UpdateTaskError,
@@ -4912,13 +4679,11 @@ export const updateTaskMutation = (
 	return mutationOptions;
 };
 
-export const listTeamsQueryKey = (
-	options?: OptionsLegacyParser<ListTeamsData>
-) => [createQueryKey("listTeams", options)];
+export const listTeamsQueryKey = (options?: OptionsLegacyParser<ListTeamsData>) => [
+	createQueryKey("listTeams", options),
+];
 
-export const listTeamsOptions = (
-	options?: OptionsLegacyParser<ListTeamsData>
-) => {
+export const listTeamsOptions = (options?: OptionsLegacyParser<ListTeamsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listTeams({
@@ -4935,23 +4700,15 @@ export const listTeamsOptions = (
 
 export const listTeamsInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListTeamsData>
-): QueryKey<OptionsLegacyParser<ListTeamsData>> => [
-	createQueryKey("listTeams", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListTeamsData>> => [createQueryKey("listTeams", options, true)];
 
-export const listTeamsInfiniteOptions = (
-	options?: OptionsLegacyParser<ListTeamsData>
-) => {
+export const listTeamsInfiniteOptions = (options?: OptionsLegacyParser<ListTeamsData>) => {
 	return infiniteQueryOptions<
 		ListTeamsResponse,
 		ListTeamsError,
 		InfiniteData<ListTeamsResponse>,
 		QueryKey<OptionsLegacyParser<ListTeamsData>>,
-		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListTeamsData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		number | Pick<QueryKey<OptionsLegacyParser<ListTeamsData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{
@@ -4982,13 +4739,11 @@ export const listTeamsInfiniteOptions = (
 	);
 };
 
-export const createTeamQueryKey = (
-	options: OptionsLegacyParser<CreateTeamData>
-) => [createQueryKey("createTeam", options)];
+export const createTeamQueryKey = (options: OptionsLegacyParser<CreateTeamData>) => [
+	createQueryKey("createTeam", options),
+];
 
-export const createTeamOptions = (
-	options: OptionsLegacyParser<CreateTeamData>
-) => {
+export const createTeamOptions = (options: OptionsLegacyParser<CreateTeamData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await createTeam({
@@ -5003,9 +4758,7 @@ export const createTeamOptions = (
 	});
 };
 
-export const createTeamMutation = (
-	options?: Partial<OptionsLegacyParser<CreateTeamData>>
-) => {
+export const createTeamMutation = (options?: Partial<OptionsLegacyParser<CreateTeamData>>) => {
 	const mutationOptions: MutationOptions<
 		CreateTeamResponse,
 		CreateTeamError,
@@ -5042,9 +4795,7 @@ export const getTeamOptions = (options: OptionsLegacyParser<GetTeamData>) => {
 	});
 };
 
-export const archiveTeamMutation = (
-	options?: Partial<OptionsLegacyParser<ArchiveTeamData>>
-) => {
+export const archiveTeamMutation = (options?: Partial<OptionsLegacyParser<ArchiveTeamData>>) => {
 	const mutationOptions: MutationOptions<
 		ArchiveTeamResponse,
 		ArchiveTeamError,
@@ -5062,9 +4813,7 @@ export const archiveTeamMutation = (
 	return mutationOptions;
 };
 
-export const updateTeamsMutation = (
-	options?: Partial<OptionsLegacyParser<UpdateTeamsData>>
-) => {
+export const updateTeamsMutation = (options?: Partial<OptionsLegacyParser<UpdateTeamsData>>) => {
 	const mutationOptions: MutationOptions<
 		UpdateTeamsResponse,
 		UpdateTeamsError,
@@ -5082,9 +4831,9 @@ export const updateTeamsMutation = (
 	return mutationOptions;
 };
 
-export const getCurrentUserSessionQueryKey = (
-	options?: OptionsLegacyParser
-) => [createQueryKey("getCurrentUserSession", options)];
+export const getCurrentUserSessionQueryKey = (options?: OptionsLegacyParser) => [
+	createQueryKey("getCurrentUserSession", options),
+];
 
 export const getCurrentUserSessionOptions = (options?: OptionsLegacyParser) => {
 	return queryOptions({
@@ -5101,13 +4850,11 @@ export const getCurrentUserSessionOptions = (options?: OptionsLegacyParser) => {
 	});
 };
 
-export const listUserAssignmentsQueryKey = (
-	options?: OptionsLegacyParser<ListUserAssignmentsData>
-) => [createQueryKey("listUserAssignments", options)];
+export const listUserAssignmentsQueryKey = (options?: OptionsLegacyParser<ListUserAssignmentsData>) => [
+	createQueryKey("listUserAssignments", options),
+];
 
-export const listUserAssignmentsOptions = (
-	options?: OptionsLegacyParser<ListUserAssignmentsData>
-) => {
+export const listUserAssignmentsOptions = (options?: OptionsLegacyParser<ListUserAssignmentsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listUserAssignments({
@@ -5171,13 +4918,11 @@ export const listUserAssignmentsInfiniteOptions = (
 	);
 };
 
-export const listUserNotificationsQueryKey = (
-	options?: OptionsLegacyParser<ListUserNotificationsData>
-) => [createQueryKey("listUserNotifications", options)];
+export const listUserNotificationsQueryKey = (options?: OptionsLegacyParser<ListUserNotificationsData>) => [
+	createQueryKey("listUserNotifications", options),
+];
 
-export const listUserNotificationsOptions = (
-	options?: OptionsLegacyParser<ListUserNotificationsData>
-) => {
+export const listUserNotificationsOptions = (options?: OptionsLegacyParser<ListUserNotificationsData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listUserNotifications({
@@ -5261,13 +5006,11 @@ export const deleteUserNotificationMutation = (
 	return mutationOptions;
 };
 
-export const listUsersQueryKey = (
-	options?: OptionsLegacyParser<ListUsersData>
-) => [createQueryKey("listUsers", options)];
+export const listUsersQueryKey = (options?: OptionsLegacyParser<ListUsersData>) => [
+	createQueryKey("listUsers", options),
+];
 
-export const listUsersOptions = (
-	options?: OptionsLegacyParser<ListUsersData>
-) => {
+export const listUsersOptions = (options?: OptionsLegacyParser<ListUsersData>) => {
 	return queryOptions({
 		queryFn: async ({ queryKey, signal }) => {
 			const { data } = await listUsers({
@@ -5284,23 +5027,15 @@ export const listUsersOptions = (
 
 export const listUsersInfiniteQueryKey = (
 	options?: OptionsLegacyParser<ListUsersData>
-): QueryKey<OptionsLegacyParser<ListUsersData>> => [
-	createQueryKey("listUsers", options, true),
-];
+): QueryKey<OptionsLegacyParser<ListUsersData>> => [createQueryKey("listUsers", options, true)];
 
-export const listUsersInfiniteOptions = (
-	options?: OptionsLegacyParser<ListUsersData>
-) => {
+export const listUsersInfiniteOptions = (options?: OptionsLegacyParser<ListUsersData>) => {
 	return infiniteQueryOptions<
 		ListUsersResponse,
 		ListUsersError,
 		InfiniteData<ListUsersResponse>,
 		QueryKey<OptionsLegacyParser<ListUsersData>>,
-		| number
-		| Pick<
-				QueryKey<OptionsLegacyParser<ListUsersData>>[0],
-				"body" | "headers" | "path" | "query"
-		  >
+		number | Pick<QueryKey<OptionsLegacyParser<ListUsersData>>[0], "body" | "headers" | "path" | "query">
 	>(
 		// @ts-ignore
 		{

@@ -1,35 +1,16 @@
 <script lang="ts">
-	import {
-		listUserAssignmentsOptions,
-		type ListUserAssignmentsData,
-	} from "$lib/api";
+	import { listUserAssignmentsOptions, type ListUserAssignmentsData } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Icon, Header, ListItem, Button } from "svelte-ux";
-	import {
-		mdiGhostOutline,
-		mdiFileDocument,
-		mdiChevronRight,
-		mdiVideo,
-	} from "@mdi/js";
-	import {
-		addDays,
-		addHours,
-		formatDate,
-		formatDistanceToNow,
-	} from "date-fns";
+	import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
+	import { addDays, addHours, formatDate, formatDistanceToNow } from "date-fns";
 
 	let params = $state<ListUserAssignmentsData["query"]>({});
-	const query = createQuery(() =>
-		listUserAssignmentsOptions({ query: params })
-	);
+	const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
 
 	const assignments = $derived(query.data?.data ?? []);
-	const incidents = $derived(
-		assignments.filter((a) => a.item_type === "incident")
-	);
-	const shifts = $derived(
-		assignments.filter((a) => a.item_type === "oncall_shift")
-	);
+	const incidents = $derived(assignments.filter((a) => a.item_type === "incident"));
+	const shifts = $derived(assignments.filter((a) => a.item_type === "oncall_shift"));
 	const tasks = $derived(assignments.filter((a) => a.item_type === "tasks"));
 </script>
 
@@ -47,10 +28,7 @@
 						icon={mdiFileDocument}
 					>
 						<div slot="actions">
-							<Button
-								icon={mdiChevronRight}
-								class="p-2 text-surface-content/50"
-							/>
+							<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 						</div>
 					</ListItem>
 				</a>
@@ -63,10 +41,7 @@
 						icon={mdiVideo}
 					>
 						<div slot="actions">
-							<Button
-								icon={mdiChevronRight}
-								class="p-2 text-surface-content/50"
-							/>
+							<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 						</div>
 					</ListItem>
 				</a>

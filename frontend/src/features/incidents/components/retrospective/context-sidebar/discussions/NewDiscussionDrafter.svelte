@@ -3,16 +3,9 @@
 	import { createMutation } from "@tanstack/svelte-query";
 	import { EditorContent, type Editor as SvelteEditor } from "svelte-tiptap";
 	import { Header } from "svelte-ux";
-	import {
-		createReplyEditor,
-		draft,
-	} from "$features/incidents/lib/discussions.svelte";
+	import { createReplyEditor, draft } from "$features/incidents/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import {
-		client,
-		createRetrospectiveDiscussionMutation,
-		type RetrospectiveDiscussion,
-	} from "$lib/api";
+	import { client, createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from "$lib/api";
 
 	type Props = {
 		retrospectiveId: string;

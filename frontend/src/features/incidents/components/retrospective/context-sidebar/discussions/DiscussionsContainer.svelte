@@ -1,10 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { Button, Header } from "svelte-ux";
-	import {
-		listRetrospectiveDiscussionsOptions,
-		type RetrospectiveDiscussion,
-	} from "$lib/api";
+	import { listRetrospectiveDiscussionsOptions, type RetrospectiveDiscussion } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { draft } from "$features/incidents/lib/discussions.svelte";
 	import DiscussionThread from "./DiscussionThread.svelte";
@@ -17,9 +14,7 @@
 
 	const queryClient = useQueryClient();
 
-	const queryOptions = $derived(
-		listRetrospectiveDiscussionsOptions({ path: { id: retrospectiveId } })
-	);
+	const queryOptions = $derived(listRetrospectiveDiscussionsOptions({ path: { id: retrospectiveId } }));
 	const query = createQuery(() => queryOptions);
 
 	const onDiscussionCreated = (d: RetrospectiveDiscussion) => {
@@ -42,9 +37,7 @@
 	<Header title="Discuss" />
 
 	<div class="flex flex-row gap-2">
-		<span class="rounded-lg border px-3 py-1 bg-primary cursor-pointer"
-			>All</span
-		>
+		<span class="rounded-lg border px-3 py-1 bg-primary cursor-pointer">All</span>
 		<span class="rounded-lg border px-3 py-1">Comments</span>
 		<span class="rounded-lg border px-3 py-1">Action Items</span>
 	</div>

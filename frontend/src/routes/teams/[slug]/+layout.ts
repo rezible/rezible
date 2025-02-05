@@ -17,10 +17,7 @@ export const load = (async ({ params, parent, url }) => {
 	const res = await queryClient.fetchQuery(getTeamOptions({ path: { id } }));
 	const slug = res.data.attributes.slug;
 
-	queryClient.setQueryData(
-		getTeamOptions({ path: { id: slug } }).queryKey,
-		res
-	);
+	queryClient.setQueryData(getTeamOptions({ path: { id: slug } }).queryKey, res);
 	const slugPath = url.pathname.replaceAll(id, slug) + url.search;
 	throw redirect(301, slugPath);
 }) satisfies LayoutLoad;

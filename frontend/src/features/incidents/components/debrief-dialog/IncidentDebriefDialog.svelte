@@ -23,11 +23,7 @@
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="Debrief">
 			<svelte:fragment slot="actions">
-				<Button
-					on:click={() => close({ force: true })}
-					iconOnly
-					icon={mdiClose}
-				/>
+				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
 			</svelte:fragment>
 		</Header>
 	</div>

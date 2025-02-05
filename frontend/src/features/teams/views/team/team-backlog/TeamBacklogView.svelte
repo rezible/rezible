@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import {
-		listTasksOptions,
-		type ListTasksData,
-		type Task,
-		type Team,
-	} from "$lib/api";
+	import { listTasksOptions, type ListTasksData, type Task, type Team } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import BacklogList from "./BacklogList.svelte";
 
@@ -15,9 +10,7 @@
 	let { team }: Props = $props();
 
 	let params = $state<ListTasksData>();
-	const query = createQuery(() =>
-		listTasksOptions({ ...params, query: { team_id: team.id } })
-	);
+	const query = createQuery(() => listTasksOptions({ ...params, query: { team_id: team.id } }));
 </script>
 
 <LoadingQueryWrapper {query}>

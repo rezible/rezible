@@ -9,12 +9,7 @@
 	import type { ErrorModel } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import LoadingSelect from "$components/loading-select/LoadingSelect.svelte";
-	import {
-		type FormFields,
-		type Field,
-		isSelectField,
-		unwrappedSchema,
-	} from "./fields.svelte";
+	import { type FormFields, type Field, isSelectField, unwrappedSchema } from "./fields.svelte";
 	import { Field as UxField, Switch, TextField, Toggle } from "svelte-ux";
 
 	type Props = {
@@ -26,15 +21,7 @@
 		mutationError: ErrorModel | null;
 		data?: DataType;
 	};
-	const {
-		fields,
-		dataType,
-		onClose,
-		onMutate,
-		isPending,
-		mutationError,
-		data,
-	}: Props = $props();
+	const { fields, dataType, onClose, onMutate, isPending, mutationError, data }: Props = $props();
 
 	const editing = $derived(!!data);
 	const fieldNames = $derived(Object.keys(fields));
@@ -110,9 +97,7 @@
 	};
 </script>
 
-<form
-	class="w-full bg-base-300 shadow-xl p-4 border-accent/20 border-2 rounded"
->
+<form class="w-full bg-base-300 shadow-xl p-4 border-accent/20 border-2 rounded">
 	<div class="flex flex-col gap-2">
 		<span>{editing ? "Edit" : "Create New"} {dataType}</span>
 		{#each Object.entries(fields) as [name, field]}
@@ -177,12 +162,7 @@
 		/>
 	{:else if isSelectField(field)}
 		{#if !Array.isArray(field.options)}
-			<LoadingSelect
-				{id}
-				bind:value={values[name]}
-				options={field.options}
-				{label}
-			/>
+			<LoadingSelect {id} bind:value={values[name]} options={field.options} {label} />
 		{:else}
 			<span>regular select</span>
 		{/if}

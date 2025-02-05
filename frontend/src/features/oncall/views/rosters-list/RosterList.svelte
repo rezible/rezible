@@ -2,11 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { TextField, ListItem, Button } from "svelte-ux";
 	import { mdiMagnify, mdiChevronRight } from "@mdi/js";
-	import {
-		listOncallRostersOptions,
-		type ListOncallRostersData,
-		type OncallRoster,
-	} from "$lib/api";
+	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import UserRosters from "./UserRosters.svelte";
@@ -50,23 +46,15 @@
 
 	<LoadingQueryWrapper query={allQuery}>
 		{#snippet view(rosters: OncallRoster[])}
-			<div
-				class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-1 px-2"
-			>
+			<div class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-1 px-2">
 				{#each rosters as r}
 					<a href="/oncall/rosters/{r.attributes.slug}">
-						<ListItem
-							title={r.attributes.name}
-							classes={{ root: "hover:bg-secondary-900" }}
-						>
+						<ListItem title={r.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 							<svelte:fragment slot="avatar">
 								<Avatar kind="roster" size={32} id={r.id} />
 							</svelte:fragment>
 							<div slot="actions">
-								<Button
-									icon={mdiChevronRight}
-									class="p-2 text-surface-content/50"
-								/>
+								<Button icon={mdiChevronRight} class="p-2 text-surface-content/50" />
 							</div>
 						</ListItem>
 					</a>

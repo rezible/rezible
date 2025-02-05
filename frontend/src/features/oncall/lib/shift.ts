@@ -15,13 +15,8 @@ export const buildShiftTimeDetails = (shift: OncallShift): ShiftTimeDetails => {
 	const attr = shift.attributes;
 	const start = new Date(attr.start_at);
 	const end = new Date(attr.end_at);
-	const progress =
-		(Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf());
+	const progress = (Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf());
 	const minutesLeft = differenceInMinutes(end, Date.now());
-	const status: ShiftStatus = isPast(end)
-		? "finished"
-		: isFuture(start)
-			? "upcoming"
-			: "active";
+	const status: ShiftStatus = isPast(end) ? "finished" : isFuture(start) ? "upcoming" : "active";
 	return { start, end, progress, minutesLeft, status };
 };

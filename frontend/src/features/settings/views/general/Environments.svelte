@@ -7,9 +7,7 @@
 		updateEnvironmentMutation,
 		type Environment,
 	} from "$lib/api";
-	import MutatingTable, {
-		makeField,
-	} from "$features/settings/components/mutating-table";
+	import MutatingTable, { makeField } from "$features/settings/components/mutating-table";
 
 	const fields = {
 		["name"]: makeField("Environment Name", z.string()),

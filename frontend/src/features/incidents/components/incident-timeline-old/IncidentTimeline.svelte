@@ -111,32 +111,17 @@
 		<span class="text-lg text-surface-content/80">Incident Timeline</span>
 	</div>
 	<div class="flex items-center">
-		<Button
-			variant="fill-light"
-			size="sm"
-			rounded={false}
-			on:click={createEvent}
-		>
+		<Button variant="fill-light" size="sm" rounded={false} on:click={createEvent}>
 			Add Event
 			<Icon data={mdiPlus} />
 		</Button>
 	</div>
 </div>
 
-<div
-	class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 rounded-lg mt-1"
->
-	<TimelineSummary
-		{events}
-		selectedId={selected?.id}
-		{hoveringId}
-		onEventClicked={summaryEventClicked}
-	/>
+<div class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 rounded-lg mt-1">
+	<TimelineSummary {events} selectedId={selected?.id} {hoveringId} onEventClicked={summaryEventClicked} />
 
-	<Collapse
-		bind:open={eventsOpen}
-		class="bg-surface-100 elevation-1 first:rounded-t last:rounded-b"
-	>
+	<Collapse bind:open={eventsOpen} class="bg-surface-100 elevation-1 first:rounded-t last:rounded-b">
 		<div slot="trigger" class="flex-1 px-3 py-3">Events</div>
 		<div class="">
 			{@render eventsList()}
@@ -172,9 +157,7 @@
 
 {#snippet eventsList()}
 	<div class="w-full flex gap-1">
-		<div
-			class="overflow-y-auto max-h-72 bg-surface-100 flex-1 flex flex-col divide-y"
-		>
+		<div class="overflow-y-auto max-h-72 bg-surface-100 flex-1 flex flex-col divide-y">
 			{#each events as e, i (i)}
 				<div
 					class="p-2 cursor-pointer {e.id === selected?.id
@@ -202,8 +185,7 @@
 						<Button
 							icon={mdiPencil}
 							on:click={() => {
-								if (selected)
-									editEvent($state.snapshot(selected));
+								if (selected) editEvent($state.snapshot(selected));
 							}}
 						>
 							Edit

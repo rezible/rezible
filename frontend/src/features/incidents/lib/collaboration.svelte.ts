@@ -80,10 +80,7 @@ const createCollaborationState = () => {
 			try {
 				collab.provider?.destroy();
 			} catch (e) {
-				console.error(
-					"failed to disconnect collaboration provider ",
-					e
-				);
+				console.error("failed to disconnect collaboration provider ", e);
 			}
 		}
 		collab = emptyState;
