@@ -5,15 +5,14 @@ import {
 	type SystemAnalysis,
 	type SystemAnalysisComponent,
 	type SystemAnalysisRelationship,
+	type SystemComponent,
 } from "$lib/api";
 import { incidentCtx } from "$features/incidents/lib/context";
 
 const createAnalysisState = () => {
 	let analysisId = $state<string>();
 	let data = $state<SystemAnalysis>();
-	let componentDialogOpen = $state(false);
-	let addingComponent = $state<SystemAnalysisComponent>();
-	let editingComponent = $state<SystemAnalysisComponent>();
+	let addingComponent = $state<SystemComponent>();
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
@@ -39,12 +38,7 @@ const createAnalysisState = () => {
 		);
 	};
 
-	const setComponentDialogOpen = (open: boolean, editComponent?: SystemAnalysisComponent) => {
-		componentDialogOpen = open;
-		editingComponent = editComponent;
-	};
-
-	const setAddingComponent = (c?: SystemAnalysisComponent) => {
+	const setAddingComponent = (c?: SystemComponent) => {
 		addingComponent = c;
 	};
 
@@ -58,16 +52,9 @@ const createAnalysisState = () => {
 		get data() {
 			return data;
 		},
-		get componentDialogOpen() {
-			return componentDialogOpen;
-		},
-		setComponentDialogOpen,
+		setAddingComponent,
 		get addingComponent() {
 			return addingComponent;
-		},
-		setAddingComponent,
-		get editingComponent() {
-			return editingComponent;
 		},
 		get relationshipDialogOpen() {
 			return relationshipDialogOpen;

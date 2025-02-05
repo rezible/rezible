@@ -29,92 +29,57 @@
 		mdiTune,
 	} from "@mdi/js";
 	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
-	import { watch } from "runed";
+	import { componentDialog } from "./componentDialog.svelte";
 
-	type Props = {
-		kind: string;
-		name: string;
-		description: string;
-		constraints: SystemComponentConstraint[];
-		signals: SystemComponentSignal[];
-		controls: SystemComponentControl[];
-	};
-	let {
-		kind = $bindable(),
-		name = $bindable(),
-		description = $bindable(),
-		constraints = $bindable(),
-		signals = $bindable(),
-		controls = $bindable(),
-	}: Props = $props();
+	const attr = $derived(componentDialog.componentAttributes);
 
 	const kindOptions: MenuOption<string>[] = [{ label: "Service", value: "service" }];
 
-	let editingConstraint = $state<SystemComponentConstraint>();
-	const editConstraint = (c?: SystemComponentConstraint) => {
-		editingConstraint = c
-			? $state.snapshot(c)
-			: { id: uuidv4(), attributes: { label: "", description: "" } };
+	const makeEmpty = () => ({ id: uuidv4(), attributes: { label: "", description: "" } });
+
+	let editConstraint = $state<SystemComponentConstraint>();
+	const setEditConstraint = (c?: SystemComponentConstraint) => {
+		editConstraint = c ? $state.snapshot(c) : makeEmpty();
 	};
 	const saveEditConstraint = () => {
-		const constraint = $state.snapshot(editingConstraint);
-		editingConstraint = undefined;
-		if (!constraint) return;
-		const idx = constraints.findIndex((c) => c.id === constraint.id);
-		if (idx >= 0) {
-			constraints[idx] = constraint;
-		} else {
-			constraints.push(constraint);
-		}
+		if (!editConstraint) return;
+		attr.updateConstraint($state.snapshot(editConstraint));
+		editConstraint = undefined;
 	};
 
-	let editingSignal = $state<SystemComponentSignal>();
-	const editSignal = (s?: SystemComponentSignal) => {
-		editingSignal = s ? $state.snapshot(s) : { id: uuidv4(), attributes: { label: "", description: "" } };
+	let editSignal = $state<SystemComponentSignal>();
+	const setEditSignal = (s?: SystemComponentSignal) => {
+		editSignal = s ? $state.snapshot(s) : makeEmpty();
 	};
 	const saveEditSignal = () => {
-		const signal = $state.snapshot(editingSignal);
-		editingSignal = undefined;
-		if (!signal) return;
-		const idx = signals.findIndex((c) => c.id === signal.id);
-		if (idx >= 0) {
-			signals[idx] = signal;
-		} else {
-			signals.push(signal);
-		}
+		if (!editSignal) return;
+		attr.updateSignal($state.snapshot(editSignal));
+		editSignal = undefined;
 	};
 
-	let editingControl = $state<SystemComponentControl>();
-	const editControl = (c?: SystemComponentControl) => {
-		editingControl = c
-			? $state.snapshot(c)
-			: { id: uuidv4(), attributes: { label: "", description: "" } };
+	let editControl = $state<SystemComponentControl>();
+	const setEditControl = (c?: SystemComponentControl) => {
+		editControl = c ? $state.snapshot(c) : makeEmpty();
 	};
 	const saveEditControl = () => {
-		const control = $state.snapshot(editingControl);
-		editingControl = undefined;
-		if (!control) return;
-		const idx = controls.findIndex((c) => c.id === control.id);
-		if (idx >= 0) {
-			controls[idx] = control;
-		} else {
-			controls.push(control);
-		}
+		if (!editControl) return;
+		attr.updateControl($state.snapshot(editControl));
+		editControl = undefined;
 	};
 </script>
 
 <div class="flex flex-row min-h-0 max-h-full h-full gap-2">
 	<div class="flex flex-col gap-2 w-2/5">
-		<TextField label="Name" labelPlacement="float" bind:value={name} />
+		<TextField label="Name" labelPlacement="float" bind:value={attr.name} />
 
-		<TextField label="Description" labelPlacement="float" bind:value={description} />
+		<TextField label="Description" labelPlacement="float" bind:value={attr.description} />
 
 		<SelectField
 			label="Kind"
 			labelPlacement="float"
 			options={kindOptions}
-			value={kind}
-			on:change={(e) => (kind = e.detail.value ?? "")}
+			value={attr.kind}
+			on:change={(e) => (attr.kind = e.detail.value ?? "")}
 		/>
 	</div>
 
@@ -139,13 +104,13 @@
 			</div>
 		{/snippet}
 
-		{#snippet attributeListItem(label: string, description: string, onClick: VoidFunction)}
+		{#snippet attributeListItem(title: string, subheading: string, onClick: VoidFunction)}
 			<ListItem
-				title={label}
-				subheading={description}
-				classes={{ root: "border first:border-t rounded elevation-0" }}
-				class="flex-1"
+				{title}
+				{subheading}
 				noShadow
+				class="flex-1"
+				classes={{ root: "border first:border-t rounded elevation-0" }}
 			>
 				<div slot="actions">
 					<Button iconOnly icon={mdiPencil} on:click={onClick} />
@@ -154,37 +119,34 @@
 		{/snippet}
 
 		{#snippet constraintsPanel()}
-			{#if !editingConstraint}
+			{#if !editConstraint}
 				<div class="flex flex-col gap-2">
-					{#each constraints as constraint}
-						{@render attributeListItem(
-							constraint.attributes.label,
-							constraint.attributes.description,
-							() => editConstraint(constraint)
-						)}
+					{#each attr.constraints as constraint}
+						{@const { label, description } = constraint.attributes}
+						{@render attributeListItem(label, description, () => setEditConstraint(constraint))}
 					{/each}
 
-					<Button on:click={() => editConstraint()}>Add Constraint</Button>
+					<Button on:click={() => setEditConstraint()}>Add Constraint</Button>
 				</div>
 			{:else}
 				<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
 					<TextField
 						label="Label"
 						labelPlacement="float"
-						bind:value={editingConstraint.attributes.label}
+						bind:value={editConstraint.attributes.label}
 					/>
 					<TextField
 						label="Description"
 						labelPlacement="float"
-						bind:value={editingConstraint.attributes.description}
+						bind:value={editConstraint.attributes.description}
 					/>
 
 					<ConfirmButtons
 						onClose={() => {
-							editingConstraint = undefined;
+							editConstraint = undefined;
 						}}
 						onConfirm={saveEditConstraint}
-						saveEnabled={!!editingConstraint.attributes.label}
+						saveEnabled={!!editConstraint.attributes.label}
 					>
 						{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}
 						{#snippet confirmButtonContent()}<Icon data={mdiCheck} />{/snippet}
@@ -200,37 +162,37 @@
 		)}
 
 		{#snippet signalsPanel()}
-			{#if !editingSignal}
+			{#if !editSignal}
 				<div class="flex flex-col gap-2">
-					{#each signals as signal}
+					{#each attr.signals as signal}
 						{@render attributeListItem(
 							signal.attributes.label,
 							signal.attributes.description,
-							() => editSignal(signal)
+							() => setEditSignal(signal)
 						)}
 					{/each}
 
-					<Button on:click={() => editSignal()}>Add Signal</Button>
+					<Button on:click={() => setEditSignal()}>Add Signal</Button>
 				</div>
 			{:else}
 				<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
 					<TextField
 						label="Label"
 						labelPlacement="float"
-						bind:value={editingSignal.attributes.label}
+						bind:value={editSignal.attributes.label}
 					/>
 					<TextField
 						label="Description"
 						labelPlacement="float"
-						bind:value={editingSignal.attributes.description}
+						bind:value={editSignal.attributes.description}
 					/>
 
 					<ConfirmButtons
 						onClose={() => {
-							editingSignal = undefined;
+							editSignal = undefined;
 						}}
 						onConfirm={saveEditSignal}
-						saveEnabled={!!editingSignal.attributes.label}
+						saveEnabled={!!editSignal.attributes.label}
 					>
 						{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}
 						{#snippet confirmButtonContent()}<Icon data={mdiCheck} />{/snippet}
@@ -241,37 +203,37 @@
 		{@render panel("Signals", "Feedback from this component", mdiBroadcast, signalsPanel)}
 
 		{#snippet controlsPanel()}
-			{#if !editingControl}
+			{#if !editControl}
 				<div class="flex flex-col gap-2">
-					{#each controls as control}
+					{#each attr.controls as control}
 						{@render attributeListItem(
 							control.attributes.label,
 							control.attributes.description,
-							() => editControl(control)
+							() => setEditControl(control)
 						)}
 					{/each}
 
-					<Button on:click={() => editSignal()}>Add Control</Button>
+					<Button on:click={() => setEditControl()}>Add Control</Button>
 				</div>
 			{:else}
 				<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
 					<TextField
 						label="Label"
 						labelPlacement="float"
-						bind:value={editingControl.attributes.label}
+						bind:value={editControl.attributes.label}
 					/>
 					<TextField
 						label="Description"
 						labelPlacement="float"
-						bind:value={editingControl.attributes.description}
+						bind:value={editControl.attributes.description}
 					/>
 
 					<ConfirmButtons
 						onClose={() => {
-							editingControl = undefined;
+							editControl = undefined;
 						}}
 						onConfirm={saveEditControl}
-						saveEnabled={!!editingControl.attributes.label}
+						saveEnabled={!!editControl.attributes.label}
 					>
 						{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}
 						{#snippet confirmButtonContent()}<Icon data={mdiCheck} />{/snippet}

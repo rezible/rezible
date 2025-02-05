@@ -1,0 +1,230 @@
+import { createMutation } from "@tanstack/svelte-query";
+import {
+	createSystemComponentMutation,
+	updateSystemComponentMutation,
+	type CreateSystemComponentAttributes,
+	type CreateSystemComponentResponseBody,
+	type SystemAnalysisComponent,
+	type SystemComponent,
+	type SystemComponentAttributes,
+	type SystemComponentConstraint,
+	type SystemComponentControl,
+	type SystemComponentSignal,
+	type UpdateSystemComponentAttributes,
+} from "$lib/api";
+import { analysis } from "../analysis.svelte";
+
+const createComponentAttributesState = () => {
+	let name = $state<SystemComponentAttributes["name"]>("");
+	let kind = $state<SystemComponentAttributes["kind"]>("");
+	let description = $state<SystemComponentAttributes["description"]>("");
+	let constraints = $state<SystemComponentAttributes["constraints"]>([]);
+	let controls = $state<SystemComponentAttributes["controls"]>([]);
+	let signals = $state<SystemComponentAttributes["signals"]>([]);
+	let properties = $state<SystemComponentAttributes["properties"]>({});
+	
+	let valid = $state(false);
+
+	const initFromComponent = (c: SystemComponent) => {
+		const a = c.attributes;
+		name = a.name;
+		kind = a.kind;
+		description = a.description;
+		constraints = a.constraints;
+		controls = a.controls;
+		signals = a.signals;
+		properties = a.properties;
+		valid = true;
+	}
+
+	const onUpdate = () => {
+		// TODO: check if attributes valid;
+		valid = !!name && !!kind;
+	}
+
+	const updateConstraint = (c: SystemComponentConstraint) => {
+		const idx = constraints.findIndex(v => v.id === c.id);
+		if (idx >= 0) { constraints[idx] = c }
+		else { constraints.push(c) }
+		onUpdate();
+	}
+
+	const updateSignal = (s: SystemComponentSignal) => {
+		const idx = constraints.findIndex(v => v.id === s.id);
+		if (idx >= 0) { signals[idx] = s }
+		else { signals.push(s) }
+		onUpdate();
+	}
+
+	const updateControl = (c: SystemComponentControl) => {
+		const idx = controls.findIndex(v => v.id === c.id);
+		if (idx >= 0) { controls[idx] = c }
+		else { controls.push(c) }
+		onUpdate();
+	}
+
+	// this is gross but oh well
+	return {
+		initFromComponent,
+		get name() { return name },
+		set name(n: string) { name = n; onUpdate(); },
+		get kind() { return name },
+		set kind(k: string) { kind = k; onUpdate(); },
+		get description() { return description },
+		set description(d: string) { description = d; onUpdate(); },
+		get constraints() { return constraints },
+		updateConstraint,
+		get controls() { return controls },
+		updateControl,
+		get signals() { return signals },
+		updateSignal,
+		asAttributes(): SystemComponentAttributes {
+			return {
+				name: $state.snapshot(name),
+				kind: $state.snapshot(kind),
+				description: $state.snapshot(description),
+				constraints: $state.snapshot(constraints),
+				controls: $state.snapshot(controls),
+				signals: $state.snapshot(signals),
+				properties: $state.snapshot(properties),
+			}
+		},
+		get valid() { return valid },
+	}
+}
+
+type ComponentDialogView = "closed" | "add" | "create" | "edit";
+
+const createComponentDialogState = () => {
+	let editingComponent = $state<SystemAnalysisComponent>();
+	let componentAttributes = createComponentAttributesState();
+	let selectedAddComponent = $state<SystemComponent>();
+
+	let view = $state<ComponentDialogView>("closed");
+	let previousView = $state<ComponentDialogView>("closed");
+
+	const setView = (v: ComponentDialogView) => {
+		previousView = $state.snapshot(view);
+		view = v;
+	}
+
+	const editValid = $derived(componentAttributes.valid && (view === "create" || view === "edit"));
+	const addValid = $derived(!!selectedAddComponent && view === "add");
+
+	const clear = () => {
+		setView("closed");
+		editingComponent = undefined;
+		selectedAddComponent = undefined;
+		componentAttributes = createComponentAttributesState();
+	};
+
+	const goBack = () => {
+		if (view === "create" && previousView === "add") {
+			setView("add");
+			return;
+		}
+		clear();
+	}
+
+	const createUpdateMutation = () => createMutation(() => ({ ...updateSystemComponentMutation(), onSuccess: clear }));
+	const createCreateMutation = () => createMutation(() => ({
+		...createSystemComponentMutation(), 
+		onSuccess: (body: CreateSystemComponentResponseBody) => {
+			if (view === "create" && previousView === "add") {
+				goBack();
+				selectedAddComponent = body.data;
+			}
+		}
+	}));
+
+	let updateMut = $state<ReturnType<typeof createUpdateMutation>>();
+	let createMut = $state<ReturnType<typeof createCreateMutation>>();
+
+	const loading = $derived(updateMut?.isPending || createMut?.isPending);
+
+	const setup = () => {
+		updateMut = createUpdateMutation();
+		createMut = createCreateMutation();
+	};
+
+	const setAdding = () => {
+		setView("add");
+	}
+
+	const setSelectedAddComponent = (c?: SystemComponent) => {
+		selectedAddComponent = c;
+	}
+
+	const setCreating = () => {
+		setView("create");
+	}
+
+	const setEditing = (sc: SystemAnalysisComponent) => {
+		setView("edit");
+		editingComponent = sc;
+		componentAttributes.initFromComponent($state.snapshot(sc.attributes.component));
+	};
+
+	const confirm = () => {
+		if (view === "create" && componentAttributes.valid) {
+			const attr = componentAttributes.asAttributes();
+			const reqAttributes: CreateSystemComponentAttributes = {
+				name: attr.name,
+			};
+			createMut?.mutate({ body: { attributes: reqAttributes } });
+		} else if (view === "edit" && !!editingComponent && componentAttributes.valid) {
+			const attr = componentAttributes.asAttributes();
+			const componentId = editingComponent.attributes.component.id;
+			const reqAttributes: UpdateSystemComponentAttributes = {
+				name: attr.name,
+			};
+			updateMut?.mutate({
+				path: { id: componentId },
+				body: { attributes: reqAttributes },
+			});
+		} else if (view === "add" && !!selectedAddComponent) {
+			analysis.setAddingComponent($state.snapshot(selectedAddComponent));
+			clear();
+		} else {
+			console.error("invalid state to confirm", $state.snapshot(view));
+			clear();
+		}
+	};
+
+	return {
+		setup,
+		get view() {
+			return view;
+		},
+		get previousView() {
+			return previousView;
+		},
+		get open() {
+			return view !== "closed";
+		},
+		setAdding,
+		setSelectedAddComponent,
+		get selectedAddComponent() {
+			return selectedAddComponent;
+		},
+		setCreating,
+		setEditing,
+		get componentAttributes() {
+			return componentAttributes
+		},
+		clear,
+		goBack,
+		confirm,
+		get loading() {
+			return loading;
+		},
+		get stateValid() {
+			return editValid || addValid;
+		},
+		get editingComponent() {
+			return editingComponent;
+		},
+	};
+};
+
+export const componentDialog = createComponentDialogState();
