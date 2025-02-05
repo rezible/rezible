@@ -216,6 +216,22 @@ const createDiagramState = () => {
 
 	const handlePaneClicked = (e: SvelteFlowEvents["paneclick"]) => {
 		setSelected({});
+
+		if (analysis.addingComponent) {
+			const event = e.detail.event;
+			event.preventDefault();
+
+			if (!containerEl || !("pageX" in event)) return;
+
+			const { x, y } = containerEl.getBoundingClientRect();
+
+			const posX = event.pageX - x;
+			const posY = event.pageY - y;
+
+			alert(`add component: [${posX}, ${posY}]`);
+
+			analysis.setAddingComponent();
+		}
 	};
 
 	const handleEdgeClicked = (e: SvelteFlowEvents["edgeclick"]) => {

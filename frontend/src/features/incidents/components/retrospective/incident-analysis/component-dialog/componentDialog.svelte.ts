@@ -121,6 +121,7 @@ const createComponentDialogState = () => {
 	const goBack = () => {
 		if (view === "create" && previousView === "add") {
 			setView("add");
+			componentAttributes = createComponentAttributesState();
 			return;
 		}
 		clear();

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Checkbox, cls, Header, Icon, ListItem, TextField } from "svelte-ux";
+	import { Button, Checkbox, cls, Header, Icon, ListItem } from "svelte-ux";
 	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiFilter, mdiPlus } from "@mdi/js";

@@ -22,6 +22,7 @@
 	import ComponentNode from "./nodes/ComponentNode.svelte";
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
+	import AddingComponentGhostNode from "./AddingComponentGhostNode.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -98,6 +99,7 @@
 			<ConnectionLine slot="connectionLine" />
 			<ContextMenu {...diagram.ctxMenuProps} />
 			<EditToolbar />
+			<AddingComponentGhostNode />
 		</SvelteFlow>
 
 		<ActionsBar />

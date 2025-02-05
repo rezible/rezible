@@ -101,6 +101,8 @@ const createTimelineState = () => {
 	};
 
 	const mount = (container: HTMLElement) => {
+		console.log("mounted");
+		
 		const options: TimelineOptions = {
 			height: "100%",
 		};

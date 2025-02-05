@@ -4,25 +4,46 @@ import (
 	"context"
 	"github.com/google/uuid"
 	oapi "github.com/rezible/rezible/openapi"
+	"github.com/rs/zerolog/log"
 )
 
 type systemAnalysisHandler struct {
+	fakeComponents []oapi.SystemComponent
 }
 
 func newSystemAnalysisHandler() *systemAnalysisHandler {
-	return &systemAnalysisHandler{}
+	return &systemAnalysisHandler{
+		fakeComponents: make([]oapi.SystemComponent, 0),
+	}
 }
 
-func (s systemAnalysisHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
+func (s *systemAnalysisHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
 	var resp oapi.ListSystemComponentsResponse
 
-	resp.Body.Data = make([]oapi.SystemComponent, 0)
+	log.Debug().Int("num", len(s.fakeComponents)).Msg("list")
+	resp.Body.Data = s.fakeComponents
 
 	return &resp, nil
 }
 
-func (s systemAnalysisHandler) CreateSystemComponent(ctx context.Context, request *oapi.CreateSystemComponentRequest) (*oapi.CreateSystemComponentResponse, error) {
+func (s *systemAnalysisHandler) CreateSystemComponent(ctx context.Context, request *oapi.CreateSystemComponentRequest) (*oapi.CreateSystemComponentResponse, error) {
 	var resp oapi.CreateSystemComponentResponse
+
+	newComponent := oapi.SystemComponent{
+		Id: uuid.New(),
+		Attributes: oapi.SystemComponentAttributes{
+			Name:        request.Body.Attributes.Name,
+			Kind:        "",
+			Description: "",
+			Properties:  nil,
+			Constraints: nil,
+			Signals:     nil,
+			Controls:    nil,
+		},
+	}
+	s.fakeComponents = append(s.fakeComponents, newComponent)
+
+	resp.Body.Data = newComponent
 
 	return &resp, nil
 }
