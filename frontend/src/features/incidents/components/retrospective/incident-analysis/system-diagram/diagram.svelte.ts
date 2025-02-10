@@ -26,6 +26,7 @@ import {
 	type SystemComponent,
 } from "$lib/api";
 import { analysis } from "../analysis.svelte";
+import { relationshipDialog } from "../relationship-dialog/relationshipDialog.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -182,13 +183,13 @@ const createDiagramState = () => {
 			const { x, y, width, height } = flow.getNodesBounds([edge.source, edge.target]);
 			toolbarPosition = {
 				x: x + width / 2,
-				y: y + height / 2 + 40,
+				y: y + height / 2,// + 40,
 			};
 		} else if (node) {
 			const { x, y, width, height } = flow.getNodesBounds([node]);
 			toolbarPosition = {
 				x: x + width / 2,
-				y: y + height + 30,
+				y: y + height + 25,
 			};
 		} else {
 			toolbarPosition = { x: 0, y: 0 };
@@ -266,9 +267,9 @@ const createDiagramState = () => {
 		};
 	};
 
-	const onEdgeConnect = (conn: Connection) => {
-		console.log(conn);
-		alert("open create relationship dialog");
+	const onEdgeConnect = ({source, target}: Connection) => {
+		edges.set(get(edges).filter(e => (!(e.source === source && e.target === target))));
+		relationshipDialog.setCreating(source, target);
 	}
 
 	return {

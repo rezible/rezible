@@ -127,8 +127,11 @@ const createComponentDialogState = () => {
 		clear();
 	}
 
-	const createUpdateMutation = () => createMutation(() => ({ ...updateSystemComponentMutation(), onSuccess: clear }));
-	const createCreateMutation = () => createMutation(() => ({
+	const makeUpdateMutation = () => createMutation(() => ({
+		...updateSystemComponentMutation(),
+		onSuccess: clear,
+	}));
+	const makeCreateMutation = () => createMutation(() => ({
 		...createSystemComponentMutation(), 
 		onSuccess: (body: CreateSystemComponentResponseBody) => {
 			if (view === "create" && previousView === "add") {
@@ -138,14 +141,14 @@ const createComponentDialogState = () => {
 		}
 	}));
 
-	let updateMut = $state<ReturnType<typeof createUpdateMutation>>();
-	let createMut = $state<ReturnType<typeof createCreateMutation>>();
+	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
+	let createMut = $state<ReturnType<typeof makeCreateMutation>>();
 
 	const loading = $derived(updateMut?.isPending || createMut?.isPending);
 
 	const setup = () => {
-		updateMut = createUpdateMutation();
-		createMut = createCreateMutation();
+		updateMut = makeUpdateMutation();
+		createMut = makeCreateMutation();
 	};
 
 	const setAdding = () => {

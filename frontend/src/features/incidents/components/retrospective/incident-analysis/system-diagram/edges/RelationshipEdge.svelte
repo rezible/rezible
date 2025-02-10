@@ -86,9 +86,9 @@
 {@render edgePath(pathIn, "in")}
 
 <EdgeLabelRenderer>
-	<div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
+	<!--div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
 		<span class="">{data.description}relationship</span>
-	</div>
+	</div-->
 </EdgeLabelRenderer>
 
 <style lang="postcss">

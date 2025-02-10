@@ -51,6 +51,39 @@ func (s *systemAnalysisHandler) CreateSystemComponent(ctx context.Context, reque
 func (s *systemAnalysisHandler) GetSystemComponent(ctx context.Context, request *oapi.GetSystemComponentRequest) (*oapi.GetSystemComponentResponse, error) {
 	var resp oapi.GetSystemComponentResponse
 
+	signals := []oapi.SystemComponentSignal{
+		{
+			Id: uuid.New(),
+			Attributes: oapi.SystemComponentSignalAttributes{
+				Label:       "signal",
+				Description: "description",
+			},
+		},
+	}
+
+	controls := []oapi.SystemComponentControl{
+		{
+			Id: uuid.New(),
+			Attributes: oapi.SystemComponentControlAttributes{
+				Label:       "control",
+				Description: "description",
+			},
+		},
+	}
+
+	resp.Body.Data = oapi.SystemComponent{
+		Id: uuid.New(),
+		Attributes: oapi.SystemComponentAttributes{
+			Name:        "Component",
+			Kind:        "kind",
+			Description: "description",
+			Properties:  make(map[string]interface{}),
+			Constraints: make([]oapi.SystemComponentConstraint, 0),
+			Signals:     signals,
+			Controls:    controls,
+		},
+	}
+
 	return &resp, nil
 }
 
