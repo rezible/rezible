@@ -98,7 +98,6 @@ type (
 		Id         uuid.UUID                `json:"id"`
 		Attributes SystemAnalysisAttributes `json:"attributes"`
 	}
-
 	SystemAnalysisAttributes struct {
 		Components    []SystemAnalysisComponent    `json:"components"`
 		Relationships []SystemAnalysisRelationship `json:"relationships"`
@@ -130,6 +129,10 @@ type (
 		Description     string                                     `json:"description"`
 		FeedbackSignals []SystemAnalysisRelationshipFeedbackSignal `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
 		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"control_actions"`  // IDs of SystemComponentControl from source to target
+	}
+
+	SystemAnalysisRelationshipComponent struct {
+		ComponentId uuid.UUID `json:"component_id"`
 	}
 
 	SystemAnalysisRelationshipControlAction struct {
@@ -255,8 +258,8 @@ var AddSystemAnalysisComponent = huma.Operation{
 }
 
 type AddSystemAnalysisComponentAttributes struct {
-	ComponentId uuid.UUID `json:"component_id"`
-	Role        string    `json:"role"`
+	ComponentId uuid.UUID                     `json:"component_id"`
+	Position    SystemAnalysisDiagramPosition `json:"position"`
 }
 type AddSystemAnalysisComponentRequest CreateIdRequest[AddSystemAnalysisComponentAttributes]
 type AddSystemAnalysisComponentResponse ItemResponse[SystemAnalysisComponent]

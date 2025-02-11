@@ -46,7 +46,7 @@
 			loading={relationshipDialog.loading}
 			closeText="Cancel"
 			confirmText={labels.confirm}
-			saveEnabled={relationshipDialog.stateValid}
+			saveEnabled={relationshipDialog.saveEnabled}
 			onClose={relationshipDialog.clear}
 			onConfirm={relationshipDialog.confirm}
 		/>
