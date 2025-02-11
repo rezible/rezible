@@ -42,7 +42,7 @@
 		</LoadingQueryWrapper>
 	</div>
 
-	<div class="border p-2">
+	<div class="border p-2 overflow-y-auto">
 		{#if !!sourceComponent && !!targetComponent}
 			<RelationshipLoopsColumn source={sourceComponent} target={targetComponent} />
 		{/if}
