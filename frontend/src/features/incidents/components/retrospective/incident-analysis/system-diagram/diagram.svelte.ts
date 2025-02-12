@@ -12,6 +12,7 @@ import {
 	type OnConnectEnd,
 	type OnConnect,
 	type Connection,
+	useStore,
 } from "@xyflow/svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
@@ -172,7 +173,15 @@ const createDiagramState = () => {
 	};
 
 	let flow = $state<ReturnType<typeof useSvelteFlow>>();
-	const onFlowInit = () => (flow = useSvelteFlow());
+	let flowStore = $state<ReturnType<typeof useStore>>();
+	const onFlowInit = () => {
+		flow = useSvelteFlow();
+		flowStore = useStore();
+	};
+
+	const interactionLocked = () => {
+		return flowStore && !get(flowStore.elementsSelectable);
+	}
 
 	const updateToolbarPosition = () => {
 		if (!flow) return;
@@ -201,6 +210,7 @@ const createDiagramState = () => {
 	};
 
 	const handleNodeClicked = (e: SvelteFlowEvents["nodeclick"]) => {
+		if (interactionLocked()) return;
 		const { event, node } = e.detail;
 		setSelected({ node });
 	};
@@ -238,11 +248,13 @@ const createDiagramState = () => {
 	};
 
 	const handleEdgeClicked = (e: SvelteFlowEvents["edgeclick"]) => {
+		if (interactionLocked()) return;
 		const { event, edge } = e.detail;
 		setSelected({ edge });
 	};
 
 	const handleContextMenuEvent = (e: SvelteFlowContextMenuEvent) => {
+		if (interactionLocked()) return;
 		if (!containerEl) return;
 
 		const detail = e.detail;

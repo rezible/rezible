@@ -31,6 +31,7 @@ const createTimelineEventElement = (id: string) => {
 };
 
 const createTimelineState = () => {
+	let containerEl = $state<HTMLElement>();
 	let timeline = $state<Timeline>();
 
 	let milestoneItems = new DataSet<any>([]);
@@ -62,7 +63,7 @@ const createTimelineState = () => {
 	};
 
 	const onEventsQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
-		
+		addEvent("bleh");
 	};
 
 	const createQueries = () => {
@@ -81,16 +82,17 @@ const createTimelineState = () => {
 
 	const addEvent = (id: IdType) => {
 		const created = createTimelineEventElement(id.toString());
-		items.add({ id: 1, content: created.element, start: "2014-01-23" });
+		items.add({ id: 1, content: created.element, start: new Date(2025, 1, 12, 7) });
 		eventComponents.set(id, created);
 	};
 
-	const mountContainer = (container?: HTMLElement) => {
-		if (!container) return;
+	const mountContainer = (el?: HTMLElement) => {
+		if (!el) return;
+		containerEl = el;
 		const options: TimelineOptions = {
 			height: "100%",
 		};
-		timeline = new Timeline(container, items, options);
+		timeline = new Timeline(containerEl, items, options);
 	};
 
 	const onUnmount = () => {
