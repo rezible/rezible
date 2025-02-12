@@ -190,7 +190,7 @@ const createRelationshipDialogState = () => {
 			return relationshipAttributes;
 		},
 		get saveEnabled() {
-			return relationshipAttributes.valid && relationshipAttributes.changed;
+			return relationshipAttributes.valid && (view === "create" || relationshipAttributes.changed);
 		},
 		clear,
 		confirm,

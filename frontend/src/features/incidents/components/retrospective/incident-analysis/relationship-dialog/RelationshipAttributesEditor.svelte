@@ -33,7 +33,7 @@
 	const targetComponent = $derived(targetComponentQuery.data?.data);
 </script>
 
-<div class="grid grid-cols-3 min-h-0 max-h-full h-full gap-2">
+<div class="grid grid-cols-3 min-h-0 max-h-full h-full gap-2 overflow-y-hidden">
 	<div class="border overflow-y-auto">
 		<LoadingQueryWrapper query={sourceComponentQuery}>
 			{#snippet view(component: SystemComponent)}

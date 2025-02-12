@@ -20,17 +20,5 @@
 				<Icon data={mdiPlusNetwork} />
 			</span>
 		</Button>
-		<Button
-			color="default"
-			variant="fill"
-			on:click={() => {
-				console.log($nodes);
-			}}
-		>
-			<span class="flex items-center gap-2">
-				<span class="group-hover:inline hidden">log</span>
-				<Icon data={mdiBug} />
-			</span>
-		</Button>
 	</div>
 </div>

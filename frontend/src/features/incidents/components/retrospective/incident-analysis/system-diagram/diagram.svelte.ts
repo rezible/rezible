@@ -171,10 +171,8 @@ const createDiagramState = () => {
 		);
 	};
 
-	let flow: ReturnType<typeof useSvelteFlow> | undefined;
-	const onFlowInit = () => {
-		flow = useSvelteFlow();
-	};
+	let flow = $state<ReturnType<typeof useSvelteFlow>>();
+	const onFlowInit = () => (flow = useSvelteFlow());
 
 	const updateToolbarPosition = () => {
 		if (!flow) return;
@@ -183,7 +181,7 @@ const createDiagramState = () => {
 			const { x, y, width, height } = flow.getNodesBounds([edge.source, edge.target]);
 			toolbarPosition = {
 				x: x + width / 2,
-				y: y + height / 2,// + 40,
+				y: y + height / 2,
 			};
 		} else if (node) {
 			const { x, y, width, height } = flow.getNodesBounds([node]);
@@ -232,6 +230,8 @@ const createDiagramState = () => {
 			const posY = event.pageY - y;
 
 			alert(`add component: [${posX}, ${posY}]`);
+
+			// createSystemAnalysisComponent mutation, then invalidate 
 
 			analysis.setAddingComponent();
 		}
