@@ -36,6 +36,7 @@
 	"dependencies": {
 		"@hey-api/client-fetch": "^0.5.7",
 		"@hocuspocus/provider": "^2.15.1",
+		"@internationalized/date": "^3.7.0",
 		"@mdi/js": "^7.4.47",
 		"@rezible/documents": "workspace:*",
 		"@sveltejs/adapter-auto": "^3.3.1",

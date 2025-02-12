@@ -2,18 +2,18 @@ import { mount, onMount, unmount } from "svelte";
 import { Timeline, type IdType, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient, type CreateQueryResult } from "@tanstack/svelte-query";
 import { watch } from "runed";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
 	listIncidentMilestonesOptions,
 	type IncidentMilestone,
-	type ListIncidentMilestonesResponse,
+	type ListIncidentMilestonesResponseBody,
 } from "$lib/api";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
 import type { TimelineEvent } from "./types";
 
-export const createTimelineEventElement = (id: string) => {
+const createTimelineEventElement = (id: string) => {
 	let props = $state<TimelineEventComponentProps>({ label: "initial" });
 
 	const target = document.createElement("div");
@@ -25,12 +25,8 @@ export const createTimelineEventElement = (id: string) => {
 		get element() {
 			return target;
 		},
-		setLabel: (label: string) => {
-			props.label = label;
-		},
-		unmount: () => {
-			unmount(component);
-		},
+		setLabel: (label: string) => (props.label = label),
+		unmount: () => (unmount(component)),
 	};
 };
 
@@ -38,98 +34,82 @@ const createTimelineState = () => {
 	let timeline = $state<Timeline>();
 
 	let milestoneItems = new DataSet<any>([]);
-	let eventItems = new DataSet<any>([]);
-
+	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
 	const items = new DataSet<any>([]);
+
 	const updateItems = () => {
 		// items = new DataSet()
 	};
 
-	const onMilestonesQueryDataUpdated = (m: IncidentMilestone[]) => {
-		milestoneItems = new DataSet([
-			{
-				id: "A",
-				content: "Period A",
-				start: "2014-01-16",
-				end: "2014-01-22",
-				type: "background",
-			},
-			{
-				id: "B",
-				content: "Period B",
-				start: "2014-01-25",
-				end: "2014-01-30",
-				type: "background",
-				className: "negative",
-			},
-		]);
+	const onMilestonesQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
+		// milestoneItems = new DataSet([
+		// 	{
+		// 		id: "A",
+		// 		content: "Period A",
+		// 		start: "2014-01-16",
+		// 		end: "2014-01-22",
+		// 		type: "background",
+		// 	},
+		// 	{
+		// 		id: "B",
+		// 		content: "Period B",
+		// 		start: "2014-01-25",
+		// 		end: "2014-01-30",
+		// 		type: "background",
+		// 		className: "negative",
+		// 	},
+		// ]);
 	};
 
-	const onEventsQueryDataUpdated = (events: any[]) => {
-		console.log("events updated");
+	const onEventsQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
+		
 	};
 
 	const createQueries = () => {
 		const queryClient = useQueryClient();
 		const incidentId = incidentCtx.get().id;
 
-		const milestonesQuery = createQuery(
-			() => listIncidentMilestonesOptions({ path: { id: incidentId } }),
-			queryClient
-		);
-		watch(
-			() => milestonesQuery,
-			(r) => onMilestonesQueryDataUpdated(r.data?.data ?? [])
-		);
+		const milestonesQueryOptsFn = () => listIncidentMilestonesOptions({ path: { id: incidentId } });
+		const milestonesQuery = createQuery(milestonesQueryOptsFn, queryClient);
+		watch(() => milestonesQuery, onMilestonesQueryDataUpdated);
 
 		// TODO: swap this for correct query
-		const eventsQuery = createQuery(
-			() => listIncidentMilestonesOptions({ path: { id: incidentId } }),
-			queryClient
-		);
-		watch(
-			() => eventsQuery,
-			(r) => onEventsQueryDataUpdated(r.data?.data ?? [])
-		);
+		const eventsQueryOpts = () => listIncidentMilestonesOptions({ path: { id: incidentId } });
+		const eventsQuery = createQuery(eventsQueryOpts, queryClient);
+		watch(() => eventsQuery, onEventsQueryDataUpdated);
 	};
 
-	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
 	const addEvent = (id: IdType) => {
 		const created = createTimelineEventElement(id.toString());
 		items.add({ id: 1, content: created.element, start: "2014-01-23" });
 		eventComponents.set(id, created);
 	};
 
-	const mount = (container: HTMLElement) => {	
+	const mountContainer = (container?: HTMLElement) => {
+		if (!container) return;
 		const options: TimelineOptions = {
 			height: "100%",
 		};
 		timeline = new Timeline(container, items, options);
-
-		addEvent("bleh");
 	};
 
-	const unmount = () => {
+	const onUnmount = () => {
 		timeline?.destroy();
-		eventComponents.forEach((c) => c.unmount());
+		eventComponents.forEach(c => c.unmount());
 		eventComponents.clear();
 		items.clear();
 	};
 
-	const componentSetup = (containerElFn: () => HTMLElement | undefined) => {
-		watch(containerElFn, (el) => {
-			if (el) mount(el);
-		});
-		onMount(() => {
-			return unmount;
-		});
+	const setup = (containerElFn: () => HTMLElement | undefined) => {
 		createQueries();
+		watch(containerElFn, mountContainer);
+		onMount(() => onUnmount);
 	};
 
 	let editingEvent = $state<TimelineEvent>();
 
 	return {
-		componentSetup,
+		setup,
 		get editingEvent() {
 			return editingEvent;
 		},

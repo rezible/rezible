@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiBug, mdiPlusNetwork } from "@mdi/js";
+	import { mdiShapeSquareRoundedPlus } from "@mdi/js";
 	import { useNodes } from "@xyflow/svelte";
 	import { Button, Icon } from "svelte-ux";
 	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/componentDialog.svelte";
@@ -17,7 +17,7 @@
 		<Button color="primary" variant="fill" on:click={componentDialog.setAdding}>
 			<span class="flex items-center gap-2">
 				<span class="group-hover:inline hidden">Add Component</span>
-				<Icon data={mdiPlusNetwork} />
+				<Icon data={mdiShapeSquareRoundedPlus} />
 			</span>
 		</Button>
 	</div>

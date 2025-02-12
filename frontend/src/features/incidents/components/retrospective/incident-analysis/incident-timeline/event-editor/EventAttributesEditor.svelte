@@ -9,20 +9,14 @@
 	import EvidencePanel from "./panels/Evidence.svelte";
 	import SystemComponentsPanel from "./panels/SystemComponents.svelte";
 	import type { Component } from "svelte";
-
-	type Props = {
-		event?: TimelineEvent;
-	};
-	let { event }: Props = $props();
-
-	let eventType = $state<TimelineEvent["type"]>("observation");
+	import { eventAttributes } from "./panels/eventAttributes.svelte";
 </script>
 
 <div class="flex flex-row min-h-0 max-h-full h-full gap-2 p-2">
 	<div class="flex flex-col gap-2">
 		<Header title="Details" />
 
-		<EventDetailsPanel bind:eventType />
+		<EventDetailsPanel />
 	</div>
 
 	<div class="flex flex-col gap-2 overflow-y-auto flex-1">
@@ -48,7 +42,7 @@
 			</div>
 		{/snippet}
 
-		{#if eventType === "decision"}
+		{#if eventAttributes.eventType === "decision"}
 			{@render panel(
 				"Decision Context",
 				"Document the options, constraints, and reasoning behind this choice",

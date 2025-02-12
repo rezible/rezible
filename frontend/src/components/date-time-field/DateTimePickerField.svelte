@@ -13,6 +13,8 @@
 	} from "svelte-ux";
 	import type { DateTimeAnchor } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import TimePicker from "$components/time-picker/TimePicker.svelte";
+	import { Time } from "@internationalized/date";
 
 	type Props = {
 		name?: string;
@@ -26,23 +28,28 @@
 	const { format, localeSettings } = getSettings();
 	// const dictionary = $derived($format.settings.dictionary);
 
-	const getTimes = (a: DateTimeAnchor) => {
+	type InternalValue = {
+		date: Date;
+		time: Time;
+		period: "AM" | "PM";
+		timezone: string;
+	}
+	const getTimes = (a: DateTimeAnchor): InternalValue => {
 		const timeParts = a.time.split(":");
 		const hour = Number.parseInt(timeParts[0]);
 		const minute = Number.parseInt(timeParts[1]);
 		const seconds = Number.parseInt(timeParts[2]);
 		return {
 			date: new Date(a.date),
-			hour,
-			minute,
-			seconds,
-			amPm: hour >= 12 ? "pm" : "am",
+			time: new Time(hour, minute, seconds),
+			period: hour >= 12 ? "PM" : "AM",
 			timezone: a.timezone,
 		};
 	};
 
 	let open = $state(false);
-	let value = $state(getTimes(current));
+	const currentValue = $derived(getTimes(current));
+	let value = $state(getTimes($state.snapshot(current)));
 
 	const periodType = PeriodType.Day;
 	const primaryFormat = [DateToken.Month_long, DateToken.DayOfMonth_withOrdinal, DateToken.Year_numeric];
@@ -50,20 +57,21 @@
 
 	const pad = (n: number) => String(n).padStart(2, "0");
 
-	const formatHourMinute = $derived(`${value.hour}:${pad(value.minute)}`);
-	const formatTime = $derived(formatHourMinute + value.amPm);
-	const formatDayOfWeek = $derived($format(value.date, PeriodType.Day, { custom: secondaryFormat }));
-	const formatDate = $derived($format(value.date, PeriodType.Day, { custom: primaryFormat }));
+	const formatHourMinute = $derived(`${currentValue.time.hour}:${pad(currentValue.time.minute)}`);
+	const formatTime = $derived(formatHourMinute + currentValue.period.toLowerCase());
+	const formatDayOfWeek = $derived($format(currentValue.date, PeriodType.Day, { custom: secondaryFormat }));
+	const formatDate = $derived($format(currentValue.date, PeriodType.Day, { custom: primaryFormat }));
 
 	const convertHour24 = () => {
-		const hour = value.hour === 12 ? 0 : value.hour;
-		return value.amPm === "am" ? hour : hour + 12;
+		const hour = value.time.hour === 12 ? 0 : value.time.hour;
+		return value.period === "AM" ? hour : hour + 12;
 	};
+
 	const onConfirm = () => {
 		const hour24 = convertHour24();
 		const newValue = {
-			date: value.date, // `${value.date.getFullYear()}-${pad(value.date.getMonth() + 1)}-${pad(value.date.getDate())}`,
-			time: `${pad(hour24)}:${pad(value.minute)}:${pad(value.seconds)}`,
+			date: value.date,
+			time: `${pad(hour24)}:${pad(value.time.minute)}:${pad(value.time.second)}`,
 			timezone: value.timezone,
 		};
 		onChange(newValue);
@@ -119,44 +127,36 @@
 
 		<div class="p-2 w-96">
 			<DateSelect
-				bind:selected={value.date}
+				selected={value.date}
 				{periodType}
 				on:dateChange={(e) => (value.date = e.detail)}
 			/>
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}
-					<!-- https://time-picker.nouro.app/ -->
-					<Input
-						mask="hhmmss"
-						replace="hms"
-						on:change={(e) => {
-							console.log(e.detail.value);
-						}}
-						class="text-md w-8 border text-center"
-					/>
+					<TimePicker bind:time={value.time} bind:period={value.period} />
 				{:else}
-					<select class={selectClasses} bind:value={value.hour}>
+					<select class={selectClasses} bind:value={value.time.hour}>
 						{#each ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"] as h}
 							{@const hourNum = Number.parseInt(h)}
-							<option selected={value.hour === hourNum} value={hourNum}>{h}</option>
+							<option selected={value.time.hour === hourNum} value={hourNum}>{h}</option>
 						{/each}
 					</select>
 
 					<span>:</span>
 
-					<select class={selectClasses} bind:value={value.minute}>
+					<select class={selectClasses} bind:value={value.time.minute}>
 						{#each ["00", "15", "30", "45"] as m}
 							{@const minuteNum = Number.parseInt(m)}
-							<option selected={value.minute === minuteNum} value={minuteNum}>{m}</option>
+							<option selected={value.time.minute === minuteNum} value={minuteNum}>{m}</option>
 						{/each}
 					</select>
-				{/if}
 
-				<select class={selectClasses} bind:value={value.amPm}>
-					<option selected={value.amPm === "am"} value="am">AM</option>
-					<option selected={value.amPm === "pm"} value="pm">PM</option>
-				</select>
+					<select class={selectClasses} bind:value={value.period}>
+						<option selected={value.period === "AM"} value="AM">AM</option>
+						<option selected={value.period === "PM"} value="PM">PM</option>
+					</select>
+				{/if}
 			</div>
 		</div>
 

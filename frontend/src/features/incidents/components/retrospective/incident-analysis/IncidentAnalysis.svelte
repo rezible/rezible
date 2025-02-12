@@ -28,7 +28,7 @@
 </div>
 
 {#snippet floatingTimelineToggleButton(hide: boolean)}
-	<div class="absolute left-1 w-full flex items-center h-10" class:top-1={hide} class:bottom-2={!hide} class:hidden={hideTimeline === hide}>
+	<div class="absolute left-2 flex items-center h-10" class:top-2={hide} class:bottom-2={!hide} class:hidden={hideTimeline === hide}>
 		<Button color={hide ? "default" : "accent"} variant="fill-light" on:click={() => {hideTimeline = hide}}>
 			{hide ? "Hide" : "Show"} Timeline
 			<Icon data={hide ? mdiChevronDown : mdiChevronUp} />

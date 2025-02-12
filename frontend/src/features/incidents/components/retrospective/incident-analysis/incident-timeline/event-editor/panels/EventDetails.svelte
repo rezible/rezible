@@ -12,15 +12,10 @@
 	} from "svelte-ux";
 	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiCalendar } from "@mdi/js";
 	import { onMount } from "svelte";
-	import type { TimelineEvent } from "$features/incidents/components/incident-timeline/types";
 	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 	import type { DateTimeAnchor } from "$lib/api";
-
-	type Props = {
-		eventType: TimelineEvent["type"];
-	};
-	let { eventType = $bindable() }: Props = $props();
+	import { eventAttributes } from "./eventAttributes.svelte";
 
 	let dateAnchor = $state<DateTimeAnchor>({
 		date: new Date(),
@@ -58,9 +53,7 @@
 	const descriptionEditor = createMentionEditor("", "cursor-text focus:outline-none min-h-20");
 
 	onMount(() => {
-		return () => {
-			descriptionEditor.destroy();
-		};
+		return () => (descriptionEditor.destroy());
 	});
 </script>
 
@@ -68,7 +61,7 @@
 	<TextField label="Title" value="" />
 
 	<Field label="Event Type">
-		<ToggleGroup bind:value={eventType} variant="fill" inset class="w-full">
+		<ToggleGroup bind:value={eventAttributes.eventType} variant="fill" inset class="w-full">
 			{#each eventTypeOptions as opt}
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
@@ -85,8 +78,8 @@
 	<DateTimePickerField
 		label="Time"
 		current={dateAnchor}
-		onChange={(v) => {
-			console.log(v);
+		onChange={newDate => {
+			dateAnchor = newDate;
 		}}
 		exactTime
 	/>
