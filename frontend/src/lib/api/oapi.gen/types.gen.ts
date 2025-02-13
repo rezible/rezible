@@ -483,7 +483,7 @@ export type CreateSystemComponentAttributes = {
 
 export type CreateSystemComponentConstraintAttributes = {
     description: string;
-    name: string;
+    label: string;
 };
 
 export type CreateSystemComponentConstraintRequestBody = {
@@ -504,7 +504,7 @@ export type CreateSystemComponentConstraintResponseBody = {
 
 export type CreateSystemComponentControlAttributes = {
     description: string;
-    name: string;
+    label: string;
 };
 
 export type CreateSystemComponentControlRequestBody = {
@@ -541,7 +541,7 @@ export type CreateSystemComponentResponseBody = {
 
 export type CreateSystemComponentSignalAttributes = {
     description: string;
-    name: string;
+    label: string;
 };
 
 export type CreateSystemComponentSignalRequestBody = {
@@ -2343,10 +2343,16 @@ export type UpdateSystemComponentAttributes = {
 };
 
 export type UpdateSystemComponentConstraintAttributes = {
+    description: string;
+    label: string;
+};
+
+export type UpdateSystemComponentConstraintRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    attributes: UpdateSystemComponentConstraintAttributes;
 };
 
 export type UpdateSystemComponentConstraintResponseBody = {
@@ -2358,10 +2364,16 @@ export type UpdateSystemComponentConstraintResponseBody = {
 };
 
 export type UpdateSystemComponentControlAttributes = {
+    description: string;
+    label: string;
+};
+
+export type UpdateSystemComponentControlRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    attributes: UpdateSystemComponentControlAttributes;
 };
 
 export type UpdateSystemComponentControlResponseBody = {
@@ -2389,10 +2401,16 @@ export type UpdateSystemComponentResponseBody = {
 };
 
 export type UpdateSystemComponentSignalAttributes = {
+    description: string;
+    label: string;
+};
+
+export type UpdateSystemComponentSignalRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
+    attributes: UpdateSystemComponentSignalAttributes;
 };
 
 export type UpdateSystemComponentSignalResponseBody = {
@@ -3762,7 +3780,8 @@ export type CreateSystemComponentError = (ErrorModel);
 
 export type GetSystemComponentConstraintData = {
     path: {
-        id: string;
+        componentId: string;
+        constraintId: string;
     };
 };
 
@@ -3782,7 +3801,7 @@ export type ArchiveSystemComponentConstraintResponse = (void);
 export type ArchiveSystemComponentConstraintError = (ErrorModel);
 
 export type UpdateSystemComponentConstraintData = {
-    body: UpdateSystemComponentConstraintAttributes;
+    body: UpdateSystemComponentConstraintRequestBody;
     path: {
         componentId: string;
         constraintId: string;
@@ -3795,7 +3814,8 @@ export type UpdateSystemComponentConstraintError = (ErrorModel);
 
 export type GetSystemComponentControlData = {
     path: {
-        id: string;
+        componentId: string;
+        controlId: string;
     };
 };
 
@@ -3815,7 +3835,7 @@ export type ArchiveSystemComponentControlResponse = (void);
 export type ArchiveSystemComponentControlError = (ErrorModel);
 
 export type UpdateSystemComponentControlData = {
-    body: UpdateSystemComponentControlAttributes;
+    body: UpdateSystemComponentControlRequestBody;
     path: {
         componentId: string;
         controlId: string;
@@ -3828,7 +3848,8 @@ export type UpdateSystemComponentControlError = (ErrorModel);
 
 export type GetSystemComponentSignalData = {
     path: {
-        id: string;
+        componentId: string;
+        signalId: string;
     };
 };
 
@@ -3848,7 +3869,7 @@ export type ArchiveSystemComponentSignalResponse = (void);
 export type ArchiveSystemComponentSignalError = (ErrorModel);
 
 export type UpdateSystemComponentSignalData = {
-    body: UpdateSystemComponentSignalAttributes;
+    body: UpdateSystemComponentSignalRequestBody;
     path: {
         componentId: string;
         signalId: string;
@@ -3892,6 +3913,9 @@ export type UpdateSystemComponentError = (ErrorModel);
 
 export type CreateSystemComponentConstraintData = {
     body: CreateSystemComponentConstraintRequestBody;
+    path: {
+        id: string;
+    };
 };
 
 export type CreateSystemComponentConstraintResponse = (CreateSystemComponentConstraintResponseBody);
@@ -3900,6 +3924,9 @@ export type CreateSystemComponentConstraintError = (ErrorModel);
 
 export type CreateSystemComponentControlData = {
     body: CreateSystemComponentControlRequestBody;
+    path: {
+        id: string;
+    };
 };
 
 export type CreateSystemComponentControlResponse = (CreateSystemComponentControlResponseBody);
@@ -3908,6 +3935,9 @@ export type CreateSystemComponentControlError = (ErrorModel);
 
 export type CreateSystemComponentSignalData = {
     body: CreateSystemComponentSignalRequestBody;
+    path: {
+        id: string;
+    };
 };
 
 export type CreateSystemComponentSignalResponse = (CreateSystemComponentSignalResponseBody);

@@ -31,11 +31,11 @@
 	} from "@mdi/js";
 	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
 	import { componentDialog } from "./componentDialog.svelte";
-	import { componentEdits } from "./componentEditMutations.svelte";
+	import { componentTraits } from "./componentTraitMutations.svelte";
 
 	const attr = $derived(componentDialog.componentAttributes);
 
-	componentEdits.setup();
+	componentTraits.setupMutations();
 
 	const kindOptions: MenuOption<string>[] = [{ label: "Service", value: "service" }];
 </script>
@@ -107,15 +107,15 @@
 {/snippet}
 
 {#snippet constraintsPanel()}
-	{@const editConstraint = componentEdits.constraint}
+	{@const editConstraint = componentTraits.constraint}
 	{#if !editConstraint}
 		<div class="flex flex-col gap-2">
 			{#each attr.constraints as c}
 				{@const { label, description } = c.attributes}
-				{@render attributeListItem(label, description, () => componentEdits.editConstraint(c))}
+				{@render attributeListItem(label, description, () => componentTraits.editConstraint(c))}
 			{/each}
 
-			<Button on:click={() => componentEdits.editConstraint()}>Add Constraint</Button>
+			<Button on:click={() => componentTraits.editConstraint()}>Add Constraint</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
@@ -127,9 +127,9 @@
 			/>
 
 			<ConfirmButtons
-				onClose={componentEdits.clearConstraint}
-				loading={componentEdits.pending}
-				onConfirm={componentEdits.saveConstraint}
+				onClose={componentTraits.clearConstraint}
+				loading={componentTraits.pending}
+				onConfirm={componentTraits.saveConstraint}
 				saveEnabled={!!editConstraint.attributes.label}
 			>
 				{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}
@@ -140,16 +140,16 @@
 {/snippet}
 
 {#snippet signalsPanel()}
-	{@const editSignal = componentEdits.signal}
+	{@const editSignal = componentTraits.signal}
 	{#if !editSignal}
 		<div class="flex flex-col gap-2">
 			{#each attr.signals as signal}
 				{@render attributeListItem(signal.attributes.label, signal.attributes.description, () =>
-					componentEdits.editSignal(signal)
+					componentTraits.editSignal(signal)
 				)}
 			{/each}
 
-			<Button on:click={() => componentEdits.editSignal()}>Add Signal</Button>
+			<Button on:click={() => componentTraits.editSignal()}>Add Signal</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
@@ -161,9 +161,9 @@
 			/>
 
 			<ConfirmButtons
-				onClose={componentEdits.clearSignal}
-				loading={componentEdits.pending}
-				onConfirm={componentEdits.saveSignal}
+				onClose={componentTraits.clearSignal}
+				loading={componentTraits.pending}
+				onConfirm={componentTraits.saveSignal}
 				saveEnabled={!!editSignal.attributes.label}
 			>
 				{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}
@@ -174,16 +174,16 @@
 {/snippet}
 
 {#snippet controlsPanel()}
-	{@const editControl = componentEdits.control}
+	{@const editControl = componentTraits.control}
 	{#if !editControl}
 		<div class="flex flex-col gap-2">
 			{#each attr.controls as control}
 				{@render attributeListItem(control.attributes.label, control.attributes.description, () =>
-					componentEdits.editControl(control)
+					componentTraits.editControl(control)
 				)}
 			{/each}
 
-			<Button on:click={() => componentEdits.editControl()}>Add Control</Button>
+			<Button on:click={() => componentTraits.editControl()}>Add Control</Button>
 		</div>
 	{:else}
 		<div class="w-full flex flex-col border rounded-lg p-2 gap-2">
@@ -195,9 +195,9 @@
 			/>
 
 			<ConfirmButtons
-				onClose={componentEdits.clearControl}
-				onConfirm={componentEdits.saveControl}
-				loading={componentEdits.pending}
+				onClose={componentTraits.clearControl}
+				onConfirm={componentTraits.saveControl}
+				loading={componentTraits.pending}
 				saveEnabled={!!editControl.attributes.label}
 			>
 				{#snippet closeButtonContent()}<Icon data={mdiClose} />{/snippet}

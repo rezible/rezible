@@ -186,7 +186,9 @@ type SystemComponentConstraintRequest struct {
 type SystemComponentConstraintBodyRequest[A any] struct {
 	ComponentId  uuid.UUID `path:"componentId"`
 	ConstraintId uuid.UUID `path:"constraintId"`
-	Body         A         `json:"body"`
+	Body         struct {
+		Attributes A `json:"attributes"`
+	}
 }
 
 const componentConstraintPath = "/system_components/{componentId}/constraints/{constraintId}"
@@ -201,10 +203,10 @@ var CreateSystemComponentConstraint = huma.Operation{
 }
 
 type CreateSystemComponentConstraintAttributes struct {
-	Label       string `json:"name"`
+	Label       string `json:"label"`
 	Description string `json:"description"`
 }
-type CreateSystemComponentConstraintRequest RequestWithBodyAttributes[CreateSystemComponentConstraintAttributes]
+type CreateSystemComponentConstraintRequest CreateIdRequest[CreateSystemComponentConstraintAttributes]
 type CreateSystemComponentConstraintResponse ItemResponse[SystemComponentConstraint]
 
 var GetSystemComponentConstraint = huma.Operation{
@@ -216,7 +218,7 @@ var GetSystemComponentConstraint = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentConstraintRequest GetIdRequest
+type GetSystemComponentConstraintRequest SystemComponentConstraintRequest
 type GetSystemComponentConstraintResponse ItemResponse[SystemComponentConstraint]
 
 var UpdateSystemComponentConstraint = huma.Operation{
@@ -229,6 +231,8 @@ var UpdateSystemComponentConstraint = huma.Operation{
 }
 
 type UpdateSystemComponentConstraintAttributes struct {
+	Label       *string `json:"label"`
+	Description *string `json:"description"`
 }
 type UpdateSystemComponentConstraintRequest SystemComponentConstraintBodyRequest[UpdateSystemComponentConstraintAttributes]
 type UpdateSystemComponentConstraintResponse ItemResponse[SystemComponentConstraint]
@@ -255,7 +259,9 @@ type SystemComponentControlRequest struct {
 type SystemComponentControlBodyRequest[A any] struct {
 	ComponentId uuid.UUID `path:"componentId"`
 	ControlId   uuid.UUID `path:"controlId"`
-	Body        A         `json:"body"`
+	Body        struct {
+		Attributes A `json:"attributes"`
+	}
 }
 
 const componentControlPath = "/system_components/{componentId}/controls/{controlId}"
@@ -270,10 +276,10 @@ var CreateSystemComponentControl = huma.Operation{
 }
 
 type CreateSystemComponentControlAttributes struct {
-	Label       string `json:"name"`
+	Label       string `json:"label"`
 	Description string `json:"description"`
 }
-type CreateSystemComponentControlRequest RequestWithBodyAttributes[CreateSystemComponentControlAttributes]
+type CreateSystemComponentControlRequest CreateIdRequest[CreateSystemComponentControlAttributes]
 type CreateSystemComponentControlResponse ItemResponse[SystemComponentControl]
 
 var GetSystemComponentControl = huma.Operation{
@@ -285,7 +291,7 @@ var GetSystemComponentControl = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentControlRequest GetIdRequest
+type GetSystemComponentControlRequest SystemComponentControlRequest
 type GetSystemComponentControlResponse ItemResponse[SystemComponentControl]
 
 var UpdateSystemComponentControl = huma.Operation{
@@ -298,6 +304,8 @@ var UpdateSystemComponentControl = huma.Operation{
 }
 
 type UpdateSystemComponentControlAttributes struct {
+	Label       *string `json:"label"`
+	Description *string `json:"description"`
 }
 type UpdateSystemComponentControlRequest SystemComponentControlBodyRequest[UpdateSystemComponentControlAttributes]
 type UpdateSystemComponentControlResponse ItemResponse[SystemComponentControl]
@@ -324,7 +332,10 @@ type SystemComponentSignalRequest struct {
 type SystemComponentSignalBodyRequest[A any] struct {
 	ComponentId uuid.UUID `path:"componentId"`
 	SignalId    uuid.UUID `path:"signalId"`
-	Body        A         `json:"body"`
+
+	Body struct {
+		Attributes A `json:"attributes"`
+	}
 }
 
 const componentSignalPath = "/system_components/{componentId}/signals/{signalId}"
@@ -339,10 +350,10 @@ var CreateSystemComponentSignal = huma.Operation{
 }
 
 type CreateSystemComponentSignalAttributes struct {
-	Label       string `json:"name"`
+	Label       string `json:"label"`
 	Description string `json:"description"`
 }
-type CreateSystemComponentSignalRequest RequestWithBodyAttributes[CreateSystemComponentSignalAttributes]
+type CreateSystemComponentSignalRequest CreateIdRequest[CreateSystemComponentSignalAttributes]
 type CreateSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
 
 var GetSystemComponentSignal = huma.Operation{
@@ -354,7 +365,7 @@ var GetSystemComponentSignal = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentSignalRequest GetIdRequest
+type GetSystemComponentSignalRequest SystemComponentSignalRequest
 type GetSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
 
 var UpdateSystemComponentSignal = huma.Operation{
@@ -367,6 +378,8 @@ var UpdateSystemComponentSignal = huma.Operation{
 }
 
 type UpdateSystemComponentSignalAttributes struct {
+	Label       *string `json:"label"`
+	Description *string `json:"description"`
 }
 type UpdateSystemComponentSignalRequest SystemComponentSignalBodyRequest[UpdateSystemComponentSignalAttributes]
 type UpdateSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
