@@ -4,17 +4,10 @@ import (
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
 	"net/http"
 )
 
 type SystemAnalysisHandler interface {
-	ListSystemComponents(context.Context, *ListSystemComponentsRequest) (*ListSystemComponentsResponse, error)
-	CreateSystemComponent(context.Context, *CreateSystemComponentRequest) (*CreateSystemComponentResponse, error)
-	GetSystemComponent(context.Context, *GetSystemComponentRequest) (*GetSystemComponentResponse, error)
-	UpdateSystemComponent(context.Context, *UpdateSystemComponentRequest) (*UpdateSystemComponentResponse, error)
-	ArchiveSystemComponent(context.Context, *ArchiveSystemComponentRequest) (*ArchiveSystemComponentResponse, error)
-
 	GetSystemAnalysis(context.Context, *GetSystemAnalysisRequest) (*GetSystemAnalysisResponse, error)
 
 	ListSystemAnalysisComponents(context.Context, *ListSystemAnalysisComponentsRequest) (*ListSystemAnalysisComponentsResponse, error)
@@ -31,12 +24,6 @@ type SystemAnalysisHandler interface {
 }
 
 func (o operations) RegisterSystemAnalysis(api huma.API) {
-	huma.Register(api, ListSystemComponents, o.ListSystemComponents)
-	huma.Register(api, CreateSystemComponent, o.CreateSystemComponent)
-	huma.Register(api, GetSystemComponent, o.GetSystemComponent)
-	huma.Register(api, UpdateSystemComponent, o.UpdateSystemComponent)
-	huma.Register(api, ArchiveSystemComponent, o.ArchiveSystemComponent)
-
 	huma.Register(api, GetSystemAnalysis, o.GetSystemAnalysis)
 
 	huma.Register(api, ListSystemAnalysisComponents, o.ListSystemAnalysisComponents)
@@ -53,47 +40,6 @@ func (o operations) RegisterSystemAnalysis(api huma.API) {
 }
 
 type (
-	SystemComponent struct {
-		Id         uuid.UUID                 `json:"id"`
-		Attributes SystemComponentAttributes `json:"attributes"`
-	}
-	SystemComponentAttributes struct {
-		Name        string                      `json:"name"`
-		Kind        string                      `json:"kind"`
-		Description string                      `json:"description"`
-		Properties  map[string]any              `json:"properties"`
-		Constraints []SystemComponentConstraint `json:"constraints"`
-		Signals     []SystemComponentSignal     `json:"signals"`
-		Controls    []SystemComponentControl    `json:"controls"`
-	}
-
-	SystemComponentSignal struct {
-		Id         uuid.UUID                       `json:"id"`
-		Attributes SystemComponentSignalAttributes `json:"attributes"`
-	}
-	SystemComponentSignalAttributes struct {
-		Label       string `json:"label"`
-		Description string `json:"description"`
-	}
-
-	SystemComponentControl struct {
-		Id         uuid.UUID                        `json:"id"`
-		Attributes SystemComponentControlAttributes `json:"attributes"`
-	}
-	SystemComponentControlAttributes struct {
-		Label       string `json:"label"`
-		Description string `json:"description"`
-	}
-
-	SystemComponentConstraint struct {
-		Id         uuid.UUID                           `json:"id"`
-		Attributes SystemComponentConstraintAttributes `json:"attributes"`
-	}
-	SystemComponentConstraintAttributes struct {
-		Label       string `json:"label"`
-		Description string `json:"description"`
-	}
-
 	SystemAnalysis struct {
 		Id         uuid.UUID                `json:"id"`
 		Attributes SystemAnalysisAttributes `json:"attributes"`
@@ -153,85 +99,7 @@ type (
 	}
 )
 
-func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
-	return SystemComponent{
-		Id: sc.ID,
-		Attributes: SystemComponentAttributes{
-			Name: sc.Name,
-		},
-	}
-}
-
 var systemAnalysisTags = []string{"System Analysis"}
-
-// System Components
-
-var ListSystemComponents = huma.Operation{
-	OperationID: "list-system-components",
-	Method:      http.MethodGet,
-	Path:        "/system_components",
-	Summary:     "List System Components",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type ListSystemComponentsRequest struct {
-	ListRequest
-}
-type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
-
-var CreateSystemComponent = huma.Operation{
-	OperationID: "create-system-component",
-	Method:      http.MethodPost,
-	Path:        "/system_components",
-	Summary:     "Create a System Component",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type CreateSystemComponentAttributes struct {
-	Name string `json:"name"`
-}
-type CreateSystemComponentRequest RequestWithBodyAttributes[CreateSystemComponentAttributes]
-type CreateSystemComponentResponse ItemResponse[SystemComponent]
-
-var GetSystemComponent = huma.Operation{
-	OperationID: "get-system-component",
-	Method:      http.MethodGet,
-	Path:        "/system_components/{id}",
-	Summary:     "Get a System Component",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type GetSystemComponentRequest GetIdRequest
-type GetSystemComponentResponse ItemResponse[SystemComponent]
-
-var UpdateSystemComponent = huma.Operation{
-	OperationID: "update-system-component",
-	Method:      http.MethodPatch,
-	Path:        "/system_components/{id}",
-	Summary:     "Update a System Component",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type UpdateSystemComponentAttributes struct {
-}
-type UpdateSystemComponentRequest UpdateIdRequest[UpdateSystemComponentAttributes]
-type UpdateSystemComponentResponse ItemResponse[SystemComponent]
-
-var ArchiveSystemComponent = huma.Operation{
-	OperationID: "archive-system-component",
-	Method:      http.MethodDelete,
-	Path:        "/system_components/{id}",
-	Summary:     "Archive a System Component",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type ArchiveSystemComponentRequest ArchiveIdRequest
-type ArchiveSystemComponentResponse EmptyResponse
 
 var GetSystemAnalysis = huma.Operation{
 	OperationID: "get-system-analysis",

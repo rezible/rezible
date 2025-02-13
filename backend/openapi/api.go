@@ -20,8 +20,10 @@ type (
 type Handler interface {
 	// GetMiddleware() []Middleware
 
-	EnvironmentsHandler
+	SystemComponentsHandler
 	SystemAnalysisHandler
+
+	EnvironmentsHandler
 	FunctionalitiesHandler
 
 	IncidentsHandler

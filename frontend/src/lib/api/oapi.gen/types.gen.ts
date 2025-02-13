@@ -481,6 +481,48 @@ export type CreateSystemComponentAttributes = {
     name: string;
 };
 
+export type CreateSystemComponentConstraintAttributes = {
+    description: string;
+    name: string;
+};
+
+export type CreateSystemComponentConstraintRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentConstraintAttributes;
+};
+
+export type CreateSystemComponentConstraintResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentConstraint;
+};
+
+export type CreateSystemComponentControlAttributes = {
+    description: string;
+    name: string;
+};
+
+export type CreateSystemComponentControlRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentControlAttributes;
+};
+
+export type CreateSystemComponentControlResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentControl;
+};
+
 export type CreateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -495,6 +537,27 @@ export type CreateSystemComponentResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponent;
+};
+
+export type CreateSystemComponentSignalAttributes = {
+    description: string;
+    name: string;
+};
+
+export type CreateSystemComponentSignalRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentSignalAttributes;
+};
+
+export type CreateSystemComponentSignalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentSignal;
 };
 
 export type CreateTaskAttributes = {
@@ -828,12 +891,36 @@ export type GetSystemAnalysisResponseBody = {
     data: SystemAnalysis;
 };
 
+export type GetSystemComponentConstraintResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentConstraint;
+};
+
+export type GetSystemComponentControlResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentControl;
+};
+
 export type GetSystemComponentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: SystemComponent;
+};
+
+export type GetSystemComponentSignalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentSignal;
 };
 
 export type GetTaskResponseBody = {
@@ -1710,7 +1797,6 @@ export type SystemAnalysisComponent = {
 export type SystemAnalysisComponentAttributes = {
     component: SystemComponent;
     position: SystemAnalysisDiagramPosition;
-    role: string;
 };
 
 export type SystemAnalysisDiagramPosition = {
@@ -2256,6 +2342,36 @@ export type UpdateSystemComponentAttributes = {
     [key: string]: unknown;
 };
 
+export type UpdateSystemComponentConstraintAttributes = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+};
+
+export type UpdateSystemComponentConstraintResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentConstraint;
+};
+
+export type UpdateSystemComponentControlAttributes = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+};
+
+export type UpdateSystemComponentControlResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentControl;
+};
+
 export type UpdateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2270,6 +2386,21 @@ export type UpdateSystemComponentResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponent;
+};
+
+export type UpdateSystemComponentSignalAttributes = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+};
+
+export type UpdateSystemComponentSignalResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentSignal;
 };
 
 export type UpdateTaskAttributes = {
@@ -3629,6 +3760,105 @@ export type CreateSystemComponentResponse = (CreateSystemComponentResponseBody);
 
 export type CreateSystemComponentError = (ErrorModel);
 
+export type GetSystemComponentConstraintData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSystemComponentConstraintResponse = (GetSystemComponentConstraintResponseBody);
+
+export type GetSystemComponentConstraintError = (ErrorModel);
+
+export type ArchiveSystemComponentConstraintData = {
+    path: {
+        componentId: string;
+        constraintId: string;
+    };
+};
+
+export type ArchiveSystemComponentConstraintResponse = (void);
+
+export type ArchiveSystemComponentConstraintError = (ErrorModel);
+
+export type UpdateSystemComponentConstraintData = {
+    body: UpdateSystemComponentConstraintAttributes;
+    path: {
+        componentId: string;
+        constraintId: string;
+    };
+};
+
+export type UpdateSystemComponentConstraintResponse = (UpdateSystemComponentConstraintResponseBody);
+
+export type UpdateSystemComponentConstraintError = (ErrorModel);
+
+export type GetSystemComponentControlData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSystemComponentControlResponse = (GetSystemComponentControlResponseBody);
+
+export type GetSystemComponentControlError = (ErrorModel);
+
+export type ArchiveSystemComponentControlData = {
+    path: {
+        componentId: string;
+        controlId: string;
+    };
+};
+
+export type ArchiveSystemComponentControlResponse = (void);
+
+export type ArchiveSystemComponentControlError = (ErrorModel);
+
+export type UpdateSystemComponentControlData = {
+    body: UpdateSystemComponentControlAttributes;
+    path: {
+        componentId: string;
+        controlId: string;
+    };
+};
+
+export type UpdateSystemComponentControlResponse = (UpdateSystemComponentControlResponseBody);
+
+export type UpdateSystemComponentControlError = (ErrorModel);
+
+export type GetSystemComponentSignalData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSystemComponentSignalResponse = (GetSystemComponentSignalResponseBody);
+
+export type GetSystemComponentSignalError = (ErrorModel);
+
+export type ArchiveSystemComponentSignalData = {
+    path: {
+        componentId: string;
+        signalId: string;
+    };
+};
+
+export type ArchiveSystemComponentSignalResponse = (void);
+
+export type ArchiveSystemComponentSignalError = (ErrorModel);
+
+export type UpdateSystemComponentSignalData = {
+    body: UpdateSystemComponentSignalAttributes;
+    path: {
+        componentId: string;
+        signalId: string;
+    };
+};
+
+export type UpdateSystemComponentSignalResponse = (UpdateSystemComponentSignalResponseBody);
+
+export type UpdateSystemComponentSignalError = (ErrorModel);
+
 export type GetSystemComponentData = {
     path: {
         id: string;
@@ -3659,6 +3889,30 @@ export type UpdateSystemComponentData = {
 export type UpdateSystemComponentResponse = (UpdateSystemComponentResponseBody);
 
 export type UpdateSystemComponentError = (ErrorModel);
+
+export type CreateSystemComponentConstraintData = {
+    body: CreateSystemComponentConstraintRequestBody;
+};
+
+export type CreateSystemComponentConstraintResponse = (CreateSystemComponentConstraintResponseBody);
+
+export type CreateSystemComponentConstraintError = (ErrorModel);
+
+export type CreateSystemComponentControlData = {
+    body: CreateSystemComponentControlRequestBody;
+};
+
+export type CreateSystemComponentControlResponse = (CreateSystemComponentControlResponseBody);
+
+export type CreateSystemComponentControlError = (ErrorModel);
+
+export type CreateSystemComponentSignalData = {
+    body: CreateSystemComponentSignalRequestBody;
+};
+
+export type CreateSystemComponentSignalResponse = (CreateSystemComponentSignalResponseBody);
+
+export type CreateSystemComponentSignalError = (ErrorModel);
 
 export type ListTasksData = {
     query?: {
