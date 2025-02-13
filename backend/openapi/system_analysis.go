@@ -109,7 +109,6 @@ type (
 	}
 	SystemAnalysisComponentAttributes struct {
 		Component SystemComponent               `json:"component"`
-		Role      string                        `json:"role"`
 		Position  SystemAnalysisDiagramPosition `json:"position"`
 	}
 
@@ -127,8 +126,8 @@ type (
 		SourceId        uuid.UUID                                  `json:"source_id"`
 		TargetId        uuid.UUID                                  `json:"target_id"`
 		Description     string                                     `json:"description"`
-		FeedbackSignals []SystemAnalysisRelationshipFeedbackSignal `json:"feedback_signals"` // IDs of SystemComponentSignal from target to source
-		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"control_actions"`  // IDs of SystemComponentControl from source to target
+		FeedbackSignals []SystemAnalysisRelationshipFeedbackSignal `json:"feedback_signals"`
+		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"control_actions"`
 	}
 
 	SystemAnalysisRelationshipComponent struct {
