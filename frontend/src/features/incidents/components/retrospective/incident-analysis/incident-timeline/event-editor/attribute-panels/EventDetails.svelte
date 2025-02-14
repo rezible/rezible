@@ -9,8 +9,9 @@
 		TextField,
 		Header,
 		DatePickerField,
+		Switch,
 	} from "svelte-ux";
-	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiCalendar } from "@mdi/js";
+	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiCalendar, mdiFlag } from "@mdi/js";
 	import { onMount } from "svelte";
 	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
@@ -23,7 +24,7 @@
 		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 	});
 
-	const eventTypeOptions = [
+	const eventKindOptions = [
 		{
 			label: "Observation",
 			value: "observation",
@@ -50,19 +51,19 @@
 		},
 	];
 
-	const descriptionEditor = createMentionEditor("", "cursor-text focus:outline-none min-h-20");
-
+	let descriptionEditor = $state<ReturnType<typeof createMentionEditor>>();
 	onMount(() => {
-		return () => (descriptionEditor.destroy());
+		descriptionEditor = createMentionEditor("", "cursor-text focus:outline-none min-h-20");
+		return () => (descriptionEditor?.destroy())
 	});
 </script>
 
 <div class="flex flex-col gap-2 flex-1">
 	<TextField label="Title" value="" />
 
-	<Field label="Event Type">
-		<ToggleGroup bind:value={eventAttributes.eventType} variant="fill" inset class="w-full">
-			{#each eventTypeOptions as opt}
+	<Field label="Event Kind">
+		<ToggleGroup bind:value={eventAttributes.eventKind} variant="fill" inset class="w-full">
+			{#each eventKindOptions as opt}
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
 						<span class="flex items-center justify-center gap-2 px-2">
@@ -75,6 +76,10 @@
 		</ToggleGroup>
 	</Field>
 
+	<Field label="Key Event" hint="Will be highlighted during Presentation Mode" let:id icon={mdiFlag}>
+		<Switch {id} bind:value={eventAttributes.isKey} />
+	</Field>
+
 	<DateTimePickerField
 		label="Time"
 		current={dateAnchor}
@@ -85,6 +90,8 @@
 	/>
 
 	<Field label="Description" classes={{ input: "block" }}>
-		<EditorContent editor={descriptionEditor} />
+		{#if descriptionEditor}
+			<EditorContent editor={descriptionEditor} />
+		{/if}
 	</Field>
 </div>

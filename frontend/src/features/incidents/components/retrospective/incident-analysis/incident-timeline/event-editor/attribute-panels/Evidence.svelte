@@ -11,6 +11,8 @@
 	const dataSources = [
 		{ value: "slack", label: "Slack", icon: mdiSlack, component: Slack },
 		// { value: "github", label: "Github", icon: mdiGithub, component: Github },
+		// { value: "metric", label: "Metric", icon: mdiMetric, component: Metric },
+		// { value: "log", label: "Log", icon: mdiLog, component: Log },
 		{ value: "url", label: "Web URL", icon: mdiWeb, component: Url },
 	];
 	let eventData = $state<any[]>([]);
@@ -20,7 +22,7 @@
 		id: string;
 	};
 	let addingState = $state<DataEvidence>();
-	const SourceComponent = $derived(dataSources.find((s) => s.value === addingState?.source)?.component);
+	const DataSourceComponent = $derived(dataSources.find((s) => s.value === addingState?.source)?.component);
 
 	const onEvidenceLinked = (id: string) => {
 		console.log(addingState?.source, id);
@@ -32,10 +34,12 @@
 	{#if addingState}
 		<SelectField bind:value={addingState.source} options={dataSources} label="Data Source" />
 
-		{#if SourceComponent}
-			<SourceComponent onLinked={onEvidenceLinked} />
+		{#if DataSourceComponent}
+			<DataSourceComponent onLinked={onEvidenceLinked} />
 		{/if}
 	{:else}
+		<!-- TODO: show linked evidence -->
+
 		<Button
 			class="text-surface-content/50 p-2"
 			color="primary"

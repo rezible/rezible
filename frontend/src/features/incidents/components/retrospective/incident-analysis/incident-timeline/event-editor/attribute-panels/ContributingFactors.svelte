@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiDotsVertical, mdiMenu, mdiPlus } from "@mdi/js";
+	import { mdiDotsVertical, mdiMenu, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 	import {
 		TextField,
 		Button,
@@ -12,6 +12,7 @@
 		MenuButton,
 		Toggle,
 		Menu,
+		ButtonGroup,
 	} from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { ContributingFactorCategories } from "../../types";
@@ -114,16 +115,9 @@
 				class="flex-1"
 				noShadow
 			>
-				<div slot="actions">
-					<Toggle let:on={open} let:toggle let:toggleOff>
-						<Button on:click={toggle}>
-							<Icon data={mdiDotsVertical} />
-							<Menu {open} on:close={toggleOff}>
-								<MenuItem>Edit</MenuItem>
-								<MenuItem>Remove</MenuItem>
-							</Menu>
-						</Button>
-					</Toggle>
+				<div slot="actions" class="flex gap-2 items-center">
+					<Button icon={mdiTrashCan} iconOnly on:click={() => {}} />
+					<Button icon={mdiPencil} iconOnly on:click={() => {}} />
 				</div>
 			</ListItem>
 		{/each}

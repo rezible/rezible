@@ -13,51 +13,7 @@ export type TimelineEvent = {
 	isDraft: boolean;
 };
 
-// Context details
-interface EventContext {
-	id: string;
-	eventId: string;
-	systemState?: string;
-	decisionOptions?: string[];
-	decisionRationale?: string;
-	involvedPersonnel?: string[];
-}
-
-// Contributing factors
-interface ContributingFactor {
-	id: string;
-	eventId: string;
-	category: string; // from controlled vocabulary
-	description: string;
-}
-
-// Evidence links
-interface EventEvidence {
-	id: string;
-	eventId: string;
-	kind: "log" | "metric" | "chat" | "ticket" | "other";
-	url: string;
-	title: string;
-	description?: string;
-}
-
-// Component relationships
-interface EventComponent {
-	id: string;
-	eventId: string;
-	componentId: string;
-	relationship: "primary" | "affected" | "contributing";
-}
-
-type Factor = {
-	title: string;
-	description: string;
-	examples: string[];
-};
-type FactorCategory = {
-	name: string;
-	factors: Record<string, Factor>;
-};
+export type EventComponentState = 'normal' | 'degraded' | 'failed';
 
 export const ContributingFactorCategories = [
 	{

@@ -1,19 +1,12 @@
 <script lang="ts">
 	import {
-	type SystemAnalysisRelationshipControlAction,
-	type SystemAnalysisRelationshipFeedbackSignal,
 		type SystemComponent,
-		type SystemComponentControl,
-		type SystemComponentSignal,
 		getSystemComponentOptions,
 	} from "$lib/api";
 	import { relationshipDialog } from "./relationshipDialog.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import RelationshipAttributesComponentColumn from "./RelationshipAttributesComponentColumn.svelte";
-	import { Button, Header } from "svelte-ux";
-	import { SvelteMap, SvelteSet } from "svelte/reactivity";
-	import SystemComponents from "../incident-timeline/event-editor/panels/SystemComponents.svelte";
 	import RelationshipLoopsColumn from "./RelationshipLoopsColumn.svelte";
 
 	const attrs = $derived(relationshipDialog.attributes);

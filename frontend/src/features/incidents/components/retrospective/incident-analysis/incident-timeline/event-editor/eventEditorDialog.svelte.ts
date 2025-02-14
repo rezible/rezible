@@ -1,4 +1,4 @@
-import { eventAttributes } from "./panels/eventAttributes.svelte";
+import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
 

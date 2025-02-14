@@ -21,6 +21,13 @@ const compareFeedbackSignals = (a: SystemAnalysisRelationshipFeedbackSignal, b: 
 	return (a.attributes.signal_id === b.attributes.signal_id) && (a.attributes.description === b.attributes.description);
 }
 
+// TODO: support this
+type RelationshipKind =
+  | 'request'    // API/Service requests
+  | 'data'       // Data flow
+  | 'telemetry'  // Monitoring/metrics
+  | 'control';   // Control actions
+
 const createRelationshipAttributesState = () => {
 	let originalAttributes = $state<SystemAnalysisRelationshipAttributes>();
 	let sourceId = $state<SystemAnalysisRelationshipAttributes["source_id"]>("");

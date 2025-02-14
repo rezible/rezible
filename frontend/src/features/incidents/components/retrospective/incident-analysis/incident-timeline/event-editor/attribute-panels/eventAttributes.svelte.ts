@@ -3,6 +3,7 @@ import type { TimelineEvent } from "../../types";
 type EventKind = TimelineEvent["kind"];
 const createEventAttributesState = () => {
 	let eventKind = $state<EventKind>("observation");
+	let isKey = $state(false);
 	
 	let valid = $state(false);
 
@@ -26,6 +27,8 @@ const createEventAttributesState = () => {
 		initFromEvent,
 		get eventKind() { return eventKind },
 		set eventKind(t: EventKind) { eventKind = t; onUpdate(); },
+		get isKey() { return isKey },
+		set isKey(v: boolean) { isKey = v; onUpdate() },
 		asAttributes(): any {
 			return {
 			}

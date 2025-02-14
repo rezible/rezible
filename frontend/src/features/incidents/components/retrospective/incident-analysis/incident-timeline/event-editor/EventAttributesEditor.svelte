@@ -3,16 +3,16 @@
 	import { Collapse, Header, ListItem } from "svelte-ux";
 	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
 
-	import { eventAttributes } from "./panels/eventAttributes.svelte";
-	import EventDetailsPanel from "./panels/EventDetails.svelte";
-	import DecisionContextPanel from "./panels/DecisionContext.svelte";
-	import ContributingFactorsPanel from "./panels/ContributingFactors.svelte";
-	import EvidencePanel from "./panels/Evidence.svelte";
-	import SystemContextPanel from "./panels/SystemContext.svelte";
+	import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
+	import EventDetailsPanel from "./attribute-panels/EventDetails.svelte";
+	import DecisionContextPanel from "./attribute-panels/DecisionContext.svelte";
+	import ContributingFactorsPanel from "./attribute-panels/ContributingFactors.svelte";
+	import EvidencePanel from "./attribute-panels/Evidence.svelte";
+	import SystemContextPanel from "./attribute-panels/SystemContext.svelte";
 </script>
 
 <div class="flex flex-row min-h-0 max-h-full flex-1 gap-2 p-2">
-	<div class="flex flex-col gap-2">
+	<div class="flex flex-col gap-2 pl-1">
 		<Header title="Details" />
 
 		<div class="flex-1 flex-col gap-2 overflow-y-auto">
@@ -23,7 +23,7 @@
 	<div class="flex flex-col gap-2 overflow-y-auto flex-1">
 		<Header title="Context" />
 
-		<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
+		<div class="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
 			{#if eventAttributes.eventKind === "decision"}
 				{@render componentTraitPanel(
 					"Decision Context",
