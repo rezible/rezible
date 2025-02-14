@@ -64,19 +64,17 @@
 
 <svelte:window onkeydown={onKeyDown} />
 
-<div class="">
-	<Button
-		icon={mdiMagnify}
-		iconOnly={!$smScreen}
-		on:click={onSearchClicked}
-		class={cls(
-			"sm:bg-surface-100/80 sm:hover:bg-surface-100/50 text-surface-content rounded-full sm:w-96 justify-start"
-		)}
-	>
-		<span class="flex-1 text-left max-sm:hidden">Search</span>
-		<Kbd variant="none" class="opacity-75 max-sm:hidden" command>K</Kbd>
-	</Button>
-</div>
+<Button
+	icon={mdiMagnify}
+	iconOnly={!$smScreen}
+	on:click={onSearchClicked}
+	class={cls(
+		"sm:bg-surface-100/80 sm:hover:bg-surface-100/50 text-surface-content rounded-full w-full max-w-xl mx-auto justify-start"
+	)}
+>
+	<span class="flex-1 text-left max-sm:hidden">Search</span>
+	<Kbd variant="none" class="opacity-75 max-sm:hidden" command>K</Kbd>
+</Button>
 
 <Dialog
 	{open}
