@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { mdiGithub, mdiPlus, mdiSlack, mdiWeb } from "@mdi/js";
 	import { Button, Field, Icon, ListItem, SelectField, TextField } from "svelte-ux";
-	import Slack from "./data-sources/Slack.svelte";
-	// import Github from "./data-sources/Github.svelte";
-	import Url from "./data-sources/Url.svelte";
-	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
 
 	type Props = {};
 	const {}: Props = $props();

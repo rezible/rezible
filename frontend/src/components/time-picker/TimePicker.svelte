@@ -82,7 +82,7 @@
 		/>
 	</div>
 
-	<div class="grid gap-1 text-center h-full">
+	<div class="grid gap-1 text-center">
 		{#if view === 'labels'}
 			<label for="seconds" class="text-xs">Period</label>
 		{/if}

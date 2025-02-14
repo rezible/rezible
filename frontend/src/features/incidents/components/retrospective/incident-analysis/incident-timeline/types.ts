@@ -3,7 +3,7 @@ export type TimelineEvent = {
 	id: string;
 	incidentId: string;
 	timestamp: Date | null; // null for "unknown time"
-	type: "observation" | "action" | "decision" | "context";
+	kind: "observation" | "action" | "decision" | "context";
 	title: string;
 	description: string;
 	createdAt: Date;
@@ -35,7 +35,7 @@ interface ContributingFactor {
 interface EventEvidence {
 	id: string;
 	eventId: string;
-	type: "log" | "metric" | "chat" | "ticket" | "other";
+	kind: "log" | "metric" | "chat" | "ticket" | "other";
 	url: string;
 	title: string;
 	description?: string;
@@ -58,6 +58,7 @@ type FactorCategory = {
 	name: string;
 	factors: Record<string, Factor>;
 };
+
 export const ContributingFactorCategories = [
 	{
 		id: "organizational_pressures",

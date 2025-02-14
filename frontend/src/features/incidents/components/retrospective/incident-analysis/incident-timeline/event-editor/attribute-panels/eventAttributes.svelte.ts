@@ -1,8 +1,8 @@
 import type { TimelineEvent } from "../../types";
 
-type EventType = TimelineEvent["type"];
+type EventKind = TimelineEvent["kind"];
 const createEventAttributesState = () => {
-	let eventType = $state<EventType>("observation");
+	let eventKind = $state<EventKind>("observation");
 	
 	let valid = $state(false);
 
@@ -24,8 +24,8 @@ const createEventAttributesState = () => {
 	return {
 		initNew,
 		initFromEvent,
-		get eventType() { return eventType },
-		set eventType(t: EventType) { eventType = t; onUpdate(); },
+		get eventKind() { return eventKind },
+		set eventKind(t: EventKind) { eventKind = t; onUpdate(); },
 		asAttributes(): any {
 			return {
 			}
