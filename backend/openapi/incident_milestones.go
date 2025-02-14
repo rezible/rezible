@@ -25,16 +25,17 @@ func (o operations) RegisterIncidentMilestones(api huma.API) {
 	huma.Register(api, ArchiveIncidentMilestone, o.ArchiveIncidentMilestone)
 }
 
-type IncidentMilestone struct {
-	Id         uuid.UUID                   `json:"id"`
-	Attributes IncidentMilestoneAttributes `json:"attributes"`
-}
-
-type IncidentMilestoneAttributes struct {
-	Type      string    `json:"type" enum:"default,incident"`
-	Title     string    `json:"title"`
-	Timestamp time.Time `json:"timestamp"`
-}
+type (
+	IncidentMilestone struct {
+		Id         uuid.UUID                   `json:"id"`
+		Attributes IncidentMilestoneAttributes `json:"attributes"`
+	}
+	IncidentMilestoneAttributes struct {
+		Type      string    `json:"type" enum:"default,incident"`
+		Title     string    `json:"title"`
+		Timestamp time.Time `json:"timestamp"`
+	}
+)
 
 func IncidentMilestoneFromEnt(m *ent.IncidentMilestone) IncidentMilestone {
 	return IncidentMilestone{
