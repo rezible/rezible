@@ -15,6 +15,12 @@ type SystemComponentsHandler interface {
 	UpdateSystemComponent(context.Context, *UpdateSystemComponentRequest) (*UpdateSystemComponentResponse, error)
 	ArchiveSystemComponent(context.Context, *ArchiveSystemComponentRequest) (*ArchiveSystemComponentResponse, error)
 
+	ListSystemComponentKinds(context.Context, *ListSystemComponentKindsRequest) (*ListSystemComponentKindsResponse, error)
+	CreateSystemComponentKind(context.Context, *CreateSystemComponentKindRequest) (*CreateSystemComponentKindResponse, error)
+	GetSystemComponentKind(context.Context, *GetSystemComponentKindRequest) (*GetSystemComponentKindResponse, error)
+	UpdateSystemComponentKind(context.Context, *UpdateSystemComponentKindRequest) (*UpdateSystemComponentKindResponse, error)
+	ArchiveSystemComponentKind(context.Context, *ArchiveSystemComponentKindRequest) (*ArchiveSystemComponentKindResponse, error)
+
 	CreateSystemComponentConstraint(context.Context, *CreateSystemComponentConstraintRequest) (*CreateSystemComponentConstraintResponse, error)
 	GetSystemComponentConstraint(context.Context, *GetSystemComponentConstraintRequest) (*GetSystemComponentConstraintResponse, error)
 	UpdateSystemComponentConstraint(context.Context, *UpdateSystemComponentConstraintRequest) (*UpdateSystemComponentConstraintResponse, error)
@@ -37,6 +43,12 @@ func (o operations) RegisterSystemComponents(api huma.API) {
 	huma.Register(api, GetSystemComponent, o.GetSystemComponent)
 	huma.Register(api, UpdateSystemComponent, o.UpdateSystemComponent)
 	huma.Register(api, ArchiveSystemComponent, o.ArchiveSystemComponent)
+
+	huma.Register(api, ListSystemComponentKinds, o.ListSystemComponentKinds)
+	huma.Register(api, CreateSystemComponentKind, o.CreateSystemComponentKind)
+	huma.Register(api, GetSystemComponentKind, o.GetSystemComponentKind)
+	huma.Register(api, UpdateSystemComponentKind, o.UpdateSystemComponentKind)
+	huma.Register(api, ArchiveSystemComponentKind, o.ArchiveSystemComponentKind)
 
 	huma.Register(api, CreateSystemComponentConstraint, o.CreateSystemComponentConstraint)
 	huma.Register(api, GetSystemComponentConstraint, o.GetSystemComponentConstraint)
@@ -61,12 +73,21 @@ type (
 	}
 	SystemComponentAttributes struct {
 		Name        string                      `json:"name"`
-		Kind        string                      `json:"kind"`
+		Kind        SystemComponentKind         `json:"kind"`
 		Description string                      `json:"description"`
 		Properties  map[string]any              `json:"properties"`
 		Constraints []SystemComponentConstraint `json:"constraints"`
 		Signals     []SystemComponentSignal     `json:"signals"`
 		Controls    []SystemComponentControl    `json:"controls"`
+	}
+
+	SystemComponentKind struct {
+		Id         uuid.UUID                     `json:"id"`
+		Attributes SystemComponentKindAttributes `json:"attributes"`
+	}
+	SystemComponentKindAttributes struct {
+		Label       string `json:"label"`
+		Description string `json:"description"`
 	}
 
 	SystemComponentConstraint struct {
@@ -175,6 +196,75 @@ var ArchiveSystemComponent = huma.Operation{
 
 type ArchiveSystemComponentRequest ArchiveIdRequest
 type ArchiveSystemComponentResponse EmptyResponse
+
+// System Component Kinds
+
+var ListSystemComponentKinds = huma.Operation{
+	OperationID: "list-system-component-kinds",
+	Method:      http.MethodGet,
+	Path:        "/system_component_kinds",
+	Summary:     "List System Component Kinds",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type ListSystemComponentKindsRequest struct {
+	ListRequest
+}
+type ListSystemComponentKindsResponse PaginatedResponse[SystemComponentKind]
+
+var CreateSystemComponentKind = huma.Operation{
+	OperationID: "create-system-component-kind",
+	Method:      http.MethodPost,
+	Path:        "/system_component_kinds",
+	Summary:     "Create a System Component Kind",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type CreateSystemComponentKindAttributes struct {
+	Name string `json:"name"`
+}
+type CreateSystemComponentKindRequest RequestWithBodyAttributes[CreateSystemComponentKindAttributes]
+type CreateSystemComponentKindResponse ItemResponse[SystemComponentKind]
+
+var GetSystemComponentKind = huma.Operation{
+	OperationID: "get-system-component-kind",
+	Method:      http.MethodGet,
+	Path:        "/system_component_kinds/{id}",
+	Summary:     "Get a System Component Kind",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type GetSystemComponentKindRequest GetIdRequest
+type GetSystemComponentKindResponse ItemResponse[SystemComponentKind]
+
+var UpdateSystemComponentKind = huma.Operation{
+	OperationID: "update-system-component-kind",
+	Method:      http.MethodPatch,
+	Path:        "/system_component_kinds/{id}",
+	Summary:     "Update a System Component Kind",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type UpdateSystemComponentKindAttributes struct {
+}
+type UpdateSystemComponentKindRequest UpdateIdRequest[UpdateSystemComponentKindAttributes]
+type UpdateSystemComponentKindResponse ItemResponse[SystemComponentKind]
+
+var ArchiveSystemComponentKind = huma.Operation{
+	OperationID: "archive-system-component-kind",
+	Method:      http.MethodDelete,
+	Path:        "/system_component_kinds/{id}",
+	Summary:     "Archive a System Component Kind",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type ArchiveSystemComponentKindRequest ArchiveIdRequest
+type ArchiveSystemComponentKindResponse EmptyResponse
 
 // System Component Constraint Operations
 

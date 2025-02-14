@@ -523,6 +523,26 @@ export type CreateSystemComponentControlResponseBody = {
     data: SystemComponentControl;
 };
 
+export type CreateSystemComponentKindAttributes = {
+    name: string;
+};
+
+export type CreateSystemComponentKindRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentKindAttributes;
+};
+
+export type CreateSystemComponentKindResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentKind;
+};
+
 export type CreateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -905,6 +925,14 @@ export type GetSystemComponentControlResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponentControl;
+};
+
+export type GetSystemComponentKindResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentKind;
 };
 
 export type GetSystemComponentResponseBody = {
@@ -1424,6 +1452,15 @@ export type ListSystemAnalysisRelationshipsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListSystemComponentKindsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemComponentKind>;
+    pagination: ResponsePagination;
+};
+
 export type ListSystemComponentsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1847,7 +1884,7 @@ export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
     controls: Array<SystemComponentControl>;
     description: string;
-    kind: string;
+    kind: SystemComponentKind;
     name: string;
     properties: {
         [key: string]: unknown;
@@ -1871,6 +1908,16 @@ export type SystemComponentControl = {
 };
 
 export type SystemComponentControlAttributes = {
+    description: string;
+    label: string;
+};
+
+export type SystemComponentKind = {
+    attributes: SystemComponentKindAttributes;
+    id: string;
+};
+
+export type SystemComponentKindAttributes = {
     description: string;
     label: string;
 };
@@ -2382,6 +2429,26 @@ export type UpdateSystemComponentControlResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponentControl;
+};
+
+export type UpdateSystemComponentKindAttributes = {
+    [key: string]: unknown;
+};
+
+export type UpdateSystemComponentKindRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemComponentKindAttributes;
+};
+
+export type UpdateSystemComponentKindResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentKind;
 };
 
 export type UpdateSystemComponentRequestBody = {
@@ -3756,6 +3823,58 @@ export type CreateSystemAnalysisRelationshipData = {
 export type CreateSystemAnalysisRelationshipResponse = (CreateSystemAnalysisRelationshipResponseBody);
 
 export type CreateSystemAnalysisRelationshipError = (ErrorModel);
+
+export type ListSystemComponentKindsData = {
+    query?: {
+        archived?: boolean;
+        limit?: number;
+        offset?: number;
+        search?: string;
+    };
+};
+
+export type ListSystemComponentKindsResponse = (ListSystemComponentKindsResponseBody);
+
+export type ListSystemComponentKindsError = (ErrorModel);
+
+export type CreateSystemComponentKindData = {
+    body: CreateSystemComponentKindRequestBody;
+};
+
+export type CreateSystemComponentKindResponse = (CreateSystemComponentKindResponseBody);
+
+export type CreateSystemComponentKindError = (ErrorModel);
+
+export type GetSystemComponentKindData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSystemComponentKindResponse = (GetSystemComponentKindResponseBody);
+
+export type GetSystemComponentKindError = (ErrorModel);
+
+export type ArchiveSystemComponentKindData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ArchiveSystemComponentKindResponse = (void);
+
+export type ArchiveSystemComponentKindError = (ErrorModel);
+
+export type UpdateSystemComponentKindData = {
+    body: UpdateSystemComponentKindRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateSystemComponentKindResponse = (UpdateSystemComponentKindResponseBody);
+
+export type UpdateSystemComponentKindError = (ErrorModel);
 
 export type ListSystemComponentsData = {
     query?: {

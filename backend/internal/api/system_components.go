@@ -31,11 +31,16 @@ func makeFakeComponents() []oapi.SystemComponent {
 		return oapi.SystemComponentControl{Id: uuid.New(), Attributes: attr}
 	}
 
+	makeKind := func(label string, desc string) oapi.SystemComponentKind {
+		attr := oapi.SystemComponentKindAttributes{Label: label, Description: desc}
+		return oapi.SystemComponentKind{Id: uuid.New(), Attributes: attr}
+	}
+
 	paymentUi := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "Payment UI",
-			Kind:        "frontend",
+			Kind:        makeKind("frontend", "A frontend ui"),
 			Description: "The UI for handling payments",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Input Validated", "Must validate the users form input"),
@@ -48,11 +53,13 @@ func makeFakeComponents() []oapi.SystemComponent {
 		},
 	}
 
+	serviceKind := makeKind("service", "A backend service")
+
 	apiGateway := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "API Gateway",
-			Kind:        "service",
+			Kind:        serviceKind,
 			Description: "Handles incoming API requests",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Rate Limiting", "Rate limits requests to 1000 req/sec"),
@@ -73,7 +80,7 @@ func makeFakeComponents() []oapi.SystemComponent {
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "Payments Service",
-			Kind:        "service",
+			Kind:        serviceKind,
 			Description: "Handles incoming API requests",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Time Limit", "Must process requests within 5s"),
@@ -94,7 +101,7 @@ func makeFakeComponents() []oapi.SystemComponent {
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "Payments Database",
-			Kind:        "database",
+			Kind:        makeKind("database", "A database"),
 			Description: "RDS PostgreSQL database",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Connection Limit", "Max 100 connections"),
@@ -115,7 +122,7 @@ func makeFakeComponents() []oapi.SystemComponent {
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "Payments Monitor",
-			Kind:        "monitor",
+			Kind:        makeKind("monitor", "A monitor"),
 			Description: "A monitor using payments metrics",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Alerts Within 30s", "Must alert"),
@@ -135,7 +142,7 @@ func makeFakeComponents() []oapi.SystemComponent {
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        "External Payments Provider",
-			Kind:        "external",
+			Kind:        makeKind("external", "An external entity"),
 			Description: "Stripe",
 			Constraints: []oapi.SystemComponentConstraint{
 				makeConstraint("Uptime SLA", "99.99%"),
@@ -173,11 +180,19 @@ func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, requ
 func (s *systemComponentsHandler) CreateSystemComponent(ctx context.Context, request *oapi.CreateSystemComponentRequest) (*oapi.CreateSystemComponentResponse, error) {
 	var resp oapi.CreateSystemComponentResponse
 
+	kind := oapi.SystemComponentKind{
+		Id: uuid.New(),
+		Attributes: oapi.SystemComponentKindAttributes{
+			Label:       "",
+			Description: "",
+		},
+	}
+
 	newComponent := oapi.SystemComponent{
 		Id: uuid.New(),
 		Attributes: oapi.SystemComponentAttributes{
 			Name:        request.Body.Attributes.Name,
-			Kind:        "",
+			Kind:        kind,
 			Description: "",
 			Properties:  nil,
 			Constraints: nil,
@@ -217,6 +232,36 @@ func (s *systemComponentsHandler) UpdateSystemComponent(ctx context.Context, req
 
 func (s *systemComponentsHandler) ArchiveSystemComponent(ctx context.Context, request *oapi.ArchiveSystemComponentRequest) (*oapi.ArchiveSystemComponentResponse, error) {
 	var resp oapi.ArchiveSystemComponentResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) ListSystemComponentKinds(ctx context.Context, request *oapi.ListSystemComponentKindsRequest) (*oapi.ListSystemComponentKindsResponse, error) {
+	var resp oapi.ListSystemComponentKindsResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) CreateSystemComponentKind(ctx context.Context, request *oapi.CreateSystemComponentKindRequest) (*oapi.CreateSystemComponentKindResponse, error) {
+	var resp oapi.CreateSystemComponentKindResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) GetSystemComponentKind(ctx context.Context, request *oapi.GetSystemComponentKindRequest) (*oapi.GetSystemComponentKindResponse, error) {
+	var resp oapi.GetSystemComponentKindResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) UpdateSystemComponentKind(ctx context.Context, request *oapi.UpdateSystemComponentKindRequest) (*oapi.UpdateSystemComponentKindResponse, error) {
+	var resp oapi.UpdateSystemComponentKindResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) ArchiveSystemComponentKind(ctx context.Context, request *oapi.ArchiveSystemComponentKindRequest) (*oapi.ArchiveSystemComponentKindResponse, error) {
+	var resp oapi.ArchiveSystemComponentKindResponse
 
 	return &resp, nil
 }
@@ -289,6 +334,6 @@ func (s *systemComponentsHandler) UpdateSystemComponentSignal(ctx context.Contex
 
 func (s *systemComponentsHandler) ArchiveSystemComponentSignal(ctx context.Context, request *oapi.ArchiveSystemComponentSignalRequest) (*oapi.ArchiveSystemComponentSignalResponse, error) {
 	var resp oapi.ArchiveSystemComponentSignalResponse
-	
+
 	return &resp, nil
 }

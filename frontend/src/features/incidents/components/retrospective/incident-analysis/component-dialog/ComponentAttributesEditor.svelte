@@ -1,43 +1,22 @@
 <script lang="ts">
-	import {
-		Button,
-		Collapse,
-		Icon,
-		ListItem,
-		SelectField,
-		State,
-		TextField,
-		type MenuOption,
-	} from "svelte-ux";
-	import {
-		type SystemComponentConstraint,
-		type SystemComponentAttributes,
-		type SystemComponent,
-		type SystemComponentSignal,
-		type SystemComponentControl,
-		updateSystemComponentMutation,
-		createSystemComponentMutation,
-	} from "$lib/api";
+	import { Button, Collapse, Icon, ListItem, SelectField, TextField, type MenuOption } from "svelte-ux";
 	import { type Snippet } from "svelte";
-	import {
-		mdiBroadcast,
-		mdiCancel,
-		mdiCheck,
-		mdiClose,
-		mdiCross,
-		mdiPencil,
-		mdiStateMachine,
-		mdiTune,
-	} from "@mdi/js";
-	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
+	import { mdiBroadcast, mdiCheck, mdiClose, mdiPencil, mdiStateMachine, mdiTune } from "@mdi/js";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { listSystemComponentKindsOptions } from "$lib/api";
+	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { componentDialog } from "./componentDialog.svelte";
 	import { componentTraits } from "./componentTraitMutations.svelte";
+	import { systemComponentKindQueryMenuOptionSelect } from "$lib/systemComponents";
 
 	const attr = $derived(componentDialog.componentAttributes);
 
 	componentTraits.setupMutations();
 
-	const kindOptions: MenuOption<string>[] = [{ label: "Service", value: "service" }];
+	const listComponentKindOptions = createQuery(() => ({
+		...listSystemComponentKindsOptions({}),
+		select: systemComponentKindQueryMenuOptionSelect,
+	}));
 </script>
 
 <div class="flex flex-row min-h-0 max-h-full h-full gap-2">
@@ -49,21 +28,22 @@
 		<SelectField
 			label="Kind"
 			labelPlacement="float"
-			options={kindOptions}
+			options={listComponentKindOptions.data}
+			loading={listComponentKindOptions.isFetching}
 			value={attr.kind}
 			on:change={(e) => (attr.kind = e.detail.value ?? "")}
 		/>
 	</div>
 
 	<div class="flex flex-col gap-2 p-1 overflow-y-auto flex-1 min-h-0 max-h-full">
-		{@render editablePanel(
+		{@render traitPanel(
 			"Constraints",
 			"Conditions under which this component operates normally",
 			mdiStateMachine,
 			constraintsPanel
 		)}
-		{@render editablePanel("Signals", "Feedback supplied by this component", mdiBroadcast, signalsPanel)}
-		{@render editablePanel(
+		{@render traitPanel("Signals", "Feedback supplied by this component", mdiBroadcast, signalsPanel)}
+		{@render traitPanel(
 			"Controls",
 			"Methods that can alter the behaviour of this component",
 			mdiTune,
@@ -72,7 +52,7 @@
 	</div>
 </div>
 
-{#snippet editablePanel(title: string, subheading: string, icon: string, content: Snippet)}
+{#snippet traitPanel(title: string, subheading: string, icon: string, content: Snippet)}
 	<div class="p-2 border rounded">
 		<Collapse open classes={{ root: "overflow-x-hidden", content: "p-2" }}>
 			<ListItem
