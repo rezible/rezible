@@ -44,7 +44,7 @@
 	<a
 		href={r.path}
 		class={cls(
-			"inline-block px-4 py-3 flex items-center gap-2 text-center border-e-2",
+			"inline-block px-4 py-3 flex items-center gap-2 text-center border-none-2 rounded-lg",
 			active
 				? "text-primary-content bg-primary-900"
 				: "text-neutral-content border-transparent hover:text-primary-content hover:border-primary/50 hover:bg-primary-900/50"
@@ -58,7 +58,7 @@
 <aside
 	class="h-full {expandingHover
 		? 'w-fit hover:w-60'
-		: 'w-60'} group border-e flex flex-col overflow-hidden bg-surface-200"
+		: 'w-60'} group flex flex-col overflow-hidden bg-surface-200"
 >
 	<div class="h-16 flex items-center px-4">
 		<a href="/" class="text-2xl flex items-center">
@@ -66,7 +66,7 @@
 			<span class="pl-3 {expandingHover ? 'hidden group-hover:inline' : ''}">Rezible</span>
 		</a>
 	</div>
-	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between">
+	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between pl-2">
 		<div class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
 			{#each routes as r (r.label)}
 				{#if "children" in r}

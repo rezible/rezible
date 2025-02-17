@@ -11,7 +11,7 @@
 	const inbox = $derived(notifications.inbox);
 </script>
 
-<div class="flex flex-wrap justify-between items-center h-16 px-4 border-b">
+<div class="flex flex-wrap justify-between items-center h-16 px-4">
 	<div class="flex-1 flex justify-around">
 		<OmniSearch />
 	</div>

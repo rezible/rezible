@@ -8,15 +8,15 @@
 	setToastState();
 </script>
 
-<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
+<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
 	<Sidebar />
 
 	<div class="grid grid-rows-layout flex-1">
-		<nav class="w-full h-16 bg-surface-200">
+		<nav class="w-full h-16">
 			<Header />
 		</nav>
 
-		<main class="w-full p-2 overflow-y-auto">
+		<main class="w-full overflow-y-auto px-2 pb-2">
 			{@render children()}
 		</main>
 	</div>

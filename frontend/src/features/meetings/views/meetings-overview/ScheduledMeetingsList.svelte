@@ -21,9 +21,7 @@
 			Filters
 		</div>
 		<div class="px-3 pb-3 border-t">
-		  Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis quod
-		  culpa et, dolores omnis, ipsum in perspiciatis porro ut nihil molestiae
-		  molestias tenetur delectus velit! Inventore laborum rerum at id?
+			show filters
 		</div>
 	</Collapse>
 

@@ -1,8 +1,6 @@
 <script lang="ts">
-	import PageContainer from "$components/page-container/PageContainer.svelte";
-	import ReportDashboardView from "$features/reports/views/dashboard/ReportDashboardView.svelte";
+	import ReportsList from "$features/reports/views/reports-list/ReportsList.svelte";
+
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Reports" }]}>
-	<ReportDashboardView />
-</PageContainer>
+<ReportsList />
