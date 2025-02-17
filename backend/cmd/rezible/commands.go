@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/internal/documents"
 	"github.com/rezible/rezible/internal/river"
 
@@ -120,6 +121,23 @@ func seedCmd(ctx context.Context, opts *Options) error {
 }
 
 func seedDatabase(ctx context.Context, db *postgres.Database) error {
+	usr, usrErr := db.Client().User.Query().First(ctx)
+	tTeam, teamErr := db.Client().Team.Query().Where(team.Slug("test-team")).Only(ctx)
+	if teamErr != nil {
+		db.Client().Team.Create().
+			SetTimezone("Australia/Perth").
+			SetName("Test Team").
+			SetSlug("test-team").
+			SetChatChannelID("test").
+			ExecX(ctx)
+	}
+	
+	if usrErr == nil {
+		if !usr.QueryTeams().Where(team.Slug("test-team")).ExistX(ctx) {
+			usr.Update().AddTeams(tTeam).ExecX(ctx)
+			log.Info().Msg("added user to test team")
+		}
+	}
 	/*
 		fakerOpts := []fakeropts.OptionFunc{
 			fakeropts.WithStringLanguage(fakerintf.LangENG),

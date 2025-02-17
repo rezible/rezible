@@ -11,7 +11,8 @@
 </script>
 
 <PageContainer breadcrumbs={[{ label: "Reports" }]}>
-	<SplitPage {children}>
+	<SplitPage>
 		{#snippet nav()}<SavedReportsNav />{/snippet}
+		{@render children()}
 	</SplitPage>
 </PageContainer>
