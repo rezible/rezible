@@ -12,7 +12,7 @@ import {
 	type SystemComponentSignal,
 	type UpdateSystemComponentSignalResponseBody,
 } from "$lib/api";
-import { componentDialog } from "./componentDialog.svelte";
+import { componentDialog } from "./dialogState.svelte";
 
 const emptyTrait = () => ({ id: "", attributes: { label: "", description: "" } });
 

@@ -4,7 +4,7 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";
-	import { componentDialog } from "./componentDialog.svelte";
+	import { componentDialog } from "./dialogState.svelte";
 	
 	componentDialog.setup();
 

@@ -2,7 +2,7 @@
 	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { relationshipDialog } from "./relationshipDialog.svelte";
+	import { relationshipDialog } from "./dialogState.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
 	
 	relationshipDialog.setup();

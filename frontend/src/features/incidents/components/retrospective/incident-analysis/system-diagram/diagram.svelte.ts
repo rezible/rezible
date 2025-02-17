@@ -27,7 +27,7 @@ import {
 	type SystemComponent,
 } from "$lib/api";
 import { analysis } from "../analysis.svelte";
-import { relationshipDialog } from "../relationship-dialog/relationshipDialog.svelte";
+import { relationshipDialog } from "../relationship-dialog/dialogState.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -93,7 +93,6 @@ const translateIncidentComponents = (incidentComponents: IncidentSystemComponent
 
 export type SystemComponentNodeData = {
 	component: SystemAnalysisComponent;
-	role: string;
 };
 
 export type SystemRelationshipEdgeData = {
@@ -105,11 +104,10 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let edges: Edge[] = [];
 
 	an.attributes.components.forEach((component) => {
-		const { role, position } = component.attributes;
+		const { position } = component.attributes;
 
 		const data: SystemComponentNodeData = {
 			component,
-			role,
 		};
 
 		nodes.push({

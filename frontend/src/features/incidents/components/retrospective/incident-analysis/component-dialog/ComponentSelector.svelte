@@ -4,7 +4,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiFilter, mdiPlus } from "@mdi/js";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
-	import { componentDialog } from "./componentDialog.svelte";
+	import { componentDialog } from "./dialogState.svelte";
 
 	let showFilters = $state(false);
 

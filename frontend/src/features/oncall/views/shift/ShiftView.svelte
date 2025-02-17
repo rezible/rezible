@@ -26,7 +26,7 @@
 		<Button
 			href="/oncall/shifts/{shift.id}/handover"
 			variant="fill"
-			color="success"
+			color="secondary"
 			classes={{ root: "w-full" }}
 		>
 			<span>Edit Handover</span>

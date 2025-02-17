@@ -17,7 +17,7 @@
 	const handover = $derived(handoverQuery.data?.data);
 
 	const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : null);
-	const isSent = $derived(handover && Date.parse(handover.attributes.sent_at) > 0);
+	const isSent = $derived(handover && handover.attributes.sent_at.valueOf() > 0);
 </script>
 
 {#key shiftId}

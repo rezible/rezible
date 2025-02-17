@@ -19,7 +19,7 @@
 		SystemComponentSignal,
 	} from "$lib/api";
 	import { SvelteMap } from "svelte/reactivity";
-	import { relationshipDialog } from "./relationshipDialog.svelte";
+	import { relationshipDialog } from "./dialogState.svelte";
 	import { Button, Header } from "svelte-ux";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { mdiCardRemove, mdiMinus, mdiPencil, mdiTagEdit, mdiTagRemove } from "@mdi/js";

@@ -2,7 +2,7 @@
 	import { Button, Dialog } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
-	import { eventDialog } from "./eventEditorDialog.svelte";
+	import { eventDialog } from "./dialogState.svelte";
 </script>
 
 <Dialog

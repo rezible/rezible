@@ -124,14 +124,18 @@ func seedDatabase(ctx context.Context, db *postgres.Database) error {
 	usr, usrErr := db.Client().User.Query().First(ctx)
 	tTeam, teamErr := db.Client().Team.Query().Where(team.Slug("test-team")).Only(ctx)
 	if teamErr != nil {
-		db.Client().Team.Create().
+		tTeam = db.Client().Team.Create().
 			SetTimezone("Australia/Perth").
 			SetName("Test Team").
 			SetSlug("test-team").
 			SetChatChannelID("test").
-			ExecX(ctx)
+			SaveX(ctx)
 	}
-	
+
+	if tTeam == nil {
+		log.Fatal().Msg("failed to get test team")
+	}
+
 	if usrErr == nil {
 		if !usr.QueryTeams().Where(team.Slug("test-team")).ExistX(ctx) {
 			usr.Update().AddTeams(tTeam).ExecX(ctx)

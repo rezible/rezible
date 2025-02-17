@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiShapeSquareRoundedPlus, mdiTimelinePlus } from "@mdi/js";
 	import { Button, Icon } from "svelte-ux";
-	import { eventDialog } from "./event-editor/eventEditorDialog.svelte";
+	import { eventDialog } from "./event-editor/dialogState.svelte";
 
 	type Props = {};
 	let {}: Props = $props();
