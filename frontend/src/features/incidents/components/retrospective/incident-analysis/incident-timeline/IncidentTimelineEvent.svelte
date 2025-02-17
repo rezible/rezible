@@ -15,4 +15,4 @@
 	});
 </script>
 
-<span>hello {label}</span>
+<span>{label}</span>

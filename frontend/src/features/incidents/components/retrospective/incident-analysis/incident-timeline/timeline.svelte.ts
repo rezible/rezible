@@ -14,7 +14,7 @@ import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./Incid
 import type { TimelineEvent } from "./types";
 
 const createTimelineEventElement = (id: string) => {
-	let props = $state<TimelineEventComponentProps>({ label: "initial" });
+	let props = $state<TimelineEventComponentProps>({ label: "example" });
 
 	const target = document.createElement("div");
 	target.setAttribute("event-id", id);
