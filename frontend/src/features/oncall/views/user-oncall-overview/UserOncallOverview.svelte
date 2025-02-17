@@ -2,35 +2,41 @@
 	import { getUserOncallDetailsOptions, type UserOncallDetails } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { Header } from "svelte-ux";
+	import { Button, Header, Icon } from "svelte-ux";
 	import UserShiftsDisplay from "./UserShiftsDisplay.svelte";
 	import UserRostersList from "./UserRostersList.svelte";
+	import SplitPage from "$components/split-page/SplitPage.svelte";
+	import { mdiArrowRight } from "@mdi/js";
 
 	const userOncallQuery = createQuery(() => getUserOncallDetailsOptions());
 </script>
 
-<div class="grid grid-cols-4 gap-2 h-full max-h-full">
-	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden">
-		<Header title="Your Rosters" subheading="" classes={{ title: "text-2xl" }} />
+{#snippet rostersNav()}
+	<Header title="Rosters" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+		<svelte:fragment slot="actions">
+			<Button href="/oncall/rosters">
+				View All
+			</Button>
+		</svelte:fragment>
+	</Header>
 
-		<LoadingQueryWrapper query={userOncallQuery}>
-			{#snippet view(details: UserOncallDetails)}
-				<UserRostersList rosters={details.rosters} />
-			{/snippet}
-		</LoadingQueryWrapper>
-	</div>
+	<LoadingQueryWrapper query={userOncallQuery}>
+		{#snippet view(details: UserOncallDetails)}
+			<UserRostersList rosters={details.rosters} />
+		{/snippet}
+	</LoadingQueryWrapper>
+{/snippet}
 
-	<div class="col-span-3 flex flex-col min-h-0 gap-2 max-h-full">
-		<Header title="Your Shifts" subheading="" classes={{ title: "text-2xl" }} />
+<SplitPage nav={rostersNav}>
+	<Header title="Your Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }} />
 
-		<LoadingQueryWrapper query={userOncallQuery}>
-			{#snippet view(details: UserOncallDetails)}
-				<UserShiftsDisplay
-					activeShifts={details.active_shifts}
-					upcomingShifts={details.upcoming_shifts}
-					pastShifts={details.past_shifts}
-				/>
-			{/snippet}
-		</LoadingQueryWrapper>
-	</div>
-</div>
+	<LoadingQueryWrapper query={userOncallQuery}>
+		{#snippet view(details: UserOncallDetails)}
+			<UserShiftsDisplay
+				activeShifts={details.active_shifts}
+				upcomingShifts={details.upcoming_shifts}
+				pastShifts={details.past_shifts}
+			/>
+		{/snippet}
+	</LoadingQueryWrapper>
+</SplitPage>

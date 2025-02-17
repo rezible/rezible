@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiMagnify } from "@mdi/js";
+	import { mdiChevronRight, mdiFilter, mdiMagnify } from "@mdi/js";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, ListItem, TextField } from "svelte-ux";
+	import { Button, ListItem, TextField, Header, Collapse } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import UserTeamSelector from "./UserTeamSelector.svelte";
+	import UserTeamsList from "./UserTeamsList.svelte";
+	import SplitPage from "$src/components/split-page/SplitPage.svelte";
 
 	type QueryParams = ListTeamsData["query"];
 	let params = $state<QueryParams>({});
@@ -41,24 +42,29 @@
 	*/
 </script>
 
-<div class="flex flex-col h-full gap-2 overflow-x-hidden overflow-y-auto">
-	<UserTeamSelector />
-
-	<div class="w-full border-b"></div>
-
+<SplitPage nav={userTeamsNav}>
 	<div class="">
-		<TextField
-			dense
-			rounded
-			label="Search For Teams"
-			labelPlacement="float"
-			icon={mdiMagnify}
-			debounceChange={500}
-			on:change={({ detail }) =>
-				maybeUpdateParams({
-					search: detail.value ? String(detail.value) : undefined,
-				})}
-		/>
+		<Header title="All Teams" subheading="" classes={{ title: "text-2xl", root: "h-11" }} />
+		<Collapse>
+			<div slot="trigger" class="flex-1">
+				<Button icon={mdiFilter} iconOnly />
+				Filters
+			</div>
+			<div class="p-3 border-t">
+				<TextField
+					dense
+					rounded
+					label="Search For Teams"
+					labelPlacement="float"
+					icon={mdiMagnify}
+					debounceChange={500}
+					on:change={({ detail }) =>
+						maybeUpdateParams({
+							search: detail.value ? String(detail.value) : undefined,
+						})}
+				/>
+			</div>
+		</Collapse>
 	</div>
 
 	<LoadingQueryWrapper {query}>
@@ -87,4 +93,10 @@
 			/-->
 		{/snippet}
 	</LoadingQueryWrapper>
-</div>
+</SplitPage>
+
+{#snippet userTeamsNav()}
+	<Header title="Your Teams" subheading="" classes={{ title: "text-2xl", root: "h-11" }} />
+
+	<UserTeamsList />
+{/snippet}

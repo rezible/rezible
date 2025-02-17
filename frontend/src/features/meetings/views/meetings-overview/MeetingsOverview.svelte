@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { Button, Icon } from "svelte-ux";
+	import { Button, Header, Icon } from "svelte-ux";
 	import { mdiPlus } from "@mdi/js";
 
 	import CreateMeetingDialog from "./CreateMeetingDialog.svelte";
 	import ScheduledMeetingsList from "./ScheduledMeetingsList.svelte";
 	import UpcomingSessionsList from "./UpcomingSessionsList.svelte";
+	import SplitPage from "$components/split-page/SplitPage.svelte";
 
 	let createOpen = $state(false);
 
@@ -13,27 +14,44 @@
 	};
 </script>
 
-<Button
-	classes={{ root: "w-fit" }}
-	variant="fill"
-	color="primary"
-	size="lg"
-	on:click={() => {
-		createOpen = true;
-	}}
->
-	Create New Meeting
-	<Icon data={mdiPlus} />
-</Button>
+<SplitPage nav={scheduledListNav}>
+	<Header title="Upcoming" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+		<svelte:fragment slot="actions">
+			<Button
+				classes={{ root: "w-fit h-fit" }}
+				variant="fill"
+				color="primary"
+				on:click={() => {
+					createOpen = true;
+				}}
+				>
+				Create New
+				<Icon data={mdiPlus} />
+			</Button>
+		</svelte:fragment>
+	</Header>
 
-<div class="flex gap-2">
-	<div class="max-w-xl w-full border mt-2 p-2">
-		<UpcomingSessionsList />
-	</div>
+	<UpcomingSessionsList />
+</SplitPage>
 
-	<div class="max-w-xl w-full border mt-2 p-2">
-		<ScheduledMeetingsList />
-	</div>
-</div>
+{#snippet scheduledListNav()}
+	<Header title="Scheduled" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+		<svelte:fragment slot="actions">
+			<Button
+				classes={{ root: "w-fit" }}
+				variant="fill"
+				color="primary"
+				on:click={() => {
+					createOpen = true;
+				}}
+				>
+				Schedule New
+				<Icon data={mdiPlus} />
+			</Button>
+		</svelte:fragment>
+	</Header>
+
+	<ScheduledMeetingsList />
+{/snippet}
 
 <CreateMeetingDialog bind:open={createOpen} onCreated={onMeetingCreated} />
