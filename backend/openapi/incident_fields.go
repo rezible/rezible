@@ -36,7 +36,7 @@ type (
 		Archived     bool                  `json:"archived"`
 		Description  string                `json:"description"`
 		Required     bool                  `json:"required"`
-		IncidentType *IncidentType         `json:"incident_type"`
+		IncidentType *IncidentType         `json:"incidentType"`
 		Options      []IncidentFieldOption `json:"options"`
 	}
 
@@ -46,7 +46,7 @@ type (
 	}
 
 	IncidentFieldOptionAttributes struct {
-		FieldOptionType string `json:"option_type" enum:"custom,derived"`
+		FieldOptionType string `json:"optionType" enum:"custom,derived"`
 		Value           string `json:"value"`
 		Archived        bool   `json:"archived"`
 	}
@@ -123,10 +123,10 @@ type CreateIncidentFieldAttributes struct {
 	Name         string                                `json:"name"`
 	Required     bool                                  `json:"required"`
 	Options      []CreateIncidentFieldOptionAttributes `json:"options" min:"1"`
-	IncidentType *string                               `json:"incident_type,omitempty"`
+	IncidentType *string                               `json:"incidentType,omitempty"`
 }
 type CreateIncidentFieldOptionAttributes struct {
-	FieldOptionType string `json:"field_option_type" enum:"custom,derived"`
+	FieldOptionType string `json:"fieldOptionType" enum:"custom,derived"`
 	Value           string `json:"value"`
 }
 type CreateIncidentFieldRequest RequestWithBodyAttributes[CreateIncidentFieldAttributes]
@@ -145,12 +145,12 @@ type UpdateIncidentFieldAttributes struct {
 	Name         *string                                `json:"name,omitempty"`
 	Archived     *bool                                  `json:"archived,omitempty"`
 	Required     *bool                                  `json:"required,omitempty"`
-	IncidentType *string                                `json:"incident_type,omitempty"`
+	IncidentType *string                                `json:"incidentType,omitempty"`
 	Options      *[]UpdateIncidentFieldOptionAttributes `json:"options,omitempty"`
 }
 type UpdateIncidentFieldOptionAttributes struct {
 	Id              *string `json:"id,omitempty"`
-	FieldOptionType string  `json:"field_option_type" enum:"custom,derived"`
+	FieldOptionType string  `json:"fieldOptionType" enum:"custom,derived"`
 	Value           string  `json:"value"`
 	Archived        bool    `json:"archived"`
 }

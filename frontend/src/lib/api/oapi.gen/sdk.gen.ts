@@ -1056,7 +1056,7 @@ export const createRetrospectiveDiscussion = <ThrowOnError extends boolean = fal
 export const getRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetRetrospectiveDiscussionData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetRetrospectiveDiscussionResponse, GetRetrospectiveDiscussionError, ThrowOnError>({
         ...options,
-        url: '/retrospectives/{id}/discussions/{discussion_id}',
+        url: '/retrospectives/{id}/discussions/{discussionId}',
         responseTransformer: GetRetrospectiveDiscussionResponseTransformer
     });
 };
@@ -1067,7 +1067,7 @@ export const getRetrospectiveDiscussion = <ThrowOnError extends boolean = false>
 export const addRetrospectiveDiscussionReply = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddRetrospectiveDiscussionReplyData, ThrowOnError>) => {
     return (options?.client ?? client).post<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, ThrowOnError>({
         ...options,
-        url: '/retrospectives/{id}/discussions/{discussion_id}',
+        url: '/retrospectives/{id}/discussions/{discussionId}',
         responseTransformer: AddRetrospectiveDiscussionReplyResponseTransformer
     });
 };
@@ -1078,7 +1078,7 @@ export const addRetrospectiveDiscussionReply = <ThrowOnError extends boolean = f
 export const updateRetrospectiveDiscussion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateRetrospectiveDiscussionData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, ThrowOnError>({
         ...options,
-        url: '/retrospectives/{id}/discussions/{discussion_id}',
+        url: '/retrospectives/{id}/discussions/{discussionId}',
         responseTransformer: UpdateRetrospectiveDiscussionResponseTransformer
     });
 };
@@ -1109,7 +1109,7 @@ export const createRetrospectiveReview = <ThrowOnError extends boolean = false>(
 export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetSystemAnalysisComponentData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetSystemAnalysisComponentResponse, GetSystemAnalysisComponentError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/components/{entity_id}'
+        url: '/system_analysis/{analysisId}/components/{entityId}'
     });
 };
 
@@ -1119,7 +1119,7 @@ export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>
 export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteSystemAnalysisComponentData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisComponentError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/components/{entity_id}'
+        url: '/system_analysis/{analysisId}/components/{entityId}'
     });
 };
 
@@ -1129,7 +1129,7 @@ export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = fal
 export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateSystemAnalysisComponentData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisComponentError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/components/{entity_id}'
+        url: '/system_analysis/{analysisId}/components/{entityId}'
     });
 };
 
@@ -1139,7 +1139,7 @@ export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = fal
 export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetSystemAnalysisRelationshipData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetSystemAnalysisRelationshipResponse, GetSystemAnalysisRelationshipError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/relationships/{entity_id}'
+        url: '/system_analysis/{analysisId}/relationships/{entityId}'
     });
 };
 
@@ -1149,7 +1149,7 @@ export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = fal
 export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteSystemAnalysisRelationshipData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteSystemAnalysisRelationshipResponse, DeleteSystemAnalysisRelationshipError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/relationships/{entity_id}'
+        url: '/system_analysis/{analysisId}/relationships/{entityId}'
     });
 };
 
@@ -1159,7 +1159,7 @@ export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateSystemAnalysisRelationshipData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateSystemAnalysisRelationshipResponse, UpdateSystemAnalysisRelationshipError, ThrowOnError>({
         ...options,
-        url: '/system_analysis/{analysis_id}/relationships/{entity_id}'
+        url: '/system_analysis/{analysisId}/relationships/{entityId}'
     });
 };
 

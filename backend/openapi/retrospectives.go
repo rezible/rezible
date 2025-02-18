@@ -337,13 +337,13 @@ type ListRetrospectiveDiscussionsResponse PaginatedResponse[RetrospectiveDiscuss
 
 type retrospectiveDiscussionRequest struct {
 	RetrospectiveId uuid.UUID `path:"id"`
-	DiscussionId    uuid.UUID `path:"discussion_id"`
+	DiscussionId    uuid.UUID `path:"discussionId"`
 }
 
 var GetRetrospectiveDiscussion = huma.Operation{
 	OperationID: "get-retrospective-discussion",
 	Method:      http.MethodGet,
-	Path:        "/retrospectives/{id}/discussions/{discussion_id}",
+	Path:        "/retrospectives/{id}/discussions/{discussionId}",
 	Summary:     "Get a Retrospective Discussion",
 	Tags:        retrospectiveDiscussionTags,
 	Errors:      errorCodes(),
@@ -370,7 +370,7 @@ type CreateRetrospectiveDiscussionResponse ItemResponse[RetrospectiveDiscussion]
 var UpdateRetrospectiveDiscussion = huma.Operation{
 	OperationID: "update-retrospective-discussion",
 	Method:      http.MethodPatch,
-	Path:        "/retrospectives/{id}/discussions/{discussion_id}",
+	Path:        "/retrospectives/{id}/discussions/{discussionId}",
 	Summary:     "Update a Retrospective Discussion",
 	Tags:        retrospectiveDiscussionTags,
 	Errors:      errorCodes(),
@@ -388,14 +388,14 @@ type UpdateRetrospectiveDiscussionResponse ItemResponse[RetrospectiveDiscussion]
 var AddRetrospectiveDiscussionReply = huma.Operation{
 	OperationID: "add-retrospective-discussion-reply",
 	Method:      http.MethodPost,
-	Path:        "/retrospectives/{id}/discussions/{discussion_id}",
+	Path:        "/retrospectives/{id}/discussions/{discussionId}",
 	Summary:     "Add a Reply to a Retrospective Discussion",
 	Tags:        retrospectiveDiscussionTags,
 	Errors:      errorCodes(),
 }
 
 type AddRetrospectiveDiscussionReplyRequestAttributes struct {
-	ParentReplyId *uuid.UUID      `json:"parent_reply_id,omitempty"`
+	ParentReplyId *uuid.UUID      `json:"parentReplyId,omitempty"`
 	Content       json.RawMessage `json:"content"`
 }
 type AddRetrospectiveDiscussionReplyRequest struct {

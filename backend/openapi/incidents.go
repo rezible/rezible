@@ -37,7 +37,7 @@ type (
 		Title            string                   `json:"title"`
 		Summary          string                   `json:"summary"`
 		Private          bool                     `json:"private"`
-		CurrentStatus    string                   `json:"current_status" enum:"started,mitigated,resolved,closed"`
+		CurrentStatus    string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
 		OpenedAt         time.Time                `json:"openedAt"`
 		ClosedAt         time.Time                `json:"closedAt"`
 		Severity         IncidentSeverity         `json:"severity"`

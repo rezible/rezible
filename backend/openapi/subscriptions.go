@@ -62,9 +62,9 @@ var CreateSubscription = huma.Operation{
 }
 
 type CreateSubscriptionAttributes struct {
-	IncidentId *uuid.UUID `json:"incident_id" required:"false"`
-	TeamId     *uuid.UUID `json:"team_id" required:"false"`
-	UserId     *uuid.UUID `json:"user_id" required:"false"`
+	IncidentId *uuid.UUID `json:"incidentId" required:"false"`
+	TeamId     *uuid.UUID `json:"teamId" required:"false"`
+	UserId     *uuid.UUID `json:"userId" required:"false"`
 }
 type CreateSubscriptionRequest RequestWithBodyAttributes[CreateSubscriptionAttributes]
 type CreateSubscriptionResponse ItemResponse[Subscription]

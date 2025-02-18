@@ -54,7 +54,7 @@ var ListUsers = huma.Operation{
 
 type ListUsersRequest struct {
 	ListRequest
-	TeamId uuid.UUID `query:"team_id" required:"false"`
+	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
 type ListUsersResponse PaginatedResponse[User]
 

@@ -25,7 +25,7 @@ func (o operations) RegisterUserSessions(api huma.API) {
 
 type (
 	UserSession struct {
-		ExpiresAt time.Time `json:"expires_at"`
+		ExpiresAt time.Time `json:"expiresAt"`
 		User      User      `json:"user"`
 	}
 
@@ -39,8 +39,8 @@ type (
 	}
 
 	UserAssignment struct {
-		ItemId   uuid.UUID `json:"item_id"`
-		ItemType string    `json:"item_type"`
+		ItemId   uuid.UUID `json:"itemId"`
+		ItemType string    `json:"itemType"`
 		Title    string    `json:"title"`
 		Deadline time.Time `json:"deadline"`
 		Role     string    `json:"role"`

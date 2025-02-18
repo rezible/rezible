@@ -193,7 +193,7 @@ var AddIncidentDebriefUserMessage = huma.Operation{
 }
 
 type AddIncidentDebriefUserMessageAttributes struct {
-	MessageContent string `json:"message_content"`
+	MessageContent string `json:"messageContent"`
 }
 type AddIncidentDebriefUserMessageRequest CreateIdRequest[AddIncidentDebriefUserMessageAttributes]
 type AddIncidentDebriefUserMessageResponse ItemResponse[IncidentDebriefMessage]

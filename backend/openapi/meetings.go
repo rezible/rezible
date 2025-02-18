@@ -58,14 +58,14 @@ type (
 	}
 
 	MeetingScheduleTiming struct {
-		StartAt             time.Time `json:"starts_at"`
-		DurationMinutes     int       `json:"duration_minutes"`
+		StartAt             time.Time `json:"startsAt"`
+		DurationMinutes     int       `json:"durationMinutes"`
 		Repeat              string    `json:"repeat" enum:"daily,weekly,monthly"`
-		RepeatStep          int       `json:"repeat_step"`
-		RepeatMonthlyOn     *string   `json:"repeat_monthly_on" enum:"same_day,same_weekday"`
+		RepeatStep          int       `json:"repeatStep"`
+		RepeatMonthlyOn     *string   `json:"repeatMonthlyOn" enum:"same_day,same_weekday"`
 		Indefinite          bool      `json:"indefinite"`
-		UntilDate           *string   `json:"until_date,omitempty"`
-		UntilNumRepetitions *int      `json:"until_num_repetitions,omitempty"`
+		UntilDate           *string   `json:"untilDate,omitempty"`
+		UntilNumRepetitions *int      `json:"untilNumRepetitions,omitempty"`
 	}
 
 	MeetingDocumentTemplate struct {
@@ -84,12 +84,12 @@ type (
 	}
 
 	MeetingSessionAttributes struct {
-		MeetingScheduleId uuid.UUID        `json:"meeting_schedule_id"`
-		StartsAt          time.Time        `json:"starts_at"`
+		MeetingScheduleId uuid.UUID        `json:"meetingScheduleId"`
+		StartsAt          time.Time        `json:"startsAt"`
 		Title             string           `json:"title"`
-		HostTeamId        uuid.UUID        `json:"host_team_id"`
+		HostTeamId        uuid.UUID        `json:"hostTeamId"`
 		Attendees         MeetingAttendees `json:"attendees"`
-		DocumentName      string           `json:"document_name"`
+		DocumentName      string           `json:"documentName"`
 	}
 )
 
@@ -134,17 +134,17 @@ var CreateMeetingSchedule = huma.Operation{
 
 type CreateMeetingScheduleAttributes struct {
 	Name            string           `json:"name"`
-	SessionTitle    string           `json:"session_title"`
+	SessionTitle    string           `json:"sessionTitle"`
 	Description     *string          `json:"description,omitempty"`
-	StartsAt        DateTimeAnchor   `json:"starts_at"`
-	DurationMinutes int              `json:"duration_minutes"`
+	StartsAt        DateTimeAnchor   `json:"startsAt"`
+	DurationMinutes int              `json:"durationMinutes"`
 	Attendees       MeetingAttendees `json:"attendees"`
 	Repeats         string           `json:"repeats" enum:"daily,weekly,monthly"`
-	RepetitionStep  int              `json:"repetition_step"`
+	RepetitionStep  int              `json:"repetitionStep"`
 	// Weekdays        []string                    `json:"weekdays"`
-	RepeatMonthlyOn string `json:"repeat_monthly_on,omitempty" enum:"same_day,same_weekday"`
-	UntilDate       string `json:"until_date,omitempty" format:"date"`
-	NumRepetitions  int    `json:"num_repetitions,omitempty"`
+	RepeatMonthlyOn string `json:"repeatMonthlyOn,omitempty" enum:"same_day,same_weekday"`
+	UntilDate       string `json:"untilDate,omitempty" format:"date"`
+	NumRepetitions  int    `json:"numRepetitions,omitempty"`
 }
 type CreateMeetingScheduleRequest RequestWithBodyAttributes[CreateMeetingScheduleAttributes]
 type CreateMeetingScheduleResponse ItemResponse[MeetingSchedule]
@@ -186,9 +186,9 @@ var ListMeetingSessions = huma.Operation{
 
 type ListMeetingSessionsRequest struct {
 	ListRequest
-	MeetingScheduleId uuid.UUID `query:"meeting_schedule_id" required:"false"`
-	UserId            uuid.UUID `query:"user_id" required:"false"`
-	TeamId            uuid.UUID `query:"team_id" required:"false"`
+	MeetingScheduleId uuid.UUID `query:"meetingScheduleId" required:"false"`
+	UserId            uuid.UUID `query:"userId" required:"false"`
+	TeamId            uuid.UUID `query:"teamId" required:"false"`
 	From              string    `query:"from" required:"false"`
 	To                string    `query:"to" required:"false"`
 }
@@ -219,9 +219,9 @@ type CreateMeetingSessionAttributes struct {
 	Title              string           `json:"title"`
 	Description        *string          `json:"description,omitempty"`
 	Attendees          MeetingAttendees `json:"attendees"`
-	StartsAt           DateTimeAnchor   `json:"starts_at"`
-	DurationMinutes    int              `json:"duration_minutes"`
-	DocumentTemplateId *uuid.UUID       `json:"document_template_id,omitempty"`
+	StartsAt           DateTimeAnchor   `json:"startsAt"`
+	DurationMinutes    int              `json:"durationMinutes"`
+	DocumentTemplateId *uuid.UUID       `json:"documentTemplateId,omitempty"`
 }
 type CreateMeetingSessionRequest RequestWithBodyAttributes[CreateMeetingSessionAttributes]
 type CreateMeetingSessionResponse ItemResponse[MeetingSession]

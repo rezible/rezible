@@ -78,7 +78,7 @@ type (
 		Name               string           `json:"name"`
 		Slug               string           `json:"slug"`
 		Schedules          []OncallSchedule `json:"schedules"`
-		HandoverTemplateId uuid.UUID        `json:"handover_template_id"`
+		HandoverTemplateId uuid.UUID        `json:"handoverTemplateId"`
 	}
 
 	OncallSchedule struct {
@@ -107,8 +107,8 @@ type (
 		User    User               `json:"user"`
 		Roster  OncallRoster       `json:"roster"`
 		Role    string             `json:"role"`
-		StartAt time.Time          `json:"start_at"`
-		EndAt   time.Time          `json:"end_at"`
+		StartAt time.Time          `json:"startAt"`
+		EndAt   time.Time          `json:"endAt"`
 		Covers  []OncallShiftCover `json:"covers"`
 	}
 
@@ -119,8 +119,8 @@ type (
 
 	OncallShiftCoverAttributes struct {
 		User    User      `json:"user"`
-		StartAt time.Time `json:"start_at"`
-		EndAt   time.Time `json:"end_at"`
+		StartAt time.Time `json:"startAt"`
+		EndAt   time.Time `json:"endAt"`
 	}
 
 	OncallShiftHandoverTemplate struct {
@@ -144,11 +144,11 @@ type (
 	}
 
 	OncallShiftHandoverAttributes struct {
-		ShiftId   uuid.UUID                    `json:"shift_id"`
+		ShiftId   uuid.UUID                    `json:"shiftId"`
 		Content   []OncallShiftHandoverSection `json:"content"`
-		CreatedAt time.Time                    `json:"created_at"`
-		UpdatedAt time.Time                    `json:"updated_at"`
-		SentAt    time.Time                    `json:"sent_at"`
+		CreatedAt time.Time                    `json:"createdAt"`
+		UpdatedAt time.Time                    `json:"updatedAt"`
+		SentAt    time.Time                    `json:"sentAt"`
 	}
 
 	OncallShiftHandoverSection struct {
@@ -163,14 +163,14 @@ type (
 	}
 
 	OncallShiftAnnotationAttributes struct {
-		ShiftId         uuid.UUID `json:"shift_id"`
+		ShiftId         uuid.UUID `json:"shiftId"`
 		Pinned          bool      `json:"pinned"`
 		Notes           string    `json:"notes"`
 		EventKind       string    `json:"kind" enum:"incident,alert,toil,ping"`
-		EventId         string    `json:"event_id"`
+		EventId         string    `json:"eventId"`
 		Title           string    `json:"title"`
-		OccurredAt      time.Time `json:"occurred_at"`
-		MinutesOccupied int       `json:"minutes_occupied"`
+		OccurredAt      time.Time `json:"occurredAt"`
+		MinutesOccupied int       `json:"minutesOccupied"`
 	}
 
 	OncallAlert struct {
@@ -179,7 +179,7 @@ type (
 	}
 
 	OncallAlertAttributes struct {
-		OccurredAt time.Time `json:"occurred_at"`
+		OccurredAt time.Time `json:"occurredAt"`
 		Title      string    `json:"title"`
 	}
 )
@@ -341,8 +341,8 @@ var ListOncallRosters = huma.Operation{
 
 type ListOncallRostersRequest struct {
 	ListRequest
-	TeamId uuid.UUID `query:"team_id" required:"false" nullable:"false"`
-	UserId uuid.UUID `query:"user_id" required:"false" nullable:"false"`
+	TeamId uuid.UUID `query:"teamId" required:"false" nullable:"false"`
+	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Pinned bool      `query:"pinned" required:"false" nullable:"false"`
 }
 type ListOncallRostersResponse PaginatedResponse[OncallRoster]
@@ -373,9 +373,9 @@ type GetUserOncallDetailsRequest struct {
 }
 type UserOncallDetails struct {
 	Rosters        []OncallRoster `json:"rosters"`
-	ActiveShifts   []OncallShift  `json:"active_shifts"`
-	UpcomingShifts []OncallShift  `json:"upcoming_shifts"`
-	PastShifts     []OncallShift  `json:"past_shifts"`
+	ActiveShifts   []OncallShift  `json:"activeShifts"`
+	UpcomingShifts []OncallShift  `json:"upcomingShifts"`
+	PastShifts     []OncallShift  `json:"pastShifts"`
 }
 type GetUserOncallDetailsResponse ItemResponse[UserOncallDetails]
 
@@ -390,7 +390,7 @@ var ListOncallShifts = huma.Operation{
 
 type ListOncallShiftsRequest struct {
 	ListRequest
-	UserId uuid.UUID `query:"user_id" required:"false" nullable:"false"`
+	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Active bool      `query:"active" required:"false" nullable:"false"`
 }
 type ListOncallShiftsResponse PaginatedResponse[OncallShift]
@@ -561,11 +561,11 @@ var CreateOncallShiftAnnotation = huma.Operation{
 }
 
 type CreateOncallShiftAnnotationRequestAttributes struct {
-	EventKind       string `json:"event_kind" enum:"incident,alert,toil,ping"`
-	EventId         string `json:"event_id"`
+	EventKind       string `json:"eventKind" enum:"incident,alert,toil,ping"`
+	EventId         string `json:"eventId"`
 	Title           string `json:"title"`
-	OccurredAt      string `json:"occurred_at" format:"date-time"`
-	MinutesOccupied int    `json:"minutes_occupied"`
+	OccurredAt      string `json:"occurredAt" format:"date-time"`
+	MinutesOccupied int    `json:"minutesOccupied"`
 	Notes           string `json:"notes"`
 	Pinned          bool   `json:"pinned"`
 }
@@ -584,7 +584,7 @@ var UpdateOncallShiftAnnotation = huma.Operation{
 type UpdateOncallShiftAnnotationRequestAttributes struct {
 	Pinned          *bool   `json:"pinned,omitempty"`
 	Notes           *string `json:"notes,omitempty"`
-	MinutesOccupied *int    `json:"minutes_occupied,omitempty"`
+	MinutesOccupied *int    `json:"minutesOccupied,omitempty"`
 }
 type UpdateOncallShiftAnnotationRequest UpdateIdRequest[UpdateOncallShiftAnnotationRequestAttributes]
 type UpdateOncallShiftAnnotationResponse ItemResponse[OncallShiftAnnotation]
