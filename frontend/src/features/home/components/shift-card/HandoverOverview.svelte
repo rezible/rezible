@@ -50,7 +50,7 @@
 		</Header>
 	</div>
 
-	<div class="px-6 py-4 overflow-y-auto">
+	<div class="px-6 py-4 overflow-y-auto overflow-x-hidden">
 		<div class="space-y-4">
 			<p>Busy Shift, hope yours is less eventful!</p>
 

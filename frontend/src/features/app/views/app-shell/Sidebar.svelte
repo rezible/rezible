@@ -56,9 +56,10 @@
 {/snippet}
 
 <aside
-	class="h-full {expandingHover
-		? 'w-fit hover:w-60'
-		: 'w-60'} group flex flex-col overflow-hidden bg-surface-200"
+	class={cls(
+		"h-full group flex flex-col overflow-hidden bg-surface-200 pb-2",
+		expandingHover ? "w-fit hover:w-60" : "w-60"
+	)}
 >
 	<div class="h-16 flex items-center px-4">
 		<a href="/" class="text-2xl flex items-center">
@@ -93,17 +94,11 @@
 					{@render navItem(r)}
 				{/if}
 			{/each}
-
-			{@render navItem({
-				label: "Settings",
-				path: "/settings",
-				icon: mdiCogBox,
-			})}
 		</div>
 
 		<div class="">
 			{#if currentPath !== "/oncall"}
-				<a href="/oncall">
+				<!--a href="/oncall">
 					<div
 						class="border rounded-lg border-success-700 bg-success-600/20 {expandingHover
 							? 'group-hover:p-2'
@@ -124,8 +119,14 @@
 							classes={{ root: "text-success" }}
 						/>
 					</div>
-				</a>
+				</a-->
 			{/if}
+
+			{@render navItem({
+				label: "Settings",
+				path: "/settings",
+				icon: mdiCogBox,
+			})}
 		</div>
 	</div>
 </aside>

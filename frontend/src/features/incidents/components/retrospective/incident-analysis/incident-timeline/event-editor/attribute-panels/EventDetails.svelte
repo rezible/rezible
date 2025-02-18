@@ -76,7 +76,7 @@
 		</ToggleGroup>
 	</Field>
 
-	<Field label="Key Event" hint="Will be highlighted during Presentation Mode" let:id icon={mdiFlag}>
+	<Field label="Key Event" let:id icon={mdiFlag}>
 		<Switch {id} bind:value={eventAttributes.isKey} />
 	</Field>
 
@@ -89,7 +89,7 @@
 		exactTime
 	/>
 
-	<Field label="Description" classes={{ input: "block" }}>
+	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}
 			<EditorContent editor={descriptionEditor} />
 		{/if}

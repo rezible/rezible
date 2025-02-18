@@ -15,7 +15,7 @@
 	<div class="flex flex-col gap-2 pl-1">
 		<Header title="Details" />
 
-		<div class="flex-1 flex-col gap-2 overflow-y-auto">
+		<div class="flex flex-col flex-1 gap-2 overflow-y-auto">
 			<EventDetailsPanel />
 		</div>
 	</div>

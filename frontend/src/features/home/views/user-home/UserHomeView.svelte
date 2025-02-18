@@ -25,10 +25,6 @@
 	{#if currentShifts}
 		<div class="max-h-full min-h-0 inline">
 			<ShiftCard shifts={currentShifts} />
-
-			<div class="mt-2">
-				<TeamInfo />
-			</div>
 		</div>
 	{/if}
 </div>
