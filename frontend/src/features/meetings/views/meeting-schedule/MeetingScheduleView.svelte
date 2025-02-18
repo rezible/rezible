@@ -31,23 +31,23 @@
 </div>
 
 {#snippet timingView(t: MeetingScheduleTiming)}
-	<span>repeats every {getRepeats(t.repeat, t.repeat_step)}</span>
+	<span>repeats every {getRepeats(t.repeat, t.repeatStep)}</span>
 	{#if t.repeat === "monthly"}
-		<span>on {t.repeat_monthly_on}</span>
+		<span>on {t.repeatMonthlyOn}</span>
 	{/if}
 	{#if t.indefinite}
 		<span>indefinitely</span>
-	{:else if t.until_num_repetitions}
-		<span>until {t.until_num_repetitions} repetitions</span>
-	{:else if t.until_date}
-		<span>until {t.until_date}</span>
+	{:else if t.untilNumRepetitions}
+		<span>until {t.untilNumRepetitions} repetitions</span>
+	{:else if t.untilDate}
+		<span>until {t.untilDate}</span>
 	{/if}
 {/snippet}
 
 {#snippet scheduleAttributesView(attr: MeetingScheduleAttributes)}
 	<div class="flex flex-col gap-2">
 		<div class="border p-2 flex items-center gap-2">
-			<Avatar kind="team" id={attr.host_team_id} />
+			<Avatar kind="team" id={attr.hostTeamId} />
 			<span class="text-lg">host team</span>
 		</div>
 

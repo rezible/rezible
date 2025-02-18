@@ -32,7 +32,7 @@
 	const doSeverityUpdate = () => {
 		update.mutate({
 			path: { id: incident.id },
-			body: { attributes: { severity_id: newSeverity } },
+			body: { attributes: { severityId: newSeverity } },
 		});
 	};
 </script>

@@ -36,13 +36,13 @@
 	const resetMeetingState = () => (formData = getEmptyForm());
 
 	const toggleWeekday = (d: Weekday) => {
-		if (!formData.week_days.delete(d)) formData.week_days.add(d);
-		formData.week_days = structuredClone(formData.week_days);
+		if (!formData.weekDays.delete(d)) formData.weekDays.add(d);
+		formData.weekDays = structuredClone(formData.weekDays);
 	};
 
 	const dayOfWeek = $derived(weekdays[new Date(formData.start.date).getDay()].label);
-	const daySelected = $derived<boolean[]>(weekdays.map((v) => formData.week_days.has(v.value)));
-	const pluralSuffix = $derived(formData.repeats !== "daily" && formData.repetition_step > 1 ? "s" : "");
+	const daySelected = $derived<boolean[]>(weekdays.map((v) => formData.weekDays.has(v.value)));
+	const pluralSuffix = $derived(formData.repeats !== "daily" && formData.repetitionStep > 1 ? "s" : "");
 
 	const parsedForm = $derived(open ? CreateMeetingFormSchema.safeParse(formData) : null);
 
@@ -147,7 +147,7 @@
 			<NumberStepper
 				min={1}
 				max={formData.repeats === "weekly" ? 4 : 6}
-				bind:value={formData.repetition_step}
+				bind:value={formData.repetitionStep}
 			/>
 			{formData.repeats === "weekly" ? "Week" : "Month"}{pluralSuffix}
 		</Field>
@@ -169,7 +169,7 @@
 		</Field>
 	{:else if formData.repeats === "monthly"}
 		<Field label="On the Same">
-			<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.monthly_on}>
+			<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.monthlyOn}>
 				<ToggleOption value="same_day">Day of the Month</ToggleOption>
 				<ToggleOption value="same_weekday">Weekday ({dayOfWeek})</ToggleOption>
 			</ToggleGroup>
@@ -177,20 +177,20 @@
 	{/if}
 
 	<Field label="Until">
-		<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.until_type}>
+		<ToggleGroup variant="outline" inset class="w-full" bind:value={formData.untilType}>
 			<ToggleOption value="indefinite">Indefinitely</ToggleOption>
 			<ToggleOption value="num_repetitions">Number of Repetitions</ToggleOption>
 			<ToggleOption value="date">Date Reached</ToggleOption>
 		</ToggleGroup>
 	</Field>
 
-	{#if formData.until_type === "num_repetitions"}
+	{#if formData.untilType === "num_repetitions"}
 		<Field label="Number of Repetitions">
-			<NumberStepper min={2} bind:value={formData.num_repetitions} />
+			<NumberStepper min={2} bind:value={formData.numRepetitions} />
 		</Field>
-	{:else if formData.until_type === "date"}
+	{:else if formData.untilType === "date"}
 		<div>
-			<DatePickerField label="End after" bind:value={formData.until_date} />
+			<DatePickerField label="End after" bind:value={formData.untilDate} />
 		</div>
 	{/if}
 {/snippet}

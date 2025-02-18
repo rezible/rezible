@@ -24,7 +24,7 @@
 	const invalidateAnnotationsQuery = () => queryClient.invalidateQueries(annotationQueryOpts);
 
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
-	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.event_id)));
+	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.eventId)));
 	const pinnedAnnotations = $derived(annotations.filter((v) => v.attributes.pinned));
 	const unpinnedAnnotations = $derived(annotations.filter((v) => !v.attributes.pinned));
 
@@ -103,7 +103,7 @@
 </div>
 
 {#snippet annotationListItem(ann: OncallShiftAnnotation)}
-	{@const occurredAt = new Date(Date.parse(ann.attributes.occurred_at))}
+	{@const occurredAt = ann.attributes.occurredAt}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
@@ -172,7 +172,7 @@
 			<div class="grid grid-cols-subgrid col-span-3 place-items-center">
 				<div class="justify-self-start">
 					<span class="flex items-center">
-						{event.occurred_at.toLocaleTimeString()}
+						{event.occurredAt.toLocaleTimeString()}
 					</span>
 				</div>
 

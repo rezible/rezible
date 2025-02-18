@@ -9,7 +9,7 @@
 
 	const userShiftsQuery = createQuery(() => ({
 		...listOncallShiftsOptions({
-			query: { user_id: session.userId, active: true },
+			query: { userId: session.userId, active: true },
 		}),
 		enabled: !!session.userId,
 	}));

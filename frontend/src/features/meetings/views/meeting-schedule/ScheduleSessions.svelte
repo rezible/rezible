@@ -12,7 +12,7 @@
 
 	const queryOptions = () =>
 		listMeetingSessionsOptions({
-			query: { meeting_schedule_id: schedule.id },
+			query: { meetingScheduleId: schedule.id },
 		});
 	const query = createQuery(queryOptions);
 </script>

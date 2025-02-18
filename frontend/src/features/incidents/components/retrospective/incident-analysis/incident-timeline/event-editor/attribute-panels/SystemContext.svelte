@@ -8,7 +8,7 @@
 	import { getIconForComponentKind } from "$lib/systemComponents";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 
-	const analysisId = incidentCtx.get().attributes.system_analysis_id;
+	const analysisId = incidentCtx.get().attributes.systemAnalysisId;
 
 	let selectingComponent = $state(false);
 	let selectedComponent = $state<SystemAnalysisComponent>();

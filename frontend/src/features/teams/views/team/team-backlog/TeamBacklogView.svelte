@@ -10,7 +10,7 @@
 	let { team }: Props = $props();
 
 	let params = $state<ListTasksData>();
-	const query = createQuery(() => listTasksOptions({ ...params, query: { team_id: team.id } }));
+	const query = createQuery(() => listTasksOptions({ ...params, query: { teamId: team.id } }));
 </script>
 
 <LoadingQueryWrapper {query}>

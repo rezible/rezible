@@ -9,9 +9,9 @@
 	const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
 
 	const assignments = $derived(query.data?.data ?? []);
-	const incidents = $derived(assignments.filter((a) => a.item_type === "incident"));
-	const shifts = $derived(assignments.filter((a) => a.item_type === "oncall_shift"));
-	const tasks = $derived(assignments.filter((a) => a.item_type === "tasks"));
+	const incidents = $derived(assignments.filter((a) => a.itemType === "incident"));
+	const shifts = $derived(assignments.filter((a) => a.itemType === "oncall_shift"));
+	const tasks = $derived(assignments.filter((a) => a.itemType === "tasks"));
 </script>
 
 <div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
@@ -19,8 +19,8 @@
 
 	<div class="flex flex-col gap-2 overflow-y-auto">
 		{#each assignments as a, i (i)}
-			{#if a.item_type == "retrospective"}
-				<a href="/incidents/{a.item_id}/retrospective">
+			{#if a.itemType == "retrospective"}
+				<a href="/incidents/{a.itemId}/retrospective">
 					<ListItem
 						title="{a.role} the Retrospective for {a.title}"
 						subheading="Due in {formatDistanceToNow(a.deadline)}"
@@ -32,8 +32,8 @@
 						</div>
 					</ListItem>
 				</a>
-			{:else if a.item_type === "incident_review"}
-				<a href="/meetings/sessions/{a.item_id}">
+			{:else if a.itemType === "incident_review"}
+				<a href="/meetings/sessions/{a.itemId}">
 					<ListItem
 						title="{a.role} {a.title} at Incident Review"
 						subheading="In {formatDistanceToNow(a.deadline)}"

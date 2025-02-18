@@ -42,7 +42,7 @@
 		const src: RelationshipFeedbackSignal[] = [];
 		const tgt: RelationshipFeedbackSignal[] = [];
 		attrs.feedbackSignals.forEach((feedback) => {
-			const signalId = feedback.attributes.signal_id;
+			const signalId = feedback.attributes.signalId;
 			const sourceSignal = sourceSignals.get(signalId);
 			if (sourceSignal) src.push({ feedback, signal: sourceSignal });
 			const targetSignal = targetSignals.get(signalId);
@@ -55,7 +55,7 @@
 		const src: RelationshipControlAction[] = [];
 		const tgt: RelationshipControlAction[] = [];
 		attrs.controlActions.forEach((action) => {
-			const controlId = action.attributes.control_id;
+			const controlId = action.attributes.controlId;
 			const sourceControl = sourceControls.get(controlId);
 			if (sourceControl) src.push({ action, control: sourceControl });
 			const targetControl = targetControls.get(controlId);
@@ -95,7 +95,7 @@
 		<Header title={feedbacks.length > 0 ? "Sends Feedback" : "Supplies No Feedback"} />
 		{#if feedbacks.length > 0}
 			{#if editingFeedback}
-				{@const signalId = editingFeedback.attributes.signal_id}
+				{@const signalId = editingFeedback.attributes.signalId}
 				{@const ctrl = sourceSignals.get(signalId) || targetSignals.get(signalId)}
 				<span>{ctrl?.attributes.label ?? "Editing"}</span>
 				<LabelDescriptionEditor
@@ -120,7 +120,7 @@
 		<Header title={actions.length > 0 ? "Is Controlled via" : "Exposes No Controls"} />
 		{#if actions.length > 0}
 			{#if editingAction}
-				{@const controlId = editingAction.attributes.control_id}
+				{@const controlId = editingAction.attributes.controlId}
 				{@const ctrl = sourceControls.get(controlId) || targetControls.get(controlId)}
 				<span>{ctrl?.attributes.label ?? "Editing"}</span>
 				<LabelDescriptionEditor

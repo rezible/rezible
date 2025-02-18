@@ -13,12 +13,12 @@ import {
 
 const compareControlActions = (a: SystemAnalysisRelationshipControlAction, b: SystemAnalysisRelationshipControlAction) => {
 	if (a.id !== b.id) return false;
-	return (a.attributes.control_id === b.attributes.control_id) && (a.attributes.description === b.attributes.description);
+	return (a.attributes.controlId === b.attributes.controlId) && (a.attributes.description === b.attributes.description);
 }
 
 const compareFeedbackSignals = (a: SystemAnalysisRelationshipFeedbackSignal, b: SystemAnalysisRelationshipFeedbackSignal) => {
 	if (a.id !== b.id) return false;
-	return (a.attributes.signal_id === b.attributes.signal_id) && (a.attributes.description === b.attributes.description);
+	return (a.attributes.signalId === b.attributes.signalId) && (a.attributes.description === b.attributes.description);
 }
 
 // TODO: support this
@@ -30,44 +30,44 @@ type RelationshipKind =
 
 const createRelationshipAttributesState = () => {
 	let originalAttributes = $state<SystemAnalysisRelationshipAttributes>();
-	let sourceId = $state<SystemAnalysisRelationshipAttributes["source_id"]>("");
-	let targetId = $state<SystemAnalysisRelationshipAttributes["target_id"]>("");
+	let sourceId = $state<SystemAnalysisRelationshipAttributes["sourceId"]>("");
+	let targetId = $state<SystemAnalysisRelationshipAttributes["targetId"]>("");
 	let description = $state<SystemAnalysisRelationshipAttributes["description"]>("");
-	let controlActions = $state<SystemAnalysisRelationshipAttributes["control_actions"]>([]);
-	let feedbackSignals = $state<SystemAnalysisRelationshipAttributes["feedback_signals"]>([]);
+	let controlActions = $state<SystemAnalysisRelationshipAttributes["controlActions"]>([]);
+	let feedbackSignals = $state<SystemAnalysisRelationshipAttributes["feedbackSignals"]>([]);
 	
 	let valid = $state(false);
 
 	const descriptionChanged = $derived(originalAttributes?.description !== description);
 	const controlsChanged = $derived.by(() => {
-		const ogControls = originalAttributes?.control_actions ?? [];
+		const ogControls = originalAttributes?.controlActions ?? [];
 		if (controlActions.length !== ogControls.length) return true;
 		return controlActions.some((a, i) => !compareControlActions(ogControls[i], a))
 	});
 	const signalsChanged = $derived.by(() => {
-		const ogSignals = originalAttributes?.feedback_signals ?? [];
+		const ogSignals = originalAttributes?.feedbackSignals ?? [];
 		if (feedbackSignals.length !== ogSignals.length) return true;
 		return feedbackSignals.some((s, i) => !compareFeedbackSignals(ogSignals[i], s))
 	});
 
 	const initFrom = (a: SystemAnalysisRelationshipAttributes) => {
 		originalAttributes = $state.snapshot(a);
-		sourceId = $state.snapshot(a.source_id);
-		targetId = $state.snapshot(a.target_id);
+		sourceId = $state.snapshot(a.sourceId);
+		targetId = $state.snapshot(a.targetId);
 		description = $state.snapshot(a.description);
-		controlActions = $state.snapshot(a.control_actions);
-		feedbackSignals = $state.snapshot(a.feedback_signals);
+		controlActions = $state.snapshot(a.controlActions);
+		feedbackSignals = $state.snapshot(a.feedbackSignals);
 
 		valid = true;
 	}
 
 	const initNew = (sourceId: string, targetId: string) => {
 		initFrom({
-			source_id: $state.snapshot(sourceId),
-			target_id: $state.snapshot(targetId),
+			sourceId: $state.snapshot(sourceId),
+			targetId: $state.snapshot(targetId),
 			description: "",
-			control_actions: [],
-			feedback_signals: [],
+			controlActions: [],
+			feedbackSignals: [],
 		});
 	}
 
@@ -77,7 +77,7 @@ const createRelationshipAttributesState = () => {
 	}
 
 	const setControlAction = (a: SystemAnalysisRelationshipControlActionAttributes) => {
-		const idx = controlActions.findIndex(v => v.attributes.control_id === a.control_id);
+		const idx = controlActions.findIndex(v => v.attributes.controlId === a.controlId);
 		if (idx >= 0) { controlActions[idx].attributes = a }
 		else { controlActions.push({id: uuidv4(), attributes: a}) }
 		onUpdate();
@@ -89,7 +89,7 @@ const createRelationshipAttributesState = () => {
 	}
 
 	const setFeedbackSignal = (a: SystemAnalysisRelationshipFeedbackSignalAttributes) => {
-		const idx = feedbackSignals.findIndex(v => v.attributes.signal_id === a.signal_id);
+		const idx = feedbackSignals.findIndex(v => v.attributes.signalId === a.signalId);
 		if (idx >= 0) { feedbackSignals[idx].attributes = a }
 		else { feedbackSignals.push({id: uuidv4(), attributes: a}) }
 		onUpdate();
@@ -116,11 +116,11 @@ const createRelationshipAttributesState = () => {
 		removeFeedbackSignal,
 		snapshot() {
 			return {
-				source_id: $state.snapshot(sourceId),
-				target_id: $state.snapshot(targetId),
+				sourceId: $state.snapshot(sourceId),
+				targetId: $state.snapshot(targetId),
 				description: $state.snapshot(description),
-				control_actions: $state.snapshot(controlActions),
-				feedback_signals: $state.snapshot(feedbackSignals),
+				controlActions: $state.snapshot(controlActions),
+				feedbackSignals: $state.snapshot(feedbackSignals),
 			}
 		},
 		get valid() { return valid },

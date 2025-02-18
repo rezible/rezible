@@ -24,7 +24,7 @@
 	let value = $state("");
 	const sendMessage = () => {
 		const msgContent = $state.snapshot(value);
-		const body = { attributes: { message_content: msgContent } };
+		const body = { attributes: { messageContent: msgContent } };
 		addMessageMut.mutate({ path: { id: debrief.id }, body });
 
 		value = "";

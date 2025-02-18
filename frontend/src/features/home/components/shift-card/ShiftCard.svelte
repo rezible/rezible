@@ -14,8 +14,8 @@
 	const shift = $derived(shifts[0]);
 	const roster = $derived(shift.attributes.roster);
 
-	const start = $derived(new Date(shift.attributes.start_at));
-	const end = $derived(new Date(shift.attributes.end_at));
+	const start = $derived(new Date(shift.attributes.startAt));
+	const end = $derived(new Date(shift.attributes.endAt));
 	const progress = $derived((100 * (Date.now() - start.valueOf())) / (end.valueOf() - start.valueOf()));
 	const firstDay = $derived(differenceInHours(Date.now(), start) <= 24);
 

@@ -13,7 +13,7 @@
 	const allRosters = $derived(allQuery.data?.data);
 
 	let userParams = $state<ListOncallRostersData>({
-		query: { user_id: session.user?.id },
+		query: { userId: session.user?.id },
 	});
 	const userQuery = createQuery(() => listOncallRostersOptions(userParams));
 	const userRosters = $derived(userQuery.data?.data);

@@ -19,14 +19,14 @@ export type ShiftTimelineNode = {
 	event: ShiftTimelineEvent;
 };
 
-export type ShiftEventKind = CreateOncallShiftAnnotationRequestAttributes["event_kind"];
+export type ShiftEventKind = CreateOncallShiftAnnotationRequestAttributes["eventKind"];
 
 export type ShiftTimelineEvent = {
 	eventId: string;
 	kind: ShiftEventKind;
 	title: string;
 	description?: string;
-	occurred_at: Date;
+	occurredAt: Date;
 	notes?: string;
 };
 
@@ -46,7 +46,7 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			kind: "incident",
 			title: attr.title,
 			description: attr.summary,
-			occurred_at: occurredAt,
+			occurredAt: occurredAt,
 		};
 	}
 	if (e.alert) {
@@ -54,7 +54,7 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			eventId: e.alert.id,
 			kind: "alert",
 			title: e.alert.attributes.title,
-			occurred_at: occurredAt,
+			occurredAt: occurredAt,
 		};
 	}
 	if (e.annotation) {
@@ -63,7 +63,7 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			eventId: e.annotation.id,
 			kind: "toil",
 			title: "annotation title",
-			occurred_at: occurredAt,
+			occurredAt: occurredAt,
 		};
 	}
 	throw new Error("invalid event type");
@@ -86,9 +86,9 @@ export const createTimeline = (
 	const timeline: ShiftTimelineNode[] = [];
 
 	const merged: MergedEvent[] = [];
-	incidents.forEach((incident) => merged.push({ timestamp: incident.attributes.opened_at, incident }));
-	alerts.forEach((alert) => merged.push({ timestamp: alert.attributes.occurred_at, alert }));
-	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurred_at), annotation}));
+	incidents.forEach((incident) => merged.push({ timestamp: incident.attributes.openedAt, incident }));
+	alerts.forEach((alert) => merged.push({ timestamp: alert.attributes.occurredAt, alert }));
+	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurredAt), annotation}));
 
 	const sorted = merged.toSorted((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
 
@@ -100,7 +100,7 @@ export const createTimeline = (
 		// 	height: 80
 		// }
 		// if (i < sorted.length - 1) {
-		// 	const diff = differenceInMinutes(event.occurred_at, sorted[i + 1].timestamp);
+		// 	const diff = differenceInMinutes(event.occurredAt, sorted[i + 1].timestamp);
 		// 	node.height = getIntervalHeight(diff);
 		// }
 		// if (event.kind === "incident") href = `/incidents/${event.eventId}`;

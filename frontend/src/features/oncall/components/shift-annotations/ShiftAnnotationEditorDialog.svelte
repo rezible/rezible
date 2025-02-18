@@ -70,12 +70,12 @@
 		const d = $state.snapshot(draftAnnotation);
 		const body: CreateOncallShiftAnnotationRequestBody = {
 			attributes: {
-				event_id: d.event.eventId,
-				event_kind: d.event.kind,
+				eventId: d.event.eventId,
+				eventKind: d.event.kind,
 				notes: d.notes,
 				pinned: d.pinned,
-				minutes_occupied: 0,
-				occurred_at: d.event.occurred_at.toISOString(),
+				minutesOccupied: 0,
+				occurredAt: d.event.occurredAt,
 				title: d.event.title,
 			},
 		};
@@ -111,7 +111,7 @@
 		{#if draftAnnotation}
 			<Header
 				title={draftAnnotation.event.title}
-				subheading={draftAnnotation.event.occurred_at.toLocaleString()}
+				subheading={draftAnnotation.event.occurredAt.toLocaleString()}
 			/>
 			<div class="w-full border-t pt-2">
 				<TextField
@@ -157,7 +157,7 @@
 	>
 		<div class="justify-self-start">
 			<span class="flex items-center">
-				{event.occurred_at.toLocaleString()}
+				{event.occurredAt.toLocaleString()}
 			</span>
 		</div>
 

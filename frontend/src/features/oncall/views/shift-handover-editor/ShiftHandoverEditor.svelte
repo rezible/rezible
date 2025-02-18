@@ -25,7 +25,7 @@
 
 	const shiftId = $derived(shift.id);
 
-	const templateId = $derived(shift.attributes.roster.attributes.handover_template_id);
+	const templateId = $derived(shift.attributes.roster.attributes.handoverTemplateId);
 	const templateQuery = createQuery(() =>
 		getOncallShiftHandoverTemplateOptions({ path: { id: templateId } })
 	);

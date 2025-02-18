@@ -17,7 +17,7 @@ const createAnalysisState = () => {
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
 	const setup = () => {
-		analysisId = incidentCtx.get().attributes.system_analysis_id;
+		analysisId = incidentCtx.get().attributes.systemAnalysisId;
 
 		const queryClient = useQueryClient();
 

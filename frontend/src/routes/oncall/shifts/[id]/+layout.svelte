@@ -14,8 +14,8 @@
 	const shift = $derived(query.data?.data);
 
 	const formatShiftDates = (shift: OncallShift) => {
-		const start = new Date(shift.attributes.start_at);
-		const end = new Date(shift.attributes.end_at);
+		const start = new Date(shift.attributes.startAt);
+		const end = new Date(shift.attributes.endAt);
 		const rosterName = shift.attributes.roster.attributes.name;
 		return `${rosterName} - ${start.toDateString()} to ${end.toDateString()}`;
 	};

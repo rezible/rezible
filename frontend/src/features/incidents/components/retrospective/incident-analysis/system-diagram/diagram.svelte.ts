@@ -34,12 +34,12 @@ const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship
 	const {kind, details} = attributes;
 	let source = "", target = "", label = "";
 	if (kind === "control") {
-		source = details.controller_id;
-		target = details.controlled_id;
+		source = details.controllerId;
+		target = details.controlledId;
 		label = details.control;
 	} else if (kind === "feedback") {
-		source = details.source_id;
-		target = details.target_id;
+		source = details.sourceId;
+		target = details.targetId;
 		label = details.feedback;
 	}
 	return {
@@ -128,8 +128,8 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 		edges.push({
 			id,
 			type: "relationship",
-			source: attributes.source_id,
-			target: attributes.target_id,
+			source: attributes.sourceId,
+			target: attributes.targetId,
 			data,
 		});
 	});

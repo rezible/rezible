@@ -78,7 +78,7 @@
 						</div>
 
 						<div slot="contents" class="pb-2">
-							<span>{formatDistanceToNow(attr.end_at)} ago</span>
+							<span>{formatDistanceToNow(attr.endAt)} ago</span>
 						</div>
 					</Card>
 				{/each}

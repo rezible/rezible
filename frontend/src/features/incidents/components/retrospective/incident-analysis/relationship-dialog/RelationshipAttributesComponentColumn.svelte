@@ -17,20 +17,20 @@
 	const relAttr = $derived(relationshipDialog.attributes);
 
 	const includedSignalIds = $derived(
-		new SvelteSet(relAttr.feedbackSignals.map((v) => v.attributes.signal_id))
+		new SvelteSet(relAttr.feedbackSignals.map((v) => v.attributes.signalId))
 	);
 	const excludedSignals = $derived(attr.signals.filter((s) => !includedSignalIds.has(s.id)));
 
 	const includedControlIds = $derived(
-		new SvelteSet(relAttr.controlActions.map((v) => v.attributes.control_id))
+		new SvelteSet(relAttr.controlActions.map((v) => v.attributes.controlId))
 	);
 	const excludedControls = $derived(attr.controls.filter((s) => !includedControlIds.has(s.id)));
 
-	const includeFeedbackSignal = (signal_id: string) =>
-		relAttr.setFeedbackSignal({ signal_id, description: "" });
+	const includeFeedbackSignal = (signalId: string) =>
+		relAttr.setFeedbackSignal({ signalId, description: "" });
 
-	const includeControlAction = (control_id: string) =>
-		relAttr.setControlAction({ control_id, description: "" });
+	const includeControlAction = (controlId: string) =>
+		relAttr.setControlAction({ controlId, description: "" });
 
 	let editingSignal = $state<SystemComponentSignal>();
 	const setEditingSignal = (s?: SystemComponentSignal) => {

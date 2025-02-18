@@ -8,7 +8,7 @@
 	import {
 		type UpdateIncidentFieldOptionAttributes,
 		type CreateIncidentFieldOptionAttributes,
-		type field_option_type as OptionType,
+		type fieldOptionType as OptionType,
 	} from "$lib/api";
 	import EditableListGroup from "$components/editable-list/EditableList.svelte";
 	import type { EditorSnippetProps } from "$features/settings/components/mutating-table";
@@ -38,18 +38,18 @@
 		if (optionsType === "custom") {
 			options = customOptions.map((o) => ({
 				id: o.value.length > 0 ? o.value : undefined,
-				field_option_type: "custom",
+				fieldOptionType: "custom",
 				value: o.label,
 				archived: creating ? undefined : o.archived,
 			}));
 		} else if (optionsType === "derived" && !!derivationSource) {
 			if (creating) {
-				options = [{ field_option_type: "derived", value: derivationSource }];
+				options = [{ fieldOptionType: "derived", value: derivationSource }];
 			} else {
 				options = [
 					{
 						id: derivedFieldId,
-						field_option_type: "derived",
+						fieldOptionType: "derived",
 						value: derivationSource,
 						archived: false,
 					},

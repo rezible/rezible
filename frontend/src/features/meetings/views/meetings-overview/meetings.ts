@@ -20,58 +20,57 @@ export const weekdays: { value: Weekday; label: string }[] = [
 
 export type CreateMeetingFormData = {
 	name: string;
-	session_title: string;
+	sessionTitle: string;
 	description: string;
 	start: DateTimeAnchor;
-	duration_minutes: number;
+	durationMinutes: number;
 	repeats: "once" | "daily" | "weekly" | "monthly";
-
-	repetition_step: number;
-	week_days: Set<Weekday>;
-	monthly_on: "same_day" | "same_weekday";
-	until_type: "indefinite" | "num_repetitions" | "date";
-	until_date: Date;
-	num_repetitions: number;
+	repetitionStep: number;
+	weekDays: Set<Weekday>;
+	monthlyOn: "same_day" | "same_weekday";
+	untilType: "indefinite" | "num_repetitions" | "date";
+	untilDate: Date;
+	numRepetitions: number;
 };
 
 export const emptyForm: CreateMeetingFormData = {
 	name: "",
-	session_title: "",
+	sessionTitle: "",
 	description: "",
 	start: {
 		date: new Date(),
 		time: "09:00:00",
 		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 	},
-	duration_minutes: 30,
+	durationMinutes: 30,
 	repeats: "once",
-	week_days: new Set<Weekday>(),
-	repetition_step: 1,
-	monthly_on: "same_day",
-	until_type: "indefinite",
-	until_date: addDays(new Date(), 1),
-	num_repetitions: 2,
+	weekDays: new Set<Weekday>(),
+	repetitionStep: 1,
+	monthlyOn: "same_day",
+	untilType: "indefinite",
+	untilDate: addDays(new Date(), 1),
+	numRepetitions: 2,
 };
 export const getEmptyForm = () => structuredClone(emptyForm);
 
 const meetingFormSchema = z.object({
 	name: z.string().min(1),
-	session_title: z.string(),
+	sessionTitle: z.string(),
 	description: z.string(),
 	start: z.object({
 		date: z.date(),
 		time: z.string(),
 		timezone: z.string(),
 	}),
-	duration_minutes: z.number(),
+	durationMinutes: z.number(),
 	repeats: z.enum(["once", "daily", "weekly", "monthly"]),
 
-	repetition_step: z.number().min(1),
-	week_days: z.set(z.enum(WEEKDAYS)),
-	monthly_on: z.enum(["same_day", "same_weekday"]),
-	until_type: z.enum(["indefinite", "num_repetitions", "date"]),
-	until_date: z.date(),
-	num_repetitions: z.number().min(1),
+	repetitionStep: z.number().min(1),
+	weekDays: z.set(z.enum(WEEKDAYS)),
+	monthlyOn: z.enum(["same_day", "same_weekday"]),
+	untilType: z.enum(["indefinite", "num_repetitions", "date"]),
+	untilDate: z.date(),
+	numRepetitions: z.number().min(1),
 });
 
 type TransformedScheduleFormData = {
@@ -95,9 +94,9 @@ export const CreateMeetingFormSchema = meetingFormSchema.transform((form, ctx): 
 					teams: [],
 					users: [],
 				},
-				document_template_id: undefined,
-				starts_at: form.start,
-				duration_minutes: form.duration_minutes,
+				documentTemplateId: undefined,
+				startsAt: form.start,
+				durationMinutes: form.durationMinutes,
 			},
 		};
 		return { requestType: "session", body };
@@ -105,20 +104,20 @@ export const CreateMeetingFormSchema = meetingFormSchema.transform((form, ctx): 
 	const body: CreateMeetingScheduleRequestBody = {
 		attributes: {
 			name: form.name,
-			session_title: form.session_title,
+			sessionTitle: form.sessionTitle,
 			description: form.description,
 			attendees: {
 				private: false,
 				teams: [],
 				users: [],
 			},
-			starts_at: form.start,
-			duration_minutes: form.duration_minutes,
+			startsAt: form.start,
+			durationMinutes: form.durationMinutes,
 			repeats: form.repeats,
-			repeat_monthly_on: form.monthly_on,
-			num_repetitions: form.num_repetitions > 1 ? form.num_repetitions : undefined,
-			repetition_step: form.repetition_step,
-			until_date: !!form.until_date ? form.until_date : undefined,
+			repeatMonthlyOn: form.monthlyOn,
+			numRepetitions: form.numRepetitions > 1 ? form.numRepetitions : undefined,
+			repetitionStep: form.repetitionStep,
+			untilDate: !!form.untilDate ? form.untilDate : undefined,
 		},
 	};
 	return { requestType: "schedule", body };

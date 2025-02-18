@@ -19,7 +19,7 @@
 		.array(
 			z.object({
 				id: z.string().optional(),
-				field_option_type: z.enum(["custom", "derived"]),
+				fieldOptionType: z.enum(["custom", "derived"]),
 				value: z.string(),
 				archived: z.boolean().optional(),
 			})
@@ -29,7 +29,7 @@
 	const fields = {
 		["name"]: makeField("Field Name", z.string().min(4)),
 		["options"]: makeCustomField("Field Options", incidentFieldOptionsSchema, IncidentFieldsOptionsEdit),
-		["incident_type"]: makeSelectField(
+		["incidentType"]: makeSelectField(
 			"Incident Types",
 			z.string().optional().describe("Restrict to Specific Incident Types?"),
 			listIncidentTypesOptions
@@ -60,7 +60,7 @@
 			{/each}
 		</td>
 		<td>
-			{f.attributes.incident_type?.attributes.name || "Any"}
+			{f.attributes.incidentType?.attributes.name || "Any"}
 		</td>
 		<td>{f.attributes.required ? "Yes" : "No"}</td>
 	{/snippet}

@@ -9,7 +9,7 @@
 	const incident = incidentCtx.get();
 
 	let editing = $state(false);
-	const linkedIncidents = $derived(incident.attributes.linked_incidents);
+	const linkedIncidents = $derived(incident.attributes.linkedIncidents);
 </script>
 
 <Header title="Linked Incidents" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
@@ -28,10 +28,10 @@
 
 <div class="flex flex-col gap-2">
 	{#each linkedIncidents as linked}
-		<a href="#/incidents/{linked.incident_id}">
+		<a href="#/incidents/{linked.incidentId}">
 			<div class="border p-2 hover:bg-accent cursor-pointer">
-				<div class="text-lg">{linked.incident_title}</div>
-				<div class="text-md">{linked.incident_summary}</div>
+				<div class="text-lg">{linked.incidentTitle}</div>
+				<div class="text-md">{linked.incidentSummary}</div>
 			</div>
 		</a>
 	{/each}

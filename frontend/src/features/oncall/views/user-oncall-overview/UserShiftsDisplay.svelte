@@ -19,8 +19,8 @@
 	);
 
 	const formatShiftDuration = (shift: OncallShift) => {
-		const start = new Date(shift.attributes.start_at);
-		const end = new Date(shift.attributes.end_at);
+		const start = new Date(shift.attributes.startAt);
+		const end = new Date(shift.attributes.endAt);
 		const minutes = differenceInMinutes(end, start);
 		if (minutes < 60) return `${minutes} minutes`;
 		const hours = minutesToHours(minutes);

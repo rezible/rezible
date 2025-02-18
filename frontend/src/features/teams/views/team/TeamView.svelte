@@ -19,8 +19,8 @@
 	}
 	let { team }: Props = $props();
 
-	const usersQuery = createQuery(() => listUsersOptions({ query: { team_id: team.id } }));
-	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { team_id: team.id } }));
+	const usersQuery = createQuery(() => listUsersOptions({ query: { teamId: team.id } }));
+	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { teamId: team.id } }));
 </script>
 
 <div class="flex gap-2">

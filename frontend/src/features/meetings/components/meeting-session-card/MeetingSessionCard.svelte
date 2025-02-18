@@ -8,8 +8,8 @@
 	};
 	const { session }: Props = $props();
 
-	const scheduleId = $derived(session.attributes.meeting_schedule_id);
-	const start = $derived(session.attributes.starts_at);
+	const scheduleId = $derived(session.attributes.meetingScheduleId);
+	const start = $derived(session.attributes.startsAt);
 </script>
 
 <a href="/meetings/{scheduleId}/{session.id}">

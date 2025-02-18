@@ -33,9 +33,9 @@
 	<LoadingQueryWrapper query={userOncallQuery}>
 		{#snippet view(details: UserOncallDetails)}
 			<UserShiftsDisplay
-				activeShifts={details.active_shifts}
-				upcomingShifts={details.upcoming_shifts}
-				pastShifts={details.past_shifts}
+				activeShifts={details.activeShifts}
+				upcomingShifts={details.upcomingShifts}
+				pastShifts={details.pastShifts}
 			/>
 		{/snippet}
 	</LoadingQueryWrapper>

@@ -13,8 +13,8 @@
 
 	const attr = $derived(shift.attributes);
 
-	const start = $derived(new Date(attr.start_at));
-	const end = $derived(new Date(attr.end_at));
+	const start = $derived(new Date(attr.startAt));
+	const end = $derived(new Date(attr.endAt));
 	const progress = $derived((Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf()));
 	const minutesLeft = $derived(differenceInMinutes(end, Date.now()));
 

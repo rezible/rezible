@@ -23,7 +23,7 @@ type AuthSession = {
 const parseUserSessionResponse = ({ data }: GetCurrentUserSessionResponse): AuthSession => {
 	return {
 		user: data.user,
-		expiresAt: data.expires_at,
+		expiresAt: data.expiresAt,
 	};
 };
 
