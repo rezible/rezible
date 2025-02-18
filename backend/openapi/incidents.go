@@ -38,26 +38,26 @@ type (
 		Summary          string                   `json:"summary"`
 		Private          bool                     `json:"private"`
 		CurrentStatus    string                   `json:"current_status" enum:"started,mitigated,resolved,closed"`
-		OpenedAt         time.Time                `json:"opened_at"`
-		ClosedAt         time.Time                `json:"closed_at"`
+		OpenedAt         time.Time                `json:"openedAt"`
+		ClosedAt         time.Time                `json:"closedAt"`
 		Severity         IncidentSeverity         `json:"severity"`
 		Type             IncidentType             `json:"type"`
-		SystemAnalysisId uuid.UUID                `json:"system_analysis_id"`
+		SystemAnalysisId uuid.UUID                `json:"systemAnalysisId"`
 		Environments     []Environment            `json:"environments"`
 		Tags             []IncidentTag            `json:"tags"`
 		Ticket           ExternalTicket           `json:"ticket"`
 		Tasks            []Task                   `json:"tasks"`
 		RoleAssignments  []IncidentRoleAssignment `json:"roles"`
 		TeamAssignments  []IncidentTeamAssignment `json:"teams"`
-		LinkedIncidents  []IncidentLink           `json:"linked_incidents"`
-		ChatChannel      IncidentChatChannel      `json:"chat_channel"`
+		LinkedIncidents  []IncidentLink           `json:"linkedIncidents"`
+		ChatChannel      IncidentChatChannel      `json:"chatChannel"`
 	}
 
 	IncidentLink struct {
-		IncidentId      uuid.UUID        `json:"incident_id"`
-		IncidentTitle   string           `json:"incident_title"`
-		IncidentSummary string           `json:"incident_summary"`
-		LinkType        IncidentLinkType `json:"link_type" enum:"duplicate_of,parent,sibling,child"`
+		IncidentId      uuid.UUID        `json:"incidentId"`
+		IncidentTitle   string           `json:"incidentTitle"`
+		IncidentSummary string           `json:"incidentSummary"`
+		LinkType        IncidentLinkType `json:"linkType" enum:"duplicate_of,parent,sibling,child"`
 	}
 	IncidentLinkType string
 
@@ -65,15 +65,15 @@ type (
 		User      User         `json:"user"`
 		Role      IncidentRole `json:"role"`
 		Active    bool         `json:"active"`
-		StartedAt time.Time    `json:"started_at"`
-		EndedAt   time.Time    `json:"ended_at"`
+		StartedAt time.Time    `json:"startedAt"`
+		EndedAt   time.Time    `json:"endedAt"`
 	}
 
 	IncidentTeamAssignment struct {
 		Team      Team      `json:"team"`
 		Active    bool      `json:"active"`
-		StartedAt time.Time `json:"started_at"`
-		EndedAt   time.Time `json:"ended_at"`
+		StartedAt time.Time `json:"startedAt"`
+		EndedAt   time.Time `json:"endedAt"`
 	}
 
 	IncidentChatChannel struct {
@@ -86,9 +86,9 @@ type (
 
 	IncidentResponderImpact struct {
 		Timezone        string `json:"timezone"`
-		BusinessMinutes int    `json:"business_minutes"`
-		PersonalMinutes int    `json:"personal_minutes"`
-		SleepMinutes    int    `json:"sleep_minutes"`
+		BusinessMinutes int    `json:"businessMinutes"`
+		PersonalMinutes int    `json:"personalMinutes"`
+		SleepMinutes    int    `json:"sleepMinutes"`
 	}
 )
 
@@ -167,7 +167,7 @@ var ListIncidents = huma.Operation{
 
 type ListIncidentsRequest struct {
 	ListRequest
-	TeamId uuid.UUID `query:"team_id" required:"false"`
+	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
 type ListIncidentsResponse PaginatedResponse[Incident]
 
@@ -211,7 +211,7 @@ var UpdateIncident = huma.Operation{
 type UpdateIncidentAttributes struct {
 	Title        *string   `json:"title,omitempty"`
 	Summary      *string   `json:"summary,omitempty"`
-	SeverityId   *string   `json:"severity_id,omitempty"`
+	SeverityId   *string   `json:"severityId,omitempty"`
 	Private      *bool     `json:"private,omitempty"`
 	Environments *[]string `json:"environments,omitempty"`
 }

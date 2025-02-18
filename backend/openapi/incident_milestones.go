@@ -31,9 +31,10 @@ type (
 		Attributes IncidentMilestoneAttributes `json:"attributes"`
 	}
 	IncidentMilestoneAttributes struct {
-		Type      string    `json:"type" enum:"default,incident"`
-		Title     string    `json:"title"`
-		Timestamp time.Time `json:"timestamp"`
+		IncidentId uuid.UUID `json:"incidentId"`
+		Type       string    `json:"type"`
+		Title      string    `json:"title"`
+		Timestamp  time.Time `json:"timestamp"`
 	}
 )
 

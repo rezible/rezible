@@ -127,6 +127,28 @@ export type CreateIncidentDebriefQuestionResponseBody = {
     data: IncidentDebriefQuestion;
 };
 
+export type CreateIncidentEventAttributes = {
+    timestamp: Date;
+    title: string;
+    type: string;
+};
+
+export type CreateIncidentEventRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateIncidentEventAttributes;
+};
+
+export type CreateIncidentEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentEvent;
+};
+
 export type CreateIncidentFieldAttributes = {
     incident_type?: string;
     name: string;
@@ -1090,6 +1112,17 @@ export type IncidentDebriefSuggestionAttributes = {
     ignored: boolean;
 };
 
+export type IncidentEvent = {
+    attributes: IncidentEventAttributes;
+    id: string;
+};
+
+export type IncidentEventAttributes = {
+    timestamp: Date;
+    title: string;
+    type: string;
+};
+
 export type IncidentField = {
     attributes: IncidentFieldAttributes;
     id: string;
@@ -1146,15 +1179,8 @@ export type IncidentMilestone = {
 export type IncidentMilestoneAttributes = {
     timestamp: Date;
     title: string;
-    type: 'default' | 'incident';
+    type: string;
 };
-
-export type type2 = 'default' | 'incident';
-
-export const type2 = {
-    DEFAULT: 'default',
-    INCIDENT: 'incident'
-} as const;
 
 export type IncidentRole = {
     attributes: IncidentRoleAttributes;
@@ -1261,6 +1287,15 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentDebriefSuggestion>;
+};
+
+export type ListIncidentEventsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentEvent>;
+    pagination: ResponsePagination;
 };
 
 export type ListIncidentFieldsResponseBody = {
@@ -1690,9 +1725,9 @@ export type OncallShiftHandoverTemplateSection = {
     type: 'regular' | 'annotations' | 'incidents';
 };
 
-export type type3 = 'regular' | 'annotations' | 'incidents';
+export type type2 = 'regular' | 'annotations' | 'incidents';
 
-export const type3 = {
+export const type2 = {
     REGULAR: 'regular',
     ANNOTATIONS: 'annotations',
     INCIDENTS: 'incidents'
@@ -1744,9 +1779,9 @@ export const state = {
     COMPLETED: 'completed'
 } as const;
 
-export type type4 = 'quick' | 'full';
+export type type3 = 'quick' | 'full';
 
-export const type4 = {
+export const type3 = {
     QUICK: 'quick',
     FULL: 'full'
 } as const;
@@ -1789,9 +1824,9 @@ export type RetrospectiveSection = {
     type: 'field' | 'timeline';
 };
 
-export type type5 = 'field' | 'timeline';
+export type type4 = 'field' | 'timeline';
 
-export const type5 = {
+export const type4 = {
     FIELD: 'field',
     TIMELINE: 'timeline'
 } as const;
@@ -2046,6 +2081,28 @@ export type UpdateIncidentDebriefResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentDebrief;
+};
+
+export type UpdateIncidentEventAttributes = {
+    timestamp: Date;
+    title: string;
+    type: string;
+};
+
+export type UpdateIncidentEventRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateIncidentEventAttributes;
+};
+
+export type UpdateIncidentEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentEvent;
 };
 
 export type UpdateIncidentFieldAttributes = {
@@ -2823,6 +2880,38 @@ export type ListDebriefSuggestionsResponse = (ListIncidentDebriefSuggestionsResp
 
 export type ListDebriefSuggestionsError = (ErrorModel);
 
+export type CreateIncidentEventData = {
+    body: CreateIncidentEventRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type CreateIncidentEventResponse = (CreateIncidentEventResponseBody);
+
+export type CreateIncidentEventError = (ErrorModel);
+
+export type DeleteIncidentEventData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeleteIncidentEventResponse = (void);
+
+export type DeleteIncidentEventError = (ErrorModel);
+
+export type UpdateIncidentEventData = {
+    body: UpdateIncidentEventRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateIncidentEventResponse = (UpdateIncidentEventResponseBody);
+
+export type UpdateIncidentEventError = (ErrorModel);
+
 export type ListIncidentFieldsData = {
     query?: {
         archived?: boolean;
@@ -3166,6 +3255,16 @@ export type GetIncidentUserDebriefData = {
 export type GetIncidentUserDebriefResponse = (GetIncidentUserDebriefResponseBody);
 
 export type GetIncidentUserDebriefError = (ErrorModel);
+
+export type ListIncidentEventsData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ListIncidentEventsResponse = (ListIncidentEventsResponseBody);
+
+export type ListIncidentEventsError = (ErrorModel);
 
 export type ListIncidentMilestonesData = {
     path: {
@@ -4282,6 +4381,56 @@ export const AddIncidentDebriefUserMessageResponseTransformer: AddIncidentDebrie
     return data;
 };
 
+export type CreateIncidentEventResponseTransformer = (data: any) => Promise<CreateIncidentEventResponse>;
+
+export type CreateIncidentEventResponseBodyModelResponseTransformer = (data: any) => CreateIncidentEventResponseBody;
+
+export type IncidentEventModelResponseTransformer = (data: any) => IncidentEvent;
+
+export type IncidentEventAttributesModelResponseTransformer = (data: any) => IncidentEventAttributes;
+
+export const IncidentEventAttributesModelResponseTransformer: IncidentEventAttributesModelResponseTransformer = data => {
+    if (data?.timestamp) {
+        data.timestamp = new Date(data.timestamp);
+    }
+    return data;
+};
+
+export const IncidentEventModelResponseTransformer: IncidentEventModelResponseTransformer = data => {
+    if (data?.attributes) {
+        IncidentEventAttributesModelResponseTransformer(data.attributes);
+    }
+    return data;
+};
+
+export const CreateIncidentEventResponseBodyModelResponseTransformer: CreateIncidentEventResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentEventModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateIncidentEventResponseTransformer: CreateIncidentEventResponseTransformer = async (data) => {
+    CreateIncidentEventResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type UpdateIncidentEventResponseTransformer = (data: any) => Promise<UpdateIncidentEventResponse>;
+
+export type UpdateIncidentEventResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentEventResponseBody;
+
+export const UpdateIncidentEventResponseBodyModelResponseTransformer: UpdateIncidentEventResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentEventModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const UpdateIncidentEventResponseTransformer: UpdateIncidentEventResponseTransformer = async (data) => {
+    UpdateIncidentEventResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
 export type UpdateIncidentMilestoneResponseTransformer = (data: any) => Promise<UpdateIncidentMilestoneResponse>;
 
 export type UpdateIncidentMilestoneResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentMilestoneResponseBody;
@@ -4428,6 +4577,22 @@ export const UpdateIncidentResponseBodyModelResponseTransformer: UpdateIncidentR
 
 export const UpdateIncidentResponseTransformer: UpdateIncidentResponseTransformer = async (data) => {
     UpdateIncidentResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type ListIncidentEventsResponseTransformer = (data: any) => Promise<ListIncidentEventsResponse>;
+
+export type ListIncidentEventsResponseBodyModelResponseTransformer = (data: any) => ListIncidentEventsResponseBody;
+
+export const ListIncidentEventsResponseBodyModelResponseTransformer: ListIncidentEventsResponseBodyModelResponseTransformer = data => {
+    if (Array.isArray(data?.data)) {
+        data.data.forEach(IncidentEventModelResponseTransformer);
+    }
+    return data;
+};
+
+export const ListIncidentEventsResponseTransformer: ListIncidentEventsResponseTransformer = async (data) => {
+    ListIncidentEventsResponseBodyModelResponseTransformer(data);
     return data;
 };
 

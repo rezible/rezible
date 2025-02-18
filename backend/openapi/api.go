@@ -28,6 +28,7 @@ type Handler interface {
 
 	IncidentsHandler
 	IncidentMilestonesHandler
+	IncidentEventsHandler
 	IncidentFieldsHandler
 	IncidentRolesHandler
 	IncidentTagsHandler

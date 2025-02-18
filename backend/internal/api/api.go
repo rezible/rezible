@@ -17,8 +17,9 @@ type Handler struct {
 	*environmentsHandler
 	*functionalitiesHandler
 	*incidentDebriefsHandler
-	*incidentMilestonesHandler
+	*incidentEventsHandler
 	*incidentFieldsHandler
+	*incidentMilestonesHandler
 	*incidentRolesHandler
 	*incidentSeverityHandler
 	*incidentTagsHandler
@@ -57,8 +58,9 @@ func NewHandler(
 		environmentsHandler:       newEnvironmentsHandler(db.Environment),
 		functionalitiesHandler:    newFunctionalitiesHandler(),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),
-		incidentMilestonesHandler: newIncidentMilestonesHandler(db.IncidentMilestone),
+		incidentEventsHandler:     newIncidentEventsHandler(db),
 		incidentFieldsHandler:     newIncidentFieldsHandler(db),
+		incidentMilestonesHandler: newIncidentMilestonesHandler(db.IncidentMilestone),
 		incidentRolesHandler:      newincidentRolesHandler(db.IncidentRole),
 		incidentSeverityHandler:   newIncidentSeverityHandler(db.IncidentSeverity),
 		incidentTagsHandler:       newIncidentTagsHandler(db.IncidentTag),

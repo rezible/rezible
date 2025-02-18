@@ -44,10 +44,10 @@ type (
 
 	MeetingScheduleAttributes struct {
 		Name               string                `json:"name"`
-		SessionTitle       string                `json:"session_title"`
+		SessionTitle       string                `json:"sessionTitle"`
 		Attendees          MeetingAttendees      `json:"attendees"`
-		HostTeamId         uuid.UUID             `json:"host_team_id"`
-		DocumentTemplateId uuid.UUID             `json:"document_template_id"`
+		HostTeamId         uuid.UUID             `json:"hostTeamId"`
+		DocumentTemplateId uuid.UUID             `json:"documentTemplateId"`
 		Timing             MeetingScheduleTiming `json:"timing"`
 	}
 
