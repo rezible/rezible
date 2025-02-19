@@ -4,12 +4,12 @@
 	import { mdiLink, mdiPlus } from "@mdi/js";
 
 	type Props = {
-		onLinked: (id: string) => void;
+		dataValue: string;
 	};
-	const { onLinked }: Props = $props();
+	let { dataValue = $bindable() }: Props = $props();
 </script>
 
-<TextField label="Link New Item" classes={{ input: "text-sm" }}>
+<TextField label="Link New Item" bind:value={dataValue} classes={{ input: "text-sm" }}>
 	<div slot="prepend">
 		<Icon data={mdiLink} class="text-surface-content/50 mr-2" />
 	</div>

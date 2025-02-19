@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Button, Checkbox, Icon, ListItem, Tabs } from "svelte-ux";
-	import { mdiAccount, mdiLinkPlus, mdiPlus } from "@mdi/js";
+	import { Button, Checkbox, cls, Icon, ListItem, Tabs } from "svelte-ux";
+	import { mdiAccount, mdiLinkPlus, mdiLinkOff } from "@mdi/js";
 
 	type Props = {
-		onLinked: (id: string) => void;
+		dataValue: string;
 	};
-	const { onLinked }: Props = $props();
+	let { dataValue = $bindable() }: Props = $props();
 
 	let channels = [{ label: "#todo-incident-channel", value: "all" }];
 
@@ -29,6 +29,14 @@
 		return channelMessages[channelId] || [];
 	};
 	let channelId = $state("all");
+
+	const onSelected = (msgId: string) => {
+		if (dataValue === msgId) {
+			dataValue = "";
+			return;
+		}
+		dataValue = $state.snapshot(msgId);
+	};
 </script>
 
 <Tabs
@@ -43,7 +51,11 @@
 	<div slot="content" let:value class="">
 		{@const messages = getMessages(value)}
 		{#each messages as msg, i}
-			<ListItem classes={{ root: "!elevation-0 hover:bg-surface-300/20" }}>
+			{@const isSelected = dataValue === msg.id}
+			<ListItem 
+				classes={{ root: cls("!elevation-0", isSelected ? "bg-surface-300/40" : "hover:bg-surface-300/20") }} 
+				on:click={e => {e.preventDefault(); onSelected(msg.id)}}
+			>
 				<div slot="avatar" class="flex flex-col">
 					<Icon data={msg.avatar} />
 				</div>
@@ -54,16 +66,7 @@
 					{msg.content}
 				</span>
 				<svelte:fragment slot="actions">
-					<Button
-						on:click={() => {
-							onLinked(msg.id);
-						}}
-					>
-						<span class="flex items-center gap-2">
-							Add
-							<Icon data={mdiLinkPlus} />
-						</span>
-					</Button>
+					<Checkbox circle checked={isSelected} size="lg" on:change={() => {onSelected(msg.id)}} />
 				</svelte:fragment>
 			</ListItem>
 		{/each}

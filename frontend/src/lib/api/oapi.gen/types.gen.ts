@@ -1185,11 +1185,11 @@ export type IncidentEventEvidence = {
 };
 
 export type IncidentEventEvidenceAttributes = {
-    data: string;
-    dataSource: string;
-    properties: {
+    properties?: {
         [key: string]: (string);
     };
+    source: string;
+    value: string;
 };
 
 export type IncidentEventSystemComponent = {

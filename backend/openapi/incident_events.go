@@ -71,9 +71,9 @@ type (
 	}
 
 	IncidentEventEvidenceAttributes struct {
-		DataSource string            `json:"dataSource"`
-		Data       string            `json:"data"`
-		Properties map[string]string `json:"properties"`
+		Source     string             `json:"source"`
+		Value      string             `json:"value"`
+		Properties *map[string]string `json:"properties,omitempty"`
 	}
 
 	IncidentEventSystemComponent struct {

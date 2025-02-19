@@ -121,6 +121,7 @@
 
 			<div class="w-full flex justify-end">
 				<ConfirmButtons
+					closeText="Cancel"
 					onClose={resetAddingState}
 					onConfirm={confirmAddingFactor}
 					saveEnabled={!!selectedFactorType}
