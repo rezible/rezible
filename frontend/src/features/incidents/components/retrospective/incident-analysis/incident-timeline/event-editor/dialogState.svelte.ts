@@ -1,3 +1,4 @@
+import type { IncidentEvent } from "$lib/api";
 import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
@@ -45,16 +46,15 @@ const createEventEditorDialogState = () => {
 
 	const setCreating = () => {
 		setView("create");
-		eventAttributes.initNew();
+		eventAttributes.init();
 	}
 
-	const setEditing = (e: any) => {
+	const setEditing = (ev: IncidentEvent) => {
 		setView("edit");
-		eventAttributes.initFromEvent(e);
+		eventAttributes.init(ev.attributes);
 	};
 
 	const confirm = () => {
-		
 		clear();
 	};
 

@@ -16,6 +16,8 @@ type IncidentEventsHandler interface {
 	CreateIncidentEvent(context.Context, *CreateIncidentEventRequest) (*CreateIncidentEventResponse, error)
 	UpdateIncidentEvent(context.Context, *UpdateIncidentEventRequest) (*UpdateIncidentEventResponse, error)
 	DeleteIncidentEvent(context.Context, *DeleteIncidentEventRequest) (*DeleteIncidentEventResponse, error)
+
+	ListIncidentEventContributingFactors(context.Context, *ListIncidentEventContributingFactorsRequest) (*ListIncidentEventContributingFactorsResponse, error)
 }
 
 func (o operations) RegisterIncidentEvents(api huma.API) {
@@ -23,22 +25,9 @@ func (o operations) RegisterIncidentEvents(api huma.API) {
 	huma.Register(api, CreateIncidentEvent, o.CreateIncidentEvent)
 	huma.Register(api, UpdateIncidentEvent, o.UpdateIncidentEvent)
 	huma.Register(api, DeleteIncidentEvent, o.DeleteIncidentEvent)
+
+	huma.Register(api, ListIncidentEventContributingFactors, o.ListIncidentEventContributingFactors)
 }
-
-/*
-
-	id: string;
-	incidentId: string;
-	timestamp: Date | null; // null for "unknown time"
-	kind: "observation" | "action" | "decision" | "context";
-	title: string;
-	description: string;
-	createdAt: Date;
-	updatedAt: Date;
-	createdBy: string;
-	sequence: number; // for ordering events with same timestamp
-	isDraft: boolean;
-*/
 
 type (
 	IncidentEvent struct {
@@ -46,18 +35,20 @@ type (
 		Attributes IncidentEventAttributes `json:"attributes"`
 	}
 	IncidentEventAttributes struct {
-		IncidentId          uuid.UUID                               `json:"incidentId"`
-		Kind                string                                  `json:"kind" enum:"observation,action,decision,context"`
-		Timestamp           time.Time                               `json:"timestamp"`
-		IsKey               bool                                    `json:"isKey"`
-		Title               string                                  `json:"title"`
-		Description         string                                  `json:"description"`
-		Sequence            int                                     `json:"sequence"`
-		DecisionContext     *IncidentEventDecisionContextAttributes `json:"decisionContext"`
-		ContributingFactors []IncidentEventContributingFactor       `json:"contributingFactors"`
+		IncidentId          uuid.UUID                         `json:"incidentId"`
+		Kind                string                            `json:"kind" enum:"observation,action,decision,context"`
+		Timestamp           DateTimeAnchor                    `json:"timestamp"`
+		IsKey               bool                              `json:"isKey"`
+		Title               string                            `json:"title"`
+		Description         *string                           `json:"description,omitempty"`
+		Sequence            int                               `json:"sequence"`
+		DecisionContext     *IncidentEventDecisionContext     `json:"decisionContext,omitempty"`
+		ContributingFactors []IncidentEventContributingFactor `json:"contributingFactors"`
+		Evidence            []IncidentEventEvidence           `json:"evidence"`
+		SystemContext       []IncidentEventSystemComponent    `json:"systemContext"`
 	}
 
-	IncidentEventDecisionContextAttributes struct {
+	IncidentEventDecisionContext struct {
 		OptionsConsidered []string `json:"optionsConsidered"`
 		Constraints       []string `json:"constraints"`
 		DecisionRationale string   `json:"decisionRationale"`
@@ -85,26 +76,19 @@ type (
 		Properties map[string]string `json:"properties"`
 	}
 
-	IncidentEventSystemContext struct {
-		Id         uuid.UUID                            `json:"id"`
-		Attributes IncidentEventSystemContextAttributes `json:"attributes"`
-	}
-
-	IncidentEventSystemContextAttributes struct {
-		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
-	}
-
-	IncidentEventComponentStatus struct {
+	IncidentEventSystemComponent struct {
 		Id         uuid.UUID                              `json:"id"`
-		Attributes IncidentEventComponentStatusAttributes `json:"attributes"`
+		Attributes IncidentEventSystemComponentAttributes `json:"attributes"`
 	}
 
-	IncidentEventComponentStatusAttributes struct {
+	IncidentEventSystemComponentAttributes struct {
 		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
 		Status              string    `json:"status"`
 		Description         string    `json:"description"`
 	}
+)
 
+type (
 	IncidentEventContributingFactorCategory struct {
 		Id         uuid.UUID                                         `json:"id"`
 		Attributes IncidentEventContributingFactorCategoryAttributes `json:"attributes"`
@@ -113,7 +97,7 @@ type (
 	IncidentEventContributingFactorCategoryAttributes struct {
 		Label       string                                `json:"name"`
 		Description string                                `json:"description"`
-		Factors     []IncidentEventContributingFactorType `json:"factors"`
+		FactorTypes []IncidentEventContributingFactorType `json:"factorTypes"`
 	}
 
 	IncidentEventContributingFactorType struct {
@@ -198,3 +182,15 @@ var DeleteIncidentEvent = huma.Operation{
 
 type DeleteIncidentEventRequest DeleteIdRequest
 type DeleteIncidentEventResponse EmptyResponse
+
+var ListIncidentEventContributingFactors = huma.Operation{
+	OperationID: "list-incident-event-contributing-factor-categories",
+	Method:      http.MethodGet,
+	Path:        "/incident_event_contributing_factor_categories",
+	Summary:     "List Categories of Contributing Factors used in Incident Events",
+	Tags:        incidentEventsTags,
+	Errors:      errorCodes(),
+}
+
+type ListIncidentEventContributingFactorsRequest ListRequest
+type ListIncidentEventContributingFactorsResponse PaginatedResponse[IncidentEventContributingFactorCategory]

@@ -7,22 +7,12 @@
 		Tooltip,
 		Icon,
 		TextField,
-		Header,
-		DatePickerField,
 		Switch,
 	} from "svelte-ux";
-	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiCalendar, mdiFlag } from "@mdi/js";
+	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
 	import { onMount } from "svelte";
-	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
-	import type { DateTimeAnchor } from "$lib/api";
 	import { eventAttributes } from "./eventAttributes.svelte";
-
-	let dateAnchor = $state<DateTimeAnchor>({
-		date: new Date(),
-		time: "09:00:00",
-		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-	});
 
 	const eventKindOptions = [
 		{
@@ -51,18 +41,14 @@
 		},
 	];
 
-	let descriptionEditor = $state<ReturnType<typeof createMentionEditor>>();
-	onMount(() => {
-		descriptionEditor = createMentionEditor("", "cursor-text focus:outline-none min-h-20");
-		return () => (descriptionEditor?.destroy())
-	});
+	onMount(eventAttributes.mountDescriptionEditor);
 </script>
 
 <div class="flex flex-col gap-2 flex-1">
-	<TextField label="Title" value="" />
+	<TextField label="Title" bind:value={eventAttributes.title} />
 
 	<Field label="Event Kind">
-		<ToggleGroup bind:value={eventAttributes.eventKind} variant="fill" inset class="w-full">
+		<ToggleGroup bind:value={eventAttributes.kind} variant="fill" inset class="w-full">
 			{#each eventKindOptions as opt}
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
@@ -82,16 +68,14 @@
 
 	<DateTimePickerField
 		label="Time"
-		current={dateAnchor}
-		onChange={newDate => {
-			dateAnchor = newDate;
-		}}
+		current={eventAttributes.timestamp}
+		onChange={ts => (eventAttributes.timestamp = ts)}
 		exactTime
 	/>
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
-		{#if descriptionEditor}
-			<EditorContent editor={descriptionEditor} />
+		{#if eventAttributes.descriptionEditor}
+			<EditorContent editor={eventAttributes.descriptionEditor} />
 		{/if}
 	</Field>
 </div>

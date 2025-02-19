@@ -1119,13 +1119,15 @@ export type IncidentEvent = {
 
 export type IncidentEventAttributes = {
     contributingFactors: Array<IncidentEventContributingFactor>;
-    decisionContext: IncidentEventDecisionContextAttributes;
-    description: string;
+    decisionContext?: IncidentEventDecisionContext;
+    description?: string;
+    evidence: Array<IncidentEventEvidence>;
     incidentId: string;
     isKey: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
-    timestamp: Date;
+    systemContext: Array<IncidentEventSystemComponent>;
+    timestamp: DateTimeAnchor;
     title: string;
 };
 
@@ -1149,10 +1151,56 @@ export type IncidentEventContributingFactorAttributes = {
     links: Array<(string)>;
 };
 
-export type IncidentEventDecisionContextAttributes = {
+export type IncidentEventContributingFactorCategory = {
+    attributes: IncidentEventContributingFactorCategoryAttributes;
+    id: string;
+};
+
+export type IncidentEventContributingFactorCategoryAttributes = {
+    description: string;
+    factorTypes: Array<IncidentEventContributingFactorType>;
+    name: string;
+};
+
+export type IncidentEventContributingFactorType = {
+    attributes: IncidentEventContributingFactorTypeAttributes;
+    id: string;
+};
+
+export type IncidentEventContributingFactorTypeAttributes = {
+    description: string;
+    examples: Array<(string)>;
+    name: string;
+};
+
+export type IncidentEventDecisionContext = {
     constraints: Array<(string)>;
     decisionRationale: string;
     optionsConsidered: Array<(string)>;
+};
+
+export type IncidentEventEvidence = {
+    attributes: IncidentEventEvidenceAttributes;
+    id: string;
+};
+
+export type IncidentEventEvidenceAttributes = {
+    data: string;
+    dataSource: string;
+    properties: {
+        [key: string]: (string);
+    };
+};
+
+export type IncidentEventSystemComponent = {
+    attributes: IncidentEventSystemComponentAttributes;
+    id: string;
+};
+
+export type IncidentEventSystemComponentAttributes = {
+    analysisComponentId: string;
+    description: string;
+    status: string;
 };
 
 export type IncidentField = {
@@ -1320,6 +1368,15 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentDebriefSuggestion>;
+};
+
+export type ListIncidentEventContributingFactorsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentEventContributingFactorCategory>;
+    pagination: ResponsePagination;
 };
 
 export type ListIncidentEventsResponseBody = {
@@ -2913,6 +2970,19 @@ export type ListDebriefSuggestionsResponse = (ListIncidentDebriefSuggestionsResp
 
 export type ListDebriefSuggestionsError = (ErrorModel);
 
+export type ListIncidentEventContributingFactorCategoriesData = {
+    query?: {
+        archived?: boolean;
+        limit?: number;
+        offset?: number;
+        search?: string;
+    };
+};
+
+export type ListIncidentEventContributingFactorCategoriesResponse = (ListIncidentEventContributingFactorsResponseBody);
+
+export type ListIncidentEventContributingFactorCategoriesError = (ErrorModel);
+
 export type CreateIncidentEventData = {
     body: CreateIncidentEventRequestBody;
     path: {
@@ -4422,9 +4492,18 @@ export type IncidentEventModelResponseTransformer = (data: any) => IncidentEvent
 
 export type IncidentEventAttributesModelResponseTransformer = (data: any) => IncidentEventAttributes;
 
+export type DateTimeAnchorModelResponseTransformer = (data: any) => DateTimeAnchor;
+
+export const DateTimeAnchorModelResponseTransformer: DateTimeAnchorModelResponseTransformer = data => {
+    if (data?.date) {
+        data.date = new Date(data.date);
+    }
+    return data;
+};
+
 export const IncidentEventAttributesModelResponseTransformer: IncidentEventAttributesModelResponseTransformer = data => {
     if (data?.timestamp) {
-        data.timestamp = new Date(data.timestamp);
+        DateTimeAnchorModelResponseTransformer(data.timestamp);
     }
     return data;
 };

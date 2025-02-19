@@ -1,41 +1,102 @@
-import type { IncidentEventAttributes } from "$lib/api";
+import type { IncidentEventDecisionContext, DateTimeAnchor, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent } from "$lib/api";
+import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
+import type { Content, JSONContent } from "@tiptap/core";
 
+const makeDefaultTimeAnchor = () => ({
+	date: new Date(),
+	time: "09:00:00",
+	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+});
+
+const makeDefaultDecisionContext = () => ({
+	optionsConsidered: [],
+	constraints: [],
+	decisionRationale: "",
+});
+
+type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
 type EventKind = IncidentEventAttributes["kind"];
 const createEventAttributesState = () => {
-	let eventKind = $state<EventKind>("observation");
+	let kind = $state<EventKind>("observation");
+	let title = $state<string>("");
+	let descriptionContent = $state<Content>();
+	let descriptionEditor = $state<DescriptionEditor>(null);
+	let timestamp = $state<DateTimeAnchor>(makeDefaultTimeAnchor());
 	let isKey = $state(false);
-	
-	let valid = $state(false);
+	let decisionContext = $state<IncidentEventDecisionContext>(makeDefaultDecisionContext());
+	let contributingFactors = $state<IncidentEventContributingFactor[]>([]);
+	let evidence = $state<IncidentEventEvidence[]>([]);
+	let systemContext = $state<IncidentEventSystemComponent[]>([]);
 
-	const initNew = () => {
-		eventKind = "observation";
-		isKey = false;
-		valid = false;
-	}
+	const valid = $derived(true);
 
-	const initFromEvent = (e: any) => {
-		// TODO
-		valid = true;
+	const init = (e?: IncidentEventAttributes) => {
+		kind = $state.snapshot(e?.kind) ?? "observation";
+		title = $state.snapshot(e?.title) ?? "";
+		descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;
+		isKey = $state.snapshot(e?.isKey) ?? false;
+		timestamp = $state.snapshot(e?.timestamp) ?? makeDefaultTimeAnchor();
+		decisionContext = $state.snapshot(e?.decisionContext) ?? makeDefaultDecisionContext();
+		contributingFactors = $state.snapshot(e?.contributingFactors) ?? [];
+		evidence = $state.snapshot(e?.evidence) ?? [];
+		systemContext = $state.snapshot(e?.systemContext) ?? [];
 	}
 
 	const onUpdate = () => {
 		// TODO: check if attributes valid;
-		valid = true;
+	}
+
+	const mountDescriptionEditor = () => {
+		descriptionEditor = createMentionEditor(descriptionContent ?? "", "cursor-text focus:outline-none min-h-20");
+		// TODO: watch for update?
+		return () => {
+			descriptionEditor?.destroy();
+			descriptionEditor = null;
+		}
+	}
+
+	const getDescriptionContent = () => {
+		if (!descriptionEditor) return;
+		return JSON.stringify(descriptionEditor.getJSON());
 	}
 
 	// this is gross but oh well
 	return {
-		initNew,
-		initFromEvent,
-		get eventKind() { return eventKind },
-		set eventKind(t: EventKind) { eventKind = t; onUpdate(); },
+		init,
+		get kind() { return kind },
+		set kind(k: EventKind) { kind = k; onUpdate(); },
+		get timestamp() { return timestamp },
+		set timestamp(t: DateTimeAnchor) { timestamp = t; onUpdate(); },
 		get isKey() { return isKey },
 		set isKey(v: boolean) { isKey = v; onUpdate() },
-		asAttributes(): any {
+		get title() { return title },
+		set title(t: string) { title = t; onUpdate(); },
+		mountDescriptionEditor,
+		get descriptionEditor() { return descriptionEditor },
+		get decisionContext() { return decisionContext },
+		set decisionContext(dc: IncidentEventDecisionContext) { decisionContext = dc; onUpdate(); },
+		get contributingFactors() { return contributingFactors },
+		set contributingFactors(cf: IncidentEventContributingFactor[]) { contributingFactors = cf; onUpdate(); },
+		get evidence() { return evidence },
+		set evidence(e: IncidentEventEvidence[]) { evidence = e; onUpdate(); },
+		get systemContext() { return systemContext },
+		set systemContext(sc: IncidentEventSystemComponent[]) { systemContext = sc; onUpdate(); },
+
+		get valid() { return valid },
+		
+		snapshot(): Partial<IncidentEventAttributes> {
 			return {
+				kind: $state.snapshot(kind),
+				title: $state.snapshot(title),
+				description: getDescriptionContent(),
+				timestamp: $state.snapshot(timestamp),
+				isKey: $state.snapshot(isKey),
+				decisionContext: $state.snapshot(decisionContext),
+				contributingFactors: $state.snapshot(contributingFactors),
+				evidence: $state.snapshot(evidence),
+				systemContext: $state.snapshot(systemContext),
 			}
 		},
-		get valid() { return valid },
 	}
 }
 

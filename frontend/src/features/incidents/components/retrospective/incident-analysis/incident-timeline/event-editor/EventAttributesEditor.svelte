@@ -24,7 +24,7 @@
 		<Header title="Context" />
 
 		<div class="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
-			{#if eventAttributes.eventKind === "decision"}
+			{#if eventAttributes.kind === "decision"}
 				{@render componentTraitPanel(
 					"Decision Context",
 					"Document the options, constraints, and reasoning behind this choice",
