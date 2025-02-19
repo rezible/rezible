@@ -216,7 +216,10 @@ var ListSystemAnalysisRelationships = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListSystemAnalysisRelationshipsRequest ListIdRequest
+type ListSystemAnalysisRelationshipsRequest struct {
+	ListIdRequest
+	AnalysisComponentId uuid.UUID `query:"analysisComponentId"`
+}
 type ListSystemAnalysisRelationshipsResponse PaginatedResponse[SystemAnalysisRelationship]
 
 var GetSystemAnalysisRelationship = huma.Operation{

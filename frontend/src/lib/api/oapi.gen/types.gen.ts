@@ -128,9 +128,9 @@ export type CreateIncidentDebriefQuestionResponseBody = {
 };
 
 export type CreateIncidentEventAttributes = {
+    kind: string;
     timestamp: Date;
     title: string;
-    type: string;
 };
 
 export type CreateIncidentEventRequestBody = {
@@ -1127,7 +1127,7 @@ export type IncidentEventAttributes = {
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
     systemContext: Array<IncidentEventSystemComponent>;
-    timestamp: DateTimeAnchor;
+    timestamp: Date;
     title: string;
 };
 
@@ -2174,9 +2174,9 @@ export type UpdateIncidentDebriefResponseBody = {
 };
 
 export type UpdateIncidentEventAttributes = {
-    timestamp: Date;
-    title: string;
-    type: string;
+    kind?: string;
+    timestamp?: Date;
+    title?: string;
 };
 
 export type UpdateIncidentEventRequestBody = {
@@ -2983,17 +2983,6 @@ export type ListIncidentEventContributingFactorCategoriesResponse = (ListInciden
 
 export type ListIncidentEventContributingFactorCategoriesError = (ErrorModel);
 
-export type CreateIncidentEventData = {
-    body: CreateIncidentEventRequestBody;
-    path: {
-        id: string;
-    };
-};
-
-export type CreateIncidentEventResponse = (CreateIncidentEventResponseBody);
-
-export type CreateIncidentEventError = (ErrorModel);
-
 export type DeleteIncidentEventData = {
     path: {
         id: string;
@@ -3368,6 +3357,17 @@ export type ListIncidentEventsData = {
 export type ListIncidentEventsResponse = (ListIncidentEventsResponseBody);
 
 export type ListIncidentEventsError = (ErrorModel);
+
+export type CreateIncidentEventData = {
+    body: CreateIncidentEventRequestBody;
+    path: {
+        id: string;
+    };
+};
+
+export type CreateIncidentEventResponse = (CreateIncidentEventResponseBody);
+
+export type CreateIncidentEventError = (ErrorModel);
 
 export type ListIncidentMilestonesData = {
     path: {
@@ -4004,6 +4004,7 @@ export type ListSystemAnalysisRelationshipsData = {
         id: string;
     };
     query?: {
+        analysisComponentId?: string;
         archived?: boolean;
         limit?: number;
         offset?: number;
@@ -4484,26 +4485,17 @@ export const AddIncidentDebriefUserMessageResponseTransformer: AddIncidentDebrie
     return data;
 };
 
-export type CreateIncidentEventResponseTransformer = (data: any) => Promise<CreateIncidentEventResponse>;
+export type UpdateIncidentEventResponseTransformer = (data: any) => Promise<UpdateIncidentEventResponse>;
 
-export type CreateIncidentEventResponseBodyModelResponseTransformer = (data: any) => CreateIncidentEventResponseBody;
+export type UpdateIncidentEventResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentEventResponseBody;
 
 export type IncidentEventModelResponseTransformer = (data: any) => IncidentEvent;
 
 export type IncidentEventAttributesModelResponseTransformer = (data: any) => IncidentEventAttributes;
 
-export type DateTimeAnchorModelResponseTransformer = (data: any) => DateTimeAnchor;
-
-export const DateTimeAnchorModelResponseTransformer: DateTimeAnchorModelResponseTransformer = data => {
-    if (data?.date) {
-        data.date = new Date(data.date);
-    }
-    return data;
-};
-
 export const IncidentEventAttributesModelResponseTransformer: IncidentEventAttributesModelResponseTransformer = data => {
     if (data?.timestamp) {
-        DateTimeAnchorModelResponseTransformer(data.timestamp);
+        data.timestamp = new Date(data.timestamp);
     }
     return data;
 };
@@ -4514,22 +4506,6 @@ export const IncidentEventModelResponseTransformer: IncidentEventModelResponseTr
     }
     return data;
 };
-
-export const CreateIncidentEventResponseBodyModelResponseTransformer: CreateIncidentEventResponseBodyModelResponseTransformer = data => {
-    if (data?.data) {
-        IncidentEventModelResponseTransformer(data.data);
-    }
-    return data;
-};
-
-export const CreateIncidentEventResponseTransformer: CreateIncidentEventResponseTransformer = async (data) => {
-    CreateIncidentEventResponseBodyModelResponseTransformer(data);
-    return data;
-};
-
-export type UpdateIncidentEventResponseTransformer = (data: any) => Promise<UpdateIncidentEventResponse>;
-
-export type UpdateIncidentEventResponseBodyModelResponseTransformer = (data: any) => UpdateIncidentEventResponseBody;
 
 export const UpdateIncidentEventResponseBodyModelResponseTransformer: UpdateIncidentEventResponseBodyModelResponseTransformer = data => {
     if (data?.data) {
@@ -4705,6 +4681,22 @@ export const ListIncidentEventsResponseBodyModelResponseTransformer: ListInciden
 
 export const ListIncidentEventsResponseTransformer: ListIncidentEventsResponseTransformer = async (data) => {
     ListIncidentEventsResponseBodyModelResponseTransformer(data);
+    return data;
+};
+
+export type CreateIncidentEventResponseTransformer = (data: any) => Promise<CreateIncidentEventResponse>;
+
+export type CreateIncidentEventResponseBodyModelResponseTransformer = (data: any) => CreateIncidentEventResponseBody;
+
+export const CreateIncidentEventResponseBodyModelResponseTransformer: CreateIncidentEventResponseBodyModelResponseTransformer = data => {
+    if (data?.data) {
+        IncidentEventModelResponseTransformer(data.data);
+    }
+    return data;
+};
+
+export const CreateIncidentEventResponseTransformer: CreateIncidentEventResponseTransformer = async (data) => {
+    CreateIncidentEventResponseBodyModelResponseTransformer(data);
     return data;
 };
 

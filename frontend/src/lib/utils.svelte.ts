@@ -13,7 +13,8 @@ import {
 	type QueryOptions,
 	type UndefinedInitialDataOptions,
 } from "@tanstack/svelte-query";
-import { tryUnwrapApiError, type ErrorDetail, type ErrorModel } from "./api";
+import { tryUnwrapApiError, type DateTimeAnchor, type ErrorDetail, type ErrorModel } from "./api";
+import { parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
 
 export function debounce<T extends Function>(cb: T, wait = 100) {
 	let timeout: ReturnType<typeof setTimeout>;
@@ -54,3 +55,7 @@ export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
 		};
 	});
 };
+
+export const convertDateTimeAnchor = (a: DateTimeAnchor) => {
+	return parseAbsolute(`${a.date.toISOString().split("T")[0]}T${a.time}Z`, a.timezone).toDate();
+}

@@ -1,9 +1,12 @@
 <script lang="ts">
-	import { Button, Dialog, Icon, Tooltip } from "svelte-ux";
+	import { Button, Dialog, Icon } from "svelte-ux";
+	import { mdiMagicStaff } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
 	import { eventDialog } from "./dialogState.svelte";
-	import { mdiMagicStaff } from "@mdi/js";
+	import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
+
+	eventDialog.setup();
 </script>
 
 <Dialog
@@ -36,7 +39,7 @@
 			onClose={eventDialog.clear}
 			confirmText={eventDialog.view === "create" ? "Create" : "Save"}
 			onConfirm={eventDialog.confirm}
-			saveEnabled={eventDialog.saveEnabled}
+			saveEnabled={eventAttributes.valid}
 		/>
 	</svelte:fragment>
 </Dialog>

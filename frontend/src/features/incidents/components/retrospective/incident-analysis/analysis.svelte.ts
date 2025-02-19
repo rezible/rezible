@@ -49,6 +49,7 @@ const createAnalysisState = () => {
 
 	return {
 		setup,
+		get id() { return analysisId },
 		get data() {
 			return data;
 		},

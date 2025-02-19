@@ -1,12 +1,16 @@
-import type { IncidentEventDecisionContext, DateTimeAnchor, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent } from "$lib/api";
+import type { IncidentEventDecisionContext, DateTimeAnchor, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent, Incident } from "$lib/api";
 import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 import type { Content, JSONContent } from "@tiptap/core";
+import { convertDateTimeAnchor } from "$lib/utils.svelte";
 
-const makeDefaultTimeAnchor = () => ({
-	date: new Date(),
-	time: "09:00:00",
-	timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-});
+const makeTimeAnchor = (from?: Date) => {
+	if (!from || true) return {
+		date: new Date(),
+		time: "09:00:00",
+		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+	}
+
+};
 
 const makeDefaultDecisionContext = () => ({
 	optionsConsidered: [],
@@ -21,7 +25,7 @@ const createEventAttributesState = () => {
 	let title = $state<string>("");
 	let descriptionContent = $state<Content>();
 	let descriptionEditor = $state<DescriptionEditor>(null);
-	let timestamp = $state<DateTimeAnchor>(makeDefaultTimeAnchor());
+	let timestamp = $state<DateTimeAnchor>(makeTimeAnchor());
 	let isKey = $state(false);
 	let decisionContext = $state<IncidentEventDecisionContext>(makeDefaultDecisionContext());
 	let contributingFactors = $state<IncidentEventContributingFactor[]>([]);
@@ -30,12 +34,13 @@ const createEventAttributesState = () => {
 
 	const valid = $derived(true);
 
-	const init = (e?: IncidentEventAttributes) => {
+	const init = (inc?: Incident, e?: IncidentEventAttributes) => {
 		kind = $state.snapshot(e?.kind) ?? "observation";
 		title = $state.snapshot(e?.title) ?? "";
 		descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;
 		isKey = $state.snapshot(e?.isKey) ?? false;
-		timestamp = $state.snapshot(e?.timestamp) ?? makeDefaultTimeAnchor();
+		const initTime = $state.snapshot(e?.timestamp) ?? inc?.attributes.openedAt; // TODO: use incident start time
+		timestamp = makeTimeAnchor(initTime);
 		decisionContext = $state.snapshot(e?.decisionContext) ?? makeDefaultDecisionContext();
 		contributingFactors = $state.snapshot(e?.contributingFactors) ?? [];
 		evidence = $state.snapshot(e?.evidence) ?? [];
@@ -84,12 +89,14 @@ const createEventAttributesState = () => {
 
 		get valid() { return valid },
 		
-		snapshot(): Partial<IncidentEventAttributes> {
+		snapshot(): IncidentEventAttributes {
 			return {
+				incidentId: "",
+				sequence: -1,
 				kind: $state.snapshot(kind),
 				title: $state.snapshot(title),
 				description: getDescriptionContent(),
-				timestamp: $state.snapshot(timestamp),
+				timestamp: convertDateTimeAnchor($state.snapshot(timestamp)),
 				isKey: $state.snapshot(isKey),
 				decisionContext: $state.snapshot(decisionContext),
 				contributingFactors: $state.snapshot(contributingFactors),

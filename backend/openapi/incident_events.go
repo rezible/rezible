@@ -2,13 +2,11 @@ package openapi
 
 import (
 	"context"
-	"net/http"
-	"time"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-
 	"github.com/rezible/rezible/ent"
+	"net/http"
+	"time"
 )
 
 type IncidentEventsHandler interface {
@@ -37,7 +35,7 @@ type (
 	IncidentEventAttributes struct {
 		IncidentId          uuid.UUID                         `json:"incidentId"`
 		Kind                string                            `json:"kind" enum:"observation,action,decision,context"`
-		Timestamp           DateTimeAnchor                    `json:"timestamp"`
+		Timestamp           time.Time                         `json:"timestamp"`
 		IsKey               bool                              `json:"isKey"`
 		Title               string                            `json:"title"`
 		Description         *string                           `json:"description,omitempty"`
@@ -85,10 +83,9 @@ type (
 		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
 		Status              string    `json:"status"`
 		Description         string    `json:"description"`
+		// TODO: what else do we want as context?
 	}
-)
 
-type (
 	IncidentEventContributingFactorCategory struct {
 		Id         uuid.UUID                                         `json:"id"`
 		Attributes IncidentEventContributingFactorCategoryAttributes `json:"attributes"`
@@ -140,7 +137,7 @@ type ListIncidentEventsResponse PaginatedResponse[IncidentEvent]
 var CreateIncidentEvent = huma.Operation{
 	OperationID: "create-incident-event",
 	Method:      http.MethodPost,
-	Path:        "/incident_events",
+	Path:        "/incidents/{id}/events",
 	Summary:     "Create an Incident Event",
 	Tags:        incidentEventsTags,
 	Errors:      errorCodes(),
@@ -148,7 +145,7 @@ var CreateIncidentEvent = huma.Operation{
 
 type CreateIncidentEventAttributes struct {
 	Title     string    `json:"title"`
-	Type      string    `json:"type"`
+	Kind      string    `json:"kind"`
 	Timestamp time.Time `json:"timestamp"`
 }
 type CreateIncidentEventRequest CreateIdRequest[CreateIncidentEventAttributes]
@@ -164,9 +161,9 @@ var UpdateIncidentEvent = huma.Operation{
 }
 
 type UpdateIncidentEventAttributes struct {
-	Title     *string    `json:"title"`
-	Type      *string    `json:"type"`
-	Timestamp *time.Time `json:"timestamp"`
+	Title     *string    `json:"title,omitempty"`
+	Kind      *string    `json:"kind,omitempty"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 type UpdateIncidentEventRequest UpdateIdRequest[UpdateIncidentEventAttributes]
 type UpdateIncidentEventResponse ItemResponse[IncidentEvent]
