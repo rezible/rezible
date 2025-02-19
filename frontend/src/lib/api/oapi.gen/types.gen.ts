@@ -1118,10 +1118,41 @@ export type IncidentEvent = {
 };
 
 export type IncidentEventAttributes = {
+    contributingFactors: Array<IncidentEventContributingFactor>;
+    decisionContext: IncidentEventDecisionContextAttributes;
+    description: string;
     incidentId: string;
+    isKey: boolean;
+    kind: 'observation' | 'action' | 'decision' | 'context';
+    sequence: number;
     timestamp: Date;
     title: string;
-    type: string;
+};
+
+export type kind = 'observation' | 'action' | 'decision' | 'context';
+
+export const kind = {
+    OBSERVATION: 'observation',
+    ACTION: 'action',
+    DECISION: 'decision',
+    CONTEXT: 'context'
+} as const;
+
+export type IncidentEventContributingFactor = {
+    attributes: IncidentEventContributingFactorAttributes;
+    id: string;
+};
+
+export type IncidentEventContributingFactorAttributes = {
+    description: string;
+    factorTypeId: string;
+    links: Array<(string)>;
+};
+
+export type IncidentEventDecisionContextAttributes = {
+    constraints: Array<(string)>;
+    decisionRationale: string;
+    optionsConsidered: Array<(string)>;
 };
 
 export type IncidentField = {
@@ -1656,9 +1687,9 @@ export type OncallShiftAnnotationAttributes = {
     title: string;
 };
 
-export type kind = 'incident' | 'alert' | 'toil' | 'ping';
+export type kind2 = 'incident' | 'alert' | 'toil' | 'ping';
 
-export const kind = {
+export const kind2 = {
     INCIDENT: 'incident',
     ALERT: 'alert',
     TOIL: 'toil',
@@ -1704,9 +1735,9 @@ export type OncallShiftHandoverSection = {
     kind: 'regular' | 'annotations' | 'incidents';
 };
 
-export type kind2 = 'regular' | 'annotations' | 'incidents';
+export type kind3 = 'regular' | 'annotations' | 'incidents';
 
-export const kind2 = {
+export const kind3 = {
     REGULAR: 'regular',
     ANNOTATIONS: 'annotations',
     INCIDENTS: 'incidents'

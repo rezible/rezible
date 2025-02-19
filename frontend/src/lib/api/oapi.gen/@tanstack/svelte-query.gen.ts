@@ -7,13 +7,13 @@ import { client, listDebriefQuestions, createDebriefQuestion, getDebriefQuestion
 
 type QueryKey<TOptions extends OptionsLegacyParser> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
-        Id: string;
+        _id: string;
         _infinite?: boolean;
     }
 ];
 
 const createQueryKey = <TOptions extends OptionsLegacyParser>(id: string, options?: TOptions, infinite?: boolean): QueryKey<TOptions>[0] => {
-    const params: QueryKey<TOptions>[0] = { Id: id, baseUrl: (options?.client ?? client).getConfig().baseUrl } as QueryKey<TOptions>[0];
+    const params: QueryKey<TOptions>[0] = { _id: id, baseUrl: (options?.client ?? client).getConfig().baseUrl } as QueryKey<TOptions>[0];
     if (infinite) {
         params._infinite = infinite;
     }

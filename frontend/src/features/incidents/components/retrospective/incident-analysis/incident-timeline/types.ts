@@ -1,18 +1,3 @@
-// Core event type
-export type TimelineEvent = {
-	id: string;
-	incidentId: string;
-	timestamp: Date | null; // null for "unknown time"
-	kind: "observation" | "action" | "decision" | "context";
-	title: string;
-	description: string;
-	createdAt: Date;
-	updatedAt: Date;
-	createdBy: string;
-	sequence: number; // for ordering events with same timestamp
-	isDraft: boolean;
-};
-
 export type EventComponentState = 'normal' | 'degraded' | 'failed';
 
 export const ContributingFactorCategories = [

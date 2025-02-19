@@ -46,10 +46,85 @@ type (
 		Attributes IncidentEventAttributes `json:"attributes"`
 	}
 	IncidentEventAttributes struct {
-		IncidentId uuid.UUID `json:"incidentId"`
-		Type       string    `json:"type"`
-		Title      string    `json:"title"`
-		Timestamp  time.Time `json:"timestamp"`
+		IncidentId          uuid.UUID                               `json:"incidentId"`
+		Kind                string                                  `json:"kind" enum:"observation,action,decision,context"`
+		Timestamp           time.Time                               `json:"timestamp"`
+		IsKey               bool                                    `json:"isKey"`
+		Title               string                                  `json:"title"`
+		Description         string                                  `json:"description"`
+		Sequence            int                                     `json:"sequence"`
+		DecisionContext     *IncidentEventDecisionContextAttributes `json:"decisionContext"`
+		ContributingFactors []IncidentEventContributingFactor       `json:"contributingFactors"`
+	}
+
+	IncidentEventDecisionContextAttributes struct {
+		OptionsConsidered []string `json:"optionsConsidered"`
+		Constraints       []string `json:"constraints"`
+		DecisionRationale string   `json:"decisionRationale"`
+	}
+
+	IncidentEventContributingFactor struct {
+		Id         uuid.UUID                                 `json:"id"`
+		Attributes IncidentEventContributingFactorAttributes `json:"attributes"`
+	}
+
+	IncidentEventContributingFactorAttributes struct {
+		FactorTypeId uuid.UUID `json:"factorTypeId"`
+		Description  string    `json:"description"`
+		Links        []string  `json:"links"`
+	}
+
+	IncidentEventEvidence struct {
+		Id         uuid.UUID                       `json:"id"`
+		Attributes IncidentEventEvidenceAttributes `json:"attributes"`
+	}
+
+	IncidentEventEvidenceAttributes struct {
+		DataSource string            `json:"dataSource"`
+		Data       string            `json:"data"`
+		Properties map[string]string `json:"properties"`
+	}
+
+	IncidentEventSystemContext struct {
+		Id         uuid.UUID                            `json:"id"`
+		Attributes IncidentEventSystemContextAttributes `json:"attributes"`
+	}
+
+	IncidentEventSystemContextAttributes struct {
+		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
+	}
+
+	IncidentEventComponentStatus struct {
+		Id         uuid.UUID                              `json:"id"`
+		Attributes IncidentEventComponentStatusAttributes `json:"attributes"`
+	}
+
+	IncidentEventComponentStatusAttributes struct {
+		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
+		Status              string    `json:"status"`
+		Description         string    `json:"description"`
+	}
+
+	IncidentEventContributingFactorCategory struct {
+		Id         uuid.UUID                                         `json:"id"`
+		Attributes IncidentEventContributingFactorCategoryAttributes `json:"attributes"`
+	}
+
+	IncidentEventContributingFactorCategoryAttributes struct {
+		Label       string                                `json:"name"`
+		Description string                                `json:"description"`
+		Factors     []IncidentEventContributingFactorType `json:"factors"`
+	}
+
+	IncidentEventContributingFactorType struct {
+		Id         uuid.UUID                                     `json:"id"`
+		Attributes IncidentEventContributingFactorTypeAttributes `json:"attributes"`
+	}
+
+	IncidentEventContributingFactorTypeAttributes struct {
+		Label       string   `json:"name"`
+		Description string   `json:"description"`
+		Examples    []string `json:"examples"`
 	}
 )
 
@@ -57,7 +132,7 @@ func IncidentEventFromEnt(m *ent.IncidentEvent) IncidentEvent {
 	return IncidentEvent{
 		Id: m.ID,
 		Attributes: IncidentEventAttributes{
-			Type: m.Type.String(),
+			Kind: m.Type.String(),
 		},
 	}
 }

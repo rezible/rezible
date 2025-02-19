@@ -1,6 +1,6 @@
-import type { TimelineEvent } from "../../types";
+import type { IncidentEventAttributes } from "$lib/api";
 
-type EventKind = TimelineEvent["kind"];
+type EventKind = IncidentEventAttributes["kind"];
 const createEventAttributesState = () => {
 	let eventKind = $state<EventKind>("observation");
 	let isKey = $state(false);
@@ -8,7 +8,9 @@ const createEventAttributesState = () => {
 	let valid = $state(false);
 
 	const initNew = () => {
-		
+		eventKind = "observation";
+		isKey = false;
+		valid = false;
 	}
 
 	const initFromEvent = (e: any) => {

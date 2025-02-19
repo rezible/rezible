@@ -7,11 +7,10 @@ import { watch } from "runed";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
 	listIncidentMilestonesOptions,
-	type IncidentMilestone,
+	type IncidentEvent,
 	type ListIncidentMilestonesResponseBody,
 } from "$lib/api";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
-import type { TimelineEvent } from "./types";
 
 const createTimelineEventElement = (id: string) => {
 	let props = $state<TimelineEventComponentProps>({ label: "example" });
@@ -39,31 +38,14 @@ const createTimelineState = () => {
 	const items = new DataSet<any>([]);
 
 	const updateItems = () => {
-		// items = new DataSet()
 	};
 
 	const onMilestonesQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
-		// milestoneItems = new DataSet([
-		// 	{
-		// 		id: "A",
-		// 		content: "Period A",
-		// 		start: "2014-01-16",
-		// 		end: "2014-01-22",
-		// 		type: "background",
-		// 	},
-		// 	{
-		// 		id: "B",
-		// 		content: "Period B",
-		// 		start: "2014-01-25",
-		// 		end: "2014-01-30",
-		// 		type: "background",
-		// 		className: "negative",
-		// 	},
-		// ]);
+		
 	};
 
 	const onEventsQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
-		addEvent("bleh");
+		
 	};
 
 	const createQueries = () => {
@@ -108,7 +90,7 @@ const createTimelineState = () => {
 		onMount(() => onUnmount);
 	};
 
-	let editingEvent = $state<TimelineEvent>();
+	let editingEvent = $state<IncidentEvent>();
 
 	return {
 		setup,
