@@ -90,6 +90,8 @@ type (
 	}
 )
 
+// TODO: remove this, just enforce a zoned datetime
+
 type DateTimeAnchor struct {
 	Date     string `json:"date" format:"date"`
 	Time     string `json:"time" format:"time"`

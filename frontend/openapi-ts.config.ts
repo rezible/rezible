@@ -16,10 +16,6 @@ export default defineConfig({
 			enums: "javascript",
 		},
 		{
-			name: "@hey-api/transformers",
-			dates: true,
-		},
-		{
 			name: "@tanstack/svelte-query",
 		},
 	],

@@ -11,17 +11,16 @@
 		NumberStepper,
 		Input,
 	} from "svelte-ux";
-	import type { DateTimeAnchor } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import TimePicker from "$components/time-picker/TimePicker.svelte";
-	import { Time } from "@internationalized/date";
+	import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
 
 	type Props = {
 		name?: string;
 		label: string;
-		current: DateTimeAnchor;
+		current: ZonedDateTime;
 		exactTime?: boolean;
-		onChange: (newValue: DateTimeAnchor) => void;
+		onChange: (newValue: ZonedDateTime) => void;
 	};
 	let { name = "", label, current, exactTime, onChange }: Props = $props();
 
@@ -34,22 +33,29 @@
 		period: "AM" | "PM";
 		timezone: string;
 	}
-	const getTimes = (a: DateTimeAnchor): InternalValue => {
-		const timeParts = a.time.split(":");
-		const hour = Number.parseInt(timeParts[0]);
-		const minute = Number.parseInt(timeParts[1]);
-		const seconds = Number.parseInt(timeParts[2]);
+	const convertTime = (t: ZonedDateTime): InternalValue => {
+		const d = t.copy();
 		return {
-			date: new Date(a.date),
-			time: new Time(hour, minute, seconds),
-			period: hour >= 12 ? "PM" : "AM",
-			timezone: a.timezone,
+			date: d.toDate(),
+			time: new Time(d.hour, d.minute, d.second),
+			period: d.hour >= 12 ? "PM" : "AM",
+			timezone: d.timeZone,
 		};
 	};
 
+	const hour12 = (hour: number) => {
+		if (hour == 0) return 12;
+		if (hour >= 12) return hour - 12;
+		return hour;
+	}
+
+	const currentValue = $derived(convertTime(current));
+	const currentDate = $derived(current.toDate());
+	const currentPeriod = $derived(current.hour >= 12 ? "pm" : "am");
+
+	let value = $state(convertTime(current));
+
 	let open = $state(false);
-	const currentValue = $derived(getTimes(current));
-	let value = $state(getTimes($state.snapshot(current)));
 
 	const periodType = PeriodType.Day;
 	const primaryFormat = [DateToken.Month_long, DateToken.DayOfMonth_withOrdinal, DateToken.Year_numeric];
@@ -57,29 +63,21 @@
 
 	const pad = (n: number) => String(n).padStart(2, "0");
 
-	const formatHourMinute = $derived(`${currentValue.time.hour}:${pad(currentValue.time.minute)}`);
-	const formatTime = $derived(formatHourMinute + currentValue.period.toLowerCase());
-	const formatDayOfWeek = $derived($format(currentValue.date, PeriodType.Day, { custom: secondaryFormat }));
-	const formatDate = $derived($format(currentValue.date, PeriodType.Day, { custom: primaryFormat }));
+	const formatHourMinute = $derived(`${pad(hour12(currentValue.time.hour))}:${pad(currentValue.time.minute)}`);
+	const formatTime = $derived(formatHourMinute + currentPeriod);
 
-	const convertHour24 = () => {
-		const hour = value.time.hour === 12 ? 0 : value.time.hour;
-		return value.period === "AM" ? hour : hour + 12;
-	};
+	const formatDayOfWeek = $derived($format(currentDate, PeriodType.Day, { custom: secondaryFormat }));
+	const formatDate = $derived($format(currentDate, PeriodType.Day, { custom: primaryFormat }));
 
 	const onConfirm = () => {
-		const hour24 = convertHour24();
-		const newValue = {
-			date: value.date,
-			time: `${pad(hour24)}:${pad(value.time.minute)}:${pad(value.time.second)}`,
-			timezone: value.timezone,
-		};
+		const valStr = `${value.date.toISOString().split("T")[0]}T${value.time}[${value.timezone}]`;
+		const newValue = parseZonedDateTime(valStr);
 		onChange(newValue);
 		open = false;
 	};
 
 	const onClose = () => {
-		value = getTimes(current);
+		value = convertTime(current);
 		open = false;
 	};
 
@@ -129,7 +127,7 @@
 			<DateSelect
 				selected={value.date}
 				{periodType}
-				on:dateChange={(e) => (value.date = e.detail)}
+				on:dateChange={e => (value.date = e.detail)}
 			/>
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">

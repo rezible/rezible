@@ -56,6 +56,6 @@ export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
 	});
 };
 
-export const convertDateTimeAnchor = (a: DateTimeAnchor) => {
-	return parseAbsolute(`${a.date.toISOString().split("T")[0]}T${a.time}Z`, a.timezone).toDate();
-}
+// export const convertDateTimeAnchor = (a: DateTimeAnchor) => {
+// 	return parseAbsolute(`${a.date.toISOString().split("T")[0]}T${a.time}Z`, a.timezone).toDate();
+// }
