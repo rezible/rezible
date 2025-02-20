@@ -40,7 +40,7 @@
 		formData.weekDays = structuredClone(formData.weekDays);
 	};
 
-	const dayOfWeek = $derived(weekdays[new Date(formData.start.date).getDay()].label);
+	const dayOfWeek = $derived(weekdays[formData.start.toDate().getDay()].label);
 	const daySelected = $derived<boolean[]>(weekdays.map((v) => formData.weekDays.has(v.value)));
 	const pluralSuffix = $derived(formData.repeats !== "daily" && formData.repetitionStep > 1 ? "s" : "");
 
@@ -76,6 +76,16 @@
 		if (requestType === "schedule") createScheduleMutation.mutate({ body });
 		if (requestType === "session") createSessionMutation.mutate({ body });
 	};
+
+	const onUntilDateChange = (d: Date) => {
+		console.log("onUntilDateChange", d);
+		const newUntilDate = formData.untilDate.copy().set({
+			day: d.getDate(), 
+			month: d.getMonth(), 
+			year: d.getFullYear(),
+		});
+		formData.untilDate = newUntilDate;
+	}
 </script>
 
 <Dialog
@@ -190,7 +200,11 @@
 		</Field>
 	{:else if formData.untilType === "date"}
 		<div>
-			<DatePickerField label="End after" bind:value={formData.untilDate} />
+			<DatePickerField 
+				label="End after"
+				value={formData.untilDate.toDate()}
+				on:change={e => (onUntilDateChange(e.detail))}
+			/>
 		</div>
 	{/if}
 {/snippet}

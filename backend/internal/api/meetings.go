@@ -95,12 +95,6 @@ func (h *meetingsHandler) ListMeetingSessions(ctx context.Context, request *oapi
 func (h *meetingsHandler) CreateMeetingSession(ctx context.Context, request *oapi.CreateMeetingSessionRequest) (*oapi.CreateMeetingSessionResponse, error) {
 	var resp oapi.CreateMeetingSessionResponse
 
-	attr := request.Body.Attributes
-	_, timeErr := attr.StartsAt.ConvertTime()
-	if timeErr != nil {
-		return nil, oapi.ErrorBadRequest("bad start time", timeErr)
-	}
-
 	return &resp, nil
 }
 

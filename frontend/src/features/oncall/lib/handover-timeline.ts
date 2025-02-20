@@ -4,6 +4,7 @@ import type {
 	OncallShiftAnnotation,
 	CreateOncallShiftAnnotationRequestAttributes,
 } from "$lib/api";
+import { getLocalTimeZone, parseAbsolute, parseAbsoluteToLocal, ZonedDateTime } from "@internationalized/date";
 import { mdiCircleMedium, mdiFire, mdiPhoneAlert } from "@mdi/js";
 import { differenceInMinutes } from "date-fns";
 
@@ -26,19 +27,18 @@ export type ShiftTimelineEvent = {
 	kind: ShiftEventKind;
 	title: string;
 	description?: string;
-	occurredAt: Date;
+	occurredAt: ZonedDateTime;
 	notes?: string;
 };
 
 type MergedEvent = {
-	timestamp: Date;
+	timestamp: ZonedDateTime;
 	incident?: Incident;
 	alert?: OncallAlert;
 	annotation?: OncallShiftAnnotation;
 };
 
 const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
-	const occurredAt = new Date(e.timestamp);
 	if (e.incident) {
 		const attr = e.incident.attributes;
 		return {
@@ -46,7 +46,7 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			kind: "incident",
 			title: attr.title,
 			description: attr.summary,
-			occurredAt: occurredAt,
+			occurredAt: e.timestamp,
 		};
 	}
 	if (e.alert) {
@@ -54,7 +54,7 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			eventId: e.alert.id,
 			kind: "alert",
 			title: e.alert.attributes.title,
-			occurredAt: occurredAt,
+			occurredAt: e.timestamp,
 		};
 	}
 	if (e.annotation) {
@@ -63,14 +63,14 @@ const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
 			eventId: e.annotation.id,
 			kind: "toil",
 			title: "annotation title",
-			occurredAt: occurredAt,
+			occurredAt: e.timestamp,
 		};
 	}
 	throw new Error("invalid event type");
 };
 
 const getIntervalHeight = (e1: MergedEvent, e2: MergedEvent) => {
-	const diff = differenceInMinutes(e1.timestamp, e2.timestamp);
+	const diff = differenceInMinutes(e1.timestamp.toDate(), e2.timestamp.toDate());
 	if (diff < 60) return 80;
 	if (diff < 60 * 24) return 160;
 	return 240;
@@ -85,9 +85,15 @@ export const createTimeline = (
 
 	const timeline: ShiftTimelineNode[] = [];
 
+	const tz = getLocalTimeZone();
+
 	const merged: MergedEvent[] = [];
-	incidents.forEach((incident) => merged.push({ timestamp: incident.attributes.openedAt, incident }));
-	alerts.forEach((alert) => merged.push({ timestamp: alert.attributes.occurredAt, alert }));
+	incidents.forEach(incident => {
+		merged.push({ timestamp: parseAbsolute(incident.attributes.openedAt, tz), incident })
+	});
+	alerts.forEach(alert => {
+		merged.push({ timestamp: parseAbsolute(alert.attributes.occurredAt, tz), alert })
+	});
 	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurredAt), annotation}));
 
 	const sorted = merged.toSorted((a, b) => (a.timestamp < b.timestamp ? 1 : -1));

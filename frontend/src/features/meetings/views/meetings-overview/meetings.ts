@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { addDays } from "date-fns/addDays";
 import type {
 	CreateMeetingScheduleRequestBody,
 	CreateMeetingSessionRequestBody,
-	DateTimeAnchor,
 } from "$lib/api";
+import { getLocalTimeZone, now, type ZonedDateTime } from "@internationalized/date";
+import { ZodZonedDateTime } from "$lib/utils.svelte";
 
 export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -22,46 +22,40 @@ export type CreateMeetingFormData = {
 	name: string;
 	sessionTitle: string;
 	description: string;
-	start: DateTimeAnchor;
+	start: ZonedDateTime;
 	durationMinutes: number;
 	repeats: "once" | "daily" | "weekly" | "monthly";
 	repetitionStep: number;
 	weekDays: Set<Weekday>;
 	monthlyOn: "same_day" | "same_weekday";
 	untilType: "indefinite" | "num_repetitions" | "date";
-	untilDate: Date;
+	untilDate: ZonedDateTime;
 	numRepetitions: number;
 };
 
-export const emptyForm: CreateMeetingFormData = {
-	name: "",
-	sessionTitle: "",
-	description: "",
-	start: {
-		date: new Date(),
-		time: "09:00:00",
-		timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-	},
-	durationMinutes: 30,
-	repeats: "once",
-	weekDays: new Set<Weekday>(),
-	repetitionStep: 1,
-	monthlyOn: "same_day",
-	untilType: "indefinite",
-	untilDate: addDays(new Date(), 1),
-	numRepetitions: 2,
+export const getEmptyForm = (): CreateMeetingFormData => {
+	const curTime = now(getLocalTimeZone());
+	return {
+		name: "",
+		sessionTitle: "",
+		description: "",
+		start: curTime,
+		durationMinutes: 30,
+		repeats: "once",
+		weekDays: new Set<Weekday>(),
+		repetitionStep: 1,
+		monthlyOn: "same_day",
+		untilType: "indefinite",
+		untilDate: curTime.add({days: 1}),
+		numRepetitions: 2,
+	}
 };
-export const getEmptyForm = () => structuredClone(emptyForm);
 
 const meetingFormSchema = z.object({
 	name: z.string().min(1),
 	sessionTitle: z.string(),
 	description: z.string(),
-	start: z.object({
-		date: z.date(),
-		time: z.string(),
-		timezone: z.string(),
-	}),
+	start: ZodZonedDateTime,
 	durationMinutes: z.number(),
 	repeats: z.enum(["once", "daily", "weekly", "monthly"]),
 
@@ -69,7 +63,7 @@ const meetingFormSchema = z.object({
 	weekDays: z.set(z.enum(WEEKDAYS)),
 	monthlyOn: z.enum(["same_day", "same_weekday"]),
 	untilType: z.enum(["indefinite", "num_repetitions", "date"]),
-	untilDate: z.date(),
+	untilDate: ZodZonedDateTime,
 	numRepetitions: z.number().min(1),
 });
 

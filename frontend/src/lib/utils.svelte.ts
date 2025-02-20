@@ -1,20 +1,15 @@
 import {
-	createQuery,
-	Query,
-	QueryClient,
 	QueryObserver,
 	useQueryClient,
-	type DefaultError,
-	type DefinedInitialDataOptions,
 	type FetchStatus,
 	type FunctionedParams,
 	type QueryKey,
 	type QueryObserverResult,
-	type QueryOptions,
 	type UndefinedInitialDataOptions,
 } from "@tanstack/svelte-query";
-import { tryUnwrapApiError, type DateTimeAnchor, type ErrorDetail, type ErrorModel } from "./api";
-import { parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
+import { tryUnwrapApiError, type ErrorModel } from "./api";
+// import { parseAbsolute, parseAbsoluteToLocal } from "@internationalized/date";
+import { z } from "zod";
 
 export function debounce<T extends Function>(cb: T, wait = 100) {
 	let timeout: ReturnType<typeof setTimeout>;
@@ -55,6 +50,22 @@ export const onQueryUpdate = <D, E extends Error, K extends QueryKey>(
 		};
 	});
 };
+
+const refineZonedDateTimeString = (dateStr: string) => {
+	try {
+		const [datePart, timezonePart] = dateStr.split("[");
+		if (!datePart || !timezonePart?.endsWith("]")) return false;
+
+		const isoDateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/;
+		return isoDateTimeRegex.test(datePart) &&
+			/^[A-Za-z_/]+$/.test(timezonePart.slice(0, -1));
+	} catch {
+		return false;
+	}
+}
+
+export const ZodZonedDateTime = z.string().
+	refine(refineZonedDateTimeString, "Invalid ZonedDateTime format");
 
 // export const convertDateTimeAnchor = (a: DateTimeAnchor) => {
 // 	return parseAbsolute(`${a.date.toISOString().split("T")[0]}T${a.time}Z`, a.timezone).toDate();

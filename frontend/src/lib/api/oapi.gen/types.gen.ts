@@ -161,13 +161,6 @@ export type CreateIncidentFieldOptionAttributes = {
     value: string;
 };
 
-export type fieldOptionType = 'custom' | 'derived';
-
-export const fieldOptionType = {
-    CUSTOM: 'custom',
-    DERIVED: 'derived'
-} as const;
-
 export type CreateIncidentFieldRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -328,24 +321,9 @@ export type CreateMeetingScheduleAttributes = {
     repeats: 'daily' | 'weekly' | 'monthly';
     repetitionStep: number;
     sessionTitle: string;
-    startsAt: DateTimeAnchor;
+    startsAt: string;
     untilDate?: string;
 };
-
-export type repeatMonthlyOn = 'same_day' | 'same_weekday';
-
-export const repeatMonthlyOn = {
-    SAME_DAY: 'same_day',
-    SAME_WEEKDAY: 'same_weekday'
-} as const;
-
-export type repeats = 'daily' | 'weekly' | 'monthly';
-
-export const repeats = {
-    DAILY: 'daily',
-    WEEKLY: 'weekly',
-    MONTHLY: 'monthly'
-} as const;
 
 export type CreateMeetingScheduleRequestBody = {
     /**
@@ -368,7 +346,7 @@ export type CreateMeetingSessionAttributes = {
     description?: string;
     documentTemplateId?: string;
     durationMinutes: number;
-    startsAt: DateTimeAnchor;
+    startsAt: string;
     title: string;
 };
 
@@ -397,15 +375,6 @@ export type CreateOncallShiftAnnotationRequestAttributes = {
     pinned: boolean;
     title: string;
 };
-
-export type eventKind = 'incident' | 'alert' | 'toil' | 'ping';
-
-export const eventKind = {
-    INCIDENT: 'incident',
-    ALERT: 'alert',
-    TOIL: 'toil',
-    PING: 'ping'
-} as const;
 
 export type CreateOncallShiftAnnotationRequestBody = {
     /**
@@ -480,7 +449,7 @@ export type CreateRetrospectiveReviewResponseBody = {
 };
 
 export type CreateSystemAnalysisRelationshipAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type CreateSystemAnalysisRelationshipRequestBody = {
@@ -640,12 +609,6 @@ export type CreateTeamResponseBody = {
      */
     readonly $schema?: string;
     data: Team;
-};
-
-export type DateTimeAnchor = {
-    date: string;
-    time: string;
-    timezone: string;
 };
 
 export type DocumentEditorSession = {
@@ -1039,28 +1002,12 @@ export type IncidentAttributes = {
     type: IncidentType;
 };
 
-export type currentStatus = 'started' | 'mitigated' | 'resolved' | 'closed';
-
-export const currentStatus = {
-    STARTED: 'started',
-    MITIGATED: 'mitigated',
-    RESOLVED: 'resolved',
-    CLOSED: 'closed'
-} as const;
-
 export type IncidentChatChannel = {
     id: string;
     private: boolean;
     provider: 'slack' | 'ms_teams';
     url: string;
 };
-
-export type provider = 'slack' | 'ms_teams';
-
-export const provider = {
-    SLACK: 'slack',
-    MS_TEAMS: 'ms_teams'
-} as const;
 
 export type IncidentDebrief = {
     attributes: IncidentDebriefAttributes;
@@ -1084,14 +1031,6 @@ export type IncidentDebriefMessageAttributes = {
     createdAt: string;
     type: 'user' | 'assistant' | 'question';
 };
-
-export type type = 'user' | 'assistant' | 'question';
-
-export const type = {
-    USER: 'user',
-    ASSISTANT: 'assistant',
-    QUESTION: 'question'
-} as const;
 
 export type IncidentDebriefQuestion = {
     attributes: IncidentDebriefQuestionAttributes;
@@ -1131,15 +1070,6 @@ export type IncidentEventAttributes = {
     title: string;
 };
 
-export type kind = 'observation' | 'action' | 'decision' | 'context';
-
-export const kind = {
-    OBSERVATION: 'observation',
-    ACTION: 'action',
-    DECISION: 'decision',
-    CONTEXT: 'context'
-} as const;
-
 export type IncidentEventContributingFactor = {
     attributes: IncidentEventContributingFactorAttributes;
     id: string;
@@ -1148,7 +1078,7 @@ export type IncidentEventContributingFactor = {
 export type IncidentEventContributingFactorAttributes = {
     description: string;
     factorTypeId: string;
-    links: Array<(string)>;
+    links: Array<string>;
 };
 
 export type IncidentEventContributingFactorCategory = {
@@ -1169,14 +1099,14 @@ export type IncidentEventContributingFactorType = {
 
 export type IncidentEventContributingFactorTypeAttributes = {
     description: string;
-    examples: Array<(string)>;
+    examples: Array<string>;
     name: string;
 };
 
 export type IncidentEventDecisionContext = {
-    constraints: Array<(string)>;
+    constraints: Array<string>;
     decisionRationale: string;
-    optionsConsidered: Array<(string)>;
+    optionsConsidered: Array<string>;
 };
 
 export type IncidentEventEvidence = {
@@ -1186,7 +1116,7 @@ export type IncidentEventEvidence = {
 
 export type IncidentEventEvidenceAttributes = {
     properties?: {
-        [key: string]: (string);
+        [key: string]: string;
     };
     source: string;
     value: string;
@@ -1228,28 +1158,12 @@ export type IncidentFieldOptionAttributes = {
     value: string;
 };
 
-export type optionType = 'custom' | 'derived';
-
-export const optionType = {
-    CUSTOM: 'custom',
-    DERIVED: 'derived'
-} as const;
-
 export type IncidentLink = {
     incidentId: string;
     incidentSummary: string;
     incidentTitle: string;
     linkType: 'duplicate_of' | 'parent' | 'sibling' | 'child';
 };
-
-export type linkType = 'duplicate_of' | 'parent' | 'sibling' | 'child';
-
-export const linkType = {
-    DUPLICATE_OF: 'duplicate_of',
-    PARENT: 'parent',
-    SIBLING: 'sibling',
-    CHILD: 'child'
-} as const;
 
 export type IncidentMilestone = {
     attributes: IncidentMilestoneAttributes;
@@ -1324,7 +1238,7 @@ export type IncidentTypeAttributes = {
 };
 
 export type Integration = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type ListEnvironmentsResponseBody = {
@@ -1424,15 +1338,6 @@ export type ListIncidentSeveritiesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIncidentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Incident>;
-    pagination: ResponsePagination;
-};
-
 export type ListIncidentTagsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1448,6 +1353,15 @@ export type ListIncidentTypesResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentType>;
+    pagination: ResponsePagination;
+};
+
+export type ListIncidentsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Incident>;
     pagination: ResponsePagination;
 };
 
@@ -1633,8 +1547,8 @@ export type ListUsersResponseBody = {
 
 export type MeetingAttendees = {
     private: boolean;
-    teams: Array<(string)>;
-    users: Array<(string)>;
+    teams: Array<string>;
+    users: Array<string>;
 };
 
 export type MeetingSchedule = {
@@ -1661,14 +1575,6 @@ export type MeetingScheduleTiming = {
     untilDate?: string;
     untilNumRepetitions?: number;
 };
-
-export type repeat = 'daily' | 'weekly' | 'monthly';
-
-export const repeat = {
-    DAILY: 'daily',
-    WEEKLY: 'weekly',
-    MONTHLY: 'monthly'
-} as const;
 
 export type MeetingSession = {
     attributes: MeetingSessionAttributes;
@@ -1744,15 +1650,6 @@ export type OncallShiftAnnotationAttributes = {
     title: string;
 };
 
-export type kind2 = 'incident' | 'alert' | 'toil' | 'ping';
-
-export const kind2 = {
-    INCIDENT: 'incident',
-    ALERT: 'alert',
-    TOIL: 'toil',
-    PING: 'ping'
-} as const;
-
 export type OncallShiftAttributes = {
     covers: Array<OncallShiftCover>;
     endAt: string;
@@ -1792,14 +1689,6 @@ export type OncallShiftHandoverSection = {
     kind: 'regular' | 'annotations' | 'incidents';
 };
 
-export type kind3 = 'regular' | 'annotations' | 'incidents';
-
-export const kind3 = {
-    REGULAR: 'regular',
-    ANNOTATIONS: 'annotations',
-    INCIDENTS: 'incidents'
-} as const;
-
 export type OncallShiftHandoverTemplate = {
     attributes: OncallShiftHandoverTemplateAttributes;
     id: string;
@@ -1814,14 +1703,6 @@ export type OncallShiftHandoverTemplateSection = {
     list: boolean;
     type: 'regular' | 'annotations' | 'incidents';
 };
-
-export type type2 = 'regular' | 'annotations' | 'incidents';
-
-export const type2 = {
-    REGULAR: 'regular',
-    ANNOTATIONS: 'annotations',
-    INCIDENTS: 'incidents'
-} as const;
 
 export type RequestDocumentEditorSessionAttributes = {
     documentName: string;
@@ -1860,22 +1741,6 @@ export type RetrospectiveAttributes = {
     type: 'quick' | 'full';
 };
 
-export type state = 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
-
-export const state = {
-    DRAFT: 'draft',
-    IN_REVIEW: 'in_review',
-    MEETING_SCHEDULED: 'meeting_scheduled',
-    COMPLETED: 'completed'
-} as const;
-
-export type type3 = 'quick' | 'full';
-
-export const type3 = {
-    QUICK: 'quick',
-    FULL: 'full'
-} as const;
-
 export type RetrospectiveDiscussion = {
     attributes: RetrospectiveDiscussionAttributes;
     id: string;
@@ -1904,7 +1769,7 @@ export type RetrospectiveReview = {
 };
 
 export type RetrospectiveReviewAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type RetrospectiveSection = {
@@ -1913,13 +1778,6 @@ export type RetrospectiveSection = {
     title: string;
     type: 'field' | 'timeline';
 };
-
-export type type4 = 'field' | 'timeline';
-
-export const type4 = {
-    FIELD: 'field',
-    TIMELINE: 'timeline'
-} as const;
 
 export type SendOncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
@@ -2011,9 +1869,7 @@ export type SystemComponentAttributes = {
     description: string;
     kind: SystemComponentKind;
     name: string;
-    properties: {
-        [key: string]: unknown;
-    };
+    properties: {};
     signals: Array<SystemComponentSignal>;
 };
 
@@ -2099,7 +1955,7 @@ export type UpdateEnvironmentResponseBody = {
 };
 
 export type UpdateFunctionalityAttributes = {
-    name: (string) | null;
+    name: string;
 };
 
 export type UpdateFunctionalityRequestBody = {
@@ -2119,7 +1975,7 @@ export type UpdateFunctionalityResponseBody = {
 };
 
 export type UpdateIncidentAttributes = {
-    environments?: Array<(string)>;
+    environments?: Array<string>;
     private?: boolean;
     severityId?: string;
     summary?: string;
@@ -2129,13 +1985,6 @@ export type UpdateIncidentAttributes = {
 export type UpdateIncidentDebriefAttributes = {
     status: 'started' | 'completed';
 };
-
-export type status = 'started' | 'completed';
-
-export const status = {
-    STARTED: 'started',
-    COMPLETED: 'completed'
-} as const;
 
 export type UpdateIncidentDebriefQuestionAttributes = {
     content?: string;
@@ -2351,7 +2200,7 @@ export type UpdateIncidentTypeResponseBody = {
 };
 
 export type UpdateIntegrationAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateIntegrationRequestBody = {
@@ -2371,7 +2220,7 @@ export type UpdateIntegrationResponseBody = {
 };
 
 export type UpdateMeetingScheduleAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateMeetingScheduleRequestBody = {
@@ -2391,7 +2240,7 @@ export type UpdateMeetingScheduleResponseBody = {
 };
 
 export type UpdateMeetingSessionAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateMeetingSessionRequestBody = {
@@ -2473,7 +2322,7 @@ export type UpdateRetrospectiveDiscussionResponseBody = {
 };
 
 export type UpdateRetrospectiveReviewRequestAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateRetrospectiveReviewRequestBody = {
@@ -2513,7 +2362,7 @@ export type UpdateSystemAnalysisComponentResponseBody = {
 };
 
 export type UpdateSystemAnalysisRelationshipAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateSystemAnalysisRelationshipRequestBody = {
@@ -2533,7 +2382,7 @@ export type UpdateSystemAnalysisRelationshipResponseBody = {
 };
 
 export type UpdateSystemComponentAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateSystemComponentConstraintAttributes = {
@@ -2579,7 +2428,7 @@ export type UpdateSystemComponentControlResponseBody = {
 };
 
 export type UpdateSystemComponentKindAttributes = {
-    [key: string]: unknown;
+    [key: string]: never;
 };
 
 export type UpdateSystemComponentKindRequestBody = {
@@ -2636,7 +2485,7 @@ export type UpdateSystemComponentSignalResponseBody = {
 };
 
 export type UpdateTaskAttributes = {
-    name?: (string) | null;
+    name?: string;
 };
 
 export type UpdateTaskRequestBody = {
@@ -2656,7 +2505,7 @@ export type UpdateTaskResponseBody = {
 };
 
 export type UpdateTeamAttributes = {
-    name: (string) | null;
+    name: string;
 };
 
 export type UpdateTeamRequestBody = {
@@ -2735,1186 +2584,5188 @@ export type VerifyDocumentEditorSessionResponseBody = {
 };
 
 export type ListDebriefQuestionsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/debrief_questions';
 };
 
-export type ListDebriefQuestionsResponse = (ListIncidentDebriefQuestionsResponseBody);
+export type ListDebriefQuestionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListDebriefQuestionsError = (ErrorModel);
+export type ListDebriefQuestionsError = ListDebriefQuestionsErrors[keyof ListDebriefQuestionsErrors];
+
+export type ListDebriefQuestionsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentDebriefQuestionsResponseBody;
+};
+
+export type ListDebriefQuestionsResponse = ListDebriefQuestionsResponses[keyof ListDebriefQuestionsResponses];
 
 export type CreateDebriefQuestionData = {
     body: CreateIncidentDebriefQuestionRequestBody;
+    path?: never;
+    query?: never;
+    url: '/debrief_questions';
 };
 
-export type CreateDebriefQuestionResponse = (CreateIncidentDebriefQuestionResponseBody);
-
-export type CreateDebriefQuestionError = (ErrorModel);
-
-export type GetDebriefQuestionData = {
-    path: {
-        id: string;
-    };
+export type CreateDebriefQuestionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetDebriefQuestionResponse = (GetIncidentDebriefQuestionResponseBody);
+export type CreateDebriefQuestionError = CreateDebriefQuestionErrors[keyof CreateDebriefQuestionErrors];
 
-export type GetDebriefQuestionError = (ErrorModel);
+export type CreateDebriefQuestionResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentDebriefQuestionResponseBody;
+};
+
+export type CreateDebriefQuestionResponse = CreateDebriefQuestionResponses[keyof CreateDebriefQuestionResponses];
 
 export type ArchiveDebriefQuestionData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/debrief_questions/{id}';
 };
 
-export type ArchiveDebriefQuestionResponse = (void);
+export type ArchiveDebriefQuestionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveDebriefQuestionError = (ErrorModel);
+export type ArchiveDebriefQuestionError = ArchiveDebriefQuestionErrors[keyof ArchiveDebriefQuestionErrors];
+
+export type ArchiveDebriefQuestionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveDebriefQuestionResponse = ArchiveDebriefQuestionResponses[keyof ArchiveDebriefQuestionResponses];
+
+export type GetDebriefQuestionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/debrief_questions/{id}';
+};
+
+export type GetDebriefQuestionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetDebriefQuestionError = GetDebriefQuestionErrors[keyof GetDebriefQuestionErrors];
+
+export type GetDebriefQuestionResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentDebriefQuestionResponseBody;
+};
+
+export type GetDebriefQuestionResponse = GetDebriefQuestionResponses[keyof GetDebriefQuestionResponses];
 
 export type UpdateDebriefQuestionData = {
     body: UpdateIncidentDebriefQuestionRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/debrief_questions/{id}';
 };
 
-export type UpdateDebriefQuestionResponse = (UpdateIncidentDebriefQuestionResponseBody);
+export type UpdateDebriefQuestionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateDebriefQuestionError = (ErrorModel);
+export type UpdateDebriefQuestionError = UpdateDebriefQuestionErrors[keyof UpdateDebriefQuestionErrors];
+
+export type UpdateDebriefQuestionResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentDebriefQuestionResponseBody;
+};
+
+export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
 export type RequestDocumentEditorSessionData = {
     body: RequestDocumentEditorSessionRequestBody;
+    path?: never;
+    query?: never;
+    url: '/documents/session/new';
 };
 
-export type RequestDocumentEditorSessionResponse = (RequestDocumentEditorSessionResponseBody);
+export type RequestDocumentEditorSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type RequestDocumentEditorSessionError = (ErrorModel);
+export type RequestDocumentEditorSessionError = RequestDocumentEditorSessionErrors[keyof RequestDocumentEditorSessionErrors];
+
+export type RequestDocumentEditorSessionResponses = {
+    /**
+     * OK
+     */
+    200: RequestDocumentEditorSessionResponseBody;
+};
+
+export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
 
 export type VerifyDocumentEditorSessionData = {
     body: VerifyDocumentEditorSessionRequestBody;
+    path?: never;
+    query?: never;
+    url: '/documents/session/verify';
 };
 
-export type VerifyDocumentEditorSessionResponse = (VerifyDocumentEditorSessionResponseBody);
+export type VerifyDocumentEditorSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type VerifyDocumentEditorSessionError = (ErrorModel);
+export type VerifyDocumentEditorSessionError = VerifyDocumentEditorSessionErrors[keyof VerifyDocumentEditorSessionErrors];
+
+export type VerifyDocumentEditorSessionResponses = {
+    /**
+     * OK
+     */
+    200: VerifyDocumentEditorSessionResponseBody;
+};
+
+export type VerifyDocumentEditorSessionResponse = VerifyDocumentEditorSessionResponses[keyof VerifyDocumentEditorSessionResponses];
 
 export type ListEnvironmentsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/environments';
 };
 
-export type ListEnvironmentsResponse = (ListEnvironmentsResponseBody);
+export type ListEnvironmentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListEnvironmentsError = (ErrorModel);
+export type ListEnvironmentsError = ListEnvironmentsErrors[keyof ListEnvironmentsErrors];
+
+export type ListEnvironmentsResponses = {
+    /**
+     * OK
+     */
+    200: ListEnvironmentsResponseBody;
+};
+
+export type ListEnvironmentsResponse = ListEnvironmentsResponses[keyof ListEnvironmentsResponses];
 
 export type CreateEnvironmentData = {
     body: CreateEnvironmentRequestBody;
+    path?: never;
+    query?: never;
+    url: '/environments';
 };
 
-export type CreateEnvironmentResponse = (CreateEnvironmentResponseBody);
-
-export type CreateEnvironmentError = (ErrorModel);
-
-export type GetEnvironmentData = {
-    path: {
-        id: string;
-    };
+export type CreateEnvironmentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetEnvironmentResponse = (GetEnvironmentResponseBody);
+export type CreateEnvironmentError = CreateEnvironmentErrors[keyof CreateEnvironmentErrors];
 
-export type GetEnvironmentError = (ErrorModel);
+export type CreateEnvironmentResponses = {
+    /**
+     * OK
+     */
+    200: CreateEnvironmentResponseBody;
+};
+
+export type CreateEnvironmentResponse = CreateEnvironmentResponses[keyof CreateEnvironmentResponses];
 
 export type ArchiveEnvironmentData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/environments/{id}';
 };
 
-export type ArchiveEnvironmentResponse = (void);
+export type ArchiveEnvironmentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveEnvironmentError = (ErrorModel);
+export type ArchiveEnvironmentError = ArchiveEnvironmentErrors[keyof ArchiveEnvironmentErrors];
+
+export type ArchiveEnvironmentResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveEnvironmentResponse = ArchiveEnvironmentResponses[keyof ArchiveEnvironmentResponses];
+
+export type GetEnvironmentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/environments/{id}';
+};
+
+export type GetEnvironmentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetEnvironmentError = GetEnvironmentErrors[keyof GetEnvironmentErrors];
+
+export type GetEnvironmentResponses = {
+    /**
+     * OK
+     */
+    200: GetEnvironmentResponseBody;
+};
+
+export type GetEnvironmentResponse = GetEnvironmentResponses[keyof GetEnvironmentResponses];
 
 export type UpdateEnvironmentData = {
     body: UpdateEnvironmentRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/environments/{id}';
 };
 
-export type UpdateEnvironmentResponse = (UpdateEnvironmentResponseBody);
+export type UpdateEnvironmentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateEnvironmentError = (ErrorModel);
+export type UpdateEnvironmentError = UpdateEnvironmentErrors[keyof UpdateEnvironmentErrors];
+
+export type UpdateEnvironmentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateEnvironmentResponseBody;
+};
+
+export type UpdateEnvironmentResponse = UpdateEnvironmentResponses[keyof UpdateEnvironmentResponses];
 
 export type ListFunctionalitiesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/functionalities';
 };
 
-export type ListFunctionalitiesResponse = (ListFunctionalitiesResponseBody);
+export type ListFunctionalitiesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListFunctionalitiesError = (ErrorModel);
+export type ListFunctionalitiesError = ListFunctionalitiesErrors[keyof ListFunctionalitiesErrors];
+
+export type ListFunctionalitiesResponses = {
+    /**
+     * OK
+     */
+    200: ListFunctionalitiesResponseBody;
+};
+
+export type ListFunctionalitiesResponse = ListFunctionalitiesResponses[keyof ListFunctionalitiesResponses];
 
 export type CreateFunctionalityData = {
     body: CreateFunctionalityRequestBody;
+    path?: never;
+    query?: never;
+    url: '/functionalities';
 };
 
-export type CreateFunctionalityResponse = (CreateFunctionalityResponseBody);
-
-export type CreateFunctionalityError = (ErrorModel);
-
-export type GetFunctionalityData = {
-    path: {
-        id: string;
-    };
+export type CreateFunctionalityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetFunctionalityResponse = (GetFunctionalityResponseBody);
+export type CreateFunctionalityError = CreateFunctionalityErrors[keyof CreateFunctionalityErrors];
 
-export type GetFunctionalityError = (ErrorModel);
+export type CreateFunctionalityResponses = {
+    /**
+     * OK
+     */
+    200: CreateFunctionalityResponseBody;
+};
+
+export type CreateFunctionalityResponse = CreateFunctionalityResponses[keyof CreateFunctionalityResponses];
 
 export type ArchiveFunctionalityData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/functionalities/{id}';
 };
 
-export type ArchiveFunctionalityResponse = (void);
+export type ArchiveFunctionalityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveFunctionalityError = (ErrorModel);
+export type ArchiveFunctionalityError = ArchiveFunctionalityErrors[keyof ArchiveFunctionalityErrors];
+
+export type ArchiveFunctionalityResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveFunctionalityResponse = ArchiveFunctionalityResponses[keyof ArchiveFunctionalityResponses];
+
+export type GetFunctionalityData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/functionalities/{id}';
+};
+
+export type GetFunctionalityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetFunctionalityError = GetFunctionalityErrors[keyof GetFunctionalityErrors];
+
+export type GetFunctionalityResponses = {
+    /**
+     * OK
+     */
+    200: GetFunctionalityResponseBody;
+};
+
+export type GetFunctionalityResponse = GetFunctionalityResponses[keyof GetFunctionalityResponses];
 
 export type UpdateFunctionalityData = {
     body: UpdateFunctionalityRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/functionalities/{id}';
 };
 
-export type UpdateFunctionalityResponse = (UpdateFunctionalityResponseBody);
+export type UpdateFunctionalityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateFunctionalityError = (ErrorModel);
+export type UpdateFunctionalityError = UpdateFunctionalityErrors[keyof UpdateFunctionalityErrors];
+
+export type UpdateFunctionalityResponses = {
+    /**
+     * OK
+     */
+    200: UpdateFunctionalityResponseBody;
+};
+
+export type UpdateFunctionalityResponse = UpdateFunctionalityResponses[keyof UpdateFunctionalityResponses];
 
 export type GetIncidentDebriefData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_debriefs/{id}';
 };
 
-export type GetIncidentDebriefResponse = (GetIncidentDebriefResponseBody);
+export type GetIncidentDebriefErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetIncidentDebriefError = (ErrorModel);
+export type GetIncidentDebriefError = GetIncidentDebriefErrors[keyof GetIncidentDebriefErrors];
+
+export type GetIncidentDebriefResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentDebriefResponseBody;
+};
+
+export type GetIncidentDebriefResponse = GetIncidentDebriefResponses[keyof GetIncidentDebriefResponses];
 
 export type UpdateIncidentDebriefData = {
     body: UpdateIncidentDebriefRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_debriefs/{id}';
 };
 
-export type UpdateIncidentDebriefResponse = (UpdateIncidentDebriefResponseBody);
+export type UpdateIncidentDebriefErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentDebriefError = (ErrorModel);
+export type UpdateIncidentDebriefError = UpdateIncidentDebriefErrors[keyof UpdateIncidentDebriefErrors];
+
+export type UpdateIncidentDebriefResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentDebriefResponseBody;
+};
+
+export type UpdateIncidentDebriefResponse = UpdateIncidentDebriefResponses[keyof UpdateIncidentDebriefResponses];
 
 export type ListDebriefMessagesData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_debriefs/{id}/messages';
 };
 
-export type ListDebriefMessagesResponse = (ListIncidentDebriefMessagesResponseBody);
+export type ListDebriefMessagesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListDebriefMessagesError = (ErrorModel);
+export type ListDebriefMessagesError = ListDebriefMessagesErrors[keyof ListDebriefMessagesErrors];
+
+export type ListDebriefMessagesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentDebriefMessagesResponseBody;
+};
+
+export type ListDebriefMessagesResponse = ListDebriefMessagesResponses[keyof ListDebriefMessagesResponses];
 
 export type AddIncidentDebriefUserMessageData = {
     body: AddIncidentDebriefUserMessageRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_debriefs/{id}/messages';
 };
 
-export type AddIncidentDebriefUserMessageResponse = (AddIncidentDebriefUserMessageResponseBody);
+export type AddIncidentDebriefUserMessageErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type AddIncidentDebriefUserMessageError = (ErrorModel);
+export type AddIncidentDebriefUserMessageError = AddIncidentDebriefUserMessageErrors[keyof AddIncidentDebriefUserMessageErrors];
+
+export type AddIncidentDebriefUserMessageResponses = {
+    /**
+     * OK
+     */
+    200: AddIncidentDebriefUserMessageResponseBody;
+};
+
+export type AddIncidentDebriefUserMessageResponse = AddIncidentDebriefUserMessageResponses[keyof AddIncidentDebriefUserMessageResponses];
 
 export type ListDebriefSuggestionsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_debriefs/{id}/suggestions';
 };
 
-export type ListDebriefSuggestionsResponse = (ListIncidentDebriefSuggestionsResponseBody);
+export type ListDebriefSuggestionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListDebriefSuggestionsError = (ErrorModel);
+export type ListDebriefSuggestionsError = ListDebriefSuggestionsErrors[keyof ListDebriefSuggestionsErrors];
+
+export type ListDebriefSuggestionsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentDebriefSuggestionsResponseBody;
+};
+
+export type ListDebriefSuggestionsResponse = ListDebriefSuggestionsResponses[keyof ListDebriefSuggestionsResponses];
 
 export type ListIncidentEventContributingFactorCategoriesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_event_contributing_factor_categories';
 };
 
-export type ListIncidentEventContributingFactorCategoriesResponse = (ListIncidentEventContributingFactorsResponseBody);
+export type ListIncidentEventContributingFactorCategoriesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentEventContributingFactorCategoriesError = (ErrorModel);
+export type ListIncidentEventContributingFactorCategoriesError = ListIncidentEventContributingFactorCategoriesErrors[keyof ListIncidentEventContributingFactorCategoriesErrors];
+
+export type ListIncidentEventContributingFactorCategoriesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentEventContributingFactorsResponseBody;
+};
+
+export type ListIncidentEventContributingFactorCategoriesResponse = ListIncidentEventContributingFactorCategoriesResponses[keyof ListIncidentEventContributingFactorCategoriesResponses];
 
 export type DeleteIncidentEventData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_events/{id}';
 };
 
-export type DeleteIncidentEventResponse = (void);
+export type DeleteIncidentEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type DeleteIncidentEventError = (ErrorModel);
+export type DeleteIncidentEventError = DeleteIncidentEventErrors[keyof DeleteIncidentEventErrors];
+
+export type DeleteIncidentEventResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteIncidentEventResponse = DeleteIncidentEventResponses[keyof DeleteIncidentEventResponses];
 
 export type UpdateIncidentEventData = {
     body: UpdateIncidentEventRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_events/{id}';
 };
 
-export type UpdateIncidentEventResponse = (UpdateIncidentEventResponseBody);
+export type UpdateIncidentEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentEventError = (ErrorModel);
+export type UpdateIncidentEventError = UpdateIncidentEventErrors[keyof UpdateIncidentEventErrors];
+
+export type UpdateIncidentEventResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentEventResponseBody;
+};
+
+export type UpdateIncidentEventResponse = UpdateIncidentEventResponses[keyof UpdateIncidentEventResponses];
 
 export type ListIncidentFieldsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_fields';
 };
 
-export type ListIncidentFieldsResponse = (ListIncidentFieldsResponseBody);
+export type ListIncidentFieldsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentFieldsError = (ErrorModel);
+export type ListIncidentFieldsError = ListIncidentFieldsErrors[keyof ListIncidentFieldsErrors];
+
+export type ListIncidentFieldsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentFieldsResponseBody;
+};
+
+export type ListIncidentFieldsResponse = ListIncidentFieldsResponses[keyof ListIncidentFieldsResponses];
 
 export type CreateIncidentFieldData = {
     body: CreateIncidentFieldRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_fields';
 };
 
-export type CreateIncidentFieldResponse = (CreateIncidentFieldResponseBody);
-
-export type CreateIncidentFieldError = (ErrorModel);
-
-export type GetIncidentFieldData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentFieldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentFieldResponse = (GetIncidentFieldResponseBody);
+export type CreateIncidentFieldError = CreateIncidentFieldErrors[keyof CreateIncidentFieldErrors];
 
-export type GetIncidentFieldError = (ErrorModel);
+export type CreateIncidentFieldResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentFieldResponseBody;
+};
+
+export type CreateIncidentFieldResponse = CreateIncidentFieldResponses[keyof CreateIncidentFieldResponses];
 
 export type ArchiveIncidentFieldData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_fields/{id}';
 };
 
-export type ArchiveIncidentFieldResponse = (void);
+export type ArchiveIncidentFieldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentFieldError = (ErrorModel);
+export type ArchiveIncidentFieldError = ArchiveIncidentFieldErrors[keyof ArchiveIncidentFieldErrors];
+
+export type ArchiveIncidentFieldResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentFieldResponse = ArchiveIncidentFieldResponses[keyof ArchiveIncidentFieldResponses];
+
+export type GetIncidentFieldData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_fields/{id}';
+};
+
+export type GetIncidentFieldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentFieldError = GetIncidentFieldErrors[keyof GetIncidentFieldErrors];
+
+export type GetIncidentFieldResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentFieldResponseBody;
+};
+
+export type GetIncidentFieldResponse = GetIncidentFieldResponses[keyof GetIncidentFieldResponses];
 
 export type UpdateIncidentFieldData = {
     body: UpdateIncidentFieldRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_fields/{id}';
 };
 
-export type UpdateIncidentFieldResponse = (UpdateIncidentFieldResponseBody);
+export type UpdateIncidentFieldErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentFieldError = (ErrorModel);
+export type UpdateIncidentFieldError = UpdateIncidentFieldErrors[keyof UpdateIncidentFieldErrors];
+
+export type UpdateIncidentFieldResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentFieldResponseBody;
+};
+
+export type UpdateIncidentFieldResponse = UpdateIncidentFieldResponses[keyof UpdateIncidentFieldResponses];
 
 export type ArchiveIncidentMilestoneData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_milestones/{id}';
 };
 
-export type ArchiveIncidentMilestoneResponse = (void);
+export type ArchiveIncidentMilestoneErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentMilestoneError = (ErrorModel);
+export type ArchiveIncidentMilestoneError = ArchiveIncidentMilestoneErrors[keyof ArchiveIncidentMilestoneErrors];
+
+export type ArchiveIncidentMilestoneResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentMilestoneResponse = ArchiveIncidentMilestoneResponses[keyof ArchiveIncidentMilestoneResponses];
 
 export type UpdateIncidentMilestoneData = {
     body: UpdateIncidentMilestoneRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_milestones/{id}';
 };
 
-export type UpdateIncidentMilestoneResponse = (UpdateIncidentMilestoneResponseBody);
+export type UpdateIncidentMilestoneErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentMilestoneError = (ErrorModel);
+export type UpdateIncidentMilestoneError = UpdateIncidentMilestoneErrors[keyof UpdateIncidentMilestoneErrors];
+
+export type UpdateIncidentMilestoneResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentMilestoneResponseBody;
+};
+
+export type UpdateIncidentMilestoneResponse = UpdateIncidentMilestoneResponses[keyof UpdateIncidentMilestoneResponses];
 
 export type ListIncidentRolesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_roles';
 };
 
-export type ListIncidentRolesResponse = (ListIncidentRolesResponseBody);
+export type ListIncidentRolesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentRolesError = (ErrorModel);
+export type ListIncidentRolesError = ListIncidentRolesErrors[keyof ListIncidentRolesErrors];
+
+export type ListIncidentRolesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentRolesResponseBody;
+};
+
+export type ListIncidentRolesResponse = ListIncidentRolesResponses[keyof ListIncidentRolesResponses];
 
 export type CreateIncidentRoleData = {
     body: CreateIncidentRoleRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_roles';
 };
 
-export type CreateIncidentRoleResponse = (CreateIncidentRoleResponseBody);
-
-export type CreateIncidentRoleError = (ErrorModel);
-
-export type GetIncidentRoleData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentRoleResponse = (GetIncidentRoleResponseBody);
+export type CreateIncidentRoleError = CreateIncidentRoleErrors[keyof CreateIncidentRoleErrors];
 
-export type GetIncidentRoleError = (ErrorModel);
+export type CreateIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentRoleResponseBody;
+};
+
+export type CreateIncidentRoleResponse = CreateIncidentRoleResponses[keyof CreateIncidentRoleResponses];
 
 export type ArchiveIncidentRoleData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_roles/{id}';
 };
 
-export type ArchiveIncidentRoleResponse = (void);
+export type ArchiveIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentRoleError = (ErrorModel);
+export type ArchiveIncidentRoleError = ArchiveIncidentRoleErrors[keyof ArchiveIncidentRoleErrors];
+
+export type ArchiveIncidentRoleResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentRoleResponse = ArchiveIncidentRoleResponses[keyof ArchiveIncidentRoleResponses];
+
+export type GetIncidentRoleData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_roles/{id}';
+};
+
+export type GetIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentRoleError = GetIncidentRoleErrors[keyof GetIncidentRoleErrors];
+
+export type GetIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentRoleResponseBody;
+};
+
+export type GetIncidentRoleResponse = GetIncidentRoleResponses[keyof GetIncidentRoleResponses];
 
 export type UpdateIncidentRoleData = {
     body: UpdateIncidentRoleRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_roles/{id}';
 };
 
-export type UpdateIncidentRoleResponse = (UpdateIncidentRoleResponseBody);
+export type UpdateIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentRoleError = (ErrorModel);
+export type UpdateIncidentRoleError = UpdateIncidentRoleErrors[keyof UpdateIncidentRoleErrors];
+
+export type UpdateIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentRoleResponseBody;
+};
+
+export type UpdateIncidentRoleResponse = UpdateIncidentRoleResponses[keyof UpdateIncidentRoleResponses];
 
 export type ListIncidentSeveritiesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_severities';
 };
 
-export type ListIncidentSeveritiesResponse = (ListIncidentSeveritiesResponseBody);
+export type ListIncidentSeveritiesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentSeveritiesError = (ErrorModel);
+export type ListIncidentSeveritiesError = ListIncidentSeveritiesErrors[keyof ListIncidentSeveritiesErrors];
+
+export type ListIncidentSeveritiesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentSeveritiesResponseBody;
+};
+
+export type ListIncidentSeveritiesResponse = ListIncidentSeveritiesResponses[keyof ListIncidentSeveritiesResponses];
 
 export type CreateIncidentSeverityData = {
     body: CreateIncidentSeverityRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_severities';
 };
 
-export type CreateIncidentSeverityResponse = (CreateIncidentSeverityResponseBody);
-
-export type CreateIncidentSeverityError = (ErrorModel);
-
-export type GetIncidentSeverityData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentSeverityResponse = (GetIncidentSeverityResponseBody);
+export type CreateIncidentSeverityError = CreateIncidentSeverityErrors[keyof CreateIncidentSeverityErrors];
 
-export type GetIncidentSeverityError = (ErrorModel);
+export type CreateIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentSeverityResponseBody;
+};
+
+export type CreateIncidentSeverityResponse = CreateIncidentSeverityResponses[keyof CreateIncidentSeverityResponses];
 
 export type ArchiveIncidentSeverityData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_severities/{id}';
 };
 
-export type ArchiveIncidentSeverityResponse = (void);
+export type ArchiveIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentSeverityError = (ErrorModel);
+export type ArchiveIncidentSeverityError = ArchiveIncidentSeverityErrors[keyof ArchiveIncidentSeverityErrors];
+
+export type ArchiveIncidentSeverityResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentSeverityResponse = ArchiveIncidentSeverityResponses[keyof ArchiveIncidentSeverityResponses];
+
+export type GetIncidentSeverityData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_severities/{id}';
+};
+
+export type GetIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentSeverityError = GetIncidentSeverityErrors[keyof GetIncidentSeverityErrors];
+
+export type GetIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentSeverityResponseBody;
+};
+
+export type GetIncidentSeverityResponse = GetIncidentSeverityResponses[keyof GetIncidentSeverityResponses];
 
 export type UpdateIncidentSeverityData = {
     body: UpdateIncidentSeverityRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_severities/{id}';
 };
 
-export type UpdateIncidentSeverityResponse = (UpdateIncidentSeverityResponseBody);
+export type UpdateIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentSeverityError = (ErrorModel);
+export type UpdateIncidentSeverityError = UpdateIncidentSeverityErrors[keyof UpdateIncidentSeverityErrors];
+
+export type UpdateIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentSeverityResponseBody;
+};
+
+export type UpdateIncidentSeverityResponse = UpdateIncidentSeverityResponses[keyof UpdateIncidentSeverityResponses];
 
 export type ListIncidentTagsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_tags';
 };
 
-export type ListIncidentTagsResponse = (ListIncidentTagsResponseBody);
+export type ListIncidentTagsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentTagsError = (ErrorModel);
+export type ListIncidentTagsError = ListIncidentTagsErrors[keyof ListIncidentTagsErrors];
+
+export type ListIncidentTagsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentTagsResponseBody;
+};
+
+export type ListIncidentTagsResponse = ListIncidentTagsResponses[keyof ListIncidentTagsResponses];
 
 export type CreateIncidentTagData = {
     body: CreateIncidentTagRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_tags';
 };
 
-export type CreateIncidentTagResponse = (CreateIncidentTagResponseBody);
-
-export type CreateIncidentTagError = (ErrorModel);
-
-export type GetIncidentTagData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentTagResponse = (GetIncidentTagResponseBody);
+export type CreateIncidentTagError = CreateIncidentTagErrors[keyof CreateIncidentTagErrors];
 
-export type GetIncidentTagError = (ErrorModel);
+export type CreateIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentTagResponseBody;
+};
+
+export type CreateIncidentTagResponse = CreateIncidentTagResponses[keyof CreateIncidentTagResponses];
 
 export type ArchiveIncidentTagData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_tags/{id}';
 };
 
-export type ArchiveIncidentTagResponse = (void);
+export type ArchiveIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentTagError = (ErrorModel);
+export type ArchiveIncidentTagError = ArchiveIncidentTagErrors[keyof ArchiveIncidentTagErrors];
+
+export type ArchiveIncidentTagResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentTagResponse = ArchiveIncidentTagResponses[keyof ArchiveIncidentTagResponses];
+
+export type GetIncidentTagData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_tags/{id}';
+};
+
+export type GetIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentTagError = GetIncidentTagErrors[keyof GetIncidentTagErrors];
+
+export type GetIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentTagResponseBody;
+};
+
+export type GetIncidentTagResponse = GetIncidentTagResponses[keyof GetIncidentTagResponses];
 
 export type UpdateIncidentTagData = {
     body: UpdateIncidentTagRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_tags/{id}';
 };
 
-export type UpdateIncidentTagResponse = (UpdateIncidentTagResponseBody);
+export type UpdateIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentTagError = (ErrorModel);
+export type UpdateIncidentTagError = UpdateIncidentTagErrors[keyof UpdateIncidentTagErrors];
+
+export type UpdateIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentTagResponseBody;
+};
+
+export type UpdateIncidentTagResponse = UpdateIncidentTagResponses[keyof UpdateIncidentTagResponses];
 
 export type ListIncidentTypesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/incident_types';
 };
 
-export type ListIncidentTypesResponse = (ListIncidentTypesResponseBody);
+export type ListIncidentTypesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentTypesError = (ErrorModel);
+export type ListIncidentTypesError = ListIncidentTypesErrors[keyof ListIncidentTypesErrors];
+
+export type ListIncidentTypesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentTypesResponseBody;
+};
+
+export type ListIncidentTypesResponse = ListIncidentTypesResponses[keyof ListIncidentTypesResponses];
 
 export type CreateIncidentTypeData = {
     body: CreateIncidentTypeRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_types';
 };
 
-export type CreateIncidentTypeResponse = (CreateIncidentTypeResponseBody);
-
-export type CreateIncidentTypeError = (ErrorModel);
-
-export type GetIncidentTypeData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentTypeResponse = (GetIncidentTypeResponseBody);
+export type CreateIncidentTypeError = CreateIncidentTypeErrors[keyof CreateIncidentTypeErrors];
 
-export type GetIncidentTypeError = (ErrorModel);
+export type CreateIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentTypeResponseBody;
+};
+
+export type CreateIncidentTypeResponse = CreateIncidentTypeResponses[keyof CreateIncidentTypeResponses];
 
 export type ArchiveIncidentTypeData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_types/{id}';
 };
 
-export type ArchiveIncidentTypeResponse = (void);
+export type ArchiveIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentTypeError = (ErrorModel);
+export type ArchiveIncidentTypeError = ArchiveIncidentTypeErrors[keyof ArchiveIncidentTypeErrors];
+
+export type ArchiveIncidentTypeResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentTypeResponse = ArchiveIncidentTypeResponses[keyof ArchiveIncidentTypeResponses];
+
+export type GetIncidentTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_types/{id}';
+};
+
+export type GetIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentTypeError = GetIncidentTypeErrors[keyof GetIncidentTypeErrors];
+
+export type GetIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentTypeResponseBody;
+};
+
+export type GetIncidentTypeResponse = GetIncidentTypeResponses[keyof GetIncidentTypeResponses];
 
 export type UpdateIncidentTypeData = {
     body: UpdateIncidentTypeRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incident_types/{id}';
 };
 
-export type UpdateIncidentTypeResponse = (UpdateIncidentTypeResponseBody);
+export type UpdateIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentTypeError = (ErrorModel);
+export type UpdateIncidentTypeError = UpdateIncidentTypeErrors[keyof UpdateIncidentTypeErrors];
+
+export type UpdateIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentTypeResponseBody;
+};
+
+export type UpdateIncidentTypeResponse = UpdateIncidentTypeResponses[keyof UpdateIncidentTypeResponses];
 
 export type ListIncidentsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
         teamId?: string;
     };
+    url: '/incidents';
 };
 
-export type ListIncidentsResponse = (ListIncidentsResponseBody);
+export type ListIncidentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentsError = (ErrorModel);
+export type ListIncidentsError = ListIncidentsErrors[keyof ListIncidentsErrors];
+
+export type ListIncidentsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentsResponseBody;
+};
+
+export type ListIncidentsResponse = ListIncidentsResponses[keyof ListIncidentsResponses];
 
 export type CreateIncidentData = {
     body: CreateIncidentRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incidents';
 };
 
-export type CreateIncidentResponse = (CreateIncidentResponseBody);
-
-export type CreateIncidentError = (ErrorModel);
-
-export type GetIncidentData = {
-    path: {
-        id: string;
-    };
+export type CreateIncidentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIncidentResponse = (GetIncidentResponseBody);
+export type CreateIncidentError = CreateIncidentErrors[keyof CreateIncidentErrors];
 
-export type GetIncidentError = (ErrorModel);
+export type CreateIncidentResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentResponseBody;
+};
+
+export type CreateIncidentResponse = CreateIncidentResponses[keyof CreateIncidentResponses];
 
 export type ArchiveIncidentData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}';
 };
 
-export type ArchiveIncidentResponse = (void);
+export type ArchiveIncidentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIncidentError = (ErrorModel);
+export type ArchiveIncidentError = ArchiveIncidentErrors[keyof ArchiveIncidentErrors];
+
+export type ArchiveIncidentResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentResponse = ArchiveIncidentResponses[keyof ArchiveIncidentResponses];
+
+export type GetIncidentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}';
+};
+
+export type GetIncidentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentError = GetIncidentErrors[keyof GetIncidentErrors];
+
+export type GetIncidentResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentResponseBody;
+};
+
+export type GetIncidentResponse = GetIncidentResponses[keyof GetIncidentResponses];
 
 export type UpdateIncidentData = {
     body: UpdateIncidentRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}';
 };
 
-export type UpdateIncidentResponse = (UpdateIncidentResponseBody);
+export type UpdateIncidentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIncidentError = (ErrorModel);
+export type UpdateIncidentError = UpdateIncidentErrors[keyof UpdateIncidentErrors];
+
+export type UpdateIncidentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentResponseBody;
+};
+
+export type UpdateIncidentResponse = UpdateIncidentResponses[keyof UpdateIncidentResponses];
 
 export type GetIncidentUserDebriefData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/debrief';
 };
 
-export type GetIncidentUserDebriefResponse = (GetIncidentUserDebriefResponseBody);
+export type GetIncidentUserDebriefErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetIncidentUserDebriefError = (ErrorModel);
+export type GetIncidentUserDebriefError = GetIncidentUserDebriefErrors[keyof GetIncidentUserDebriefErrors];
+
+export type GetIncidentUserDebriefResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentUserDebriefResponseBody;
+};
+
+export type GetIncidentUserDebriefResponse = GetIncidentUserDebriefResponses[keyof GetIncidentUserDebriefResponses];
 
 export type ListIncidentEventsData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/events';
 };
 
-export type ListIncidentEventsResponse = (ListIncidentEventsResponseBody);
+export type ListIncidentEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentEventsError = (ErrorModel);
+export type ListIncidentEventsError = ListIncidentEventsErrors[keyof ListIncidentEventsErrors];
+
+export type ListIncidentEventsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentEventsResponseBody;
+};
+
+export type ListIncidentEventsResponse = ListIncidentEventsResponses[keyof ListIncidentEventsResponses];
 
 export type CreateIncidentEventData = {
     body: CreateIncidentEventRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/events';
 };
 
-export type CreateIncidentEventResponse = (CreateIncidentEventResponseBody);
+export type CreateIncidentEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateIncidentEventError = (ErrorModel);
+export type CreateIncidentEventError = CreateIncidentEventErrors[keyof CreateIncidentEventErrors];
+
+export type CreateIncidentEventResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentEventResponseBody;
+};
+
+export type CreateIncidentEventResponse = CreateIncidentEventResponses[keyof CreateIncidentEventResponses];
 
 export type ListIncidentMilestonesData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/milestones';
 };
 
-export type ListIncidentMilestonesResponse = (ListIncidentMilestonesResponseBody);
+export type ListIncidentMilestonesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIncidentMilestonesError = (ErrorModel);
+export type ListIncidentMilestonesError = ListIncidentMilestonesErrors[keyof ListIncidentMilestonesErrors];
+
+export type ListIncidentMilestonesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentMilestonesResponseBody;
+};
+
+export type ListIncidentMilestonesResponse = ListIncidentMilestonesResponses[keyof ListIncidentMilestonesResponses];
 
 export type CreateIncidentMilestoneData = {
     body: CreateIncidentMilestoneRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/milestones';
 };
 
-export type CreateIncidentMilestoneResponse = (CreateIncidentMilestoneResponseBody);
+export type CreateIncidentMilestoneErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateIncidentMilestoneError = (ErrorModel);
+export type CreateIncidentMilestoneError = CreateIncidentMilestoneErrors[keyof CreateIncidentMilestoneErrors];
+
+export type CreateIncidentMilestoneResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentMilestoneResponseBody;
+};
+
+export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
 
 export type GetRetrospectiveForIncidentData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/incidents/{id}/retrospective';
 };
 
-export type GetRetrospectiveForIncidentResponse = (GetRetrospectiveForIncidentResponseBody);
+export type GetRetrospectiveForIncidentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetRetrospectiveForIncidentError = (ErrorModel);
+export type GetRetrospectiveForIncidentError = GetRetrospectiveForIncidentErrors[keyof GetRetrospectiveForIncidentErrors];
+
+export type GetRetrospectiveForIncidentResponses = {
+    /**
+     * OK
+     */
+    200: GetRetrospectiveForIncidentResponseBody;
+};
+
+export type GetRetrospectiveForIncidentResponse = GetRetrospectiveForIncidentResponses[keyof GetRetrospectiveForIncidentResponses];
 
 export type ListIntegrationsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/integrations';
 };
 
-export type ListIntegrationsResponse = (ListIntegrationsResponseBody);
+export type ListIntegrationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListIntegrationsError = (ErrorModel);
+export type ListIntegrationsError = ListIntegrationsErrors[keyof ListIntegrationsErrors];
+
+export type ListIntegrationsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationsResponseBody;
+};
+
+export type ListIntegrationsResponse = ListIntegrationsResponses[keyof ListIntegrationsResponses];
 
 export type CreateIntegrationData = {
     body: CreateIntegrationRequestBody;
+    path?: never;
+    query?: never;
+    url: '/integrations';
 };
 
-export type CreateIntegrationResponse = (CreateIntegrationResponseBody);
-
-export type CreateIntegrationError = (ErrorModel);
-
-export type GetIntegrationData = {
-    path: {
-        id: string;
-    };
+export type CreateIntegrationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetIntegrationResponse = (GetIntegrationResponseBody);
+export type CreateIntegrationError = CreateIntegrationErrors[keyof CreateIntegrationErrors];
 
-export type GetIntegrationError = (ErrorModel);
+export type CreateIntegrationResponses = {
+    /**
+     * OK
+     */
+    200: CreateIntegrationResponseBody;
+};
+
+export type CreateIntegrationResponse = CreateIntegrationResponses[keyof CreateIntegrationResponses];
 
 export type ArchiveIntegrationData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/integrations/{id}';
 };
 
-export type ArchiveIntegrationResponse = (void);
+export type ArchiveIntegrationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveIntegrationError = (ErrorModel);
+export type ArchiveIntegrationError = ArchiveIntegrationErrors[keyof ArchiveIntegrationErrors];
+
+export type ArchiveIntegrationResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIntegrationResponse = ArchiveIntegrationResponses[keyof ArchiveIntegrationResponses];
+
+export type GetIntegrationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/{id}';
+};
+
+export type GetIntegrationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIntegrationError = GetIntegrationErrors[keyof GetIntegrationErrors];
+
+export type GetIntegrationResponses = {
+    /**
+     * OK
+     */
+    200: GetIntegrationResponseBody;
+};
+
+export type GetIntegrationResponse = GetIntegrationResponses[keyof GetIntegrationResponses];
 
 export type UpdateIntegrationData = {
     body: UpdateIntegrationRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/integrations/{id}';
 };
 
-export type UpdateIntegrationResponse = (UpdateIntegrationResponseBody);
+export type UpdateIntegrationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateIntegrationError = (ErrorModel);
+export type UpdateIntegrationError = UpdateIntegrationErrors[keyof UpdateIntegrationErrors];
+
+export type UpdateIntegrationResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIntegrationResponseBody;
+};
+
+export type UpdateIntegrationResponse = UpdateIntegrationResponses[keyof UpdateIntegrationResponses];
 
 export type ListMeetingSchedulesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/meeting_schedules';
 };
 
-export type ListMeetingSchedulesResponse = (ListMeetingSchedulesResponseBody);
+export type ListMeetingSchedulesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListMeetingSchedulesError = (ErrorModel);
+export type ListMeetingSchedulesError = ListMeetingSchedulesErrors[keyof ListMeetingSchedulesErrors];
+
+export type ListMeetingSchedulesResponses = {
+    /**
+     * OK
+     */
+    200: ListMeetingSchedulesResponseBody;
+};
+
+export type ListMeetingSchedulesResponse = ListMeetingSchedulesResponses[keyof ListMeetingSchedulesResponses];
 
 export type CreateMeetingScheduleData = {
     body: CreateMeetingScheduleRequestBody;
+    path?: never;
+    query?: never;
+    url: '/meeting_schedules';
 };
 
-export type CreateMeetingScheduleResponse = (CreateMeetingScheduleResponseBody);
-
-export type CreateMeetingScheduleError = (ErrorModel);
-
-export type GetMeetingScheduleData = {
-    path: {
-        id: string;
-    };
+export type CreateMeetingScheduleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetMeetingScheduleResponse = (GetMeetingScheduleResponseBody);
+export type CreateMeetingScheduleError = CreateMeetingScheduleErrors[keyof CreateMeetingScheduleErrors];
 
-export type GetMeetingScheduleError = (ErrorModel);
+export type CreateMeetingScheduleResponses = {
+    /**
+     * OK
+     */
+    200: CreateMeetingScheduleResponseBody;
+};
+
+export type CreateMeetingScheduleResponse = CreateMeetingScheduleResponses[keyof CreateMeetingScheduleResponses];
 
 export type ArchiveMeetingScheduleData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/meeting_schedules/{id}';
 };
 
-export type ArchiveMeetingScheduleResponse = (void);
+export type ArchiveMeetingScheduleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveMeetingScheduleError = (ErrorModel);
+export type ArchiveMeetingScheduleError = ArchiveMeetingScheduleErrors[keyof ArchiveMeetingScheduleErrors];
+
+export type ArchiveMeetingScheduleResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveMeetingScheduleResponse = ArchiveMeetingScheduleResponses[keyof ArchiveMeetingScheduleResponses];
+
+export type GetMeetingScheduleData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/meeting_schedules/{id}';
+};
+
+export type GetMeetingScheduleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetMeetingScheduleError = GetMeetingScheduleErrors[keyof GetMeetingScheduleErrors];
+
+export type GetMeetingScheduleResponses = {
+    /**
+     * OK
+     */
+    200: GetMeetingScheduleResponseBody;
+};
+
+export type GetMeetingScheduleResponse = GetMeetingScheduleResponses[keyof GetMeetingScheduleResponses];
 
 export type UpdateMeetingScheduleData = {
     body: UpdateMeetingScheduleRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/meeting_schedules/{id}';
 };
 
-export type UpdateMeetingScheduleResponse = (UpdateMeetingScheduleResponseBody);
+export type UpdateMeetingScheduleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateMeetingScheduleError = (ErrorModel);
+export type UpdateMeetingScheduleError = UpdateMeetingScheduleErrors[keyof UpdateMeetingScheduleErrors];
+
+export type UpdateMeetingScheduleResponses = {
+    /**
+     * OK
+     */
+    200: UpdateMeetingScheduleResponseBody;
+};
+
+export type UpdateMeetingScheduleResponse = UpdateMeetingScheduleResponses[keyof UpdateMeetingScheduleResponses];
 
 export type ListMeetingSessionsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
-        from?: string;
         limit?: number;
-        meetingScheduleId?: string;
         offset?: number;
         search?: string;
-        teamId?: string;
-        to?: string;
+        archived?: boolean;
+        meetingScheduleId?: string;
         userId?: string;
+        teamId?: string;
+        from?: string;
+        to?: string;
     };
+    url: '/meeting_sessions';
 };
 
-export type ListMeetingSessionsResponse = (ListMeetingSessionsResponseBody);
+export type ListMeetingSessionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListMeetingSessionsError = (ErrorModel);
+export type ListMeetingSessionsError = ListMeetingSessionsErrors[keyof ListMeetingSessionsErrors];
+
+export type ListMeetingSessionsResponses = {
+    /**
+     * OK
+     */
+    200: ListMeetingSessionsResponseBody;
+};
+
+export type ListMeetingSessionsResponse = ListMeetingSessionsResponses[keyof ListMeetingSessionsResponses];
 
 export type CreateMeetingSessionData = {
     body: CreateMeetingSessionRequestBody;
+    path?: never;
+    query?: never;
+    url: '/meeting_sessions';
 };
 
-export type CreateMeetingSessionResponse = (CreateMeetingSessionResponseBody);
-
-export type CreateMeetingSessionError = (ErrorModel);
-
-export type GetMeetingSessionData = {
-    path: {
-        id: string;
-    };
+export type CreateMeetingSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetMeetingSessionResponse = (GetMeetingSessionResponseBody);
+export type CreateMeetingSessionError = CreateMeetingSessionErrors[keyof CreateMeetingSessionErrors];
 
-export type GetMeetingSessionError = (ErrorModel);
+export type CreateMeetingSessionResponses = {
+    /**
+     * OK
+     */
+    200: CreateMeetingSessionResponseBody;
+};
+
+export type CreateMeetingSessionResponse = CreateMeetingSessionResponses[keyof CreateMeetingSessionResponses];
 
 export type ArchiveMeetingSessionData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/meeting_sessions/{id}';
 };
 
-export type ArchiveMeetingSessionResponse = (void);
+export type ArchiveMeetingSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveMeetingSessionError = (ErrorModel);
+export type ArchiveMeetingSessionError = ArchiveMeetingSessionErrors[keyof ArchiveMeetingSessionErrors];
+
+export type ArchiveMeetingSessionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveMeetingSessionResponse = ArchiveMeetingSessionResponses[keyof ArchiveMeetingSessionResponses];
+
+export type GetMeetingSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/meeting_sessions/{id}';
+};
+
+export type GetMeetingSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetMeetingSessionError = GetMeetingSessionErrors[keyof GetMeetingSessionErrors];
+
+export type GetMeetingSessionResponses = {
+    /**
+     * OK
+     */
+    200: GetMeetingSessionResponseBody;
+};
+
+export type GetMeetingSessionResponse = GetMeetingSessionResponses[keyof GetMeetingSessionResponses];
 
 export type UpdateMeetingSessionData = {
     body: UpdateMeetingSessionRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/meeting_sessions/{id}';
 };
 
-export type UpdateMeetingSessionResponse = (UpdateMeetingSessionResponseBody);
+export type UpdateMeetingSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateMeetingSessionError = (ErrorModel);
+export type UpdateMeetingSessionError = UpdateMeetingSessionErrors[keyof UpdateMeetingSessionErrors];
+
+export type UpdateMeetingSessionResponses = {
+    /**
+     * OK
+     */
+    200: UpdateMeetingSessionResponseBody;
+};
+
+export type UpdateMeetingSessionResponse = UpdateMeetingSessionResponses[keyof UpdateMeetingSessionResponses];
 
 export type ArchiveOncallShiftAnnotationData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/annotations/{id}';
 };
 
-export type ArchiveOncallShiftAnnotationResponse = (void);
+export type ArchiveOncallShiftAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveOncallShiftAnnotationError = (ErrorModel);
+export type ArchiveOncallShiftAnnotationError = ArchiveOncallShiftAnnotationErrors[keyof ArchiveOncallShiftAnnotationErrors];
+
+export type ArchiveOncallShiftAnnotationResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveOncallShiftAnnotationResponse = ArchiveOncallShiftAnnotationResponses[keyof ArchiveOncallShiftAnnotationResponses];
 
 export type UpdateOncallShiftAnnotationData = {
     body: UpdateOncallShiftAnnotationRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/annotations/{id}';
 };
 
-export type UpdateOncallShiftAnnotationResponse = (UpdateOncallShiftAnnotationResponseBody);
+export type UpdateOncallShiftAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateOncallShiftAnnotationError = (ErrorModel);
+export type UpdateOncallShiftAnnotationError = UpdateOncallShiftAnnotationErrors[keyof UpdateOncallShiftAnnotationErrors];
+
+export type UpdateOncallShiftAnnotationResponses = {
+    /**
+     * OK
+     */
+    200: UpdateOncallShiftAnnotationResponseBody;
+};
+
+export type UpdateOncallShiftAnnotationResponse = UpdateOncallShiftAnnotationResponses[keyof UpdateOncallShiftAnnotationResponses];
 
 export type CreateOncallHandoverTemplateData = {
     body: CreateOncallShiftHandoverTemplateRequestBody;
+    path?: never;
+    query?: never;
+    url: '/oncall/handover_templates';
 };
 
-export type CreateOncallHandoverTemplateResponse = (CreateOncallShiftHandoverTemplateResponseBody);
-
-export type CreateOncallHandoverTemplateError = (ErrorModel);
-
-export type GetOncallShiftHandoverTemplateData = {
-    path: {
-        id: string;
-    };
+export type CreateOncallHandoverTemplateErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetOncallShiftHandoverTemplateResponse = (GetOncallShiftHandoverTemplateResponseBody);
+export type CreateOncallHandoverTemplateError = CreateOncallHandoverTemplateErrors[keyof CreateOncallHandoverTemplateErrors];
 
-export type GetOncallShiftHandoverTemplateError = (ErrorModel);
+export type CreateOncallHandoverTemplateResponses = {
+    /**
+     * OK
+     */
+    200: CreateOncallShiftHandoverTemplateResponseBody;
+};
+
+export type CreateOncallHandoverTemplateResponse = CreateOncallHandoverTemplateResponses[keyof CreateOncallHandoverTemplateResponses];
 
 export type ArchiveOncallHandoverTemplateData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/handover_templates/{id}';
 };
 
-export type ArchiveOncallHandoverTemplateResponse = (void);
+export type ArchiveOncallHandoverTemplateErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveOncallHandoverTemplateError = (ErrorModel);
+export type ArchiveOncallHandoverTemplateError = ArchiveOncallHandoverTemplateErrors[keyof ArchiveOncallHandoverTemplateErrors];
+
+export type ArchiveOncallHandoverTemplateResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveOncallHandoverTemplateResponse = ArchiveOncallHandoverTemplateResponses[keyof ArchiveOncallHandoverTemplateResponses];
+
+export type GetOncallShiftHandoverTemplateData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/handover_templates/{id}';
+};
+
+export type GetOncallShiftHandoverTemplateErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallShiftHandoverTemplateError = GetOncallShiftHandoverTemplateErrors[keyof GetOncallShiftHandoverTemplateErrors];
+
+export type GetOncallShiftHandoverTemplateResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftHandoverTemplateResponseBody;
+};
+
+export type GetOncallShiftHandoverTemplateResponse = GetOncallShiftHandoverTemplateResponses[keyof GetOncallShiftHandoverTemplateResponses];
 
 export type UpdateOncallHandoverTemplateData = {
     body: UpdateOncallShiftHandoverTemplateRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/handover_templates/{id}';
 };
 
-export type UpdateOncallHandoverTemplateResponse = (UpdateOncallShiftHandoverTemplateResponseBody);
+export type UpdateOncallHandoverTemplateErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateOncallHandoverTemplateError = (ErrorModel);
+export type UpdateOncallHandoverTemplateError = UpdateOncallHandoverTemplateErrors[keyof UpdateOncallHandoverTemplateErrors];
+
+export type UpdateOncallHandoverTemplateResponses = {
+    /**
+     * OK
+     */
+    200: UpdateOncallShiftHandoverTemplateResponseBody;
+};
+
+export type UpdateOncallHandoverTemplateResponse = UpdateOncallHandoverTemplateResponses[keyof UpdateOncallHandoverTemplateResponses];
 
 export type ListOncallRostersData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
-        pinned?: boolean;
         search?: string;
+        archived?: boolean;
         teamId?: string;
         userId?: string;
+        pinned?: boolean;
     };
+    url: '/oncall/rosters';
 };
 
-export type ListOncallRostersResponse = (ListOncallRostersResponseBody);
+export type ListOncallRostersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListOncallRostersError = (ErrorModel);
+export type ListOncallRostersError = ListOncallRostersErrors[keyof ListOncallRostersErrors];
+
+export type ListOncallRostersResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallRostersResponseBody;
+};
+
+export type ListOncallRostersResponse = ListOncallRostersResponses[keyof ListOncallRostersResponses];
 
 export type GetOncallRosterData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/rosters/{id}';
 };
 
-export type GetOncallRosterResponse = (GetOncallRosterResponseBody);
+export type GetOncallRosterErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetOncallRosterError = (ErrorModel);
+export type GetOncallRosterError = GetOncallRosterErrors[keyof GetOncallRosterErrors];
+
+export type GetOncallRosterResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallRosterResponseBody;
+};
+
+export type GetOncallRosterResponse = GetOncallRosterResponses[keyof GetOncallRosterResponses];
 
 export type ListOncallShiftsData = {
+    body?: never;
+    path?: never;
     query?: {
-        active?: boolean;
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
         userId?: string;
+        active?: boolean;
     };
+    url: '/oncall/shifts';
 };
 
-export type ListOncallShiftsResponse = (ListOncallShiftsResponseBody);
+export type ListOncallShiftsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListOncallShiftsError = (ErrorModel);
+export type ListOncallShiftsError = ListOncallShiftsErrors[keyof ListOncallShiftsErrors];
+
+export type ListOncallShiftsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallShiftsResponseBody;
+};
+
+export type ListOncallShiftsResponse = ListOncallShiftsResponses[keyof ListOncallShiftsResponses];
 
 export type GetOncallShiftData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/shifts/{id}';
 };
 
-export type GetOncallShiftResponse = (GetOncallShiftResponseBody);
+export type GetOncallShiftErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetOncallShiftError = (ErrorModel);
+export type GetOncallShiftError = GetOncallShiftErrors[keyof GetOncallShiftErrors];
+
+export type GetOncallShiftResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftResponseBody;
+};
+
+export type GetOncallShiftResponse = GetOncallShiftResponses[keyof GetOncallShiftResponses];
 
 export type ListOncallShiftAlertsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/oncall/shifts/{id}/alerts';
 };
 
-export type ListOncallShiftAlertsResponse = (ListOncallShiftAlertsResponseBody);
+export type ListOncallShiftAlertsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListOncallShiftAlertsError = (ErrorModel);
+export type ListOncallShiftAlertsError = ListOncallShiftAlertsErrors[keyof ListOncallShiftAlertsErrors];
+
+export type ListOncallShiftAlertsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallShiftAlertsResponseBody;
+};
+
+export type ListOncallShiftAlertsResponse = ListOncallShiftAlertsResponses[keyof ListOncallShiftAlertsResponses];
 
 export type ListOncallShiftAnnotationsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/oncall/shifts/{id}/annotations';
 };
 
-export type ListOncallShiftAnnotationsResponse = (ListOncallShiftAnnotationsResponseBody);
+export type ListOncallShiftAnnotationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListOncallShiftAnnotationsError = (ErrorModel);
+export type ListOncallShiftAnnotationsError = ListOncallShiftAnnotationsErrors[keyof ListOncallShiftAnnotationsErrors];
+
+export type ListOncallShiftAnnotationsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallShiftAnnotationsResponseBody;
+};
+
+export type ListOncallShiftAnnotationsResponse = ListOncallShiftAnnotationsResponses[keyof ListOncallShiftAnnotationsResponses];
 
 export type CreateOncallShiftAnnotationData = {
     body: CreateOncallShiftAnnotationRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/shifts/{id}/annotations';
 };
 
-export type CreateOncallShiftAnnotationResponse = (CreateOncallShiftAnnotationResponseBody);
+export type CreateOncallShiftAnnotationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateOncallShiftAnnotationError = (ErrorModel);
+export type CreateOncallShiftAnnotationError = CreateOncallShiftAnnotationErrors[keyof CreateOncallShiftAnnotationErrors];
+
+export type CreateOncallShiftAnnotationResponses = {
+    /**
+     * OK
+     */
+    200: CreateOncallShiftAnnotationResponseBody;
+};
+
+export type CreateOncallShiftAnnotationResponse = CreateOncallShiftAnnotationResponses[keyof CreateOncallShiftAnnotationResponses];
 
 export type GetOncallShiftHandoverData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/shifts/{id}/handover';
 };
 
-export type GetOncallShiftHandoverResponse = (GetOncallShiftHandoverResponseBody);
+export type GetOncallShiftHandoverErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetOncallShiftHandoverError = (ErrorModel);
+export type GetOncallShiftHandoverError = GetOncallShiftHandoverErrors[keyof GetOncallShiftHandoverErrors];
+
+export type GetOncallShiftHandoverResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftHandoverResponseBody;
+};
+
+export type GetOncallShiftHandoverResponse = GetOncallShiftHandoverResponses[keyof GetOncallShiftHandoverResponses];
 
 export type SendOncallShiftHandoverData = {
     body: SendOncallShiftHandoverRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/shifts/{id}/handover';
 };
 
-export type SendOncallShiftHandoverResponse = (SendOncallShiftHandoverResponseBody);
+export type SendOncallShiftHandoverErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type SendOncallShiftHandoverError = (ErrorModel);
+export type SendOncallShiftHandoverError = SendOncallShiftHandoverErrors[keyof SendOncallShiftHandoverErrors];
+
+export type SendOncallShiftHandoverResponses = {
+    /**
+     * OK
+     */
+    200: SendOncallShiftHandoverResponseBody;
+};
+
+export type SendOncallShiftHandoverResponse = SendOncallShiftHandoverResponses[keyof SendOncallShiftHandoverResponses];
 
 export type ListOncallShiftIncidentsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/oncall/shifts/{id}/incidents';
 };
 
-export type ListOncallShiftIncidentsResponse = (ListOncallShiftIncidentsResponseBody);
+export type ListOncallShiftIncidentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListOncallShiftIncidentsError = (ErrorModel);
+export type ListOncallShiftIncidentsError = ListOncallShiftIncidentsErrors[keyof ListOncallShiftIncidentsErrors];
+
+export type ListOncallShiftIncidentsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallShiftIncidentsResponseBody;
+};
+
+export type ListOncallShiftIncidentsResponse = ListOncallShiftIncidentsResponses[keyof ListOncallShiftIncidentsResponses];
 
 export type GetNextOncallShiftData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/oncall/shifts/{id}/next';
 };
 
-export type GetNextOncallShiftResponse = (GetNextOncallShiftResponseBody);
+export type GetNextOncallShiftErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetNextOncallShiftError = (ErrorModel);
+export type GetNextOncallShiftError = GetNextOncallShiftErrors[keyof GetNextOncallShiftErrors];
+
+export type GetNextOncallShiftResponses = {
+    /**
+     * OK
+     */
+    200: GetNextOncallShiftResponseBody;
+};
+
+export type GetNextOncallShiftResponse = GetNextOncallShiftResponses[keyof GetNextOncallShiftResponses];
 
 export type GetUserOncallDetailsData = {
+    body?: never;
+    path?: never;
     query?: {
         userId?: string;
     };
+    url: '/oncall/user';
 };
 
-export type GetUserOncallDetailsResponse = (GetUserOncallDetailsResponseBody);
+export type GetUserOncallDetailsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetUserOncallDetailsError = (ErrorModel);
+export type GetUserOncallDetailsError = GetUserOncallDetailsErrors[keyof GetUserOncallDetailsErrors];
+
+export type GetUserOncallDetailsResponses = {
+    /**
+     * OK
+     */
+    200: GetUserOncallDetailsResponseBody;
+};
+
+export type GetUserOncallDetailsResponse = GetUserOncallDetailsResponses[keyof GetUserOncallDetailsResponses];
 
 export type ArchiveRetrospectiveReviewData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/retrospective_reviews/{id}';
 };
 
-export type ArchiveRetrospectiveReviewResponse = (void);
+export type ArchiveRetrospectiveReviewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveRetrospectiveReviewError = (ErrorModel);
+export type ArchiveRetrospectiveReviewError = ArchiveRetrospectiveReviewErrors[keyof ArchiveRetrospectiveReviewErrors];
+
+export type ArchiveRetrospectiveReviewResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveRetrospectiveReviewResponse = ArchiveRetrospectiveReviewResponses[keyof ArchiveRetrospectiveReviewResponses];
 
 export type UpdateRetrospectiveReviewData = {
     body: UpdateRetrospectiveReviewRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/retrospective_reviews/{id}';
 };
 
-export type UpdateRetrospectiveReviewResponse = (UpdateRetrospectiveReviewResponseBody);
+export type UpdateRetrospectiveReviewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateRetrospectiveReviewError = (ErrorModel);
+export type UpdateRetrospectiveReviewError = UpdateRetrospectiveReviewErrors[keyof UpdateRetrospectiveReviewErrors];
+
+export type UpdateRetrospectiveReviewResponses = {
+    /**
+     * OK
+     */
+    200: UpdateRetrospectiveReviewResponseBody;
+};
+
+export type UpdateRetrospectiveReviewResponse = UpdateRetrospectiveReviewResponses[keyof UpdateRetrospectiveReviewResponses];
 
 export type ListRetrospectivesData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/retrospectives';
 };
 
-export type ListRetrospectivesResponse = (ListRetrospectivesResponseBody);
+export type ListRetrospectivesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListRetrospectivesError = (ErrorModel);
+export type ListRetrospectivesError = ListRetrospectivesErrors[keyof ListRetrospectivesErrors];
+
+export type ListRetrospectivesResponses = {
+    /**
+     * OK
+     */
+    200: ListRetrospectivesResponseBody;
+};
+
+export type ListRetrospectivesResponse = ListRetrospectivesResponses[keyof ListRetrospectivesResponses];
 
 export type GetRetrospectiveData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/retrospectives/{id}';
 };
 
-export type GetRetrospectiveResponse = (GetRetrospectiveResponseBody);
+export type GetRetrospectiveErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetRetrospectiveError = (ErrorModel);
+export type GetRetrospectiveError = GetRetrospectiveErrors[keyof GetRetrospectiveErrors];
+
+export type GetRetrospectiveResponses = {
+    /**
+     * OK
+     */
+    200: GetRetrospectiveResponseBody;
+};
+
+export type GetRetrospectiveResponse = GetRetrospectiveResponses[keyof GetRetrospectiveResponses];
 
 export type ListRetrospectiveDiscussionsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/retrospectives/{id}/discussions';
 };
 
-export type ListRetrospectiveDiscussionsResponse = (ListRetrospectiveDiscussionsResponseBody);
+export type ListRetrospectiveDiscussionsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListRetrospectiveDiscussionsError = (ErrorModel);
+export type ListRetrospectiveDiscussionsError = ListRetrospectiveDiscussionsErrors[keyof ListRetrospectiveDiscussionsErrors];
+
+export type ListRetrospectiveDiscussionsResponses = {
+    /**
+     * OK
+     */
+    200: ListRetrospectiveDiscussionsResponseBody;
+};
+
+export type ListRetrospectiveDiscussionsResponse = ListRetrospectiveDiscussionsResponses[keyof ListRetrospectiveDiscussionsResponses];
 
 export type CreateRetrospectiveDiscussionData = {
     body: CreateRetrospectiveDiscussionRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/retrospectives/{id}/discussions';
 };
 
-export type CreateRetrospectiveDiscussionResponse = (CreateRetrospectiveDiscussionResponseBody);
+export type CreateRetrospectiveDiscussionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateRetrospectiveDiscussionError = (ErrorModel);
+export type CreateRetrospectiveDiscussionError = CreateRetrospectiveDiscussionErrors[keyof CreateRetrospectiveDiscussionErrors];
+
+export type CreateRetrospectiveDiscussionResponses = {
+    /**
+     * OK
+     */
+    200: CreateRetrospectiveDiscussionResponseBody;
+};
+
+export type CreateRetrospectiveDiscussionResponse = CreateRetrospectiveDiscussionResponses[keyof CreateRetrospectiveDiscussionResponses];
 
 export type GetRetrospectiveDiscussionData = {
+    body?: never;
     path: {
-        discussionId: string;
         id: string;
+        discussionId: string;
     };
+    query?: never;
+    url: '/retrospectives/{id}/discussions/{discussionId}';
 };
 
-export type GetRetrospectiveDiscussionResponse = (GetRetrospectiveDiscussionResponseBody);
-
-export type GetRetrospectiveDiscussionError = (ErrorModel);
-
-export type AddRetrospectiveDiscussionReplyData = {
-    body: AddRetrospectiveDiscussionReplyRequestBody;
+export type GetRetrospectiveDiscussionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type AddRetrospectiveDiscussionReplyResponse = (AddRetrospectiveDiscussionReplyResponseBody);
+export type GetRetrospectiveDiscussionError = GetRetrospectiveDiscussionErrors[keyof GetRetrospectiveDiscussionErrors];
 
-export type AddRetrospectiveDiscussionReplyError = (ErrorModel);
+export type GetRetrospectiveDiscussionResponses = {
+    /**
+     * OK
+     */
+    200: GetRetrospectiveDiscussionResponseBody;
+};
+
+export type GetRetrospectiveDiscussionResponse = GetRetrospectiveDiscussionResponses[keyof GetRetrospectiveDiscussionResponses];
 
 export type UpdateRetrospectiveDiscussionData = {
     body: UpdateRetrospectiveDiscussionRequestBody;
+    path?: never;
+    query?: never;
+    url: '/retrospectives/{id}/discussions/{discussionId}';
 };
 
-export type UpdateRetrospectiveDiscussionResponse = (UpdateRetrospectiveDiscussionResponseBody);
+export type UpdateRetrospectiveDiscussionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateRetrospectiveDiscussionError = (ErrorModel);
+export type UpdateRetrospectiveDiscussionError = UpdateRetrospectiveDiscussionErrors[keyof UpdateRetrospectiveDiscussionErrors];
+
+export type UpdateRetrospectiveDiscussionResponses = {
+    /**
+     * OK
+     */
+    200: UpdateRetrospectiveDiscussionResponseBody;
+};
+
+export type UpdateRetrospectiveDiscussionResponse = UpdateRetrospectiveDiscussionResponses[keyof UpdateRetrospectiveDiscussionResponses];
+
+export type AddRetrospectiveDiscussionReplyData = {
+    body: AddRetrospectiveDiscussionReplyRequestBody;
+    path?: never;
+    query?: never;
+    url: '/retrospectives/{id}/discussions/{discussionId}';
+};
+
+export type AddRetrospectiveDiscussionReplyErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddRetrospectiveDiscussionReplyError = AddRetrospectiveDiscussionReplyErrors[keyof AddRetrospectiveDiscussionReplyErrors];
+
+export type AddRetrospectiveDiscussionReplyResponses = {
+    /**
+     * OK
+     */
+    200: AddRetrospectiveDiscussionReplyResponseBody;
+};
+
+export type AddRetrospectiveDiscussionReplyResponse = AddRetrospectiveDiscussionReplyResponses[keyof AddRetrospectiveDiscussionReplyResponses];
 
 export type ListRetrospectiveReviewsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/retrospectives/{id}/reviews';
 };
 
-export type ListRetrospectiveReviewsResponse = (ListRetrospectiveReviewsResponseBody);
+export type ListRetrospectiveReviewsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListRetrospectiveReviewsError = (ErrorModel);
+export type ListRetrospectiveReviewsError = ListRetrospectiveReviewsErrors[keyof ListRetrospectiveReviewsErrors];
+
+export type ListRetrospectiveReviewsResponses = {
+    /**
+     * OK
+     */
+    200: ListRetrospectiveReviewsResponseBody;
+};
+
+export type ListRetrospectiveReviewsResponse = ListRetrospectiveReviewsResponses[keyof ListRetrospectiveReviewsResponses];
 
 export type CreateRetrospectiveReviewData = {
     body: CreateRetrospectiveReviewRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/retrospectives/{id}/reviews';
 };
 
-export type CreateRetrospectiveReviewResponse = (CreateRetrospectiveReviewResponseBody);
-
-export type CreateRetrospectiveReviewError = (ErrorModel);
-
-export type GetSystemAnalysisComponentData = {
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
+export type CreateRetrospectiveReviewErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemAnalysisComponentResponse = (GetSystemAnalysisComponentResponseBody);
+export type CreateRetrospectiveReviewError = CreateRetrospectiveReviewErrors[keyof CreateRetrospectiveReviewErrors];
 
-export type GetSystemAnalysisComponentError = (ErrorModel);
+export type CreateRetrospectiveReviewResponses = {
+    /**
+     * OK
+     */
+    200: CreateRetrospectiveReviewResponseBody;
+};
+
+export type CreateRetrospectiveReviewResponse = CreateRetrospectiveReviewResponses[keyof CreateRetrospectiveReviewResponses];
 
 export type DeleteSystemAnalysisComponentData = {
+    body?: never;
     path: {
         analysisId: string;
         entityId: string;
     };
+    query?: never;
+    url: '/system_analysis/{analysisId}/components/{entityId}';
 };
 
-export type DeleteSystemAnalysisComponentResponse = (void);
+export type DeleteSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type DeleteSystemAnalysisComponentError = (ErrorModel);
+export type DeleteSystemAnalysisComponentError = DeleteSystemAnalysisComponentErrors[keyof DeleteSystemAnalysisComponentErrors];
+
+export type DeleteSystemAnalysisComponentResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisComponentResponse = DeleteSystemAnalysisComponentResponses[keyof DeleteSystemAnalysisComponentResponses];
+
+export type GetSystemAnalysisComponentData = {
+    body?: never;
+    path: {
+        analysisId: string;
+        entityId: string;
+    };
+    query?: never;
+    url: '/system_analysis/{analysisId}/components/{entityId}';
+};
+
+export type GetSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemAnalysisComponentError = GetSystemAnalysisComponentErrors[keyof GetSystemAnalysisComponentErrors];
+
+export type GetSystemAnalysisComponentResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisComponentResponseBody;
+};
+
+export type GetSystemAnalysisComponentResponse = GetSystemAnalysisComponentResponses[keyof GetSystemAnalysisComponentResponses];
 
 export type UpdateSystemAnalysisComponentData = {
     body: UpdateSystemAnalysisComponentRequestBody;
@@ -3922,33 +7773,143 @@ export type UpdateSystemAnalysisComponentData = {
         analysisId: string;
         entityId: string;
     };
+    query?: never;
+    url: '/system_analysis/{analysisId}/components/{entityId}';
 };
 
-export type UpdateSystemAnalysisComponentResponse = (UpdateSystemAnalysisComponentResponseBody);
-
-export type UpdateSystemAnalysisComponentError = (ErrorModel);
-
-export type GetSystemAnalysisRelationshipData = {
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
+export type UpdateSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemAnalysisRelationshipResponse = (GetSystemAnalysisRelationshipResponseBody);
+export type UpdateSystemAnalysisComponentError = UpdateSystemAnalysisComponentErrors[keyof UpdateSystemAnalysisComponentErrors];
 
-export type GetSystemAnalysisRelationshipError = (ErrorModel);
+export type UpdateSystemAnalysisComponentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisComponentResponseBody;
+};
+
+export type UpdateSystemAnalysisComponentResponse = UpdateSystemAnalysisComponentResponses[keyof UpdateSystemAnalysisComponentResponses];
 
 export type DeleteSystemAnalysisRelationshipData = {
+    body?: never;
     path: {
         analysisId: string;
         entityId: string;
     };
+    query?: never;
+    url: '/system_analysis/{analysisId}/relationships/{entityId}';
 };
 
-export type DeleteSystemAnalysisRelationshipResponse = (void);
+export type DeleteSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type DeleteSystemAnalysisRelationshipError = (ErrorModel);
+export type DeleteSystemAnalysisRelationshipError = DeleteSystemAnalysisRelationshipErrors[keyof DeleteSystemAnalysisRelationshipErrors];
+
+export type DeleteSystemAnalysisRelationshipResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisRelationshipResponse = DeleteSystemAnalysisRelationshipResponses[keyof DeleteSystemAnalysisRelationshipResponses];
+
+export type GetSystemAnalysisRelationshipData = {
+    body?: never;
+    path: {
+        analysisId: string;
+        entityId: string;
+    };
+    query?: never;
+    url: '/system_analysis/{analysisId}/relationships/{entityId}';
+};
+
+export type GetSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemAnalysisRelationshipError = GetSystemAnalysisRelationshipErrors[keyof GetSystemAnalysisRelationshipErrors];
+
+export type GetSystemAnalysisRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisRelationshipResponseBody;
+};
+
+export type GetSystemAnalysisRelationshipResponse = GetSystemAnalysisRelationshipResponses[keyof GetSystemAnalysisRelationshipResponses];
 
 export type UpdateSystemAnalysisRelationshipData = {
     body: UpdateSystemAnalysisRelationshipRequestBody;
@@ -3956,171 +7917,720 @@ export type UpdateSystemAnalysisRelationshipData = {
         analysisId: string;
         entityId: string;
     };
+    query?: never;
+    url: '/system_analysis/{analysisId}/relationships/{entityId}';
 };
 
-export type UpdateSystemAnalysisRelationshipResponse = (UpdateSystemAnalysisRelationshipResponseBody);
+export type UpdateSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateSystemAnalysisRelationshipError = (ErrorModel);
+export type UpdateSystemAnalysisRelationshipError = UpdateSystemAnalysisRelationshipErrors[keyof UpdateSystemAnalysisRelationshipErrors];
+
+export type UpdateSystemAnalysisRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisRelationshipResponseBody;
+};
+
+export type UpdateSystemAnalysisRelationshipResponse = UpdateSystemAnalysisRelationshipResponses[keyof UpdateSystemAnalysisRelationshipResponses];
 
 export type GetSystemAnalysisData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_analysis/{id}';
 };
 
-export type GetSystemAnalysisResponse = (GetSystemAnalysisResponseBody);
+export type GetSystemAnalysisErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetSystemAnalysisError = (ErrorModel);
+export type GetSystemAnalysisError = GetSystemAnalysisErrors[keyof GetSystemAnalysisErrors];
+
+export type GetSystemAnalysisResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisResponseBody;
+};
+
+export type GetSystemAnalysisResponse = GetSystemAnalysisResponses[keyof GetSystemAnalysisResponses];
 
 export type ListSystemAnalysisComponentsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/system_analysis/{id}/components';
 };
 
-export type ListSystemAnalysisComponentsResponse = (ListSystemAnalysisComponentsResponseBody);
+export type ListSystemAnalysisComponentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListSystemAnalysisComponentsError = (ErrorModel);
+export type ListSystemAnalysisComponentsError = ListSystemAnalysisComponentsErrors[keyof ListSystemAnalysisComponentsErrors];
+
+export type ListSystemAnalysisComponentsResponses = {
+    /**
+     * OK
+     */
+    200: ListSystemAnalysisComponentsResponseBody;
+};
+
+export type ListSystemAnalysisComponentsResponse = ListSystemAnalysisComponentsResponses[keyof ListSystemAnalysisComponentsResponses];
 
 export type AddSystemAnalysisComponentData = {
     body: AddSystemAnalysisComponentRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_analysis/{id}/components';
 };
 
-export type AddSystemAnalysisComponentResponse = (AddSystemAnalysisComponentResponseBody);
+export type AddSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type AddSystemAnalysisComponentError = (ErrorModel);
+export type AddSystemAnalysisComponentError = AddSystemAnalysisComponentErrors[keyof AddSystemAnalysisComponentErrors];
+
+export type AddSystemAnalysisComponentResponses = {
+    /**
+     * OK
+     */
+    200: AddSystemAnalysisComponentResponseBody;
+};
+
+export type AddSystemAnalysisComponentResponse = AddSystemAnalysisComponentResponses[keyof AddSystemAnalysisComponentResponses];
 
 export type ListSystemAnalysisRelationshipsData = {
+    body?: never;
     path: {
         id: string;
     };
     query?: {
-        analysisComponentId?: string;
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
+        analysisComponentId?: string;
     };
+    url: '/system_analysis/{id}/relationships';
 };
 
-export type ListSystemAnalysisRelationshipsResponse = (ListSystemAnalysisRelationshipsResponseBody);
+export type ListSystemAnalysisRelationshipsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListSystemAnalysisRelationshipsError = (ErrorModel);
+export type ListSystemAnalysisRelationshipsError = ListSystemAnalysisRelationshipsErrors[keyof ListSystemAnalysisRelationshipsErrors];
+
+export type ListSystemAnalysisRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ListSystemAnalysisRelationshipsResponseBody;
+};
+
+export type ListSystemAnalysisRelationshipsResponse = ListSystemAnalysisRelationshipsResponses[keyof ListSystemAnalysisRelationshipsResponses];
 
 export type CreateSystemAnalysisRelationshipData = {
     body: CreateSystemAnalysisRelationshipRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_analysis/{id}/relationships';
 };
 
-export type CreateSystemAnalysisRelationshipResponse = (CreateSystemAnalysisRelationshipResponseBody);
+export type CreateSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateSystemAnalysisRelationshipError = (ErrorModel);
+export type CreateSystemAnalysisRelationshipError = CreateSystemAnalysisRelationshipErrors[keyof CreateSystemAnalysisRelationshipErrors];
+
+export type CreateSystemAnalysisRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemAnalysisRelationshipResponseBody;
+};
+
+export type CreateSystemAnalysisRelationshipResponse = CreateSystemAnalysisRelationshipResponses[keyof CreateSystemAnalysisRelationshipResponses];
 
 export type ListSystemComponentKindsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/system_component_kinds';
 };
 
-export type ListSystemComponentKindsResponse = (ListSystemComponentKindsResponseBody);
+export type ListSystemComponentKindsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListSystemComponentKindsError = (ErrorModel);
+export type ListSystemComponentKindsError = ListSystemComponentKindsErrors[keyof ListSystemComponentKindsErrors];
+
+export type ListSystemComponentKindsResponses = {
+    /**
+     * OK
+     */
+    200: ListSystemComponentKindsResponseBody;
+};
+
+export type ListSystemComponentKindsResponse = ListSystemComponentKindsResponses[keyof ListSystemComponentKindsResponses];
 
 export type CreateSystemComponentKindData = {
     body: CreateSystemComponentKindRequestBody;
+    path?: never;
+    query?: never;
+    url: '/system_component_kinds';
 };
 
-export type CreateSystemComponentKindResponse = (CreateSystemComponentKindResponseBody);
-
-export type CreateSystemComponentKindError = (ErrorModel);
-
-export type GetSystemComponentKindData = {
-    path: {
-        id: string;
-    };
+export type CreateSystemComponentKindErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemComponentKindResponse = (GetSystemComponentKindResponseBody);
+export type CreateSystemComponentKindError = CreateSystemComponentKindErrors[keyof CreateSystemComponentKindErrors];
 
-export type GetSystemComponentKindError = (ErrorModel);
+export type CreateSystemComponentKindResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentKindResponseBody;
+};
+
+export type CreateSystemComponentKindResponse = CreateSystemComponentKindResponses[keyof CreateSystemComponentKindResponses];
 
 export type ArchiveSystemComponentKindData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_component_kinds/{id}';
 };
 
-export type ArchiveSystemComponentKindResponse = (void);
+export type ArchiveSystemComponentKindErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveSystemComponentKindError = (ErrorModel);
+export type ArchiveSystemComponentKindError = ArchiveSystemComponentKindErrors[keyof ArchiveSystemComponentKindErrors];
+
+export type ArchiveSystemComponentKindResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentKindResponse = ArchiveSystemComponentKindResponses[keyof ArchiveSystemComponentKindResponses];
+
+export type GetSystemComponentKindData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_kinds/{id}';
+};
+
+export type GetSystemComponentKindErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentKindError = GetSystemComponentKindErrors[keyof GetSystemComponentKindErrors];
+
+export type GetSystemComponentKindResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentKindResponseBody;
+};
+
+export type GetSystemComponentKindResponse = GetSystemComponentKindResponses[keyof GetSystemComponentKindResponses];
 
 export type UpdateSystemComponentKindData = {
     body: UpdateSystemComponentKindRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_component_kinds/{id}';
 };
 
-export type UpdateSystemComponentKindResponse = (UpdateSystemComponentKindResponseBody);
+export type UpdateSystemComponentKindErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateSystemComponentKindError = (ErrorModel);
+export type UpdateSystemComponentKindError = UpdateSystemComponentKindErrors[keyof UpdateSystemComponentKindErrors];
+
+export type UpdateSystemComponentKindResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentKindResponseBody;
+};
+
+export type UpdateSystemComponentKindResponse = UpdateSystemComponentKindResponses[keyof UpdateSystemComponentKindResponses];
 
 export type ListSystemComponentsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/system_components';
 };
 
-export type ListSystemComponentsResponse = (ListSystemComponentsResponseBody);
+export type ListSystemComponentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListSystemComponentsError = (ErrorModel);
+export type ListSystemComponentsError = ListSystemComponentsErrors[keyof ListSystemComponentsErrors];
+
+export type ListSystemComponentsResponses = {
+    /**
+     * OK
+     */
+    200: ListSystemComponentsResponseBody;
+};
+
+export type ListSystemComponentsResponse = ListSystemComponentsResponses[keyof ListSystemComponentsResponses];
 
 export type CreateSystemComponentData = {
     body: CreateSystemComponentRequestBody;
+    path?: never;
+    query?: never;
+    url: '/system_components';
 };
 
-export type CreateSystemComponentResponse = (CreateSystemComponentResponseBody);
-
-export type CreateSystemComponentError = (ErrorModel);
-
-export type GetSystemComponentConstraintData = {
-    path: {
-        componentId: string;
-        constraintId: string;
-    };
+export type CreateSystemComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemComponentConstraintResponse = (GetSystemComponentConstraintResponseBody);
+export type CreateSystemComponentError = CreateSystemComponentErrors[keyof CreateSystemComponentErrors];
 
-export type GetSystemComponentConstraintError = (ErrorModel);
+export type CreateSystemComponentResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentResponseBody;
+};
+
+export type CreateSystemComponentResponse = CreateSystemComponentResponses[keyof CreateSystemComponentResponses];
 
 export type ArchiveSystemComponentConstraintData = {
+    body?: never;
     path: {
         componentId: string;
         constraintId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/constraints/{constraintId}';
 };
 
-export type ArchiveSystemComponentConstraintResponse = (void);
+export type ArchiveSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveSystemComponentConstraintError = (ErrorModel);
+export type ArchiveSystemComponentConstraintError = ArchiveSystemComponentConstraintErrors[keyof ArchiveSystemComponentConstraintErrors];
+
+export type ArchiveSystemComponentConstraintResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentConstraintResponse = ArchiveSystemComponentConstraintResponses[keyof ArchiveSystemComponentConstraintResponses];
+
+export type GetSystemComponentConstraintData = {
+    body?: never;
+    path: {
+        componentId: string;
+        constraintId: string;
+    };
+    query?: never;
+    url: '/system_components/{componentId}/constraints/{constraintId}';
+};
+
+export type GetSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentConstraintError = GetSystemComponentConstraintErrors[keyof GetSystemComponentConstraintErrors];
+
+export type GetSystemComponentConstraintResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentConstraintResponseBody;
+};
+
+export type GetSystemComponentConstraintResponse = GetSystemComponentConstraintResponses[keyof GetSystemComponentConstraintResponses];
 
 export type UpdateSystemComponentConstraintData = {
     body: UpdateSystemComponentConstraintRequestBody;
@@ -4128,33 +8638,143 @@ export type UpdateSystemComponentConstraintData = {
         componentId: string;
         constraintId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/constraints/{constraintId}';
 };
 
-export type UpdateSystemComponentConstraintResponse = (UpdateSystemComponentConstraintResponseBody);
-
-export type UpdateSystemComponentConstraintError = (ErrorModel);
-
-export type GetSystemComponentControlData = {
-    path: {
-        componentId: string;
-        controlId: string;
-    };
+export type UpdateSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemComponentControlResponse = (GetSystemComponentControlResponseBody);
+export type UpdateSystemComponentConstraintError = UpdateSystemComponentConstraintErrors[keyof UpdateSystemComponentConstraintErrors];
 
-export type GetSystemComponentControlError = (ErrorModel);
+export type UpdateSystemComponentConstraintResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentConstraintResponseBody;
+};
+
+export type UpdateSystemComponentConstraintResponse = UpdateSystemComponentConstraintResponses[keyof UpdateSystemComponentConstraintResponses];
 
 export type ArchiveSystemComponentControlData = {
+    body?: never;
     path: {
         componentId: string;
         controlId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/controls/{controlId}';
 };
 
-export type ArchiveSystemComponentControlResponse = (void);
+export type ArchiveSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveSystemComponentControlError = (ErrorModel);
+export type ArchiveSystemComponentControlError = ArchiveSystemComponentControlErrors[keyof ArchiveSystemComponentControlErrors];
+
+export type ArchiveSystemComponentControlResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentControlResponse = ArchiveSystemComponentControlResponses[keyof ArchiveSystemComponentControlResponses];
+
+export type GetSystemComponentControlData = {
+    body?: never;
+    path: {
+        componentId: string;
+        controlId: string;
+    };
+    query?: never;
+    url: '/system_components/{componentId}/controls/{controlId}';
+};
+
+export type GetSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentControlError = GetSystemComponentControlErrors[keyof GetSystemComponentControlErrors];
+
+export type GetSystemComponentControlResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentControlResponseBody;
+};
+
+export type GetSystemComponentControlResponse = GetSystemComponentControlResponses[keyof GetSystemComponentControlResponses];
 
 export type UpdateSystemComponentControlData = {
     body: UpdateSystemComponentControlRequestBody;
@@ -4162,33 +8782,143 @@ export type UpdateSystemComponentControlData = {
         componentId: string;
         controlId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/controls/{controlId}';
 };
 
-export type UpdateSystemComponentControlResponse = (UpdateSystemComponentControlResponseBody);
-
-export type UpdateSystemComponentControlError = (ErrorModel);
-
-export type GetSystemComponentSignalData = {
-    path: {
-        componentId: string;
-        signalId: string;
-    };
+export type UpdateSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemComponentSignalResponse = (GetSystemComponentSignalResponseBody);
+export type UpdateSystemComponentControlError = UpdateSystemComponentControlErrors[keyof UpdateSystemComponentControlErrors];
 
-export type GetSystemComponentSignalError = (ErrorModel);
+export type UpdateSystemComponentControlResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentControlResponseBody;
+};
+
+export type UpdateSystemComponentControlResponse = UpdateSystemComponentControlResponses[keyof UpdateSystemComponentControlResponses];
 
 export type ArchiveSystemComponentSignalData = {
+    body?: never;
     path: {
         componentId: string;
         signalId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/signals/{signalId}';
 };
 
-export type ArchiveSystemComponentSignalResponse = (void);
+export type ArchiveSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveSystemComponentSignalError = (ErrorModel);
+export type ArchiveSystemComponentSignalError = ArchiveSystemComponentSignalErrors[keyof ArchiveSystemComponentSignalErrors];
+
+export type ArchiveSystemComponentSignalResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentSignalResponse = ArchiveSystemComponentSignalResponses[keyof ArchiveSystemComponentSignalResponses];
+
+export type GetSystemComponentSignalData = {
+    body?: never;
+    path: {
+        componentId: string;
+        signalId: string;
+    };
+    query?: never;
+    url: '/system_components/{componentId}/signals/{signalId}';
+};
+
+export type GetSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentSignalError = GetSystemComponentSignalErrors[keyof GetSystemComponentSignalErrors];
+
+export type GetSystemComponentSignalResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentSignalResponseBody;
+};
+
+export type GetSystemComponentSignalResponse = GetSystemComponentSignalResponses[keyof GetSystemComponentSignalResponses];
 
 export type UpdateSystemComponentSignalData = {
     body: UpdateSystemComponentSignalRequestBody;
@@ -4196,241 +8926,1089 @@ export type UpdateSystemComponentSignalData = {
         componentId: string;
         signalId: string;
     };
+    query?: never;
+    url: '/system_components/{componentId}/signals/{signalId}';
 };
 
-export type UpdateSystemComponentSignalResponse = (UpdateSystemComponentSignalResponseBody);
-
-export type UpdateSystemComponentSignalError = (ErrorModel);
-
-export type GetSystemComponentData = {
-    path: {
-        id: string;
-    };
+export type UpdateSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetSystemComponentResponse = (GetSystemComponentResponseBody);
+export type UpdateSystemComponentSignalError = UpdateSystemComponentSignalErrors[keyof UpdateSystemComponentSignalErrors];
 
-export type GetSystemComponentError = (ErrorModel);
+export type UpdateSystemComponentSignalResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentSignalResponseBody;
+};
+
+export type UpdateSystemComponentSignalResponse = UpdateSystemComponentSignalResponses[keyof UpdateSystemComponentSignalResponses];
 
 export type ArchiveSystemComponentData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_components/{id}';
 };
 
-export type ArchiveSystemComponentResponse = (void);
+export type ArchiveSystemComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveSystemComponentError = (ErrorModel);
+export type ArchiveSystemComponentError = ArchiveSystemComponentErrors[keyof ArchiveSystemComponentErrors];
+
+export type ArchiveSystemComponentResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentResponse = ArchiveSystemComponentResponses[keyof ArchiveSystemComponentResponses];
+
+export type GetSystemComponentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_components/{id}';
+};
+
+export type GetSystemComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentError = GetSystemComponentErrors[keyof GetSystemComponentErrors];
+
+export type GetSystemComponentResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentResponseBody;
+};
+
+export type GetSystemComponentResponse = GetSystemComponentResponses[keyof GetSystemComponentResponses];
 
 export type UpdateSystemComponentData = {
     body: UpdateSystemComponentRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_components/{id}';
 };
 
-export type UpdateSystemComponentResponse = (UpdateSystemComponentResponseBody);
+export type UpdateSystemComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateSystemComponentError = (ErrorModel);
+export type UpdateSystemComponentError = UpdateSystemComponentErrors[keyof UpdateSystemComponentErrors];
+
+export type UpdateSystemComponentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentResponseBody;
+};
+
+export type UpdateSystemComponentResponse = UpdateSystemComponentResponses[keyof UpdateSystemComponentResponses];
 
 export type CreateSystemComponentConstraintData = {
     body: CreateSystemComponentConstraintRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_components/{id}/constraints';
 };
 
-export type CreateSystemComponentConstraintResponse = (CreateSystemComponentConstraintResponseBody);
+export type CreateSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateSystemComponentConstraintError = (ErrorModel);
+export type CreateSystemComponentConstraintError = CreateSystemComponentConstraintErrors[keyof CreateSystemComponentConstraintErrors];
+
+export type CreateSystemComponentConstraintResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentConstraintResponseBody;
+};
+
+export type CreateSystemComponentConstraintResponse = CreateSystemComponentConstraintResponses[keyof CreateSystemComponentConstraintResponses];
 
 export type CreateSystemComponentControlData = {
     body: CreateSystemComponentControlRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_components/{id}/controls';
 };
 
-export type CreateSystemComponentControlResponse = (CreateSystemComponentControlResponseBody);
+export type CreateSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateSystemComponentControlError = (ErrorModel);
+export type CreateSystemComponentControlError = CreateSystemComponentControlErrors[keyof CreateSystemComponentControlErrors];
+
+export type CreateSystemComponentControlResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentControlResponseBody;
+};
+
+export type CreateSystemComponentControlResponse = CreateSystemComponentControlResponses[keyof CreateSystemComponentControlResponses];
 
 export type CreateSystemComponentSignalData = {
     body: CreateSystemComponentSignalRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/system_components/{id}/signals';
 };
 
-export type CreateSystemComponentSignalResponse = (CreateSystemComponentSignalResponseBody);
+export type CreateSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type CreateSystemComponentSignalError = (ErrorModel);
+export type CreateSystemComponentSignalError = CreateSystemComponentSignalErrors[keyof CreateSystemComponentSignalErrors];
+
+export type CreateSystemComponentSignalResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentSignalResponseBody;
+};
+
+export type CreateSystemComponentSignalResponse = CreateSystemComponentSignalResponses[keyof CreateSystemComponentSignalResponses];
 
 export type ListTasksData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
         teamId?: string;
     };
+    url: '/tasks';
 };
 
-export type ListTasksResponse = (ListTasksResponseBody);
+export type ListTasksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListTasksError = (ErrorModel);
+export type ListTasksError = ListTasksErrors[keyof ListTasksErrors];
+
+export type ListTasksResponses = {
+    /**
+     * OK
+     */
+    200: ListTasksResponseBody;
+};
+
+export type ListTasksResponse = ListTasksResponses[keyof ListTasksResponses];
 
 export type CreateTaskData = {
     body: CreateTaskRequestBody;
+    path?: never;
+    query?: never;
+    url: '/tasks';
 };
 
-export type CreateTaskResponse = (CreateTaskResponseBody);
-
-export type CreateTaskError = (ErrorModel);
-
-export type GetTaskData = {
-    path: {
-        id: string;
-    };
+export type CreateTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetTaskResponse = (GetTaskResponseBody);
+export type CreateTaskError = CreateTaskErrors[keyof CreateTaskErrors];
 
-export type GetTaskError = (ErrorModel);
+export type CreateTaskResponses = {
+    /**
+     * OK
+     */
+    200: CreateTaskResponseBody;
+};
+
+export type CreateTaskResponse = CreateTaskResponses[keyof CreateTaskResponses];
 
 export type ArchiveTaskData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/tasks/{id}';
 };
 
-export type ArchiveTaskResponse = (void);
+export type ArchiveTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveTaskError = (ErrorModel);
+export type ArchiveTaskError = ArchiveTaskErrors[keyof ArchiveTaskErrors];
+
+export type ArchiveTaskResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveTaskResponse = ArchiveTaskResponses[keyof ArchiveTaskResponses];
+
+export type GetTaskData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/tasks/{id}';
+};
+
+export type GetTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetTaskError = GetTaskErrors[keyof GetTaskErrors];
+
+export type GetTaskResponses = {
+    /**
+     * OK
+     */
+    200: GetTaskResponseBody;
+};
+
+export type GetTaskResponse = GetTaskResponses[keyof GetTaskResponses];
 
 export type UpdateTaskData = {
     body: UpdateTaskRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/tasks/{id}';
 };
 
-export type UpdateTaskResponse = (UpdateTaskResponseBody);
+export type UpdateTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateTaskError = (ErrorModel);
+export type UpdateTaskError = UpdateTaskErrors[keyof UpdateTaskErrors];
+
+export type UpdateTaskResponses = {
+    /**
+     * OK
+     */
+    200: UpdateTaskResponseBody;
+};
+
+export type UpdateTaskResponse = UpdateTaskResponses[keyof UpdateTaskResponses];
 
 export type ListTeamsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/teams';
 };
 
-export type ListTeamsResponse = (ListTeamsResponseBody);
+export type ListTeamsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListTeamsError = (ErrorModel);
+export type ListTeamsError = ListTeamsErrors[keyof ListTeamsErrors];
+
+export type ListTeamsResponses = {
+    /**
+     * OK
+     */
+    200: ListTeamsResponseBody;
+};
+
+export type ListTeamsResponse = ListTeamsResponses[keyof ListTeamsResponses];
 
 export type CreateTeamData = {
     body: CreateTeamRequestBody;
+    path?: never;
+    query?: never;
+    url: '/teams';
 };
 
-export type CreateTeamResponse = (CreateTeamResponseBody);
-
-export type CreateTeamError = (ErrorModel);
-
-export type GetTeamData = {
-    path: {
-        id: string;
-    };
+export type CreateTeamErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
 };
 
-export type GetTeamResponse = (GetTeamResponseBody);
+export type CreateTeamError = CreateTeamErrors[keyof CreateTeamErrors];
 
-export type GetTeamError = (ErrorModel);
+export type CreateTeamResponses = {
+    /**
+     * OK
+     */
+    200: CreateTeamResponseBody;
+};
+
+export type CreateTeamResponse = CreateTeamResponses[keyof CreateTeamResponses];
 
 export type ArchiveTeamData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/teams/{id}';
 };
 
-export type ArchiveTeamResponse = (void);
+export type ArchiveTeamErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ArchiveTeamError = (ErrorModel);
+export type ArchiveTeamError = ArchiveTeamErrors[keyof ArchiveTeamErrors];
+
+export type ArchiveTeamResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveTeamResponse = ArchiveTeamResponses[keyof ArchiveTeamResponses];
+
+export type GetTeamData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/teams/{id}';
+};
+
+export type GetTeamErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetTeamError = GetTeamErrors[keyof GetTeamErrors];
+
+export type GetTeamResponses = {
+    /**
+     * OK
+     */
+    200: GetTeamResponseBody;
+};
+
+export type GetTeamResponse = GetTeamResponses[keyof GetTeamResponses];
 
 export type UpdateTeamsData = {
     body: UpdateTeamRequestBody;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/teams/{id}';
 };
 
-export type UpdateTeamsResponse = (UpdateTeamResponseBody);
+export type UpdateTeamsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type UpdateTeamsError = (ErrorModel);
+export type UpdateTeamsError = UpdateTeamsErrors[keyof UpdateTeamsErrors];
 
-export type GetCurrentUserSessionResponse = (GetUserSessionResponseBody);
+export type UpdateTeamsResponses = {
+    /**
+     * OK
+     */
+    200: UpdateTeamResponseBody;
+};
 
-export type GetCurrentUserSessionError = (ErrorModel);
+export type UpdateTeamsResponse = UpdateTeamsResponses[keyof UpdateTeamsResponses];
+
+export type GetCurrentUserSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user_session';
+};
+
+export type GetCurrentUserSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetCurrentUserSessionError = GetCurrentUserSessionErrors[keyof GetCurrentUserSessionErrors];
+
+export type GetCurrentUserSessionResponses = {
+    /**
+     * OK
+     */
+    200: GetUserSessionResponseBody;
+};
+
+export type GetCurrentUserSessionResponse = GetCurrentUserSessionResponses[keyof GetCurrentUserSessionResponses];
 
 export type ListUserAssignmentsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/user_session/assignments';
 };
 
-export type ListUserAssignmentsResponse = (ListUserAssignmentsResponseBody);
+export type ListUserAssignmentsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListUserAssignmentsError = (ErrorModel);
+export type ListUserAssignmentsError = ListUserAssignmentsErrors[keyof ListUserAssignmentsErrors];
+
+export type ListUserAssignmentsResponses = {
+    /**
+     * OK
+     */
+    200: ListUserAssignmentsResponseBody;
+};
+
+export type ListUserAssignmentsResponse = ListUserAssignmentsResponses[keyof ListUserAssignmentsResponses];
 
 export type ListUserNotificationsData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
     };
+    url: '/user_session/notifications';
 };
 
-export type ListUserNotificationsResponse = (ListNotificationsResponseBody);
+export type ListUserNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListUserNotificationsError = (ErrorModel);
+export type ListUserNotificationsError = ListUserNotificationsErrors[keyof ListUserNotificationsErrors];
+
+export type ListUserNotificationsResponses = {
+    /**
+     * OK
+     */
+    200: ListNotificationsResponseBody;
+};
+
+export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
 
 export type DeleteUserNotificationData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/user_session/notifications/{id}';
 };
 
-export type DeleteUserNotificationResponse = (void);
+export type DeleteUserNotificationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type DeleteUserNotificationError = (ErrorModel);
+export type DeleteUserNotificationError = DeleteUserNotificationErrors[keyof DeleteUserNotificationErrors];
+
+export type DeleteUserNotificationResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteUserNotificationResponse = DeleteUserNotificationResponses[keyof DeleteUserNotificationResponses];
 
 export type ListUsersData = {
+    body?: never;
+    path?: never;
     query?: {
-        archived?: boolean;
         limit?: number;
         offset?: number;
         search?: string;
+        archived?: boolean;
         teamId?: string;
     };
+    url: '/users';
 };
 
-export type ListUsersResponse = (ListUsersResponseBody);
+export type ListUsersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type ListUsersError = (ErrorModel);
+export type ListUsersError = ListUsersErrors[keyof ListUsersErrors];
+
+export type ListUsersResponses = {
+    /**
+     * OK
+     */
+    200: ListUsersResponseBody;
+};
+
+export type ListUsersResponse = ListUsersResponses[keyof ListUsersResponses];
 
 export type GetUserData = {
+    body?: never;
     path: {
         id: string;
     };
+    query?: never;
+    url: '/users/{id}';
 };
 
-export type GetUserResponse = (GetUserResponseBody);
+export type GetUserErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
 
-export type GetUserError = (ErrorModel);
+export type GetUserError = GetUserErrors[keyof GetUserErrors];
+
+export type GetUserResponses = {
+    /**
+     * OK
+     */
+    200: GetUserResponseBody;
+};
+
+export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
+
+export type ClientOptions = {
+    baseUrl: 'http://localhost:8888/api/v1' | (string & {});
+};

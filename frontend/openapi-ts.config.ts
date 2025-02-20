@@ -7,10 +7,10 @@ export default defineConfig({
 	output: {
 		path: "src/lib/api/oapi.gen",
 	},
-	client: {
-		name: "@hey-api/client-fetch",
-	},
 	plugins: [
+		{
+			name: '@hey-api/client-fetch',
+		},
 		{
 			name: "@hey-api/typescript",
 			enums: "javascript",

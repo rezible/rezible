@@ -136,7 +136,7 @@ type CreateMeetingScheduleAttributes struct {
 	Name            string           `json:"name"`
 	SessionTitle    string           `json:"sessionTitle"`
 	Description     *string          `json:"description,omitempty"`
-	StartsAt        DateTimeAnchor   `json:"startsAt"`
+	StartsAt        time.Time        `json:"startsAt"`
 	DurationMinutes int              `json:"durationMinutes"`
 	Attendees       MeetingAttendees `json:"attendees"`
 	Repeats         string           `json:"repeats" enum:"daily,weekly,monthly"`
@@ -219,7 +219,7 @@ type CreateMeetingSessionAttributes struct {
 	Title              string           `json:"title"`
 	Description        *string          `json:"description,omitempty"`
 	Attendees          MeetingAttendees `json:"attendees"`
-	StartsAt           DateTimeAnchor   `json:"startsAt"`
+	StartsAt           time.Time        `json:"startsAt"`
 	DurationMinutes    int              `json:"durationMinutes"`
 	DocumentTemplateId *uuid.UUID       `json:"documentTemplateId,omitempty"`
 }

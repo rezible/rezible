@@ -5,13 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-	rez "github.com/rezible/rezible"
-	"reflect"
-	"time"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
+	"reflect"
 )
 
 const (
@@ -89,23 +86,6 @@ type (
 		Total    int     `json:"total"`
 	}
 )
-
-// TODO: remove this, just enforce a zoned datetime
-
-type DateTimeAnchor struct {
-	Date     string `json:"date" format:"date"`
-	Time     string `json:"time" format:"time"`
-	Timezone string `json:"timezone"`
-}
-
-func (a DateTimeAnchor) ConvertTime() (time.Time, error) {
-	loc, locErr := time.LoadLocation(a.Timezone)
-	if locErr != nil {
-		return time.Time{}, fmt.Errorf("failed to load timezone: %w", locErr)
-	}
-	dateTime := fmt.Sprintf("%s %s", a.Date, a.Time)
-	return time.ParseInLocation("2006-01-02 15:04:05", dateTime, loc)
-}
 
 // FlexibleId is a field which can be either a uuid or a slug
 type FlexibleId struct {

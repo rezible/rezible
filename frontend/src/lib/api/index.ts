@@ -1,5 +1,5 @@
 import { dev } from "$app/environment";
-import { client } from "./oapi.gen";
+import { client } from "./oapi.gen/client.gen";
 import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
 
 import { createConfig, type Options } from "@hey-api/client-fetch";

@@ -6,6 +6,7 @@ import {
 	type GetCurrentUserSessionResponse,
 	type User,
 } from "$lib/api";
+import { parseAbsoluteToLocal } from "@internationalized/date";
 import { getCurrentUserSession } from "./api/oapi.gen";
 import { QueryClient, QueryObserver, queryOptions } from "@tanstack/svelte-query";
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
@@ -23,7 +24,7 @@ type AuthSession = {
 const parseUserSessionResponse = ({ data }: GetCurrentUserSessionResponse): AuthSession => {
 	return {
 		user: data.user,
-		expiresAt: data.expiresAt,
+		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
 	};
 };
 
