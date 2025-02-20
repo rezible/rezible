@@ -1,4 +1,4 @@
-import type { IncidentEventDecisionContext, DateTimeAnchor, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent, Incident } from "$lib/api";
+import type { IncidentEventDecisionContext, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent, Incident } from "$lib/api";
 import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 import type { Content, JSONContent } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, fromDate} from '@internationalized/date';

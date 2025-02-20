@@ -9,14 +9,33 @@ import {
 	type SystemComponentAttributes,
 	type SystemComponentConstraint,
 	type SystemComponentControl,
+	type SystemComponentKind,
 	type SystemComponentSignal,
 	type UpdateSystemComponentAttributes,
 } from "$lib/api";
 import { analysis } from "../analysis.svelte";
 
+const defaultComponentKind = {
+	id: "",
+	attributes: {
+		description: "",
+		label: ""
+	},
+};
+
+const defaultAttributes: SystemComponentAttributes = {
+	constraints: [],
+	controls: [],
+	description: "",
+	kind: defaultComponentKind,
+	name: "",
+	properties: {},
+	signals: []
+}
+
 const createComponentAttributesState = () => {
 	let name = $state<SystemComponentAttributes["name"]>("");
-	let kind = $state<SystemComponentAttributes["kind"]>("");
+	let kind = $state<SystemComponentKind>(defaultComponentKind);
 	let description = $state<SystemComponentAttributes["description"]>("");
 	let constraints = $state<SystemComponentAttributes["constraints"]>([]);
 	let controls = $state<SystemComponentAttributes["controls"]>([]);
@@ -25,8 +44,8 @@ const createComponentAttributesState = () => {
 	
 	let valid = $state(false);
 
-	const initFromComponent = (c: SystemComponent) => {
-		const a = c.attributes;
+	const init = (c?: SystemComponent) => {
+		const a = c ? c.attributes : defaultAttributes;
 		name = a.name;
 		kind = a.kind;
 		description = a.description;
@@ -65,11 +84,11 @@ const createComponentAttributesState = () => {
 
 	// this is gross but oh well
 	return {
-		initFromComponent,
+		init,
 		get name() { return name },
 		set name(n: string) { name = n; onUpdate(); },
-		get kind() { return name },
-		set kind(k: string) { kind = k; onUpdate(); },
+		get kind() { return kind },
+		set kind(k: SystemComponentKind) { kind = k; onUpdate(); },
 		get description() { return description },
 		set description(d: string) { description = d; onUpdate(); },
 		get constraints() { return constraints },
@@ -127,28 +146,30 @@ const createComponentDialogState = () => {
 		clear();
 	}
 
-	const makeUpdateMutation = () => createMutation(() => ({
-		...updateSystemComponentMutation(),
-		onSuccess: clear,
-	}));
 	const makeCreateMutation = () => createMutation(() => ({
 		...createSystemComponentMutation(), 
 		onSuccess: (body: CreateSystemComponentResponseBody) => {
 			if (view === "create" && previousView === "add") {
 				goBack();
 				selectedAddComponent = body.data;
+				return;
 			}
+			clear();
 		}
 	}));
+	const makeUpdateMutation = () => createMutation(() => ({
+		...updateSystemComponentMutation(),
+		onSuccess: clear,
+	}));
 
-	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
 	let createMut = $state<ReturnType<typeof makeCreateMutation>>();
+	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
 
-	const loading = $derived(updateMut?.isPending || createMut?.isPending);
+	const loading = $derived(createMut?.isPending || updateMut?.isPending);
 
 	const setup = () => {
-		updateMut = makeUpdateMutation();
 		createMut = makeCreateMutation();
+		updateMut = makeUpdateMutation();
 	};
 
 	const setAdding = () => {
@@ -166,21 +187,20 @@ const createComponentDialogState = () => {
 	const setEditing = (sc: SystemAnalysisComponent) => {
 		setView("edit");
 		editingComponent = sc;
-		componentAttributes.initFromComponent($state.snapshot(sc.attributes.component));
+		componentAttributes.init($state.snapshot(sc.attributes.component));
 	};
 
 	const confirm = () => {
+		const attr = componentAttributes.asAttributes();
 		if (view === "create" && componentAttributes.valid) {
-			const attr = componentAttributes.asAttributes();
 			const reqAttributes: CreateSystemComponentAttributes = {
 				name: attr.name,
 			};
 			createMut?.mutate({ body: { attributes: reqAttributes } });
 		} else if (view === "edit" && !!editingComponent && componentAttributes.valid) {
-			const attr = componentAttributes.asAttributes();
 			const componentId = editingComponent.attributes.component.id;
 			const reqAttributes: UpdateSystemComponentAttributes = {
-				name: attr.name,
+				
 			};
 			updateMut?.mutate({
 				path: { id: componentId },
