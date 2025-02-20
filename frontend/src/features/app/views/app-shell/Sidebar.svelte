@@ -11,7 +11,8 @@
 		mdiPhoneRing,
 		mdiVideo,
 	} from "@mdi/js";
-	import { cls, Header, Icon, Collapse } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
+	import { Icon, Collapse } from "svelte-ux";
 
 	type SidebarItem = {
 		path: string;

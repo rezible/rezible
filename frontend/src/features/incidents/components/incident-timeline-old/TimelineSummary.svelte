@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { cls, Icon, Tooltip } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
+	import { Icon, Tooltip } from "svelte-ux";
 	import type { IncidentEvent, IncidentMilestone, IncidentStage } from "./events";
 	import {
 		mdiAccountAlert,

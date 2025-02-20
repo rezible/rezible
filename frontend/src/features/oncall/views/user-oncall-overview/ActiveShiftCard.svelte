@@ -3,7 +3,8 @@
 	import { session } from "$lib/auth.svelte";
 	import { addMinutes, isFuture, differenceInMinutes, formatDistanceToNowStrict, isPast } from "date-fns";
 
-	import { cls, Card, Button, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
+	import { Card, Button, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { mdiCircleMedium, mdiChevronRight } from "@mdi/js";
 
 	interface Props {

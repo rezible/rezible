@@ -2,7 +2,8 @@
 	import type { RetrospectiveSection } from "$lib/api";
 	import { mdiCircleMedium } from "@mdi/js";
 	import { onMount } from "svelte";
-	import { cls, Icon } from "svelte-ux";
+	import { Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 
 	type Props = {
 		visible: boolean;

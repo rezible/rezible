@@ -24,7 +24,7 @@
 		getDateByType,
 		setDateByType
 	} from './utils';
-	import { cls } from 'svelte-ux';
+	import { cls } from '@layerstack/tailwind';
 
 	let {
 		class: className,

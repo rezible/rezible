@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { cls, Icon } from "svelte-ux";
+	import { Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiLayers, mdiPuzzle } from "@mdi/js";
 	import PageContainer, { type PageTabsProps } from "$components/page-container/PageContainer.svelte";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";

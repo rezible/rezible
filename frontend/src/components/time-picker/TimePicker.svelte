@@ -4,7 +4,7 @@
 	import { Time } from '@internationalized/date';
 	import TimePickerInput from './TimePickerInput.svelte';
 	import TimePeriodSelect from "./TimePickerSelect.svelte";
-	import { cls } from 'svelte-ux';
+	import { cls } from '@layerstack/tailwind';
 	import type { Period } from './utils';
 
 	type Props = {

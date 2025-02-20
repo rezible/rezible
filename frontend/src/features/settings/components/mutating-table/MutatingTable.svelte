@@ -15,7 +15,9 @@
 		useQueryClient,
 		type MutationOptions,
 	} from "@tanstack/svelte-query";
-	import { Button, Card, Pagination, paginationStore, Table, type ColumnDef } from "svelte-ux";
+	import { type ColumnDef } from "@layerstack/svelte-table";
+	import { Button, Card, Pagination, Table } from "svelte-ux";
+	import { paginationStore } from "@layerstack/svelte-stores";
 	import type { PaginatedResponse, ErrorModel, ListQueryOptionsFunc, ListFuncQueryOptions } from "$lib/api";
 	import { mdiArchive, mdiArchiveMinus, mdiPencil, mdiPlus } from "@mdi/js";
 	import type { FormFields } from "./fields.svelte";

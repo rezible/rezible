@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Checkbox, cls, Icon, ListItem, Tabs } from "svelte-ux";
+	import { Button, Checkbox, Icon, ListItem, Tabs } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { mdiAccount, mdiLinkPlus, mdiLinkOff } from "@mdi/js";
 
 	type Props = {

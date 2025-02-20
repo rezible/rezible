@@ -1,7 +1,8 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { mdiDotsGrid } from "@mdi/js";
-	import { Button, Card, cls, Header, Icon } from "svelte-ux";
+	import { Button, Card, Header, Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 
 	interface Props {
 		title: string;

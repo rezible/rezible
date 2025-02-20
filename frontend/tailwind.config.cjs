@@ -1,13 +1,17 @@
-const svelteUx = require("svelte-ux/plugins/tailwind.cjs");
+const colors = require('tailwindcss/colors');
+const layerstack = require("@layerstack/tailwind/plugin");
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
 	content: [
 		"./src/**/*.{html,js,svelte,ts}",
-		"../node_modules/svelte-ux/**/*.{html,svelte,js,ts}",
-		"../node_modules/layerchart/**/*.{html,svelte,js,ts}",
+		"../node_modules/svelte-ux/**/*.{svelte,js}",
+		"../node_modules/layerchart/**/*.{svelte,js}",
 	],
-	plugins: [require("@tailwindcss/typography"), svelteUx({ colorSpace: "oklch" })],
+	plugins: [
+		require("@tailwindcss/typography"),
+		layerstack({ colorSpace: "oklch" }),
+	],
 	ux: {
 		themes: require("./src/themes.json"),
 	},

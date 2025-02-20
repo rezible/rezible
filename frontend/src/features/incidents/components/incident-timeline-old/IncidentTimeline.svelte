@@ -1,10 +1,8 @@
 <script lang="ts">
 	import {
-		cls,
 		settings,
 		Button,
 		Icon,
-		PeriodType,
 		Timeline,
 		TimelineEvent,
 		Dialog,

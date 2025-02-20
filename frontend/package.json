@@ -37,6 +37,7 @@
 		"@hey-api/client-fetch": "^0.8.1",
 		"@hocuspocus/provider": "^2.15.2",
 		"@internationalized/date": "^3.7.0",
+		"@layerstack/tailwind": "^0.0.13",
 		"@mdi/js": "^7.4.47",
 		"@rezible/documents": "workspace:*",
 		"@sveltejs/adapter-auto": "^4.0.0",

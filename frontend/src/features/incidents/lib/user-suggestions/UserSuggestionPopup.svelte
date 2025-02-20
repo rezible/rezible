@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { SuggestionKeyDownProps, SuggestionProps } from "@tiptap/suggestion";
-	import { cls } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 
 	const { items, command }: SuggestionProps<string, any> = $props();
 

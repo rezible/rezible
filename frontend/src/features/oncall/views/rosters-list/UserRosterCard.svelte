@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Card, cls, Header, Icon } from "svelte-ux";
+	import { Button, Card, Header, Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { page } from "$app/state";
 	import Avatar from "$components/avatar/Avatar.svelte";
 

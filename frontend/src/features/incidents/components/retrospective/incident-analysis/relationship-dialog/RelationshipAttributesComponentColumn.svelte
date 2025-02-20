@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { type SystemComponent, type SystemComponentSignal, type SystemComponentControl } from "$lib/api";
-	import { Button, Checkbox, cls, Header, Icon, ListItem, TextField } from "svelte-ux";
+	import { Button, Checkbox, Header, Icon, ListItem, TextField } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { relationshipDialog } from "./dialogState.svelte";
 	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
 	import { mdiCheck, mdiClose, mdiPencil, mdiPlus } from "@mdi/js";

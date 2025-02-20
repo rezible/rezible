@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { Card, DateRangeField, Header, PeriodType, TextField } from "svelte-ux";
+	import { Card, DateRangeField, Header, TextField } from "svelte-ux";
+	import {
+		PeriodType,
+	} from '@layerstack/utils';
+	import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
 	import { formatDistanceToNow, subDays } from "date-fns";
-	import type { DateRange as DateRangeType } from "svelte-ux/utils/dateRange";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
@@ -10,7 +13,7 @@
 	type Props = {};
 	const {}: Props = $props();
 
-	let params = $state<ListOncallShiftsData>({});
+	let params = $state<ListOncallShiftsData>();
 	const shiftsQuery = createQuery(() => listOncallShiftsOptions(params));
 
 	const today = new Date();

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Card, cls, Header, Icon, ProgressCircle } from "svelte-ux";
+	import { Button, Card, Header, Icon, ProgressCircle } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import PreviousShiftOverview from "./PreviousShiftOverview.svelte";
 	import { mdiArrowRight, mdiPhone } from "@mdi/js";

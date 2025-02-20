@@ -16,7 +16,8 @@
 
 <script lang="ts">
 	import { page } from "$app/state";
-	import { cls, Icon } from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
+	import { Icon } from "svelte-ux";
 
 	const { pages, baseRouteId, basePath, end = false }: PageTabsProps = $props();
 

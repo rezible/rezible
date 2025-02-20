@@ -7,9 +7,9 @@
 		type MenuOption,
 		SelectField,
 		MenuItem,
-		cls,
 		ListItem,
 	} from "svelte-ux";
+	import { cls } from '@layerstack/tailwind';
 	import { v4 as uuidv4 } from "uuid";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import {

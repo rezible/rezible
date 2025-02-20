@@ -1,16 +1,8 @@
 <script lang="ts">
 	import { slide } from "svelte/transition";
 	import { mdiCalendar } from "@mdi/js";
-	import {
-		Field,
-		Dialog,
-		DateSelect,
-		DateToken,
-		getSettings,
-		PeriodType,
-		NumberStepper,
-		Input,
-	} from "svelte-ux";
+	import { Field, Dialog, DateSelect, getSettings } from "svelte-ux";
+	import { DateToken, PeriodType } from "@layerstack/utils";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import TimePicker from "$components/time-picker/TimePicker.svelte";
 	import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
@@ -32,7 +24,7 @@
 		time: Time;
 		period: "AM" | "PM";
 		timezone: string;
-	}
+	};
 	const convertTime = (t: ZonedDateTime): InternalValue => {
 		const d = t.copy();
 		return {
@@ -47,7 +39,7 @@
 		if (hour == 0) return 12;
 		if (hour >= 12) return hour - 12;
 		return hour;
-	}
+	};
 
 	const currentValue = $derived(convertTime(current));
 	const currentDate = $derived(current.toDate());
@@ -63,7 +55,9 @@
 
 	const pad = (n: number) => String(n).padStart(2, "0");
 
-	const formatHourMinute = $derived(`${pad(hour12(currentValue.time.hour))}:${pad(currentValue.time.minute)}`);
+	const formatHourMinute = $derived(
+		`${pad(hour12(currentValue.time.hour))}:${pad(currentValue.time.minute)}`
+	);
 	const formatTime = $derived(formatHourMinute + currentPeriod);
 
 	const formatDayOfWeek = $derived($format(currentDate, PeriodType.Day, { custom: secondaryFormat }));
@@ -124,11 +118,7 @@
 		{/if}
 
 		<div class="p-2 w-96">
-			<DateSelect
-				selected={value.date}
-				{periodType}
-				on:dateChange={e => (value.date = e.detail)}
-			/>
+			<DateSelect selected={value.date} {periodType} on:dateChange={(e) => (value.date = e.detail)} />
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}
