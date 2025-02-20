@@ -13,9 +13,7 @@
     "just":                        "latest",
     "postgresql":                  "latest",
     "github:peterldowns/localias": "",
-    "go":                          "latest",
-    "nodejs":                      "latest",
-    "pnpm":                        "latest"
+    "go":                          "latest"
   },
   "env": {
     "DB_URL": "postgresql://localhost/rezible?sslmode=disable"
