@@ -141,7 +141,7 @@ func (b *handoverMessageBuilder) addAnnotations() {
 
 func (b *handoverMessageBuilder) addIncidents() {
 	if len(b.incidents) == 0 {
-		b.addBlocks(plainText("No Incidents"))
+		b.addBlocks(slack.NewSectionBlock(plainText("No Incidents"), nil, nil))
 		return
 	}
 
