@@ -28,6 +28,8 @@ export class ToastState {
 			this.remove(id);
 		}, durationMs);
 		this.toastToTimeoutMap.set(id, newTimeout);
+		
+		return id;
 	}
 
 	remove(id: string) {
@@ -42,10 +44,10 @@ export class ToastState {
 
 const TOAST_KEY = Symbol("TOAST_STATE");
 
-export function setToastState() {
+export function setupToastState() {
 	return setContext(TOAST_KEY, new ToastState());
 }
 
 export function getToastState() {
-	return getContext<ReturnType<typeof setToastState>>(TOAST_KEY);
+	return getContext<ReturnType<typeof setupToastState>>(TOAST_KEY);
 }

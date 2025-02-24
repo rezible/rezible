@@ -2,6 +2,7 @@
 	import { Card } from "svelte-ux";
 	import { createQuery } from "@tanstack/svelte-query";
 	import {
+	getTeamOptions,
 		listOncallRostersOptions,
 		listUsersOptions,
 		type OncallRoster,
@@ -14,13 +15,14 @@
 	import TeamUsers from "./TeamUsers.svelte";
 	import TeamRosters from "./TeamRosters.svelte";
 
-	interface Props {
-		team: Team;
+	type Props = {
+		teamId: string;
 	}
-	let { team }: Props = $props();
+	let { teamId }: Props = $props();
 
-	const usersQuery = createQuery(() => listUsersOptions({ query: { teamId: team.id } }));
-	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { teamId: team.id } }));
+	const teamQuery = createQuery(() => getTeamOptions({ path: { id: teamId } }));
+	const usersQuery = createQuery(() => listUsersOptions({ query: { teamId } }));
+	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { teamId } }));
 </script>
 
 <div class="flex gap-2">

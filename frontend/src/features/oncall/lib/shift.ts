@@ -20,3 +20,10 @@ export const buildShiftTimeDetails = (shift: OncallShift): ShiftTimeDetails => {
 	const status: ShiftStatus = isPast(end) ? "finished" : isFuture(start) ? "upcoming" : "active";
 	return { start, end, progress, minutesLeft, status };
 };
+
+export const formatShiftDates = (shift: OncallShift) => {
+	const start = new Date(shift.attributes.startAt);
+	const end = new Date(shift.attributes.endAt);
+	const rosterName = shift.attributes.roster.attributes.name;
+	return `${rosterName} - ${start.toDateString()} to ${end.toDateString()}`;
+};

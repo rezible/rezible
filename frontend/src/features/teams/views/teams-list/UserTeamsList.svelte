@@ -6,7 +6,7 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import Avatar from "$components/avatar/Avatar.svelte";
 
-	let params = $state<ListTeamsData>({ query: { limit: 1 } });
+	let params = $state<ListTeamsData>();
 	const userTeamsQuery = createQuery(() => listTeamsOptions(params));
 </script>
 

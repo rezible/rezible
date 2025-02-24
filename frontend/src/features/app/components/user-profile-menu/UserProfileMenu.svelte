@@ -3,9 +3,7 @@
 	import { mdiAccount, mdiAbTesting, mdiChevronDown, mdiCog } from "@mdi/js";
 	import { session } from "$lib/auth.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { getToastState } from "$components/toaster";
-
-	const toastState = getToastState();
+	import { appState } from "$lib/appState.svelte";
 
 	const accountLinks = [
 		{ href: "/profile", title: "Profile", icon: mdiAccount },
@@ -24,7 +22,7 @@
 		{/each}
 		<Button
 			on:click={() =>
-				toastState.add(
+				appState.toasts?.add(
 					"test",
 					"an example toast",
 					Math.random() > 0.25 ? mdiAbTesting : undefined,

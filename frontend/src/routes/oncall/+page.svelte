@@ -1,8 +1,8 @@
 <script lang="ts">
-	import PageContainer from "$components/page-container/PageContainer.svelte";
-	import UserOncallDisplay from "$features/oncall/views/user-oncall-overview/UserOncallOverview.svelte";
+	import UserOncallOverview from "$features/oncall/views/user-oncall-overview/UserOncallOverview.svelte";
+	import { setPageBreadcrumbs } from "$src/lib/appState.svelte";
+
+	setPageBreadcrumbs(() => [{ label: "Oncall" }]);
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Oncall" }]}>
-	<UserOncallDisplay />
-</PageContainer>
+<UserOncallOverview />

@@ -2,6 +2,7 @@
 	import { Button, ButtonGroup, Header, Icon } from "svelte-ux";
 	import IncidentsGraph from "$features/reports/components/incidents-graph/IncidentsGraph.svelte";
 	import { mdiContentDuplicate, mdiCopyleft, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
+	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 
 	type Props = {id: string;}
 	const { id }: Props = $props();
@@ -9,6 +10,11 @@
 	let starred = $state(true);
 
 	const report = {id: "foo", attributes: {title: "Test Report", author: "tex", slug: "test"}};
+
+	setPageBreadcrumbs(() => [
+		{ label: "Reports", href: "/reports" },
+		{ label: report.attributes.title },
+	]);
 </script>
 
 <div class="flex flex-col gap-2">

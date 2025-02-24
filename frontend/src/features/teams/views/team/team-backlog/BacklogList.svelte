@@ -3,7 +3,7 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button, ListItem } from "svelte-ux";
 
-	interface Props {
+	type Props = {
 		tasks: Task[];
 	}
 	let { tasks }: Props = $props();

@@ -3,7 +3,6 @@
 	import { Icon } from "svelte-ux";
 	import { cls } from '@layerstack/tailwind';
 	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiLayers, mdiPuzzle } from "@mdi/js";
-	import PageContainer, { type PageTabsProps } from "$components/page-container/PageContainer.svelte";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";
 
 	const { children } = $props();
@@ -47,13 +46,11 @@
 	</ul>
 {/snippet}
 
-<PageContainer breadcrumbs={[{ label: "Settings" }]}>
-	<div class="flex w-full h-full gap-2">
-		<div class="w-64 h-fit border rounded-lg py-2">
-			{@render pagesNav()}
-		</div>
-		<div class="flex-1 block">
-			{@render children()}
-		</div>
+<div class="flex w-full h-full gap-2">
+	<div class="w-64 h-fit border rounded-lg py-2">
+		{@render pagesNav()}
 	</div>
-</PageContainer>
+	<div class="flex-1 block">
+		{@render children()}
+	</div>
+</div>

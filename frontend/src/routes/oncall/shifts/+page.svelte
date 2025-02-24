@@ -1,11 +1,11 @@
 <script>
-	import PageContainer from "$components/page-container/PageContainer.svelte";
+	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 	import ShiftsList from "$features/oncall/views/shifts-list/ShiftsList.svelte";
+
+	setPageBreadcrumbs(() => [{ label: "Oncall", href: "/oncall" }, { label: "Shifts" }])
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Oncall", href: "/oncall" }, { label: "Shifts" }]}>
-	<ShiftsList />
-</PageContainer>
+<ShiftsList />
 
 <!-- upcoming -->
 <!--script lang="ts">

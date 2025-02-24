@@ -1,8 +1,8 @@
 <script lang="ts">
-	import PageContainer from "$components/page-container/PageContainer.svelte";
+	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 	import TeamsListView from "$features/teams/views/teams-list/TeamsListView.svelte";
+
+	setPageBreadcrumbs(() => [{ label: "Teams" }]);
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Teams" }]}>
-	<TeamsListView />
-</PageContainer>
+<TeamsListView />

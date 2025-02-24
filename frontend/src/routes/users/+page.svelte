@@ -1,7 +1,7 @@
 <script lang="ts">
-	import PageContainer from "$components/page-container/PageContainer.svelte";
+	import { setPageBreadcrumbs } from "$lib/appState.svelte";
+
+	setPageBreadcrumbs(() => [{ label: "Users" }]);
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Users" }]}>
-	<span>todo</span>
-</PageContainer>
+<span>todo</span>

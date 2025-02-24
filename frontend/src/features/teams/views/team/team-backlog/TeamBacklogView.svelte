@@ -4,13 +4,13 @@
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import BacklogList from "./BacklogList.svelte";
 
-	interface Props {
-		team: Team;
+	type Props = {
+		teamId: string;
 	}
-	let { team }: Props = $props();
+	let { teamId }: Props = $props();
 
 	let params = $state<ListTasksData>();
-	const query = createQuery(() => listTasksOptions({ ...params, query: { teamId: team.id } }));
+	const query = createQuery(() => listTasksOptions({ ...params, query: { teamId } }));
 </script>
 
 <LoadingQueryWrapper {query}>

@@ -1,11 +1,10 @@
 <script lang="ts">
-	import Toaster, { setToastState } from "$components/toaster";
+	import Toaster from "$components/toaster/Toaster.svelte";
 	import Sidebar from "./Sidebar.svelte";
 	import Header from "./Header.svelte";
+	import PageContainer from "./PageContainer.svelte";
 
 	const { children } = $props();
-
-	setToastState();
 </script>
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
@@ -17,7 +16,9 @@
 		</nav>
 
 		<main class="w-full overflow-y-auto px-2 pb-2">
-			{@render children()}
+			<PageContainer>
+				{@render children()}
+			</PageContainer>
 		</main>
 	</div>
 </div>

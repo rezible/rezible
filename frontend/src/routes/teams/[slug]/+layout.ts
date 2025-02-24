@@ -8,8 +8,7 @@ export const load = (async ({ params, parent, url }) => {
 
 	if (!isValidUUID(params.slug)) {
 		return {
-			slug: params.slug,
-			teamQueryOptions: getTeamOptions({ path: { id: params.slug } }),
+			id: params.slug,
 		};
 	}
 

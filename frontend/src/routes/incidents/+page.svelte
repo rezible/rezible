@@ -1,8 +1,8 @@
 <script lang="ts">
-	import PageContainer from "$components/page-container/PageContainer.svelte";
 	import IncidentsList from "$features/incidents/views/incidents-list/IncidentsList.svelte";
+	import { setPageBreadcrumbs } from "$lib/appState.svelte";
+
+	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 </script>
 
-<PageContainer breadcrumbs={[{ label: "Incidents" }]}>
-	<IncidentsList />
-</PageContainer>
+<IncidentsList />
