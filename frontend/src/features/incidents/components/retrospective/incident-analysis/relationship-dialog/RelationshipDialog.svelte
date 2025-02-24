@@ -2,8 +2,8 @@
 	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { relationshipDialog } from "./dialogState.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
+	import { relationshipDialog } from "./relationshipDialogState.svelte";
 	
 	relationshipDialog.setup();
 
@@ -48,7 +48,7 @@
 			confirmText={labels.confirm}
 			saveEnabled={relationshipDialog.saveEnabled}
 			onClose={relationshipDialog.clear}
-			onConfirm={relationshipDialog.confirm}
+			onConfirm={relationshipDialog.onConfirm}
 		/>
 	</svelte:fragment>
 </Dialog>

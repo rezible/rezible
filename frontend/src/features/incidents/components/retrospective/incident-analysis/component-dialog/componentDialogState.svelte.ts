@@ -157,13 +157,16 @@ const createComponentDialogState = () => {
 			clear();
 		}
 	}));
+	type CreateMutation = ReturnType<typeof makeCreateMutation>;
+
 	const makeUpdateMutation = () => createMutation(() => ({
 		...updateSystemComponentMutation(),
 		onSuccess: clear,
 	}));
+	type UpdateMutation = ReturnType<typeof makeUpdateMutation>;
 
-	let createMut = $state<ReturnType<typeof makeCreateMutation>>();
-	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
+	let createMut = $state<CreateMutation>();
+	let updateMut = $state<UpdateMutation>();
 
 	const loading = $derived(createMut?.isPending || updateMut?.isPending);
 
@@ -172,17 +175,11 @@ const createComponentDialogState = () => {
 		updateMut = makeUpdateMutation();
 	};
 
-	const setAdding = () => {
-		setView("add");
-	}
+	const setAdding = () => setView("add");
 
-	const setSelectedAddComponent = (c?: SystemComponent) => {
-		selectedAddComponent = c;
-	}
+	const setSelectedAddComponent = (c?: SystemComponent) => selectedAddComponent = c;
 
-	const setCreating = () => {
-		setView("create");
-	}
+	const setCreating = () => setView("create");
 
 	const setEditing = (sc: SystemAnalysisComponent) => {
 		setView("edit");

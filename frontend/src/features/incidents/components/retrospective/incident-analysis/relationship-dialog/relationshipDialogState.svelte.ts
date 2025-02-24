@@ -144,26 +144,29 @@ const createRelationshipDialogState = () => {
 	};
 
 	const onSuccess = () => {
-
+		clear();
 	}
+
+	const makeCreateMutation = () => createMutation(() => ({
+		...createSystemAnalysisRelationshipMutation(), 
+		onSuccess,
+	}));
+	type CreateMutation = ReturnType<typeof makeCreateMutation>;
 
 	const makeUpdateMutation = () => createMutation(() => ({
 		...updateSystemAnalysisRelationshipMutation(),
 		onSuccess,
 	}));
-	const makeCreateMutation = () => createMutation(() => ({
-		...createSystemAnalysisRelationshipMutation(), 
-		onSuccess,
-	}));
+	type UpdateMutation = ReturnType<typeof makeUpdateMutation>;
 
-	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
-	let createMut = $state<ReturnType<typeof makeCreateMutation>>();
+	let createMut = $state<CreateMutation>();
+	let updateMut = $state<UpdateMutation>();
 
-	const loading = $derived(updateMut?.isPending || createMut?.isPending);
+	const loading = $derived(createMut?.isPending || updateMut?.isPending);
 
 	const setup = () => {
-		updateMut = makeUpdateMutation();
 		createMut = makeCreateMutation();
+		updateMut = makeUpdateMutation();
 	};
 
 	const setCreating = (sourceId: string, targetId: string) => {
@@ -178,7 +181,7 @@ const createRelationshipDialogState = () => {
 		relationshipAttributes.initFrom(rel.attributes);
 	};
 
-	const confirm = () => {
+	const onConfirm = () => {
 		
 		clear();
 	};
@@ -200,7 +203,7 @@ const createRelationshipDialogState = () => {
 			return relationshipAttributes.valid && (view === "create" || relationshipAttributes.changed);
 		},
 		clear,
-		confirm,
+		onConfirm,
 		get loading() {
 			return loading;
 		},
