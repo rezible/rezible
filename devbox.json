@@ -12,7 +12,6 @@
     "process-compose":             "1.24.2",
     "just":                        "latest",
     "postgresql":                  "latest",
-    "github:peterldowns/localias": "",
     "go":                          "latest"
   },
   "env": {

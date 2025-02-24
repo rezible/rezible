@@ -49,9 +49,3 @@ processes:
     availability:
       restart: on_failure
       max_restarts: 1
-  localias:
-    disabled: true
-    command: localias run
-    availability:
-      restart: on_failure
-      max_restarts: 3

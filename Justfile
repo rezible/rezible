@@ -62,9 +62,6 @@ _default:
     DATABASE_URL="$DB_URL" \
       bun run --silent dev-server
 
-@install-localias:
-    sudo setcap CAP_NET_BIND_SERVICE=+eip $(readlink -f $(which localias))
-
 # [group('Database')]
 @setup-db: stop-db
     rm -rf ./.devbox/virtenv/postgresql/data
