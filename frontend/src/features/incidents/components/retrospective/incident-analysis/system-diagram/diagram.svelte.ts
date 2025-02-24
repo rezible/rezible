@@ -5,29 +5,21 @@ import { writable, get } from "svelte/store";
 import {
 	type Node,
 	type Edge,
-	MarkerType,
 	SvelteFlow,
 	type XYPosition,
 	useSvelteFlow,
-	type OnConnectEnd,
-	type OnConnect,
 	type Connection,
 	useStore,
 } from "@xyflow/svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
-	getSystemAnalysisOptions,
 	type SystemAnalysis,
 	type SystemAnalysisComponent,
 	type SystemAnalysisRelationship,
-	type SystemAnalysisRelationshipAttributes,
-	type SystemComponent,
 } from "$lib/api";
-import { analysis } from "../analysis.svelte";
-import { relationshipDialog } from "../relationship-dialog/dialogState.svelte";
+import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysis.svelte";
+import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {

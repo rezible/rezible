@@ -57,7 +57,7 @@
 			confirmText={labels.confirm}
 			saveEnabled={componentDialog.stateValid}
 			onClose={componentDialog.goBack}
-			onConfirm={componentDialog.confirm}
+			onConfirm={componentDialog.onConfirm}
 		/>
 	</svelte:fragment>
 </Dialog>

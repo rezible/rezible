@@ -29,13 +29,7 @@ const createAnalysisState = () => {
 			queryClient
 		);
 
-		watch(
-			() => analysisQuery.data,
-			(body) => {
-				if (!body?.data) return;
-				data = body.data;
-			}
-		);
+		watch(() => analysisQuery.data, res => { if (res?.data) data = res.data });
 	};
 
 	const setAddingComponent = (c?: SystemComponent) => {

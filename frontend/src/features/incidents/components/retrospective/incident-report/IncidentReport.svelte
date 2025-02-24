@@ -8,8 +8,7 @@
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";
 
-	import { incidentCtx, retrospectiveCtx } from "$features/incidents/lib/context.ts";
-	import type { Incident, Retrospective } from "$lib/api";
+	import { retrospectiveCtx } from "$features/incidents/lib/context.ts";
 	import { collaboration } from "$features/incidents/lib/collaboration.svelte";
 
 	type Props = {};

@@ -2,7 +2,7 @@ import { mdiDelta } from "@mdi/js";
 import type { ListSystemComponentKindsResponse, SystemComponentAttributes, SystemComponentKind } from "./api";
 import type { MenuOption } from "svelte-ux";
 
-export const systemComponentKindQueryMenuOptionSelect = (data: ListSystemComponentKindsResponse): MenuOption<string>[] => {
+export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]): MenuOption<string>[] => {
 	return [{ label: "Service", value: "service" }];
 }
 

@@ -17,7 +17,6 @@
 <div class="flex flex-col gap-2 h-full max-h-full overflow-hidden">
 	<div class="relative grow">
 		<SystemDiagram />
-
 		{@render floatingTimelineToggleButton(false)}
 	</div>
 

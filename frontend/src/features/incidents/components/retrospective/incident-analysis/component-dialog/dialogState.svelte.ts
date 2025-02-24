@@ -13,7 +13,7 @@ import {
 	type SystemComponentSignal,
 	type UpdateSystemComponentAttributes,
 } from "$lib/api";
-import { analysis } from "../analysis.svelte";
+import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysis.svelte";
 
 const defaultComponentKind = {
 	id: "",
@@ -88,7 +88,7 @@ const createComponentAttributesState = () => {
 		get name() { return name },
 		set name(n: string) { name = n; onUpdate(); },
 		get kind() { return kind },
-		set kind(k: SystemComponentKind) { kind = k; onUpdate(); },
+		setKind(k?: SystemComponentKind) { kind = (k ?? defaultComponentKind); onUpdate(); },
 		get description() { return description },
 		set description(d: string) { description = d; onUpdate(); },
 		get constraints() { return constraints },
@@ -190,22 +190,31 @@ const createComponentDialogState = () => {
 		componentAttributes.init($state.snapshot(sc.attributes.component));
 	};
 
-	const confirm = () => {
+	const doCreate = () => {
 		const attr = componentAttributes.asAttributes();
+		const reqAttributes: CreateSystemComponentAttributes = {
+			name: attr.name,
+		};
+		createMut?.mutate({ body: { attributes: reqAttributes } });
+	}
+
+	const doEdit = () => {
+		if (!editingComponent) return;
+		const componentId = editingComponent.attributes.component.id;
+		const reqAttributes: UpdateSystemComponentAttributes = {
+			
+		};
+		updateMut?.mutate({
+			path: { id: componentId },
+			body: { attributes: reqAttributes },
+		});
+	}
+
+	const onConfirm = () => {
 		if (view === "create" && componentAttributes.valid) {
-			const reqAttributes: CreateSystemComponentAttributes = {
-				name: attr.name,
-			};
-			createMut?.mutate({ body: { attributes: reqAttributes } });
-		} else if (view === "edit" && !!editingComponent && componentAttributes.valid) {
-			const componentId = editingComponent.attributes.component.id;
-			const reqAttributes: UpdateSystemComponentAttributes = {
-				
-			};
-			updateMut?.mutate({
-				path: { id: componentId },
-				body: { attributes: reqAttributes },
-			});
+			doCreate();
+		} else if (view === "edit" && componentAttributes.valid) {
+			doEdit();
 		} else if (view === "add" && !!selectedAddComponent) {
 			analysis.setAddingComponent($state.snapshot(selectedAddComponent));
 			clear();
@@ -238,7 +247,7 @@ const createComponentDialogState = () => {
 		},
 		clear,
 		goBack,
-		confirm,
+		onConfirm,
 		get loading() {
 			return loading;
 		},

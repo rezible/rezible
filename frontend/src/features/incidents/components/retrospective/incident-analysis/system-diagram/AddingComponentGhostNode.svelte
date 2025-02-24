@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal, type XYPosition } from "@xyflow/svelte";
-	import { Button, ButtonGroup } from "svelte-ux";
-	import { analysis } from "../analysis.svelte";
+	import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysis.svelte";
 
 	const { screenToFlowPosition } = useSvelteFlow();
 

@@ -23,7 +23,6 @@
 	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
 	import AddingComponentGhostNode from "./AddingComponentGhostNode.svelte";
-	import { analysis } from "../analysis.svelte";
 
 	type Props = {};
 	const {}: Props = $props();

@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { ViewportPortal } from "@xyflow/svelte";
-	import { diagram } from "./diagram.svelte";
 	import { Button, ButtonGroup } from "svelte-ux";
-	import { analysis } from "../analysis.svelte";
 	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
+	import { diagram } from "./diagram.svelte";
 	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/dialogState.svelte";
 	import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
 

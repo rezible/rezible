@@ -6,13 +6,11 @@ import {
 	updateSystemComponentConstraintMutation,
 	updateSystemComponentControlMutation,
 	updateSystemComponentSignalMutation,
-	type CreateSystemComponentSignalResponseBody,
 	type SystemComponentConstraint,
 	type SystemComponentControl,
 	type SystemComponentSignal,
-	type UpdateSystemComponentSignalResponseBody,
 } from "$lib/api";
-import { componentDialog } from "./dialogState.svelte";
+import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/dialogState.svelte";
 
 const emptyTrait = () => ({ id: "", attributes: { label: "", description: "" } });
 
