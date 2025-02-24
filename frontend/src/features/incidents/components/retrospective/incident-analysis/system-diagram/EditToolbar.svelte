@@ -3,8 +3,8 @@
 	import { Button, ButtonGroup } from "svelte-ux";
 	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
 	import { diagram } from "./diagram.svelte";
-	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/dialogState.svelte";
-	import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
+	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/componentDialogState.svelte";
+	import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/relationshipDialogState.svelte";
 
 	const { node, edge } = $derived(diagram.selected);
 	const component = $derived(node?.data ? (node.data.component as SystemAnalysisComponent) : undefined);

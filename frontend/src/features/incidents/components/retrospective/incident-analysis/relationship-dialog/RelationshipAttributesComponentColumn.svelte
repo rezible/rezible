@@ -1,13 +1,10 @@
 <script lang="ts">
-	import { type SystemComponent, type SystemComponentSignal, type SystemComponentControl } from "$lib/api";
-	import { Button, Checkbox, Header, Icon, ListItem, TextField } from "svelte-ux";
-	import { cls } from '@layerstack/tailwind';
-	import { relationshipDialog } from "./dialogState.svelte";
-	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
-	import { mdiCheck, mdiClose, mdiPencil, mdiPlus } from "@mdi/js";
+	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
+	import { Button, Header, ListItem } from "svelte-ux";
+	import { relationshipDialog } from "./relationshipDialogState.svelte";
+	import { mdiPencil, mdiPlus } from "@mdi/js";
 	import { SvelteSet } from "svelte/reactivity";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
-	import { createMutation } from "@tanstack/svelte-query";
 
 	type Props = {
 		component: SystemComponent;

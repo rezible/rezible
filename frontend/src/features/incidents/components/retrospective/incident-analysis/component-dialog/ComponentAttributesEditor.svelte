@@ -5,7 +5,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listSystemComponentKindsOptions } from "$lib/api";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { componentDialog } from "./dialogState.svelte";
+	import { componentDialog } from "./componentDialogState.svelte";
 	import { componentTraits } from "./componentTraitMutations.svelte";
 	import { getSystemComponentKindMenuOptions } from "$lib/systemComponents";
 	import { SvelteMap } from "svelte/reactivity";

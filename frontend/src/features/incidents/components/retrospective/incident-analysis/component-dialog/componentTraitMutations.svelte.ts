@@ -10,7 +10,7 @@ import {
 	type SystemComponentControl,
 	type SystemComponentSignal,
 } from "$lib/api";
-import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/dialogState.svelte";
+import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/componentDialogState.svelte";
 
 const emptyTrait = () => ({ id: "", attributes: { label: "", description: "" } });
 

@@ -19,7 +19,7 @@ import {
 	type SystemAnalysisRelationship,
 } from "$lib/api";
 import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysis.svelte";
-import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
+import { relationshipDialog } from "$src/features/incidents/components/retrospective/incident-analysis/relationship-dialog/relationshipDialogState.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {

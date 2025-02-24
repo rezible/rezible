@@ -11,6 +11,7 @@
 </script>
 
 <script lang="ts">
+	import { Button, Header } from "svelte-ux";
 	import type {
 		SystemAnalysisRelationshipControlAction,
 		SystemAnalysisRelationshipFeedbackSignal,
@@ -19,8 +20,7 @@
 		SystemComponentSignal,
 	} from "$lib/api";
 	import { SvelteMap } from "svelte/reactivity";
-	import { relationshipDialog } from "./dialogState.svelte";
-	import { Button, Header } from "svelte-ux";
+	import { relationshipDialog } from "./relationshipDialogState.svelte";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { mdiCardRemove, mdiMinus, mdiPencil, mdiTagEdit, mdiTagRemove } from "@mdi/js";
 

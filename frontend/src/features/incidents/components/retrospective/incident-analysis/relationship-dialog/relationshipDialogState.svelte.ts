@@ -3,13 +3,16 @@ import { v4 as uuidv4 } from "uuid";
 import {
 	createSystemAnalysisRelationshipMutation,
 	updateSystemAnalysisRelationshipMutation,
+	type CreateSystemAnalysisRelationshipAttributes,
 	type SystemAnalysisRelationship,
 	type SystemAnalysisRelationshipAttributes,
 	type SystemAnalysisRelationshipControlAction,
 	type SystemAnalysisRelationshipControlActionAttributes,
 	type SystemAnalysisRelationshipFeedbackSignal,
 	type SystemAnalysisRelationshipFeedbackSignalAttributes,
+	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
+import { analysis } from "../analysis.svelte";
 
 const compareControlActions = (a: SystemAnalysisRelationshipControlAction, b: SystemAnalysisRelationshipControlAction) => {
 	if (a.id !== b.id) return false;
@@ -135,10 +138,20 @@ const createRelationshipDialogState = () => {
 	let relationshipId = $state<string>();
 	let relationshipAttributes = createRelationshipAttributesState();
 
-	const setView = (v: RelationshipDialogView) => {view = v}
+	const setCreating = (sourceId: string, targetId: string) => {
+		view = "create";
+		relationshipId = undefined;
+		relationshipAttributes.initNew(sourceId, targetId);
+	}
+
+	const setEditing = (rel: SystemAnalysisRelationship) => {
+		view = "edit";
+		relationshipId = rel.id;
+		relationshipAttributes.initFrom(rel.attributes);
+	};
 
 	const clear = () => {
-		setView("closed");
+		view = "closed";
 		relationshipAttributes.initNew("", "");
 		relationshipId = undefined;
 	};
@@ -169,21 +182,38 @@ const createRelationshipDialogState = () => {
 		updateMut = makeUpdateMutation();
 	};
 
-	const setCreating = (sourceId: string, targetId: string) => {
-		setView("create");
-		relationshipId = undefined;
-		relationshipAttributes.initNew(sourceId, targetId);
+	const doCreate = () => {
+		if (!analysis.id) return;
+		const path = {id: $state.snapshot(analysis.id)};
+
+		const attr = relationshipAttributes.snapshot();
+		const attributes: CreateSystemAnalysisRelationshipAttributes = {
+			// TODO
+		};
+		createMut?.mutate({ path, body: { attributes } });
 	}
 
-	const setEditing = (rel: SystemAnalysisRelationship) => {
-		setView("edit");
-		relationshipId = rel.id;
-		relationshipAttributes.initFrom(rel.attributes);
-	};
+	const doEdit = () => {
+		if (!analysis.id || !relationshipId) return;
+		const path = {
+			analysisId: $state.snapshot(analysis.id),
+			entityId: $state.snapshot(relationshipId),
+		}
+		const attributes: UpdateSystemAnalysisRelationshipAttributes = {
+			// TODO
+		};
+		updateMut?.mutate({path, body: { attributes }});
+	}
 
 	const onConfirm = () => {
-		
-		clear();
+		if (!relationshipAttributes.valid) return;
+		if (view == "create") {
+			doCreate();
+		} else if (view == "edit") {
+			doEdit();
+		} else {
+			console.error("Invalid view state");
+		}
 	};
 
 	return {
