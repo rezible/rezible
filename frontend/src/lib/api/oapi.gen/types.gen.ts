@@ -449,7 +449,11 @@ export type CreateRetrospectiveReviewResponseBody = {
 };
 
 export type CreateSystemAnalysisRelationshipAttributes = {
-    [key: string]: never;
+    controlActions: Array<SystemAnalysisRelationshipControlActionAttributes>;
+    description: string;
+    feedbackSignals: Array<SystemAnalysisRelationshipFeedbackSignalAttributes>;
+    sourceId: string;
+    targetId: string;
 };
 
 export type CreateSystemAnalysisRelationshipRequestBody = {
@@ -469,7 +473,13 @@ export type CreateSystemAnalysisRelationshipResponseBody = {
 };
 
 export type CreateSystemComponentAttributes = {
+    constraints: Array<SystemComponentConstraintAttributes>;
+    controls: Array<SystemComponentControlAttributes>;
+    description: string;
+    kindId: string;
     name: string;
+    properties: {};
+    signals: Array<SystemComponentSignalAttributes>;
 };
 
 export type CreateSystemComponentConstraintAttributes = {
@@ -515,7 +525,8 @@ export type CreateSystemComponentControlResponseBody = {
 };
 
 export type CreateSystemComponentKindAttributes = {
-    name: string;
+    description: string;
+    label: string;
 };
 
 export type CreateSystemComponentKindRequestBody = {
@@ -2342,7 +2353,7 @@ export type UpdateRetrospectiveReviewResponseBody = {
 };
 
 export type UpdateSystemAnalysisComponentAttributes = {
-    role?: string;
+    position?: SystemAnalysisDiagramPosition;
 };
 
 export type UpdateSystemAnalysisComponentRequestBody = {
@@ -2362,7 +2373,9 @@ export type UpdateSystemAnalysisComponentResponseBody = {
 };
 
 export type UpdateSystemAnalysisRelationshipAttributes = {
-    [key: string]: never;
+    controlActions?: Array<SystemAnalysisRelationshipControlActionAttributes>;
+    description?: string;
+    feedbackSignals?: Array<SystemAnalysisRelationshipFeedbackSignalAttributes>;
 };
 
 export type UpdateSystemAnalysisRelationshipRequestBody = {
@@ -2382,12 +2395,15 @@ export type UpdateSystemAnalysisRelationshipResponseBody = {
 };
 
 export type UpdateSystemComponentAttributes = {
-    [key: string]: never;
+    description?: string;
+    kindId?: string;
+    name?: string;
+    properties?: {};
 };
 
 export type UpdateSystemComponentConstraintAttributes = {
-    description: string;
-    label: string;
+    description?: string;
+    label?: string;
 };
 
 export type UpdateSystemComponentConstraintRequestBody = {
@@ -2407,8 +2423,8 @@ export type UpdateSystemComponentConstraintResponseBody = {
 };
 
 export type UpdateSystemComponentControlAttributes = {
-    description: string;
-    label: string;
+    description?: string;
+    label?: string;
 };
 
 export type UpdateSystemComponentControlRequestBody = {
@@ -2428,7 +2444,8 @@ export type UpdateSystemComponentControlResponseBody = {
 };
 
 export type UpdateSystemComponentKindAttributes = {
-    [key: string]: never;
+    description?: string;
+    label?: string;
 };
 
 export type UpdateSystemComponentKindRequestBody = {
@@ -2464,8 +2481,8 @@ export type UpdateSystemComponentResponseBody = {
 };
 
 export type UpdateSystemComponentSignalAttributes = {
-    description: string;
-    label: string;
+    description?: string;
+    label?: string;
 };
 
 export type UpdateSystemComponentSignalRequestBody = {
@@ -7671,294 +7688,6 @@ export type CreateRetrospectiveReviewResponses = {
 
 export type CreateRetrospectiveReviewResponse = CreateRetrospectiveReviewResponses[keyof CreateRetrospectiveReviewResponses];
 
-export type DeleteSystemAnalysisComponentData = {
-    body?: never;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/components/{entityId}';
-};
-
-export type DeleteSystemAnalysisComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteSystemAnalysisComponentError = DeleteSystemAnalysisComponentErrors[keyof DeleteSystemAnalysisComponentErrors];
-
-export type DeleteSystemAnalysisComponentResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteSystemAnalysisComponentResponse = DeleteSystemAnalysisComponentResponses[keyof DeleteSystemAnalysisComponentResponses];
-
-export type GetSystemAnalysisComponentData = {
-    body?: never;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/components/{entityId}';
-};
-
-export type GetSystemAnalysisComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemAnalysisComponentError = GetSystemAnalysisComponentErrors[keyof GetSystemAnalysisComponentErrors];
-
-export type GetSystemAnalysisComponentResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemAnalysisComponentResponseBody;
-};
-
-export type GetSystemAnalysisComponentResponse = GetSystemAnalysisComponentResponses[keyof GetSystemAnalysisComponentResponses];
-
-export type UpdateSystemAnalysisComponentData = {
-    body: UpdateSystemAnalysisComponentRequestBody;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/components/{entityId}';
-};
-
-export type UpdateSystemAnalysisComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemAnalysisComponentError = UpdateSystemAnalysisComponentErrors[keyof UpdateSystemAnalysisComponentErrors];
-
-export type UpdateSystemAnalysisComponentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemAnalysisComponentResponseBody;
-};
-
-export type UpdateSystemAnalysisComponentResponse = UpdateSystemAnalysisComponentResponses[keyof UpdateSystemAnalysisComponentResponses];
-
-export type DeleteSystemAnalysisRelationshipData = {
-    body?: never;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/relationships/{entityId}';
-};
-
-export type DeleteSystemAnalysisRelationshipErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteSystemAnalysisRelationshipError = DeleteSystemAnalysisRelationshipErrors[keyof DeleteSystemAnalysisRelationshipErrors];
-
-export type DeleteSystemAnalysisRelationshipResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteSystemAnalysisRelationshipResponse = DeleteSystemAnalysisRelationshipResponses[keyof DeleteSystemAnalysisRelationshipResponses];
-
-export type GetSystemAnalysisRelationshipData = {
-    body?: never;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/relationships/{entityId}';
-};
-
-export type GetSystemAnalysisRelationshipErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemAnalysisRelationshipError = GetSystemAnalysisRelationshipErrors[keyof GetSystemAnalysisRelationshipErrors];
-
-export type GetSystemAnalysisRelationshipResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemAnalysisRelationshipResponseBody;
-};
-
-export type GetSystemAnalysisRelationshipResponse = GetSystemAnalysisRelationshipResponses[keyof GetSystemAnalysisRelationshipResponses];
-
-export type UpdateSystemAnalysisRelationshipData = {
-    body: UpdateSystemAnalysisRelationshipRequestBody;
-    path: {
-        analysisId: string;
-        entityId: string;
-    };
-    query?: never;
-    url: '/system_analysis/{analysisId}/relationships/{entityId}';
-};
-
-export type UpdateSystemAnalysisRelationshipErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemAnalysisRelationshipError = UpdateSystemAnalysisRelationshipErrors[keyof UpdateSystemAnalysisRelationshipErrors];
-
-export type UpdateSystemAnalysisRelationshipResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemAnalysisRelationshipResponseBody;
-};
-
-export type UpdateSystemAnalysisRelationshipResponse = UpdateSystemAnalysisRelationshipResponses[keyof UpdateSystemAnalysisRelationshipResponses];
-
 export type GetSystemAnalysisData = {
     body?: never;
     path: {
@@ -8205,6 +7934,570 @@ export type CreateSystemAnalysisRelationshipResponses = {
 
 export type CreateSystemAnalysisRelationshipResponse = CreateSystemAnalysisRelationshipResponses[keyof CreateSystemAnalysisRelationshipResponses];
 
+export type DeleteSystemAnalysisComponentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_components/{id}';
+};
+
+export type DeleteSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteSystemAnalysisComponentError = DeleteSystemAnalysisComponentErrors[keyof DeleteSystemAnalysisComponentErrors];
+
+export type DeleteSystemAnalysisComponentResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisComponentResponse = DeleteSystemAnalysisComponentResponses[keyof DeleteSystemAnalysisComponentResponses];
+
+export type GetSystemAnalysisComponentData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_components/{id}';
+};
+
+export type GetSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemAnalysisComponentError = GetSystemAnalysisComponentErrors[keyof GetSystemAnalysisComponentErrors];
+
+export type GetSystemAnalysisComponentResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisComponentResponseBody;
+};
+
+export type GetSystemAnalysisComponentResponse = GetSystemAnalysisComponentResponses[keyof GetSystemAnalysisComponentResponses];
+
+export type UpdateSystemAnalysisComponentData = {
+    body: UpdateSystemAnalysisComponentRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_components/{id}';
+};
+
+export type UpdateSystemAnalysisComponentErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisComponentError = UpdateSystemAnalysisComponentErrors[keyof UpdateSystemAnalysisComponentErrors];
+
+export type UpdateSystemAnalysisComponentResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisComponentResponseBody;
+};
+
+export type UpdateSystemAnalysisComponentResponse = UpdateSystemAnalysisComponentResponses[keyof UpdateSystemAnalysisComponentResponses];
+
+export type DeleteSystemAnalysisRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_relationships/{id}';
+};
+
+export type DeleteSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteSystemAnalysisRelationshipError = DeleteSystemAnalysisRelationshipErrors[keyof DeleteSystemAnalysisRelationshipErrors];
+
+export type DeleteSystemAnalysisRelationshipResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteSystemAnalysisRelationshipResponse = DeleteSystemAnalysisRelationshipResponses[keyof DeleteSystemAnalysisRelationshipResponses];
+
+export type GetSystemAnalysisRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_relationships/{id}';
+};
+
+export type GetSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemAnalysisRelationshipError = GetSystemAnalysisRelationshipErrors[keyof GetSystemAnalysisRelationshipErrors];
+
+export type GetSystemAnalysisRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemAnalysisRelationshipResponseBody;
+};
+
+export type GetSystemAnalysisRelationshipResponse = GetSystemAnalysisRelationshipResponses[keyof GetSystemAnalysisRelationshipResponses];
+
+export type UpdateSystemAnalysisRelationshipData = {
+    body: UpdateSystemAnalysisRelationshipRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_analysis_relationships/{id}';
+};
+
+export type UpdateSystemAnalysisRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemAnalysisRelationshipError = UpdateSystemAnalysisRelationshipErrors[keyof UpdateSystemAnalysisRelationshipErrors];
+
+export type UpdateSystemAnalysisRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemAnalysisRelationshipResponseBody;
+};
+
+export type UpdateSystemAnalysisRelationshipResponse = UpdateSystemAnalysisRelationshipResponses[keyof UpdateSystemAnalysisRelationshipResponses];
+
+export type ArchiveSystemComponentConstraintData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_constraints/{id}';
+};
+
+export type ArchiveSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveSystemComponentConstraintError = ArchiveSystemComponentConstraintErrors[keyof ArchiveSystemComponentConstraintErrors];
+
+export type ArchiveSystemComponentConstraintResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentConstraintResponse = ArchiveSystemComponentConstraintResponses[keyof ArchiveSystemComponentConstraintResponses];
+
+export type GetSystemComponentConstraintData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_constraints/{id}';
+};
+
+export type GetSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentConstraintError = GetSystemComponentConstraintErrors[keyof GetSystemComponentConstraintErrors];
+
+export type GetSystemComponentConstraintResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentConstraintResponseBody;
+};
+
+export type GetSystemComponentConstraintResponse = GetSystemComponentConstraintResponses[keyof GetSystemComponentConstraintResponses];
+
+export type UpdateSystemComponentConstraintData = {
+    body: UpdateSystemComponentConstraintRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_constraints/{id}';
+};
+
+export type UpdateSystemComponentConstraintErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemComponentConstraintError = UpdateSystemComponentConstraintErrors[keyof UpdateSystemComponentConstraintErrors];
+
+export type UpdateSystemComponentConstraintResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentConstraintResponseBody;
+};
+
+export type UpdateSystemComponentConstraintResponse = UpdateSystemComponentConstraintResponses[keyof UpdateSystemComponentConstraintResponses];
+
+export type ArchiveSystemComponentControlData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_controls/{id}';
+};
+
+export type ArchiveSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveSystemComponentControlError = ArchiveSystemComponentControlErrors[keyof ArchiveSystemComponentControlErrors];
+
+export type ArchiveSystemComponentControlResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentControlResponse = ArchiveSystemComponentControlResponses[keyof ArchiveSystemComponentControlResponses];
+
+export type GetSystemComponentControlData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_controls/{id}';
+};
+
+export type GetSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentControlError = GetSystemComponentControlErrors[keyof GetSystemComponentControlErrors];
+
+export type GetSystemComponentControlResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentControlResponseBody;
+};
+
+export type GetSystemComponentControlResponse = GetSystemComponentControlResponses[keyof GetSystemComponentControlResponses];
+
+export type UpdateSystemComponentControlData = {
+    body: UpdateSystemComponentControlRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_controls/{id}';
+};
+
+export type UpdateSystemComponentControlErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemComponentControlError = UpdateSystemComponentControlErrors[keyof UpdateSystemComponentControlErrors];
+
+export type UpdateSystemComponentControlResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentControlResponseBody;
+};
+
+export type UpdateSystemComponentControlResponse = UpdateSystemComponentControlResponses[keyof UpdateSystemComponentControlResponses];
+
 export type ListSystemComponentKindsData = {
     body?: never;
     path?: never;
@@ -8441,6 +8734,147 @@ export type UpdateSystemComponentKindResponses = {
 
 export type UpdateSystemComponentKindResponse = UpdateSystemComponentKindResponses[keyof UpdateSystemComponentKindResponses];
 
+export type ArchiveSystemComponentSignalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_signals/{id}';
+};
+
+export type ArchiveSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveSystemComponentSignalError = ArchiveSystemComponentSignalErrors[keyof ArchiveSystemComponentSignalErrors];
+
+export type ArchiveSystemComponentSignalResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentSignalResponse = ArchiveSystemComponentSignalResponses[keyof ArchiveSystemComponentSignalResponses];
+
+export type GetSystemComponentSignalData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_signals/{id}';
+};
+
+export type GetSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentSignalError = GetSystemComponentSignalErrors[keyof GetSystemComponentSignalErrors];
+
+export type GetSystemComponentSignalResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentSignalResponseBody;
+};
+
+export type GetSystemComponentSignalResponse = GetSystemComponentSignalResponses[keyof GetSystemComponentSignalResponses];
+
+export type UpdateSystemComponentSignalData = {
+    body: UpdateSystemComponentSignalRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_signals/{id}';
+};
+
+export type UpdateSystemComponentSignalErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemComponentSignalError = UpdateSystemComponentSignalErrors[keyof UpdateSystemComponentSignalErrors];
+
+export type UpdateSystemComponentSignalResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentSignalResponseBody;
+};
+
+export type UpdateSystemComponentSignalResponse = UpdateSystemComponentSignalResponses[keyof UpdateSystemComponentSignalResponses];
+
 export type ListSystemComponentsData = {
     body?: never;
     path?: never;
@@ -8535,438 +8969,6 @@ export type CreateSystemComponentResponses = {
 };
 
 export type CreateSystemComponentResponse = CreateSystemComponentResponses[keyof CreateSystemComponentResponses];
-
-export type ArchiveSystemComponentConstraintData = {
-    body?: never;
-    path: {
-        componentId: string;
-        constraintId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/constraints/{constraintId}';
-};
-
-export type ArchiveSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentConstraintError = ArchiveSystemComponentConstraintErrors[keyof ArchiveSystemComponentConstraintErrors];
-
-export type ArchiveSystemComponentConstraintResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentConstraintResponse = ArchiveSystemComponentConstraintResponses[keyof ArchiveSystemComponentConstraintResponses];
-
-export type GetSystemComponentConstraintData = {
-    body?: never;
-    path: {
-        componentId: string;
-        constraintId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/constraints/{constraintId}';
-};
-
-export type GetSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentConstraintError = GetSystemComponentConstraintErrors[keyof GetSystemComponentConstraintErrors];
-
-export type GetSystemComponentConstraintResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentConstraintResponseBody;
-};
-
-export type GetSystemComponentConstraintResponse = GetSystemComponentConstraintResponses[keyof GetSystemComponentConstraintResponses];
-
-export type UpdateSystemComponentConstraintData = {
-    body: UpdateSystemComponentConstraintRequestBody;
-    path: {
-        componentId: string;
-        constraintId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/constraints/{constraintId}';
-};
-
-export type UpdateSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentConstraintError = UpdateSystemComponentConstraintErrors[keyof UpdateSystemComponentConstraintErrors];
-
-export type UpdateSystemComponentConstraintResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentConstraintResponseBody;
-};
-
-export type UpdateSystemComponentConstraintResponse = UpdateSystemComponentConstraintResponses[keyof UpdateSystemComponentConstraintResponses];
-
-export type ArchiveSystemComponentControlData = {
-    body?: never;
-    path: {
-        componentId: string;
-        controlId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/controls/{controlId}';
-};
-
-export type ArchiveSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentControlError = ArchiveSystemComponentControlErrors[keyof ArchiveSystemComponentControlErrors];
-
-export type ArchiveSystemComponentControlResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentControlResponse = ArchiveSystemComponentControlResponses[keyof ArchiveSystemComponentControlResponses];
-
-export type GetSystemComponentControlData = {
-    body?: never;
-    path: {
-        componentId: string;
-        controlId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/controls/{controlId}';
-};
-
-export type GetSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentControlError = GetSystemComponentControlErrors[keyof GetSystemComponentControlErrors];
-
-export type GetSystemComponentControlResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentControlResponseBody;
-};
-
-export type GetSystemComponentControlResponse = GetSystemComponentControlResponses[keyof GetSystemComponentControlResponses];
-
-export type UpdateSystemComponentControlData = {
-    body: UpdateSystemComponentControlRequestBody;
-    path: {
-        componentId: string;
-        controlId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/controls/{controlId}';
-};
-
-export type UpdateSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentControlError = UpdateSystemComponentControlErrors[keyof UpdateSystemComponentControlErrors];
-
-export type UpdateSystemComponentControlResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentControlResponseBody;
-};
-
-export type UpdateSystemComponentControlResponse = UpdateSystemComponentControlResponses[keyof UpdateSystemComponentControlResponses];
-
-export type ArchiveSystemComponentSignalData = {
-    body?: never;
-    path: {
-        componentId: string;
-        signalId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/signals/{signalId}';
-};
-
-export type ArchiveSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentSignalError = ArchiveSystemComponentSignalErrors[keyof ArchiveSystemComponentSignalErrors];
-
-export type ArchiveSystemComponentSignalResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentSignalResponse = ArchiveSystemComponentSignalResponses[keyof ArchiveSystemComponentSignalResponses];
-
-export type GetSystemComponentSignalData = {
-    body?: never;
-    path: {
-        componentId: string;
-        signalId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/signals/{signalId}';
-};
-
-export type GetSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentSignalError = GetSystemComponentSignalErrors[keyof GetSystemComponentSignalErrors];
-
-export type GetSystemComponentSignalResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentSignalResponseBody;
-};
-
-export type GetSystemComponentSignalResponse = GetSystemComponentSignalResponses[keyof GetSystemComponentSignalResponses];
-
-export type UpdateSystemComponentSignalData = {
-    body: UpdateSystemComponentSignalRequestBody;
-    path: {
-        componentId: string;
-        signalId: string;
-    };
-    query?: never;
-    url: '/system_components/{componentId}/signals/{signalId}';
-};
-
-export type UpdateSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentSignalError = UpdateSystemComponentSignalErrors[keyof UpdateSystemComponentSignalErrors];
-
-export type UpdateSystemComponentSignalResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentSignalResponseBody;
-};
-
-export type UpdateSystemComponentSignalResponse = UpdateSystemComponentSignalResponses[keyof UpdateSystemComponentSignalResponses];
 
 export type ArchiveSystemComponentData = {
     body?: never;

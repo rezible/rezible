@@ -20,17 +20,15 @@
 		SystemComponentSignal,
 	} from "$lib/api";
 	import { SvelteMap } from "svelte/reactivity";
-	import { relationshipDialog } from "./relationshipDialogState.svelte";
+	import { relationshipAttributes } from "./dialogState.svelte";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
-	import { mdiCardRemove, mdiMinus, mdiPencil, mdiTagEdit, mdiTagRemove } from "@mdi/js";
+	import { mdiMinus, mdiPencil } from "@mdi/js";
 
 	type Props = {
 		source: SystemComponent;
 		target: SystemComponent;
 	};
 	const { source, target }: Props = $props();
-
-	const attrs = $derived(relationshipDialog.attributes);
 
 	const sourceSignals = $derived(new SvelteMap(source.attributes.signals.map((s) => [s.id, s])));
 	const targetSignals = $derived(new SvelteMap(target.attributes.signals.map((s) => [s.id, s])));
@@ -41,7 +39,7 @@
 	const [sourceFeedbackSignals, targetFeedbackSignals] = $derived.by(() => {
 		const src: RelationshipFeedbackSignal[] = [];
 		const tgt: RelationshipFeedbackSignal[] = [];
-		attrs.feedbackSignals.forEach((feedback) => {
+		relationshipAttributes.feedbackSignals.forEach((feedback) => {
 			const signalId = feedback.attributes.signalId;
 			const sourceSignal = sourceSignals.get(signalId);
 			if (sourceSignal) src.push({ feedback, signal: sourceSignal });
@@ -54,7 +52,7 @@
 	const [sourceControlActions, targetControlActions] = $derived.by(() => {
 		const src: RelationshipControlAction[] = [];
 		const tgt: RelationshipControlAction[] = [];
-		attrs.controlActions.forEach((action) => {
+		relationshipAttributes.controlActions.forEach((action) => {
 			const controlId = action.attributes.controlId;
 			const sourceControl = sourceControls.get(controlId);
 			if (sourceControl) src.push({ action, control: sourceControl });
@@ -67,14 +65,14 @@
 	let editingAction = $state<SystemAnalysisRelationshipControlAction>();
 	const updateEditingAction = () => {
 		if (!editingAction) return;
-		attrs.setControlAction($state.snapshot(editingAction.attributes));
+		relationshipAttributes.updateControlAction($state.snapshot(editingAction.attributes));
 		editingAction = undefined;
 	};
 
 	let editingFeedback = $state<SystemAnalysisRelationshipFeedbackSignal>();
 	const updateEditingFeedback = () => {
 		if (!editingFeedback) return;
-		attrs.setFeedbackSignal($state.snapshot(editingFeedback.attributes));
+		relationshipAttributes.updateFeedbackSignal($state.snapshot(editingFeedback.attributes));
 		editingFeedback = undefined;
 	};
 </script>
@@ -111,7 +109,7 @@
 						signal.attributes.label,
 						feedback.attributes.description,
 						() => (editingFeedback = $state.snapshot(feedback)),
-						() => attrs.removeFeedbackSignal(feedback.id)
+						() => relationshipAttributes.removeFeedbackSignal(feedback.id)
 					)}
 				{/each}
 			{/if}
@@ -136,7 +134,7 @@
 						control.attributes.label,
 						action.attributes.description,
 						() => (editingAction = $state.snapshot(action)),
-						() => attrs.removeControlAction(action.id)
+						() => relationshipAttributes.removeControlAction(action.id)
 					)}
 				{/each}
 			{/if}

@@ -2,7 +2,7 @@
 	import { mdiShapeSquareRoundedPlus } from "@mdi/js";
 	import { useNodes } from "@xyflow/svelte";
 	import { Button, Icon } from "svelte-ux";
-	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/componentDialogState.svelte";
+	import { componentDialog } from "$features/incidents/components/retrospective/incident-analysis/component-dialog/dialogState.svelte";
 
 	type Props = {};
 	let {}: Props = $props();

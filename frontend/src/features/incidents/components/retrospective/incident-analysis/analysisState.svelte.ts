@@ -3,7 +3,6 @@ import { watch } from "runed";
 import {
 	getSystemAnalysisOptions,
 	type SystemAnalysis,
-	type SystemAnalysisComponent,
 	type SystemAnalysisRelationship,
 	type SystemComponent,
 } from "$lib/api";

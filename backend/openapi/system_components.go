@@ -144,21 +144,6 @@ type ListSystemComponentsRequest struct {
 }
 type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
 
-var CreateSystemComponent = huma.Operation{
-	OperationID: "create-system-component",
-	Method:      http.MethodPost,
-	Path:        "/system_components",
-	Summary:     "Create a System Component",
-	Tags:        systemComponentsTags,
-	Errors:      errorCodes(),
-}
-
-type CreateSystemComponentAttributes struct {
-	Name string `json:"name"`
-}
-type CreateSystemComponentRequest RequestWithBodyAttributes[CreateSystemComponentAttributes]
-type CreateSystemComponentResponse ItemResponse[SystemComponent]
-
 var GetSystemComponent = huma.Operation{
 	OperationID: "get-system-component",
 	Method:      http.MethodGet,
@@ -180,7 +165,32 @@ var UpdateSystemComponent = huma.Operation{
 	Errors:      errorCodes(),
 }
 
+var CreateSystemComponent = huma.Operation{
+	OperationID: "create-system-component",
+	Method:      http.MethodPost,
+	Path:        "/system_components",
+	Summary:     "Create a System Component",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type CreateSystemComponentAttributes struct {
+	Name        string                                `json:"name"`
+	KindId      uuid.UUID                             `json:"kindId"`
+	Description string                                `json:"description"`
+	Properties  map[string]any                        `json:"properties"`
+	Constraints []SystemComponentConstraintAttributes `json:"constraints"`
+	Signals     []SystemComponentSignalAttributes     `json:"signals"`
+	Controls    []SystemComponentControlAttributes    `json:"controls"`
+}
+type CreateSystemComponentRequest RequestWithBodyAttributes[CreateSystemComponentAttributes]
+type CreateSystemComponentResponse ItemResponse[SystemComponent]
+
 type UpdateSystemComponentAttributes struct {
+	Name        *string         `json:"name,omitempty"`
+	KindId      *uuid.UUID      `json:"kindId,omitempty"`
+	Description *string         `json:"description,omitempty"`
+	Properties  *map[string]any `json:"properties,omitempty"`
 }
 type UpdateSystemComponentRequest UpdateIdRequest[UpdateSystemComponentAttributes]
 type UpdateSystemComponentResponse ItemResponse[SystemComponent]
@@ -223,7 +233,8 @@ var CreateSystemComponentKind = huma.Operation{
 }
 
 type CreateSystemComponentKindAttributes struct {
-	Name string `json:"name"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
 }
 type CreateSystemComponentKindRequest RequestWithBodyAttributes[CreateSystemComponentKindAttributes]
 type CreateSystemComponentKindResponse ItemResponse[SystemComponentKind]
@@ -250,6 +261,8 @@ var UpdateSystemComponentKind = huma.Operation{
 }
 
 type UpdateSystemComponentKindAttributes struct {
+	Label       *string `json:"label,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
 type UpdateSystemComponentKindRequest UpdateIdRequest[UpdateSystemComponentKindAttributes]
 type UpdateSystemComponentKindResponse ItemResponse[SystemComponentKind]
@@ -267,21 +280,6 @@ type ArchiveSystemComponentKindRequest ArchiveIdRequest
 type ArchiveSystemComponentKindResponse EmptyResponse
 
 // System Component Constraint Operations
-
-type SystemComponentConstraintRequest struct {
-	ComponentId  uuid.UUID `path:"componentId"`
-	ConstraintId uuid.UUID `path:"constraintId"`
-}
-
-type SystemComponentConstraintBodyRequest[A any] struct {
-	ComponentId  uuid.UUID `path:"componentId"`
-	ConstraintId uuid.UUID `path:"constraintId"`
-	Body         struct {
-		Attributes A `json:"attributes"`
-	}
-}
-
-const componentConstraintPath = "/system_components/{componentId}/constraints/{constraintId}"
 
 var CreateSystemComponentConstraint = huma.Operation{
 	OperationID: "create-system-component-constraint",
@@ -302,59 +300,44 @@ type CreateSystemComponentConstraintResponse ItemResponse[SystemComponentConstra
 var GetSystemComponentConstraint = huma.Operation{
 	OperationID: "get-system-component-constraint",
 	Method:      http.MethodGet,
-	Path:        componentConstraintPath,
+	Path:        "/system_component_constraints/{id}",
 	Summary:     "Get a System Component",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentConstraintRequest SystemComponentConstraintRequest
+type GetSystemComponentConstraintRequest GetIdRequest
 type GetSystemComponentConstraintResponse ItemResponse[SystemComponentConstraint]
 
 var UpdateSystemComponentConstraint = huma.Operation{
 	OperationID: "update-system-component-constraint",
 	Method:      http.MethodPatch,
-	Path:        componentConstraintPath,
+	Path:        "/system_component_constraints/{id}",
 	Summary:     "Update a System Component Constraint",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateSystemComponentConstraintAttributes struct {
-	Label       *string `json:"label"`
-	Description *string `json:"description"`
+	Label       *string `json:"label,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
-type UpdateSystemComponentConstraintRequest SystemComponentConstraintBodyRequest[UpdateSystemComponentConstraintAttributes]
+type UpdateSystemComponentConstraintRequest UpdateIdRequest[UpdateSystemComponentConstraintAttributes]
 type UpdateSystemComponentConstraintResponse ItemResponse[SystemComponentConstraint]
 
 var ArchiveSystemComponentConstraint = huma.Operation{
 	OperationID: "archive-system-component-constraint",
 	Method:      http.MethodDelete,
-	Path:        componentConstraintPath,
+	Path:        "/system_component_constraints/{id}",
 	Summary:     "Archive a System Component Constraint",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type ArchiveSystemComponentConstraintRequest SystemComponentConstraintRequest
+type ArchiveSystemComponentConstraintRequest ArchiveIdRequest
 type ArchiveSystemComponentConstraintResponse EmptyResponse
 
 // System Component Control Operations
-
-type SystemComponentControlRequest struct {
-	ComponentId uuid.UUID `path:"componentId"`
-	ControlId   uuid.UUID `path:"controlId"`
-}
-
-type SystemComponentControlBodyRequest[A any] struct {
-	ComponentId uuid.UUID `path:"componentId"`
-	ControlId   uuid.UUID `path:"controlId"`
-	Body        struct {
-		Attributes A `json:"attributes"`
-	}
-}
-
-const componentControlPath = "/system_components/{componentId}/controls/{controlId}"
 
 var CreateSystemComponentControl = huma.Operation{
 	OperationID: "create-system-component-control",
@@ -375,60 +358,44 @@ type CreateSystemComponentControlResponse ItemResponse[SystemComponentControl]
 var GetSystemComponentControl = huma.Operation{
 	OperationID: "get-system-component-control",
 	Method:      http.MethodGet,
-	Path:        componentControlPath,
+	Path:        "/system_component_controls/{id}",
 	Summary:     "Get a System Component Control",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentControlRequest SystemComponentControlRequest
+type GetSystemComponentControlRequest GetIdRequest
 type GetSystemComponentControlResponse ItemResponse[SystemComponentControl]
 
 var UpdateSystemComponentControl = huma.Operation{
 	OperationID: "update-system-component-control",
 	Method:      http.MethodPatch,
-	Path:        componentControlPath,
+	Path:        "/system_component_controls/{id}",
 	Summary:     "Update a System Component Control",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateSystemComponentControlAttributes struct {
-	Label       *string `json:"label"`
-	Description *string `json:"description"`
+	Label       *string `json:"label,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
-type UpdateSystemComponentControlRequest SystemComponentControlBodyRequest[UpdateSystemComponentControlAttributes]
+type UpdateSystemComponentControlRequest UpdateIdRequest[UpdateSystemComponentControlAttributes]
 type UpdateSystemComponentControlResponse ItemResponse[SystemComponentControl]
 
 var ArchiveSystemComponentControl = huma.Operation{
 	OperationID: "archive-system-component-control",
 	Method:      http.MethodDelete,
-	Path:        componentControlPath,
+	Path:        "/system_component_controls/{id}",
 	Summary:     "Archive a System Component Control",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type ArchiveSystemComponentControlRequest SystemComponentControlRequest
+type ArchiveSystemComponentControlRequest ArchiveIdRequest
 type ArchiveSystemComponentControlResponse EmptyResponse
 
 // System Component Signal Operations
-
-type SystemComponentSignalRequest struct {
-	ComponentId uuid.UUID `path:"componentId"`
-	SignalId    uuid.UUID `path:"signalId"`
-}
-
-type SystemComponentSignalBodyRequest[A any] struct {
-	ComponentId uuid.UUID `path:"componentId"`
-	SignalId    uuid.UUID `path:"signalId"`
-
-	Body struct {
-		Attributes A `json:"attributes"`
-	}
-}
-
-const componentSignalPath = "/system_components/{componentId}/signals/{signalId}"
 
 var CreateSystemComponentSignal = huma.Operation{
 	OperationID: "create-system-component-signal",
@@ -449,39 +416,39 @@ type CreateSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
 var GetSystemComponentSignal = huma.Operation{
 	OperationID: "get-system-component-signal",
 	Method:      http.MethodGet,
-	Path:        componentSignalPath,
+	Path:        "/system_component_signals/{id}",
 	Summary:     "Get a System Component Signal",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type GetSystemComponentSignalRequest SystemComponentSignalRequest
+type GetSystemComponentSignalRequest GetIdRequest
 type GetSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
 
 var UpdateSystemComponentSignal = huma.Operation{
 	OperationID: "update-system-component-signal",
 	Method:      http.MethodPatch,
-	Path:        componentSignalPath,
+	Path:        "/system_component_signals/{id}",
 	Summary:     "Update a System Component Signal",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateSystemComponentSignalAttributes struct {
-	Label       *string `json:"label"`
-	Description *string `json:"description"`
+	Label       *string `json:"label,omitempty"`
+	Description *string `json:"description,omitempty"`
 }
-type UpdateSystemComponentSignalRequest SystemComponentSignalBodyRequest[UpdateSystemComponentSignalAttributes]
+type UpdateSystemComponentSignalRequest UpdateIdRequest[UpdateSystemComponentSignalAttributes]
 type UpdateSystemComponentSignalResponse ItemResponse[SystemComponentSignal]
 
 var ArchiveSystemComponentSignal = huma.Operation{
 	OperationID: "archive-system-component-signal",
 	Method:      http.MethodDelete,
-	Path:        componentSignalPath,
+	Path:        "/system_component_signals/{id}",
 	Summary:     "Archive a System Component Signal",
 	Tags:        systemComponentsTags,
 	Errors:      errorCodes(),
 }
 
-type ArchiveSystemComponentSignalRequest SystemComponentSignalRequest
+type ArchiveSystemComponentSignalRequest ArchiveIdRequest
 type ArchiveSystemComponentSignalResponse EmptyResponse

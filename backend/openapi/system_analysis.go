@@ -76,10 +76,6 @@ type (
 		ControlActions  []SystemAnalysisRelationshipControlAction  `json:"controlActions"`
 	}
 
-	SystemAnalysisRelationshipComponent struct {
-		ComponentId uuid.UUID `json:"componentId"`
-	}
-
 	SystemAnalysisRelationshipControlAction struct {
 		Id         uuid.UUID                                         `json:"id"`
 		Attributes SystemAnalysisRelationshipControlActionAttributes `json:"attributes"`
@@ -143,69 +139,46 @@ var ListSystemAnalysisComponents = huma.Operation{
 type ListSystemAnalysisComponentsRequest ListIdRequest
 type ListSystemAnalysisComponentsResponse PaginatedResponse[SystemAnalysisComponent]
 
-type SystemAnalysisEntityRequest struct {
-	AnalysisId uuid.UUID `path:"analysisId"`
-	EntityId   uuid.UUID `path:"entityId"`
-}
-
 var GetSystemAnalysisComponent = huma.Operation{
 	OperationID: "get-system-analysis-component",
 	Method:      http.MethodGet,
-	Path:        "/system_analysis/{analysisId}/components/{entityId}",
+	Path:        "/system_analysis_components/{id}",
 	Summary:     "Get a component in a System analysis",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
-type GetSystemAnalysisComponentRequest SystemAnalysisEntityRequest
+type GetSystemAnalysisComponentRequest GetIdRequest
 type GetSystemAnalysisComponentResponse ItemResponse[SystemAnalysisComponent]
 
 var UpdateSystemAnalysisComponent = huma.Operation{
 	OperationID: "update-system-analysis-component",
 	Method:      http.MethodPatch,
-	Path:        "/system_analysis/{analysisId}/components/{entityId}",
+	Path:        "/system_analysis_components/{id}",
 	Summary:     "Update a System Analysis Component",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateSystemAnalysisComponentAttributes struct {
-	Role *string `json:"role,omitempty"`
+	Position *SystemAnalysisDiagramPosition `json:"position,omitempty"`
 }
-type UpdateSystemAnalysisComponentRequest struct {
-	SystemAnalysisEntityRequest
-	RequestWithBodyAttributes[UpdateSystemAnalysisComponentAttributes]
-}
+type UpdateSystemAnalysisComponentRequest UpdateIdRequest[UpdateSystemAnalysisComponentAttributes]
 type UpdateSystemAnalysisComponentResponse ItemResponse[SystemAnalysisComponent]
 
 var DeleteSystemAnalysisComponent = huma.Operation{
 	OperationID: "delete-system-analysis-component",
 	Method:      http.MethodDelete,
-	Path:        "/system_analysis/{analysisId}/components/{entityId}",
+	Path:        "/system_analysis_components/{id}",
 	Summary:     "Delete a Component from a System Analysis",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
-type DeleteSystemAnalysisComponentRequest SystemAnalysisEntityRequest
+type DeleteSystemAnalysisComponentRequest DeleteIdRequest
 type DeleteSystemAnalysisComponentResponse EmptyResponse
 
 // analysis relationships
-
-var CreateSystemAnalysisRelationship = huma.Operation{
-	OperationID: "create-system-analysis-relationship",
-	Method:      http.MethodPost,
-	Path:        "/system_analysis/{id}/relationships",
-	Summary:     "Create a Relationship in a System Analysis",
-	Tags:        systemAnalysisTags,
-	Errors:      errorCodes(),
-}
-
-type CreateSystemAnalysisRelationshipAttributes struct {
-	// TODO: relationship attributes
-}
-type CreateSystemAnalysisRelationshipRequest CreateIdRequest[CreateSystemAnalysisRelationshipAttributes]
-type CreateSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]
 
 var ListSystemAnalysisRelationships = huma.Operation{
 	OperationID: "list-system-analysis-relationships",
@@ -225,41 +198,59 @@ type ListSystemAnalysisRelationshipsResponse PaginatedResponse[SystemAnalysisRel
 var GetSystemAnalysisRelationship = huma.Operation{
 	OperationID: "get-system-analysis-relationship",
 	Method:      http.MethodGet,
-	Path:        "/system_analysis/{analysisId}/relationships/{entityId}",
+	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Get a relationship in a System analysis",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
-type GetSystemAnalysisRelationshipRequest SystemAnalysisEntityRequest
+type GetSystemAnalysisRelationshipRequest GetIdRequest
 type GetSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]
+
+var CreateSystemAnalysisRelationship = huma.Operation{
+	OperationID: "create-system-analysis-relationship",
+	Method:      http.MethodPost,
+	Path:        "/system_analysis/{id}/relationships",
+	Summary:     "Create a Relationship in a System Analysis",
+	Tags:        systemAnalysisTags,
+	Errors:      errorCodes(),
+}
+
+type CreateSystemAnalysisRelationshipAttributes struct {
+	SourceId        uuid.UUID                                            `json:"sourceId"`
+	TargetId        uuid.UUID                                            `json:"targetId"`
+	Description     string                                               `json:"description"`
+	FeedbackSignals []SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals"`
+	ControlActions  []SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions"`
+}
+type CreateSystemAnalysisRelationshipRequest CreateIdRequest[CreateSystemAnalysisRelationshipAttributes]
+type CreateSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]
 
 var UpdateSystemAnalysisRelationship = huma.Operation{
 	OperationID: "update-system-analysis-relationship",
 	Method:      http.MethodPatch,
-	Path:        "/system_analysis/{analysisId}/relationships/{entityId}",
+	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Update a System Analysis Relationship",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
 type UpdateSystemAnalysisRelationshipAttributes struct {
-	// TODO
+	Description     *string                                               `json:"description,omitempty"`
+	FeedbackSignals *[]SystemAnalysisRelationshipFeedbackSignalAttributes `json:"feedbackSignals,omitempty"`
+	ControlActions  *[]SystemAnalysisRelationshipControlActionAttributes  `json:"controlActions,omitempty"`
 }
-type UpdateSystemAnalysisRelationshipRequest struct {
-	SystemAnalysisEntityRequest
-	RequestWithBodyAttributes[UpdateSystemAnalysisRelationshipAttributes]
-}
+type UpdateSystemAnalysisRelationshipRequest UpdateIdRequest[UpdateSystemAnalysisRelationshipAttributes]
 type UpdateSystemAnalysisRelationshipResponse ItemResponse[SystemAnalysisRelationship]
 
 var DeleteSystemAnalysisRelationship = huma.Operation{
 	OperationID: "delete-system-analysis-relationship",
 	Method:      http.MethodDelete,
-	Path:        "/system_analysis/{analysisId}/relationships/{entityId}",
+	Path:        "/system_analysis_relationships/{id}",
 	Summary:     "Delete a Relationship from a System Analysis",
 	Tags:        systemAnalysisTags,
 	Errors:      errorCodes(),
 }
 
-type DeleteSystemAnalysisRelationshipRequest SystemAnalysisEntityRequest
+type DeleteSystemAnalysisRelationshipRequest DeleteIdRequest
 type DeleteSystemAnalysisRelationshipResponse EmptyResponse

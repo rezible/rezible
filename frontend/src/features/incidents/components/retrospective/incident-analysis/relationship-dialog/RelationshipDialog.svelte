@@ -3,7 +3,7 @@
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
-	import { relationshipDialog } from "./relationshipDialogState.svelte";
+	import { relationshipDialog } from "./dialogState.svelte";
 	
 	relationshipDialog.setup();
 

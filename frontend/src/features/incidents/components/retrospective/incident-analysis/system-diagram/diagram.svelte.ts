@@ -12,14 +12,15 @@ import {
 	useStore,
 } from "@xyflow/svelte";
 
-import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import {
 	type SystemAnalysis,
 	type SystemAnalysisComponent,
 	type SystemAnalysisRelationship,
 } from "$lib/api";
-import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysis.svelte";
-import { relationshipDialog } from "$src/features/incidents/components/retrospective/incident-analysis/relationship-dialog/relationshipDialogState.svelte";
+import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysisState.svelte";
+import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
+
+import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {

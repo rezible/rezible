@@ -2,7 +2,7 @@
 	import { Button, Icon } from "svelte-ux";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
-	import { analysis } from "./analysis.svelte";
+	import { analysis } from "./analysisState.svelte";
 
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";

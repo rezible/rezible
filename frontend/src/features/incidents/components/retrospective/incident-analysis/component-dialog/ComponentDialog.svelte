@@ -4,20 +4,21 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";
-	import { componentDialog } from "./componentDialogState.svelte";
-	
+	import { componentDialog } from "./dialogState.svelte";
+
 	componentDialog.setup();
 
-	const view = $derived(componentDialog.view);
-	const viewActionLabels: Record<typeof view, {action: string, confirm: string}> = {
-		add: {action: "Add", confirm: "Add"},
-		create: {action: "Create", confirm: "Create Component"},
-		edit: {action: "Edit", confirm: "Save Changes"},
-		closed: {action: "", confirm: ""},
-	}
-	const labels = $derived(viewActionLabels[view]);
+	const viewActionLabels: Record<typeof componentDialog.view, { action: string; confirm: string }> = {
+		add: { action: "Add", confirm: "Add" },
+		create: { action: "Create", confirm: "Create Component" },
+		edit: { action: "Edit", confirm: "Save Changes" },
+		closed: { action: "", confirm: "" },
+	};
+	const labels = $derived(viewActionLabels[componentDialog.view]);
 
-	const creatingToAdd = $derived(view === "create" && componentDialog.previousView === "add");
+	const creatingToAdd = $derived(
+		componentDialog.view === "create" && componentDialog.previousView === "add"
+	);
 	const cancelLabel = $derived(creatingToAdd ? "Cancel" : "Cancel");
 </script>
 
@@ -42,7 +43,7 @@
 
 	<div slot="default" class="p-2 flex-1 min-h-0 max-h-full grid">
 		{#if componentDialog.open}
-			{#if view === "add"}
+			{#if componentDialog.view === "add"}
 				<ComponentSelector />
 			{:else}
 				<ComponentAttributesEditor />

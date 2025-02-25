@@ -5,25 +5,18 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listSystemComponentKindsOptions } from "$lib/api";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { componentDialog } from "./componentDialogState.svelte";
-	import { componentTraits } from "./componentTraitMutations.svelte";
+	import { componentDialog, componentTraits } from "./dialogState.svelte";
 	import { getSystemComponentKindMenuOptions } from "$lib/systemComponents";
 	import { SvelteMap } from "svelte/reactivity";
 
 	const attr = $derived(componentDialog.componentAttributes);
 
-	componentTraits.setupMutations();
-
-	const componentKindsQuery = createQuery(() => listSystemComponentKindsOptions({}));
-	const componentKinds = $derived(componentKindsQuery.data?.data ?? []);
-	const componentKindsMap = $derived(new SvelteMap(componentKinds.map((k) => [k.id, k])));
-	const componentKindOptions = $derived(getSystemComponentKindMenuOptions(componentKinds));
+	const kindsQuery = createQuery(() => listSystemComponentKindsOptions({}));
+	const kinds = $derived(kindsQuery.data?.data ?? []);
+	const kindsMap = $derived(new SvelteMap(kinds.map((k) => [k.id, k])));
+	const kindOptions = $derived(getSystemComponentKindMenuOptions(kinds));
 	const onKindSelected = ({detail}: CustomEvent<{value?: string | null}>) => {
-		if (detail.value) {
-			attr.setKind(componentKindsMap.get(detail.value));
-		} else {
-			attr.setKind(undefined);
-		}
+		attr.setKind(!!detail.value ? kindsMap.get(detail.value) : undefined);
 	};
 </script>
 
@@ -36,8 +29,8 @@
 		<SelectField
 			label="Kind"
 			labelPlacement="float"
-			options={componentKindOptions}
-			loading={componentKindsQuery.isFetching}
+			options={kindOptions}
+			loading={kindsQuery.isFetching}
 			value={attr.kind.id}
 			on:change={onKindSelected}
 		/>

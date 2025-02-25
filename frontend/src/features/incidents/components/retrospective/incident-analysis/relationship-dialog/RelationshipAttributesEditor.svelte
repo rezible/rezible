@@ -1,24 +1,19 @@
 <script lang="ts">
-	import {
-		type SystemComponent,
-		getSystemComponentOptions,
-	} from "$lib/api";
-	import { relationshipDialog } from "./relationshipDialogState.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
+	import { getSystemComponentOptions, type SystemComponent } from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import { relationshipAttributes } from "./dialogState.svelte";
 	import RelationshipAttributesComponentColumn from "./RelationshipAttributesComponentColumn.svelte";
 	import RelationshipLoopsColumn from "./RelationshipLoopsColumn.svelte";
 
-	const attrs = $derived(relationshipDialog.attributes);
-
-	const sourceId = $derived(attrs.sourceId);
+	const sourceId = $derived(relationshipAttributes.sourceId);
 	const sourceComponentQuery = createQuery(() => ({
 		...getSystemComponentOptions({path: {id: sourceId}}),
 		enabled: !!sourceId,
 	}));
 	const sourceComponent = $derived(sourceComponentQuery.data?.data);
 
-	const targetId = $derived(attrs.targetId);
+	const targetId = $derived(relationshipAttributes.targetId);
 	const targetComponentQuery = createQuery(() => ({
 		...getSystemComponentOptions({path: {id: targetId}}),
 		enabled: !!targetId,

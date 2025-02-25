@@ -10,9 +10,12 @@ import {
 	type SystemAnalysisRelationshipControlActionAttributes,
 	type SystemAnalysisRelationshipFeedbackSignal,
 	type SystemAnalysisRelationshipFeedbackSignalAttributes,
+	type SystemComponentControl,
+	type SystemComponentSignal,
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
-import { analysis } from "../analysis.svelte";
+import { analysis } from "../analysisState.svelte";
+import { SvelteSet } from "svelte/reactivity";
 
 const compareControlActions = (a: SystemAnalysisRelationshipControlAction, b: SystemAnalysisRelationshipControlAction) => {
 	if (a.id !== b.id) return false;
@@ -79,7 +82,11 @@ const createRelationshipAttributesState = () => {
 		valid = !!sourceId && !!targetId;
 	}
 
-	const setControlAction = (a: SystemAnalysisRelationshipControlActionAttributes) => {
+	const includeControlAction = (controlId: string) => {
+		updateControlAction({ controlId, description: "" });
+	}
+
+	const updateControlAction = (a: SystemAnalysisRelationshipControlActionAttributes) => {
 		const idx = controlActions.findIndex(v => v.attributes.controlId === a.controlId);
 		if (idx >= 0) { controlActions[idx].attributes = a }
 		else { controlActions.push({ id: uuidv4(), attributes: a }) }
@@ -91,7 +98,11 @@ const createRelationshipAttributesState = () => {
 		onUpdate();
 	}
 
-	const setFeedbackSignal = (a: SystemAnalysisRelationshipFeedbackSignalAttributes) => {
+	const includeFeedbackSignal = (signalId: string) => {
+		updateFeedbackSignal({ signalId, description: "" });
+	}
+
+	const updateFeedbackSignal = (a: SystemAnalysisRelationshipFeedbackSignalAttributes) => {
 		const idx = feedbackSignals.findIndex(v => v.attributes.signalId === a.signalId);
 		if (idx >= 0) { feedbackSignals[idx].attributes = a }
 		else { feedbackSignals.push({ id: uuidv4(), attributes: a }) }
@@ -103,7 +114,6 @@ const createRelationshipAttributesState = () => {
 		onUpdate();
 	}
 
-	// this is gross but oh well
 	return {
 		initNew,
 		initFrom,
@@ -112,10 +122,12 @@ const createRelationshipAttributesState = () => {
 		get description() { return description },
 		set description(d: string) { description = d; onUpdate(); },
 		get controlActions() { return controlActions },
-		setControlAction,
+		includeControlAction,
+		updateControlAction,
 		removeControlAction,
 		get feedbackSignals() { return feedbackSignals },
-		setFeedbackSignal,
+		includeFeedbackSignal,
+		updateFeedbackSignal,
 		removeFeedbackSignal,
 		snapshot() {
 			return $state.snapshot({ sourceId, targetId, description, controlActions, feedbackSignals })
@@ -125,12 +137,13 @@ const createRelationshipAttributesState = () => {
 	}
 }
 
+export const relationshipAttributes = createRelationshipAttributesState();
+
 type RelationshipDialogView = "closed" | "create" | "edit";
 
 const createRelationshipDialogState = () => {
 	let view = $state<RelationshipDialogView>("closed");
 	let relationshipId = $state<string>();
-	let relationshipAttributes = createRelationshipAttributesState();
 
 	const setCreating = (sourceId: string, targetId: string) => {
 		view = "create";
@@ -154,16 +167,10 @@ const createRelationshipDialogState = () => {
 		clear();
 	}
 
-	const makeCreateMutation = () => createMutation(() => ({
-		...createSystemAnalysisRelationshipMutation(),
-		onSuccess,
-	}));
+	const makeCreateMutation = () => createMutation(() => ({ ...createSystemAnalysisRelationshipMutation(), onSuccess }));
 	type CreateMutation = ReturnType<typeof makeCreateMutation>;
 
-	const makeUpdateMutation = () => createMutation(() => ({
-		...updateSystemAnalysisRelationshipMutation(),
-		onSuccess,
-	}));
+	const makeUpdateMutation = () => createMutation(() => ({ ...updateSystemAnalysisRelationshipMutation(), onSuccess }));
 	type UpdateMutation = ReturnType<typeof makeUpdateMutation>;
 
 	let createMut = $state<CreateMutation>();
@@ -171,32 +178,28 @@ const createRelationshipDialogState = () => {
 
 	const loading = $derived(createMut?.isPending || updateMut?.isPending);
 
-	const setup = () => {
-		createMut = makeCreateMutation();
-		updateMut = makeUpdateMutation();
-	};
-
 	const doCreate = () => {
 		if (!analysis.id) return;
-		const path = { id: $state.snapshot(analysis.id) };
-
 		const attr = relationshipAttributes.snapshot();
 		const attributes: CreateSystemAnalysisRelationshipAttributes = {
-			// TODO
+			sourceId: attr.sourceId,
+			targetId: attr.targetId,
+			description: attr.description,
+			controlActions: attr.controlActions.map(a => a.attributes),
+			feedbackSignals: attr.feedbackSignals.map(a => a.attributes),
 		};
-		createMut?.mutate({ path, body: { attributes } });
+		createMut?.mutate({ path: { id: $state.snapshot(analysis.id) }, body: { attributes } });
 	}
 
 	const doEdit = () => {
-		if (!analysis.id || !relationshipId) return;
-		const path = {
-			analysisId: $state.snapshot(analysis.id),
-			entityId: $state.snapshot(relationshipId),
-		}
+		if (!relationshipId) return;
+		const attr = relationshipAttributes.snapshot();
 		const attributes: UpdateSystemAnalysisRelationshipAttributes = {
-			// TODO
+			description: attr.description,
+			controlActions: attr.controlActions.map(a => a.attributes),
+			feedbackSignals: attr.feedbackSignals.map(s => s.attributes),
 		};
-		updateMut?.mutate({ path, body: { attributes } });
+		updateMut?.mutate({ path: { id: $state.snapshot(relationshipId) }, body: { attributes } });
 	}
 
 	const onConfirm = () => {
@@ -211,7 +214,10 @@ const createRelationshipDialogState = () => {
 	};
 
 	return {
-		setup,
+		setup: () => {
+			createMut = makeCreateMutation();
+			updateMut = makeUpdateMutation();
+		},
 		get view() {
 			return view;
 		},
@@ -220,9 +226,6 @@ const createRelationshipDialogState = () => {
 		},
 		setCreating,
 		setEditing,
-		get attributes() {
-			return relationshipAttributes;
-		},
 		get saveEnabled() {
 			return relationshipAttributes.valid && (view === "create" || relationshipAttributes.changed);
 		},
@@ -235,3 +238,27 @@ const createRelationshipDialogState = () => {
 };
 
 export const relationshipDialog = createRelationshipDialogState();
+
+export type RelationshipTrait = {
+	id: string;
+	attributes: {
+		label: string;
+		description: string;
+	};
+}
+
+const createRelationshipTraitsState = () => {
+	const includedSignalIds = $derived(
+		new SvelteSet(relationshipAttributes.feedbackSignals.map((s) => s.attributes.signalId))
+	);
+	const includedControlIds = $derived(
+		new SvelteSet(relationshipAttributes.controlActions.map((a) => a.attributes.controlId))
+	);
+
+	return {
+		get includedSignalIds() { return includedSignalIds },
+		get includedControlIds() { return includedControlIds },
+	}
+}
+
+export const relationshipTraits = createRelationshipTraitsState();
