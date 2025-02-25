@@ -3,16 +3,18 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type systemComponentsHandler struct {
+	db *ent.Client
 }
 
 var fakeComponents = makeFakeComponents()
 
-func newSystemComponentsHandler() *systemComponentsHandler {
-	return &systemComponentsHandler{}
+func newSystemComponentsHandler(db *ent.Client) *systemComponentsHandler {
+	return &systemComponentsHandler{db: db}
 }
 
 func makeFakeComponents() []oapi.SystemComponent {

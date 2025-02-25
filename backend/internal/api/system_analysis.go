@@ -3,16 +3,18 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 var fakeAnalysis = makeFakeSystemAnalysis(fakeComponents)
 
 type systemAnalysisHandler struct {
+	db *ent.Client
 }
 
-func newSystemAnalysisHandler() *systemAnalysisHandler {
-	return &systemAnalysisHandler{}
+func newSystemAnalysisHandler(db *ent.Client) *systemAnalysisHandler {
+	return &systemAnalysisHandler{db: db}
 }
 
 func makeFakeSystemAnalysis(cmps []oapi.SystemComponent) oapi.SystemAnalysis {
@@ -91,6 +93,12 @@ func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 	var resp oapi.GetSystemAnalysisResponse
 
 	resp.Body.Data = fakeAnalysis
+
+	//sysAn, getErr := s.db.SystemAnalysis.Get(ctx, request.Id)
+	//if getErr != nil {
+	//	return nil, detailError("failed to get system analysis", getErr)
+	//}
+	//resp.Body.Data = oapi.SystemAnalysisFromEnt(sysAn)
 
 	return &resp, nil
 }
