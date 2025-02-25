@@ -45,9 +45,10 @@ func (Incident) Edges() []ent.Edge {
 		edge.From("role_assignments", IncidentRoleAssignment.Type).
 			Ref("incident"),
 
-		edge.To("retrospective", Retrospective.Type),
 		edge.To("milestones", IncidentMilestone.Type),
 		edge.To("events", IncidentEvent.Type),
+		edge.From("retrospective", Retrospective.Type).
+			Ref("incident"),
 		edge.From("system_analysis", SystemAnalysis.Type).
 			Ref("incident"),
 

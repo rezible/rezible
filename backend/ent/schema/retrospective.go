@@ -17,6 +17,7 @@ type Retrospective struct {
 func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.UUID("incident_id", uuid.UUID{}),
 		field.String("document_name"),
 		field.Enum("type").Values("quick", "full"),
 		field.Enum("state").Values("draft", "in_review", "meeting", "closed"),
@@ -26,9 +27,8 @@ func (Retrospective) Fields() []ent.Field {
 // Edges of the Retrospective.
 func (Retrospective) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("incident", Incident.Type).
-			Ref("retrospective").
-			Unique(),
+		edge.To("incident", Incident.Type).
+			Unique().Required().Field("incident_id"),
 		edge.From("discussions", RetrospectiveDiscussion.Type).
 			Ref("retrospective"),
 	}
