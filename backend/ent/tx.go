@@ -96,6 +96,8 @@ type Tx struct {
 	SystemAnalysis *SystemAnalysisClient
 	// SystemAnalysisComponent is the client for interacting with the SystemAnalysisComponent builders.
 	SystemAnalysisComponent *SystemAnalysisComponentClient
+	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
+	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
 	// SystemComponent is the client for interacting with the SystemComponent builders.
 	SystemComponent *SystemComponentClient
 	// SystemComponentConstraint is the client for interacting with the SystemComponentConstraint builders.
@@ -106,8 +108,6 @@ type Tx struct {
 	SystemComponentKind *SystemComponentKindClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
-	// SystemRelationship is the client for interacting with the SystemRelationship builders.
-	SystemRelationship *SystemRelationshipClient
 	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
 	SystemRelationshipControlAction *SystemRelationshipControlActionClient
 	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
@@ -291,12 +291,12 @@ func (tx *Tx) init() {
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
 	tx.SystemAnalysisComponent = NewSystemAnalysisComponentClient(tx.config)
+	tx.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(tx.config)
 	tx.SystemComponent = NewSystemComponentClient(tx.config)
 	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
 	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
 	tx.SystemComponentKind = NewSystemComponentKindClient(tx.config)
 	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
-	tx.SystemRelationship = NewSystemRelationshipClient(tx.config)
 	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
 	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)

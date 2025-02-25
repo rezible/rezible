@@ -54,7 +54,7 @@ func (SystemComponent) Edges() []ent.Edge {
 			StorageKey(
 				edge.Table("system_relationship"),
 				edge.Columns("source_component_id", "target_component_id")).
-			Through("relationships", SystemRelationship.Type),
+			Through("relationships", SystemAnalysisRelationship.Type),
 		//edge.To("controls", SystemComponent.Type).
 		//	StorageKey(edge.Table("system_component_control_relationship"), edge.Columns("controller_id", "controlled_id")).
 		//	Through("control_relationships", SystemComponentControlRelationship.Type),
@@ -138,7 +138,7 @@ func (SystemComponentSignal) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("relationships", SystemRelationship.Type).
+		edge.From("relationships", SystemAnalysisRelationship.Type).
 			Ref("signals").
 			Through("feedback_signals", SystemRelationshipFeedbackSignal.Type),
 	}
@@ -162,7 +162,7 @@ func (SystemComponentControl) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
-		edge.From("relationships", SystemRelationship.Type).
+		edge.From("relationships", SystemAnalysisRelationship.Type).
 			Ref("controls").
 			Through("control_actions", SystemRelationshipControlAction.Type),
 	}

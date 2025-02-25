@@ -47,12 +47,12 @@ import (
 	"github.com/rezible/rezible/ent/schema"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -477,6 +477,16 @@ func init() {
 	systemanalysiscomponentDescID := systemanalysiscomponentFields[0].Descriptor()
 	// systemanalysiscomponent.DefaultID holds the default value on creation for the id field.
 	systemanalysiscomponent.DefaultID = systemanalysiscomponentDescID.Default.(func() uuid.UUID)
+	systemanalysisrelationshipFields := schema.SystemAnalysisRelationship{}.Fields()
+	_ = systemanalysisrelationshipFields
+	// systemanalysisrelationshipDescCreatedAt is the schema descriptor for created_at field.
+	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipFields[5].Descriptor()
+	// systemanalysisrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemanalysisrelationship.DefaultCreatedAt = systemanalysisrelationshipDescCreatedAt.Default.(func() time.Time)
+	// systemanalysisrelationshipDescID is the schema descriptor for id field.
+	systemanalysisrelationshipDescID := systemanalysisrelationshipFields[0].Descriptor()
+	// systemanalysisrelationship.DefaultID holds the default value on creation for the id field.
+	systemanalysisrelationship.DefaultID = systemanalysisrelationshipDescID.Default.(func() uuid.UUID)
 	systemcomponentFields := schema.SystemComponent{}.Fields()
 	_ = systemcomponentFields
 	// systemcomponentDescName is the schema descriptor for name field.
@@ -537,16 +547,6 @@ func init() {
 	systemcomponentsignalDescID := systemcomponentsignalFields[0].Descriptor()
 	// systemcomponentsignal.DefaultID holds the default value on creation for the id field.
 	systemcomponentsignal.DefaultID = systemcomponentsignalDescID.Default.(func() uuid.UUID)
-	systemrelationshipFields := schema.SystemRelationship{}.Fields()
-	_ = systemrelationshipFields
-	// systemrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	systemrelationshipDescCreatedAt := systemrelationshipFields[4].Descriptor()
-	// systemrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
-	systemrelationship.DefaultCreatedAt = systemrelationshipDescCreatedAt.Default.(func() time.Time)
-	// systemrelationshipDescID is the schema descriptor for id field.
-	systemrelationshipDescID := systemrelationshipFields[0].Descriptor()
-	// systemrelationship.DefaultID holds the default value on creation for the id field.
-	systemrelationship.DefaultID = systemrelationshipDescID.Default.(func() uuid.UUID)
 	systemrelationshipcontrolactionFields := schema.SystemRelationshipControlAction{}.Fields()
 	_ = systemrelationshipcontrolactionFields
 	// systemrelationshipcontrolactionDescType is the schema descriptor for type field.

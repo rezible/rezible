@@ -25,6 +25,8 @@ const (
 	EdgeIncident = "incident"
 	// EdgeComponents holds the string denoting the components edge name in mutations.
 	EdgeComponents = "components"
+	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
+	EdgeRelationships = "relationships"
 	// EdgeAnalysisComponents holds the string denoting the analysis_components edge name in mutations.
 	EdgeAnalysisComponents = "analysis_components"
 	// Table holds the table name of the systemanalysis in the database.
@@ -41,6 +43,13 @@ const (
 	// ComponentsInverseTable is the table name for the SystemComponent entity.
 	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
 	ComponentsInverseTable = "system_components"
+	// RelationshipsTable is the table that holds the relationships relation/edge.
+	RelationshipsTable = "system_analysis_relationships"
+	// RelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
+	RelationshipsInverseTable = "system_analysis_relationships"
+	// RelationshipsColumn is the table column denoting the relationships relation/edge.
+	RelationshipsColumn = "analysis_id"
 	// AnalysisComponentsTable is the table that holds the analysis_components relation/edge.
 	AnalysisComponentsTable = "system_analysis_components"
 	// AnalysisComponentsInverseTable is the table name for the SystemAnalysisComponent entity.
@@ -129,6 +138,20 @@ func ByComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByRelationshipsCount orders the results by relationships count.
+func ByRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRelationshipsStep(), opts...)
+	}
+}
+
+// ByRelationships orders the results by relationships terms.
+func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAnalysisComponentsCount orders the results by analysis_components count.
 func ByAnalysisComponentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -154,6 +177,13 @@ func newComponentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ComponentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, ComponentsTable, ComponentsPrimaryKey...),
+	)
+}
+func newRelationshipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RelationshipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
 	)
 }
 func newAnalysisComponentsStep() *sqlgraph.Step {

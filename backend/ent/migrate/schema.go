@@ -992,6 +992,48 @@ var (
 			},
 		},
 	}
+	// SystemAnalysisRelationshipsColumns holds the columns for the "system_analysis_relationships" table.
+	SystemAnalysisRelationshipsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "analysis_id", Type: field.TypeUUID},
+		{Name: "source_component_id", Type: field.TypeUUID},
+		{Name: "target_component_id", Type: field.TypeUUID},
+	}
+	// SystemAnalysisRelationshipsTable holds the schema information for the "system_analysis_relationships" table.
+	SystemAnalysisRelationshipsTable = &schema.Table{
+		Name:       "system_analysis_relationships",
+		Columns:    SystemAnalysisRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_analysis_relationships_system_analyses_system_analysis",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[3]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_components_source_component",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[4]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_components_target_component",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[5]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysisrelationship_source_component_id_target_component_id",
+				Unique:  true,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[4], SystemAnalysisRelationshipsColumns[5]},
+			},
+		},
+	}
 	// SystemComponentsColumns holds the columns for the "system_components" table.
 	SystemComponentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1095,41 +1137,6 @@ var (
 			},
 		},
 	}
-	// SystemRelationshipsColumns holds the columns for the "system_relationships" table.
-	SystemRelationshipsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "source_component_id", Type: field.TypeUUID},
-		{Name: "target_component_id", Type: field.TypeUUID},
-	}
-	// SystemRelationshipsTable holds the schema information for the "system_relationships" table.
-	SystemRelationshipsTable = &schema.Table{
-		Name:       "system_relationships",
-		Columns:    SystemRelationshipsColumns,
-		PrimaryKey: []*schema.Column{SystemRelationshipsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_relationships_system_components_source_component",
-				Columns:    []*schema.Column{SystemRelationshipsColumns[3]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_relationships_system_components_target_component",
-				Columns:    []*schema.Column{SystemRelationshipsColumns[4]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemrelationship_source_component_id_target_component_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemRelationshipsColumns[3], SystemRelationshipsColumns[4]},
-			},
-		},
-	}
 	// SystemRelationshipControlActionsColumns holds the columns for the "system_relationship_control_actions" table.
 	SystemRelationshipControlActionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1146,9 +1153,9 @@ var (
 		PrimaryKey: []*schema.Column{SystemRelationshipControlActionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_relationship_control_actions_system_relationships_relationship",
+				Symbol:     "system_relationship_control_actions_system_analysis_relationships_relationship",
 				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[4]},
-				RefColumns: []*schema.Column{SystemRelationshipsColumns[0]},
+				RefColumns: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
@@ -1182,9 +1189,9 @@ var (
 		PrimaryKey: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_relationship_feedback_signals_system_relationships_relationship",
+				Symbol:     "system_relationship_feedback_signals_system_analysis_relationships_relationship",
 				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4]},
-				RefColumns: []*schema.Column{SystemRelationshipsColumns[0]},
+				RefColumns: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
@@ -1610,12 +1617,12 @@ var (
 		RetrospectiveReviewsTable,
 		SystemAnalysesTable,
 		SystemAnalysisComponentsTable,
+		SystemAnalysisRelationshipsTable,
 		SystemComponentsTable,
 		SystemComponentConstraintsTable,
 		SystemComponentControlsTable,
 		SystemComponentKindsTable,
 		SystemComponentSignalsTable,
-		SystemRelationshipsTable,
 		SystemRelationshipControlActionsTable,
 		SystemRelationshipFeedbackSignalsTable,
 		TasksTable,
@@ -1684,15 +1691,16 @@ func init() {
 	SystemAnalysesTable.ForeignKeys[0].RefTable = IncidentsTable
 	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
 	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = SystemComponentsTable
 	SystemComponentsTable.ForeignKeys[0].RefTable = SystemComponentKindsTable
 	SystemComponentConstraintsTable.ForeignKeys[0].RefTable = SystemComponentsTable
 	SystemComponentControlsTable.ForeignKeys[0].RefTable = SystemComponentsTable
 	SystemComponentSignalsTable.ForeignKeys[0].RefTable = SystemComponentsTable
-	SystemRelationshipsTable.ForeignKeys[0].RefTable = SystemComponentsTable
-	SystemRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[0].RefTable = SystemRelationshipsTable
+	SystemRelationshipControlActionsTable.ForeignKeys[0].RefTable = SystemAnalysisRelationshipsTable
 	SystemRelationshipControlActionsTable.ForeignKeys[1].RefTable = SystemComponentControlsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[0].RefTable = SystemRelationshipsTable
+	SystemRelationshipFeedbackSignalsTable.ForeignKeys[0].RefTable = SystemAnalysisRelationshipsTable
 	SystemRelationshipFeedbackSignalsTable.ForeignKeys[1].RefTable = SystemComponentSignalsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = UsersTable

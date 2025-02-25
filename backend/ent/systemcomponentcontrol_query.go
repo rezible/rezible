@@ -14,9 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
@@ -28,7 +28,7 @@ type SystemComponentControlQuery struct {
 	inters             []Interceptor
 	predicates         []predicate.SystemComponentControl
 	withComponent      *SystemComponentQuery
-	withRelationships  *SystemRelationshipQuery
+	withRelationships  *SystemAnalysisRelationshipQuery
 	withControlActions *SystemRelationshipControlActionQuery
 	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -90,8 +90,8 @@ func (sccq *SystemComponentControlQuery) QueryComponent() *SystemComponentQuery 
 }
 
 // QueryRelationships chains the current query on the "relationships" edge.
-func (sccq *SystemComponentControlQuery) QueryRelationships() *SystemRelationshipQuery {
-	query := (&SystemRelationshipClient{config: sccq.config}).Query()
+func (sccq *SystemComponentControlQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: sccq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sccq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -102,7 +102,7 @@ func (sccq *SystemComponentControlQuery) QueryRelationships() *SystemRelationshi
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, selector),
-			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
+			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentcontrol.RelationshipsTable, systemcomponentcontrol.RelationshipsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sccq.driver.Dialect(), step)
@@ -348,8 +348,8 @@ func (sccq *SystemComponentControlQuery) WithComponent(opts ...func(*SystemCompo
 
 // WithRelationships tells the query-builder to eager-load the nodes that are connected to
 // the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (sccq *SystemComponentControlQuery) WithRelationships(opts ...func(*SystemRelationshipQuery)) *SystemComponentControlQuery {
-	query := (&SystemRelationshipClient{config: sccq.config}).Query()
+func (sccq *SystemComponentControlQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemComponentControlQuery {
+	query := (&SystemAnalysisRelationshipClient{config: sccq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -481,8 +481,8 @@ func (sccq *SystemComponentControlQuery) sqlAll(ctx context.Context, hooks ...qu
 	}
 	if query := sccq.withRelationships; query != nil {
 		if err := sccq.loadRelationships(ctx, query, nodes,
-			func(n *SystemComponentControl) { n.Edges.Relationships = []*SystemRelationship{} },
-			func(n *SystemComponentControl, e *SystemRelationship) {
+			func(n *SystemComponentControl) { n.Edges.Relationships = []*SystemAnalysisRelationship{} },
+			func(n *SystemComponentControl, e *SystemAnalysisRelationship) {
 				n.Edges.Relationships = append(n.Edges.Relationships, e)
 			}); err != nil {
 			return nil, err
@@ -529,7 +529,7 @@ func (sccq *SystemComponentControlQuery) loadComponent(ctx context.Context, quer
 	}
 	return nil
 }
-func (sccq *SystemComponentControlQuery) loadRelationships(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemComponentControl, init func(*SystemComponentControl), assign func(*SystemComponentControl, *SystemRelationship)) error {
+func (sccq *SystemComponentControlQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemComponentControl, init func(*SystemComponentControl), assign func(*SystemComponentControl, *SystemAnalysisRelationship)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemComponentControl)
 	nids := make(map[uuid.UUID]map[*SystemComponentControl]struct{})
@@ -542,7 +542,7 @@ func (sccq *SystemComponentControlQuery) loadRelationships(ctx context.Context, 
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponentcontrol.RelationshipsTable)
-		s.Join(joinT).On(s.C(systemrelationship.FieldID), joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[0]))
+		s.Join(joinT).On(s.C(systemanalysisrelationship.FieldID), joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(systemcomponentcontrol.RelationshipsPrimaryKey[1]))
@@ -575,7 +575,7 @@ func (sccq *SystemComponentControlQuery) loadRelationships(ctx context.Context, 
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*SystemRelationship](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*SystemAnalysisRelationship](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

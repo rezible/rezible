@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
@@ -86,8 +86,8 @@ func (srcac *SystemRelationshipControlActionCreate) SetNillableID(u *uuid.UUID) 
 	return srcac
 }
 
-// SetRelationship sets the "relationship" edge to the SystemRelationship entity.
-func (srcac *SystemRelationshipControlActionCreate) SetRelationship(s *SystemRelationship) *SystemRelationshipControlActionCreate {
+// SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
+func (srcac *SystemRelationshipControlActionCreate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipControlActionCreate {
 	return srcac.SetRelationshipID(s.ID)
 }
 
@@ -222,7 +222,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 			Columns: []string{systemrelationshipcontrolaction.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

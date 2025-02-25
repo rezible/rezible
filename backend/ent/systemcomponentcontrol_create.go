@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
@@ -86,14 +86,14 @@ func (sccc *SystemComponentControlCreate) SetComponent(s *SystemComponent) *Syst
 	return sccc.SetComponentID(s.ID)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemRelationship entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
 func (sccc *SystemComponentControlCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentControlCreate {
 	sccc.mutation.AddRelationshipIDs(ids...)
 	return sccc
 }
 
-// AddRelationships adds the "relationships" edges to the SystemRelationship entity.
-func (sccc *SystemComponentControlCreate) AddRelationships(s ...*SystemRelationship) *SystemComponentControlCreate {
+// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
+func (sccc *SystemComponentControlCreate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentControlCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -248,7 +248,7 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 			Columns: systemcomponentcontrol.RelationshipsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

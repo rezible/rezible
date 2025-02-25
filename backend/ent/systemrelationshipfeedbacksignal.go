@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
@@ -39,7 +39,7 @@ type SystemRelationshipFeedbackSignal struct {
 // SystemRelationshipFeedbackSignalEdges holds the relations/edges for other nodes in the graph.
 type SystemRelationshipFeedbackSignalEdges struct {
 	// Relationship holds the value of the relationship edge.
-	Relationship *SystemRelationship `json:"relationship,omitempty"`
+	Relationship *SystemAnalysisRelationship `json:"relationship,omitempty"`
 	// Signal holds the value of the signal edge.
 	Signal *SystemComponentSignal `json:"signal,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -49,11 +49,11 @@ type SystemRelationshipFeedbackSignalEdges struct {
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemRelationshipFeedbackSignalEdges) RelationshipOrErr() (*SystemRelationship, error) {
+func (e SystemRelationshipFeedbackSignalEdges) RelationshipOrErr() (*SystemAnalysisRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: systemrelationship.Label}
+		return nil, &NotFoundError{label: systemanalysisrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
 }
@@ -145,7 +145,7 @@ func (srfs *SystemRelationshipFeedbackSignal) Value(name string) (ent.Value, err
 }
 
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipFeedbackSignal entity.
-func (srfs *SystemRelationshipFeedbackSignal) QueryRelationship() *SystemRelationshipQuery {
+func (srfs *SystemRelationshipFeedbackSignal) QueryRelationship() *SystemAnalysisRelationshipQuery {
 	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QueryRelationship(srfs)
 }
 

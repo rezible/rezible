@@ -40,9 +40,9 @@ const (
 	ComponentColumn = "component_id"
 	// RelationshipsTable is the table that holds the relationships relation/edge. The primary key declared below.
 	RelationshipsTable = "system_relationship_control_actions"
-	// RelationshipsInverseTable is the table name for the SystemRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
-	RelationshipsInverseTable = "system_relationships"
+	// RelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
+	RelationshipsInverseTable = "system_analysis_relationships"
 	// ControlActionsTable is the table that holds the control_actions relation/edge.
 	ControlActionsTable = "system_relationship_control_actions"
 	// ControlActionsInverseTable is the table name for the SystemRelationshipControlAction entity.

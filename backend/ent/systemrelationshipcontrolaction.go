@@ -10,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 )
 
@@ -39,7 +39,7 @@ type SystemRelationshipControlAction struct {
 // SystemRelationshipControlActionEdges holds the relations/edges for other nodes in the graph.
 type SystemRelationshipControlActionEdges struct {
 	// Relationship holds the value of the relationship edge.
-	Relationship *SystemRelationship `json:"relationship,omitempty"`
+	Relationship *SystemAnalysisRelationship `json:"relationship,omitempty"`
 	// Control holds the value of the control edge.
 	Control *SystemComponentControl `json:"control,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -49,11 +49,11 @@ type SystemRelationshipControlActionEdges struct {
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemRelationship, error) {
+func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemAnalysisRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: systemrelationship.Label}
+		return nil, &NotFoundError{label: systemanalysisrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
 }
@@ -145,7 +145,7 @@ func (srca *SystemRelationshipControlAction) Value(name string) (ent.Value, erro
 }
 
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipControlAction entity.
-func (srca *SystemRelationshipControlAction) QueryRelationship() *SystemRelationshipQuery {
+func (srca *SystemRelationshipControlAction) QueryRelationship() *SystemAnalysisRelationshipQuery {
 	return NewSystemRelationshipControlActionClient(srca.config).QueryRelationship(srca)
 }
 

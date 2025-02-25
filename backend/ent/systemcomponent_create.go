@@ -17,12 +17,12 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 )
 
 // SystemComponentCreate is the builder for creating a SystemComponent entity.
@@ -217,14 +217,14 @@ func (scc *SystemComponentCreate) AddAnalysisComponents(s ...*SystemAnalysisComp
 	return scc.AddAnalysisComponentIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemRelationship entity by IDs.
+// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
 func (scc *SystemComponentCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentCreate {
 	scc.mutation.AddRelationshipIDs(ids...)
 	return scc
 }
 
-// AddRelationships adds the "relationships" edges to the SystemRelationship entity.
-func (scc *SystemComponentCreate) AddRelationships(s ...*SystemRelationship) *SystemComponentCreate {
+// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
+func (scc *SystemComponentCreate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -431,7 +431,7 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipCreate{config: scc.config, mutation: newSystemRelationshipMutation(scc.config, OpCreate)}
+		createE := &SystemAnalysisRelationshipCreate{config: scc.config, mutation: newSystemAnalysisRelationshipMutation(scc.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -535,7 +535,7 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 			Columns: []string{systemcomponent.RelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

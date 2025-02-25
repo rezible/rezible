@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
@@ -25,7 +25,7 @@ type SystemRelationshipFeedbackSignalQuery struct {
 	order            []systemrelationshipfeedbacksignal.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.SystemRelationshipFeedbackSignal
-	withRelationship *SystemRelationshipQuery
+	withRelationship *SystemAnalysisRelationshipQuery
 	withSignal       *SystemComponentSignalQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -65,8 +65,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Order(o ...systemrelationshi
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemRelationshipQuery {
-	query := (&SystemRelationshipClient{config: srfsq.config}).Query()
+func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: srfsq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := srfsq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -77,7 +77,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryRelationship() *SystemR
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, selector),
-			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
+			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.RelationshipTable, systemrelationshipfeedbacksignal.RelationshipColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(srfsq.driver.Dialect(), step)
@@ -311,8 +311,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Clone() *SystemRelationshipF
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (srfsq *SystemRelationshipFeedbackSignalQuery) WithRelationship(opts ...func(*SystemRelationshipQuery)) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipClient{config: srfsq.config}).Query()
+func (srfsq *SystemRelationshipFeedbackSignalQuery) WithRelationship(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemAnalysisRelationshipClient{config: srfsq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -437,7 +437,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	}
 	if query := srfsq.withRelationship; query != nil {
 		if err := srfsq.loadRelationship(ctx, query, nodes, nil,
-			func(n *SystemRelationshipFeedbackSignal, e *SystemRelationship) { n.Edges.Relationship = e }); err != nil {
+			func(n *SystemRelationshipFeedbackSignal, e *SystemAnalysisRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -450,7 +450,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	return nodes, nil
 }
 
-func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemRelationship)) error {
+func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemAnalysisRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipFeedbackSignal)
 	for i := range nodes {
@@ -463,7 +463,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(systemrelationship.IDIn(ids...))
+	query.Where(systemanalysisrelationship.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

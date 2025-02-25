@@ -306,7 +306,7 @@ func HasRelationships() predicate.SystemComponentControl {
 }
 
 // HasRelationshipsWith applies the HasEdge predicate on the "relationships" edge with a given conditions (other predicates).
-func HasRelationshipsWith(preds ...predicate.SystemRelationship) predicate.SystemComponentControl {
+func HasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newRelationshipsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

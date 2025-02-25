@@ -513,6 +513,18 @@ func (f SystemAnalysisComponentFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisComponentMutation", m)
 }
 
+// The SystemAnalysisRelationshipFunc type is an adapter to allow the use of ordinary
+// function as SystemAnalysisRelationship mutator.
+type SystemAnalysisRelationshipFunc func(context.Context, *ent.SystemAnalysisRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemAnalysisRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemAnalysisRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemAnalysisRelationshipMutation", m)
+}
+
 // The SystemComponentFunc type is an adapter to allow the use of ordinary
 // function as SystemComponent mutator.
 type SystemComponentFunc func(context.Context, *ent.SystemComponentMutation) (ent.Value, error)
@@ -571,18 +583,6 @@ func (f SystemComponentSignalFunc) Mutate(ctx context.Context, m ent.Mutation) (
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentSignalMutation", m)
-}
-
-// The SystemRelationshipFunc type is an adapter to allow the use of ordinary
-// function as SystemRelationship mutator.
-type SystemRelationshipFunc func(context.Context, *ent.SystemRelationshipMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SystemRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemRelationshipMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemRelationshipMutation", m)
 }
 
 // The SystemRelationshipControlActionFunc type is an adapter to allow the use of ordinary

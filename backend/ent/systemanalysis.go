@@ -37,11 +37,13 @@ type SystemAnalysisEdges struct {
 	Incident *Incident `json:"incident,omitempty"`
 	// Components holds the value of the components edge.
 	Components []*SystemComponent `json:"components,omitempty"`
+	// Relationships holds the value of the relationships edge.
+	Relationships []*SystemAnalysisRelationship `json:"relationships,omitempty"`
 	// AnalysisComponents holds the value of the analysis_components edge.
 	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -64,10 +66,19 @@ func (e SystemAnalysisEdges) ComponentsOrErr() ([]*SystemComponent, error) {
 	return nil, &NotLoadedError{edge: "components"}
 }
 
+// RelationshipsOrErr returns the Relationships value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemAnalysisEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
+	if e.loadedTypes[2] {
+		return e.Relationships, nil
+	}
+	return nil, &NotLoadedError{edge: "relationships"}
+}
+
 // AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.AnalysisComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "analysis_components"}
@@ -142,6 +153,11 @@ func (sa *SystemAnalysis) QueryIncident() *IncidentQuery {
 // QueryComponents queries the "components" edge of the SystemAnalysis entity.
 func (sa *SystemAnalysis) QueryComponents() *SystemComponentQuery {
 	return NewSystemAnalysisClient(sa.config).QueryComponents(sa)
+}
+
+// QueryRelationships queries the "relationships" edge of the SystemAnalysis entity.
+func (sa *SystemAnalysis) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	return NewSystemAnalysisClient(sa.config).QueryRelationships(sa)
 }
 
 // QueryAnalysisComponents queries the "analysis_components" edge of the SystemAnalysis entity.

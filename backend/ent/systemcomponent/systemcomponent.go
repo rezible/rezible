@@ -62,7 +62,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
 	AnalysesInverseTable = "system_analyses"
 	// RelatedTable is the table that holds the related relation/edge. The primary key declared below.
-	RelatedTable = "system_relationships"
+	RelatedTable = "system_analysis_relationships"
 	// EventsTable is the table that holds the events relation/edge. The primary key declared below.
 	EventsTable = "incident_event_system_components"
 	// EventsInverseTable is the table name for the IncidentEvent entity.
@@ -97,10 +97,10 @@ const (
 	// AnalysisComponentsColumn is the table column denoting the analysis_components relation/edge.
 	AnalysisComponentsColumn = "component_id"
 	// RelationshipsTable is the table that holds the relationships relation/edge.
-	RelationshipsTable = "system_relationships"
-	// RelationshipsInverseTable is the table name for the SystemRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
-	RelationshipsInverseTable = "system_relationships"
+	RelationshipsTable = "system_analysis_relationships"
+	// RelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
+	RelationshipsInverseTable = "system_analysis_relationships"
 	// RelationshipsColumn is the table column denoting the relationships relation/edge.
 	RelationshipsColumn = "source_component_id"
 	// EventComponentsTable is the table that holds the event_components relation/edge.

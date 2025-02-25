@@ -57,7 +57,7 @@ type SystemComponentEdges struct {
 	// AnalysisComponents holds the value of the analysis_components edge.
 	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
 	// Relationships holds the value of the relationships edge.
-	Relationships []*SystemRelationship `json:"relationships,omitempty"`
+	Relationships []*SystemAnalysisRelationship `json:"relationships,omitempty"`
 	// EventComponents holds the value of the event_components edge.
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -141,7 +141,7 @@ func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisCompon
 
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemRelationship, error) {
+func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
 	if e.loadedTypes[8] {
 		return e.Relationships, nil
 	}
@@ -283,7 +283,7 @@ func (sc *SystemComponent) QueryAnalysisComponents() *SystemAnalysisComponentQue
 }
 
 // QueryRelationships queries the "relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryRelationships() *SystemRelationshipQuery {
+func (sc *SystemComponent) QueryRelationships() *SystemAnalysisRelationshipQuery {
 	return NewSystemComponentClient(sc.config).QueryRelationships(sc)
 }
 

@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
@@ -29,6 +30,7 @@ type SystemAnalysisQuery struct {
 	predicates             []predicate.SystemAnalysis
 	withIncident           *IncidentQuery
 	withComponents         *SystemComponentQuery
+	withRelationships      *SystemAnalysisRelationshipQuery
 	withAnalysisComponents *SystemAnalysisComponentQuery
 	modifiers              []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -104,6 +106,28 @@ func (saq *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRelationships chains the current query on the "relationships" edge.
+func (saq *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
+	query := (&SystemAnalysisRelationshipClient{config: saq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := saq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := saq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
+			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.RelationshipsTable, systemanalysis.RelationshipsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
 		return fromU, nil
@@ -327,6 +351,7 @@ func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		predicates:             append([]predicate.SystemAnalysis{}, saq.predicates...),
 		withIncident:           saq.withIncident.Clone(),
 		withComponents:         saq.withComponents.Clone(),
+		withRelationships:      saq.withRelationships.Clone(),
 		withAnalysisComponents: saq.withAnalysisComponents.Clone(),
 		// clone intermediate query.
 		sql:       saq.sql.Clone(),
@@ -354,6 +379,17 @@ func (saq *SystemAnalysisQuery) WithComponents(opts ...func(*SystemComponentQuer
 		opt(query)
 	}
 	saq.withComponents = query
+	return saq
+}
+
+// WithRelationships tells the query-builder to eager-load the nodes that are connected to
+// the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
+func (saq *SystemAnalysisQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemAnalysisQuery {
+	query := (&SystemAnalysisRelationshipClient{config: saq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	saq.withRelationships = query
 	return saq
 }
 
@@ -446,9 +482,10 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*SystemAnalysis{}
 		_spec       = saq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			saq.withIncident != nil,
 			saq.withComponents != nil,
+			saq.withRelationships != nil,
 			saq.withAnalysisComponents != nil,
 		}
 	)
@@ -483,6 +520,15 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		if err := saq.loadComponents(ctx, query, nodes,
 			func(n *SystemAnalysis) { n.Edges.Components = []*SystemComponent{} },
 			func(n *SystemAnalysis, e *SystemComponent) { n.Edges.Components = append(n.Edges.Components, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := saq.withRelationships; query != nil {
+		if err := saq.loadRelationships(ctx, query, nodes,
+			func(n *SystemAnalysis) { n.Edges.Relationships = []*SystemAnalysisRelationship{} },
+			func(n *SystemAnalysis, e *SystemAnalysisRelationship) {
+				n.Edges.Relationships = append(n.Edges.Relationships, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -585,6 +631,36 @@ func (saq *SystemAnalysisQuery) loadComponents(ctx context.Context, query *Syste
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (saq *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisRelationship)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysis)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(systemanalysisrelationship.FieldAnalysisID)
+	}
+	query.Where(predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.RelationshipsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AnalysisID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "analysis_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

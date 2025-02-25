@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
@@ -87,6 +88,21 @@ func (sau *SystemAnalysisUpdate) AddComponents(s ...*SystemComponent) *SystemAna
 	return sau.AddComponentIDs(ids...)
 }
 
+// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (sau *SystemAnalysisUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	sau.mutation.AddRelationshipIDs(ids...)
+	return sau
+}
+
+// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
+func (sau *SystemAnalysisUpdate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sau.AddRelationshipIDs(ids...)
+}
+
 // AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
 func (sau *SystemAnalysisUpdate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
 	sau.mutation.AddAnalysisComponentIDs(ids...)
@@ -132,6 +148,27 @@ func (sau *SystemAnalysisUpdate) RemoveComponents(s ...*SystemComponent) *System
 		ids[i] = s[i].ID
 	}
 	return sau.RemoveComponentIDs(ids...)
+}
+
+// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
+func (sau *SystemAnalysisUpdate) ClearRelationships() *SystemAnalysisUpdate {
+	sau.mutation.ClearRelationships()
+	return sau
+}
+
+// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
+func (sau *SystemAnalysisUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	sau.mutation.RemoveRelationshipIDs(ids...)
+	return sau
+}
+
+// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
+func (sau *SystemAnalysisUpdate) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sau.RemoveRelationshipIDs(ids...)
 }
 
 // ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
@@ -318,6 +355,51 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if sau.mutation.RelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sau.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sau.mutation.RelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sau.mutation.RelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if sau.mutation.AnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -439,6 +521,21 @@ func (sauo *SystemAnalysisUpdateOne) AddComponents(s ...*SystemComponent) *Syste
 	return sauo.AddComponentIDs(ids...)
 }
 
+// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (sauo *SystemAnalysisUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	sauo.mutation.AddRelationshipIDs(ids...)
+	return sauo
+}
+
+// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
+func (sauo *SystemAnalysisUpdateOne) AddRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sauo.AddRelationshipIDs(ids...)
+}
+
 // AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
 func (sauo *SystemAnalysisUpdateOne) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
 	sauo.mutation.AddAnalysisComponentIDs(ids...)
@@ -484,6 +581,27 @@ func (sauo *SystemAnalysisUpdateOne) RemoveComponents(s ...*SystemComponent) *Sy
 		ids[i] = s[i].ID
 	}
 	return sauo.RemoveComponentIDs(ids...)
+}
+
+// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
+func (sauo *SystemAnalysisUpdateOne) ClearRelationships() *SystemAnalysisUpdateOne {
+	sauo.mutation.ClearRelationships()
+	return sauo
+}
+
+// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
+func (sauo *SystemAnalysisUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	sauo.mutation.RemoveRelationshipIDs(ids...)
+	return sauo
+}
+
+// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
+func (sauo *SystemAnalysisUpdateOne) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sauo.RemoveRelationshipIDs(ids...)
 }
 
 // ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
@@ -697,6 +815,51 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if sauo.mutation.RelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sauo.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !sauo.mutation.RelationshipsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sauo.mutation.RelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}

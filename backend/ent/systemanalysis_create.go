@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
@@ -93,6 +94,21 @@ func (sac *SystemAnalysisCreate) AddComponents(s ...*SystemComponent) *SystemAna
 		ids[i] = s[i].ID
 	}
 	return sac.AddComponentIDs(ids...)
+}
+
+// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
+func (sac *SystemAnalysisCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	sac.mutation.AddRelationshipIDs(ids...)
+	return sac
+}
+
+// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
+func (sac *SystemAnalysisCreate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemAnalysisCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sac.AddRelationshipIDs(ids...)
 }
 
 // AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
@@ -254,6 +270,22 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
 			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sac.mutation.RelationshipsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.RelationshipsTable,
+			Columns: []string{systemanalysis.RelationshipsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}

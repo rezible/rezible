@@ -54,12 +54,12 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -167,12 +167,12 @@ func checkColumn(table, column string) error {
 			retrospectivereview.Table:              retrospectivereview.ValidColumn,
 			systemanalysis.Table:                   systemanalysis.ValidColumn,
 			systemanalysiscomponent.Table:          systemanalysiscomponent.ValidColumn,
+			systemanalysisrelationship.Table:       systemanalysisrelationship.ValidColumn,
 			systemcomponent.Table:                  systemcomponent.ValidColumn,
 			systemcomponentconstraint.Table:        systemcomponentconstraint.ValidColumn,
 			systemcomponentcontrol.Table:           systemcomponentcontrol.ValidColumn,
 			systemcomponentkind.Table:              systemcomponentkind.ValidColumn,
 			systemcomponentsignal.Table:            systemcomponentsignal.ValidColumn,
-			systemrelationship.Table:               systemrelationship.ValidColumn,
 			systemrelationshipcontrolaction.Table:  systemrelationshipcontrolaction.ValidColumn,
 			systemrelationshipfeedbacksignal.Table: systemrelationshipfeedbacksignal.ValidColumn,
 			task.Table:                             task.ValidColumn,

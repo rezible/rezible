@@ -33,9 +33,9 @@ const (
 	Table = "system_relationship_feedback_signals"
 	// RelationshipTable is the table that holds the relationship relation/edge.
 	RelationshipTable = "system_relationship_feedback_signals"
-	// RelationshipInverseTable is the table name for the SystemRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemrelationship" package.
-	RelationshipInverseTable = "system_relationships"
+	// RelationshipInverseTable is the table name for the SystemAnalysisRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
+	RelationshipInverseTable = "system_analysis_relationships"
 	// RelationshipColumn is the table column denoting the relationship relation/edge.
 	RelationshipColumn = "relationship_id"
 	// SignalTable is the table that holds the signal relation/edge.

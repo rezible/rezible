@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
@@ -86,8 +86,8 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) SetNillableID(u *uuid.UUID)
 	return srfsc
 }
 
-// SetRelationship sets the "relationship" edge to the SystemRelationship entity.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) SetRelationship(s *SystemRelationship) *SystemRelationshipFeedbackSignalCreate {
+// SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
+func (srfsc *SystemRelationshipFeedbackSignalCreate) SetRelationship(s *SystemAnalysisRelationship) *SystemRelationshipFeedbackSignalCreate {
 	return srfsc.SetRelationshipID(s.ID)
 }
 
@@ -222,7 +222,7 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 			Columns: []string{systemrelationshipfeedbacksignal.RelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

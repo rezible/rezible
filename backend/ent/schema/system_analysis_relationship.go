@@ -8,13 +8,14 @@ import (
 	"time"
 )
 
-type SystemRelationship struct {
+type SystemAnalysisRelationship struct {
 	ent.Schema
 }
 
-func (SystemRelationship) Fields() []ent.Field {
+func (SystemAnalysisRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("analysis_id", uuid.UUID{}),
 		field.UUID("source_component_id", uuid.UUID{}),
 		field.UUID("target_component_id", uuid.UUID{}),
 		field.Text("description").Optional(),
@@ -22,8 +23,11 @@ func (SystemRelationship) Fields() []ent.Field {
 	}
 }
 
-func (SystemRelationship) Edges() []ent.Edge {
+func (SystemAnalysisRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("system_analysis", SystemAnalysis.Type).
+			Required().Unique().Field("analysis_id"),
+
 		edge.To("source_component", SystemComponent.Type).
 			Required().Unique().Field("source_component_id"),
 		edge.To("target_component", SystemComponent.Type).
@@ -57,7 +61,7 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 
 func (SystemRelationshipControlAction) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("relationship", SystemRelationship.Type).
+		edge.To("relationship", SystemAnalysisRelationship.Type).
 			Unique().Required().Field("relationship_id"),
 		edge.To("control", SystemComponentControl.Type).
 			Unique().Required().Field("control_id"),
@@ -85,7 +89,7 @@ func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {
 
 func (SystemRelationshipFeedbackSignal) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("relationship", SystemRelationship.Type).
+		edge.To("relationship", SystemAnalysisRelationship.Type).
 			Unique().Required().Field("relationship_id"),
 		edge.To("signal", SystemComponentSignal.Type).
 			Unique().Required().Field("signal_id"),

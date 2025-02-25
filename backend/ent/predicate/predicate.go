@@ -132,6 +132,9 @@ type SystemAnalysis func(*sql.Selector)
 // SystemAnalysisComponent is the predicate function for systemanalysiscomponent builders.
 type SystemAnalysisComponent func(*sql.Selector)
 
+// SystemAnalysisRelationship is the predicate function for systemanalysisrelationship builders.
+type SystemAnalysisRelationship func(*sql.Selector)
+
 // SystemComponent is the predicate function for systemcomponent builders.
 type SystemComponent func(*sql.Selector)
 
@@ -146,9 +149,6 @@ type SystemComponentKind func(*sql.Selector)
 
 // SystemComponentSignal is the predicate function for systemcomponentsignal builders.
 type SystemComponentSignal func(*sql.Selector)
-
-// SystemRelationship is the predicate function for systemrelationship builders.
-type SystemRelationship func(*sql.Selector)
 
 // SystemRelationshipControlAction is the predicate function for systemrelationshipcontrolaction builders.
 type SystemRelationshipControlAction func(*sql.Selector)
