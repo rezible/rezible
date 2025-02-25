@@ -18,14 +18,15 @@ func (SystemComponent) Fields() []ent.Field {
 			Default(uuid.New),
 		field.String("name").
 			NotEmpty(),
-		field.Enum("type").
-			Values(
-				"service",          // e.g., API service, database
-				"control",          // e.g., rate limiter, circuit breaker
-				"feedback",         // e.g., monitoring, alerts
-				"interface",        // e.g., API endpoint, UI
-				"human_controller", // e.g., team, operations
-			),
+		field.UUID("kind_id", uuid.UUID{}),
+		//field.Enum("type").
+		//	Values(
+		//		"service",          // e.g., API service, database
+		//		"control",          // e.g., rate limiter, circuit breaker
+		//		"feedback",         // e.g., monitoring, alerts
+		//		"interface",        // e.g., API endpoint, UI
+		//		"human_controller", // e.g., team, operations
+		//	),
 		field.Text("description").
 			Optional(),
 		field.JSON("properties", map[string]any{}), // Flexible properties based on component type
@@ -43,6 +44,9 @@ func (SystemComponent) Edges() []ent.Edge {
 		//edge.To("children", SystemComponent.Type).
 		//	From("parent").
 		//	Unique(),
+		edge.To("kind", SystemComponentKind.Type).
+			Required().Unique().
+			Field("kind_id"),
 		edge.To("analyses", SystemAnalysis.Type).
 			Through("analysis_components", SystemAnalysisComponent.Type),
 		// relationships
@@ -76,6 +80,25 @@ func (SystemComponent) Edges() []ent.Edge {
 	}
 }
 
+type SystemComponentKind struct {
+	ent.Schema
+}
+
+func (SystemComponentKind) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.Text("label"),
+		field.Text("description").Optional(),
+		field.Time("created_at").Default(time.Now),
+	}
+}
+
+func (SystemComponentKind) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("components", SystemComponent.Type).Ref("kind"),
+	}
+}
+
 type SystemComponentConstraint struct {
 	ent.Schema
 }
@@ -84,6 +107,7 @@ func (SystemComponentConstraint) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("component_id", uuid.UUID{}),
+		field.Text("label"),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
@@ -104,6 +128,7 @@ func (SystemComponentSignal) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("component_id", uuid.UUID{}),
+		field.Text("label"),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}
@@ -115,7 +140,7 @@ func (SystemComponentSignal) Edges() []ent.Edge {
 			Required().Unique().Field("component_id"),
 		edge.From("relationships", SystemRelationship.Type).
 			Ref("signals").
-			Through("feedback_signals", SystemRelationshipFeedback.Type),
+			Through("feedback_signals", SystemRelationshipFeedbackSignal.Type),
 	}
 }
 
@@ -127,6 +152,7 @@ func (SystemComponentControl) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("component_id", uuid.UUID{}),
+		field.Text("label"),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),
 	}

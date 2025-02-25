@@ -32,7 +32,7 @@ func (SystemRelationship) Edges() []ent.Edge {
 		edge.To("controls", SystemComponentControl.Type).
 			Through("control_actions", SystemRelationshipControlAction.Type),
 		edge.To("signals", SystemComponentSignal.Type).
-			Through("feedback", SystemRelationshipFeedback.Type),
+			Through("feedback_signals", SystemRelationshipFeedbackSignal.Type),
 	}
 }
 
@@ -44,8 +44,8 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.UUID("control_id", uuid.UUID{}),
 		field.UUID("relationship_id", uuid.UUID{}),
+		field.UUID("control_id", uuid.UUID{}),
 		field.String("type").
 			NotEmpty(), // e.g., "rate_limits", "circuit_breaks"
 		field.Text("description").
@@ -57,18 +57,18 @@ func (SystemRelationshipControlAction) Fields() []ent.Field {
 
 func (SystemRelationshipControlAction) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("control", SystemComponentControl.Type).
-			Unique().Required().Field("control_id"),
 		edge.To("relationship", SystemRelationship.Type).
 			Unique().Required().Field("relationship_id"),
+		edge.To("control", SystemComponentControl.Type).
+			Unique().Required().Field("control_id"),
 	}
 }
 
-type SystemRelationshipFeedback struct {
+type SystemRelationshipFeedbackSignal struct {
 	ent.Schema
 }
 
-func (SystemRelationshipFeedback) Fields() []ent.Field {
+func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
@@ -83,11 +83,11 @@ func (SystemRelationshipFeedback) Fields() []ent.Field {
 	}
 }
 
-func (SystemRelationshipFeedback) Edges() []ent.Edge {
+func (SystemRelationshipFeedbackSignal) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("signal", SystemComponentSignal.Type).
-			Unique().Required().Field("signal_id"),
 		edge.To("relationship", SystemRelationship.Type).
 			Unique().Required().Field("relationship_id"),
+		edge.To("signal", SystemComponentSignal.Type).
+			Unique().Required().Field("signal_id"),
 	}
 }
