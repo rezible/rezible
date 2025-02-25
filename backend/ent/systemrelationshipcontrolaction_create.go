@@ -26,15 +26,15 @@ type SystemRelationshipControlActionCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetControlID sets the "control_id" field.
-func (srcac *SystemRelationshipControlActionCreate) SetControlID(u uuid.UUID) *SystemRelationshipControlActionCreate {
-	srcac.mutation.SetControlID(u)
-	return srcac
-}
-
 // SetRelationshipID sets the "relationship_id" field.
 func (srcac *SystemRelationshipControlActionCreate) SetRelationshipID(u uuid.UUID) *SystemRelationshipControlActionCreate {
 	srcac.mutation.SetRelationshipID(u)
+	return srcac
+}
+
+// SetControlID sets the "control_id" field.
+func (srcac *SystemRelationshipControlActionCreate) SetControlID(u uuid.UUID) *SystemRelationshipControlActionCreate {
+	srcac.mutation.SetControlID(u)
 	return srcac
 }
 
@@ -86,14 +86,14 @@ func (srcac *SystemRelationshipControlActionCreate) SetNillableID(u *uuid.UUID) 
 	return srcac
 }
 
-// SetControl sets the "control" edge to the SystemComponentControl entity.
-func (srcac *SystemRelationshipControlActionCreate) SetControl(s *SystemComponentControl) *SystemRelationshipControlActionCreate {
-	return srcac.SetControlID(s.ID)
-}
-
 // SetRelationship sets the "relationship" edge to the SystemRelationship entity.
 func (srcac *SystemRelationshipControlActionCreate) SetRelationship(s *SystemRelationship) *SystemRelationshipControlActionCreate {
 	return srcac.SetRelationshipID(s.ID)
+}
+
+// SetControl sets the "control" edge to the SystemComponentControl entity.
+func (srcac *SystemRelationshipControlActionCreate) SetControl(s *SystemComponentControl) *SystemRelationshipControlActionCreate {
+	return srcac.SetControlID(s.ID)
 }
 
 // Mutation returns the SystemRelationshipControlActionMutation object of the builder.
@@ -143,11 +143,11 @@ func (srcac *SystemRelationshipControlActionCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (srcac *SystemRelationshipControlActionCreate) check() error {
-	if _, ok := srcac.mutation.ControlID(); !ok {
-		return &ValidationError{Name: "control_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.control_id"`)}
-	}
 	if _, ok := srcac.mutation.RelationshipID(); !ok {
 		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.relationship_id"`)}
+	}
+	if _, ok := srcac.mutation.ControlID(); !ok {
+		return &ValidationError{Name: "control_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.control_id"`)}
 	}
 	if _, ok := srcac.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.type"`)}
@@ -160,11 +160,11 @@ func (srcac *SystemRelationshipControlActionCreate) check() error {
 	if _, ok := srcac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.created_at"`)}
 	}
-	if len(srcac.mutation.ControlIDs()) == 0 {
-		return &ValidationError{Name: "control", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.control"`)}
-	}
 	if len(srcac.mutation.RelationshipIDs()) == 0 {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.relationship"`)}
+	}
+	if len(srcac.mutation.ControlIDs()) == 0 {
+		return &ValidationError{Name: "control", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.control"`)}
 	}
 	return nil
 }
@@ -214,23 +214,6 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 		_spec.SetField(systemrelationshipcontrolaction.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
-	if nodes := srcac.mutation.ControlIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemrelationshipcontrolaction.ControlTable,
-			Columns: []string{systemrelationshipcontrolaction.ControlColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.ControlID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := srcac.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -248,6 +231,23 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 		_node.RelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := srcac.mutation.ControlIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemrelationshipcontrolaction.ControlTable,
+			Columns: []string{systemrelationshipcontrolaction.ControlColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ControlID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -255,7 +255,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 // of the `INSERT` statement. For example:
 //
 //	client.SystemRelationshipControlAction.Create().
-//		SetControlID(v).
+//		SetRelationshipID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -264,7 +264,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipControlActionUpsert) {
-//			SetControlID(v+v).
+//			SetRelationshipID(v+v).
 //		}).
 //		Exec(ctx)
 func (srcac *SystemRelationshipControlActionCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertOne {
@@ -300,18 +300,6 @@ type (
 	}
 )
 
-// SetControlID sets the "control_id" field.
-func (u *SystemRelationshipControlActionUpsert) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsert {
-	u.Set(systemrelationshipcontrolaction.FieldControlID, v)
-	return u
-}
-
-// UpdateControlID sets the "control_id" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsert) UpdateControlID() *SystemRelationshipControlActionUpsert {
-	u.SetExcluded(systemrelationshipcontrolaction.FieldControlID)
-	return u
-}
-
 // SetRelationshipID sets the "relationship_id" field.
 func (u *SystemRelationshipControlActionUpsert) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionUpsert {
 	u.Set(systemrelationshipcontrolaction.FieldRelationshipID, v)
@@ -321,6 +309,18 @@ func (u *SystemRelationshipControlActionUpsert) SetRelationshipID(v uuid.UUID) *
 // UpdateRelationshipID sets the "relationship_id" field to the value that was provided on create.
 func (u *SystemRelationshipControlActionUpsert) UpdateRelationshipID() *SystemRelationshipControlActionUpsert {
 	u.SetExcluded(systemrelationshipcontrolaction.FieldRelationshipID)
+	return u
+}
+
+// SetControlID sets the "control_id" field.
+func (u *SystemRelationshipControlActionUpsert) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsert {
+	u.Set(systemrelationshipcontrolaction.FieldControlID, v)
+	return u
+}
+
+// UpdateControlID sets the "control_id" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsert) UpdateControlID() *SystemRelationshipControlActionUpsert {
+	u.SetExcluded(systemrelationshipcontrolaction.FieldControlID)
 	return u
 }
 
@@ -414,20 +414,6 @@ func (u *SystemRelationshipControlActionUpsertOne) Update(set func(*SystemRelati
 	return u
 }
 
-// SetControlID sets the "control_id" field.
-func (u *SystemRelationshipControlActionUpsertOne) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsertOne {
-	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.SetControlID(v)
-	})
-}
-
-// UpdateControlID sets the "control_id" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsertOne) UpdateControlID() *SystemRelationshipControlActionUpsertOne {
-	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.UpdateControlID()
-	})
-}
-
 // SetRelationshipID sets the "relationship_id" field.
 func (u *SystemRelationshipControlActionUpsertOne) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionUpsertOne {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
@@ -439,6 +425,20 @@ func (u *SystemRelationshipControlActionUpsertOne) SetRelationshipID(v uuid.UUID
 func (u *SystemRelationshipControlActionUpsertOne) UpdateRelationshipID() *SystemRelationshipControlActionUpsertOne {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
 		s.UpdateRelationshipID()
+	})
+}
+
+// SetControlID sets the "control_id" field.
+func (u *SystemRelationshipControlActionUpsertOne) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsertOne {
+	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
+		s.SetControlID(v)
+	})
+}
+
+// UpdateControlID sets the "control_id" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsertOne) UpdateControlID() *SystemRelationshipControlActionUpsertOne {
+	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
+		s.UpdateControlID()
 	})
 }
 
@@ -627,7 +627,7 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) ExecX(ctx context.Conte
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipControlActionUpsert) {
-//			SetControlID(v+v).
+//			SetRelationshipID(v+v).
 //		}).
 //		Exec(ctx)
 func (srcacb *SystemRelationshipControlActionCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertBulk {
@@ -706,20 +706,6 @@ func (u *SystemRelationshipControlActionUpsertBulk) Update(set func(*SystemRelat
 	return u
 }
 
-// SetControlID sets the "control_id" field.
-func (u *SystemRelationshipControlActionUpsertBulk) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsertBulk {
-	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.SetControlID(v)
-	})
-}
-
-// UpdateControlID sets the "control_id" field to the value that was provided on create.
-func (u *SystemRelationshipControlActionUpsertBulk) UpdateControlID() *SystemRelationshipControlActionUpsertBulk {
-	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
-		s.UpdateControlID()
-	})
-}
-
 // SetRelationshipID sets the "relationship_id" field.
 func (u *SystemRelationshipControlActionUpsertBulk) SetRelationshipID(v uuid.UUID) *SystemRelationshipControlActionUpsertBulk {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
@@ -731,6 +717,20 @@ func (u *SystemRelationshipControlActionUpsertBulk) SetRelationshipID(v uuid.UUI
 func (u *SystemRelationshipControlActionUpsertBulk) UpdateRelationshipID() *SystemRelationshipControlActionUpsertBulk {
 	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
 		s.UpdateRelationshipID()
+	})
+}
+
+// SetControlID sets the "control_id" field.
+func (u *SystemRelationshipControlActionUpsertBulk) SetControlID(v uuid.UUID) *SystemRelationshipControlActionUpsertBulk {
+	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
+		s.SetControlID(v)
+	})
+}
+
+// UpdateControlID sets the "control_id" field to the value that was provided on create.
+func (u *SystemRelationshipControlActionUpsertBulk) UpdateControlID() *SystemRelationshipControlActionUpsertBulk {
+	return u.Update(func(s *SystemRelationshipControlActionUpsert) {
+		s.UpdateControlID()
 	})
 }
 

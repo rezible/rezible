@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentkind"
 )
 
 // SystemComponent is the model entity for the SystemComponent schema.
@@ -21,8 +22,8 @@ type SystemComponent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Type holds the value of the "type" field.
-	Type systemcomponent.Type `json:"type,omitempty"`
+	// KindID holds the value of the "kind_id" field.
+	KindID uuid.UUID `json:"kind_id,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Properties holds the value of the "properties" field.
@@ -39,6 +40,8 @@ type SystemComponent struct {
 
 // SystemComponentEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentEdges struct {
+	// Kind holds the value of the kind edge.
+	Kind *SystemComponentKind `json:"kind,omitempty"`
 	// Analyses holds the value of the analyses edge.
 	Analyses []*SystemAnalysis `json:"analyses,omitempty"`
 	// Related holds the value of the related edge.
@@ -59,13 +62,24 @@ type SystemComponentEdges struct {
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [9]bool
+	loadedTypes [10]bool
+}
+
+// KindOrErr returns the Kind value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemComponentEdges) KindOrErr() (*SystemComponentKind, error) {
+	if e.Kind != nil {
+		return e.Kind, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: systemcomponentkind.Label}
+	}
+	return nil, &NotLoadedError{edge: "kind"}
 }
 
 // AnalysesOrErr returns the Analyses value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) AnalysesOrErr() ([]*SystemAnalysis, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Analyses, nil
 	}
 	return nil, &NotLoadedError{edge: "analyses"}
@@ -74,7 +88,7 @@ func (e SystemComponentEdges) AnalysesOrErr() ([]*SystemAnalysis, error) {
 // RelatedOrErr returns the Related value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) RelatedOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Related, nil
 	}
 	return nil, &NotLoadedError{edge: "related"}
@@ -83,7 +97,7 @@ func (e SystemComponentEdges) RelatedOrErr() ([]*SystemComponent, error) {
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
@@ -92,7 +106,7 @@ func (e SystemComponentEdges) EventsOrErr() ([]*IncidentEvent, error) {
 // ConstraintsOrErr returns the Constraints value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) ConstraintsOrErr() ([]*SystemComponentConstraint, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Constraints, nil
 	}
 	return nil, &NotLoadedError{edge: "constraints"}
@@ -101,7 +115,7 @@ func (e SystemComponentEdges) ConstraintsOrErr() ([]*SystemComponentConstraint, 
 // ControlsOrErr returns the Controls value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) ControlsOrErr() ([]*SystemComponentControl, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Controls, nil
 	}
 	return nil, &NotLoadedError{edge: "controls"}
@@ -110,7 +124,7 @@ func (e SystemComponentEdges) ControlsOrErr() ([]*SystemComponentControl, error)
 // SignalsOrErr returns the Signals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.Signals, nil
 	}
 	return nil, &NotLoadedError{edge: "signals"}
@@ -119,7 +133,7 @@ func (e SystemComponentEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
 // AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.AnalysisComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "analysis_components"}
@@ -128,7 +142,7 @@ func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisCompon
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemRelationship, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.Relationships, nil
 	}
 	return nil, &NotLoadedError{edge: "relationships"}
@@ -137,7 +151,7 @@ func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemRelationship, error
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.EventComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "event_components"}
@@ -150,11 +164,11 @@ func (*SystemComponent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemcomponent.FieldProperties:
 			values[i] = new([]byte)
-		case systemcomponent.FieldName, systemcomponent.FieldType, systemcomponent.FieldDescription:
+		case systemcomponent.FieldName, systemcomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponent.FieldCreatedAt, systemcomponent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case systemcomponent.FieldID:
+		case systemcomponent.FieldID, systemcomponent.FieldKindID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -183,11 +197,11 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				sc.Name = value.String
 			}
-		case systemcomponent.FieldType:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
-			} else if value.Valid {
-				sc.Type = systemcomponent.Type(value.String)
+		case systemcomponent.FieldKindID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field kind_id", values[i])
+			} else if value != nil {
+				sc.KindID = *value
 			}
 		case systemcomponent.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -226,6 +240,11 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (sc *SystemComponent) Value(name string) (ent.Value, error) {
 	return sc.selectValues.Get(name)
+}
+
+// QueryKind queries the "kind" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryKind() *SystemComponentKindQuery {
+	return NewSystemComponentClient(sc.config).QueryKind(sc)
 }
 
 // QueryAnalyses queries the "analyses" edge of the SystemComponent entity.
@@ -299,8 +318,8 @@ func (sc *SystemComponent) String() string {
 	builder.WriteString("name=")
 	builder.WriteString(sc.Name)
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", sc.Type))
+	builder.WriteString("kind_id=")
+	builder.WriteString(fmt.Sprintf("%v", sc.KindID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(sc.Description)

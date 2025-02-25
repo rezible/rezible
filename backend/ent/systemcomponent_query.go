@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 )
@@ -32,6 +33,7 @@ type SystemComponentQuery struct {
 	order                  []systemcomponent.OrderOption
 	inters                 []Interceptor
 	predicates             []predicate.SystemComponent
+	withKind               *SystemComponentKindQuery
 	withAnalyses           *SystemAnalysisQuery
 	withRelated            *SystemComponentQuery
 	withEvents             *IncidentEventQuery
@@ -76,6 +78,28 @@ func (scq *SystemComponentQuery) Unique(unique bool) *SystemComponentQuery {
 func (scq *SystemComponentQuery) Order(o ...systemcomponent.OrderOption) *SystemComponentQuery {
 	scq.order = append(scq.order, o...)
 	return scq
+}
+
+// QueryKind chains the current query on the "kind" edge.
+func (scq *SystemComponentQuery) QueryKind() *SystemComponentKindQuery {
+	query := (&SystemComponentKindClient{config: scq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, selector),
+			sqlgraph.To(systemcomponentkind.Table, systemcomponentkind.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.KindTable, systemcomponent.KindColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAnalyses chains the current query on the "analyses" edge.
@@ -468,6 +492,7 @@ func (scq *SystemComponentQuery) Clone() *SystemComponentQuery {
 		order:                  append([]systemcomponent.OrderOption{}, scq.order...),
 		inters:                 append([]Interceptor{}, scq.inters...),
 		predicates:             append([]predicate.SystemComponent{}, scq.predicates...),
+		withKind:               scq.withKind.Clone(),
 		withAnalyses:           scq.withAnalyses.Clone(),
 		withRelated:            scq.withRelated.Clone(),
 		withEvents:             scq.withEvents.Clone(),
@@ -482,6 +507,17 @@ func (scq *SystemComponentQuery) Clone() *SystemComponentQuery {
 		path:      scq.path,
 		modifiers: append([]func(*sql.Selector){}, scq.modifiers...),
 	}
+}
+
+// WithKind tells the query-builder to eager-load the nodes that are connected to
+// the "kind" edge. The optional arguments are used to configure the query builder of the edge.
+func (scq *SystemComponentQuery) WithKind(opts ...func(*SystemComponentKindQuery)) *SystemComponentQuery {
+	query := (&SystemComponentKindClient{config: scq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	scq.withKind = query
+	return scq
 }
 
 // WithAnalyses tells the query-builder to eager-load the nodes that are connected to
@@ -661,7 +697,8 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*SystemComponent{}
 		_spec       = scq.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
+			scq.withKind != nil,
 			scq.withAnalyses != nil,
 			scq.withRelated != nil,
 			scq.withEvents != nil,
@@ -693,6 +730,12 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := scq.withKind; query != nil {
+		if err := scq.loadKind(ctx, query, nodes, nil,
+			func(n *SystemComponent, e *SystemComponentKind) { n.Edges.Kind = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := scq.withAnalyses; query != nil {
 		if err := scq.loadAnalyses(ctx, query, nodes,
@@ -768,6 +811,35 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	return nodes, nil
 }
 
+func (scq *SystemComponentQuery) loadKind(ctx context.Context, query *SystemComponentKindQuery, nodes []*SystemComponent, init func(*SystemComponent), assign func(*SystemComponent, *SystemComponentKind)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemComponent)
+	for i := range nodes {
+		fk := nodes[i].KindID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(systemcomponentkind.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "kind_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (scq *SystemComponentQuery) loadAnalyses(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemComponent, init func(*SystemComponent), assign func(*SystemComponent, *SystemAnalysis)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemComponent)
@@ -1159,6 +1231,9 @@ func (scq *SystemComponentQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemcomponent.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if scq.withKind != nil {
+			_spec.Node.AddColumnOnce(systemcomponent.FieldKindID)
 		}
 	}
 	if ps := scq.predicates; len(ps) > 0 {

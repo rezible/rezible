@@ -549,6 +549,18 @@ func (f SystemComponentControlFunc) Mutate(ctx context.Context, m ent.Mutation) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentControlMutation", m)
 }
 
+// The SystemComponentKindFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentKind mutator.
+type SystemComponentKindFunc func(context.Context, *ent.SystemComponentKindMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentKindFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentKindMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentKindMutation", m)
+}
+
 // The SystemComponentSignalFunc type is an adapter to allow the use of ordinary
 // function as SystemComponentSignal mutator.
 type SystemComponentSignalFunc func(context.Context, *ent.SystemComponentSignalMutation) (ent.Value, error)
@@ -585,16 +597,16 @@ func (f SystemRelationshipControlActionFunc) Mutate(ctx context.Context, m ent.M
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemRelationshipControlActionMutation", m)
 }
 
-// The SystemRelationshipFeedbackFunc type is an adapter to allow the use of ordinary
-// function as SystemRelationshipFeedback mutator.
-type SystemRelationshipFeedbackFunc func(context.Context, *ent.SystemRelationshipFeedbackMutation) (ent.Value, error)
+// The SystemRelationshipFeedbackSignalFunc type is an adapter to allow the use of ordinary
+// function as SystemRelationshipFeedbackSignal mutator.
+type SystemRelationshipFeedbackSignalFunc func(context.Context, *ent.SystemRelationshipFeedbackSignalMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f SystemRelationshipFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SystemRelationshipFeedbackMutation); ok {
+func (f SystemRelationshipFeedbackSignalFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemRelationshipFeedbackSignalMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemRelationshipFeedbackMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemRelationshipFeedbackSignalMutation", m)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary

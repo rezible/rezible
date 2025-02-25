@@ -20,10 +20,10 @@ type SystemRelationshipControlAction struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// ControlID holds the value of the "control_id" field.
-	ControlID uuid.UUID `json:"control_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
 	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
+	// ControlID holds the value of the "control_id" field.
+	ControlID uuid.UUID `json:"control_id,omitempty"`
 	// Type holds the value of the "type" field.
 	Type string `json:"type,omitempty"`
 	// Description holds the value of the "description" field.
@@ -38,24 +38,13 @@ type SystemRelationshipControlAction struct {
 
 // SystemRelationshipControlActionEdges holds the relations/edges for other nodes in the graph.
 type SystemRelationshipControlActionEdges struct {
-	// Control holds the value of the control edge.
-	Control *SystemComponentControl `json:"control,omitempty"`
 	// Relationship holds the value of the relationship edge.
 	Relationship *SystemRelationship `json:"relationship,omitempty"`
+	// Control holds the value of the control edge.
+	Control *SystemComponentControl `json:"control,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
-}
-
-// ControlOrErr returns the Control value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SystemRelationshipControlActionEdges) ControlOrErr() (*SystemComponentControl, error) {
-	if e.Control != nil {
-		return e.Control, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: systemcomponentcontrol.Label}
-	}
-	return nil, &NotLoadedError{edge: "control"}
 }
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
@@ -63,10 +52,21 @@ func (e SystemRelationshipControlActionEdges) ControlOrErr() (*SystemComponentCo
 func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[0] {
 		return nil, &NotFoundError{label: systemrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
+}
+
+// ControlOrErr returns the Control value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemRelationshipControlActionEdges) ControlOrErr() (*SystemComponentControl, error) {
+	if e.Control != nil {
+		return e.Control, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: systemcomponentcontrol.Label}
+	}
+	return nil, &NotLoadedError{edge: "control"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -78,7 +78,7 @@ func (*SystemRelationshipControlAction) scanValues(columns []string) ([]any, err
 			values[i] = new(sql.NullString)
 		case systemrelationshipcontrolaction.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case systemrelationshipcontrolaction.FieldID, systemrelationshipcontrolaction.FieldControlID, systemrelationshipcontrolaction.FieldRelationshipID:
+		case systemrelationshipcontrolaction.FieldID, systemrelationshipcontrolaction.FieldRelationshipID, systemrelationshipcontrolaction.FieldControlID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -101,17 +101,17 @@ func (srca *SystemRelationshipControlAction) assignValues(columns []string, valu
 			} else if value != nil {
 				srca.ID = *value
 			}
-		case systemrelationshipcontrolaction.FieldControlID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field control_id", values[i])
-			} else if value != nil {
-				srca.ControlID = *value
-			}
 		case systemrelationshipcontrolaction.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field relationship_id", values[i])
 			} else if value != nil {
 				srca.RelationshipID = *value
+			}
+		case systemrelationshipcontrolaction.FieldControlID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field control_id", values[i])
+			} else if value != nil {
+				srca.ControlID = *value
 			}
 		case systemrelationshipcontrolaction.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -144,14 +144,14 @@ func (srca *SystemRelationshipControlAction) Value(name string) (ent.Value, erro
 	return srca.selectValues.Get(name)
 }
 
-// QueryControl queries the "control" edge of the SystemRelationshipControlAction entity.
-func (srca *SystemRelationshipControlAction) QueryControl() *SystemComponentControlQuery {
-	return NewSystemRelationshipControlActionClient(srca.config).QueryControl(srca)
-}
-
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipControlAction entity.
 func (srca *SystemRelationshipControlAction) QueryRelationship() *SystemRelationshipQuery {
 	return NewSystemRelationshipControlActionClient(srca.config).QueryRelationship(srca)
+}
+
+// QueryControl queries the "control" edge of the SystemRelationshipControlAction entity.
+func (srca *SystemRelationshipControlAction) QueryControl() *SystemComponentControlQuery {
+	return NewSystemRelationshipControlActionClient(srca.config).QueryControl(srca)
 }
 
 // Update returns a builder for updating this SystemRelationshipControlAction.
@@ -177,11 +177,11 @@ func (srca *SystemRelationshipControlAction) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemRelationshipControlAction(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", srca.ID))
-	builder.WriteString("control_id=")
-	builder.WriteString(fmt.Sprintf("%v", srca.ControlID))
-	builder.WriteString(", ")
 	builder.WriteString("relationship_id=")
 	builder.WriteString(fmt.Sprintf("%v", srca.RelationshipID))
+	builder.WriteString(", ")
+	builder.WriteString("control_id=")
+	builder.WriteString(fmt.Sprintf("%v", srca.ControlID))
 	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(srca.Type)

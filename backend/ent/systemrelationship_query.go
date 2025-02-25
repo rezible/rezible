@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
 // SystemRelationshipQuery is the builder for querying SystemRelationship entities.
@@ -34,7 +34,7 @@ type SystemRelationshipQuery struct {
 	withControls        *SystemComponentControlQuery
 	withSignals         *SystemComponentSignalQuery
 	withControlActions  *SystemRelationshipControlActionQuery
-	withFeedback        *SystemRelationshipFeedbackQuery
+	withFeedbackSignals *SystemRelationshipFeedbackSignalQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -182,9 +182,9 @@ func (srq *SystemRelationshipQuery) QueryControlActions() *SystemRelationshipCon
 	return query
 }
 
-// QueryFeedback chains the current query on the "feedback" edge.
-func (srq *SystemRelationshipQuery) QueryFeedback() *SystemRelationshipFeedbackQuery {
-	query := (&SystemRelationshipFeedbackClient{config: srq.config}).Query()
+// QueryFeedbackSignals chains the current query on the "feedback_signals" edge.
+func (srq *SystemRelationshipQuery) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: srq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := srq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -195,8 +195,8 @@ func (srq *SystemRelationshipQuery) QueryFeedback() *SystemRelationshipFeedbackQ
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemrelationship.Table, systemrelationship.FieldID, selector),
-			sqlgraph.To(systemrelationshipfeedback.Table, systemrelationshipfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemrelationship.FeedbackTable, systemrelationship.FeedbackColumn),
+			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemrelationship.FeedbackSignalsTable, systemrelationship.FeedbackSignalsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(srq.driver.Dialect(), step)
 		return fromU, nil
@@ -401,7 +401,7 @@ func (srq *SystemRelationshipQuery) Clone() *SystemRelationshipQuery {
 		withControls:        srq.withControls.Clone(),
 		withSignals:         srq.withSignals.Clone(),
 		withControlActions:  srq.withControlActions.Clone(),
-		withFeedback:        srq.withFeedback.Clone(),
+		withFeedbackSignals: srq.withFeedbackSignals.Clone(),
 		// clone intermediate query.
 		sql:       srq.sql.Clone(),
 		path:      srq.path,
@@ -464,14 +464,14 @@ func (srq *SystemRelationshipQuery) WithControlActions(opts ...func(*SystemRelat
 	return srq
 }
 
-// WithFeedback tells the query-builder to eager-load the nodes that are connected to
-// the "feedback" edge. The optional arguments are used to configure the query builder of the edge.
-func (srq *SystemRelationshipQuery) WithFeedback(opts ...func(*SystemRelationshipFeedbackQuery)) *SystemRelationshipQuery {
-	query := (&SystemRelationshipFeedbackClient{config: srq.config}).Query()
+// WithFeedbackSignals tells the query-builder to eager-load the nodes that are connected to
+// the "feedback_signals" edge. The optional arguments are used to configure the query builder of the edge.
+func (srq *SystemRelationshipQuery) WithFeedbackSignals(opts ...func(*SystemRelationshipFeedbackSignalQuery)) *SystemRelationshipQuery {
+	query := (&SystemRelationshipFeedbackSignalClient{config: srq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	srq.withFeedback = query
+	srq.withFeedbackSignals = query
 	return srq
 }
 
@@ -559,7 +559,7 @@ func (srq *SystemRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHo
 			srq.withControls != nil,
 			srq.withSignals != nil,
 			srq.withControlActions != nil,
-			srq.withFeedback != nil,
+			srq.withFeedbackSignals != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -618,11 +618,11 @@ func (srq *SystemRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHo
 			return nil, err
 		}
 	}
-	if query := srq.withFeedback; query != nil {
-		if err := srq.loadFeedback(ctx, query, nodes,
-			func(n *SystemRelationship) { n.Edges.Feedback = []*SystemRelationshipFeedback{} },
-			func(n *SystemRelationship, e *SystemRelationshipFeedback) {
-				n.Edges.Feedback = append(n.Edges.Feedback, e)
+	if query := srq.withFeedbackSignals; query != nil {
+		if err := srq.loadFeedbackSignals(ctx, query, nodes,
+			func(n *SystemRelationship) { n.Edges.FeedbackSignals = []*SystemRelationshipFeedbackSignal{} },
+			func(n *SystemRelationship, e *SystemRelationshipFeedbackSignal) {
+				n.Edges.FeedbackSignals = append(n.Edges.FeedbackSignals, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -840,7 +840,7 @@ func (srq *SystemRelationshipQuery) loadControlActions(ctx context.Context, quer
 	}
 	return nil
 }
-func (srq *SystemRelationshipQuery) loadFeedback(ctx context.Context, query *SystemRelationshipFeedbackQuery, nodes []*SystemRelationship, init func(*SystemRelationship), assign func(*SystemRelationship, *SystemRelationshipFeedback)) error {
+func (srq *SystemRelationshipQuery) loadFeedbackSignals(ctx context.Context, query *SystemRelationshipFeedbackSignalQuery, nodes []*SystemRelationship, init func(*SystemRelationship), assign func(*SystemRelationship, *SystemRelationshipFeedbackSignal)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemRelationship)
 	for i := range nodes {
@@ -851,10 +851,10 @@ func (srq *SystemRelationshipQuery) loadFeedback(ctx context.Context, query *Sys
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemrelationshipfeedback.FieldRelationshipID)
+		query.ctx.AppendFieldOnce(systemrelationshipfeedbacksignal.FieldRelationshipID)
 	}
-	query.Where(predicate.SystemRelationshipFeedback(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemrelationship.FeedbackColumn), fks...))
+	query.Where(predicate.SystemRelationshipFeedbackSignal(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemrelationship.FeedbackSignalsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

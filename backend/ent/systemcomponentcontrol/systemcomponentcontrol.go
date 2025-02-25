@@ -17,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldComponentID holds the string denoting the component_id field in the database.
 	FieldComponentID = "component_id"
+	// FieldLabel holds the string denoting the label field in the database.
+	FieldLabel = "label"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -54,6 +56,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldComponentID,
+	FieldLabel,
 	FieldDescription,
 	FieldCreatedAt,
 }
@@ -92,6 +95,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByComponentID orders the results by the component_id field.
 func ByComponentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldComponentID, opts...).ToFunc()
+}
+
+// ByLabel orders the results by the label field.
+func ByLabel(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLabel, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.

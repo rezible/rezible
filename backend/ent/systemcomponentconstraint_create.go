@@ -31,6 +31,12 @@ func (sccc *SystemComponentConstraintCreate) SetComponentID(u uuid.UUID) *System
 	return sccc
 }
 
+// SetLabel sets the "label" field.
+func (sccc *SystemComponentConstraintCreate) SetLabel(s string) *SystemComponentConstraintCreate {
+	sccc.mutation.SetLabel(s)
+	return sccc
+}
+
 // SetDescription sets the "description" field.
 func (sccc *SystemComponentConstraintCreate) SetDescription(s string) *SystemComponentConstraintCreate {
 	sccc.mutation.SetDescription(s)
@@ -128,6 +134,9 @@ func (sccc *SystemComponentConstraintCreate) check() error {
 	if _, ok := sccc.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentConstraint.component_id"`)}
 	}
+	if _, ok := sccc.mutation.Label(); !ok {
+		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentConstraint.label"`)}
+	}
 	if _, ok := sccc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentConstraint.created_at"`)}
 	}
@@ -169,6 +178,10 @@ func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConst
 	if id, ok := sccc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := sccc.mutation.Label(); ok {
+		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
+		_node.Label = value
 	}
 	if value, ok := sccc.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)
@@ -256,6 +269,18 @@ func (u *SystemComponentConstraintUpsert) SetComponentID(v uuid.UUID) *SystemCom
 // UpdateComponentID sets the "component_id" field to the value that was provided on create.
 func (u *SystemComponentConstraintUpsert) UpdateComponentID() *SystemComponentConstraintUpsert {
 	u.SetExcluded(systemcomponentconstraint.FieldComponentID)
+	return u
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentConstraintUpsert) SetLabel(v string) *SystemComponentConstraintUpsert {
+	u.Set(systemcomponentconstraint.FieldLabel, v)
+	return u
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentConstraintUpsert) UpdateLabel() *SystemComponentConstraintUpsert {
+	u.SetExcluded(systemcomponentconstraint.FieldLabel)
 	return u
 }
 
@@ -348,6 +373,20 @@ func (u *SystemComponentConstraintUpsertOne) SetComponentID(v uuid.UUID) *System
 func (u *SystemComponentConstraintUpsertOne) UpdateComponentID() *SystemComponentConstraintUpsertOne {
 	return u.Update(func(s *SystemComponentConstraintUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentConstraintUpsertOne) SetLabel(v string) *SystemComponentConstraintUpsertOne {
+	return u.Update(func(s *SystemComponentConstraintUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentConstraintUpsertOne) UpdateLabel() *SystemComponentConstraintUpsertOne {
+	return u.Update(func(s *SystemComponentConstraintUpsert) {
+		s.UpdateLabel()
 	})
 }
 
@@ -612,6 +651,20 @@ func (u *SystemComponentConstraintUpsertBulk) SetComponentID(v uuid.UUID) *Syste
 func (u *SystemComponentConstraintUpsertBulk) UpdateComponentID() *SystemComponentConstraintUpsertBulk {
 	return u.Update(func(s *SystemComponentConstraintUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentConstraintUpsertBulk) SetLabel(v string) *SystemComponentConstraintUpsertBulk {
+	return u.Update(func(s *SystemComponentConstraintUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentConstraintUpsertBulk) UpdateLabel() *SystemComponentConstraintUpsertBulk {
+	return u.Update(func(s *SystemComponentConstraintUpsert) {
+		s.UpdateLabel()
 	})
 }
 

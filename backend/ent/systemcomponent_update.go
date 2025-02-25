@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 )
@@ -52,16 +53,16 @@ func (scu *SystemComponentUpdate) SetNillableName(s *string) *SystemComponentUpd
 	return scu
 }
 
-// SetType sets the "type" field.
-func (scu *SystemComponentUpdate) SetType(s systemcomponent.Type) *SystemComponentUpdate {
-	scu.mutation.SetType(s)
+// SetKindID sets the "kind_id" field.
+func (scu *SystemComponentUpdate) SetKindID(u uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.SetKindID(u)
 	return scu
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (scu *SystemComponentUpdate) SetNillableType(s *systemcomponent.Type) *SystemComponentUpdate {
-	if s != nil {
-		scu.SetType(*s)
+// SetNillableKindID sets the "kind_id" field if the given value is not nil.
+func (scu *SystemComponentUpdate) SetNillableKindID(u *uuid.UUID) *SystemComponentUpdate {
+	if u != nil {
+		scu.SetKindID(*u)
 	}
 	return scu
 }
@@ -110,6 +111,11 @@ func (scu *SystemComponentUpdate) SetNillableCreatedAt(t *time.Time) *SystemComp
 func (scu *SystemComponentUpdate) SetUpdatedAt(t time.Time) *SystemComponentUpdate {
 	scu.mutation.SetUpdatedAt(t)
 	return scu
+}
+
+// SetKind sets the "kind" edge to the SystemComponentKind entity.
+func (scu *SystemComponentUpdate) SetKind(s *SystemComponentKind) *SystemComponentUpdate {
+	return scu.SetKindID(s.ID)
 }
 
 // AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
@@ -250,6 +256,12 @@ func (scu *SystemComponentUpdate) AddEventComponents(i ...*IncidentEventSystemCo
 // Mutation returns the SystemComponentMutation object of the builder.
 func (scu *SystemComponentUpdate) Mutation() *SystemComponentMutation {
 	return scu.mutation
+}
+
+// ClearKind clears the "kind" edge to the SystemComponentKind entity.
+func (scu *SystemComponentUpdate) ClearKind() *SystemComponentUpdate {
+	scu.mutation.ClearKind()
+	return scu
 }
 
 // ClearAnalyses clears all "analyses" edges to the SystemAnalysis entity.
@@ -484,10 +496,8 @@ func (scu *SystemComponentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if v, ok := scu.mutation.GetType(); ok {
-		if err := systemcomponent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.type": %w`, err)}
-		}
+	if scu.mutation.KindCleared() && len(scu.mutation.KindIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
 	}
 	return nil
 }
@@ -513,9 +523,6 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 	if value, ok := scu.mutation.Name(); ok {
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 	}
-	if value, ok := scu.mutation.GetType(); ok {
-		_spec.SetField(systemcomponent.FieldType, field.TypeEnum, value)
-	}
 	if value, ok := scu.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 	}
@@ -530,6 +537,35 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if value, ok := scu.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if scu.mutation.KindCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponent.KindTable,
+			Columns: []string{systemcomponent.KindColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scu.mutation.KindIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponent.KindTable,
+			Columns: []string{systemcomponent.KindColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if scu.mutation.AnalysesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1035,16 +1071,16 @@ func (scuo *SystemComponentUpdateOne) SetNillableName(s *string) *SystemComponen
 	return scuo
 }
 
-// SetType sets the "type" field.
-func (scuo *SystemComponentUpdateOne) SetType(s systemcomponent.Type) *SystemComponentUpdateOne {
-	scuo.mutation.SetType(s)
+// SetKindID sets the "kind_id" field.
+func (scuo *SystemComponentUpdateOne) SetKindID(u uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.SetKindID(u)
 	return scuo
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (scuo *SystemComponentUpdateOne) SetNillableType(s *systemcomponent.Type) *SystemComponentUpdateOne {
-	if s != nil {
-		scuo.SetType(*s)
+// SetNillableKindID sets the "kind_id" field if the given value is not nil.
+func (scuo *SystemComponentUpdateOne) SetNillableKindID(u *uuid.UUID) *SystemComponentUpdateOne {
+	if u != nil {
+		scuo.SetKindID(*u)
 	}
 	return scuo
 }
@@ -1093,6 +1129,11 @@ func (scuo *SystemComponentUpdateOne) SetNillableCreatedAt(t *time.Time) *System
 func (scuo *SystemComponentUpdateOne) SetUpdatedAt(t time.Time) *SystemComponentUpdateOne {
 	scuo.mutation.SetUpdatedAt(t)
 	return scuo
+}
+
+// SetKind sets the "kind" edge to the SystemComponentKind entity.
+func (scuo *SystemComponentUpdateOne) SetKind(s *SystemComponentKind) *SystemComponentUpdateOne {
+	return scuo.SetKindID(s.ID)
 }
 
 // AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
@@ -1233,6 +1274,12 @@ func (scuo *SystemComponentUpdateOne) AddEventComponents(i ...*IncidentEventSyst
 // Mutation returns the SystemComponentMutation object of the builder.
 func (scuo *SystemComponentUpdateOne) Mutation() *SystemComponentMutation {
 	return scuo.mutation
+}
+
+// ClearKind clears the "kind" edge to the SystemComponentKind entity.
+func (scuo *SystemComponentUpdateOne) ClearKind() *SystemComponentUpdateOne {
+	scuo.mutation.ClearKind()
+	return scuo
 }
 
 // ClearAnalyses clears all "analyses" edges to the SystemAnalysis entity.
@@ -1480,10 +1527,8 @@ func (scuo *SystemComponentUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if v, ok := scuo.mutation.GetType(); ok {
-		if err := systemcomponent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.type": %w`, err)}
-		}
+	if scuo.mutation.KindCleared() && len(scuo.mutation.KindIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
 	}
 	return nil
 }
@@ -1526,9 +1571,6 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 	if value, ok := scuo.mutation.Name(); ok {
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 	}
-	if value, ok := scuo.mutation.GetType(); ok {
-		_spec.SetField(systemcomponent.FieldType, field.TypeEnum, value)
-	}
 	if value, ok := scuo.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 	}
@@ -1543,6 +1585,35 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 	}
 	if value, ok := scuo.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if scuo.mutation.KindCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponent.KindTable,
+			Columns: []string{systemcomponent.KindColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scuo.mutation.KindIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponent.KindTable,
+			Columns: []string{systemcomponent.KindColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if scuo.mutation.AnalysesCleared() {
 		edge := &sqlgraph.EdgeSpec{

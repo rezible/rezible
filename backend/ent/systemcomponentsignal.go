@@ -21,6 +21,8 @@ type SystemComponentSignal struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// ComponentID holds the value of the "component_id" field.
 	ComponentID uuid.UUID `json:"component_id,omitempty"`
+	// Label holds the value of the "label" field.
+	Label string `json:"label,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -38,7 +40,7 @@ type SystemComponentSignalEdges struct {
 	// Relationships holds the value of the relationships edge.
 	Relationships []*SystemRelationship `json:"relationships,omitempty"`
 	// FeedbackSignals holds the value of the feedback_signals edge.
-	FeedbackSignals []*SystemRelationshipFeedback `json:"feedback_signals,omitempty"`
+	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -66,7 +68,7 @@ func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemRelationship,
 
 // FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentSignalEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedback, error) {
+func (e SystemComponentSignalEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
 	if e.loadedTypes[2] {
 		return e.FeedbackSignals, nil
 	}
@@ -78,7 +80,7 @@ func (*SystemComponentSignal) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemcomponentsignal.FieldDescription:
+		case systemcomponentsignal.FieldLabel, systemcomponentsignal.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentsignal.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -110,6 +112,12 @@ func (scs *SystemComponentSignal) assignValues(columns []string, values []any) e
 				return fmt.Errorf("unexpected type %T for field component_id", values[i])
 			} else if value != nil {
 				scs.ComponentID = *value
+			}
+		case systemcomponentsignal.FieldLabel:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field label", values[i])
+			} else if value.Valid {
+				scs.Label = value.String
 			}
 		case systemcomponentsignal.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -147,7 +155,7 @@ func (scs *SystemComponentSignal) QueryRelationships() *SystemRelationshipQuery 
 }
 
 // QueryFeedbackSignals queries the "feedback_signals" edge of the SystemComponentSignal entity.
-func (scs *SystemComponentSignal) QueryFeedbackSignals() *SystemRelationshipFeedbackQuery {
+func (scs *SystemComponentSignal) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
 	return NewSystemComponentSignalClient(scs.config).QueryFeedbackSignals(scs)
 }
 
@@ -176,6 +184,9 @@ func (scs *SystemComponentSignal) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", scs.ID))
 	builder.WriteString("component_id=")
 	builder.WriteString(fmt.Sprintf("%v", scs.ComponentID))
+	builder.WriteString(", ")
+	builder.WriteString("label=")
+	builder.WriteString(scs.Label)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(scs.Description)

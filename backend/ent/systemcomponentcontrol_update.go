@@ -47,6 +47,20 @@ func (sccu *SystemComponentControlUpdate) SetNillableComponentID(u *uuid.UUID) *
 	return sccu
 }
 
+// SetLabel sets the "label" field.
+func (sccu *SystemComponentControlUpdate) SetLabel(s string) *SystemComponentControlUpdate {
+	sccu.mutation.SetLabel(s)
+	return sccu
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (sccu *SystemComponentControlUpdate) SetNillableLabel(s *string) *SystemComponentControlUpdate {
+	if s != nil {
+		sccu.SetLabel(*s)
+	}
+	return sccu
+}
+
 // SetDescription sets the "description" field.
 func (sccu *SystemComponentControlUpdate) SetDescription(s string) *SystemComponentControlUpdate {
 	sccu.mutation.SetDescription(s)
@@ -221,6 +235,9 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := sccu.mutation.Label(); ok {
+		_spec.SetField(systemcomponentcontrol.FieldLabel, field.TypeString, value)
 	}
 	if value, ok := sccu.mutation.Description(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldDescription, field.TypeString, value)
@@ -403,6 +420,20 @@ func (sccuo *SystemComponentControlUpdateOne) SetComponentID(u uuid.UUID) *Syste
 func (sccuo *SystemComponentControlUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemComponentControlUpdateOne {
 	if u != nil {
 		sccuo.SetComponentID(*u)
+	}
+	return sccuo
+}
+
+// SetLabel sets the "label" field.
+func (sccuo *SystemComponentControlUpdateOne) SetLabel(s string) *SystemComponentControlUpdateOne {
+	sccuo.mutation.SetLabel(s)
+	return sccuo
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (sccuo *SystemComponentControlUpdateOne) SetNillableLabel(s *string) *SystemComponentControlUpdateOne {
+	if s != nil {
+		sccuo.SetLabel(*s)
 	}
 	return sccuo
 }
@@ -611,6 +642,9 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := sccuo.mutation.Label(); ok {
+		_spec.SetField(systemcomponentcontrol.FieldLabel, field.TypeString, value)
 	}
 	if value, ok := sccuo.mutation.Description(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldDescription, field.TypeString, value)

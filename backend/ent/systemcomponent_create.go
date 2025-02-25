@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 )
@@ -38,9 +39,9 @@ func (scc *SystemComponentCreate) SetName(s string) *SystemComponentCreate {
 	return scc
 }
 
-// SetType sets the "type" field.
-func (scc *SystemComponentCreate) SetType(s systemcomponent.Type) *SystemComponentCreate {
-	scc.mutation.SetType(s)
+// SetKindID sets the "kind_id" field.
+func (scc *SystemComponentCreate) SetKindID(u uuid.UUID) *SystemComponentCreate {
+	scc.mutation.SetKindID(u)
 	return scc
 }
 
@@ -104,6 +105,11 @@ func (scc *SystemComponentCreate) SetNillableID(u *uuid.UUID) *SystemComponentCr
 		scc.SetID(*u)
 	}
 	return scc
+}
+
+// SetKind sets the "kind" edge to the SystemComponentKind entity.
+func (scc *SystemComponentCreate) SetKind(s *SystemComponentKind) *SystemComponentCreate {
+	return scc.SetKindID(s.ID)
 }
 
 // AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
@@ -300,13 +306,8 @@ func (scc *SystemComponentCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if _, ok := scc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "SystemComponent.type"`)}
-	}
-	if v, ok := scc.mutation.GetType(); ok {
-		if err := systemcomponent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.type": %w`, err)}
-		}
+	if _, ok := scc.mutation.KindID(); !ok {
+		return &ValidationError{Name: "kind_id", err: errors.New(`ent: missing required field "SystemComponent.kind_id"`)}
 	}
 	if _, ok := scc.mutation.Properties(); !ok {
 		return &ValidationError{Name: "properties", err: errors.New(`ent: missing required field "SystemComponent.properties"`)}
@@ -316,6 +317,9 @@ func (scc *SystemComponentCreate) check() error {
 	}
 	if _, ok := scc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemComponent.updated_at"`)}
+	}
+	if len(scc.mutation.KindIDs()) == 0 {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required edge "SystemComponent.kind"`)}
 	}
 	return nil
 }
@@ -357,10 +361,6 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := scc.mutation.GetType(); ok {
-		_spec.SetField(systemcomponent.FieldType, field.TypeEnum, value)
-		_node.Type = value
-	}
 	if value, ok := scc.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 		_node.Description = value
@@ -376,6 +376,23 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 	if value, ok := scc.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := scc.mutation.KindIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponent.KindTable,
+			Columns: []string{systemcomponent.KindColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KindID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := scc.mutation.AnalysesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -606,15 +623,15 @@ func (u *SystemComponentUpsert) UpdateName() *SystemComponentUpsert {
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *SystemComponentUpsert) SetType(v systemcomponent.Type) *SystemComponentUpsert {
-	u.Set(systemcomponent.FieldType, v)
+// SetKindID sets the "kind_id" field.
+func (u *SystemComponentUpsert) SetKindID(v uuid.UUID) *SystemComponentUpsert {
+	u.Set(systemcomponent.FieldKindID, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemComponentUpsert) UpdateType() *SystemComponentUpsert {
-	u.SetExcluded(systemcomponent.FieldType)
+// UpdateKindID sets the "kind_id" field to the value that was provided on create.
+func (u *SystemComponentUpsert) UpdateKindID() *SystemComponentUpsert {
+	u.SetExcluded(systemcomponent.FieldKindID)
 	return u
 }
 
@@ -734,17 +751,17 @@ func (u *SystemComponentUpsertOne) UpdateName() *SystemComponentUpsertOne {
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemComponentUpsertOne) SetType(v systemcomponent.Type) *SystemComponentUpsertOne {
+// SetKindID sets the "kind_id" field.
+func (u *SystemComponentUpsertOne) SetKindID(v uuid.UUID) *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
-		s.SetType(v)
+		s.SetKindID(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemComponentUpsertOne) UpdateType() *SystemComponentUpsertOne {
+// UpdateKindID sets the "kind_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertOne) UpdateKindID() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
-		s.UpdateType()
+		s.UpdateKindID()
 	})
 }
 
@@ -1040,17 +1057,17 @@ func (u *SystemComponentUpsertBulk) UpdateName() *SystemComponentUpsertBulk {
 	})
 }
 
-// SetType sets the "type" field.
-func (u *SystemComponentUpsertBulk) SetType(v systemcomponent.Type) *SystemComponentUpsertBulk {
+// SetKindID sets the "kind_id" field.
+func (u *SystemComponentUpsertBulk) SetKindID(v uuid.UUID) *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
-		s.SetType(v)
+		s.SetKindID(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *SystemComponentUpsertBulk) UpdateType() *SystemComponentUpsertBulk {
+// UpdateKindID sets the "kind_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertBulk) UpdateKindID() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
-		s.UpdateType()
+		s.UpdateKindID()
 	})
 }
 

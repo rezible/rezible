@@ -45,8 +45,8 @@ type SystemRelationshipEdges struct {
 	Signals []*SystemComponentSignal `json:"signals,omitempty"`
 	// ControlActions holds the value of the control_actions edge.
 	ControlActions []*SystemRelationshipControlAction `json:"control_actions,omitempty"`
-	// Feedback holds the value of the feedback edge.
-	Feedback []*SystemRelationshipFeedback `json:"feedback,omitempty"`
+	// FeedbackSignals holds the value of the feedback_signals edge.
+	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -101,13 +101,13 @@ func (e SystemRelationshipEdges) ControlActionsOrErr() ([]*SystemRelationshipCon
 	return nil, &NotLoadedError{edge: "control_actions"}
 }
 
-// FeedbackOrErr returns the Feedback value or an error if the edge
+// FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemRelationshipEdges) FeedbackOrErr() ([]*SystemRelationshipFeedback, error) {
+func (e SystemRelationshipEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
 	if e.loadedTypes[5] {
-		return e.Feedback, nil
+		return e.FeedbackSignals, nil
 	}
-	return nil, &NotLoadedError{edge: "feedback"}
+	return nil, &NotLoadedError{edge: "feedback_signals"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -204,9 +204,9 @@ func (sr *SystemRelationship) QueryControlActions() *SystemRelationshipControlAc
 	return NewSystemRelationshipClient(sr.config).QueryControlActions(sr)
 }
 
-// QueryFeedback queries the "feedback" edge of the SystemRelationship entity.
-func (sr *SystemRelationship) QueryFeedback() *SystemRelationshipFeedbackQuery {
-	return NewSystemRelationshipClient(sr.config).QueryFeedback(sr)
+// QueryFeedbackSignals queries the "feedback_signals" edge of the SystemRelationship entity.
+func (sr *SystemRelationship) QueryFeedbackSignals() *SystemRelationshipFeedbackSignalQuery {
+	return NewSystemRelationshipClient(sr.config).QueryFeedbackSignals(sr)
 }
 
 // Update returns a builder for updating this SystemRelationship.

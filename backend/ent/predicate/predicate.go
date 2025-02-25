@@ -141,6 +141,9 @@ type SystemComponentConstraint func(*sql.Selector)
 // SystemComponentControl is the predicate function for systemcomponentcontrol builders.
 type SystemComponentControl func(*sql.Selector)
 
+// SystemComponentKind is the predicate function for systemcomponentkind builders.
+type SystemComponentKind func(*sql.Selector)
+
 // SystemComponentSignal is the predicate function for systemcomponentsignal builders.
 type SystemComponentSignal func(*sql.Selector)
 
@@ -150,8 +153,8 @@ type SystemRelationship func(*sql.Selector)
 // SystemRelationshipControlAction is the predicate function for systemrelationshipcontrolaction builders.
 type SystemRelationshipControlAction func(*sql.Selector)
 
-// SystemRelationshipFeedback is the predicate function for systemrelationshipfeedback builders.
-type SystemRelationshipFeedback func(*sql.Selector)
+// SystemRelationshipFeedbackSignal is the predicate function for systemrelationshipfeedbacksignal builders.
+type SystemRelationshipFeedbackSignal func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

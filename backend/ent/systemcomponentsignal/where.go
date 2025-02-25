@@ -91,6 +91,71 @@ func ComponentIDNotIn(vs ...uuid.UUID) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldNotIn(FieldComponentID, vs...))
 }
 
+// LabelEQ applies the EQ predicate on the "label" field.
+func LabelEQ(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldEQ(FieldLabel, v))
+}
+
+// LabelNEQ applies the NEQ predicate on the "label" field.
+func LabelNEQ(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldNEQ(FieldLabel, v))
+}
+
+// LabelIn applies the In predicate on the "label" field.
+func LabelIn(vs ...string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldIn(FieldLabel, vs...))
+}
+
+// LabelNotIn applies the NotIn predicate on the "label" field.
+func LabelNotIn(vs ...string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldNotIn(FieldLabel, vs...))
+}
+
+// LabelGT applies the GT predicate on the "label" field.
+func LabelGT(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldGT(FieldLabel, v))
+}
+
+// LabelGTE applies the GTE predicate on the "label" field.
+func LabelGTE(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldGTE(FieldLabel, v))
+}
+
+// LabelLT applies the LT predicate on the "label" field.
+func LabelLT(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldLT(FieldLabel, v))
+}
+
+// LabelLTE applies the LTE predicate on the "label" field.
+func LabelLTE(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldLTE(FieldLabel, v))
+}
+
+// LabelContains applies the Contains predicate on the "label" field.
+func LabelContains(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldContains(FieldLabel, v))
+}
+
+// LabelHasPrefix applies the HasPrefix predicate on the "label" field.
+func LabelHasPrefix(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldHasPrefix(FieldLabel, v))
+}
+
+// LabelHasSuffix applies the HasSuffix predicate on the "label" field.
+func LabelHasSuffix(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldHasSuffix(FieldLabel, v))
+}
+
+// LabelEqualFold applies the EqualFold predicate on the "label" field.
+func LabelEqualFold(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldEqualFold(FieldLabel, v))
+}
+
+// LabelContainsFold applies the ContainsFold predicate on the "label" field.
+func LabelContainsFold(v string) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldContainsFold(FieldLabel, v))
+}
+
 // DescriptionEQ applies the EQ predicate on the "description" field.
 func DescriptionEQ(v string) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldEQ(FieldDescription, v))
@@ -264,7 +329,7 @@ func HasFeedbackSignals() predicate.SystemComponentSignal {
 }
 
 // HasFeedbackSignalsWith applies the HasEdge predicate on the "feedback_signals" edge with a given conditions (other predicates).
-func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedback) predicate.SystemComponentSignal {
+func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newFeedbackSignalsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

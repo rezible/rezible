@@ -364,6 +364,14 @@ func (c *SystemComponentControlClient) Debug() *SystemComponentControlClient {
 	return &SystemComponentControlClient{config: cfg}
 }
 
+func (c *SystemComponentKindClient) Debug() *SystemComponentKindClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemComponentKindClient{config: cfg}
+}
+
 func (c *SystemComponentSignalClient) Debug() *SystemComponentSignalClient {
 	if c.debug {
 		return c
@@ -388,12 +396,12 @@ func (c *SystemRelationshipControlActionClient) Debug() *SystemRelationshipContr
 	return &SystemRelationshipControlActionClient{config: cfg}
 }
 
-func (c *SystemRelationshipFeedbackClient) Debug() *SystemRelationshipFeedbackClient {
+func (c *SystemRelationshipFeedbackSignalClient) Debug() *SystemRelationshipFeedbackSignalClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &SystemRelationshipFeedbackClient{config: cfg}
+	return &SystemRelationshipFeedbackSignalClient{config: cfg}
 }
 
 func (c *TaskClient) Debug() *TaskClient {

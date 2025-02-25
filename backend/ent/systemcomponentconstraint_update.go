@@ -45,6 +45,20 @@ func (sccu *SystemComponentConstraintUpdate) SetNillableComponentID(u *uuid.UUID
 	return sccu
 }
 
+// SetLabel sets the "label" field.
+func (sccu *SystemComponentConstraintUpdate) SetLabel(s string) *SystemComponentConstraintUpdate {
+	sccu.mutation.SetLabel(s)
+	return sccu
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (sccu *SystemComponentConstraintUpdate) SetNillableLabel(s *string) *SystemComponentConstraintUpdate {
+	if s != nil {
+		sccu.SetLabel(*s)
+	}
+	return sccu
+}
+
 // SetDescription sets the "description" field.
 func (sccu *SystemComponentConstraintUpdate) SetDescription(s string) *SystemComponentConstraintUpdate {
 	sccu.mutation.SetDescription(s)
@@ -148,6 +162,9 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 			}
 		}
 	}
+	if value, ok := sccu.mutation.Label(); ok {
+		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
+	}
 	if value, ok := sccu.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)
 	}
@@ -218,6 +235,20 @@ func (sccuo *SystemComponentConstraintUpdateOne) SetComponentID(u uuid.UUID) *Sy
 func (sccuo *SystemComponentConstraintUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemComponentConstraintUpdateOne {
 	if u != nil {
 		sccuo.SetComponentID(*u)
+	}
+	return sccuo
+}
+
+// SetLabel sets the "label" field.
+func (sccuo *SystemComponentConstraintUpdateOne) SetLabel(s string) *SystemComponentConstraintUpdateOne {
+	sccuo.mutation.SetLabel(s)
+	return sccuo
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (sccuo *SystemComponentConstraintUpdateOne) SetNillableLabel(s *string) *SystemComponentConstraintUpdateOne {
+	if s != nil {
+		sccuo.SetLabel(*s)
 	}
 	return sccuo
 }
@@ -354,6 +385,9 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := sccuo.mutation.Label(); ok {
+		_spec.SetField(systemcomponentconstraint.FieldLabel, field.TypeString, value)
 	}
 	if value, ok := sccuo.mutation.Description(); ok {
 		_spec.SetField(systemcomponentconstraint.FieldDescription, field.TypeString, value)

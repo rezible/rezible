@@ -25,8 +25,8 @@ type SystemRelationshipControlActionQuery struct {
 	order            []systemrelationshipcontrolaction.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.SystemRelationshipControlAction
-	withControl      *SystemComponentControlQuery
 	withRelationship *SystemRelationshipQuery
+	withControl      *SystemComponentControlQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -64,28 +64,6 @@ func (srcaq *SystemRelationshipControlActionQuery) Order(o ...systemrelationship
 	return srcaq
 }
 
-// QueryControl chains the current query on the "control" edge.
-func (srcaq *SystemRelationshipControlActionQuery) QueryControl() *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: srcaq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := srcaq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := srcaq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, selector),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.ControlTable, systemrelationshipcontrolaction.ControlColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(srcaq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryRelationship chains the current query on the "relationship" edge.
 func (srcaq *SystemRelationshipControlActionQuery) QueryRelationship() *SystemRelationshipQuery {
 	query := (&SystemRelationshipClient{config: srcaq.config}).Query()
@@ -101,6 +79,28 @@ func (srcaq *SystemRelationshipControlActionQuery) QueryRelationship() *SystemRe
 			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, selector),
 			sqlgraph.To(systemrelationship.Table, systemrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.RelationshipTable, systemrelationshipcontrolaction.RelationshipColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(srcaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryControl chains the current query on the "control" edge.
+func (srcaq *SystemRelationshipControlActionQuery) QueryControl() *SystemComponentControlQuery {
+	query := (&SystemComponentControlClient{config: srcaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := srcaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := srcaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, selector),
+			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.ControlTable, systemrelationshipcontrolaction.ControlColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(srcaq.driver.Dialect(), step)
 		return fromU, nil
@@ -300,24 +300,13 @@ func (srcaq *SystemRelationshipControlActionQuery) Clone() *SystemRelationshipCo
 		order:            append([]systemrelationshipcontrolaction.OrderOption{}, srcaq.order...),
 		inters:           append([]Interceptor{}, srcaq.inters...),
 		predicates:       append([]predicate.SystemRelationshipControlAction{}, srcaq.predicates...),
-		withControl:      srcaq.withControl.Clone(),
 		withRelationship: srcaq.withRelationship.Clone(),
+		withControl:      srcaq.withControl.Clone(),
 		// clone intermediate query.
 		sql:       srcaq.sql.Clone(),
 		path:      srcaq.path,
 		modifiers: append([]func(*sql.Selector){}, srcaq.modifiers...),
 	}
-}
-
-// WithControl tells the query-builder to eager-load the nodes that are connected to
-// the "control" edge. The optional arguments are used to configure the query builder of the edge.
-func (srcaq *SystemRelationshipControlActionQuery) WithControl(opts ...func(*SystemComponentControlQuery)) *SystemRelationshipControlActionQuery {
-	query := (&SystemComponentControlClient{config: srcaq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	srcaq.withControl = query
-	return srcaq
 }
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
@@ -331,18 +320,29 @@ func (srcaq *SystemRelationshipControlActionQuery) WithRelationship(opts ...func
 	return srcaq
 }
 
+// WithControl tells the query-builder to eager-load the nodes that are connected to
+// the "control" edge. The optional arguments are used to configure the query builder of the edge.
+func (srcaq *SystemRelationshipControlActionQuery) WithControl(opts ...func(*SystemComponentControlQuery)) *SystemRelationshipControlActionQuery {
+	query := (&SystemComponentControlClient{config: srcaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	srcaq.withControl = query
+	return srcaq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		ControlID uuid.UUID `json:"control_id,omitempty"`
+//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemRelationshipControlAction.Query().
-//		GroupBy(systemrelationshipcontrolaction.FieldControlID).
+//		GroupBy(systemrelationshipcontrolaction.FieldRelationshipID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (srcaq *SystemRelationshipControlActionQuery) GroupBy(field string, fields ...string) *SystemRelationshipControlActionGroupBy {
@@ -360,11 +360,11 @@ func (srcaq *SystemRelationshipControlActionQuery) GroupBy(field string, fields 
 // Example:
 //
 //	var v []struct {
-//		ControlID uuid.UUID `json:"control_id,omitempty"`
+//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 //	}
 //
 //	client.SystemRelationshipControlAction.Query().
-//		Select(systemrelationshipcontrolaction.FieldControlID).
+//		Select(systemrelationshipcontrolaction.FieldRelationshipID).
 //		Scan(ctx, &v)
 func (srcaq *SystemRelationshipControlActionQuery) Select(fields ...string) *SystemRelationshipControlActionSelect {
 	srcaq.ctx.Fields = append(srcaq.ctx.Fields, fields...)
@@ -410,8 +410,8 @@ func (srcaq *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, h
 		nodes       = []*SystemRelationshipControlAction{}
 		_spec       = srcaq.querySpec()
 		loadedTypes = [2]bool{
-			srcaq.withControl != nil,
 			srcaq.withRelationship != nil,
+			srcaq.withControl != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -435,50 +435,21 @@ func (srcaq *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, h
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := srcaq.withControl; query != nil {
-		if err := srcaq.loadControl(ctx, query, nodes, nil,
-			func(n *SystemRelationshipControlAction, e *SystemComponentControl) { n.Edges.Control = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := srcaq.withRelationship; query != nil {
 		if err := srcaq.loadRelationship(ctx, query, nodes, nil,
 			func(n *SystemRelationshipControlAction, e *SystemRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
+	if query := srcaq.withControl; query != nil {
+		if err := srcaq.loadControl(ctx, query, nodes, nil,
+			func(n *SystemRelationshipControlAction, e *SystemComponentControl) { n.Edges.Control = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (srcaq *SystemRelationshipControlActionQuery) loadControl(ctx context.Context, query *SystemComponentControlQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemComponentControl)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemRelationshipControlAction)
-	for i := range nodes {
-		fk := nodes[i].ControlID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(systemcomponentcontrol.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "control_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
 func (srcaq *SystemRelationshipControlActionQuery) loadRelationship(ctx context.Context, query *SystemRelationshipQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipControlAction)
@@ -501,6 +472,35 @@ func (srcaq *SystemRelationshipControlActionQuery) loadRelationship(ctx context.
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "relationship_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (srcaq *SystemRelationshipControlActionQuery) loadControl(ctx context.Context, query *SystemComponentControlQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemComponentControl)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemRelationshipControlAction)
+	for i := range nodes {
+		fk := nodes[i].ControlID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(systemcomponentcontrol.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "control_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -537,11 +537,11 @@ func (srcaq *SystemRelationshipControlActionQuery) querySpec() *sqlgraph.QuerySp
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if srcaq.withControl != nil {
-			_spec.Node.AddColumnOnce(systemrelationshipcontrolaction.FieldControlID)
-		}
 		if srcaq.withRelationship != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipcontrolaction.FieldRelationshipID)
+		}
+		if srcaq.withControl != nil {
+			_spec.Node.AddColumnOnce(systemrelationshipcontrolaction.FieldControlID)
 		}
 	}
 	if ps := srcaq.predicates; len(ps) > 0 {

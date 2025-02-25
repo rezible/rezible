@@ -33,8 +33,8 @@ const (
 	EdgeSignals = "signals"
 	// EdgeControlActions holds the string denoting the control_actions edge name in mutations.
 	EdgeControlActions = "control_actions"
-	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
-	EdgeFeedback = "feedback"
+	// EdgeFeedbackSignals holds the string denoting the feedback_signals edge name in mutations.
+	EdgeFeedbackSignals = "feedback_signals"
 	// Table holds the table name of the systemrelationship in the database.
 	Table = "system_relationships"
 	// SourceComponentTable is the table that holds the source_component relation/edge.
@@ -57,7 +57,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "systemcomponentcontrol" package.
 	ControlsInverseTable = "system_component_controls"
 	// SignalsTable is the table that holds the signals relation/edge. The primary key declared below.
-	SignalsTable = "system_relationship_feedbacks"
+	SignalsTable = "system_relationship_feedback_signals"
 	// SignalsInverseTable is the table name for the SystemComponentSignal entity.
 	// It exists in this package in order to avoid circular dependency with the "systemcomponentsignal" package.
 	SignalsInverseTable = "system_component_signals"
@@ -68,13 +68,13 @@ const (
 	ControlActionsInverseTable = "system_relationship_control_actions"
 	// ControlActionsColumn is the table column denoting the control_actions relation/edge.
 	ControlActionsColumn = "relationship_id"
-	// FeedbackTable is the table that holds the feedback relation/edge.
-	FeedbackTable = "system_relationship_feedbacks"
-	// FeedbackInverseTable is the table name for the SystemRelationshipFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "systemrelationshipfeedback" package.
-	FeedbackInverseTable = "system_relationship_feedbacks"
-	// FeedbackColumn is the table column denoting the feedback relation/edge.
-	FeedbackColumn = "relationship_id"
+	// FeedbackSignalsTable is the table that holds the feedback_signals relation/edge.
+	FeedbackSignalsTable = "system_relationship_feedback_signals"
+	// FeedbackSignalsInverseTable is the table name for the SystemRelationshipFeedbackSignal entity.
+	// It exists in this package in order to avoid circular dependency with the "systemrelationshipfeedbacksignal" package.
+	FeedbackSignalsInverseTable = "system_relationship_feedback_signals"
+	// FeedbackSignalsColumn is the table column denoting the feedback_signals relation/edge.
+	FeedbackSignalsColumn = "relationship_id"
 )
 
 // Columns holds all SQL columns for systemrelationship fields.
@@ -196,17 +196,17 @@ func ByControlActions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByFeedbackCount orders the results by feedback count.
-func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFeedbackSignalsCount orders the results by feedback_signals count.
+func ByFeedbackSignalsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newFeedbackSignalsStep(), opts...)
 	}
 }
 
-// ByFeedback orders the results by feedback terms.
-func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByFeedbackSignals orders the results by feedback_signals terms.
+func ByFeedbackSignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFeedbackSignalsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newSourceComponentStep() *sqlgraph.Step {
@@ -244,10 +244,10 @@ func newControlActionsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, ControlActionsTable, ControlActionsColumn),
 	)
 }
-func newFeedbackStep() *sqlgraph.Step {
+func newFeedbackSignalsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FeedbackInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+		sqlgraph.To(FeedbackSignalsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackSignalsTable, FeedbackSignalsColumn),
 	)
 }

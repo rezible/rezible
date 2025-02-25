@@ -33,6 +33,12 @@ func (sccc *SystemComponentControlCreate) SetComponentID(u uuid.UUID) *SystemCom
 	return sccc
 }
 
+// SetLabel sets the "label" field.
+func (sccc *SystemComponentControlCreate) SetLabel(s string) *SystemComponentControlCreate {
+	sccc.mutation.SetLabel(s)
+	return sccc
+}
+
 // SetDescription sets the "description" field.
 func (sccc *SystemComponentControlCreate) SetDescription(s string) *SystemComponentControlCreate {
 	sccc.mutation.SetDescription(s)
@@ -160,6 +166,9 @@ func (sccc *SystemComponentControlCreate) check() error {
 	if _, ok := sccc.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentControl.component_id"`)}
 	}
+	if _, ok := sccc.mutation.Label(); !ok {
+		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentControl.label"`)}
+	}
 	if _, ok := sccc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentControl.created_at"`)}
 	}
@@ -201,6 +210,10 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 	if id, ok := sccc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := sccc.mutation.Label(); ok {
+		_spec.SetField(systemcomponentcontrol.FieldLabel, field.TypeString, value)
+		_node.Label = value
 	}
 	if value, ok := sccc.mutation.Description(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldDescription, field.TypeString, value)
@@ -330,6 +343,18 @@ func (u *SystemComponentControlUpsert) UpdateComponentID() *SystemComponentContr
 	return u
 }
 
+// SetLabel sets the "label" field.
+func (u *SystemComponentControlUpsert) SetLabel(v string) *SystemComponentControlUpsert {
+	u.Set(systemcomponentcontrol.FieldLabel, v)
+	return u
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentControlUpsert) UpdateLabel() *SystemComponentControlUpsert {
+	u.SetExcluded(systemcomponentcontrol.FieldLabel)
+	return u
+}
+
 // SetDescription sets the "description" field.
 func (u *SystemComponentControlUpsert) SetDescription(v string) *SystemComponentControlUpsert {
 	u.Set(systemcomponentcontrol.FieldDescription, v)
@@ -419,6 +444,20 @@ func (u *SystemComponentControlUpsertOne) SetComponentID(v uuid.UUID) *SystemCom
 func (u *SystemComponentControlUpsertOne) UpdateComponentID() *SystemComponentControlUpsertOne {
 	return u.Update(func(s *SystemComponentControlUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentControlUpsertOne) SetLabel(v string) *SystemComponentControlUpsertOne {
+	return u.Update(func(s *SystemComponentControlUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentControlUpsertOne) UpdateLabel() *SystemComponentControlUpsertOne {
+	return u.Update(func(s *SystemComponentControlUpsert) {
+		s.UpdateLabel()
 	})
 }
 
@@ -683,6 +722,20 @@ func (u *SystemComponentControlUpsertBulk) SetComponentID(v uuid.UUID) *SystemCo
 func (u *SystemComponentControlUpsertBulk) UpdateComponentID() *SystemComponentControlUpsertBulk {
 	return u.Update(func(s *SystemComponentControlUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentControlUpsertBulk) SetLabel(v string) *SystemComponentControlUpsertBulk {
+	return u.Update(func(s *SystemComponentControlUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentControlUpsertBulk) UpdateLabel() *SystemComponentControlUpsertBulk {
+	return u.Update(func(s *SystemComponentControlUpsert) {
+		s.UpdateLabel()
 	})
 }
 

@@ -54,10 +54,11 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -1334,6 +1335,33 @@ func (f TraverseSystemComponentControl) Traverse(ctx context.Context, q ent.Quer
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentControlQuery", q)
 }
 
+// The SystemComponentKindFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemComponentKindFunc func(context.Context, *ent.SystemComponentKindQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemComponentKindFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemComponentKindQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentKindQuery", q)
+}
+
+// The TraverseSystemComponentKind type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemComponentKind func(context.Context, *ent.SystemComponentKindQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemComponentKind) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemComponentKind) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemComponentKindQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentKindQuery", q)
+}
+
 // The SystemComponentSignalFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SystemComponentSignalFunc func(context.Context, *ent.SystemComponentSignalQuery) (ent.Value, error)
 
@@ -1415,31 +1443,31 @@ func (f TraverseSystemRelationshipControlAction) Traverse(ctx context.Context, q
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemRelationshipControlActionQuery", q)
 }
 
-// The SystemRelationshipFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
-type SystemRelationshipFeedbackFunc func(context.Context, *ent.SystemRelationshipFeedbackQuery) (ent.Value, error)
+// The SystemRelationshipFeedbackSignalFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemRelationshipFeedbackSignalFunc func(context.Context, *ent.SystemRelationshipFeedbackSignalQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f SystemRelationshipFeedbackFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.SystemRelationshipFeedbackQuery); ok {
+func (f SystemRelationshipFeedbackSignalFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemRelationshipFeedbackSignalQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemRelationshipFeedbackQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemRelationshipFeedbackSignalQuery", q)
 }
 
-// The TraverseSystemRelationshipFeedback type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseSystemRelationshipFeedback func(context.Context, *ent.SystemRelationshipFeedbackQuery) error
+// The TraverseSystemRelationshipFeedbackSignal type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemRelationshipFeedbackSignal func(context.Context, *ent.SystemRelationshipFeedbackSignalQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseSystemRelationshipFeedback) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseSystemRelationshipFeedbackSignal) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseSystemRelationshipFeedback) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemRelationshipFeedbackQuery); ok {
+func (f TraverseSystemRelationshipFeedbackSignal) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemRelationshipFeedbackSignalQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.SystemRelationshipFeedbackQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemRelationshipFeedbackSignalQuery", q)
 }
 
 // The TaskFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1616,14 +1644,16 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SystemComponentConstraintQuery, predicate.SystemComponentConstraint, systemcomponentconstraint.OrderOption]{typ: ent.TypeSystemComponentConstraint, tq: q}, nil
 	case *ent.SystemComponentControlQuery:
 		return &query[*ent.SystemComponentControlQuery, predicate.SystemComponentControl, systemcomponentcontrol.OrderOption]{typ: ent.TypeSystemComponentControl, tq: q}, nil
+	case *ent.SystemComponentKindQuery:
+		return &query[*ent.SystemComponentKindQuery, predicate.SystemComponentKind, systemcomponentkind.OrderOption]{typ: ent.TypeSystemComponentKind, tq: q}, nil
 	case *ent.SystemComponentSignalQuery:
 		return &query[*ent.SystemComponentSignalQuery, predicate.SystemComponentSignal, systemcomponentsignal.OrderOption]{typ: ent.TypeSystemComponentSignal, tq: q}, nil
 	case *ent.SystemRelationshipQuery:
 		return &query[*ent.SystemRelationshipQuery, predicate.SystemRelationship, systemrelationship.OrderOption]{typ: ent.TypeSystemRelationship, tq: q}, nil
 	case *ent.SystemRelationshipControlActionQuery:
 		return &query[*ent.SystemRelationshipControlActionQuery, predicate.SystemRelationshipControlAction, systemrelationshipcontrolaction.OrderOption]{typ: ent.TypeSystemRelationshipControlAction, tq: q}, nil
-	case *ent.SystemRelationshipFeedbackQuery:
-		return &query[*ent.SystemRelationshipFeedbackQuery, predicate.SystemRelationshipFeedback, systemrelationshipfeedback.OrderOption]{typ: ent.TypeSystemRelationshipFeedback, tq: q}, nil
+	case *ent.SystemRelationshipFeedbackSignalQuery:
+		return &query[*ent.SystemRelationshipFeedbackSignalQuery, predicate.SystemRelationshipFeedbackSignal, systemrelationshipfeedbacksignal.OrderOption]{typ: ent.TypeSystemRelationshipFeedbackSignal, tq: q}, nil
 	case *ent.TaskQuery:
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	case *ent.TeamQuery:

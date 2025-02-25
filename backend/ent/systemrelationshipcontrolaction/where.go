@@ -56,14 +56,14 @@ func IDLTE(id uuid.UUID) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldLTE(FieldID, id))
 }
 
-// ControlID applies equality check predicate on the "control_id" field. It's identical to ControlIDEQ.
-func ControlID(v uuid.UUID) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldControlID, v))
-}
-
 // RelationshipID applies equality check predicate on the "relationship_id" field. It's identical to RelationshipIDEQ.
 func RelationshipID(v uuid.UUID) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldRelationshipID, v))
+}
+
+// ControlID applies equality check predicate on the "control_id" field. It's identical to ControlIDEQ.
+func ControlID(v uuid.UUID) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldControlID, v))
 }
 
 // Type applies equality check predicate on the "type" field. It's identical to TypeEQ.
@@ -79,26 +79,6 @@ func Description(v string) predicate.SystemRelationshipControlAction {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// ControlIDEQ applies the EQ predicate on the "control_id" field.
-func ControlIDEQ(v uuid.UUID) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldControlID, v))
-}
-
-// ControlIDNEQ applies the NEQ predicate on the "control_id" field.
-func ControlIDNEQ(v uuid.UUID) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldNEQ(FieldControlID, v))
-}
-
-// ControlIDIn applies the In predicate on the "control_id" field.
-func ControlIDIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldIn(FieldControlID, vs...))
-}
-
-// ControlIDNotIn applies the NotIn predicate on the "control_id" field.
-func ControlIDNotIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldControlID, vs...))
 }
 
 // RelationshipIDEQ applies the EQ predicate on the "relationship_id" field.
@@ -119,6 +99,26 @@ func RelationshipIDIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction
 // RelationshipIDNotIn applies the NotIn predicate on the "relationship_id" field.
 func RelationshipIDNotIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldRelationshipID, vs...))
+}
+
+// ControlIDEQ applies the EQ predicate on the "control_id" field.
+func ControlIDEQ(v uuid.UUID) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldEQ(FieldControlID, v))
+}
+
+// ControlIDNEQ applies the NEQ predicate on the "control_id" field.
+func ControlIDNEQ(v uuid.UUID) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldNEQ(FieldControlID, v))
+}
+
+// ControlIDIn applies the In predicate on the "control_id" field.
+func ControlIDIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldIn(FieldControlID, vs...))
+}
+
+// ControlIDNotIn applies the NotIn predicate on the "control_id" field.
+func ControlIDNotIn(vs ...uuid.UUID) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(sql.FieldNotIn(FieldControlID, vs...))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
@@ -301,29 +301,6 @@ func CreatedAtLTE(v time.Time) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(sql.FieldLTE(FieldCreatedAt, v))
 }
 
-// HasControl applies the HasEdge predicate on the "control" edge.
-func HasControl() predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ControlTable, ControlColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasControlWith applies the HasEdge predicate on the "control" edge with a given conditions (other predicates).
-func HasControlWith(preds ...predicate.SystemComponentControl) predicate.SystemRelationshipControlAction {
-	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
-		step := newControlStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRelationship applies the HasEdge predicate on the "relationship" edge.
 func HasRelationship() predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
@@ -339,6 +316,29 @@ func HasRelationship() predicate.SystemRelationshipControlAction {
 func HasRelationshipWith(preds ...predicate.SystemRelationship) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
 		step := newRelationshipStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasControl applies the HasEdge predicate on the "control" edge.
+func HasControl() predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ControlTable, ControlColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasControlWith applies the HasEdge predicate on the "control" edge with a given conditions (other predicates).
+func HasControlWith(preds ...predicate.SystemComponentControl) predicate.SystemRelationshipControlAction {
+	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
+		step := newControlStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

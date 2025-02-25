@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
 // SystemComponentSignalUpdate is the builder for updating SystemComponentSignal entities.
@@ -43,6 +43,20 @@ func (scsu *SystemComponentSignalUpdate) SetComponentID(u uuid.UUID) *SystemComp
 func (scsu *SystemComponentSignalUpdate) SetNillableComponentID(u *uuid.UUID) *SystemComponentSignalUpdate {
 	if u != nil {
 		scsu.SetComponentID(*u)
+	}
+	return scsu
+}
+
+// SetLabel sets the "label" field.
+func (scsu *SystemComponentSignalUpdate) SetLabel(s string) *SystemComponentSignalUpdate {
+	scsu.mutation.SetLabel(s)
+	return scsu
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (scsu *SystemComponentSignalUpdate) SetNillableLabel(s *string) *SystemComponentSignalUpdate {
+	if s != nil {
+		scsu.SetLabel(*s)
 	}
 	return scsu
 }
@@ -101,14 +115,14 @@ func (scsu *SystemComponentSignalUpdate) AddRelationships(s ...*SystemRelationsh
 	return scsu.AddRelationshipIDs(ids...)
 }
 
-// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedback entity by IDs.
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
 func (scsu *SystemComponentSignalUpdate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalUpdate {
 	scsu.mutation.AddFeedbackSignalIDs(ids...)
 	return scsu
 }
 
-// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedback entity.
-func (scsu *SystemComponentSignalUpdate) AddFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalUpdate {
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (scsu *SystemComponentSignalUpdate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -148,20 +162,20 @@ func (scsu *SystemComponentSignalUpdate) RemoveRelationships(s ...*SystemRelatio
 	return scsu.RemoveRelationshipIDs(ids...)
 }
 
-// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedback entity.
+// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
 func (scsu *SystemComponentSignalUpdate) ClearFeedbackSignals() *SystemComponentSignalUpdate {
 	scsu.mutation.ClearFeedbackSignals()
 	return scsu
 }
 
-// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedback entities by IDs.
+// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
 func (scsu *SystemComponentSignalUpdate) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalUpdate {
 	scsu.mutation.RemoveFeedbackSignalIDs(ids...)
 	return scsu
 }
 
-// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedback entities.
-func (scsu *SystemComponentSignalUpdate) RemoveFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalUpdate {
+// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
+func (scsu *SystemComponentSignalUpdate) RemoveFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -222,6 +236,9 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			}
 		}
 	}
+	if value, ok := scsu.mutation.Label(); ok {
+		_spec.SetField(systemcomponentsignal.FieldLabel, field.TypeString, value)
+	}
 	if value, ok := scsu.mutation.Description(); ok {
 		_spec.SetField(systemcomponentsignal.FieldDescription, field.TypeString, value)
 	}
@@ -271,7 +288,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackMutation(scsu.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -294,7 +311,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackMutation(scsu.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -317,7 +334,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackMutation(scsu.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -334,7 +351,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -347,7 +364,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -363,7 +380,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -403,6 +420,20 @@ func (scsuo *SystemComponentSignalUpdateOne) SetComponentID(u uuid.UUID) *System
 func (scsuo *SystemComponentSignalUpdateOne) SetNillableComponentID(u *uuid.UUID) *SystemComponentSignalUpdateOne {
 	if u != nil {
 		scsuo.SetComponentID(*u)
+	}
+	return scsuo
+}
+
+// SetLabel sets the "label" field.
+func (scsuo *SystemComponentSignalUpdateOne) SetLabel(s string) *SystemComponentSignalUpdateOne {
+	scsuo.mutation.SetLabel(s)
+	return scsuo
+}
+
+// SetNillableLabel sets the "label" field if the given value is not nil.
+func (scsuo *SystemComponentSignalUpdateOne) SetNillableLabel(s *string) *SystemComponentSignalUpdateOne {
+	if s != nil {
+		scsuo.SetLabel(*s)
 	}
 	return scsuo
 }
@@ -461,14 +492,14 @@ func (scsuo *SystemComponentSignalUpdateOne) AddRelationships(s ...*SystemRelati
 	return scsuo.AddRelationshipIDs(ids...)
 }
 
-// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedback entity by IDs.
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
 func (scsuo *SystemComponentSignalUpdateOne) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalUpdateOne {
 	scsuo.mutation.AddFeedbackSignalIDs(ids...)
 	return scsuo
 }
 
-// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedback entity.
-func (scsuo *SystemComponentSignalUpdateOne) AddFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalUpdateOne {
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (scsuo *SystemComponentSignalUpdateOne) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -508,20 +539,20 @@ func (scsuo *SystemComponentSignalUpdateOne) RemoveRelationships(s ...*SystemRel
 	return scsuo.RemoveRelationshipIDs(ids...)
 }
 
-// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedback entity.
+// ClearFeedbackSignals clears all "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
 func (scsuo *SystemComponentSignalUpdateOne) ClearFeedbackSignals() *SystemComponentSignalUpdateOne {
 	scsuo.mutation.ClearFeedbackSignals()
 	return scsuo
 }
 
-// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedback entities by IDs.
+// RemoveFeedbackSignalIDs removes the "feedback_signals" edge to SystemRelationshipFeedbackSignal entities by IDs.
 func (scsuo *SystemComponentSignalUpdateOne) RemoveFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalUpdateOne {
 	scsuo.mutation.RemoveFeedbackSignalIDs(ids...)
 	return scsuo
 }
 
-// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedback entities.
-func (scsuo *SystemComponentSignalUpdateOne) RemoveFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalUpdateOne {
+// RemoveFeedbackSignals removes "feedback_signals" edges to SystemRelationshipFeedbackSignal entities.
+func (scsuo *SystemComponentSignalUpdateOne) RemoveFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -612,6 +643,9 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			}
 		}
 	}
+	if value, ok := scsuo.mutation.Label(); ok {
+		_spec.SetField(systemcomponentsignal.FieldLabel, field.TypeString, value)
+	}
 	if value, ok := scsuo.mutation.Description(); ok {
 		_spec.SetField(systemcomponentsignal.FieldDescription, field.TypeString, value)
 	}
@@ -661,7 +695,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackMutation(scsuo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -684,7 +718,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackMutation(scsuo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -707,7 +741,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackMutation(scsuo.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -724,7 +758,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -737,7 +771,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -753,7 +787,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

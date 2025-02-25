@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
 // SystemRelationshipCreate is the builder for creating a SystemRelationship entity.
@@ -138,19 +138,19 @@ func (src *SystemRelationshipCreate) AddControlActions(s ...*SystemRelationshipC
 	return src.AddControlActionIDs(ids...)
 }
 
-// AddFeedbackIDs adds the "feedback" edge to the SystemRelationshipFeedback entity by IDs.
-func (src *SystemRelationshipCreate) AddFeedbackIDs(ids ...uuid.UUID) *SystemRelationshipCreate {
-	src.mutation.AddFeedbackIDs(ids...)
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
+func (src *SystemRelationshipCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemRelationshipCreate {
+	src.mutation.AddFeedbackSignalIDs(ids...)
 	return src
 }
 
-// AddFeedback adds the "feedback" edges to the SystemRelationshipFeedback entity.
-func (src *SystemRelationshipCreate) AddFeedback(s ...*SystemRelationshipFeedback) *SystemRelationshipCreate {
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (src *SystemRelationshipCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemRelationshipCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return src.AddFeedbackIDs(ids...)
+	return src.AddFeedbackSignalIDs(ids...)
 }
 
 // Mutation returns the SystemRelationshipMutation object of the builder.
@@ -330,7 +330,7 @@ func (src *SystemRelationshipCreate) createSpec() (*SystemRelationship, *sqlgrap
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: src.config, mutation: newSystemRelationshipFeedbackMutation(src.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: src.config, mutation: newSystemRelationshipFeedbackSignalMutation(src.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -355,15 +355,15 @@ func (src *SystemRelationshipCreate) createSpec() (*SystemRelationship, *sqlgrap
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := src.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := src.mutation.FeedbackSignalsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemrelationship.FeedbackTable,
-			Columns: []string{systemrelationship.FeedbackColumn},
+			Table:   systemrelationship.FeedbackSignalsTable,
+			Columns: []string{systemrelationship.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

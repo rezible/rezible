@@ -15,29 +15,22 @@ const (
 	Label = "system_relationship_control_action"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldControlID holds the string denoting the control_id field in the database.
-	FieldControlID = "control_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
 	FieldRelationshipID = "relationship_id"
+	// FieldControlID holds the string denoting the control_id field in the database.
+	FieldControlID = "control_id"
 	// FieldType holds the string denoting the type field in the database.
 	FieldType = "type"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
-	// EdgeControl holds the string denoting the control edge name in mutations.
-	EdgeControl = "control"
 	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
 	EdgeRelationship = "relationship"
+	// EdgeControl holds the string denoting the control edge name in mutations.
+	EdgeControl = "control"
 	// Table holds the table name of the systemrelationshipcontrolaction in the database.
 	Table = "system_relationship_control_actions"
-	// ControlTable is the table that holds the control relation/edge.
-	ControlTable = "system_relationship_control_actions"
-	// ControlInverseTable is the table name for the SystemComponentControl entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponentcontrol" package.
-	ControlInverseTable = "system_component_controls"
-	// ControlColumn is the table column denoting the control relation/edge.
-	ControlColumn = "control_id"
 	// RelationshipTable is the table that holds the relationship relation/edge.
 	RelationshipTable = "system_relationship_control_actions"
 	// RelationshipInverseTable is the table name for the SystemRelationship entity.
@@ -45,13 +38,20 @@ const (
 	RelationshipInverseTable = "system_relationships"
 	// RelationshipColumn is the table column denoting the relationship relation/edge.
 	RelationshipColumn = "relationship_id"
+	// ControlTable is the table that holds the control relation/edge.
+	ControlTable = "system_relationship_control_actions"
+	// ControlInverseTable is the table name for the SystemComponentControl entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentcontrol" package.
+	ControlInverseTable = "system_component_controls"
+	// ControlColumn is the table column denoting the control relation/edge.
+	ControlColumn = "control_id"
 )
 
 // Columns holds all SQL columns for systemrelationshipcontrolaction fields.
 var Columns = []string{
 	FieldID,
-	FieldControlID,
 	FieldRelationshipID,
+	FieldControlID,
 	FieldType,
 	FieldDescription,
 	FieldCreatedAt,
@@ -84,14 +84,14 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByControlID orders the results by the control_id field.
-func ByControlID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldControlID, opts...).ToFunc()
-}
-
 // ByRelationshipID orders the results by the relationship_id field.
 func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
+}
+
+// ByControlID orders the results by the control_id field.
+func ByControlID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldControlID, opts...).ToFunc()
 }
 
 // ByType orders the results by the type field.
@@ -109,30 +109,30 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
-// ByControlField orders the results by control field.
-func ByControlField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newControlStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByRelationshipField orders the results by relationship field.
 func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRelationshipStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newControlStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ControlInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ControlTable, ControlColumn),
-	)
+
+// ByControlField orders the results by control field.
+func ByControlField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newControlStep(), sql.OrderByField(field, opts...))
+	}
 }
 func newRelationshipStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RelationshipInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
+	)
+}
+func newControlStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ControlInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ControlTable, ControlColumn),
 	)
 }

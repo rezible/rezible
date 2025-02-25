@@ -102,14 +102,16 @@ type Tx struct {
 	SystemComponentConstraint *SystemComponentConstraintClient
 	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
 	SystemComponentControl *SystemComponentControlClient
+	// SystemComponentKind is the client for interacting with the SystemComponentKind builders.
+	SystemComponentKind *SystemComponentKindClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
 	// SystemRelationship is the client for interacting with the SystemRelationship builders.
 	SystemRelationship *SystemRelationshipClient
 	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
 	SystemRelationshipControlAction *SystemRelationshipControlActionClient
-	// SystemRelationshipFeedback is the client for interacting with the SystemRelationshipFeedback builders.
-	SystemRelationshipFeedback *SystemRelationshipFeedbackClient
+	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
+	SystemRelationshipFeedbackSignal *SystemRelationshipFeedbackSignalClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -292,10 +294,11 @@ func (tx *Tx) init() {
 	tx.SystemComponent = NewSystemComponentClient(tx.config)
 	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
 	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
+	tx.SystemComponentKind = NewSystemComponentKindClient(tx.config)
 	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
 	tx.SystemRelationship = NewSystemRelationshipClient(tx.config)
 	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
-	tx.SystemRelationshipFeedback = NewSystemRelationshipFeedbackClient(tx.config)
+	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.User = NewUserClient(tx.config)

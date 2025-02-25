@@ -61,6 +61,11 @@ func Name(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldName, v))
 }
 
+// KindID applies equality check predicate on the "kind_id" field. It's identical to KindIDEQ.
+func KindID(v uuid.UUID) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldEQ(FieldKindID, v))
+}
+
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldDescription, v))
@@ -141,24 +146,24 @@ func NameContainsFold(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldContainsFold(FieldName, v))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldEQ(FieldType, v))
+// KindIDEQ applies the EQ predicate on the "kind_id" field.
+func KindIDEQ(v uuid.UUID) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldEQ(FieldKindID, v))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldNEQ(FieldType, v))
+// KindIDNEQ applies the NEQ predicate on the "kind_id" field.
+func KindIDNEQ(v uuid.UUID) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNEQ(FieldKindID, v))
 }
 
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldIn(FieldType, vs...))
+// KindIDIn applies the In predicate on the "kind_id" field.
+func KindIDIn(vs ...uuid.UUID) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldIn(FieldKindID, vs...))
 }
 
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.SystemComponent {
-	return predicate.SystemComponent(sql.FieldNotIn(FieldType, vs...))
+// KindIDNotIn applies the NotIn predicate on the "kind_id" field.
+func KindIDNotIn(vs ...uuid.UUID) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNotIn(FieldKindID, vs...))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -314,6 +319,29 @@ func UpdatedAtLT(v time.Time) predicate.SystemComponent {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasKind applies the HasEdge predicate on the "kind" edge.
+func HasKind() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, KindTable, KindColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKindWith applies the HasEdge predicate on the "kind" edge with a given conditions (other predicates).
+func HasKindWith(preds ...predicate.SystemComponentKind) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newKindStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAnalyses applies the HasEdge predicate on the "analyses" edge.

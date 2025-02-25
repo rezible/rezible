@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationship"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedback"
+	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 )
 
 // SystemComponentSignalCreate is the builder for creating a SystemComponentSignal entity.
@@ -30,6 +30,12 @@ type SystemComponentSignalCreate struct {
 // SetComponentID sets the "component_id" field.
 func (scsc *SystemComponentSignalCreate) SetComponentID(u uuid.UUID) *SystemComponentSignalCreate {
 	scsc.mutation.SetComponentID(u)
+	return scsc
+}
+
+// SetLabel sets the "label" field.
+func (scsc *SystemComponentSignalCreate) SetLabel(s string) *SystemComponentSignalCreate {
+	scsc.mutation.SetLabel(s)
 	return scsc
 }
 
@@ -95,14 +101,14 @@ func (scsc *SystemComponentSignalCreate) AddRelationships(s ...*SystemRelationsh
 	return scsc.AddRelationshipIDs(ids...)
 }
 
-// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedback entity by IDs.
+// AddFeedbackSignalIDs adds the "feedback_signals" edge to the SystemRelationshipFeedbackSignal entity by IDs.
 func (scsc *SystemComponentSignalCreate) AddFeedbackSignalIDs(ids ...uuid.UUID) *SystemComponentSignalCreate {
 	scsc.mutation.AddFeedbackSignalIDs(ids...)
 	return scsc
 }
 
-// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedback entity.
-func (scsc *SystemComponentSignalCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedback) *SystemComponentSignalCreate {
+// AddFeedbackSignals adds the "feedback_signals" edges to the SystemRelationshipFeedbackSignal entity.
+func (scsc *SystemComponentSignalCreate) AddFeedbackSignals(s ...*SystemRelationshipFeedbackSignal) *SystemComponentSignalCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -160,6 +166,9 @@ func (scsc *SystemComponentSignalCreate) check() error {
 	if _, ok := scsc.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentSignal.component_id"`)}
 	}
+	if _, ok := scsc.mutation.Label(); !ok {
+		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentSignal.label"`)}
+	}
 	if _, ok := scsc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentSignal.created_at"`)}
 	}
@@ -202,6 +211,10 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := scsc.mutation.Label(); ok {
+		_spec.SetField(systemcomponentsignal.FieldLabel, field.TypeString, value)
+		_node.Label = value
+	}
 	if value, ok := scsc.mutation.Description(); ok {
 		_spec.SetField(systemcomponentsignal.FieldDescription, field.TypeString, value)
 		_node.Description = value
@@ -241,7 +254,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemRelationshipFeedbackCreate{config: scsc.config, mutation: newSystemRelationshipFeedbackMutation(scsc.config, OpCreate)}
+		createE := &SystemRelationshipFeedbackSignalCreate{config: scsc.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsc.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -258,7 +271,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 			Columns: []string{systemcomponentsignal.FeedbackSignalsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -327,6 +340,18 @@ func (u *SystemComponentSignalUpsert) SetComponentID(v uuid.UUID) *SystemCompone
 // UpdateComponentID sets the "component_id" field to the value that was provided on create.
 func (u *SystemComponentSignalUpsert) UpdateComponentID() *SystemComponentSignalUpsert {
 	u.SetExcluded(systemcomponentsignal.FieldComponentID)
+	return u
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentSignalUpsert) SetLabel(v string) *SystemComponentSignalUpsert {
+	u.Set(systemcomponentsignal.FieldLabel, v)
+	return u
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentSignalUpsert) UpdateLabel() *SystemComponentSignalUpsert {
+	u.SetExcluded(systemcomponentsignal.FieldLabel)
 	return u
 }
 
@@ -419,6 +444,20 @@ func (u *SystemComponentSignalUpsertOne) SetComponentID(v uuid.UUID) *SystemComp
 func (u *SystemComponentSignalUpsertOne) UpdateComponentID() *SystemComponentSignalUpsertOne {
 	return u.Update(func(s *SystemComponentSignalUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentSignalUpsertOne) SetLabel(v string) *SystemComponentSignalUpsertOne {
+	return u.Update(func(s *SystemComponentSignalUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentSignalUpsertOne) UpdateLabel() *SystemComponentSignalUpsertOne {
+	return u.Update(func(s *SystemComponentSignalUpsert) {
+		s.UpdateLabel()
 	})
 }
 
@@ -683,6 +722,20 @@ func (u *SystemComponentSignalUpsertBulk) SetComponentID(v uuid.UUID) *SystemCom
 func (u *SystemComponentSignalUpsertBulk) UpdateComponentID() *SystemComponentSignalUpsertBulk {
 	return u.Update(func(s *SystemComponentSignalUpsert) {
 		s.UpdateComponentID()
+	})
+}
+
+// SetLabel sets the "label" field.
+func (u *SystemComponentSignalUpsertBulk) SetLabel(v string) *SystemComponentSignalUpsertBulk {
+	return u.Update(func(s *SystemComponentSignalUpsert) {
+		s.SetLabel(v)
+	})
+}
+
+// UpdateLabel sets the "label" field to the value that was provided on create.
+func (u *SystemComponentSignalUpsertBulk) UpdateLabel() *SystemComponentSignalUpsertBulk {
+	return u.Update(func(s *SystemComponentSignalUpsert) {
+		s.UpdateLabel()
 	})
 }
 

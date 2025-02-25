@@ -3,7 +3,6 @@
 package systemcomponent
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -18,8 +17,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldKindID holds the string denoting the kind_id field in the database.
+	FieldKindID = "kind_id"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldProperties holds the string denoting the properties field in the database.
@@ -28,6 +27,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeKind holds the string denoting the kind edge name in mutations.
+	EdgeKind = "kind"
 	// EdgeAnalyses holds the string denoting the analyses edge name in mutations.
 	EdgeAnalyses = "analyses"
 	// EdgeRelated holds the string denoting the related edge name in mutations.
@@ -48,6 +49,13 @@ const (
 	EdgeEventComponents = "event_components"
 	// Table holds the table name of the systemcomponent in the database.
 	Table = "system_components"
+	// KindTable is the table that holds the kind relation/edge.
+	KindTable = "system_components"
+	// KindInverseTable is the table name for the SystemComponentKind entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentkind" package.
+	KindInverseTable = "system_component_kinds"
+	// KindColumn is the table column denoting the kind relation/edge.
+	KindColumn = "kind_id"
 	// AnalysesTable is the table that holds the analyses relation/edge. The primary key declared below.
 	AnalysesTable = "system_analysis_components"
 	// AnalysesInverseTable is the table name for the SystemAnalysis entity.
@@ -108,7 +116,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
-	FieldType,
+	FieldKindID,
 	FieldDescription,
 	FieldProperties,
 	FieldCreatedAt,
@@ -150,32 +158,6 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
-
-// Type values.
-const (
-	TypeService         Type = "service"
-	TypeControl         Type = "control"
-	TypeFeedback        Type = "feedback"
-	TypeInterface       Type = "interface"
-	TypeHumanController Type = "human_controller"
-)
-
-func (_type Type) String() string {
-	return string(_type)
-}
-
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeService, TypeControl, TypeFeedback, TypeInterface, TypeHumanController:
-		return nil
-	default:
-		return fmt.Errorf("systemcomponent: invalid enum value for type field: %q", _type)
-	}
-}
-
 // OrderOption defines the ordering options for the SystemComponent queries.
 type OrderOption func(*sql.Selector)
 
@@ -189,9 +171,9 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByKindID orders the results by the kind_id field.
+func ByKindID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKindID, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
@@ -207,6 +189,13 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByKindField orders the results by kind field.
+func ByKindField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newKindStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByAnalysesCount orders the results by analyses count.
@@ -333,6 +322,13 @@ func ByEventComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEventComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newKindStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(KindInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KindTable, KindColumn),
+	)
 }
 func newAnalysesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

@@ -346,21 +346,21 @@ func HasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) p
 	})
 }
 
-// HasFeedback applies the HasEdge predicate on the "feedback" edge.
-func HasFeedback() predicate.SystemRelationship {
+// HasFeedbackSignals applies the HasEdge predicate on the "feedback_signals" edge.
+func HasFeedbackSignals() predicate.SystemRelationship {
 	return predicate.SystemRelationship(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackSignalsTable, FeedbackSignalsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasFeedbackWith applies the HasEdge predicate on the "feedback" edge with a given conditions (other predicates).
-func HasFeedbackWith(preds ...predicate.SystemRelationshipFeedback) predicate.SystemRelationship {
+// HasFeedbackSignalsWith applies the HasEdge predicate on the "feedback_signals" edge with a given conditions (other predicates).
+func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) predicate.SystemRelationship {
 	return predicate.SystemRelationship(func(s *sql.Selector) {
-		step := newFeedbackStep()
+		step := newFeedbackSignalsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
