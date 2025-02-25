@@ -751,29 +751,6 @@ func HasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate
 	})
 }
 
-// HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
-func HasRetrospective() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, RetrospectiveTable, RetrospectiveColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasRetrospectiveWith applies the HasEdge predicate on the "retrospective" edge with a given conditions (other predicates).
-func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newRetrospectiveStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasMilestones applies the HasEdge predicate on the "milestones" edge.
 func HasMilestones() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -812,6 +789,29 @@ func HasEvents() predicate.Incident {
 func HasEventsWith(preds ...predicate.IncidentEvent) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := newEventsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
+func HasRetrospective() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveTable, RetrospectiveColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRetrospectiveWith applies the HasEdge predicate on the "retrospective" edge with a given conditions (other predicates).
+func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newRetrospectiveStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -206,21 +206,6 @@ func (ic *IncidentCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *Inci
 	return ic.AddRoleAssignmentIDs(ids...)
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
-func (ic *IncidentCreate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddRetrospectiveIDs(ids...)
-	return ic
-}
-
-// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
-func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate {
-	ids := make([]uuid.UUID, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return ic.AddRetrospectiveIDs(ids...)
-}
-
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
 func (ic *IncidentCreate) AddMilestoneIDs(ids ...uuid.UUID) *IncidentCreate {
 	ic.mutation.AddMilestoneIDs(ids...)
@@ -249,6 +234,21 @@ func (ic *IncidentCreate) AddEvents(i ...*IncidentEvent) *IncidentCreate {
 		ids[j] = i[j].ID
 	}
 	return ic.AddEventIDs(ids...)
+}
+
+// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by IDs.
+func (ic *IncidentCreate) AddRetrospectiveIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddRetrospectiveIDs(ids...)
+	return ic
+}
+
+// AddRetrospective adds the "retrospective" edges to the Retrospective entity.
+func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ic.AddRetrospectiveIDs(ids...)
 }
 
 // AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
@@ -596,22 +596,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ic.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   incident.RetrospectiveTable,
-			Columns: []string{incident.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := ic.mutation.MilestonesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -637,6 +621,22 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.RetrospectiveTable,
+			Columns: []string{incident.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -31,6 +31,20 @@ func (ru *RetrospectiveUpdate) Where(ps ...predicate.Retrospective) *Retrospecti
 	return ru
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (ru *RetrospectiveUpdate) SetIncidentID(u uuid.UUID) *RetrospectiveUpdate {
+	ru.mutation.SetIncidentID(u)
+	return ru
+}
+
+// SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
+func (ru *RetrospectiveUpdate) SetNillableIncidentID(u *uuid.UUID) *RetrospectiveUpdate {
+	if u != nil {
+		ru.SetIncidentID(*u)
+	}
+	return ru
+}
+
 // SetDocumentName sets the "document_name" field.
 func (ru *RetrospectiveUpdate) SetDocumentName(s string) *RetrospectiveUpdate {
 	ru.mutation.SetDocumentName(s)
@@ -69,20 +83,6 @@ func (ru *RetrospectiveUpdate) SetState(r retrospective.State) *RetrospectiveUpd
 func (ru *RetrospectiveUpdate) SetNillableState(r *retrospective.State) *RetrospectiveUpdate {
 	if r != nil {
 		ru.SetState(*r)
-	}
-	return ru
-}
-
-// SetIncidentID sets the "incident" edge to the Incident entity by ID.
-func (ru *RetrospectiveUpdate) SetIncidentID(id uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.SetIncidentID(id)
-	return ru
-}
-
-// SetNillableIncidentID sets the "incident" edge to the Incident entity by ID if the given value is not nil.
-func (ru *RetrospectiveUpdate) SetNillableIncidentID(id *uuid.UUID) *RetrospectiveUpdate {
-	if id != nil {
-		ru = ru.SetIncidentID(*id)
 	}
 	return ru
 }
@@ -178,6 +178,9 @@ func (ru *RetrospectiveUpdate) check() error {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
+	if ru.mutation.IncidentCleared() && len(ru.mutation.IncidentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
+	}
 	return nil
 }
 
@@ -211,7 +214,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if ru.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -224,7 +227,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := ru.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -304,6 +307,20 @@ type RetrospectiveUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (ruo *RetrospectiveUpdateOne) SetIncidentID(u uuid.UUID) *RetrospectiveUpdateOne {
+	ruo.mutation.SetIncidentID(u)
+	return ruo
+}
+
+// SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
+func (ruo *RetrospectiveUpdateOne) SetNillableIncidentID(u *uuid.UUID) *RetrospectiveUpdateOne {
+	if u != nil {
+		ruo.SetIncidentID(*u)
+	}
+	return ruo
+}
+
 // SetDocumentName sets the "document_name" field.
 func (ruo *RetrospectiveUpdateOne) SetDocumentName(s string) *RetrospectiveUpdateOne {
 	ruo.mutation.SetDocumentName(s)
@@ -342,20 +359,6 @@ func (ruo *RetrospectiveUpdateOne) SetState(r retrospective.State) *Retrospectiv
 func (ruo *RetrospectiveUpdateOne) SetNillableState(r *retrospective.State) *RetrospectiveUpdateOne {
 	if r != nil {
 		ruo.SetState(*r)
-	}
-	return ruo
-}
-
-// SetIncidentID sets the "incident" edge to the Incident entity by ID.
-func (ruo *RetrospectiveUpdateOne) SetIncidentID(id uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.SetIncidentID(id)
-	return ruo
-}
-
-// SetNillableIncidentID sets the "incident" edge to the Incident entity by ID if the given value is not nil.
-func (ruo *RetrospectiveUpdateOne) SetNillableIncidentID(id *uuid.UUID) *RetrospectiveUpdateOne {
-	if id != nil {
-		ruo = ruo.SetIncidentID(*id)
 	}
 	return ruo
 }
@@ -464,6 +467,9 @@ func (ruo *RetrospectiveUpdateOne) check() error {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
+	if ruo.mutation.IncidentCleared() && len(ruo.mutation.IncidentIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
+	}
 	return nil
 }
 
@@ -514,7 +520,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	if ruo.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -527,7 +533,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	if nodes := ruo.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,

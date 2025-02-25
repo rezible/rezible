@@ -15,6 +15,8 @@ const (
 	Label = "retrospective"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldIncidentID holds the string denoting the incident_id field in the database.
+	FieldIncidentID = "incident_id"
 	// FieldDocumentName holds the string denoting the document_name field in the database.
 	FieldDocumentName = "document_name"
 	// FieldType holds the string denoting the type field in the database.
@@ -33,7 +35,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentInverseTable = "incidents"
 	// IncidentColumn is the table column denoting the incident relation/edge.
-	IncidentColumn = "incident_retrospective"
+	IncidentColumn = "incident_id"
 	// DiscussionsTable is the table that holds the discussions relation/edge.
 	DiscussionsTable = "retrospective_discussions"
 	// DiscussionsInverseTable is the table name for the RetrospectiveDiscussion entity.
@@ -46,26 +48,16 @@ const (
 // Columns holds all SQL columns for retrospective fields.
 var Columns = []string{
 	FieldID,
+	FieldIncidentID,
 	FieldDocumentName,
 	FieldType,
 	FieldState,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "retrospectives"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"incident_retrospective",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -133,6 +125,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByIncidentID orders the results by the incident_id field.
+func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
+}
+
 // ByDocumentName orders the results by the document_name field.
 func ByDocumentName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentName, opts...).ToFunc()
@@ -172,7 +169,7 @@ func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
+		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 	)
 }
 func newDiscussionsStep() *sqlgraph.Step {

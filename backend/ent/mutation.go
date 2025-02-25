@@ -994,15 +994,15 @@ type IncidentMutation struct {
 	role_assignments        map[uuid.UUID]struct{}
 	removedrole_assignments map[uuid.UUID]struct{}
 	clearedrole_assignments bool
-	retrospective           map[uuid.UUID]struct{}
-	removedretrospective    map[uuid.UUID]struct{}
-	clearedretrospective    bool
 	milestones              map[uuid.UUID]struct{}
 	removedmilestones       map[uuid.UUID]struct{}
 	clearedmilestones       bool
 	events                  map[uuid.UUID]struct{}
 	removedevents           map[uuid.UUID]struct{}
 	clearedevents           bool
+	retrospective           map[uuid.UUID]struct{}
+	removedretrospective    map[uuid.UUID]struct{}
+	clearedretrospective    bool
 	system_analysis         map[uuid.UUID]struct{}
 	removedsystem_analysis  map[uuid.UUID]struct{}
 	clearedsystem_analysis  bool
@@ -1787,60 +1787,6 @@ func (m *IncidentMutation) ResetRoleAssignments() {
 	m.removedrole_assignments = nil
 }
 
-// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by ids.
-func (m *IncidentMutation) AddRetrospectiveIDs(ids ...uuid.UUID) {
-	if m.retrospective == nil {
-		m.retrospective = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.retrospective[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (m *IncidentMutation) ClearRetrospective() {
-	m.clearedretrospective = true
-}
-
-// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
-func (m *IncidentMutation) RetrospectiveCleared() bool {
-	return m.clearedretrospective
-}
-
-// RemoveRetrospectiveIDs removes the "retrospective" edge to the Retrospective entity by IDs.
-func (m *IncidentMutation) RemoveRetrospectiveIDs(ids ...uuid.UUID) {
-	if m.removedretrospective == nil {
-		m.removedretrospective = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.retrospective, ids[i])
-		m.removedretrospective[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRetrospective returns the removed IDs of the "retrospective" edge to the Retrospective entity.
-func (m *IncidentMutation) RemovedRetrospectiveIDs() (ids []uuid.UUID) {
-	for id := range m.removedretrospective {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
-func (m *IncidentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
-	for id := range m.retrospective {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRetrospective resets all changes to the "retrospective" edge.
-func (m *IncidentMutation) ResetRetrospective() {
-	m.retrospective = nil
-	m.clearedretrospective = false
-	m.removedretrospective = nil
-}
-
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by ids.
 func (m *IncidentMutation) AddMilestoneIDs(ids ...uuid.UUID) {
 	if m.milestones == nil {
@@ -1947,6 +1893,60 @@ func (m *IncidentMutation) ResetEvents() {
 	m.events = nil
 	m.clearedevents = false
 	m.removedevents = nil
+}
+
+// AddRetrospectiveIDs adds the "retrospective" edge to the Retrospective entity by ids.
+func (m *IncidentMutation) AddRetrospectiveIDs(ids ...uuid.UUID) {
+	if m.retrospective == nil {
+		m.retrospective = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.retrospective[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (m *IncidentMutation) ClearRetrospective() {
+	m.clearedretrospective = true
+}
+
+// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
+func (m *IncidentMutation) RetrospectiveCleared() bool {
+	return m.clearedretrospective
+}
+
+// RemoveRetrospectiveIDs removes the "retrospective" edge to the Retrospective entity by IDs.
+func (m *IncidentMutation) RemoveRetrospectiveIDs(ids ...uuid.UUID) {
+	if m.removedretrospective == nil {
+		m.removedretrospective = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.retrospective, ids[i])
+		m.removedretrospective[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRetrospective returns the removed IDs of the "retrospective" edge to the Retrospective entity.
+func (m *IncidentMutation) RemovedRetrospectiveIDs() (ids []uuid.UUID) {
+	for id := range m.removedretrospective {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
+func (m *IncidentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
+	for id := range m.retrospective {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRetrospective resets all changes to the "retrospective" edge.
+func (m *IncidentMutation) ResetRetrospective() {
+	m.retrospective = nil
+	m.clearedretrospective = false
+	m.removedretrospective = nil
 }
 
 // AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by ids.
@@ -2721,14 +2721,14 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.role_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
 	}
-	if m.retrospective != nil {
-		edges = append(edges, incident.EdgeRetrospective)
-	}
 	if m.milestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
 	if m.events != nil {
 		edges = append(edges, incident.EdgeEvents)
+	}
+	if m.retrospective != nil {
+		edges = append(edges, incident.EdgeRetrospective)
 	}
 	if m.system_analysis != nil {
 		edges = append(edges, incident.EdgeSystemAnalysis)
@@ -2787,12 +2787,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeRetrospective:
-		ids := make([]ent.Value, 0, len(m.retrospective))
-		for id := range m.retrospective {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeMilestones:
 		ids := make([]ent.Value, 0, len(m.milestones))
 		for id := range m.milestones {
@@ -2802,6 +2796,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 	case incident.EdgeEvents:
 		ids := make([]ent.Value, 0, len(m.events))
 		for id := range m.events {
+			ids = append(ids, id)
+		}
+		return ids
+	case incident.EdgeRetrospective:
+		ids := make([]ent.Value, 0, len(m.retrospective))
+		for id := range m.retrospective {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2869,14 +2869,14 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	if m.removedrole_assignments != nil {
 		edges = append(edges, incident.EdgeRoleAssignments)
 	}
-	if m.removedretrospective != nil {
-		edges = append(edges, incident.EdgeRetrospective)
-	}
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
 	if m.removedevents != nil {
 		edges = append(edges, incident.EdgeEvents)
+	}
+	if m.removedretrospective != nil {
+		edges = append(edges, incident.EdgeRetrospective)
 	}
 	if m.removedsystem_analysis != nil {
 		edges = append(edges, incident.EdgeSystemAnalysis)
@@ -2927,12 +2927,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeRetrospective:
-		ids := make([]ent.Value, 0, len(m.removedretrospective))
-		for id := range m.removedretrospective {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeMilestones:
 		ids := make([]ent.Value, 0, len(m.removedmilestones))
 		for id := range m.removedmilestones {
@@ -2942,6 +2936,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 	case incident.EdgeEvents:
 		ids := make([]ent.Value, 0, len(m.removedevents))
 		for id := range m.removedevents {
+			ids = append(ids, id)
+		}
+		return ids
+	case incident.EdgeRetrospective:
+		ids := make([]ent.Value, 0, len(m.removedretrospective))
+		for id := range m.removedretrospective {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3015,14 +3015,14 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedrole_assignments {
 		edges = append(edges, incident.EdgeRoleAssignments)
 	}
-	if m.clearedretrospective {
-		edges = append(edges, incident.EdgeRetrospective)
-	}
 	if m.clearedmilestones {
 		edges = append(edges, incident.EdgeMilestones)
 	}
 	if m.clearedevents {
 		edges = append(edges, incident.EdgeEvents)
+	}
+	if m.clearedretrospective {
+		edges = append(edges, incident.EdgeRetrospective)
 	}
 	if m.clearedsystem_analysis {
 		edges = append(edges, incident.EdgeSystemAnalysis)
@@ -3065,12 +3065,12 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedteam_assignments
 	case incident.EdgeRoleAssignments:
 		return m.clearedrole_assignments
-	case incident.EdgeRetrospective:
-		return m.clearedretrospective
 	case incident.EdgeMilestones:
 		return m.clearedmilestones
 	case incident.EdgeEvents:
 		return m.clearedevents
+	case incident.EdgeRetrospective:
+		return m.clearedretrospective
 	case incident.EdgeSystemAnalysis:
 		return m.clearedsystem_analysis
 	case incident.EdgeLinkedIncidents:
@@ -3124,14 +3124,14 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeRoleAssignments:
 		m.ResetRoleAssignments()
 		return nil
-	case incident.EdgeRetrospective:
-		m.ResetRetrospective()
-		return nil
 	case incident.EdgeMilestones:
 		m.ResetMilestones()
 		return nil
 	case incident.EdgeEvents:
 		m.ResetEvents()
+		return nil
+	case incident.EdgeRetrospective:
+		m.ResetRetrospective()
 		return nil
 	case incident.EdgeSystemAnalysis:
 		m.ResetSystemAnalysis()
@@ -26242,6 +26242,42 @@ func (m *RetrospectiveMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (m *RetrospectiveMutation) SetIncidentID(u uuid.UUID) {
+	m.incident = &u
+}
+
+// IncidentID returns the value of the "incident_id" field in the mutation.
+func (m *RetrospectiveMutation) IncidentID() (r uuid.UUID, exists bool) {
+	v := m.incident
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentID returns the old "incident_id" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldIncidentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentID: %w", err)
+	}
+	return oldValue.IncidentID, nil
+}
+
+// ResetIncidentID resets all changes to the "incident_id" field.
+func (m *RetrospectiveMutation) ResetIncidentID() {
+	m.incident = nil
+}
+
 // SetDocumentName sets the "document_name" field.
 func (m *RetrospectiveMutation) SetDocumentName(s string) {
 	m.document_name = &s
@@ -26350,27 +26386,15 @@ func (m *RetrospectiveMutation) ResetState() {
 	m.state = nil
 }
 
-// SetIncidentID sets the "incident" edge to the Incident entity by id.
-func (m *RetrospectiveMutation) SetIncidentID(id uuid.UUID) {
-	m.incident = &id
-}
-
 // ClearIncident clears the "incident" edge to the Incident entity.
 func (m *RetrospectiveMutation) ClearIncident() {
 	m.clearedincident = true
+	m.clearedFields[retrospective.FieldIncidentID] = struct{}{}
 }
 
 // IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
 func (m *RetrospectiveMutation) IncidentCleared() bool {
 	return m.clearedincident
-}
-
-// IncidentID returns the "incident" edge ID in the mutation.
-func (m *RetrospectiveMutation) IncidentID() (id uuid.UUID, exists bool) {
-	if m.incident != nil {
-		return *m.incident, true
-	}
-	return
 }
 
 // IncidentIDs returns the "incident" edge IDs in the mutation.
@@ -26477,7 +26501,10 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.incident != nil {
+		fields = append(fields, retrospective.FieldIncidentID)
+	}
 	if m.document_name != nil {
 		fields = append(fields, retrospective.FieldDocumentName)
 	}
@@ -26495,6 +26522,8 @@ func (m *RetrospectiveMutation) Fields() []string {
 // schema.
 func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case retrospective.FieldIncidentID:
+		return m.IncidentID()
 	case retrospective.FieldDocumentName:
 		return m.DocumentName()
 	case retrospective.FieldType:
@@ -26510,6 +26539,8 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case retrospective.FieldIncidentID:
+		return m.OldIncidentID(ctx)
 	case retrospective.FieldDocumentName:
 		return m.OldDocumentName(ctx)
 	case retrospective.FieldType:
@@ -26525,6 +26556,13 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 // type.
 func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case retrospective.FieldIncidentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentID(v)
+		return nil
 	case retrospective.FieldDocumentName:
 		v, ok := value.(string)
 		if !ok {
@@ -26595,6 +26633,9 @@ func (m *RetrospectiveMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *RetrospectiveMutation) ResetField(name string) error {
 	switch name {
+	case retrospective.FieldIncidentID:
+		m.ResetIncidentID()
+		return nil
 	case retrospective.FieldDocumentName:
 		m.ResetDocumentName()
 		return nil

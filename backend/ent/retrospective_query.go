@@ -28,7 +28,6 @@ type RetrospectiveQuery struct {
 	predicates      []predicate.Retrospective
 	withIncident    *IncidentQuery
 	withDiscussions *RetrospectiveDiscussionQuery
-	withFKs         bool
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -80,7 +79,7 @@ func (rq *RetrospectiveQuery) QueryIncident() *IncidentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
 			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, retrospective.IncidentTable, retrospective.IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.IncidentTable, retrospective.IncidentColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -339,12 +338,12 @@ func (rq *RetrospectiveQuery) WithDiscussions(opts ...func(*RetrospectiveDiscuss
 // Example:
 //
 //	var v []struct {
-//		DocumentName string `json:"document_name,omitempty"`
+//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Retrospective.Query().
-//		GroupBy(retrospective.FieldDocumentName).
+//		GroupBy(retrospective.FieldIncidentID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rq *RetrospectiveQuery) GroupBy(field string, fields ...string) *RetrospectiveGroupBy {
@@ -362,11 +361,11 @@ func (rq *RetrospectiveQuery) GroupBy(field string, fields ...string) *Retrospec
 // Example:
 //
 //	var v []struct {
-//		DocumentName string `json:"document_name,omitempty"`
+//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
 //	}
 //
 //	client.Retrospective.Query().
-//		Select(retrospective.FieldDocumentName).
+//		Select(retrospective.FieldIncidentID).
 //		Scan(ctx, &v)
 func (rq *RetrospectiveQuery) Select(fields ...string) *RetrospectiveSelect {
 	rq.ctx.Fields = append(rq.ctx.Fields, fields...)
@@ -410,19 +409,12 @@ func (rq *RetrospectiveQuery) prepareQuery(ctx context.Context) error {
 func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Retrospective, error) {
 	var (
 		nodes       = []*Retrospective{}
-		withFKs     = rq.withFKs
 		_spec       = rq.querySpec()
 		loadedTypes = [2]bool{
 			rq.withIncident != nil,
 			rq.withDiscussions != nil,
 		}
 	)
-	if rq.withIncident != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, retrospective.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Retrospective).scanValues(nil, columns)
 	}
@@ -466,10 +458,7 @@ func (rq *RetrospectiveQuery) loadIncident(ctx context.Context, query *IncidentQ
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Retrospective)
 	for i := range nodes {
-		if nodes[i].incident_retrospective == nil {
-			continue
-		}
-		fk := *nodes[i].incident_retrospective
+		fk := nodes[i].IncidentID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -486,7 +475,7 @@ func (rq *RetrospectiveQuery) loadIncident(ctx context.Context, query *IncidentQ
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "incident_retrospective" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -552,6 +541,9 @@ func (rq *RetrospectiveQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != retrospective.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rq.withIncident != nil {
+			_spec.Node.AddColumnOnce(retrospective.FieldIncidentID)
 		}
 	}
 	if ps := rq.predicates; len(ps) > 0 {

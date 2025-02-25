@@ -60,12 +60,12 @@ type IncidentEdges struct {
 	TeamAssignments []*IncidentTeamAssignment `json:"team_assignments,omitempty"`
 	// RoleAssignments holds the value of the role_assignments edge.
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
-	// Retrospective holds the value of the retrospective edge.
-	Retrospective []*Retrospective `json:"retrospective,omitempty"`
 	// Milestones holds the value of the milestones edge.
 	Milestones []*IncidentMilestone `json:"milestones,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*IncidentEvent `json:"events,omitempty"`
+	// Retrospective holds the value of the retrospective edge.
+	Retrospective []*Retrospective `json:"retrospective,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis []*SystemAnalysis `json:"system_analysis,omitempty"`
 	// LinkedIncidents holds the value of the linked_incidents edge.
@@ -136,19 +136,10 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 	return nil, &NotLoadedError{edge: "role_assignments"}
 }
 
-// RetrospectiveOrErr returns the Retrospective value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEdges) RetrospectiveOrErr() ([]*Retrospective, error) {
-	if e.loadedTypes[5] {
-		return e.Retrospective, nil
-	}
-	return nil, &NotLoadedError{edge: "retrospective"}
-}
-
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
@@ -157,10 +148,19 @@ func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[6] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
+}
+
+// RetrospectiveOrErr returns the Retrospective value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) RetrospectiveOrErr() ([]*Retrospective, error) {
+	if e.loadedTypes[7] {
+		return e.Retrospective, nil
+	}
+	return nil, &NotLoadedError{edge: "retrospective"}
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
@@ -373,11 +373,6 @@ func (i *Incident) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return NewIncidentClient(i.config).QueryRoleAssignments(i)
 }
 
-// QueryRetrospective queries the "retrospective" edge of the Incident entity.
-func (i *Incident) QueryRetrospective() *RetrospectiveQuery {
-	return NewIncidentClient(i.config).QueryRetrospective(i)
-}
-
 // QueryMilestones queries the "milestones" edge of the Incident entity.
 func (i *Incident) QueryMilestones() *IncidentMilestoneQuery {
 	return NewIncidentClient(i.config).QueryMilestones(i)
@@ -386,6 +381,11 @@ func (i *Incident) QueryMilestones() *IncidentMilestoneQuery {
 // QueryEvents queries the "events" edge of the Incident entity.
 func (i *Incident) QueryEvents() *IncidentEventQuery {
 	return NewIncidentClient(i.config).QueryEvents(i)
+}
+
+// QueryRetrospective queries the "retrospective" edge of the Incident entity.
+func (i *Incident) QueryRetrospective() *RetrospectiveQuery {
+	return NewIncidentClient(i.config).QueryRetrospective(i)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the Incident entity.

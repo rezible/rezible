@@ -1126,22 +1126,6 @@ func (c *IncidentClient) QueryRoleAssignments(i *Incident) *IncidentRoleAssignme
 	return query
 }
 
-// QueryRetrospective queries the retrospective edge of a Incident.
-func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryMilestones queries the milestones edge of a Incident.
 func (c *IncidentClient) QueryMilestones(i *Incident) *IncidentMilestoneQuery {
 	query := (&IncidentMilestoneClient{config: c.config}).Query()
@@ -1167,6 +1151,22 @@ func (c *IncidentClient) QueryEvents(i *Incident) *IncidentEventQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRetrospective queries the retrospective edge of a Incident.
+func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -6968,7 +6968,7 @@ func (c *RetrospectiveClient) QueryIncident(r *Retrospective) *IncidentQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, retrospective.IncidentTable, retrospective.IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.IncidentTable, retrospective.IncidentColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil

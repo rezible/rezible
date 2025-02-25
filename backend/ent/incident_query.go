@@ -44,9 +44,9 @@ type IncidentQuery struct {
 	withType            *IncidentTypeQuery
 	withTeamAssignments *IncidentTeamAssignmentQuery
 	withRoleAssignments *IncidentRoleAssignmentQuery
-	withRetrospective   *RetrospectiveQuery
 	withMilestones      *IncidentMilestoneQuery
 	withEvents          *IncidentEventQuery
+	withRetrospective   *RetrospectiveQuery
 	withSystemAnalysis  *SystemAnalysisQuery
 	withLinkedIncidents *IncidentQuery
 	withFieldSelections *IncidentFieldOptionQuery
@@ -202,28 +202,6 @@ func (iq *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 	return query
 }
 
-// QueryRetrospective chains the current query on the "retrospective" edge.
-func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryMilestones chains the current query on the "milestones" edge.
 func (iq *IncidentQuery) QueryMilestones() *IncidentMilestoneQuery {
 	query := (&IncidentMilestoneClient{config: iq.config}).Query()
@@ -261,6 +239,28 @@ func (iq *IncidentQuery) QueryEvents() *IncidentEventQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRetrospective chains the current query on the "retrospective" edge.
+func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -641,9 +641,9 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		withType:            iq.withType.Clone(),
 		withTeamAssignments: iq.withTeamAssignments.Clone(),
 		withRoleAssignments: iq.withRoleAssignments.Clone(),
-		withRetrospective:   iq.withRetrospective.Clone(),
 		withMilestones:      iq.withMilestones.Clone(),
 		withEvents:          iq.withEvents.Clone(),
+		withRetrospective:   iq.withRetrospective.Clone(),
 		withSystemAnalysis:  iq.withSystemAnalysis.Clone(),
 		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
 		withFieldSelections: iq.withFieldSelections.Clone(),
@@ -714,17 +714,6 @@ func (iq *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmen
 	return iq
 }
 
-// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *IncidentQuery {
-	query := (&RetrospectiveClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withRetrospective = query
-	return iq
-}
-
 // WithMilestones tells the query-builder to eager-load the nodes that are connected to
 // the "milestones" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *IncidentQuery) WithMilestones(opts ...func(*IncidentMilestoneQuery)) *IncidentQuery {
@@ -744,6 +733,17 @@ func (iq *IncidentQuery) WithEvents(opts ...func(*IncidentEventQuery)) *Incident
 		opt(query)
 	}
 	iq.withEvents = query
+	return iq
+}
+
+// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
+// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *IncidentQuery {
+	query := (&RetrospectiveClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withRetrospective = query
 	return iq
 }
 
@@ -919,9 +919,9 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			iq.withType != nil,
 			iq.withTeamAssignments != nil,
 			iq.withRoleAssignments != nil,
-			iq.withRetrospective != nil,
 			iq.withMilestones != nil,
 			iq.withEvents != nil,
+			iq.withRetrospective != nil,
 			iq.withSystemAnalysis != nil,
 			iq.withLinkedIncidents != nil,
 			iq.withFieldSelections != nil,
@@ -990,13 +990,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := iq.withRetrospective; query != nil {
-		if err := iq.loadRetrospective(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
-			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := iq.withMilestones; query != nil {
 		if err := iq.loadMilestones(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Milestones = []*IncidentMilestone{} },
@@ -1008,6 +1001,13 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := iq.loadEvents(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Events = []*IncidentEvent{} },
 			func(n *Incident, e *IncidentEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withRetrospective; query != nil {
+		if err := iq.loadRetrospective(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
+			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1251,37 +1251,6 @@ func (iq *IncidentQuery) loadRoleAssignments(ctx context.Context, query *Inciden
 	}
 	return nil
 }
-func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Retrospective)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Retrospective(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.RetrospectiveColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.incident_retrospective
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "incident_retrospective" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_retrospective" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (iq *IncidentQuery) loadMilestones(ctx context.Context, query *IncidentMilestoneQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentMilestone)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
@@ -1327,6 +1296,36 @@ func (iq *IncidentQuery) loadEvents(ctx context.Context, query *IncidentEventQue
 	}
 	query.Where(predicate.IncidentEvent(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(incident.EventsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Retrospective)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(retrospective.FieldIncidentID)
+	}
+	query.Where(predicate.Retrospective(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.RetrospectiveColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

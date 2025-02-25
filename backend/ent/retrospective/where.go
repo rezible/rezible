@@ -54,9 +54,34 @@ func IDLTE(id uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldLTE(FieldID, id))
 }
 
+// IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
+func IncidentID(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldIncidentID, v))
+}
+
 // DocumentName applies equality check predicate on the "document_name" field. It's identical to DocumentNameEQ.
 func DocumentName(v string) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldDocumentName, v))
+}
+
+// IncidentIDEQ applies the EQ predicate on the "incident_id" field.
+func IncidentIDEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldIncidentID, v))
+}
+
+// IncidentIDNEQ applies the NEQ predicate on the "incident_id" field.
+func IncidentIDNEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldIncidentID, v))
+}
+
+// IncidentIDIn applies the In predicate on the "incident_id" field.
+func IncidentIDIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldIncidentID, vs...))
+}
+
+// IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
+func IncidentIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldIncidentID, vs...))
 }
 
 // DocumentNameEQ applies the EQ predicate on the "document_name" field.
@@ -169,7 +194,7 @@ func HasIncident() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

@@ -25,6 +25,12 @@ type RetrospectiveCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetIncidentID sets the "incident_id" field.
+func (rc *RetrospectiveCreate) SetIncidentID(u uuid.UUID) *RetrospectiveCreate {
+	rc.mutation.SetIncidentID(u)
+	return rc
+}
+
 // SetDocumentName sets the "document_name" field.
 func (rc *RetrospectiveCreate) SetDocumentName(s string) *RetrospectiveCreate {
 	rc.mutation.SetDocumentName(s)
@@ -53,20 +59,6 @@ func (rc *RetrospectiveCreate) SetID(u uuid.UUID) *RetrospectiveCreate {
 func (rc *RetrospectiveCreate) SetNillableID(u *uuid.UUID) *RetrospectiveCreate {
 	if u != nil {
 		rc.SetID(*u)
-	}
-	return rc
-}
-
-// SetIncidentID sets the "incident" edge to the Incident entity by ID.
-func (rc *RetrospectiveCreate) SetIncidentID(id uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.SetIncidentID(id)
-	return rc
-}
-
-// SetNillableIncidentID sets the "incident" edge to the Incident entity by ID if the given value is not nil.
-func (rc *RetrospectiveCreate) SetNillableIncidentID(id *uuid.UUID) *RetrospectiveCreate {
-	if id != nil {
-		rc = rc.SetIncidentID(*id)
 	}
 	return rc
 }
@@ -134,6 +126,9 @@ func (rc *RetrospectiveCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rc *RetrospectiveCreate) check() error {
+	if _, ok := rc.mutation.IncidentID(); !ok {
+		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "Retrospective.incident_id"`)}
+	}
 	if _, ok := rc.mutation.DocumentName(); !ok {
 		return &ValidationError{Name: "document_name", err: errors.New(`ent: missing required field "Retrospective.document_name"`)}
 	}
@@ -152,6 +147,9 @@ func (rc *RetrospectiveCreate) check() error {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
+	}
+	if len(rc.mutation.IncidentIDs()) == 0 {
+		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "Retrospective.incident"`)}
 	}
 	return nil
 }
@@ -204,7 +202,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	if nodes := rc.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: true,
+			Inverse: false,
 			Table:   retrospective.IncidentTable,
 			Columns: []string{retrospective.IncidentColumn},
 			Bidi:    false,
@@ -215,7 +213,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.incident_retrospective = &nodes[0]
+		_node.IncidentID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.DiscussionsIDs(); len(nodes) > 0 {
@@ -241,7 +239,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 // of the `INSERT` statement. For example:
 //
 //	client.Retrospective.Create().
-//		SetDocumentName(v).
+//		SetIncidentID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -250,7 +248,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveUpsert) {
-//			SetDocumentName(v+v).
+//			SetIncidentID(v+v).
 //		}).
 //		Exec(ctx)
 func (rc *RetrospectiveCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertOne {
@@ -285,6 +283,18 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetIncidentID sets the "incident_id" field.
+func (u *RetrospectiveUpsert) SetIncidentID(v uuid.UUID) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldIncidentID, v)
+	return u
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateIncidentID() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldIncidentID)
+	return u
+}
 
 // SetDocumentName sets the "document_name" field.
 func (u *RetrospectiveUpsert) SetDocumentName(v string) *RetrospectiveUpsert {
@@ -368,6 +378,20 @@ func (u *RetrospectiveUpsertOne) Update(set func(*RetrospectiveUpsert)) *Retrosp
 		set(&RetrospectiveUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetIncidentID sets the "incident_id" field.
+func (u *RetrospectiveUpsertOne) SetIncidentID(v uuid.UUID) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetIncidentID(v)
+	})
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateIncidentID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateIncidentID()
+	})
 }
 
 // SetDocumentName sets the "document_name" field.
@@ -548,7 +572,7 @@ func (rcb *RetrospectiveCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveUpsert) {
-//			SetDocumentName(v+v).
+//			SetIncidentID(v+v).
 //		}).
 //		Exec(ctx)
 func (rcb *RetrospectiveCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveUpsertBulk {
@@ -625,6 +649,20 @@ func (u *RetrospectiveUpsertBulk) Update(set func(*RetrospectiveUpsert)) *Retros
 		set(&RetrospectiveUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetIncidentID sets the "incident_id" field.
+func (u *RetrospectiveUpsertBulk) SetIncidentID(v uuid.UUID) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetIncidentID(v)
+	})
+}
+
+// UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateIncidentID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateIncidentID()
+	})
 }
 
 // SetDocumentName sets the "document_name" field.

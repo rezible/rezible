@@ -830,7 +830,7 @@ var (
 		{Name: "document_name", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"quick", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
-		{Name: "incident_retrospective", Type: field.TypeUUID, Nullable: true},
+		{Name: "incident_id", Type: field.TypeUUID},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
 	RetrospectivesTable = &schema.Table{
@@ -839,10 +839,10 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectivesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospectives_incidents_retrospective",
+				Symbol:     "retrospectives_incidents_incident",
 				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
-				OnDelete:   schema.SetNull,
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}

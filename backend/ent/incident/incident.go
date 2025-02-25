@@ -45,12 +45,12 @@ const (
 	EdgeTeamAssignments = "team_assignments"
 	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
 	EdgeRoleAssignments = "role_assignments"
-	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
-	EdgeRetrospective = "retrospective"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
 	// EdgeEvents holds the string denoting the events edge name in mutations.
 	EdgeEvents = "events"
+	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
+	EdgeRetrospective = "retrospective"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
 	EdgeSystemAnalysis = "system_analysis"
 	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
@@ -102,13 +102,6 @@ const (
 	RoleAssignmentsInverseTable = "incident_role_assignments"
 	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
 	RoleAssignmentsColumn = "incident_id"
-	// RetrospectiveTable is the table that holds the retrospective relation/edge.
-	RetrospectiveTable = "retrospectives"
-	// RetrospectiveInverseTable is the table name for the Retrospective entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
-	RetrospectiveInverseTable = "retrospectives"
-	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
-	RetrospectiveColumn = "incident_retrospective"
 	// MilestonesTable is the table that holds the milestones relation/edge.
 	MilestonesTable = "incident_milestones"
 	// MilestonesInverseTable is the table name for the IncidentMilestone entity.
@@ -123,6 +116,13 @@ const (
 	EventsInverseTable = "incident_events"
 	// EventsColumn is the table column denoting the events relation/edge.
 	EventsColumn = "incident_id"
+	// RetrospectiveTable is the table that holds the retrospective relation/edge.
+	RetrospectiveTable = "retrospectives"
+	// RetrospectiveInverseTable is the table name for the Retrospective entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
+	RetrospectiveInverseTable = "retrospectives"
+	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
+	RetrospectiveColumn = "incident_id"
 	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
 	SystemAnalysisTable = "system_analyses"
 	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
@@ -340,20 +340,6 @@ func ByRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByRetrospectiveCount orders the results by retrospective count.
-func ByRetrospectiveCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveStep(), opts...)
-	}
-}
-
-// ByRetrospective orders the results by retrospective terms.
-func ByRetrospective(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByMilestonesCount orders the results by milestones count.
 func ByMilestonesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -379,6 +365,20 @@ func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByRetrospectiveCount orders the results by retrospective count.
+func ByRetrospectiveCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRetrospectiveStep(), opts...)
+	}
+}
+
+// ByRetrospective orders the results by retrospective terms.
+func ByRetrospective(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -528,13 +528,6 @@ func newRoleAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
 	)
 }
-func newRetrospectiveStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, RetrospectiveTable, RetrospectiveColumn),
-	)
-}
 func newMilestonesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -547,6 +540,13 @@ func newEventsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(EventsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
+	)
+}
+func newRetrospectiveStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RetrospectiveInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
 func newSystemAnalysisStep() *sqlgraph.Step {

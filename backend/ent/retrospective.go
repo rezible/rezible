@@ -18,6 +18,8 @@ type Retrospective struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// IncidentID holds the value of the "incident_id" field.
+	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// DocumentName holds the value of the "document_name" field.
 	DocumentName string `json:"document_name,omitempty"`
 	// Type holds the value of the "type" field.
@@ -26,9 +28,8 @@ type Retrospective struct {
 	State retrospective.State `json:"state,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the RetrospectiveQuery when eager-loading is set.
-	Edges                  RetrospectiveEdges `json:"edges"`
-	incident_retrospective *uuid.UUID
-	selectValues           sql.SelectValues
+	Edges        RetrospectiveEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // RetrospectiveEdges holds the relations/edges for other nodes in the graph.
@@ -69,10 +70,8 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case retrospective.FieldDocumentName, retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
-		case retrospective.FieldID:
+		case retrospective.FieldID, retrospective.FieldIncidentID:
 			values[i] = new(uuid.UUID)
-		case retrospective.ForeignKeys[0]: // incident_retrospective
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -94,6 +93,12 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				r.ID = *value
 			}
+		case retrospective.FieldIncidentID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
+			} else if value != nil {
+				r.IncidentID = *value
+			}
 		case retrospective.FieldDocumentName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field document_name", values[i])
@@ -111,13 +116,6 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field state", values[i])
 			} else if value.Valid {
 				r.State = retrospective.State(value.String)
-			}
-		case retrospective.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field incident_retrospective", values[i])
-			} else if value.Valid {
-				r.incident_retrospective = new(uuid.UUID)
-				*r.incident_retrospective = *value.S.(*uuid.UUID)
 			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
@@ -165,6 +163,9 @@ func (r *Retrospective) String() string {
 	var builder strings.Builder
 	builder.WriteString("Retrospective(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString("incident_id=")
+	builder.WriteString(fmt.Sprintf("%v", r.IncidentID))
+	builder.WriteString(", ")
 	builder.WriteString("document_name=")
 	builder.WriteString(r.DocumentName)
 	builder.WriteString(", ")
