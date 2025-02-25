@@ -127,6 +127,46 @@ func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
 	}
 }
 
+func SystemComponentKindFromEnt(k *ent.SystemComponentKind) SystemComponentKind {
+	return SystemComponentKind{
+		Id: k.ID,
+		Attributes: SystemComponentKindAttributes{
+			Label:       k.Label,
+			Description: k.Description,
+		},
+	}
+}
+
+func SystemComponentConstraintFromEnt(k *ent.SystemComponentConstraint) SystemComponentConstraint {
+	return SystemComponentConstraint{
+		Id: k.ID,
+		Attributes: SystemComponentConstraintAttributes{
+			Label:       k.Label,
+			Description: k.Description,
+		},
+	}
+}
+
+func SystemComponentControlFromEnt(k *ent.SystemComponentControl) SystemComponentControl {
+	return SystemComponentControl{
+		Id: k.ID,
+		Attributes: SystemComponentControlAttributes{
+			Label:       k.Label,
+			Description: k.Description,
+		},
+	}
+}
+
+func SystemComponentSignalFromEnt(k *ent.SystemComponentSignal) SystemComponentSignal {
+	return SystemComponentSignal{
+		Id: k.ID,
+		Attributes: SystemComponentSignalAttributes{
+			Label:       k.Label,
+			Description: k.Description,
+		},
+	}
+}
+
 // System Components
 var systemComponentsTags = []string{"System Components"}
 

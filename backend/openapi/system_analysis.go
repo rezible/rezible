@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
 	"net/http"
 )
 
@@ -94,6 +95,31 @@ type (
 		Description string    `json:"description"`
 	}
 )
+
+func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
+	attr := SystemAnalysisAttributes{}
+
+	// TODO
+
+	return SystemAnalysis{
+		Id:         sc.ID,
+		Attributes: attr,
+	}
+}
+
+func SystemAnalysisComponentFromEnt(sc *ent.SystemAnalysisComponent) SystemAnalysisComponent {
+	return SystemAnalysisComponent{
+		Id:         sc.ID,
+		Attributes: SystemAnalysisComponentAttributes{},
+	}
+}
+
+func SystemAnalysisRelationshipFromEnt(sc *ent.SystemAnalysisRelationship) SystemAnalysisRelationship {
+	return SystemAnalysisRelationship{
+		Id:         sc.ID,
+		Attributes: SystemAnalysisRelationshipAttributes{},
+	}
+}
 
 var systemAnalysisTags = []string{"System Analysis"}
 
