@@ -41,7 +41,7 @@ const createComponentAttributesState = () => {
 	let controls = $state<SystemComponentAttributes["controls"]>([]);
 	let signals = $state<SystemComponentAttributes["signals"]>([]);
 	let properties = $state<SystemComponentAttributes["properties"]>({});
-	
+
 	let valid = $state(false);
 
 	const init = (c?: SystemComponent) => {
@@ -97,16 +97,8 @@ const createComponentAttributesState = () => {
 		updateControl,
 		get signals() { return signals },
 		updateSignal,
-		asAttributes(): SystemComponentAttributes {
-			return {
-				name: $state.snapshot(name),
-				kind: $state.snapshot(kind),
-				description: $state.snapshot(description),
-				constraints: $state.snapshot(constraints),
-				controls: $state.snapshot(controls),
-				signals: $state.snapshot(signals),
-				properties: $state.snapshot(properties),
-			}
+		snapshot(): SystemComponentAttributes {
+			return $state.snapshot({ name, kind, description, constraints, controls, signals, properties })
 		},
 		get valid() { return valid },
 	}
@@ -147,7 +139,7 @@ const createComponentDialogState = () => {
 	}
 
 	const makeCreateMutation = () => createMutation(() => ({
-		...createSystemComponentMutation(), 
+		...createSystemComponentMutation(),
 		onSuccess: (body: CreateSystemComponentResponseBody) => {
 			if (view === "create" && previousView === "add") {
 				goBack();
@@ -188,7 +180,7 @@ const createComponentDialogState = () => {
 	};
 
 	const doCreate = () => {
-		const attr = componentAttributes.asAttributes();
+		const attr = componentAttributes.snapshot();
 		const reqAttributes: CreateSystemComponentAttributes = {
 			name: attr.name,
 		};
@@ -199,7 +191,7 @@ const createComponentDialogState = () => {
 		if (!editingComponent) return;
 		const componentId = editingComponent.attributes.component.id;
 		const reqAttributes: UpdateSystemComponentAttributes = {
-			
+
 		};
 		updateMut?.mutate({
 			path: { id: componentId },

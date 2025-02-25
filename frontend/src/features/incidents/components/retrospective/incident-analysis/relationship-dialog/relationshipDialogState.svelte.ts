@@ -26,10 +26,10 @@ const compareFeedbackSignals = (a: SystemAnalysisRelationshipFeedbackSignal, b: 
 
 // TODO: support this
 type RelationshipKind =
-  | 'request'    // API/Service requests
-  | 'data'       // Data flow
-  | 'telemetry'  // Monitoring/metrics
-  | 'control';   // Control actions
+	| 'request'    // API/Service requests
+	| 'data'       // Data flow
+	| 'telemetry'  // Monitoring/metrics
+	| 'control';   // Control actions
 
 const createRelationshipAttributesState = () => {
 	let originalAttributes = $state<SystemAnalysisRelationshipAttributes>();
@@ -38,7 +38,7 @@ const createRelationshipAttributesState = () => {
 	let description = $state<SystemAnalysisRelationshipAttributes["description"]>("");
 	let controlActions = $state<SystemAnalysisRelationshipAttributes["controlActions"]>([]);
 	let feedbackSignals = $state<SystemAnalysisRelationshipAttributes["feedbackSignals"]>([]);
-	
+
 	let valid = $state(false);
 
 	const descriptionChanged = $derived(originalAttributes?.description !== description);
@@ -66,8 +66,8 @@ const createRelationshipAttributesState = () => {
 
 	const initNew = (sourceId: string, targetId: string) => {
 		initFrom({
-			sourceId: $state.snapshot(sourceId),
-			targetId: $state.snapshot(targetId),
+			sourceId,
+			targetId,
 			description: "",
 			controlActions: [],
 			feedbackSignals: [],
@@ -82,7 +82,7 @@ const createRelationshipAttributesState = () => {
 	const setControlAction = (a: SystemAnalysisRelationshipControlActionAttributes) => {
 		const idx = controlActions.findIndex(v => v.attributes.controlId === a.controlId);
 		if (idx >= 0) { controlActions[idx].attributes = a }
-		else { controlActions.push({id: uuidv4(), attributes: a}) }
+		else { controlActions.push({ id: uuidv4(), attributes: a }) }
 		onUpdate();
 	}
 
@@ -94,7 +94,7 @@ const createRelationshipAttributesState = () => {
 	const setFeedbackSignal = (a: SystemAnalysisRelationshipFeedbackSignalAttributes) => {
 		const idx = feedbackSignals.findIndex(v => v.attributes.signalId === a.signalId);
 		if (idx >= 0) { feedbackSignals[idx].attributes = a }
-		else { feedbackSignals.push({id: uuidv4(), attributes: a}) }
+		else { feedbackSignals.push({ id: uuidv4(), attributes: a }) }
 		onUpdate();
 	}
 
@@ -118,13 +118,7 @@ const createRelationshipAttributesState = () => {
 		setFeedbackSignal,
 		removeFeedbackSignal,
 		snapshot() {
-			return {
-				sourceId: $state.snapshot(sourceId),
-				targetId: $state.snapshot(targetId),
-				description: $state.snapshot(description),
-				controlActions: $state.snapshot(controlActions),
-				feedbackSignals: $state.snapshot(feedbackSignals),
-			}
+			return $state.snapshot({ sourceId, targetId, description, controlActions, feedbackSignals })
 		},
 		get valid() { return valid },
 		get changed() { return descriptionChanged || controlsChanged || signalsChanged },
@@ -161,7 +155,7 @@ const createRelationshipDialogState = () => {
 	}
 
 	const makeCreateMutation = () => createMutation(() => ({
-		...createSystemAnalysisRelationshipMutation(), 
+		...createSystemAnalysisRelationshipMutation(),
 		onSuccess,
 	}));
 	type CreateMutation = ReturnType<typeof makeCreateMutation>;
@@ -184,7 +178,7 @@ const createRelationshipDialogState = () => {
 
 	const doCreate = () => {
 		if (!analysis.id) return;
-		const path = {id: $state.snapshot(analysis.id)};
+		const path = { id: $state.snapshot(analysis.id) };
 
 		const attr = relationshipAttributes.snapshot();
 		const attributes: CreateSystemAnalysisRelationshipAttributes = {
@@ -202,7 +196,7 @@ const createRelationshipDialogState = () => {
 		const attributes: UpdateSystemAnalysisRelationshipAttributes = {
 			// TODO
 		};
-		updateMut?.mutate({path, body: { attributes }});
+		updateMut?.mutate({ path, body: { attributes } });
 	}
 
 	const onConfirm = () => {

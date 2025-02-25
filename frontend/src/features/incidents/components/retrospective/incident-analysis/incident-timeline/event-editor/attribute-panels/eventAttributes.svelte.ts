@@ -88,19 +88,19 @@ const createEventAttributesState = () => {
 		get valid() { return valid },
 		
 		snapshot(): IncidentEventAttributes {
-			return {
+			return $state.snapshot({
 				incidentId: "",
 				sequence: -1,
-				kind: $state.snapshot(kind),
-				title: $state.snapshot(title),
+				kind,
+				title,
 				description: getDescriptionContent(),
 				timestamp: timestamp.toAbsoluteString(),
-				isKey: $state.snapshot(isKey),
-				decisionContext: $state.snapshot(decisionContext),
-				contributingFactors: $state.snapshot(contributingFactors),
-				evidence: $state.snapshot(evidence),
-				systemContext: $state.snapshot(systemContext),
-			}
+				isKey,
+				decisionContext,
+				contributingFactors,
+				evidence,
+				systemContext,
+			})
 		},
 	}
 }
