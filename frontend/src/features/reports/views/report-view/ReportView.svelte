@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { Button, ButtonGroup, Header, Icon } from "svelte-ux";
+	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
 	import IncidentsGraph from "$features/reports/components/incidents-graph/IncidentsGraph.svelte";
-	import { mdiContentDuplicate, mdiCopyleft, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
-	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 
 	type Props = {id: string;}
 	const { id }: Props = $props();

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getMeetingSessionOptions, type MeetingSession } from "$lib/api";
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import SessionContent from "./SessionContent.svelte";
-	import { setPageBreadcrumbs } from "$src/lib/appState.svelte";
 
 	type Props = { sessionId: string; };
 	const { sessionId }: Props = $props();

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getMeetingScheduleOptions, type MeetingSchedule } from "$lib/api";
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import ScheduledMeeting from "./ScheduledMeeting.svelte";
-	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 
 	type Props = {
 		scheduleId: string;

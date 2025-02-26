@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getOncallRosterOptions, type OncallRoster } from "$lib/api";
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
-	import { setPageBreadcrumbs } from "$src/lib/appState.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
+	import { getOncallRosterOptions, type OncallRoster } from "$lib/api";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import OncallRosterDetails from "./OncallRosterDetails.svelte";
 
 	type Props = { rosterId: string };

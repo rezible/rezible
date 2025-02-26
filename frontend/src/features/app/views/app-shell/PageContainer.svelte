@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { appState } from "$lib/appState.svelte";
 
 	type Props = {
 		children: Snippet;
@@ -12,8 +12,8 @@
 <div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 p-2 border rounded-lg bg-surface-300">
 	<div class="border-b">
 		<span class="text-xl text-surface-content/50 w-fit px-2 self-bottom flex gap-1 items-end">
-			{#each appState.breadcrumbs as c, i}
-				{@const last = i === appState.breadcrumbs.length - 1}
+			{#each appShell.breadcrumbs as c, i}
+				{@const last = i === appShell.breadcrumbs.length - 1}
 				{#if i > 0}
 					<span>/</span>
 				{/if}

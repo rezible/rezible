@@ -44,10 +44,10 @@ export class ToastState {
 
 const TOAST_KEY = Symbol("TOAST_STATE");
 
-export function setupToastState() {
+export function setToastState() {
 	return setContext(TOAST_KEY, new ToastState());
 }
 
 export function getToastState() {
-	return getContext<ReturnType<typeof setupToastState>>(TOAST_KEY);
+	return getContext<ReturnType<typeof setToastState>>(TOAST_KEY);
 }

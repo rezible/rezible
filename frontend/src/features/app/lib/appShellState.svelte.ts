@@ -1,8 +1,6 @@
 import { settings as svelteUxSettings } from "svelte-ux";
-import { getToastState, setupToastState, ToastState, type Toast } from "$components/toaster/toasts.svelte";
-import type { AvatarProps } from "$components/avatar/Avatar.svelte";
-import { onMount } from "svelte";
 import { watch } from "runed";
+import type { AvatarProps } from "$components/avatar/Avatar.svelte";
 
 export type PageBreadcrumb = {
 	label?: string;
@@ -10,27 +8,23 @@ export type PageBreadcrumb = {
 	avatar?: AvatarProps;
 };
 
-const createAppState = () => {
+const createAppShellState = () => {
 	let breadcrumbs = $state<PageBreadcrumb[]>([]);
-	let toasts = $state<ToastState>();
 
 	const setup = () => {
 		svelteUxSettings({
 			themes: { light: ["light-old"], dark: ["dark", "bleh"] },
 		});
-
-		toasts = setupToastState();
 	}
 
 	return {
 		setup,
-		get toasts() { return toasts },
 		get breadcrumbs() { return breadcrumbs },
 		set	breadcrumbs(value: PageBreadcrumb[]) { breadcrumbs = value },
 	};
 };
-export const appState = createAppState();
+export const appShell = createAppShellState();
 
 export const setPageBreadcrumbs = (source: () => PageBreadcrumb[]) => {
-	watch(source, crumbs => {appState.breadcrumbs = crumbs});
+	watch(source, crumbs => {appShell.breadcrumbs = crumbs});
 }

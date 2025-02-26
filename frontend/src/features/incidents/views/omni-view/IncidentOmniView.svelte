@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { createQuery } from "@tanstack/svelte-query";
+	import type { IncidentViewRouteParam } from "$src/params/incidentView";
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions } from "$lib/api";
 	import IncidentContentView from "./IncidentContentView.svelte";
-	import { setPageBreadcrumbs } from "$lib/appState.svelte";
 
 	type Props = {
 		incidentId: string;

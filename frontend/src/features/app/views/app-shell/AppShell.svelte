@@ -1,26 +1,37 @@
 <script lang="ts">
-	import Toaster from "$components/toaster/Toaster.svelte";
+	import { session } from "$lib/auth.svelte";
+	import { setToastState } from "$features/app/lib/toasts.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import Toaster from "$features/app/components/toaster/Toaster.svelte";
 	import Sidebar from "./Sidebar.svelte";
 	import Header from "./Header.svelte";
 	import PageContainer from "./PageContainer.svelte";
+	import AuthSessionError from "./AuthSessionError.svelte";
 
 	const { children } = $props();
+
+	appShell.setup();
+	setToastState();
 </script>
 
-<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
-	<Sidebar />
+{#if session.error}
+	<AuthSessionError />
+{:else}
+	<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
+		<Sidebar />
 
-	<div class="grid grid-rows-layout flex-1">
-		<nav class="w-full h-16">
-			<Header />
-		</nav>
+		<div class="grid grid-rows-layout flex-1">
+			<nav class="w-full h-16">
+				<Header />
+			</nav>
 
-		<main class="w-full overflow-y-auto px-2 pb-2">
-			<PageContainer>
-				{@render children()}
-			</PageContainer>
-		</main>
+			<main class="w-full overflow-y-auto px-2 pb-2">
+				<PageContainer>
+					{@render children()}
+				</PageContainer>
+			</main>
+		</div>
 	</div>
-</div>
 
-<Toaster />
+	<Toaster />
+{/if}

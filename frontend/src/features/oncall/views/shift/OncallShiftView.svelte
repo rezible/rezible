@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftOptions, type OncallShift } from "$lib/api";
+	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { formatShiftDates } from "$features/oncall/lib/shift";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import OncallShiftDetails from "./OncallShiftDetails.svelte";
-	import { setPageBreadcrumbs } from "$lib/appState.svelte";
-	import { formatShiftDates } from "../../lib/shift";
 
 	type Props = {
 		shiftId: string;

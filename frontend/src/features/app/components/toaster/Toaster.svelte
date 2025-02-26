@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiCircleMedium } from "@mdi/js";
 	import { Icon, Notification } from "svelte-ux";
-	import { getToastState, type Toast } from "./toasts.svelte";
+	import { getToastState, type Toast } from "$features/app/lib/toasts.svelte";
 
 	const toastState = getToastState();
 </script>

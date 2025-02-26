@@ -106,6 +106,9 @@ const createSession = () => {
 		get accentColor() {
 			return "#a33333";
 		},
+		get needsSignIn() {
+			return false;
+		},
 		get error() {
 			return error;
 		},

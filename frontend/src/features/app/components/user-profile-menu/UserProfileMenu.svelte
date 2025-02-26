@@ -3,13 +3,15 @@
 	import { mdiAccount, mdiAbTesting, mdiChevronDown, mdiCog } from "@mdi/js";
 	import { session } from "$lib/auth.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { appState } from "$lib/appState.svelte";
+	import { getToastState } from "$features/app/lib/toasts.svelte";
 
 	const accountLinks = [
 		{ href: "/profile", title: "Profile", icon: mdiAccount },
 		{ href: "/preferences", title: "Preferences", icon: mdiCog },
 	];
 	let accountMenuOpen = $state(false);
+
+	const toasts = getToastState();
 </script>
 
 <Popover bind:open={accountMenuOpen}>
@@ -22,7 +24,7 @@
 		{/each}
 		<Button
 			on:click={() =>
-				appState.toasts?.add(
+				toasts.add(
 					"test",
 					"an example toast",
 					Math.random() > 0.25 ? mdiAbTesting : undefined,
