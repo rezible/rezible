@@ -10,7 +10,7 @@
 </script>
 
 <div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 p-2 border rounded-lg bg-surface-300">
-	<div class="border-b">
+	<div class="border-b flex">
 		<span class="text-xl text-surface-content/50 w-fit px-2 self-bottom flex gap-1 items-end">
 			{#each appShell.breadcrumbs as c, i}
 				{@const last = i === appShell.breadcrumbs.length - 1}
@@ -31,6 +31,12 @@
 				</span>
 			{/each}
 		</span>
+
+		<div class="flex flex-1">
+			{#if appShell.pageActionsComponent}
+				<appShell.pageActionsComponent />
+			{/if}
+		</div>
 	</div>
 
 	<div class="flex flex-col flex-1 min-h-0 overflow-auto">

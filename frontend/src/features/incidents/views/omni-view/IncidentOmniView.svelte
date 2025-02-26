@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import type { IncidentViewRouteParam } from "$src/params/incidentView";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions } from "$lib/api";
+	import IncidentPageActions from "$features/incidents/components/incident-page-actions/IncidentPageActions.svelte";
 	import IncidentContentView from "./IncidentContentView.svelte";
 
 	type Props = {
@@ -25,6 +26,8 @@
 		{ label: "Incidents", href: "/incidents" },
 		{ label: title, href: `/incidents/${incidentId}` },
 	]);
+
+	appShell.setPageActions(IncidentPageActions, true);
 </script>
 
 <div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">
