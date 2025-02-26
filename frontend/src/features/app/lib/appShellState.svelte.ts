@@ -28,16 +28,14 @@ const createAppShellState = () => {
 
 		onNavigate(nav => {
 			if (!pageActions) return;
-			console.log(nav);
 			if (!nav.to?.route.id?.startsWith(pageActions.routeBase)) {
-				console.log("clear actions");
+				pageActions = undefined;
 			}
 		})
 	}
 
 	const setPageActions = (component: Component, allowChildren: boolean) => {
 		pageActions = {component, allowChildren, routeBase: $state.snapshot(page.route.id) ?? ""};
-		console.log("set actions", $state.snapshot(pageActions));
 	}
 
 	return {
