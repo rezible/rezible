@@ -5,20 +5,22 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5"
-	"github.com/rezible/rezible/internal/providers/oauth2"
-	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/go-chi/chi/v5"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/internal/providers/anthropic"
+	"github.com/rezible/rezible/internal/providers/fake"
 	"github.com/rezible/rezible/internal/providers/grafana"
+	"github.com/rezible/rezible/internal/providers/oauth2"
 	"github.com/rezible/rezible/internal/providers/saml"
 	"github.com/rezible/rezible/internal/providers/slack"
 )
@@ -200,6 +202,8 @@ func (l *Loader) LoadOncallDataProvider(ctx context.Context) (rez.OncallDataProv
 	switch pCfg.Name {
 	case "grafana":
 		prov, provErr = loadProvider(grafana.NewOncallDataProvider, pCfg)
+	case "fake":
+		prov, provErr = loadProvider(fakeprovider.NewOncallDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid oncall data provider: %s", pCfg.Name)
 	}
@@ -222,6 +226,8 @@ func (l *Loader) LoadAlertsDataProvider(ctx context.Context) (rez.AlertsDataProv
 	switch pCfg.Name {
 	case "grafana":
 		prov, provErr = loadProvider(grafana.NewAlertsDataProvider, pCfg)
+	case "fake":
+		prov, provErr = loadProvider(fakeprovider.NewAlertsDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid alerts data provider: %s", pCfg.Name)
 	}
@@ -244,6 +250,8 @@ func (l *Loader) LoadIncidentDataProvider(ctx context.Context) (rez.IncidentData
 	switch pCfg.Name {
 	case "grafana":
 		prov, provErr = loadProvider(grafana.NewIncidentDataProvider, pCfg)
+	case "fake":
+		prov, provErr = loadProvider(fakeprovider.NewIncidentDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid incident data provider: %s", pCfg.Name)
 	}
