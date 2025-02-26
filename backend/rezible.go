@@ -89,6 +89,13 @@ type (
 )
 
 type (
+	SystemComponentDataProvider interface {
+		SystemComponentDataMapping() *ent.SystemComponent
+		PullSystemComponents(context.Context) iter.Seq2[*ent.SystemComponent, error]
+	}
+)
+
+type (
 	TeamDataProvider interface {
 		PullTeams(context.Context) iter.Seq2[*ent.Team, error]
 	}
