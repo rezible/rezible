@@ -14,10 +14,10 @@
 	setToastState();
 </script>
 
-{#if session.error}
-	<AuthSessionError />
-{:else}
-	<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
+<div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
+	{#if session.error}
+		<AuthSessionError />
+	{:else}
 		<Sidebar />
 
 		<div class="grid grid-rows-layout flex-1">
@@ -31,7 +31,7 @@
 				</PageContainer>
 			</main>
 		</div>
-	</div>
+	{/if}
+</div>
 
-	<Toaster />
-{/if}
+<Toaster />

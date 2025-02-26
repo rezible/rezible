@@ -3,16 +3,15 @@
 	import {
 		mdiAccountGroup,
 		mdiChartBox,
-		mdiCircleMedium,
 		mdiCogBox,
 		mdiFire,
 		mdiHome,
-		mdiPhoneLog,
 		mdiPhoneRing,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import { Icon, Collapse } from "svelte-ux";
+	import HeaderLogo from "./HeaderLogo.svelte";
 
 	type SidebarItem = {
 		path: string;
@@ -62,12 +61,8 @@
 		expandingHover ? "w-fit hover:w-60" : "w-60"
 	)}
 >
-	<div class="h-16 flex items-center px-4">
-		<a href="/" class="text-2xl flex items-center">
-			<img src="/images/logo.svg" alt="logo" class="h-10 w-10 fill-neutral" />
-			<span class="pl-3 {expandingHover ? 'hidden group-hover:inline' : ''}">Rezible</span>
-		</a>
-	</div>
+	<HeaderLogo {expandingHover} />
+
 	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between pl-2">
 		<div class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
 			{#each routes as r (r.label)}
