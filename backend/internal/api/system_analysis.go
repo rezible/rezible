@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
+	
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -16,78 +16,6 @@ type systemAnalysisHandler struct {
 
 func newSystemAnalysisHandler(db *ent.Client) *systemAnalysisHandler {
 	return &systemAnalysisHandler{db: db}
-}
-
-func makeFakeSystemAnalysis(cmps []oapi.SystemComponent) oapi.SystemAnalysis {
-	position := func(x, y float64) oapi.SystemAnalysisDiagramPosition {
-		return oapi.SystemAnalysisDiagramPosition{X: x, Y: y}
-	}
-
-	relSignal := func(id uuid.UUID, desc string) *oapi.SystemAnalysisRelationshipFeedbackSignal {
-		attr := oapi.SystemAnalysisRelationshipFeedbackSignalAttributes{SignalId: id, Description: desc}
-		return &oapi.SystemAnalysisRelationshipFeedbackSignal{Id: uuid.New(), Attributes: attr}
-	}
-
-	relControl := func(id uuid.UUID, desc string) *oapi.SystemAnalysisRelationshipControlAction {
-		attr := oapi.SystemAnalysisRelationshipControlActionAttributes{ControlId: id, Description: desc}
-		return &oapi.SystemAnalysisRelationshipControlAction{Id: uuid.New(), Attributes: attr}
-	}
-
-	makeAnalysisComponent := func(cmp oapi.SystemComponent, pos oapi.SystemAnalysisDiagramPosition) oapi.SystemAnalysisComponent {
-		attr := oapi.SystemAnalysisComponentAttributes{Component: cmp, Position: pos}
-		return oapi.SystemAnalysisComponent{Id: uuid.New(), Attributes: attr}
-	}
-
-	makeRelationship := func(sId, tId uuid.UUID, feedback *oapi.SystemAnalysisRelationshipFeedbackSignal, control *oapi.SystemAnalysisRelationshipControlAction) oapi.SystemAnalysisRelationship {
-		attr := oapi.SystemAnalysisRelationshipAttributes{
-			SourceId:        sId,
-			TargetId:        tId,
-			Description:     "description",
-			FeedbackSignals: make([]oapi.SystemAnalysisRelationshipFeedbackSignal, 0, 1),
-			ControlActions:  make([]oapi.SystemAnalysisRelationshipControlAction, 0, 1),
-		}
-		if feedback != nil {
-			attr.FeedbackSignals = append(attr.FeedbackSignals, *feedback)
-		}
-		if control != nil {
-			attr.ControlActions = append(attr.ControlActions, *control)
-		}
-		return oapi.SystemAnalysisRelationship{Id: uuid.New(), Attributes: attr}
-	}
-
-	paymentUi := cmps[0]
-	apiGateway := cmps[1]
-	paymentSvc := cmps[2]
-	paymentsMonitor := cmps[3]
-	db := cmps[4]
-	extPaymentsProvider := cmps[5]
-
-	components := []oapi.SystemAnalysisComponent{
-		makeAnalysisComponent(paymentUi, position(0, 0)),
-		makeAnalysisComponent(apiGateway, position(200, 100)),
-		makeAnalysisComponent(paymentSvc, position(400, 200)),
-		makeAnalysisComponent(paymentsMonitor, position(600, 300)),
-		makeAnalysisComponent(db, position(600, 100)),
-		makeAnalysisComponent(extPaymentsProvider, position(700, 200)),
-	}
-
-	feApiErrsSignal := relSignal(apiGateway.Attributes.Signals[0].Id, "api errors are returned")
-	feThrottleControl := relControl(apiGateway.Attributes.Controls[0].Id, "frontend can be throttled")
-	relationships := []oapi.SystemAnalysisRelationship{
-		makeRelationship(paymentUi.Id, apiGateway.Id, feApiErrsSignal, feThrottleControl),
-		makeRelationship(apiGateway.Id, paymentSvc.Id, nil, nil),
-		makeRelationship(paymentSvc.Id, db.Id, nil, nil),
-		makeRelationship(paymentSvc.Id, paymentsMonitor.Id, nil, nil),
-		makeRelationship(paymentSvc.Id, extPaymentsProvider.Id, nil, nil),
-	}
-
-	return oapi.SystemAnalysis{
-		Id: uuid.New(),
-		Attributes: oapi.SystemAnalysisAttributes{
-			Components:    components,
-			Relationships: relationships,
-		},
-	}
 }
 
 func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
