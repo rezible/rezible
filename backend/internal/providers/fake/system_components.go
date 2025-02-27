@@ -121,7 +121,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	}
 
 	makeKind := func(label string, desc string) *ent.SystemComponentKind {
-		return &ent.SystemComponentKind{ID: uuid.New(), Label: label, Description: desc}
+		return &ent.SystemComponentKind{ID: uuid.New(), ProviderID: label, Label: label, Description: desc}
 	}
 
 	frontendKind := makeKind("frontend", "A frontend ui")
