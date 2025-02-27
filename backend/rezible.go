@@ -56,13 +56,14 @@ type (
 	ProviderLoader interface {
 		HandleWebhookRequest(w http.ResponseWriter, r *http.Request)
 
-		LoadAiModelProvider(ctx context.Context) (AiModelProvider, error)
-		LoadChatProvider(ctx context.Context) (ChatProvider, error)
-		LoadOncallDataProvider(ctx context.Context) (OncallDataProvider, error)
-		LoadAlertsDataProvider(ctx context.Context) (AlertsDataProvider, error)
-		LoadIncidentDataProvider(ctx context.Context) (IncidentDataProvider, error)
-		LoadAuthSessionProvider(ctx context.Context) (AuthSessionProvider, error)
-		LoadUserDataProvider(ctx context.Context) (UserDataProvider, error)
+		LoadAiModelProvider(context.Context) (AiModelProvider, error)
+		LoadChatProvider(context.Context) (ChatProvider, error)
+		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
+		LoadAlertsDataProvider(context.Context) (AlertsDataProvider, error)
+		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
+		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
+		LoadUserDataProvider(context.Context) (UserDataProvider, error)
+		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
 	}
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 )
@@ -89,9 +90,12 @@ type (
 )
 
 type (
-	SystemComponentDataProvider interface {
+	SystemComponentsDataProvider interface {
 		SystemComponentDataMapping() *ent.SystemComponent
 		PullSystemComponents(context.Context) iter.Seq2[*ent.SystemComponent, error]
+	}
+
+	SystemComponentsService interface {
 	}
 )
 

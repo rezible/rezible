@@ -276,6 +276,20 @@ func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider
 	}
 }
 
+func (l *Loader) LoadSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
+	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeSystemComponents)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+
+	switch pCfg.Name {
+	case "fake":
+		return loadProvider(fakeprovider.NewSystemComponentsDataProvider, pCfg)
+	default:
+		return nil, fmt.Errorf("invalid system components data provider: %s", pCfg.Name)
+	}
+}
+
 func (l *Loader) LoadAuthSessionProvider(ctx context.Context) (rez.AuthSessionProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAuthSession)
 	if cfgErr != nil {

@@ -791,7 +791,7 @@ var (
 	// ProviderConfigsColumns holds the columns for the "provider_configs" table.
 	ProviderConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider_type", Type: field.TypeEnum, Enums: []string{"auth_session", "users", "chat", "incidents", "oncall", "alerts", "ai"}},
+		{Name: "provider_type", Type: field.TypeEnum, Enums: []string{"auth_session", "users", "chat", "incidents", "oncall", "alerts", "ai", "system_components"}},
 		{Name: "provider_name", Type: field.TypeString},
 		{Name: "provider_config", Type: field.TypeBytes},
 		{Name: "enabled", Type: field.TypeBool, Default: true},

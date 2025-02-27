@@ -19,12 +19,12 @@ const (
 
 type systemComponentsDataSyncer struct {
 	db       *ent.Client
-	provider rez.SystemComponentDataProvider
+	provider rez.SystemComponentsDataProvider
 
 	mutations []ent.Mutation
 }
 
-func newSystemComponentsDataSyncer(db *ent.Client, prov rez.SystemComponentDataProvider) *systemComponentsDataSyncer {
+func newSystemComponentsDataSyncer(db *ent.Client, prov rez.SystemComponentsDataProvider) *systemComponentsDataSyncer {
 	ds := &systemComponentsDataSyncer{db: db, provider: prov}
 	ds.resetState()
 	return ds

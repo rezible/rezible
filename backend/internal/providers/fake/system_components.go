@@ -12,10 +12,14 @@ type SystemComponentsDataProvider struct {
 	components []*ent.SystemComponent
 }
 
-func NewSystemComponentsDataProvider() *SystemComponentsDataProvider {
-	return &SystemComponentsDataProvider{
+type SystemComponentsDataProviderConfig struct{}
+
+func NewSystemComponentsDataProvider(cfg SystemComponentsDataProviderConfig) (*SystemComponentsDataProvider, error) {
+	p := &SystemComponentsDataProvider{
 		components: makeFakeSystemComponents(),
 	}
+
+	return p, nil
 }
 
 func (p *SystemComponentsDataProvider) SystemComponentDataMapping() *ent.SystemComponent {
