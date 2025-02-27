@@ -1,4 +1,4 @@
-import { 
+import {
 	createIncidentEventMutation,
 	updateIncidentEventMutation,
 	type CreateIncidentEventAttributes,
@@ -27,24 +27,41 @@ const createEventDialogState = () => {
 		setView("closed");
 	};
 
-	const onMutationSuccess = ({ data: event }: { data: IncidentEvent }) => {
+	const onSuccess = ({ data: event }: { data: IncidentEvent }) => {
 		console.log("event!", event);
 		clear();
 	}
 
-	const makeCreateMutation = () => createMutation(() => ({
-		...createIncidentEventMutation(),
-		onSuccess: onMutationSuccess,
-	}));
-	const makeUpdateMutation = () => createMutation(() => ({
-		...updateIncidentEventMutation(),
-		onSuccess: onMutationSuccess,
-	}));
+	const makeCreateMutation = () => createMutation(() => ({ ...createIncidentEventMutation(), onSuccess }));
+	const makeUpdateMutation = () => createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess }));
 
 	let createMut = $state<ReturnType<typeof makeCreateMutation>>();
 	let updateMut = $state<ReturnType<typeof makeUpdateMutation>>();
-
 	const loading = $derived(updateMut?.isPending || createMut?.isPending);
+
+	const doCreate = () => {
+		if (!incident || !createMut) return;
+		const attrs = eventAttributes.snapshot();
+		const path = { id: $state.snapshot(incident.id) };
+		const attributes: CreateIncidentEventAttributes = {
+			kind: attrs.kind,
+			timestamp: attrs.timestamp,
+			title: attrs.title,
+		};
+		createMut.mutate({ path, body: { attributes } });
+	}
+
+	const doEdit = () => {
+		if (!editingEvent || !updateMut) return;
+		const attrs = eventAttributes.snapshot();
+		const path = { id: $state.snapshot(editingEvent.id) };
+		const attributes: UpdateIncidentEventAttributes = {
+			kind: attrs.kind,
+			timestamp: attrs.timestamp,
+			title: attrs.title,
+		};
+		updateMut.mutate({ path, body: { attributes } });
+	}
 
 	const setup = () => {
 		incident = incidentCtx.get();
@@ -64,23 +81,10 @@ const createEventDialogState = () => {
 	};
 
 	const confirm = () => {
-		const attrs = eventAttributes.snapshot();
-		if (view === "create" && createMut && incident?.id) {
-			const path = { id: $state.snapshot(incident.id) };
-			const attributes: CreateIncidentEventAttributes = {
-				kind: attrs.kind,
-				timestamp: attrs.timestamp,
-				title: attrs.title,
-			}
-			createMut.mutate({ path, body: { attributes } });
-		} else if (view === "edit" && updateMut && editingEvent) {
-			const path = { id: editingEvent.id };
-			const attributes: UpdateIncidentEventAttributes = {
-				kind: attrs.kind,
-				timestamp: attrs.timestamp,
-				title: attrs.title,
-			};
-			updateMut.mutate({ path, body: { attributes } });
+		if (view === "create") {
+			doCreate();
+		} else if (view === "edit") {
+			doEdit();
 		} else {
 			console.error("something went wrong", $state.snapshot(view), !!createMut, !!updateMut);
 		}
