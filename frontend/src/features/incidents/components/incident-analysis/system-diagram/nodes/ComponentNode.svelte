@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { NodeToolbar, type NodeProps, Handle, Position, useStore } from "@xyflow/svelte";
-	import type { SystemComponentNodeData } from "../diagram.svelte";
+	import type { SystemComponentNodeData } from "$features/incidents/components/incident-analysis/system-diagram/diagram.svelte";
 	import { fromStore } from "svelte/store";
 
 	const { selected, data: arbitraryData }: NodeProps = $props();

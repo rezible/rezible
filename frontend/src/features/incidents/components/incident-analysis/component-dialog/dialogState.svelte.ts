@@ -18,7 +18,7 @@ import {
 	type SystemComponentKind,
 	type UpdateSystemComponentAttributes,
 } from "$lib/api";
-import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysisState.svelte";
+import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 
 const emptyComponentKind = () => ({
 	id: "",

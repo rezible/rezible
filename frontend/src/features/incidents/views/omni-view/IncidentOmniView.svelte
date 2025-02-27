@@ -4,7 +4,7 @@
 	import { appShell, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions } from "$lib/api";
 	import IncidentPageActions from "$features/incidents/components/incident-page-actions/IncidentPageActions.svelte";
-	import IncidentContentView from "./IncidentContentView.svelte";
+	import IncidentPageContent from "./IncidentPageContent.svelte";
 
 	type Props = {
 		incidentId: string;
@@ -59,7 +59,7 @@
 	</div>
 
 	{#if incident && retrospective}
-		<IncidentContentView {incident} {retrospective} {viewParam} />
+		<IncidentPageContent {incident} {retrospective} {viewParam} />
 	{:else}
 		<div class="flex-1 min-h-0 overflow-y-auto border p-2">
 			<div class="flex flex-col items-center justify-center h-full">

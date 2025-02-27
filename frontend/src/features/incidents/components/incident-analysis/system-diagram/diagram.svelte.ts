@@ -3,22 +3,18 @@ import { watch } from "runed";
 import { writable, get } from "svelte/store";
 
 import {
+	SvelteFlow,
+	useSvelteFlow,
+	useStore as useSvelteFlowStore,
 	type Node,
 	type Edge,
-	SvelteFlow,
 	type XYPosition,
-	useSvelteFlow,
 	type Connection,
-	useStore,
 } from "@xyflow/svelte";
 
-import {
-	type SystemAnalysis,
-	type SystemAnalysisComponent,
-	type SystemAnalysisRelationship,
-} from "$lib/api";
-import { analysis } from "$features/incidents/components/retrospective/incident-analysis/analysisState.svelte";
-import { relationshipDialog } from "$features/incidents/components/retrospective/incident-analysis/relationship-dialog/dialogState.svelte";
+import type { SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
+import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
+import { relationshipDialog } from "$features/incidents/components/incident-analysis/relationship-dialog/dialogState.svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 
@@ -164,10 +160,10 @@ const createDiagramState = () => {
 	};
 
 	let flow = $state<ReturnType<typeof useSvelteFlow>>();
-	let flowStore = $state<ReturnType<typeof useStore>>();
+	let flowStore = $state<ReturnType<typeof useSvelteFlowStore>>();
 	const onFlowInit = () => {
 		flow = useSvelteFlow();
-		flowStore = useStore();
+		flowStore = useSvelteFlowStore();
 	};
 
 	const interactionLocked = () => {
