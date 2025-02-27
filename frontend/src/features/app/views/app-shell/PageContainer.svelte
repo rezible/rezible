@@ -9,7 +9,7 @@
 	const { children }: Props = $props();
 </script>
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 p-2 border rounded-lg bg-surface-300">
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-2 pb-2 pt-1 border rounded-lg bg-surface-300">
 	<div class="border-b flex justify-between items-bottom">
 		<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end">
 			{#each appShell.breadcrumbs as c, i}
@@ -24,16 +24,16 @@
 					{/if}
 		
 					{#if c.href}
-						<a href={c.href} class:text-2xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</a>
+						<a href={c.href} class:text-3xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</a>
 					{:else}
-						<span class:text-2xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</span>
+						<span class:text-3xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</span>
 					{/if}
 				</span>
 			{/each}
 		</span>
 
 		{#if appShell.pageActionsComponent}
-			<div class="">
+			<div class="pb-1">
 				<appShell.pageActionsComponent />
 			</div>
 		{/if}
