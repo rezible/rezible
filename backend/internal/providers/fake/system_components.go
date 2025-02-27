@@ -133,6 +133,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	paymentUi := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "Payment UI",
+		ProviderID:  "payment-ui",
 		Description: "The UI for handling payments",
 		Edges: ent.SystemComponentEdges{
 			Kind: frontendKind,
@@ -150,6 +151,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	apiGateway := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "API Gateway",
+		ProviderID:  "api-gateway",
 		Description: "Handles incoming API requests",
 		Edges: ent.SystemComponentEdges{
 			Kind: serviceKind,
@@ -171,6 +173,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	paymentSvc := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "Payments Service",
+		ProviderID:  "payment-service",
 		Description: "Handles incoming API requests",
 		Edges: ent.SystemComponentEdges{
 			Kind: serviceKind,
@@ -192,6 +195,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	db := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "Payments Database",
+		ProviderID:  "payment-database",
 		Description: "PostgreSQL database",
 		Edges: ent.SystemComponentEdges{
 			Kind: dbKind,
@@ -213,6 +217,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	paymentsMonitor := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "Payments Monitor",
+		ProviderID:  "payment-monitor",
 		Description: "A monitor using payments metrics",
 		Edges: ent.SystemComponentEdges{
 			Kind: monitorKind,
@@ -233,6 +238,7 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	extPaymentsProvider := &ent.SystemComponent{
 		ID:          uuid.New(),
 		Name:        "Payment Provider",
+		ProviderID:  "payment-provider",
 		Description: "Stripe",
 		Edges: ent.SystemComponentEdges{
 			Kind: kindExternal,

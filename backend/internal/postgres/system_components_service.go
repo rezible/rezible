@@ -1,6 +1,8 @@
 package postgres
 
 import (
+	"context"
+	"fmt"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -17,4 +19,13 @@ func NewSystemComponentsService(db *ent.Client, pl rez.ProviderLoader) (*SystemC
 	}
 
 	return s, nil
+}
+
+func (s *SystemComponentsService) SyncData(ctx context.Context) error {
+	prov, provErr := s.loader.LoadSystemComponentsDataProvider(ctx)
+	if provErr != nil {
+		return fmt.Errorf("loading system components data provider: %w", provErr)
+	}
+	syncer := newSystemComponentsDataSyncer(s.db, prov)
+	return syncer.syncProviderData(ctx)
 }

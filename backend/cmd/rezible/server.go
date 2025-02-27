@@ -108,6 +108,11 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
+	cmps, cmpsErr := postgres.NewSystemComponentsService(dbc, pl)
+	if cmpsErr != nil {
+		return fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpsErr)
+	}
+
 	alerts, alertsErr := postgres.NewAlertsService(ctx, dbc, s.jobs, pl, users)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertsService: %w", alertsErr)
@@ -127,7 +132,7 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 	s.httpServer = httpServer
 
-	jobsErr := s.jobs.RegisterWorkers(users, incidents, oncall, alerts, debriefs)
+	jobsErr := s.jobs.RegisterWorkers(users, incidents, oncall, alerts, debriefs, cmps)
 	if jobsErr != nil {
 		return fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
 	}

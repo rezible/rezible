@@ -31371,9 +31371,22 @@ func (m *SystemComponentMutation) OldKindID(ctx context.Context) (v uuid.UUID, e
 	return oldValue.KindID, nil
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (m *SystemComponentMutation) ClearKindID() {
+	m.kind = nil
+	m.clearedFields[systemcomponent.FieldKindID] = struct{}{}
+}
+
+// KindIDCleared returns if the "kind_id" field was cleared in this mutation.
+func (m *SystemComponentMutation) KindIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponent.FieldKindID]
+	return ok
+}
+
 // ResetKindID resets all changes to the "kind_id" field.
 func (m *SystemComponentMutation) ResetKindID() {
 	m.kind = nil
+	delete(m.clearedFields, systemcomponent.FieldKindID)
 }
 
 // SetDescription sets the "description" field.
@@ -31456,9 +31469,22 @@ func (m *SystemComponentMutation) OldProperties(ctx context.Context) (v map[stri
 	return oldValue.Properties, nil
 }
 
+// ClearProperties clears the value of the "properties" field.
+func (m *SystemComponentMutation) ClearProperties() {
+	m.properties = nil
+	m.clearedFields[systemcomponent.FieldProperties] = struct{}{}
+}
+
+// PropertiesCleared returns if the "properties" field was cleared in this mutation.
+func (m *SystemComponentMutation) PropertiesCleared() bool {
+	_, ok := m.clearedFields[systemcomponent.FieldProperties]
+	return ok
+}
+
 // ResetProperties resets all changes to the "properties" field.
 func (m *SystemComponentMutation) ResetProperties() {
 	m.properties = nil
+	delete(m.clearedFields, systemcomponent.FieldProperties)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -31541,7 +31567,7 @@ func (m *SystemComponentMutation) ClearKind() {
 
 // KindCleared reports if the "kind" edge to the SystemComponentKind entity was cleared.
 func (m *SystemComponentMutation) KindCleared() bool {
-	return m.clearedkind
+	return m.KindIDCleared() || m.clearedkind
 }
 
 // KindIDs returns the "kind" edge IDs in the mutation.
@@ -32238,8 +32264,14 @@ func (m *SystemComponentMutation) ClearedFields() []string {
 	if m.FieldCleared(systemcomponent.FieldProviderID) {
 		fields = append(fields, systemcomponent.FieldProviderID)
 	}
+	if m.FieldCleared(systemcomponent.FieldKindID) {
+		fields = append(fields, systemcomponent.FieldKindID)
+	}
 	if m.FieldCleared(systemcomponent.FieldDescription) {
 		fields = append(fields, systemcomponent.FieldDescription)
+	}
+	if m.FieldCleared(systemcomponent.FieldProperties) {
+		fields = append(fields, systemcomponent.FieldProperties)
 	}
 	return fields
 }
@@ -32258,8 +32290,14 @@ func (m *SystemComponentMutation) ClearField(name string) error {
 	case systemcomponent.FieldProviderID:
 		m.ClearProviderID()
 		return nil
+	case systemcomponent.FieldKindID:
+		m.ClearKindID()
+		return nil
 	case systemcomponent.FieldDescription:
 		m.ClearDescription()
+		return nil
+	case systemcomponent.FieldProperties:
+		m.ClearProperties()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponent nullable field %s", name)

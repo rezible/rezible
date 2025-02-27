@@ -87,6 +87,12 @@ func (scu *SystemComponentUpdate) SetNillableKindID(u *uuid.UUID) *SystemCompone
 	return scu
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (scu *SystemComponentUpdate) ClearKindID() *SystemComponentUpdate {
+	scu.mutation.ClearKindID()
+	return scu
+}
+
 // SetDescription sets the "description" field.
 func (scu *SystemComponentUpdate) SetDescription(s string) *SystemComponentUpdate {
 	scu.mutation.SetDescription(s)
@@ -110,6 +116,12 @@ func (scu *SystemComponentUpdate) ClearDescription() *SystemComponentUpdate {
 // SetProperties sets the "properties" field.
 func (scu *SystemComponentUpdate) SetProperties(m map[string]interface{}) *SystemComponentUpdate {
 	scu.mutation.SetProperties(m)
+	return scu
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (scu *SystemComponentUpdate) ClearProperties() *SystemComponentUpdate {
+	scu.mutation.ClearProperties()
 	return scu
 }
 
@@ -516,9 +528,6 @@ func (scu *SystemComponentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if scu.mutation.KindCleared() && len(scu.mutation.KindIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
-	}
 	return nil
 }
 
@@ -557,6 +566,9 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 	}
 	if value, ok := scu.mutation.Properties(); ok {
 		_spec.SetField(systemcomponent.FieldProperties, field.TypeJSON, value)
+	}
+	if scu.mutation.PropertiesCleared() {
+		_spec.ClearField(systemcomponent.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := scu.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldCreatedAt, field.TypeTime, value)
@@ -1131,6 +1143,12 @@ func (scuo *SystemComponentUpdateOne) SetNillableKindID(u *uuid.UUID) *SystemCom
 	return scuo
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (scuo *SystemComponentUpdateOne) ClearKindID() *SystemComponentUpdateOne {
+	scuo.mutation.ClearKindID()
+	return scuo
+}
+
 // SetDescription sets the "description" field.
 func (scuo *SystemComponentUpdateOne) SetDescription(s string) *SystemComponentUpdateOne {
 	scuo.mutation.SetDescription(s)
@@ -1154,6 +1172,12 @@ func (scuo *SystemComponentUpdateOne) ClearDescription() *SystemComponentUpdateO
 // SetProperties sets the "properties" field.
 func (scuo *SystemComponentUpdateOne) SetProperties(m map[string]interface{}) *SystemComponentUpdateOne {
 	scuo.mutation.SetProperties(m)
+	return scuo
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (scuo *SystemComponentUpdateOne) ClearProperties() *SystemComponentUpdateOne {
+	scuo.mutation.ClearProperties()
 	return scuo
 }
 
@@ -1573,9 +1597,6 @@ func (scuo *SystemComponentUpdateOne) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if scuo.mutation.KindCleared() && len(scuo.mutation.KindIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemComponent.kind"`)
-	}
 	return nil
 }
 
@@ -1631,6 +1652,9 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 	}
 	if value, ok := scuo.mutation.Properties(); ok {
 		_spec.SetField(systemcomponent.FieldProperties, field.TypeJSON, value)
+	}
+	if scuo.mutation.PropertiesCleared() {
+		_spec.ClearField(systemcomponent.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := scuo.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponent.FieldCreatedAt, field.TypeTime, value)

@@ -22,6 +22,8 @@ type systemComponentsDataSyncer struct {
 	provider rez.SystemComponentsDataProvider
 
 	mutations []ent.Mutation
+
+	componentKindProvIds map[string]*ent.SystemComponentKind
 }
 
 func newSystemComponentsDataSyncer(db *ent.Client, prov rez.SystemComponentsDataProvider) *systemComponentsDataSyncer {
@@ -54,12 +56,34 @@ func (ds *systemComponentsDataSyncer) syncProviderData(ctx context.Context) erro
 		return nil
 	}
 
+	if kindsErr := ds.loadComponentKindsMap(ctx); kindsErr != nil {
+		return fmt.Errorf("loading component kinds map: %w", kindsErr)
+	}
+
 	if componentsErr := ds.syncAllProviderComponents(ctx); componentsErr != nil {
 		return fmt.Errorf("system components: %w", componentsErr)
 	}
 	log.Info().
 		Msg("system components data sync complete")
 
+	return nil
+}
+
+func (ds *systemComponentsDataSyncer) loadComponentKindsMap(ctx context.Context) error {
+	provIds := make(map[string]*ent.SystemComponentKind)
+
+	kinds, queryErr := ds.db.SystemComponentKind.Query().All(ctx)
+	if queryErr != nil {
+		return fmt.Errorf("querying component kinds: %w", queryErr)
+	}
+	for _, kind := range kinds {
+		if kind.ProviderID == "" {
+			continue
+		}
+		k := kind
+		provIds[k.ProviderID] = k
+	}
+	ds.componentKindProvIds = provIds
 	return nil
 }
 
@@ -120,12 +144,12 @@ func (ds *systemComponentsDataSyncer) syncBatch(ctx context.Context, batch []*en
 
 func (ds *systemComponentsDataSyncer) createBatchSyncMutations(ctx context.Context, batch []*ent.SystemComponent) error {
 	ids := make([]string, len(batch))
+
 	for i, c := range batch {
 		ids[i] = c.ProviderID
 	}
 
-	query := ds.db.SystemComponent.Query().
-		Where(systemcomponent.ProviderIDIn(ids...))
+	query := ds.db.SystemComponent.Query().Where(systemcomponent.ProviderIDIn(ids...))
 	dbComponents, queryErr := query.All(ctx)
 	if queryErr != nil {
 		return fmt.Errorf("querying system components: %w", queryErr)
@@ -163,12 +187,51 @@ func (ds *systemComponentsDataSyncer) syncComponent(db, prov *ent.SystemComponen
 		needsSync = db.Name != prov.Name
 	}
 
+	m.SetProviderID(prov.ProviderID)
 	m.SetName(prov.Name)
-	// TODO
+	if prov.Edges.Kind != nil {
+		m.SetKindID(ds.syncComponentKind(prov.Edges.Kind))
+	}
+	m.SetProperties(prov.Properties)
+	m.SetDescription(prov.Description)
 
 	if needsSync {
 		ds.mutations = append(ds.mutations, m)
 	}
 
 	return componentId
+}
+
+func (ds *systemComponentsDataSyncer) syncComponentKind(prov *ent.SystemComponentKind) uuid.UUID {
+	var m *ent.SystemComponentKindMutation
+	var kindId uuid.UUID
+
+	dbKind, dbExists := ds.componentKindProvIds[prov.ProviderID]
+
+	needsSync := true
+	if !dbExists {
+		kindId = uuid.New()
+		ds.componentKindProvIds[prov.ProviderID] = &ent.SystemComponentKind{
+			ID:          kindId,
+			ProviderID:  prov.ProviderID,
+			Label:       prov.Label,
+			Description: prov.Description,
+		}
+		m = ds.db.SystemComponentKind.Create().SetID(kindId).Mutation()
+	} else {
+		kindId = dbKind.ID
+		m = ds.db.SystemComponentKind.UpdateOneID(kindId).Mutation()
+
+		needsSync = dbKind.Label != prov.Label
+	}
+
+	m.SetLabel(prov.Label)
+	m.SetDescription(prov.Description)
+	m.SetProviderID(prov.ProviderID)
+
+	if needsSync {
+		ds.mutations = append(ds.mutations, m)
+	}
+
+	return kindId
 }

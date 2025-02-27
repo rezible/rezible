@@ -73,6 +73,9 @@ func (s *OncallService) SyncData(ctx context.Context) error {
 }
 
 func (s *OncallService) setChatCreateAnnotationFunc() {
+	if s.chat == nil {
+		return
+	}
 	s.chat.SetCreateAnnotationFunc(func(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
 		anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
 			Where(oncallusershiftannotation.And(

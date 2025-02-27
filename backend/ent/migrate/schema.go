@@ -1026,10 +1026,10 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "properties", Type: field.TypeJSON},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind_id", Type: field.TypeUUID},
+		{Name: "kind_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemComponentsTable holds the schema information for the "system_components" table.
 	SystemComponentsTable = &schema.Table{
@@ -1041,7 +1041,7 @@ var (
 				Symbol:     "system_components_system_component_kinds_kind",
 				Columns:    []*schema.Column{SystemComponentsColumns[7]},
 				RefColumns: []*schema.Column{SystemComponentKindsColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}

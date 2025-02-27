@@ -246,6 +246,16 @@ func KindIDNotIn(vs ...uuid.UUID) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldNotIn(FieldKindID, vs...))
 }
 
+// KindIDIsNil applies the IsNil predicate on the "kind_id" field.
+func KindIDIsNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldIsNull(FieldKindID))
+}
+
+// KindIDNotNil applies the NotNil predicate on the "kind_id" field.
+func KindIDNotNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNotNull(FieldKindID))
+}
+
 // DescriptionEQ applies the EQ predicate on the "description" field.
 func DescriptionEQ(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldDescription, v))
@@ -319,6 +329,16 @@ func DescriptionEqualFold(v string) predicate.SystemComponent {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// PropertiesIsNil applies the IsNil predicate on the "properties" field.
+func PropertiesIsNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldIsNull(FieldProperties))
+}
+
+// PropertiesNotNil applies the NotNil predicate on the "properties" field.
+func PropertiesNotNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNotNull(FieldProperties))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

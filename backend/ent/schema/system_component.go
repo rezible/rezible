@@ -14,15 +14,12 @@ type SystemComponent struct {
 
 func (SystemComponent) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).
-			Default(uuid.New),
-		field.String("name").
-			NotEmpty(),
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.String("name").NotEmpty(),
 		field.String("provider_id").Optional(),
-		field.UUID("kind_id", uuid.UUID{}),
-		field.Text("description").
-			Optional(),
-		field.JSON("properties", map[string]any{}), // Flexible properties based on component type
+		field.UUID("kind_id", uuid.UUID{}).Optional(),
+		field.Text("description").Optional(),
+		field.JSON("properties", map[string]any{}).Optional(), // Flexible properties based on component type
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
@@ -34,7 +31,7 @@ func (SystemComponent) Fields() []ent.Field {
 func (SystemComponent) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("kind", SystemComponentKind.Type).
-			Required().Unique().
+			Unique().
 			Field("kind_id"),
 
 		edge.To("related", SystemComponent.Type).

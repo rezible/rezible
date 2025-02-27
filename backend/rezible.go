@@ -42,7 +42,7 @@ type (
 
 type (
 	BackgroundJobService interface {
-		RegisterWorkers(UserService, IncidentService, OncallService, AlertsService, DebriefService) error
+		RegisterWorkers(UserService, IncidentService, OncallService, AlertsService, DebriefService, SystemComponentsService) error
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 
@@ -96,6 +96,7 @@ type (
 	}
 
 	SystemComponentsService interface {
+		SyncData(context.Context) error
 	}
 )
 

@@ -59,6 +59,14 @@ func (scc *SystemComponentCreate) SetKindID(u uuid.UUID) *SystemComponentCreate 
 	return scc
 }
 
+// SetNillableKindID sets the "kind_id" field if the given value is not nil.
+func (scc *SystemComponentCreate) SetNillableKindID(u *uuid.UUID) *SystemComponentCreate {
+	if u != nil {
+		scc.SetKindID(*u)
+	}
+	return scc
+}
+
 // SetDescription sets the "description" field.
 func (scc *SystemComponentCreate) SetDescription(s string) *SystemComponentCreate {
 	scc.mutation.SetDescription(s)
@@ -320,20 +328,11 @@ func (scc *SystemComponentCreate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
-	if _, ok := scc.mutation.KindID(); !ok {
-		return &ValidationError{Name: "kind_id", err: errors.New(`ent: missing required field "SystemComponent.kind_id"`)}
-	}
-	if _, ok := scc.mutation.Properties(); !ok {
-		return &ValidationError{Name: "properties", err: errors.New(`ent: missing required field "SystemComponent.properties"`)}
-	}
 	if _, ok := scc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponent.created_at"`)}
 	}
 	if _, ok := scc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemComponent.updated_at"`)}
-	}
-	if len(scc.mutation.KindIDs()) == 0 {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required edge "SystemComponent.kind"`)}
 	}
 	return nil
 }
@@ -671,6 +670,12 @@ func (u *SystemComponentUpsert) UpdateKindID() *SystemComponentUpsert {
 	return u
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (u *SystemComponentUpsert) ClearKindID() *SystemComponentUpsert {
+	u.SetNull(systemcomponent.FieldKindID)
+	return u
+}
+
 // SetDescription sets the "description" field.
 func (u *SystemComponentUpsert) SetDescription(v string) *SystemComponentUpsert {
 	u.Set(systemcomponent.FieldDescription, v)
@@ -698,6 +703,12 @@ func (u *SystemComponentUpsert) SetProperties(v map[string]interface{}) *SystemC
 // UpdateProperties sets the "properties" field to the value that was provided on create.
 func (u *SystemComponentUpsert) UpdateProperties() *SystemComponentUpsert {
 	u.SetExcluded(systemcomponent.FieldProperties)
+	return u
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *SystemComponentUpsert) ClearProperties() *SystemComponentUpsert {
+	u.SetNull(systemcomponent.FieldProperties)
 	return u
 }
 
@@ -822,6 +833,13 @@ func (u *SystemComponentUpsertOne) UpdateKindID() *SystemComponentUpsertOne {
 	})
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (u *SystemComponentUpsertOne) ClearKindID() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearKindID()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *SystemComponentUpsertOne) SetDescription(v string) *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
@@ -854,6 +872,13 @@ func (u *SystemComponentUpsertOne) SetProperties(v map[string]interface{}) *Syst
 func (u *SystemComponentUpsertOne) UpdateProperties() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateProperties()
+	})
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *SystemComponentUpsertOne) ClearProperties() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearProperties()
 	})
 }
 
@@ -1149,6 +1174,13 @@ func (u *SystemComponentUpsertBulk) UpdateKindID() *SystemComponentUpsertBulk {
 	})
 }
 
+// ClearKindID clears the value of the "kind_id" field.
+func (u *SystemComponentUpsertBulk) ClearKindID() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearKindID()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *SystemComponentUpsertBulk) SetDescription(v string) *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
@@ -1181,6 +1213,13 @@ func (u *SystemComponentUpsertBulk) SetProperties(v map[string]interface{}) *Sys
 func (u *SystemComponentUpsertBulk) UpdateProperties() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateProperties()
+	})
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *SystemComponentUpsertBulk) ClearProperties() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearProperties()
 	})
 }
 

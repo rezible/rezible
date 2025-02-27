@@ -57,13 +57,22 @@ func migrateCmd(ctx context.Context, opts *Options) error {
 
 func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
+		// TODO: use cli flags
 		const (
-			syncUsers     = true
-			syncOncall    = true
-			syncIncidents = true
+			syncUsers      = true
+			syncOncall     = true
+			syncIncidents  = true
+			syncComponents = true
+
+			hardSync = true
 		)
 
 		c := db.Client()
+
+		if hardSync {
+			c.ProviderSyncHistory.Delete().ExecX(ctx)
+		}
+
 		pl := providers.NewProviderLoader(c.ProviderConfig)
 
 		users, usersErr := postgres.NewUserService(c, pl)
@@ -98,6 +107,16 @@ func syncCmd(ctx context.Context, opts *Options) error {
 			}
 			if syncErr := inc.SyncData(ctx); syncErr != nil {
 				return fmt.Errorf("incidents sync failed: %w", syncErr)
+			}
+		}
+
+		if syncComponents {
+			cmp, cmpErr := postgres.NewSystemComponentsService(c, pl)
+			if cmpErr != nil {
+				return fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpErr)
+			}
+			if syncErr := cmp.SyncData(ctx); syncErr != nil {
+				return fmt.Errorf("system components sync failed: %w", syncErr)
 			}
 		}
 

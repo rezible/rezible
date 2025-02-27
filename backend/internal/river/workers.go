@@ -17,21 +17,34 @@ func (s *JobService) RegisterWorkers(
 	oncall rez.OncallService,
 	alerts rez.AlertsService,
 	debriefs rez.DebriefService,
+	components rez.SystemComponentsService,
 ) error {
-	generateDebriefResponse := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.GenerateIncidentDebriefResponse]) error {
-		return debriefs.GenerateResponse(ctx, j.Args.DebriefId)
-	})
-	sendDebriefRequests := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SendIncidentDebriefRequests]) error {
+	return errors.Join(
+		s.registerSendDebriefRequests(debriefs),
+		s.registerGenerateDebriefResponse(debriefs),
+		s.registerEnsureShiftHandovers(oncall),
+		s.registerOncallHandoverScanPeriodicJob(time.Hour, oncall),
+		s.registerProviderDataSyncPeriodicJob(time.Hour, users, incidents, oncall, alerts, components),
+	)
+}
+
+func (s *JobService) registerSendDebriefRequests(debriefs rez.DebriefService) error {
+	workFn := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SendIncidentDebriefRequests]) error {
 		return debriefs.SendUserDebriefRequests(ctx, j.Args.IncidentId)
 	})
-	ensureShiftHandovers := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.EnsureShiftHandover]) error {
+	return river.AddWorkerSafely(s.clientCfg.Workers, workFn)
+}
+
+func (s *JobService) registerGenerateDebriefResponse(debriefs rez.DebriefService) error {
+	workFn := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.GenerateIncidentDebriefResponse]) error {
+		return debriefs.GenerateResponse(ctx, j.Args.DebriefId)
+	})
+	return river.AddWorkerSafely(s.clientCfg.Workers, workFn)
+}
+
+func (s *JobService) registerEnsureShiftHandovers(oncall rez.OncallService) error {
+	workFn := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.EnsureShiftHandover]) error {
 		return oncall.EnsureShiftHandover(ctx, j.Args.ShiftId)
 	})
-	return errors.Join(
-		river.AddWorkerSafely(s.clientCfg.Workers, sendDebriefRequests),
-		river.AddWorkerSafely(s.clientCfg.Workers, generateDebriefResponse),
-		river.AddWorkerSafely(s.clientCfg.Workers, ensureShiftHandovers),
-		s.registerOncallHandoverScanPeriodicJob(time.Hour, oncall),
-		s.registerProviderDataSyncPeriodicJob(time.Hour, users, incidents, oncall, alerts),
-	)
+	return river.AddWorkerSafely(s.clientCfg.Workers, workFn)
 }

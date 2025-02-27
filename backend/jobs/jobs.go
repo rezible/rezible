@@ -22,10 +22,11 @@ type (
 )
 
 type SyncProviderData struct {
-	Users     bool
-	Incidents bool
-	Oncall    bool
-	Alerts    bool
+	Users            bool
+	Incidents        bool
+	Oncall           bool
+	Alerts           bool
+	SystemComponents bool
 }
 
 func (SyncProviderData) Kind() string {

@@ -35,12 +35,14 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 	incidents rez.IncidentService,
 	oncall rez.OncallService,
 	alerts rez.AlertsService,
+	components rez.SystemComponentsService,
 ) error {
 	args := &jobs.SyncProviderData{
-		Users:     true,
-		Incidents: true,
-		Oncall:    true,
-		Alerts:    true,
+		Users:            true,
+		Incidents:        true,
+		Oncall:           true,
+		Alerts:           true,
+		SystemComponents: true,
 	}
 	opts := &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{
@@ -57,7 +59,7 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 		},
 	))
 
-	return river.AddWorkerSafely(s.clientCfg.Workers, river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SyncProviderData]) error {
+	workFn := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SyncProviderData]) error {
 		var err error
 		if j.Args.Users {
 			err = errors.Join(err, users.SyncData(ctx))
@@ -71,6 +73,11 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 		if j.Args.Alerts {
 			err = errors.Join(err, alerts.SyncData(ctx))
 		}
+		if j.Args.SystemComponents {
+			err = errors.Join(err, components.SyncData(ctx))
+		}
 		return err
-	}))
+	})
+
+	return river.AddWorkerSafely(s.clientCfg.Workers, workFn)
 }
