@@ -1,117 +1,105 @@
-// import * as Y from "yjs";
 import {
 	HocuspocusProvider,
 	WebSocketStatus,
 	type HocuspocusProviderConfiguration,
 	type StatesArray,
 } from "@hocuspocus/provider";
-import { requestDocumentEditorSession } from "$lib/api/oapi.gen";
+import { requestDocumentEditorSession, type DocumentEditorSession } from "$lib/api/oapi.gen";
 import { onMount } from "svelte";
 import { watch } from "runed";
-import { retrospectiveCtx } from "./context";
-
-export type CollaborationState = {
-	documentName?: string;
-	provider: HocuspocusProvider | null;
-	awareness: StatesArray;
-	status: WebSocketStatus;
-	error?: Error;
-};
 
 const createCollaborationState = () => {
-	const emptyState: CollaborationState = {
-		documentName: undefined,
-		provider: null,
-		awareness: [],
-		status: WebSocketStatus.Disconnected,
-		error: undefined,
+	let documentName = $state<string>();
+	let provider = $state<HocuspocusProvider>();
+	let awareness = $state<StatesArray>([]);
+	let connectionStatus = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
+	let error = $state<Error>();
+
+	const cleanup = () => {
+		// https://github.com/ueberdosis/hocuspocus/issues/845
+		// if (collab.provider && collab.provider.isConnected) {}
+		try {
+			documentName = undefined;
+			if (provider?.isConnected) provider?.disconnect();
+			provider?.destroy();
+			provider = undefined;
+			awareness = [];
+			connectionStatus = WebSocketStatus.Disconnected;
+			error = undefined;
+		} catch (e) {
+			console.error("failed to disconnect collaboration provider ", e);
+		}
 	};
 
-	let collab = $state<CollaborationState>(emptyState);
-
-	const connect = async (retrospectiveId: string) => {
-		if (collab.documentName === retrospectiveId) return;
-		collab.documentName = retrospectiveId;
-
-		const res = await requestDocumentEditorSession({
-			body: { attributes: { documentName: retrospectiveId } },
-			throwOnError: false,
-		});
-
-		if (res.error) {
-			console.error("connection error", res.error);
-			collab.error = new Error("failed to connect");
-			return;
-		}
-
-		const sess = res.data.data;
+	const createSessionProvider = (sess: DocumentEditorSession): HocuspocusProvider => {
 		const config: HocuspocusProviderConfiguration = {
-			// document: new Y.Doc(),
 			url: sess.connectionUrl,
 			token: sess.token,
 			name: sess.documentName,
 			connect: true,
 			preserveConnection: false,
 			onAwarenessChange: ({ states }) => {
-				collab.awareness = states;
+				awareness = states;
 			},
 			onStatus({ status }) {
-				collab.status = status;
+				console.log("status", status, sess.documentName)
+				connectionStatus = status;
 			},
 			onAuthenticated: () => {
-				collab.error = undefined;
+				error = undefined;
 			},
 			onAuthenticationFailed: ({ reason }) => {
-				collab.error = new Error(reason);
+				error = new Error(reason);
 			},
 		};
+		return new HocuspocusProvider(config);
+	}
 
-		if (collab.provider) {
-			collab.provider.destroy();
-			// collab.provider.setConfiguration(config);
-			// collab.provider.forceSync();
+	const connect = async (retrospectiveId: string) => {
+		if (documentName === retrospectiveId) return;
+		documentName = retrospectiveId;
+
+		cleanup();
+		/*
+		if (provider) {
+			collab.provider.setConfiguration(config);
+			collab.provider.forceSync();
 		}
-		collab.provider = new HocuspocusProvider(config);
-	};
+		*/
 
-	const cleanup = () => {
-		if (collab.provider && collab.provider.isConnected) {
-			// https://github.com/ueberdosis/hocuspocus/issues/845
-			try {
-				collab.provider?.destroy();
-			} catch (e) {
-				console.error("failed to disconnect collaboration provider ", e);
-			}
-		}
-		collab = emptyState;
-	};
-
-	const setup = () => {
-		const retrospectiveId = retrospectiveCtx.get().id;
-		watch(
-			() => retrospectiveId,
-			(id) => {
-				connect(id);
-			}
-		);
-		onMount(() => {
-			return () => cleanup();
+		const { data: body, error: reqErr } = await requestDocumentEditorSession({
+			body: { attributes: { documentName: retrospectiveId } },
+			throwOnError: false,
 		});
+
+		if (reqErr) {
+			console.error("connection error", reqErr);
+			error = new Error("failed to connect");
+			return;
+		}
+
+		provider = createSessionProvider(body.data);
+	};
+
+	const setup = (retroId: string) => {
+		// const retrospectiveId = retrospectiveCtx.get().id;
+		watch(() => retroId, (id) => { connect(id) });
+		onMount(() => (() => { cleanup() }));
 	};
 
 	return {
 		setup,
 		get awareness() {
-			return collab.awareness;
+			return awareness;
 		},
 		get provider() {
-			return collab.provider;
+			return provider;
 		},
-		get status() {
-			return collab.status;
+		get connectionStatus() {
+			return connectionStatus;
 		},
 		get error() {
-			return collab.error;
+			return error;
 		},
 	};
 };

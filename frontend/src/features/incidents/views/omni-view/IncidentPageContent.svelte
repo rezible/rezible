@@ -18,9 +18,9 @@
 
 	incidentCtx.set(incident);
 	retrospectiveCtx.set(retrospective);
-	collaboration.setup();
-</script>
 
+	collaboration.setup(retrospective.id);
+</script>
 
 <div class="flex-1 min-h-0 overflow-y-auto border p-2">
 	{#if viewParam === undefined}

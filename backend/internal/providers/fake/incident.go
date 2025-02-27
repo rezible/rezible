@@ -91,7 +91,27 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 		},
 	}
 
-	p.fakeIncidents = []*ent.Incident{inc1}
+	inc2 := &ent.Incident{
+		ProviderID:    "test-incident-two",
+		Slug:          "test-incident-2",
+		Title:         "Test Incident 2",
+		Private:       false,
+		Summary:       "a second test incident",
+		OpenedAt:      time.Now().Add(-8 * time.Hour),
+		ModifiedAt:    time.Now().Add(-7 * time.Hour),
+		ClosedAt:      time.Now().Add(-7 * time.Hour),
+		ChatChannelID: "",
+		Edges: ent.IncidentEdges{
+			Severity:        severity,
+			Type:            incType,
+			Tasks:           tasks,
+			RoleAssignments: roles,
+			TagAssignments:  tags,
+			Milestones:      milestones,
+		},
+	}
+
+	p.fakeIncidents = []*ent.Incident{inc1, inc2}
 }
 
 func (p *IncidentDataProvider) GetWebhooks() rez.Webhooks {

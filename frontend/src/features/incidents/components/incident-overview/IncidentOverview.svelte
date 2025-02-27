@@ -10,7 +10,7 @@
 </script>
 
 <div class="flex flex-col gap-2 overflow-y-auto">
-	<!--a href="/incidents/demo-incident">other</a-->
+	<a href="/incidents/test-incident">other</a>
 
 	<div class="grid grid-cols-2 gap-2">
 		<div class="flex flex-col gap-2">

@@ -10,5 +10,5 @@
 			<Button iconOnly icon={mdiChevronRight} />
 		</div>
 	</Header>
-	<span>status: {collaboration.status}</span>
+	<span>status: {collaboration.connectionStatus}</span>
 </div>
