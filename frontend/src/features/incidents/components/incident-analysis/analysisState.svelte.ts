@@ -7,11 +7,11 @@ import {
 	type SystemComponent,
 } from "$lib/api";
 import { incidentCtx } from "$features/incidents/lib/context";
+import type { XYPosition } from "@xyflow/svelte";
 
 const createAnalysisState = () => {
 	let analysisId = $state<string>();
 	let data = $state<SystemAnalysis>();
-	let addingComponent = $state<SystemComponent>();
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
@@ -31,9 +31,9 @@ const createAnalysisState = () => {
 		watch(() => analysisQuery.data, res => { if (res?.data) data = res.data });
 	};
 
-	const setAddingComponent = (c?: SystemComponent) => {
-		addingComponent = c;
-	};
+	const addComponent = async (component: SystemComponent, pos: XYPosition) => {
+		console.log("add component");
+	}
 
 	const setRelationshipDialogOpen = (open: boolean, editRel?: SystemAnalysisRelationship) => {
 		relationshipDialogOpen = open;
@@ -46,10 +46,7 @@ const createAnalysisState = () => {
 		get data() {
 			return data;
 		},
-		setAddingComponent,
-		get addingComponent() {
-			return addingComponent;
-		},
+		addComponent,
 		get relationshipDialogOpen() {
 			return relationshipDialogOpen;
 		},

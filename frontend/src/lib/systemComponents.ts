@@ -3,7 +3,7 @@ import type { ListSystemComponentKindsResponse, SystemComponentAttributes, Syste
 import type { MenuOption } from "svelte-ux";
 
 export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]): MenuOption<string>[] => {
-	return [{ label: "Service", value: "service" }];
+	return kinds.map(k => ({ label: k.attributes.label, value: k.id }));
 }
 
 export const getIconForComponentKind = (kind: SystemComponentKind) => {

@@ -1,14 +1,28 @@
 <script lang="ts">
-	import { Button, Header } from "svelte-ux";
-	import { mdiChevronRight } from "@mdi/js";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { mdiChevronRight, mdiCircleMedium } from "@mdi/js";
 	import { collaboration } from "$features/incidents/lib/collaboration.svelte";
+	import { cls } from "@layerstack/tailwind";
+	import { WebSocketStatus } from "@hocuspocus/provider";
+
+	const connected = $derived(collaboration.connectionStatus === WebSocketStatus.Connected);
+	const connecting = $derived(collaboration.connectionStatus === WebSocketStatus.Connecting);
 </script>
 
 <div class="w-64 border overflow-y-auto p-2">
-	<Header title="Context">
+	<Header>
+		<span slot="title" class="text-xl flex gap-1 items-center">
+			Context
+			<Icon
+				data={mdiCircleMedium}
+				classes={{
+					root: "opacity-70",
+					path: cls(connected ? "fill-success" : (connecting ? "fill-warning" : "fill-default")),
+				}}
+			/>
+		</span>
 		<div slot="actions">
 			<Button iconOnly icon={mdiChevronRight} />
 		</div>
 	</Header>
-	<span>status: {collaboration.connectionStatus}</span>
 </div>

@@ -94,6 +94,21 @@ type (
 		SignalId    uuid.UUID `json:"signalId"`
 		Description string    `json:"description"`
 	}
+
+	// TODO: System Hazard support
+	SystemHazard struct {
+		Id         uuid.UUID              `json:"id"`
+		Attributes SystemHazardAttributes `json:"attributes"`
+	}
+
+	SystemHazardAttributes struct {
+		Label          string      `json:"label"`
+		Severity       string      `json:"severity"`
+		Likelihood     string      `json:"likelihood"`
+		Constraints    []uuid.UUID `json:"constraintIds"`
+		Feedbacks      []uuid.UUID `json:"signalIds"`
+		ControlActions []uuid.UUID `json:"controlIds"`
+	}
 )
 
 func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {

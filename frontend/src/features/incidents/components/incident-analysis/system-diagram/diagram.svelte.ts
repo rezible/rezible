@@ -12,7 +12,7 @@ import {
 	type Connection,
 } from "@xyflow/svelte";
 
-import type { SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
+import type { SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent } from "$lib/api";
 import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 import { relationshipDialog } from "$features/incidents/components/incident-analysis/relationship-dialog/dialogState.svelte";
 
@@ -139,6 +139,7 @@ const createDiagramState = () => {
 	let toolbarPosition = $state<XYPosition>({ x: 0, y: 0 });
 	let containerEl = $state<HTMLElement>();
 	let ctxMenuProps = $state<ContextMenuProps>();
+	let addingComponent = $state<SystemComponent>();
 
 	const nodes = writable<Node[]>([]);
 	const edges = writable<Edge[]>([]);
@@ -212,10 +213,14 @@ const createDiagramState = () => {
 		}
 	};
 
+	const setAddingComponent = (c?: SystemComponent) => {
+		addingComponent = c;
+	};
+
 	const handlePaneClicked = (e: SvelteFlowEvents["paneclick"]) => {
 		setSelected({});
 
-		if (analysis.addingComponent) {
+		if (addingComponent) {
 			const event = e.detail.event;
 			event.preventDefault();
 
@@ -223,14 +228,10 @@ const createDiagramState = () => {
 
 			const { x, y } = containerEl.getBoundingClientRect();
 
-			const posX = event.pageX - x;
-			const posY = event.pageY - y;
-
-			alert(`add component: [${posX}, ${posY}]`);
-
-			// createSystemAnalysisComponent mutation, then invalidate 
-
-			analysis.setAddingComponent();
+			const pos = {x: event.pageX - x, y: event.pageY - y};
+			const component = $state.snapshot(addingComponent);
+			analysis.addComponent(component, pos);
+			setAddingComponent();
 		}
 	};
 
@@ -266,6 +267,10 @@ const createDiagramState = () => {
 		};
 	};
 
+	const closeContextMenu = () => {
+		ctxMenuProps = undefined;
+	}
+
 	const onEdgeConnect = ({source, target}: Connection) => {
 		edges.set(get(edges).filter(e => (!(e.source === source && e.target === target))));
 		relationshipDialog.setCreating(source, target);
@@ -288,6 +293,11 @@ const createDiagramState = () => {
 		},
 		get ctxMenuProps() {
 			return ctxMenuProps;
+		},
+		closeContextMenu,
+		setAddingComponent,
+		get addingComponent() {
+			return addingComponent;
 		},
 		handleContextMenuEvent,
 		handleNodeClicked,

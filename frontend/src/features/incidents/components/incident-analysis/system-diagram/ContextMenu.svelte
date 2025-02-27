@@ -2,8 +2,10 @@
 	export type ContextMenuProps = {
 		nodeId?: string;
 		edgeId?: string;
-		top?: number;
-		left?: number;
+		top: number;
+		left: number;
+		x: number;
+		y: number;
 	};
 
 	export const ContextMenuWidth = 180;
@@ -12,29 +14,35 @@
 
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
+	import { diagram } from "./diagram.svelte";
+	import { componentDialog } from "$features/incidents/components/incident-analysis/component-dialog/dialogState.svelte";
 
-	const { nodeId, edgeId, top, left }: ContextMenuProps = $props();
-
+	const props = $derived(diagram.ctxMenuProps);
 	const nodes = useNodes();
 	const edges = useEdges();
 
-	const active = $derived(!!top && !!left);
-
-	const deleteNode = () => {
+	const deleteNode = (nodeId: string) => {
 		nodes.set($nodes.filter(({ id }) => id !== nodeId));
 		edges.set($edges.filter(({ source, target }) => source !== nodeId && target !== nodeId));
 	};
+
+	const addComponent = () => {
+		if (!props) return;
+		const {x, y} = $state.snapshot(props);
+		componentDialog.setAdding({x, y});
+		diagram.closeContextMenu();
+	}
 </script>
 
-{#if active}
+{#if !!props}
 	<div
-		style="top: {top}px; left: {left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
+		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
 		class="absolute context-menu border bg-surface-200"
 	>
-		{#if nodeId}
-			{@render nodeMenu(nodeId)}
-		{:else if edgeId}
-			{@render edgeMenu(edgeId)}
+		{#if props.nodeId}
+			{@render nodeMenu(props.nodeId)}
+		{:else if props.edgeId}
+			{@render edgeMenu(props.edgeId)}
 		{:else}
 			{@render paneMenu()}
 		{/if}
@@ -45,7 +53,7 @@
 	<p style="margin: 0.5em;">
 		<small>node id: {id}</small>
 	</p>
-	<button onclick={deleteNode}>delete node</button>
+	<button onclick={() => {deleteNode(id)}}>delete node</button>
 {/snippet}
 
 {#snippet edgeMenu(id: string)}
@@ -55,7 +63,7 @@
 {/snippet}
 
 {#snippet paneMenu()}
-	<p style="margin: 0.5em;">pane menu</p>
+	<button onclick={addComponent}>add component</button>
 {/snippet}
 
 <style>

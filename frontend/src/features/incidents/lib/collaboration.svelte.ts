@@ -42,7 +42,6 @@ const createCollaborationState = () => {
 				awareness = states;
 			},
 			onStatus({ status }) {
-				console.log("status", status, sess.documentName)
 				connectionStatus = status;
 			},
 			onAuthenticated: () => {

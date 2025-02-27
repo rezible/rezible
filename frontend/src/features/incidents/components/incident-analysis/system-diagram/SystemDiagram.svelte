@@ -98,7 +98,7 @@
 			<Controls {...controlsProps} />
 			<MiniMap {...minimapProps} />
 			<ConnectionLine slot="connectionLine" />
-			<ContextMenu {...diagram.ctxMenuProps} />
+			<ContextMenu />
 			<EditToolbar />
 			<AddingComponentGhostNode />
 		</SvelteFlow>

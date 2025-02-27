@@ -16,7 +16,7 @@
 	const kindsMap = $derived(new SvelteMap(kinds.map((k) => [k.id, k])));
 	const kindOptions = $derived(getSystemComponentKindMenuOptions(kinds));
 	const onKindSelected = ({detail}: CustomEvent<{value?: string | null}>) => {
-		attr.setKind(!!detail.value ? kindsMap.get(detail.value) : undefined);
+		attr.updateKind(!!detail.value ? kindsMap.get(detail.value) : undefined);
 	};
 </script>
 

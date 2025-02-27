@@ -19,6 +19,8 @@ import {
 	type UpdateSystemComponentAttributes,
 } from "$lib/api";
 import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
+import type { XYPosition } from "@xyflow/svelte";
+import { diagram } from "../system-diagram/diagram.svelte";
 
 const emptyComponentKind = () => ({
 	id: "",
@@ -66,8 +68,13 @@ const createComponentAttributesState = () => {
 	}
 
 	const onUpdate = () => {
-		// TODO: check if attributes valid;
-		valid = !!name && !!kind;
+		// TODO: actually check if attributes valid;
+		valid = !!name && !!kind.id;
+	}
+
+	const updateKind = (k?: SystemComponentKind) => {
+		kind = (k ?? emptyComponentKind());
+		onUpdate(); 
 	}
 
 	const updateConstraint = (c: SystemComponentConstraint) => {
@@ -91,13 +98,12 @@ const createComponentAttributesState = () => {
 		onUpdate();
 	}
 
-	// this is gross but oh well
 	return {
 		init,
 		get name() { return name },
 		set name(n: string) { name = n; onUpdate(); },
 		get kind() { return kind },
-		setKind(k?: SystemComponentKind) { kind = (k ?? emptyComponentKind()); onUpdate(); },
+		updateKind,
 		get description() { return description },
 		set description(d: string) { description = d; onUpdate(); },
 		get constraints() { return constraints },
@@ -118,9 +124,12 @@ export const componentAttributes = createComponentAttributesState();
 const createComponentDialogState = () => {
 	let editingComponent = $state<SystemAnalysisComponent>();
 	let selectedAddComponent = $state<SystemComponent>();
+	let addingPosition = $state<XYPosition>();
 
 	let view = $state<ComponentDialogView>("closed");
 	let previousView = $state<ComponentDialogView>("closed");
+
+	const creatingToAdd = $derived(view === "create" && previousView === "add");
 
 	const setView = (v: ComponentDialogView) => {
 		previousView = $state.snapshot(view);
@@ -134,11 +143,12 @@ const createComponentDialogState = () => {
 		setView("closed");
 		editingComponent = undefined;
 		selectedAddComponent = undefined;
+		addingPosition = undefined;
 		componentAttributes.init();
 	};
 
 	const goBack = () => {
-		if (view === "create" && previousView === "add") {
+		if (creatingToAdd) {
 			setView("add");
 			componentAttributes.init();
 			return;
@@ -147,7 +157,8 @@ const createComponentDialogState = () => {
 	}
 
 	const onSuccess = ({ data }: { data: SystemComponent }) => {
-		if (previousView === "add"/*&& view === "create"*/) {
+		console.log("success", creatingToAdd);
+		if (creatingToAdd) {
 			goBack();
 			selectedAddComponent = data;
 			return;
@@ -171,7 +182,10 @@ const createComponentDialogState = () => {
 		componentTraits.setup();
 	};
 
-	const setAdding = () => setView("add");
+	const setAdding = (pos?: XYPosition) => {
+		setView("add");
+		addingPosition = pos;
+	}
 
 	const setSelectedAddComponent = (c?: SystemComponent) => selectedAddComponent = c;
 
@@ -210,14 +224,27 @@ const createComponentDialogState = () => {
 		updateMut?.mutate({ path: { id }, body: { attributes } });
 	}
 
+	const doAdd = () => {
+		if (!selectedAddComponent) return;
+		const component = $state.snapshot(selectedAddComponent);
+		const pos = $state.snapshot(addingPosition);
+		if (pos) {
+			analysis.addComponent(component, pos);
+			// TODO: check if success then clear
+			clear();
+		} else {
+			diagram.setAddingComponent(component);
+			clear();
+		}
+	}
+
 	const onConfirm = () => {
 		if (view === "create" && componentAttributes.valid) {
 			doCreate();
 		} else if (view === "edit" && componentAttributes.valid) {
 			doUpdate();
 		} else if (view === "add" && !!selectedAddComponent) {
-			analysis.setAddingComponent($state.snapshot(selectedAddComponent));
-			clear();
+			doAdd();
 		} else {
 			console.error("invalid state to confirm", $state.snapshot(view));
 			clear();
