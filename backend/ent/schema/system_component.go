@@ -18,15 +18,8 @@ func (SystemComponent) Fields() []ent.Field {
 			Default(uuid.New),
 		field.String("name").
 			NotEmpty(),
+		field.String("provider_id").Optional(),
 		field.UUID("kind_id", uuid.UUID{}),
-		//field.Enum("type").
-		//	Values(
-		//		"service",          // e.g., API service, database
-		//		"control",          // e.g., rate limiter, circuit breaker
-		//		"feedback",         // e.g., monitoring, alerts
-		//		"interface",        // e.g., API endpoint, UI
-		//		"human_controller", // e.g., team, operations
-		//	),
 		field.Text("description").
 			Optional(),
 		field.JSON("properties", map[string]any{}), // Flexible properties based on component type
@@ -40,37 +33,27 @@ func (SystemComponent) Fields() []ent.Field {
 
 func (SystemComponent) Edges() []ent.Edge {
 	return []ent.Edge{
-		// Hierarchical relationships
-		//edge.To("children", SystemComponent.Type).
-		//	From("parent").
-		//	Unique(),
 		edge.To("kind", SystemComponentKind.Type).
 			Required().Unique().
 			Field("kind_id"),
-		edge.To("analyses", SystemAnalysis.Type).
-			Through("analysis_components", SystemAnalysisComponent.Type),
-		// relationships
+
 		edge.To("related", SystemComponent.Type).
 			StorageKey(
-				edge.Table("system_relationship"),
-				edge.Columns("source_component_id", "target_component_id")).
-			Through("relationships", SystemAnalysisRelationship.Type),
-		//edge.To("controls", SystemComponent.Type).
-		//	StorageKey(edge.Table("system_component_control_relationship"), edge.Columns("controller_id", "controlled_id")).
-		//	Through("control_relationships", SystemComponentControlRelationship.Type),
-		//// Feedback relationships
-		//edge.To("feedback_to", SystemComponent.Type).
-		//	StorageKey(edge.Table("system_component_feedback_relationship"), edge.Columns("source_id", "target_id")).
-		//	Through("feedback_relationships", SystemComponentFeedbackRelationship.Type),
-		// Incident involvement
-		//edge.From("incidents", Incident.Type).
-		//	Ref("system_components").
-		//	Through("incident_system_components", IncidentSystemComponent.Type),
-		// Timeline events this component was involved in
+				edge.Table("system_component_relationships"),
+				edge.Columns("source_id", "target_id")).
+			Through("component_relationships", SystemComponentRelationship.Type),
+
+		edge.To("system_analyses", SystemAnalysis.Type).
+			Through("system_analysis_components", SystemAnalysisComponent.Type),
+		//edge.To("system_analysis_relations", SystemComponent.Type).
+		//	//StorageKey(
+		//	//	edge.Table("system_analysis_relations"),
+		//	//	edge.Columns("source_component_id", "target_component_id")).
+		//	Through("system_analysis_relations", SystemAnalysisRelationship.Type),
+
 		edge.From("events", IncidentEvent.Type).
 			Ref("system_components").
 			Through("event_components", IncidentEventSystemComponent.Type),
-
 		edge.From("constraints", SystemComponentConstraint.Type).
 			Ref("component"),
 		edge.From("controls", SystemComponentControl.Type).
@@ -87,6 +70,7 @@ type SystemComponentKind struct {
 func (SystemComponentKind) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.String("provider_id").Optional(),
 		field.Text("label"),
 		field.Text("description").Optional(),
 		field.Time("created_at").Default(time.Now),

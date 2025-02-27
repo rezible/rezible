@@ -61,14 +61,9 @@ func AnalysisID(v uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldAnalysisID, v))
 }
 
-// SourceComponentID applies equality check predicate on the "source_component_id" field. It's identical to SourceComponentIDEQ.
-func SourceComponentID(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldSourceComponentID, v))
-}
-
-// TargetComponentID applies equality check predicate on the "target_component_id" field. It's identical to TargetComponentIDEQ.
-func TargetComponentID(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTargetComponentID, v))
+// ComponentRelationshipID applies equality check predicate on the "component_relationship_id" field. It's identical to ComponentRelationshipIDEQ.
+func ComponentRelationshipID(v uuid.UUID) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldComponentRelationshipID, v))
 }
 
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
@@ -101,44 +96,24 @@ func AnalysisIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldAnalysisID, vs...))
 }
 
-// SourceComponentIDEQ applies the EQ predicate on the "source_component_id" field.
-func SourceComponentIDEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldSourceComponentID, v))
+// ComponentRelationshipIDEQ applies the EQ predicate on the "component_relationship_id" field.
+func ComponentRelationshipIDEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldComponentRelationshipID, v))
 }
 
-// SourceComponentIDNEQ applies the NEQ predicate on the "source_component_id" field.
-func SourceComponentIDNEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldSourceComponentID, v))
+// ComponentRelationshipIDNEQ applies the NEQ predicate on the "component_relationship_id" field.
+func ComponentRelationshipIDNEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldComponentRelationshipID, v))
 }
 
-// SourceComponentIDIn applies the In predicate on the "source_component_id" field.
-func SourceComponentIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldSourceComponentID, vs...))
+// ComponentRelationshipIDIn applies the In predicate on the "component_relationship_id" field.
+func ComponentRelationshipIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldComponentRelationshipID, vs...))
 }
 
-// SourceComponentIDNotIn applies the NotIn predicate on the "source_component_id" field.
-func SourceComponentIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldSourceComponentID, vs...))
-}
-
-// TargetComponentIDEQ applies the EQ predicate on the "target_component_id" field.
-func TargetComponentIDEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTargetComponentID, v))
-}
-
-// TargetComponentIDNEQ applies the NEQ predicate on the "target_component_id" field.
-func TargetComponentIDNEQ(v uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldTargetComponentID, v))
-}
-
-// TargetComponentIDIn applies the In predicate on the "target_component_id" field.
-func TargetComponentIDIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldTargetComponentID, vs...))
-}
-
-// TargetComponentIDNotIn applies the NotIn predicate on the "target_component_id" field.
-func TargetComponentIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldTargetComponentID, vs...))
+// ComponentRelationshipIDNotIn applies the NotIn predicate on the "component_relationship_id" field.
+func ComponentRelationshipIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldComponentRelationshipID, vs...))
 }
 
 // DescriptionEQ applies the EQ predicate on the "description" field.
@@ -279,44 +254,21 @@ func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.SystemAn
 	})
 }
 
-// HasSourceComponent applies the HasEdge predicate on the "source_component" edge.
-func HasSourceComponent() predicate.SystemAnalysisRelationship {
+// HasComponentRelationship applies the HasEdge predicate on the "component_relationship" edge.
+func HasComponentRelationship() predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, SourceComponentTable, SourceComponentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, ComponentRelationshipTable, ComponentRelationshipColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSourceComponentWith applies the HasEdge predicate on the "source_component" edge with a given conditions (other predicates).
-func HasSourceComponentWith(preds ...predicate.SystemComponent) predicate.SystemAnalysisRelationship {
+// HasComponentRelationshipWith applies the HasEdge predicate on the "component_relationship" edge with a given conditions (other predicates).
+func HasComponentRelationshipWith(preds ...predicate.SystemComponentRelationship) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := newSourceComponentStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasTargetComponent applies the HasEdge predicate on the "target_component" edge.
-func HasTargetComponent() predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, TargetComponentTable, TargetComponentColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTargetComponentWith applies the HasEdge predicate on the "target_component" edge with a given conditions (other predicates).
-func HasTargetComponentWith(preds ...predicate.SystemComponent) predicate.SystemAnalysisRelationship {
-	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		step := newTargetComponentStep()
+		step := newComponentRelationshipStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

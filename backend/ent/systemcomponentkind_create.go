@@ -25,6 +25,20 @@ type SystemComponentKindCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetProviderID sets the "provider_id" field.
+func (sckc *SystemComponentKindCreate) SetProviderID(s string) *SystemComponentKindCreate {
+	sckc.mutation.SetProviderID(s)
+	return sckc
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (sckc *SystemComponentKindCreate) SetNillableProviderID(s *string) *SystemComponentKindCreate {
+	if s != nil {
+		sckc.SetProviderID(*s)
+	}
+	return sckc
+}
+
 // SetLabel sets the "label" field.
 func (sckc *SystemComponentKindCreate) SetLabel(s string) *SystemComponentKindCreate {
 	sckc.mutation.SetLabel(s)
@@ -177,6 +191,10 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := sckc.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
 	if value, ok := sckc.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)
 		_node.Label = value
@@ -212,7 +230,7 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 // of the `INSERT` statement. For example:
 //
 //	client.SystemComponentKind.Create().
-//		SetLabel(v).
+//		SetProviderID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -221,7 +239,7 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentKindUpsert) {
-//			SetLabel(v+v).
+//			SetProviderID(v+v).
 //		}).
 //		Exec(ctx)
 func (sckc *SystemComponentKindCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentKindUpsertOne {
@@ -256,6 +274,24 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentKindUpsert) SetProviderID(v string) *SystemComponentKindUpsert {
+	u.Set(systemcomponentkind.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentKindUpsert) UpdateProviderID() *SystemComponentKindUpsert {
+	u.SetExcluded(systemcomponentkind.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentKindUpsert) ClearProviderID() *SystemComponentKindUpsert {
+	u.SetNull(systemcomponentkind.FieldProviderID)
+	return u
+}
 
 // SetLabel sets the "label" field.
 func (u *SystemComponentKindUpsert) SetLabel(v string) *SystemComponentKindUpsert {
@@ -345,6 +381,27 @@ func (u *SystemComponentKindUpsertOne) Update(set func(*SystemComponentKindUpser
 		set(&SystemComponentKindUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentKindUpsertOne) SetProviderID(v string) *SystemComponentKindUpsertOne {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentKindUpsertOne) UpdateProviderID() *SystemComponentKindUpsertOne {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentKindUpsertOne) ClearProviderID() *SystemComponentKindUpsertOne {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.ClearProviderID()
+	})
 }
 
 // SetLabel sets the "label" field.
@@ -532,7 +589,7 @@ func (sckcb *SystemComponentKindCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentKindUpsert) {
-//			SetLabel(v+v).
+//			SetProviderID(v+v).
 //		}).
 //		Exec(ctx)
 func (sckcb *SystemComponentKindCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentKindUpsertBulk {
@@ -609,6 +666,27 @@ func (u *SystemComponentKindUpsertBulk) Update(set func(*SystemComponentKindUpse
 		set(&SystemComponentKindUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentKindUpsertBulk) SetProviderID(v string) *SystemComponentKindUpsertBulk {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentKindUpsertBulk) UpdateProviderID() *SystemComponentKindUpsertBulk {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentKindUpsertBulk) ClearProviderID() *SystemComponentKindUpsertBulk {
+	return u.Update(func(s *SystemComponentKindUpsert) {
+		s.ClearProviderID()
+	})
 }
 
 // SetLabel sets the "label" field.

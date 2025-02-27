@@ -17,11 +17,11 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 )
 
@@ -50,6 +50,26 @@ func (scu *SystemComponentUpdate) SetNillableName(s *string) *SystemComponentUpd
 	if s != nil {
 		scu.SetName(*s)
 	}
+	return scu
+}
+
+// SetProviderID sets the "provider_id" field.
+func (scu *SystemComponentUpdate) SetProviderID(s string) *SystemComponentUpdate {
+	scu.mutation.SetProviderID(s)
+	return scu
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (scu *SystemComponentUpdate) SetNillableProviderID(s *string) *SystemComponentUpdate {
+	if s != nil {
+		scu.SetProviderID(*s)
+	}
+	return scu
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (scu *SystemComponentUpdate) ClearProviderID() *SystemComponentUpdate {
+	scu.mutation.ClearProviderID()
 	return scu
 }
 
@@ -118,21 +138,6 @@ func (scu *SystemComponentUpdate) SetKind(s *SystemComponentKind) *SystemCompone
 	return scu.SetKindID(s.ID)
 }
 
-// AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
-func (scu *SystemComponentUpdate) AddAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.AddAnalysisIDs(ids...)
-	return scu
-}
-
-// AddAnalyses adds the "analyses" edges to the SystemAnalysis entity.
-func (scu *SystemComponentUpdate) AddAnalyses(s ...*SystemAnalysis) *SystemComponentUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return scu.AddAnalysisIDs(ids...)
-}
-
 // AddRelatedIDs adds the "related" edge to the SystemComponent entity by IDs.
 func (scu *SystemComponentUpdate) AddRelatedIDs(ids ...uuid.UUID) *SystemComponentUpdate {
 	scu.mutation.AddRelatedIDs(ids...)
@@ -146,6 +151,21 @@ func (scu *SystemComponentUpdate) AddRelated(s ...*SystemComponent) *SystemCompo
 		ids[i] = s[i].ID
 	}
 	return scu.AddRelatedIDs(ids...)
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (scu *SystemComponentUpdate) AddSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.AddSystemAnalysisIDs(ids...)
+	return scu
+}
+
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (scu *SystemComponentUpdate) AddSystemAnalyses(s ...*SystemAnalysis) *SystemComponentUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scu.AddSystemAnalysisIDs(ids...)
 }
 
 // AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
@@ -208,34 +228,34 @@ func (scu *SystemComponentUpdate) AddSignals(s ...*SystemComponentSignal) *Syste
 	return scu.AddSignalIDs(ids...)
 }
 
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (scu *SystemComponentUpdate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.AddAnalysisComponentIDs(ids...)
+// AddComponentRelationshipIDs adds the "component_relationships" edge to the SystemComponentRelationship entity by IDs.
+func (scu *SystemComponentUpdate) AddComponentRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.AddComponentRelationshipIDs(ids...)
 	return scu
 }
 
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (scu *SystemComponentUpdate) AddAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdate {
+// AddComponentRelationships adds the "component_relationships" edges to the SystemComponentRelationship entity.
+func (scu *SystemComponentUpdate) AddComponentRelationships(s ...*SystemComponentRelationship) *SystemComponentUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scu.AddAnalysisComponentIDs(ids...)
+	return scu.AddComponentRelationshipIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (scu *SystemComponentUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.AddRelationshipIDs(ids...)
+// AddSystemAnalysisComponentIDs adds the "system_analysis_components" edge to the SystemAnalysisComponent entity by IDs.
+func (scu *SystemComponentUpdate) AddSystemAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.AddSystemAnalysisComponentIDs(ids...)
 	return scu
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (scu *SystemComponentUpdate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentUpdate {
+// AddSystemAnalysisComponents adds the "system_analysis_components" edges to the SystemAnalysisComponent entity.
+func (scu *SystemComponentUpdate) AddSystemAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scu.AddRelationshipIDs(ids...)
+	return scu.AddSystemAnalysisComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
@@ -264,27 +284,6 @@ func (scu *SystemComponentUpdate) ClearKind() *SystemComponentUpdate {
 	return scu
 }
 
-// ClearAnalyses clears all "analyses" edges to the SystemAnalysis entity.
-func (scu *SystemComponentUpdate) ClearAnalyses() *SystemComponentUpdate {
-	scu.mutation.ClearAnalyses()
-	return scu
-}
-
-// RemoveAnalysisIDs removes the "analyses" edge to SystemAnalysis entities by IDs.
-func (scu *SystemComponentUpdate) RemoveAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.RemoveAnalysisIDs(ids...)
-	return scu
-}
-
-// RemoveAnalyses removes "analyses" edges to SystemAnalysis entities.
-func (scu *SystemComponentUpdate) RemoveAnalyses(s ...*SystemAnalysis) *SystemComponentUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return scu.RemoveAnalysisIDs(ids...)
-}
-
 // ClearRelated clears all "related" edges to the SystemComponent entity.
 func (scu *SystemComponentUpdate) ClearRelated() *SystemComponentUpdate {
 	scu.mutation.ClearRelated()
@@ -304,6 +303,27 @@ func (scu *SystemComponentUpdate) RemoveRelated(s ...*SystemComponent) *SystemCo
 		ids[i] = s[i].ID
 	}
 	return scu.RemoveRelatedIDs(ids...)
+}
+
+// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
+func (scu *SystemComponentUpdate) ClearSystemAnalyses() *SystemComponentUpdate {
+	scu.mutation.ClearSystemAnalyses()
+	return scu
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
+func (scu *SystemComponentUpdate) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.RemoveSystemAnalysisIDs(ids...)
+	return scu
+}
+
+// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
+func (scu *SystemComponentUpdate) RemoveSystemAnalyses(s ...*SystemAnalysis) *SystemComponentUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scu.RemoveSystemAnalysisIDs(ids...)
 }
 
 // ClearEvents clears all "events" edges to the IncidentEvent entity.
@@ -390,46 +410,46 @@ func (scu *SystemComponentUpdate) RemoveSignals(s ...*SystemComponentSignal) *Sy
 	return scu.RemoveSignalIDs(ids...)
 }
 
-// ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (scu *SystemComponentUpdate) ClearAnalysisComponents() *SystemComponentUpdate {
-	scu.mutation.ClearAnalysisComponents()
+// ClearComponentRelationships clears all "component_relationships" edges to the SystemComponentRelationship entity.
+func (scu *SystemComponentUpdate) ClearComponentRelationships() *SystemComponentUpdate {
+	scu.mutation.ClearComponentRelationships()
 	return scu
 }
 
-// RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (scu *SystemComponentUpdate) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.RemoveAnalysisComponentIDs(ids...)
+// RemoveComponentRelationshipIDs removes the "component_relationships" edge to SystemComponentRelationship entities by IDs.
+func (scu *SystemComponentUpdate) RemoveComponentRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.RemoveComponentRelationshipIDs(ids...)
 	return scu
 }
 
-// RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (scu *SystemComponentUpdate) RemoveAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdate {
+// RemoveComponentRelationships removes "component_relationships" edges to SystemComponentRelationship entities.
+func (scu *SystemComponentUpdate) RemoveComponentRelationships(s ...*SystemComponentRelationship) *SystemComponentUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scu.RemoveAnalysisComponentIDs(ids...)
+	return scu.RemoveComponentRelationshipIDs(ids...)
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (scu *SystemComponentUpdate) ClearRelationships() *SystemComponentUpdate {
-	scu.mutation.ClearRelationships()
+// ClearSystemAnalysisComponents clears all "system_analysis_components" edges to the SystemAnalysisComponent entity.
+func (scu *SystemComponentUpdate) ClearSystemAnalysisComponents() *SystemComponentUpdate {
+	scu.mutation.ClearSystemAnalysisComponents()
 	return scu
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (scu *SystemComponentUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdate {
-	scu.mutation.RemoveRelationshipIDs(ids...)
+// RemoveSystemAnalysisComponentIDs removes the "system_analysis_components" edge to SystemAnalysisComponent entities by IDs.
+func (scu *SystemComponentUpdate) RemoveSystemAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdate {
+	scu.mutation.RemoveSystemAnalysisComponentIDs(ids...)
 	return scu
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (scu *SystemComponentUpdate) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemComponentUpdate {
+// RemoveSystemAnalysisComponents removes "system_analysis_components" edges to SystemAnalysisComponent entities.
+func (scu *SystemComponentUpdate) RemoveSystemAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scu.RemoveRelationshipIDs(ids...)
+	return scu.RemoveSystemAnalysisComponentIDs(ids...)
 }
 
 // ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
@@ -523,6 +543,12 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 	if value, ok := scu.mutation.Name(); ok {
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 	}
+	if value, ok := scu.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponent.FieldProviderID, field.TypeString, value)
+	}
+	if scu.mutation.ProviderIDCleared() {
+		_spec.ClearField(systemcomponent.FieldProviderID, field.TypeString)
+	}
 	if value, ok := scu.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 	}
@@ -567,72 +593,6 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scu.mutation.AnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := scu.mutation.RemovedAnalysesIDs(); len(nodes) > 0 && !scu.mutation.AnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := scu.mutation.AnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if scu.mutation.RelatedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -644,7 +604,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scu.config, mutation: newSystemAnalysisRelationshipMutation(scu.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -667,7 +627,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scu.config, mutation: newSystemAnalysisRelationshipMutation(scu.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -690,7 +650,73 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scu.config, mutation: newSystemAnalysisRelationshipMutation(scu.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if scu.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scu.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !scu.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scu.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -900,28 +926,28 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scu.mutation.AnalysisComponentsCleared() {
+	if scu.mutation.ComponentRelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !scu.mutation.AnalysisComponentsCleared() {
+	if nodes := scu.mutation.RemovedComponentRelationshipsIDs(); len(nodes) > 0 && !scu.mutation.ComponentRelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -929,15 +955,15 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := scu.mutation.ComponentRelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -945,28 +971,28 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scu.mutation.RelationshipsCleared() {
+	if scu.mutation.SystemAnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !scu.mutation.RelationshipsCleared() {
+	if nodes := scu.mutation.RemovedSystemAnalysisComponentsIDs(); len(nodes) > 0 && !scu.mutation.SystemAnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -974,15 +1000,15 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scu.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := scu.mutation.SystemAnalysisComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1071,6 +1097,26 @@ func (scuo *SystemComponentUpdateOne) SetNillableName(s *string) *SystemComponen
 	return scuo
 }
 
+// SetProviderID sets the "provider_id" field.
+func (scuo *SystemComponentUpdateOne) SetProviderID(s string) *SystemComponentUpdateOne {
+	scuo.mutation.SetProviderID(s)
+	return scuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (scuo *SystemComponentUpdateOne) SetNillableProviderID(s *string) *SystemComponentUpdateOne {
+	if s != nil {
+		scuo.SetProviderID(*s)
+	}
+	return scuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (scuo *SystemComponentUpdateOne) ClearProviderID() *SystemComponentUpdateOne {
+	scuo.mutation.ClearProviderID()
+	return scuo
+}
+
 // SetKindID sets the "kind_id" field.
 func (scuo *SystemComponentUpdateOne) SetKindID(u uuid.UUID) *SystemComponentUpdateOne {
 	scuo.mutation.SetKindID(u)
@@ -1136,21 +1182,6 @@ func (scuo *SystemComponentUpdateOne) SetKind(s *SystemComponentKind) *SystemCom
 	return scuo.SetKindID(s.ID)
 }
 
-// AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
-func (scuo *SystemComponentUpdateOne) AddAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.AddAnalysisIDs(ids...)
-	return scuo
-}
-
-// AddAnalyses adds the "analyses" edges to the SystemAnalysis entity.
-func (scuo *SystemComponentUpdateOne) AddAnalyses(s ...*SystemAnalysis) *SystemComponentUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return scuo.AddAnalysisIDs(ids...)
-}
-
 // AddRelatedIDs adds the "related" edge to the SystemComponent entity by IDs.
 func (scuo *SystemComponentUpdateOne) AddRelatedIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
 	scuo.mutation.AddRelatedIDs(ids...)
@@ -1164,6 +1195,21 @@ func (scuo *SystemComponentUpdateOne) AddRelated(s ...*SystemComponent) *SystemC
 		ids[i] = s[i].ID
 	}
 	return scuo.AddRelatedIDs(ids...)
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (scuo *SystemComponentUpdateOne) AddSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.AddSystemAnalysisIDs(ids...)
+	return scuo
+}
+
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (scuo *SystemComponentUpdateOne) AddSystemAnalyses(s ...*SystemAnalysis) *SystemComponentUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scuo.AddSystemAnalysisIDs(ids...)
 }
 
 // AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
@@ -1226,34 +1272,34 @@ func (scuo *SystemComponentUpdateOne) AddSignals(s ...*SystemComponentSignal) *S
 	return scuo.AddSignalIDs(ids...)
 }
 
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (scuo *SystemComponentUpdateOne) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.AddAnalysisComponentIDs(ids...)
+// AddComponentRelationshipIDs adds the "component_relationships" edge to the SystemComponentRelationship entity by IDs.
+func (scuo *SystemComponentUpdateOne) AddComponentRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.AddComponentRelationshipIDs(ids...)
 	return scuo
 }
 
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (scuo *SystemComponentUpdateOne) AddAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdateOne {
+// AddComponentRelationships adds the "component_relationships" edges to the SystemComponentRelationship entity.
+func (scuo *SystemComponentUpdateOne) AddComponentRelationships(s ...*SystemComponentRelationship) *SystemComponentUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scuo.AddAnalysisComponentIDs(ids...)
+	return scuo.AddComponentRelationshipIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (scuo *SystemComponentUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.AddRelationshipIDs(ids...)
+// AddSystemAnalysisComponentIDs adds the "system_analysis_components" edge to the SystemAnalysisComponent entity by IDs.
+func (scuo *SystemComponentUpdateOne) AddSystemAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.AddSystemAnalysisComponentIDs(ids...)
 	return scuo
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (scuo *SystemComponentUpdateOne) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentUpdateOne {
+// AddSystemAnalysisComponents adds the "system_analysis_components" edges to the SystemAnalysisComponent entity.
+func (scuo *SystemComponentUpdateOne) AddSystemAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scuo.AddRelationshipIDs(ids...)
+	return scuo.AddSystemAnalysisComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
@@ -1282,27 +1328,6 @@ func (scuo *SystemComponentUpdateOne) ClearKind() *SystemComponentUpdateOne {
 	return scuo
 }
 
-// ClearAnalyses clears all "analyses" edges to the SystemAnalysis entity.
-func (scuo *SystemComponentUpdateOne) ClearAnalyses() *SystemComponentUpdateOne {
-	scuo.mutation.ClearAnalyses()
-	return scuo
-}
-
-// RemoveAnalysisIDs removes the "analyses" edge to SystemAnalysis entities by IDs.
-func (scuo *SystemComponentUpdateOne) RemoveAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.RemoveAnalysisIDs(ids...)
-	return scuo
-}
-
-// RemoveAnalyses removes "analyses" edges to SystemAnalysis entities.
-func (scuo *SystemComponentUpdateOne) RemoveAnalyses(s ...*SystemAnalysis) *SystemComponentUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return scuo.RemoveAnalysisIDs(ids...)
-}
-
 // ClearRelated clears all "related" edges to the SystemComponent entity.
 func (scuo *SystemComponentUpdateOne) ClearRelated() *SystemComponentUpdateOne {
 	scuo.mutation.ClearRelated()
@@ -1322,6 +1347,27 @@ func (scuo *SystemComponentUpdateOne) RemoveRelated(s ...*SystemComponent) *Syst
 		ids[i] = s[i].ID
 	}
 	return scuo.RemoveRelatedIDs(ids...)
+}
+
+// ClearSystemAnalyses clears all "system_analyses" edges to the SystemAnalysis entity.
+func (scuo *SystemComponentUpdateOne) ClearSystemAnalyses() *SystemComponentUpdateOne {
+	scuo.mutation.ClearSystemAnalyses()
+	return scuo
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to SystemAnalysis entities by IDs.
+func (scuo *SystemComponentUpdateOne) RemoveSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.RemoveSystemAnalysisIDs(ids...)
+	return scuo
+}
+
+// RemoveSystemAnalyses removes "system_analyses" edges to SystemAnalysis entities.
+func (scuo *SystemComponentUpdateOne) RemoveSystemAnalyses(s ...*SystemAnalysis) *SystemComponentUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scuo.RemoveSystemAnalysisIDs(ids...)
 }
 
 // ClearEvents clears all "events" edges to the IncidentEvent entity.
@@ -1408,46 +1454,46 @@ func (scuo *SystemComponentUpdateOne) RemoveSignals(s ...*SystemComponentSignal)
 	return scuo.RemoveSignalIDs(ids...)
 }
 
-// ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (scuo *SystemComponentUpdateOne) ClearAnalysisComponents() *SystemComponentUpdateOne {
-	scuo.mutation.ClearAnalysisComponents()
+// ClearComponentRelationships clears all "component_relationships" edges to the SystemComponentRelationship entity.
+func (scuo *SystemComponentUpdateOne) ClearComponentRelationships() *SystemComponentUpdateOne {
+	scuo.mutation.ClearComponentRelationships()
 	return scuo
 }
 
-// RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (scuo *SystemComponentUpdateOne) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.RemoveAnalysisComponentIDs(ids...)
+// RemoveComponentRelationshipIDs removes the "component_relationships" edge to SystemComponentRelationship entities by IDs.
+func (scuo *SystemComponentUpdateOne) RemoveComponentRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.RemoveComponentRelationshipIDs(ids...)
 	return scuo
 }
 
-// RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (scuo *SystemComponentUpdateOne) RemoveAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdateOne {
+// RemoveComponentRelationships removes "component_relationships" edges to SystemComponentRelationship entities.
+func (scuo *SystemComponentUpdateOne) RemoveComponentRelationships(s ...*SystemComponentRelationship) *SystemComponentUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scuo.RemoveAnalysisComponentIDs(ids...)
+	return scuo.RemoveComponentRelationshipIDs(ids...)
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (scuo *SystemComponentUpdateOne) ClearRelationships() *SystemComponentUpdateOne {
-	scuo.mutation.ClearRelationships()
+// ClearSystemAnalysisComponents clears all "system_analysis_components" edges to the SystemAnalysisComponent entity.
+func (scuo *SystemComponentUpdateOne) ClearSystemAnalysisComponents() *SystemComponentUpdateOne {
+	scuo.mutation.ClearSystemAnalysisComponents()
 	return scuo
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (scuo *SystemComponentUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
-	scuo.mutation.RemoveRelationshipIDs(ids...)
+// RemoveSystemAnalysisComponentIDs removes the "system_analysis_components" edge to SystemAnalysisComponent entities by IDs.
+func (scuo *SystemComponentUpdateOne) RemoveSystemAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentUpdateOne {
+	scuo.mutation.RemoveSystemAnalysisComponentIDs(ids...)
 	return scuo
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (scuo *SystemComponentUpdateOne) RemoveRelationships(s ...*SystemAnalysisRelationship) *SystemComponentUpdateOne {
+// RemoveSystemAnalysisComponents removes "system_analysis_components" edges to SystemAnalysisComponent entities.
+func (scuo *SystemComponentUpdateOne) RemoveSystemAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentUpdateOne {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scuo.RemoveRelationshipIDs(ids...)
+	return scuo.RemoveSystemAnalysisComponentIDs(ids...)
 }
 
 // ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
@@ -1571,6 +1617,12 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 	if value, ok := scuo.mutation.Name(); ok {
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 	}
+	if value, ok := scuo.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponent.FieldProviderID, field.TypeString, value)
+	}
+	if scuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(systemcomponent.FieldProviderID, field.TypeString)
+	}
 	if value, ok := scuo.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 	}
@@ -1615,72 +1667,6 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scuo.mutation.AnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := scuo.mutation.RemovedAnalysesIDs(); len(nodes) > 0 && !scuo.mutation.AnalysesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := scuo.mutation.AnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if scuo.mutation.RelatedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1692,7 +1678,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scuo.config, mutation: newSystemAnalysisRelationshipMutation(scuo.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1715,7 +1701,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scuo.config, mutation: newSystemAnalysisRelationshipMutation(scuo.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1738,7 +1724,73 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scuo.config, mutation: newSystemAnalysisRelationshipMutation(scuo.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if scuo.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scuo.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !scuo.mutation.SystemAnalysesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scuo.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -1948,28 +2000,28 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scuo.mutation.AnalysisComponentsCleared() {
+	if scuo.mutation.ComponentRelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !scuo.mutation.AnalysisComponentsCleared() {
+	if nodes := scuo.mutation.RemovedComponentRelationshipsIDs(); len(nodes) > 0 && !scuo.mutation.ComponentRelationshipsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1977,15 +2029,15 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := scuo.mutation.ComponentRelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1993,28 +2045,28 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if scuo.mutation.RelationshipsCleared() {
+	if scuo.mutation.SystemAnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !scuo.mutation.RelationshipsCleared() {
+	if nodes := scuo.mutation.RemovedSystemAnalysisComponentsIDs(); len(nodes) > 0 && !scuo.mutation.SystemAnalysisComponentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -2022,15 +2074,15 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := scuo.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := scuo.mutation.SystemAnalysisComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

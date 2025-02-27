@@ -22,6 +22,8 @@ type SystemComponent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
 	// KindID holds the value of the "kind_id" field.
 	KindID uuid.UUID `json:"kind_id,omitempty"`
 	// Description holds the value of the "description" field.
@@ -42,10 +44,10 @@ type SystemComponent struct {
 type SystemComponentEdges struct {
 	// Kind holds the value of the kind edge.
 	Kind *SystemComponentKind `json:"kind,omitempty"`
-	// Analyses holds the value of the analyses edge.
-	Analyses []*SystemAnalysis `json:"analyses,omitempty"`
 	// Related holds the value of the related edge.
 	Related []*SystemComponent `json:"related,omitempty"`
+	// SystemAnalyses holds the value of the system_analyses edge.
+	SystemAnalyses []*SystemAnalysis `json:"system_analyses,omitempty"`
 	// Events holds the value of the events edge.
 	Events []*IncidentEvent `json:"events,omitempty"`
 	// Constraints holds the value of the constraints edge.
@@ -54,10 +56,10 @@ type SystemComponentEdges struct {
 	Controls []*SystemComponentControl `json:"controls,omitempty"`
 	// Signals holds the value of the signals edge.
 	Signals []*SystemComponentSignal `json:"signals,omitempty"`
-	// AnalysisComponents holds the value of the analysis_components edge.
-	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
-	// Relationships holds the value of the relationships edge.
-	Relationships []*SystemAnalysisRelationship `json:"relationships,omitempty"`
+	// ComponentRelationships holds the value of the component_relationships edge.
+	ComponentRelationships []*SystemComponentRelationship `json:"component_relationships,omitempty"`
+	// SystemAnalysisComponents holds the value of the system_analysis_components edge.
+	SystemAnalysisComponents []*SystemAnalysisComponent `json:"system_analysis_components,omitempty"`
 	// EventComponents holds the value of the event_components edge.
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -76,22 +78,22 @@ func (e SystemComponentEdges) KindOrErr() (*SystemComponentKind, error) {
 	return nil, &NotLoadedError{edge: "kind"}
 }
 
-// AnalysesOrErr returns the Analyses value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemComponentEdges) AnalysesOrErr() ([]*SystemAnalysis, error) {
-	if e.loadedTypes[1] {
-		return e.Analyses, nil
-	}
-	return nil, &NotLoadedError{edge: "analyses"}
-}
-
 // RelatedOrErr returns the Related value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) RelatedOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[1] {
 		return e.Related, nil
 	}
 	return nil, &NotLoadedError{edge: "related"}
+}
+
+// SystemAnalysesOrErr returns the SystemAnalyses value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) SystemAnalysesOrErr() ([]*SystemAnalysis, error) {
+	if e.loadedTypes[2] {
+		return e.SystemAnalyses, nil
+	}
+	return nil, &NotLoadedError{edge: "system_analyses"}
 }
 
 // EventsOrErr returns the Events value or an error if the edge
@@ -130,22 +132,22 @@ func (e SystemComponentEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
 	return nil, &NotLoadedError{edge: "signals"}
 }
 
-// AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
+// ComponentRelationshipsOrErr returns the ComponentRelationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
+func (e SystemComponentEdges) ComponentRelationshipsOrErr() ([]*SystemComponentRelationship, error) {
 	if e.loadedTypes[7] {
-		return e.AnalysisComponents, nil
+		return e.ComponentRelationships, nil
 	}
-	return nil, &NotLoadedError{edge: "analysis_components"}
+	return nil, &NotLoadedError{edge: "component_relationships"}
 }
 
-// RelationshipsOrErr returns the Relationships value or an error if the edge
+// SystemAnalysisComponentsOrErr returns the SystemAnalysisComponents value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemComponentEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
+func (e SystemComponentEdges) SystemAnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
 	if e.loadedTypes[8] {
-		return e.Relationships, nil
+		return e.SystemAnalysisComponents, nil
 	}
-	return nil, &NotLoadedError{edge: "relationships"}
+	return nil, &NotLoadedError{edge: "system_analysis_components"}
 }
 
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
@@ -164,7 +166,7 @@ func (*SystemComponent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemcomponent.FieldProperties:
 			values[i] = new([]byte)
-		case systemcomponent.FieldName, systemcomponent.FieldDescription:
+		case systemcomponent.FieldName, systemcomponent.FieldProviderID, systemcomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponent.FieldCreatedAt, systemcomponent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -196,6 +198,12 @@ func (sc *SystemComponent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				sc.Name = value.String
+			}
+		case systemcomponent.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				sc.ProviderID = value.String
 			}
 		case systemcomponent.FieldKindID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -247,14 +255,14 @@ func (sc *SystemComponent) QueryKind() *SystemComponentKindQuery {
 	return NewSystemComponentClient(sc.config).QueryKind(sc)
 }
 
-// QueryAnalyses queries the "analyses" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryAnalyses() *SystemAnalysisQuery {
-	return NewSystemComponentClient(sc.config).QueryAnalyses(sc)
-}
-
 // QueryRelated queries the "related" edge of the SystemComponent entity.
 func (sc *SystemComponent) QueryRelated() *SystemComponentQuery {
 	return NewSystemComponentClient(sc.config).QueryRelated(sc)
+}
+
+// QuerySystemAnalyses queries the "system_analyses" edge of the SystemComponent entity.
+func (sc *SystemComponent) QuerySystemAnalyses() *SystemAnalysisQuery {
+	return NewSystemComponentClient(sc.config).QuerySystemAnalyses(sc)
 }
 
 // QueryEvents queries the "events" edge of the SystemComponent entity.
@@ -277,14 +285,14 @@ func (sc *SystemComponent) QuerySignals() *SystemComponentSignalQuery {
 	return NewSystemComponentClient(sc.config).QuerySignals(sc)
 }
 
-// QueryAnalysisComponents queries the "analysis_components" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
-	return NewSystemComponentClient(sc.config).QueryAnalysisComponents(sc)
+// QueryComponentRelationships queries the "component_relationships" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryComponentRelationships() *SystemComponentRelationshipQuery {
+	return NewSystemComponentClient(sc.config).QueryComponentRelationships(sc)
 }
 
-// QueryRelationships queries the "relationships" edge of the SystemComponent entity.
-func (sc *SystemComponent) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	return NewSystemComponentClient(sc.config).QueryRelationships(sc)
+// QuerySystemAnalysisComponents queries the "system_analysis_components" edge of the SystemComponent entity.
+func (sc *SystemComponent) QuerySystemAnalysisComponents() *SystemAnalysisComponentQuery {
+	return NewSystemComponentClient(sc.config).QuerySystemAnalysisComponents(sc)
 }
 
 // QueryEventComponents queries the "event_components" edge of the SystemComponent entity.
@@ -317,6 +325,9 @@ func (sc *SystemComponent) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", sc.ID))
 	builder.WriteString("name=")
 	builder.WriteString(sc.Name)
+	builder.WriteString(", ")
+	builder.WriteString("provider_id=")
+	builder.WriteString(sc.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("kind_id=")
 	builder.WriteString(fmt.Sprintf("%v", sc.KindID))

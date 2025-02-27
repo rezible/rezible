@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 )
 
 // SystemAnalysisRelationship is the model entity for the SystemAnalysisRelationship schema.
@@ -22,10 +22,8 @@ type SystemAnalysisRelationship struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
-	// SourceComponentID holds the value of the "source_component_id" field.
-	SourceComponentID uuid.UUID `json:"source_component_id,omitempty"`
-	// TargetComponentID holds the value of the "target_component_id" field.
-	TargetComponentID uuid.UUID `json:"target_component_id,omitempty"`
+	// ComponentRelationshipID holds the value of the "component_relationship_id" field.
+	ComponentRelationshipID uuid.UUID `json:"component_relationship_id,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -40,10 +38,8 @@ type SystemAnalysisRelationship struct {
 type SystemAnalysisRelationshipEdges struct {
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
-	// SourceComponent holds the value of the source_component edge.
-	SourceComponent *SystemComponent `json:"source_component,omitempty"`
-	// TargetComponent holds the value of the target_component edge.
-	TargetComponent *SystemComponent `json:"target_component,omitempty"`
+	// ComponentRelationship holds the value of the component_relationship edge.
+	ComponentRelationship *SystemComponentRelationship `json:"component_relationship,omitempty"`
 	// Controls holds the value of the controls edge.
 	Controls []*SystemComponentControl `json:"controls,omitempty"`
 	// Signals holds the value of the signals edge.
@@ -54,7 +50,7 @@ type SystemAnalysisRelationshipEdges struct {
 	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [6]bool
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
@@ -68,32 +64,21 @@ func (e SystemAnalysisRelationshipEdges) SystemAnalysisOrErr() (*SystemAnalysis,
 	return nil, &NotLoadedError{edge: "system_analysis"}
 }
 
-// SourceComponentOrErr returns the SourceComponent value or an error if the edge
+// ComponentRelationshipOrErr returns the ComponentRelationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisRelationshipEdges) SourceComponentOrErr() (*SystemComponent, error) {
-	if e.SourceComponent != nil {
-		return e.SourceComponent, nil
+func (e SystemAnalysisRelationshipEdges) ComponentRelationshipOrErr() (*SystemComponentRelationship, error) {
+	if e.ComponentRelationship != nil {
+		return e.ComponentRelationship, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: systemcomponent.Label}
+		return nil, &NotFoundError{label: systemcomponentrelationship.Label}
 	}
-	return nil, &NotLoadedError{edge: "source_component"}
-}
-
-// TargetComponentOrErr returns the TargetComponent value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisRelationshipEdges) TargetComponentOrErr() (*SystemComponent, error) {
-	if e.TargetComponent != nil {
-		return e.TargetComponent, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: systemcomponent.Label}
-	}
-	return nil, &NotLoadedError{edge: "target_component"}
+	return nil, &NotLoadedError{edge: "component_relationship"}
 }
 
 // ControlsOrErr returns the Controls value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) ControlsOrErr() ([]*SystemComponentControl, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Controls, nil
 	}
 	return nil, &NotLoadedError{edge: "controls"}
@@ -102,7 +87,7 @@ func (e SystemAnalysisRelationshipEdges) ControlsOrErr() ([]*SystemComponentCont
 // SignalsOrErr returns the Signals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Signals, nil
 	}
 	return nil, &NotLoadedError{edge: "signals"}
@@ -111,7 +96,7 @@ func (e SystemAnalysisRelationshipEdges) SignalsOrErr() ([]*SystemComponentSigna
 // ControlActionsOrErr returns the ControlActions value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) ControlActionsOrErr() ([]*SystemRelationshipControlAction, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[4] {
 		return e.ControlActions, nil
 	}
 	return nil, &NotLoadedError{edge: "control_actions"}
@@ -120,7 +105,7 @@ func (e SystemAnalysisRelationshipEdges) ControlActionsOrErr() ([]*SystemRelatio
 // FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.FeedbackSignals, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback_signals"}
@@ -135,7 +120,7 @@ func (*SystemAnalysisRelationship) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case systemanalysisrelationship.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysisrelationship.FieldID, systemanalysisrelationship.FieldAnalysisID, systemanalysisrelationship.FieldSourceComponentID, systemanalysisrelationship.FieldTargetComponentID:
+		case systemanalysisrelationship.FieldID, systemanalysisrelationship.FieldAnalysisID, systemanalysisrelationship.FieldComponentRelationshipID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -164,17 +149,11 @@ func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []a
 			} else if value != nil {
 				sar.AnalysisID = *value
 			}
-		case systemanalysisrelationship.FieldSourceComponentID:
+		case systemanalysisrelationship.FieldComponentRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field source_component_id", values[i])
+				return fmt.Errorf("unexpected type %T for field component_relationship_id", values[i])
 			} else if value != nil {
-				sar.SourceComponentID = *value
-			}
-		case systemanalysisrelationship.FieldTargetComponentID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field target_component_id", values[i])
-			} else if value != nil {
-				sar.TargetComponentID = *value
+				sar.ComponentRelationshipID = *value
 			}
 		case systemanalysisrelationship.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -206,14 +185,9 @@ func (sar *SystemAnalysisRelationship) QuerySystemAnalysis() *SystemAnalysisQuer
 	return NewSystemAnalysisRelationshipClient(sar.config).QuerySystemAnalysis(sar)
 }
 
-// QuerySourceComponent queries the "source_component" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QuerySourceComponent() *SystemComponentQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QuerySourceComponent(sar)
-}
-
-// QueryTargetComponent queries the "target_component" edge of the SystemAnalysisRelationship entity.
-func (sar *SystemAnalysisRelationship) QueryTargetComponent() *SystemComponentQuery {
-	return NewSystemAnalysisRelationshipClient(sar.config).QueryTargetComponent(sar)
+// QueryComponentRelationship queries the "component_relationship" edge of the SystemAnalysisRelationship entity.
+func (sar *SystemAnalysisRelationship) QueryComponentRelationship() *SystemComponentRelationshipQuery {
+	return NewSystemAnalysisRelationshipClient(sar.config).QueryComponentRelationship(sar)
 }
 
 // QueryControls queries the "controls" edge of the SystemAnalysisRelationship entity.
@@ -262,11 +236,8 @@ func (sar *SystemAnalysisRelationship) String() string {
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", sar.AnalysisID))
 	builder.WriteString(", ")
-	builder.WriteString("source_component_id=")
-	builder.WriteString(fmt.Sprintf("%v", sar.SourceComponentID))
-	builder.WriteString(", ")
-	builder.WriteString("target_component_id=")
-	builder.WriteString(fmt.Sprintf("%v", sar.TargetComponentID))
+	builder.WriteString("component_relationship_id=")
+	builder.WriteString(fmt.Sprintf("%v", sar.ComponentRelationshipID))
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(sar.Description)

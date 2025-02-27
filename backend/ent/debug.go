@@ -380,6 +380,14 @@ func (c *SystemComponentKindClient) Debug() *SystemComponentKindClient {
 	return &SystemComponentKindClient{config: cfg}
 }
 
+func (c *SystemComponentRelationshipClient) Debug() *SystemComponentRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &SystemComponentRelationshipClient{config: cfg}
+}
+
 func (c *SystemComponentSignalClient) Debug() *SystemComponentSignalClient {
 	if c.debug {
 		return c

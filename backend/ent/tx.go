@@ -106,6 +106,8 @@ type Tx struct {
 	SystemComponentControl *SystemComponentControlClient
 	// SystemComponentKind is the client for interacting with the SystemComponentKind builders.
 	SystemComponentKind *SystemComponentKindClient
+	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
+	SystemComponentRelationship *SystemComponentRelationshipClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
 	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
@@ -296,6 +298,7 @@ func (tx *Tx) init() {
 	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
 	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
 	tx.SystemComponentKind = NewSystemComponentKindClient(tx.config)
+	tx.SystemComponentRelationship = NewSystemComponentRelationshipClient(tx.config)
 	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
 	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
 	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)

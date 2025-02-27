@@ -61,6 +61,11 @@ func Name(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldName, v))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldEQ(FieldProviderID, v))
+}
+
 // KindID applies equality check predicate on the "kind_id" field. It's identical to KindIDEQ.
 func KindID(v uuid.UUID) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldEQ(FieldKindID, v))
@@ -144,6 +149,81 @@ func NameEqualFold(v string) predicate.SystemComponent {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.SystemComponent {
 	return predicate.SystemComponent(sql.FieldContainsFold(FieldName, v))
+}
+
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldEQ(FieldProviderID, v))
+}
+
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNEQ(FieldProviderID, v))
+}
+
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldIn(FieldProviderID, vs...))
+}
+
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNotIn(FieldProviderID, vs...))
+}
+
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldGT(FieldProviderID, v))
+}
+
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldGTE(FieldProviderID, v))
+}
+
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldLT(FieldProviderID, v))
+}
+
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldLTE(FieldProviderID, v))
+}
+
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldContains(FieldProviderID, v))
+}
+
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldHasPrefix(FieldProviderID, v))
+}
+
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
+func ProviderIDIsNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldIsNull(FieldProviderID))
+}
+
+// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
+func ProviderIDNotNil() predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldNotNull(FieldProviderID))
+}
+
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldEqualFold(FieldProviderID, v))
+}
+
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.SystemComponent {
+	return predicate.SystemComponent(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // KindIDEQ applies the EQ predicate on the "kind_id" field.
@@ -344,29 +424,6 @@ func HasKindWith(preds ...predicate.SystemComponentKind) predicate.SystemCompone
 	})
 }
 
-// HasAnalyses applies the HasEdge predicate on the "analyses" edge.
-func HasAnalyses() predicate.SystemComponent {
-	return predicate.SystemComponent(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, AnalysesTable, AnalysesPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAnalysesWith applies the HasEdge predicate on the "analyses" edge with a given conditions (other predicates).
-func HasAnalysesWith(preds ...predicate.SystemAnalysis) predicate.SystemComponent {
-	return predicate.SystemComponent(func(s *sql.Selector) {
-		step := newAnalysesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRelated applies the HasEdge predicate on the "related" edge.
 func HasRelated() predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
@@ -382,6 +439,29 @@ func HasRelated() predicate.SystemComponent {
 func HasRelatedWith(preds ...predicate.SystemComponent) predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
 		step := newRelatedStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSystemAnalyses applies the HasEdge predicate on the "system_analyses" edge.
+func HasSystemAnalyses() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, SystemAnalysesTable, SystemAnalysesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysesWith applies the HasEdge predicate on the "system_analyses" edge with a given conditions (other predicates).
+func HasSystemAnalysesWith(preds ...predicate.SystemAnalysis) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newSystemAnalysesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -482,21 +562,21 @@ func HasSignalsWith(preds ...predicate.SystemComponentSignal) predicate.SystemCo
 	})
 }
 
-// HasAnalysisComponents applies the HasEdge predicate on the "analysis_components" edge.
-func HasAnalysisComponents() predicate.SystemComponent {
+// HasComponentRelationships applies the HasEdge predicate on the "component_relationships" edge.
+func HasComponentRelationships() predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisComponentsTable, AnalysisComponentsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, ComponentRelationshipsTable, ComponentRelationshipsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAnalysisComponentsWith applies the HasEdge predicate on the "analysis_components" edge with a given conditions (other predicates).
-func HasAnalysisComponentsWith(preds ...predicate.SystemAnalysisComponent) predicate.SystemComponent {
+// HasComponentRelationshipsWith applies the HasEdge predicate on the "component_relationships" edge with a given conditions (other predicates).
+func HasComponentRelationshipsWith(preds ...predicate.SystemComponentRelationship) predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
-		step := newAnalysisComponentsStep()
+		step := newComponentRelationshipsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -505,21 +585,21 @@ func HasAnalysisComponentsWith(preds ...predicate.SystemAnalysisComponent) predi
 	})
 }
 
-// HasRelationships applies the HasEdge predicate on the "relationships" edge.
-func HasRelationships() predicate.SystemComponent {
+// HasSystemAnalysisComponents applies the HasEdge predicate on the "system_analysis_components" edge.
+func HasSystemAnalysisComponents() predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisComponentsTable, SystemAnalysisComponentsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasRelationshipsWith applies the HasEdge predicate on the "relationships" edge with a given conditions (other predicates).
-func HasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) predicate.SystemComponent {
+// HasSystemAnalysisComponentsWith applies the HasEdge predicate on the "system_analysis_components" edge with a given conditions (other predicates).
+func HasSystemAnalysisComponentsWith(preds ...predicate.SystemAnalysisComponent) predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {
-		step := newRelationshipsStep()
+		step := newSystemAnalysisComponentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

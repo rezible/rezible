@@ -15,8 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -36,15 +36,9 @@ func (sarc *SystemAnalysisRelationshipCreate) SetAnalysisID(u uuid.UUID) *System
 	return sarc
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetSourceComponentID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetSourceComponentID(u)
-	return sarc
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (sarc *SystemAnalysisRelationshipCreate) SetTargetComponentID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
-	sarc.mutation.SetTargetComponentID(u)
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (sarc *SystemAnalysisRelationshipCreate) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipCreate {
+	sarc.mutation.SetComponentRelationshipID(u)
 	return sarc
 }
 
@@ -101,14 +95,9 @@ func (sarc *SystemAnalysisRelationshipCreate) SetSystemAnalysis(s *SystemAnalysi
 	return sarc.SetSystemAnalysisID(s.ID)
 }
 
-// SetSourceComponent sets the "source_component" edge to the SystemComponent entity.
-func (sarc *SystemAnalysisRelationshipCreate) SetSourceComponent(s *SystemComponent) *SystemAnalysisRelationshipCreate {
-	return sarc.SetSourceComponentID(s.ID)
-}
-
-// SetTargetComponent sets the "target_component" edge to the SystemComponent entity.
-func (sarc *SystemAnalysisRelationshipCreate) SetTargetComponent(s *SystemComponent) *SystemAnalysisRelationshipCreate {
-	return sarc.SetTargetComponentID(s.ID)
+// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
+func (sarc *SystemAnalysisRelationshipCreate) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipCreate {
+	return sarc.SetComponentRelationshipID(s.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
@@ -221,11 +210,8 @@ func (sarc *SystemAnalysisRelationshipCreate) check() error {
 	if _, ok := sarc.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.analysis_id"`)}
 	}
-	if _, ok := sarc.mutation.SourceComponentID(); !ok {
-		return &ValidationError{Name: "source_component_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.source_component_id"`)}
-	}
-	if _, ok := sarc.mutation.TargetComponentID(); !ok {
-		return &ValidationError{Name: "target_component_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.target_component_id"`)}
+	if _, ok := sarc.mutation.ComponentRelationshipID(); !ok {
+		return &ValidationError{Name: "component_relationship_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.component_relationship_id"`)}
 	}
 	if _, ok := sarc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.created_at"`)}
@@ -233,11 +219,8 @@ func (sarc *SystemAnalysisRelationshipCreate) check() error {
 	if len(sarc.mutation.SystemAnalysisIDs()) == 0 {
 		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.system_analysis"`)}
 	}
-	if len(sarc.mutation.SourceComponentIDs()) == 0 {
-		return &ValidationError{Name: "source_component", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.source_component"`)}
-	}
-	if len(sarc.mutation.TargetComponentIDs()) == 0 {
-		return &ValidationError{Name: "target_component", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.target_component"`)}
+	if len(sarc.mutation.ComponentRelationshipIDs()) == 0 {
+		return &ValidationError{Name: "component_relationship", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.component_relationship"`)}
 	}
 	return nil
 }
@@ -300,38 +283,21 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 		_node.AnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sarc.mutation.SourceComponentIDs(); len(nodes) > 0 {
+	if nodes := sarc.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.SourceComponentTable,
-			Columns: []string{systemanalysisrelationship.SourceComponentColumn},
+			Table:   systemanalysisrelationship.ComponentRelationshipTable,
+			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SourceComponentID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sarc.mutation.TargetComponentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetComponentTable,
-			Columns: []string{systemanalysisrelationship.TargetComponentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.TargetComponentID = nodes[0]
+		_node.ComponentRelationshipID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sarc.mutation.ControlsIDs(); len(nodes) > 0 {
@@ -476,27 +442,15 @@ func (u *SystemAnalysisRelationshipUpsert) UpdateAnalysisID() *SystemAnalysisRel
 	return u
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetSourceComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldSourceComponentID, v)
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsert) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
+	u.Set(systemanalysisrelationship.FieldComponentRelationshipID, v)
 	return u
 }
 
-// UpdateSourceComponentID sets the "source_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateSourceComponentID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldSourceComponentID)
-	return u
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (u *SystemAnalysisRelationshipUpsert) SetTargetComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsert {
-	u.Set(systemanalysisrelationship.FieldTargetComponentID, v)
-	return u
-}
-
-// UpdateTargetComponentID sets the "target_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsert) UpdateTargetComponentID() *SystemAnalysisRelationshipUpsert {
-	u.SetExcluded(systemanalysisrelationship.FieldTargetComponentID)
+// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsert) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsert {
+	u.SetExcluded(systemanalysisrelationship.FieldComponentRelationshipID)
 	return u
 }
 
@@ -592,31 +546,17 @@ func (u *SystemAnalysisRelationshipUpsertOne) UpdateAnalysisID() *SystemAnalysis
 	})
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetSourceComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertOne) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetSourceComponentID(v)
+		s.SetComponentRelationshipID(v)
 	})
 }
 
-// UpdateSourceComponentID sets the "source_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateSourceComponentID() *SystemAnalysisRelationshipUpsertOne {
+// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertOne) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsertOne {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateSourceComponentID()
-	})
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (u *SystemAnalysisRelationshipUpsertOne) SetTargetComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetTargetComponentID(v)
-	})
-}
-
-// UpdateTargetComponentID sets the "target_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertOne) UpdateTargetComponentID() *SystemAnalysisRelationshipUpsertOne {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateTargetComponentID()
+		s.UpdateComponentRelationshipID()
 	})
 }
 
@@ -884,31 +824,17 @@ func (u *SystemAnalysisRelationshipUpsertBulk) UpdateAnalysisID() *SystemAnalysi
 	})
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetSourceComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (u *SystemAnalysisRelationshipUpsertBulk) SetComponentRelationshipID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetSourceComponentID(v)
+		s.SetComponentRelationshipID(v)
 	})
 }
 
-// UpdateSourceComponentID sets the "source_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateSourceComponentID() *SystemAnalysisRelationshipUpsertBulk {
+// UpdateComponentRelationshipID sets the "component_relationship_id" field to the value that was provided on create.
+func (u *SystemAnalysisRelationshipUpsertBulk) UpdateComponentRelationshipID() *SystemAnalysisRelationshipUpsertBulk {
 	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateSourceComponentID()
-	})
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (u *SystemAnalysisRelationshipUpsertBulk) SetTargetComponentID(v uuid.UUID) *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.SetTargetComponentID(v)
-	})
-}
-
-// UpdateTargetComponentID sets the "target_component_id" field to the value that was provided on create.
-func (u *SystemAnalysisRelationshipUpsertBulk) UpdateTargetComponentID() *SystemAnalysisRelationshipUpsertBulk {
-	return u.Update(func(s *SystemAnalysisRelationshipUpsert) {
-		s.UpdateTargetComponentID()
+		s.UpdateComponentRelationshipID()
 	})
 }
 

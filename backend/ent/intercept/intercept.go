@@ -56,6 +56,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -1389,6 +1390,33 @@ func (f TraverseSystemComponentKind) Traverse(ctx context.Context, q ent.Query) 
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentKindQuery", q)
 }
 
+// The SystemComponentRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemComponentRelationshipFunc func(context.Context, *ent.SystemComponentRelationshipQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemComponentRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemComponentRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentRelationshipQuery", q)
+}
+
+// The TraverseSystemComponentRelationship type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemComponentRelationship func(context.Context, *ent.SystemComponentRelationshipQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemComponentRelationship) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemComponentRelationship) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemComponentRelationshipQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentRelationshipQuery", q)
+}
+
 // The SystemComponentSignalFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SystemComponentSignalFunc func(context.Context, *ent.SystemComponentSignalQuery) (ent.Value, error)
 
@@ -1648,6 +1676,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SystemComponentControlQuery, predicate.SystemComponentControl, systemcomponentcontrol.OrderOption]{typ: ent.TypeSystemComponentControl, tq: q}, nil
 	case *ent.SystemComponentKindQuery:
 		return &query[*ent.SystemComponentKindQuery, predicate.SystemComponentKind, systemcomponentkind.OrderOption]{typ: ent.TypeSystemComponentKind, tq: q}, nil
+	case *ent.SystemComponentRelationshipQuery:
+		return &query[*ent.SystemComponentRelationshipQuery, predicate.SystemComponentRelationship, systemcomponentrelationship.OrderOption]{typ: ent.TypeSystemComponentRelationship, tq: q}, nil
 	case *ent.SystemComponentSignalQuery:
 		return &query[*ent.SystemComponentSignalQuery, predicate.SystemComponentSignal, systemcomponentsignal.OrderOption]{typ: ent.TypeSystemComponentSignal, tq: q}, nil
 	case *ent.SystemRelationshipControlActionQuery:

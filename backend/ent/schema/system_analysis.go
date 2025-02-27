@@ -30,7 +30,7 @@ func (SystemAnalysis) Edges() []ent.Edge {
 		edge.To("incident", Incident.Type).
 			Unique().Required().Field("incident_id"),
 		edge.From("components", SystemComponent.Type).
-			Ref("analyses").
+			Ref("system_analyses").
 			Through("analysis_components", SystemAnalysisComponent.Type),
 		edge.From("relationships", SystemAnalysisRelationship.Type).
 			Ref("system_analysis"),

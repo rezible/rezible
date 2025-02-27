@@ -573,6 +573,18 @@ func (f SystemComponentKindFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentKindMutation", m)
 }
 
+// The SystemComponentRelationshipFunc type is an adapter to allow the use of ordinary
+// function as SystemComponentRelationship mutator.
+type SystemComponentRelationshipFunc func(context.Context, *ent.SystemComponentRelationshipMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemComponentRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemComponentRelationshipMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentRelationshipMutation", m)
+}
+
 // The SystemComponentSignalFunc type is an adapter to allow the use of ordinary
 // function as SystemComponentSignal mutator.
 type SystemComponentSignalFunc func(context.Context, *ent.SystemComponentSignalMutation) (ent.Value, error)

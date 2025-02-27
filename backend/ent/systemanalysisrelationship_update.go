@@ -15,8 +15,8 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -50,30 +50,16 @@ func (saru *SystemAnalysisRelationshipUpdate) SetNillableAnalysisID(u *uuid.UUID
 	return saru
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetSourceComponentID(u uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetSourceComponentID(u)
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (saru *SystemAnalysisRelationshipUpdate) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipUpdate {
+	saru.mutation.SetComponentRelationshipID(u)
 	return saru
 }
 
-// SetNillableSourceComponentID sets the "source_component_id" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableSourceComponentID(u *uuid.UUID) *SystemAnalysisRelationshipUpdate {
+// SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
+func (saru *SystemAnalysisRelationshipUpdate) SetNillableComponentRelationshipID(u *uuid.UUID) *SystemAnalysisRelationshipUpdate {
 	if u != nil {
-		saru.SetSourceComponentID(*u)
-	}
-	return saru
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (saru *SystemAnalysisRelationshipUpdate) SetTargetComponentID(u uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	saru.mutation.SetTargetComponentID(u)
-	return saru
-}
-
-// SetNillableTargetComponentID sets the "target_component_id" field if the given value is not nil.
-func (saru *SystemAnalysisRelationshipUpdate) SetNillableTargetComponentID(u *uuid.UUID) *SystemAnalysisRelationshipUpdate {
-	if u != nil {
-		saru.SetTargetComponentID(*u)
+		saru.SetComponentRelationshipID(*u)
 	}
 	return saru
 }
@@ -123,14 +109,9 @@ func (saru *SystemAnalysisRelationshipUpdate) SetSystemAnalysis(s *SystemAnalysi
 	return saru.SetSystemAnalysisID(s.ID)
 }
 
-// SetSourceComponent sets the "source_component" edge to the SystemComponent entity.
-func (saru *SystemAnalysisRelationshipUpdate) SetSourceComponent(s *SystemComponent) *SystemAnalysisRelationshipUpdate {
-	return saru.SetSourceComponentID(s.ID)
-}
-
-// SetTargetComponent sets the "target_component" edge to the SystemComponent entity.
-func (saru *SystemAnalysisRelationshipUpdate) SetTargetComponent(s *SystemComponent) *SystemAnalysisRelationshipUpdate {
-	return saru.SetTargetComponentID(s.ID)
+// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
+func (saru *SystemAnalysisRelationshipUpdate) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipUpdate {
+	return saru.SetComponentRelationshipID(s.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
@@ -204,15 +185,9 @@ func (saru *SystemAnalysisRelationshipUpdate) ClearSystemAnalysis() *SystemAnaly
 	return saru
 }
 
-// ClearSourceComponent clears the "source_component" edge to the SystemComponent entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearSourceComponent() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearSourceComponent()
-	return saru
-}
-
-// ClearTargetComponent clears the "target_component" edge to the SystemComponent entity.
-func (saru *SystemAnalysisRelationshipUpdate) ClearTargetComponent() *SystemAnalysisRelationshipUpdate {
-	saru.mutation.ClearTargetComponent()
+// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
+func (saru *SystemAnalysisRelationshipUpdate) ClearComponentRelationship() *SystemAnalysisRelationshipUpdate {
+	saru.mutation.ClearComponentRelationship()
 	return saru
 }
 
@@ -332,11 +307,8 @@ func (saru *SystemAnalysisRelationshipUpdate) check() error {
 	if saru.mutation.SystemAnalysisCleared() && len(saru.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if saru.mutation.SourceComponentCleared() && len(saru.mutation.SourceComponentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.source_component"`)
-	}
-	if saru.mutation.TargetComponentCleared() && len(saru.mutation.TargetComponentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.target_component"`)
+	if saru.mutation.ComponentRelationshipCleared() && len(saru.mutation.ComponentRelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
 	}
 	return nil
 }
@@ -397,57 +369,28 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saru.mutation.SourceComponentCleared() {
+	if saru.mutation.ComponentRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.SourceComponentTable,
-			Columns: []string{systemanalysisrelationship.SourceComponentColumn},
+			Table:   systemanalysisrelationship.ComponentRelationshipTable,
+			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saru.mutation.SourceComponentIDs(); len(nodes) > 0 {
+	if nodes := saru.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.SourceComponentTable,
-			Columns: []string{systemanalysisrelationship.SourceComponentColumn},
+			Table:   systemanalysisrelationship.ComponentRelationshipTable,
+			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if saru.mutation.TargetComponentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetComponentTable,
-			Columns: []string{systemanalysisrelationship.TargetComponentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := saru.mutation.TargetComponentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetComponentTable,
-			Columns: []string{systemanalysisrelationship.TargetComponentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -713,30 +656,16 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableAnalysisID(u *uuid.
 	return saruo
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetSourceComponentID(u uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetSourceComponentID(u)
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (saruo *SystemAnalysisRelationshipUpdateOne) SetComponentRelationshipID(u uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+	saruo.mutation.SetComponentRelationshipID(u)
 	return saruo
 }
 
-// SetNillableSourceComponentID sets the "source_component_id" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableSourceComponentID(u *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
+// SetNillableComponentRelationshipID sets the "component_relationship_id" field if the given value is not nil.
+func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableComponentRelationshipID(u *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
 	if u != nil {
-		saruo.SetSourceComponentID(*u)
-	}
-	return saruo
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetTargetComponentID(u uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.SetTargetComponentID(u)
-	return saruo
-}
-
-// SetNillableTargetComponentID sets the "target_component_id" field if the given value is not nil.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetNillableTargetComponentID(u *uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	if u != nil {
-		saruo.SetTargetComponentID(*u)
+		saruo.SetComponentRelationshipID(*u)
 	}
 	return saruo
 }
@@ -786,14 +715,9 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) SetSystemAnalysis(s *SystemAna
 	return saruo.SetSystemAnalysisID(s.ID)
 }
 
-// SetSourceComponent sets the "source_component" edge to the SystemComponent entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetSourceComponent(s *SystemComponent) *SystemAnalysisRelationshipUpdateOne {
-	return saruo.SetSourceComponentID(s.ID)
-}
-
-// SetTargetComponent sets the "target_component" edge to the SystemComponent entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) SetTargetComponent(s *SystemComponent) *SystemAnalysisRelationshipUpdateOne {
-	return saruo.SetTargetComponentID(s.ID)
+// SetComponentRelationship sets the "component_relationship" edge to the SystemComponentRelationship entity.
+func (saruo *SystemAnalysisRelationshipUpdateOne) SetComponentRelationship(s *SystemComponentRelationship) *SystemAnalysisRelationshipUpdateOne {
+	return saruo.SetComponentRelationshipID(s.ID)
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by IDs.
@@ -867,15 +791,9 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) ClearSystemAnalysis() *SystemA
 	return saruo
 }
 
-// ClearSourceComponent clears the "source_component" edge to the SystemComponent entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearSourceComponent() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearSourceComponent()
-	return saruo
-}
-
-// ClearTargetComponent clears the "target_component" edge to the SystemComponent entity.
-func (saruo *SystemAnalysisRelationshipUpdateOne) ClearTargetComponent() *SystemAnalysisRelationshipUpdateOne {
-	saruo.mutation.ClearTargetComponent()
+// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
+func (saruo *SystemAnalysisRelationshipUpdateOne) ClearComponentRelationship() *SystemAnalysisRelationshipUpdateOne {
+	saruo.mutation.ClearComponentRelationship()
 	return saruo
 }
 
@@ -1008,11 +926,8 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) check() error {
 	if saruo.mutation.SystemAnalysisCleared() && len(saruo.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
-	if saruo.mutation.SourceComponentCleared() && len(saruo.mutation.SourceComponentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.source_component"`)
-	}
-	if saruo.mutation.TargetComponentCleared() && len(saruo.mutation.TargetComponentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.target_component"`)
+	if saruo.mutation.ComponentRelationshipCleared() && len(saruo.mutation.ComponentRelationshipIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.component_relationship"`)
 	}
 	return nil
 }
@@ -1090,57 +1005,28 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if saruo.mutation.SourceComponentCleared() {
+	if saruo.mutation.ComponentRelationshipCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.SourceComponentTable,
-			Columns: []string{systemanalysisrelationship.SourceComponentColumn},
+			Table:   systemanalysisrelationship.ComponentRelationshipTable,
+			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := saruo.mutation.SourceComponentIDs(); len(nodes) > 0 {
+	if nodes := saruo.mutation.ComponentRelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysisrelationship.SourceComponentTable,
-			Columns: []string{systemanalysisrelationship.SourceComponentColumn},
+			Table:   systemanalysisrelationship.ComponentRelationshipTable,
+			Columns: []string{systemanalysisrelationship.ComponentRelationshipColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if saruo.mutation.TargetComponentCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetComponentTable,
-			Columns: []string{systemanalysisrelationship.TargetComponentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := saruo.mutation.TargetComponentIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemanalysisrelationship.TargetComponentTable,
-			Columns: []string{systemanalysisrelationship.TargetComponentColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -17,20 +17,16 @@ const (
 	FieldID = "id"
 	// FieldAnalysisID holds the string denoting the analysis_id field in the database.
 	FieldAnalysisID = "analysis_id"
-	// FieldSourceComponentID holds the string denoting the source_component_id field in the database.
-	FieldSourceComponentID = "source_component_id"
-	// FieldTargetComponentID holds the string denoting the target_component_id field in the database.
-	FieldTargetComponentID = "target_component_id"
+	// FieldComponentRelationshipID holds the string denoting the component_relationship_id field in the database.
+	FieldComponentRelationshipID = "component_relationship_id"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
 	EdgeSystemAnalysis = "system_analysis"
-	// EdgeSourceComponent holds the string denoting the source_component edge name in mutations.
-	EdgeSourceComponent = "source_component"
-	// EdgeTargetComponent holds the string denoting the target_component edge name in mutations.
-	EdgeTargetComponent = "target_component"
+	// EdgeComponentRelationship holds the string denoting the component_relationship edge name in mutations.
+	EdgeComponentRelationship = "component_relationship"
 	// EdgeControls holds the string denoting the controls edge name in mutations.
 	EdgeControls = "controls"
 	// EdgeSignals holds the string denoting the signals edge name in mutations.
@@ -48,20 +44,13 @@ const (
 	SystemAnalysisInverseTable = "system_analyses"
 	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
 	SystemAnalysisColumn = "analysis_id"
-	// SourceComponentTable is the table that holds the source_component relation/edge.
-	SourceComponentTable = "system_analysis_relationships"
-	// SourceComponentInverseTable is the table name for the SystemComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
-	SourceComponentInverseTable = "system_components"
-	// SourceComponentColumn is the table column denoting the source_component relation/edge.
-	SourceComponentColumn = "source_component_id"
-	// TargetComponentTable is the table that holds the target_component relation/edge.
-	TargetComponentTable = "system_analysis_relationships"
-	// TargetComponentInverseTable is the table name for the SystemComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
-	TargetComponentInverseTable = "system_components"
-	// TargetComponentColumn is the table column denoting the target_component relation/edge.
-	TargetComponentColumn = "target_component_id"
+	// ComponentRelationshipTable is the table that holds the component_relationship relation/edge.
+	ComponentRelationshipTable = "system_analysis_relationships"
+	// ComponentRelationshipInverseTable is the table name for the SystemComponentRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "systemcomponentrelationship" package.
+	ComponentRelationshipInverseTable = "system_component_relationships"
+	// ComponentRelationshipColumn is the table column denoting the component_relationship relation/edge.
+	ComponentRelationshipColumn = "component_relationship_id"
 	// ControlsTable is the table that holds the controls relation/edge. The primary key declared below.
 	ControlsTable = "system_relationship_control_actions"
 	// ControlsInverseTable is the table name for the SystemComponentControl entity.
@@ -92,8 +81,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldAnalysisID,
-	FieldSourceComponentID,
-	FieldTargetComponentID,
+	FieldComponentRelationshipID,
 	FieldDescription,
 	FieldCreatedAt,
 }
@@ -137,14 +125,9 @@ func ByAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAnalysisID, opts...).ToFunc()
 }
 
-// BySourceComponentID orders the results by the source_component_id field.
-func BySourceComponentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceComponentID, opts...).ToFunc()
-}
-
-// ByTargetComponentID orders the results by the target_component_id field.
-func ByTargetComponentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTargetComponentID, opts...).ToFunc()
+// ByComponentRelationshipID orders the results by the component_relationship_id field.
+func ByComponentRelationshipID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldComponentRelationshipID, opts...).ToFunc()
 }
 
 // ByDescription orders the results by the description field.
@@ -164,17 +147,10 @@ func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOptio
 	}
 }
 
-// BySourceComponentField orders the results by source_component field.
-func BySourceComponentField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByComponentRelationshipField orders the results by component_relationship field.
+func ByComponentRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSourceComponentStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByTargetComponentField orders the results by target_component field.
-func ByTargetComponentField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTargetComponentStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newComponentRelationshipStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -240,18 +216,11 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }
-func newSourceComponentStep() *sqlgraph.Step {
+func newComponentRelationshipStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SourceComponentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SourceComponentTable, SourceComponentColumn),
-	)
-}
-func newTargetComponentStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TargetComponentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, TargetComponentTable, TargetComponentColumn),
+		sqlgraph.To(ComponentRelationshipInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ComponentRelationshipTable, ComponentRelationshipColumn),
 	)
 }
 func newControlsStep() *sqlgraph.Step {

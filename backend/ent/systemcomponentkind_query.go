@@ -302,12 +302,12 @@ func (sckq *SystemComponentKindQuery) WithComponents(opts ...func(*SystemCompone
 // Example:
 //
 //	var v []struct {
-//		Label string `json:"label,omitempty"`
+//		ProviderID string `json:"provider_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemComponentKind.Query().
-//		GroupBy(systemcomponentkind.FieldLabel).
+//		GroupBy(systemcomponentkind.FieldProviderID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *SystemComponentKindGroupBy {
@@ -325,11 +325,11 @@ func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *S
 // Example:
 //
 //	var v []struct {
-//		Label string `json:"label,omitempty"`
+//		ProviderID string `json:"provider_id,omitempty"`
 //	}
 //
 //	client.SystemComponentKind.Query().
-//		Select(systemcomponentkind.FieldLabel).
+//		Select(systemcomponentkind.FieldProviderID).
 //		Scan(ctx, &v)
 func (sckq *SystemComponentKindQuery) Select(fields ...string) *SystemComponentKindSelect {
 	sckq.ctx.Fields = append(sckq.ctx.Fields, fields...)

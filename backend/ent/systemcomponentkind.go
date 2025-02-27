@@ -18,6 +18,8 @@ type SystemComponentKind struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
 	// Label holds the value of the "label" field.
 	Label string `json:"label,omitempty"`
 	// Description holds the value of the "description" field.
@@ -53,7 +55,7 @@ func (*SystemComponentKind) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case systemcomponentkind.FieldLabel, systemcomponentkind.FieldDescription:
+		case systemcomponentkind.FieldProviderID, systemcomponentkind.FieldLabel, systemcomponentkind.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentkind.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -79,6 +81,12 @@ func (sck *SystemComponentKind) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sck.ID = *value
+			}
+		case systemcomponentkind.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				sck.ProviderID = value.String
 			}
 		case systemcomponentkind.FieldLabel:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -139,6 +147,9 @@ func (sck *SystemComponentKind) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentKind(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sck.ID))
+	builder.WriteString("provider_id=")
+	builder.WriteString(sck.ProviderID)
+	builder.WriteString(", ")
 	builder.WriteString("label=")
 	builder.WriteString(sck.Label)
 	builder.WriteString(", ")

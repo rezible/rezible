@@ -15,6 +15,8 @@ const (
 	Label = "system_component_kind"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
 	// FieldLabel holds the string denoting the label field in the database.
 	FieldLabel = "label"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -37,6 +39,7 @@ const (
 // Columns holds all SQL columns for systemcomponentkind fields.
 var Columns = []string{
 	FieldID,
+	FieldProviderID,
 	FieldLabel,
 	FieldDescription,
 	FieldCreatedAt,
@@ -65,6 +68,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByLabel orders the results by the label field.

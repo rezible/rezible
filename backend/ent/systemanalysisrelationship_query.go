@@ -16,8 +16,8 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -26,18 +26,17 @@ import (
 // SystemAnalysisRelationshipQuery is the builder for querying SystemAnalysisRelationship entities.
 type SystemAnalysisRelationshipQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []systemanalysisrelationship.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.SystemAnalysisRelationship
-	withSystemAnalysis  *SystemAnalysisQuery
-	withSourceComponent *SystemComponentQuery
-	withTargetComponent *SystemComponentQuery
-	withControls        *SystemComponentControlQuery
-	withSignals         *SystemComponentSignalQuery
-	withControlActions  *SystemRelationshipControlActionQuery
-	withFeedbackSignals *SystemRelationshipFeedbackSignalQuery
-	modifiers           []func(*sql.Selector)
+	ctx                       *QueryContext
+	order                     []systemanalysisrelationship.OrderOption
+	inters                    []Interceptor
+	predicates                []predicate.SystemAnalysisRelationship
+	withSystemAnalysis        *SystemAnalysisQuery
+	withComponentRelationship *SystemComponentRelationshipQuery
+	withControls              *SystemComponentControlQuery
+	withSignals               *SystemComponentSignalQuery
+	withControlActions        *SystemRelationshipControlActionQuery
+	withFeedbackSignals       *SystemRelationshipFeedbackSignalQuery
+	modifiers                 []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -96,9 +95,9 @@ func (sarq *SystemAnalysisRelationshipQuery) QuerySystemAnalysis() *SystemAnalys
 	return query
 }
 
-// QuerySourceComponent chains the current query on the "source_component" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QuerySourceComponent() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: sarq.config}).Query()
+// QueryComponentRelationship chains the current query on the "component_relationship" edge.
+func (sarq *SystemAnalysisRelationshipQuery) QueryComponentRelationship() *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: sarq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sarq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -109,30 +108,8 @@ func (sarq *SystemAnalysisRelationshipQuery) QuerySourceComponent() *SystemCompo
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SourceComponentTable, systemanalysisrelationship.SourceComponentColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTargetComponent chains the current query on the "target_component" edge.
-func (sarq *SystemAnalysisRelationshipQuery) QueryTargetComponent() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: sarq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := sarq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := sarq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TargetComponentTable, systemanalysisrelationship.TargetComponentColumn),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.ComponentRelationshipTable, systemanalysisrelationship.ComponentRelationshipColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
 		return fromU, nil
@@ -415,18 +392,17 @@ func (sarq *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationship
 		return nil
 	}
 	return &SystemAnalysisRelationshipQuery{
-		config:              sarq.config,
-		ctx:                 sarq.ctx.Clone(),
-		order:               append([]systemanalysisrelationship.OrderOption{}, sarq.order...),
-		inters:              append([]Interceptor{}, sarq.inters...),
-		predicates:          append([]predicate.SystemAnalysisRelationship{}, sarq.predicates...),
-		withSystemAnalysis:  sarq.withSystemAnalysis.Clone(),
-		withSourceComponent: sarq.withSourceComponent.Clone(),
-		withTargetComponent: sarq.withTargetComponent.Clone(),
-		withControls:        sarq.withControls.Clone(),
-		withSignals:         sarq.withSignals.Clone(),
-		withControlActions:  sarq.withControlActions.Clone(),
-		withFeedbackSignals: sarq.withFeedbackSignals.Clone(),
+		config:                    sarq.config,
+		ctx:                       sarq.ctx.Clone(),
+		order:                     append([]systemanalysisrelationship.OrderOption{}, sarq.order...),
+		inters:                    append([]Interceptor{}, sarq.inters...),
+		predicates:                append([]predicate.SystemAnalysisRelationship{}, sarq.predicates...),
+		withSystemAnalysis:        sarq.withSystemAnalysis.Clone(),
+		withComponentRelationship: sarq.withComponentRelationship.Clone(),
+		withControls:              sarq.withControls.Clone(),
+		withSignals:               sarq.withSignals.Clone(),
+		withControlActions:        sarq.withControlActions.Clone(),
+		withFeedbackSignals:       sarq.withFeedbackSignals.Clone(),
 		// clone intermediate query.
 		sql:       sarq.sql.Clone(),
 		path:      sarq.path,
@@ -445,25 +421,14 @@ func (sarq *SystemAnalysisRelationshipQuery) WithSystemAnalysis(opts ...func(*Sy
 	return sarq
 }
 
-// WithSourceComponent tells the query-builder to eager-load the nodes that are connected to
-// the "source_component" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithSourceComponent(opts ...func(*SystemComponentQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentClient{config: sarq.config}).Query()
+// WithComponentRelationship tells the query-builder to eager-load the nodes that are connected to
+// the "component_relationship" edge. The optional arguments are used to configure the query builder of the edge.
+func (sarq *SystemAnalysisRelationshipQuery) WithComponentRelationship(opts ...func(*SystemComponentRelationshipQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: sarq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sarq.withSourceComponent = query
-	return sarq
-}
-
-// WithTargetComponent tells the query-builder to eager-load the nodes that are connected to
-// the "target_component" edge. The optional arguments are used to configure the query builder of the edge.
-func (sarq *SystemAnalysisRelationshipQuery) WithTargetComponent(opts ...func(*SystemComponentQuery)) *SystemAnalysisRelationshipQuery {
-	query := (&SystemComponentClient{config: sarq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	sarq.withTargetComponent = query
+	sarq.withComponentRelationship = query
 	return sarq
 }
 
@@ -589,10 +554,9 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 	var (
 		nodes       = []*SystemAnalysisRelationship{}
 		_spec       = sarq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [6]bool{
 			sarq.withSystemAnalysis != nil,
-			sarq.withSourceComponent != nil,
-			sarq.withTargetComponent != nil,
+			sarq.withComponentRelationship != nil,
 			sarq.withControls != nil,
 			sarq.withSignals != nil,
 			sarq.withControlActions != nil,
@@ -626,15 +590,9 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 			return nil, err
 		}
 	}
-	if query := sarq.withSourceComponent; query != nil {
-		if err := sarq.loadSourceComponent(ctx, query, nodes, nil,
-			func(n *SystemAnalysisRelationship, e *SystemComponent) { n.Edges.SourceComponent = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := sarq.withTargetComponent; query != nil {
-		if err := sarq.loadTargetComponent(ctx, query, nodes, nil,
-			func(n *SystemAnalysisRelationship, e *SystemComponent) { n.Edges.TargetComponent = e }); err != nil {
+	if query := sarq.withComponentRelationship; query != nil {
+		if err := sarq.loadComponentRelationship(ctx, query, nodes, nil,
+			func(n *SystemAnalysisRelationship, e *SystemComponentRelationship) { n.Edges.ComponentRelationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -706,11 +664,11 @@ func (sarq *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Cont
 	}
 	return nil
 }
-func (sarq *SystemAnalysisRelationshipQuery) loadSourceComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponent)) error {
+func (sarq *SystemAnalysisRelationshipQuery) loadComponentRelationship(ctx context.Context, query *SystemComponentRelationshipQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponentRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
 	for i := range nodes {
-		fk := nodes[i].SourceComponentID
+		fk := nodes[i].ComponentRelationshipID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -719,7 +677,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadSourceComponent(ctx context.Con
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(systemcomponent.IDIn(ids...))
+	query.Where(systemcomponentrelationship.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -727,36 +685,7 @@ func (sarq *SystemAnalysisRelationshipQuery) loadSourceComponent(ctx context.Con
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "source_component_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (sarq *SystemAnalysisRelationshipQuery) loadTargetComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemComponent)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
-	for i := range nodes {
-		fk := nodes[i].TargetComponentID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(systemcomponent.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "target_component_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "component_relationship_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -978,11 +907,8 @@ func (sarq *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 		if sarq.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldAnalysisID)
 		}
-		if sarq.withSourceComponent != nil {
-			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldSourceComponentID)
-		}
-		if sarq.withTargetComponent != nil {
-			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldTargetComponentID)
+		if sarq.withComponentRelationship != nil {
+			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldComponentRelationshipID)
 		}
 	}
 	if ps := sarq.predicates; len(ps) > 0 {

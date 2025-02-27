@@ -31,6 +31,26 @@ func (scku *SystemComponentKindUpdate) Where(ps ...predicate.SystemComponentKind
 	return scku
 }
 
+// SetProviderID sets the "provider_id" field.
+func (scku *SystemComponentKindUpdate) SetProviderID(s string) *SystemComponentKindUpdate {
+	scku.mutation.SetProviderID(s)
+	return scku
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (scku *SystemComponentKindUpdate) SetNillableProviderID(s *string) *SystemComponentKindUpdate {
+	if s != nil {
+		scku.SetProviderID(*s)
+	}
+	return scku
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (scku *SystemComponentKindUpdate) ClearProviderID() *SystemComponentKindUpdate {
+	scku.mutation.ClearProviderID()
+	return scku
+}
+
 // SetLabel sets the "label" field.
 func (scku *SystemComponentKindUpdate) SetLabel(s string) *SystemComponentKindUpdate {
 	scku.mutation.SetLabel(s)
@@ -162,6 +182,12 @@ func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err 
 			}
 		}
 	}
+	if value, ok := scku.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
+	}
+	if scku.mutation.ProviderIDCleared() {
+		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
+	}
 	if value, ok := scku.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)
 	}
@@ -239,6 +265,26 @@ type SystemComponentKindUpdateOne struct {
 	hooks     []Hook
 	mutation  *SystemComponentKindMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetProviderID sets the "provider_id" field.
+func (sckuo *SystemComponentKindUpdateOne) SetProviderID(s string) *SystemComponentKindUpdateOne {
+	sckuo.mutation.SetProviderID(s)
+	return sckuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (sckuo *SystemComponentKindUpdateOne) SetNillableProviderID(s *string) *SystemComponentKindUpdateOne {
+	if s != nil {
+		sckuo.SetProviderID(*s)
+	}
+	return sckuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (sckuo *SystemComponentKindUpdateOne) ClearProviderID() *SystemComponentKindUpdateOne {
+	sckuo.mutation.ClearProviderID()
+	return sckuo
 }
 
 // SetLabel sets the "label" field.
@@ -401,6 +447,12 @@ func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := sckuo.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponentkind.FieldProviderID, field.TypeString, value)
+	}
+	if sckuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(systemcomponentkind.FieldProviderID, field.TypeString)
 	}
 	if value, ok := sckuo.mutation.Label(); ok {
 		_spec.SetField(systemcomponentkind.FieldLabel, field.TypeString, value)

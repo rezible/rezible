@@ -60,6 +60,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -124,6 +125,7 @@ const (
 	TypeSystemComponentConstraint        = "SystemComponentConstraint"
 	TypeSystemComponentControl           = "SystemComponentControl"
 	TypeSystemComponentKind              = "SystemComponentKind"
+	TypeSystemComponentRelationship      = "SystemComponentRelationship"
 	TypeSystemComponentSignal            = "SystemComponentSignal"
 	TypeSystemRelationshipControlAction  = "SystemRelationshipControlAction"
 	TypeSystemRelationshipFeedbackSignal = "SystemRelationshipFeedbackSignal"
@@ -30142,33 +30144,31 @@ func (m *SystemAnalysisComponentMutation) ResetEdge(name string) error {
 // SystemAnalysisRelationshipMutation represents an operation that mutates the SystemAnalysisRelationship nodes in the graph.
 type SystemAnalysisRelationshipMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	description             *string
-	created_at              *time.Time
-	clearedFields           map[string]struct{}
-	system_analysis         *uuid.UUID
-	clearedsystem_analysis  bool
-	source_component        *uuid.UUID
-	clearedsource_component bool
-	target_component        *uuid.UUID
-	clearedtarget_component bool
-	controls                map[uuid.UUID]struct{}
-	removedcontrols         map[uuid.UUID]struct{}
-	clearedcontrols         bool
-	signals                 map[uuid.UUID]struct{}
-	removedsignals          map[uuid.UUID]struct{}
-	clearedsignals          bool
-	control_actions         map[uuid.UUID]struct{}
-	removedcontrol_actions  map[uuid.UUID]struct{}
-	clearedcontrol_actions  bool
-	feedback_signals        map[uuid.UUID]struct{}
-	removedfeedback_signals map[uuid.UUID]struct{}
-	clearedfeedback_signals bool
-	done                    bool
-	oldValue                func(context.Context) (*SystemAnalysisRelationship, error)
-	predicates              []predicate.SystemAnalysisRelationship
+	op                            Op
+	typ                           string
+	id                            *uuid.UUID
+	description                   *string
+	created_at                    *time.Time
+	clearedFields                 map[string]struct{}
+	system_analysis               *uuid.UUID
+	clearedsystem_analysis        bool
+	component_relationship        *uuid.UUID
+	clearedcomponent_relationship bool
+	controls                      map[uuid.UUID]struct{}
+	removedcontrols               map[uuid.UUID]struct{}
+	clearedcontrols               bool
+	signals                       map[uuid.UUID]struct{}
+	removedsignals                map[uuid.UUID]struct{}
+	clearedsignals                bool
+	control_actions               map[uuid.UUID]struct{}
+	removedcontrol_actions        map[uuid.UUID]struct{}
+	clearedcontrol_actions        bool
+	feedback_signals              map[uuid.UUID]struct{}
+	removedfeedback_signals       map[uuid.UUID]struct{}
+	clearedfeedback_signals       bool
+	done                          bool
+	oldValue                      func(context.Context) (*SystemAnalysisRelationship, error)
+	predicates                    []predicate.SystemAnalysisRelationship
 }
 
 var _ ent.Mutation = (*SystemAnalysisRelationshipMutation)(nil)
@@ -30311,76 +30311,40 @@ func (m *SystemAnalysisRelationshipMutation) ResetAnalysisID() {
 	m.system_analysis = nil
 }
 
-// SetSourceComponentID sets the "source_component_id" field.
-func (m *SystemAnalysisRelationshipMutation) SetSourceComponentID(u uuid.UUID) {
-	m.source_component = &u
+// SetComponentRelationshipID sets the "component_relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) SetComponentRelationshipID(u uuid.UUID) {
+	m.component_relationship = &u
 }
 
-// SourceComponentID returns the value of the "source_component_id" field in the mutation.
-func (m *SystemAnalysisRelationshipMutation) SourceComponentID() (r uuid.UUID, exists bool) {
-	v := m.source_component
+// ComponentRelationshipID returns the value of the "component_relationship_id" field in the mutation.
+func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipID() (r uuid.UUID, exists bool) {
+	v := m.component_relationship
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceComponentID returns the old "source_component_id" field's value of the SystemAnalysisRelationship entity.
+// OldComponentRelationshipID returns the old "component_relationship_id" field's value of the SystemAnalysisRelationship entity.
 // If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisRelationshipMutation) OldSourceComponentID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SystemAnalysisRelationshipMutation) OldComponentRelationshipID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceComponentID is only allowed on UpdateOne operations")
+		return v, errors.New("OldComponentRelationshipID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceComponentID requires an ID field in the mutation")
+		return v, errors.New("OldComponentRelationshipID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceComponentID: %w", err)
+		return v, fmt.Errorf("querying old value for OldComponentRelationshipID: %w", err)
 	}
-	return oldValue.SourceComponentID, nil
+	return oldValue.ComponentRelationshipID, nil
 }
 
-// ResetSourceComponentID resets all changes to the "source_component_id" field.
-func (m *SystemAnalysisRelationshipMutation) ResetSourceComponentID() {
-	m.source_component = nil
-}
-
-// SetTargetComponentID sets the "target_component_id" field.
-func (m *SystemAnalysisRelationshipMutation) SetTargetComponentID(u uuid.UUID) {
-	m.target_component = &u
-}
-
-// TargetComponentID returns the value of the "target_component_id" field in the mutation.
-func (m *SystemAnalysisRelationshipMutation) TargetComponentID() (r uuid.UUID, exists bool) {
-	v := m.target_component
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTargetComponentID returns the old "target_component_id" field's value of the SystemAnalysisRelationship entity.
-// If the SystemAnalysisRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisRelationshipMutation) OldTargetComponentID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetComponentID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetComponentID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetComponentID: %w", err)
-	}
-	return oldValue.TargetComponentID, nil
-}
-
-// ResetTargetComponentID resets all changes to the "target_component_id" field.
-func (m *SystemAnalysisRelationshipMutation) ResetTargetComponentID() {
-	m.target_component = nil
+// ResetComponentRelationshipID resets all changes to the "component_relationship_id" field.
+func (m *SystemAnalysisRelationshipMutation) ResetComponentRelationshipID() {
+	m.component_relationship = nil
 }
 
 // SetDescription sets the "description" field.
@@ -30508,58 +30472,31 @@ func (m *SystemAnalysisRelationshipMutation) ResetSystemAnalysis() {
 	m.clearedsystem_analysis = false
 }
 
-// ClearSourceComponent clears the "source_component" edge to the SystemComponent entity.
-func (m *SystemAnalysisRelationshipMutation) ClearSourceComponent() {
-	m.clearedsource_component = true
-	m.clearedFields[systemanalysisrelationship.FieldSourceComponentID] = struct{}{}
+// ClearComponentRelationship clears the "component_relationship" edge to the SystemComponentRelationship entity.
+func (m *SystemAnalysisRelationshipMutation) ClearComponentRelationship() {
+	m.clearedcomponent_relationship = true
+	m.clearedFields[systemanalysisrelationship.FieldComponentRelationshipID] = struct{}{}
 }
 
-// SourceComponentCleared reports if the "source_component" edge to the SystemComponent entity was cleared.
-func (m *SystemAnalysisRelationshipMutation) SourceComponentCleared() bool {
-	return m.clearedsource_component
+// ComponentRelationshipCleared reports if the "component_relationship" edge to the SystemComponentRelationship entity was cleared.
+func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipCleared() bool {
+	return m.clearedcomponent_relationship
 }
 
-// SourceComponentIDs returns the "source_component" edge IDs in the mutation.
+// ComponentRelationshipIDs returns the "component_relationship" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SourceComponentID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisRelationshipMutation) SourceComponentIDs() (ids []uuid.UUID) {
-	if id := m.source_component; id != nil {
+// ComponentRelationshipID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisRelationshipMutation) ComponentRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.component_relationship; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSourceComponent resets all changes to the "source_component" edge.
-func (m *SystemAnalysisRelationshipMutation) ResetSourceComponent() {
-	m.source_component = nil
-	m.clearedsource_component = false
-}
-
-// ClearTargetComponent clears the "target_component" edge to the SystemComponent entity.
-func (m *SystemAnalysisRelationshipMutation) ClearTargetComponent() {
-	m.clearedtarget_component = true
-	m.clearedFields[systemanalysisrelationship.FieldTargetComponentID] = struct{}{}
-}
-
-// TargetComponentCleared reports if the "target_component" edge to the SystemComponent entity was cleared.
-func (m *SystemAnalysisRelationshipMutation) TargetComponentCleared() bool {
-	return m.clearedtarget_component
-}
-
-// TargetComponentIDs returns the "target_component" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TargetComponentID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisRelationshipMutation) TargetComponentIDs() (ids []uuid.UUID) {
-	if id := m.target_component; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTargetComponent resets all changes to the "target_component" edge.
-func (m *SystemAnalysisRelationshipMutation) ResetTargetComponent() {
-	m.target_component = nil
-	m.clearedtarget_component = false
+// ResetComponentRelationship resets all changes to the "component_relationship" edge.
+func (m *SystemAnalysisRelationshipMutation) ResetComponentRelationship() {
+	m.component_relationship = nil
+	m.clearedcomponent_relationship = false
 }
 
 // AddControlIDs adds the "controls" edge to the SystemComponentControl entity by ids.
@@ -30812,15 +30749,12 @@ func (m *SystemAnalysisRelationshipMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 4)
 	if m.system_analysis != nil {
 		fields = append(fields, systemanalysisrelationship.FieldAnalysisID)
 	}
-	if m.source_component != nil {
-		fields = append(fields, systemanalysisrelationship.FieldSourceComponentID)
-	}
-	if m.target_component != nil {
-		fields = append(fields, systemanalysisrelationship.FieldTargetComponentID)
+	if m.component_relationship != nil {
+		fields = append(fields, systemanalysisrelationship.FieldComponentRelationshipID)
 	}
 	if m.description != nil {
 		fields = append(fields, systemanalysisrelationship.FieldDescription)
@@ -30838,10 +30772,8 @@ func (m *SystemAnalysisRelationshipMutation) Field(name string) (ent.Value, bool
 	switch name {
 	case systemanalysisrelationship.FieldAnalysisID:
 		return m.AnalysisID()
-	case systemanalysisrelationship.FieldSourceComponentID:
-		return m.SourceComponentID()
-	case systemanalysisrelationship.FieldTargetComponentID:
-		return m.TargetComponentID()
+	case systemanalysisrelationship.FieldComponentRelationshipID:
+		return m.ComponentRelationshipID()
 	case systemanalysisrelationship.FieldDescription:
 		return m.Description()
 	case systemanalysisrelationship.FieldCreatedAt:
@@ -30857,10 +30789,8 @@ func (m *SystemAnalysisRelationshipMutation) OldField(ctx context.Context, name 
 	switch name {
 	case systemanalysisrelationship.FieldAnalysisID:
 		return m.OldAnalysisID(ctx)
-	case systemanalysisrelationship.FieldSourceComponentID:
-		return m.OldSourceComponentID(ctx)
-	case systemanalysisrelationship.FieldTargetComponentID:
-		return m.OldTargetComponentID(ctx)
+	case systemanalysisrelationship.FieldComponentRelationshipID:
+		return m.OldComponentRelationshipID(ctx)
 	case systemanalysisrelationship.FieldDescription:
 		return m.OldDescription(ctx)
 	case systemanalysisrelationship.FieldCreatedAt:
@@ -30881,19 +30811,12 @@ func (m *SystemAnalysisRelationshipMutation) SetField(name string, value ent.Val
 		}
 		m.SetAnalysisID(v)
 		return nil
-	case systemanalysisrelationship.FieldSourceComponentID:
+	case systemanalysisrelationship.FieldComponentRelationshipID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceComponentID(v)
-		return nil
-	case systemanalysisrelationship.FieldTargetComponentID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTargetComponentID(v)
+		m.SetComponentRelationshipID(v)
 		return nil
 	case systemanalysisrelationship.FieldDescription:
 		v, ok := value.(string)
@@ -30970,11 +30893,8 @@ func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
 	case systemanalysisrelationship.FieldAnalysisID:
 		m.ResetAnalysisID()
 		return nil
-	case systemanalysisrelationship.FieldSourceComponentID:
-		m.ResetSourceComponentID()
-		return nil
-	case systemanalysisrelationship.FieldTargetComponentID:
-		m.ResetTargetComponentID()
+	case systemanalysisrelationship.FieldComponentRelationshipID:
+		m.ResetComponentRelationshipID()
 		return nil
 	case systemanalysisrelationship.FieldDescription:
 		m.ResetDescription()
@@ -30988,15 +30908,12 @@ func (m *SystemAnalysisRelationshipMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisRelationshipMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.system_analysis != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeSystemAnalysis)
 	}
-	if m.source_component != nil {
-		edges = append(edges, systemanalysisrelationship.EdgeSourceComponent)
-	}
-	if m.target_component != nil {
-		edges = append(edges, systemanalysisrelationship.EdgeTargetComponent)
+	if m.component_relationship != nil {
+		edges = append(edges, systemanalysisrelationship.EdgeComponentRelationship)
 	}
 	if m.controls != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeControls)
@@ -31021,12 +30938,8 @@ func (m *SystemAnalysisRelationshipMutation) AddedIDs(name string) []ent.Value {
 		if id := m.system_analysis; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemanalysisrelationship.EdgeSourceComponent:
-		if id := m.source_component; id != nil {
-			return []ent.Value{*id}
-		}
-	case systemanalysisrelationship.EdgeTargetComponent:
-		if id := m.target_component; id != nil {
+	case systemanalysisrelationship.EdgeComponentRelationship:
+		if id := m.component_relationship; id != nil {
 			return []ent.Value{*id}
 		}
 	case systemanalysisrelationship.EdgeControls:
@@ -31059,7 +30972,7 @@ func (m *SystemAnalysisRelationshipMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemAnalysisRelationshipMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.removedcontrols != nil {
 		edges = append(edges, systemanalysisrelationship.EdgeControls)
 	}
@@ -31109,15 +31022,12 @@ func (m *SystemAnalysisRelationshipMutation) RemovedIDs(name string) []ent.Value
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisRelationshipMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 6)
 	if m.clearedsystem_analysis {
 		edges = append(edges, systemanalysisrelationship.EdgeSystemAnalysis)
 	}
-	if m.clearedsource_component {
-		edges = append(edges, systemanalysisrelationship.EdgeSourceComponent)
-	}
-	if m.clearedtarget_component {
-		edges = append(edges, systemanalysisrelationship.EdgeTargetComponent)
+	if m.clearedcomponent_relationship {
+		edges = append(edges, systemanalysisrelationship.EdgeComponentRelationship)
 	}
 	if m.clearedcontrols {
 		edges = append(edges, systemanalysisrelationship.EdgeControls)
@@ -31140,10 +31050,8 @@ func (m *SystemAnalysisRelationshipMutation) EdgeCleared(name string) bool {
 	switch name {
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		return m.clearedsystem_analysis
-	case systemanalysisrelationship.EdgeSourceComponent:
-		return m.clearedsource_component
-	case systemanalysisrelationship.EdgeTargetComponent:
-		return m.clearedtarget_component
+	case systemanalysisrelationship.EdgeComponentRelationship:
+		return m.clearedcomponent_relationship
 	case systemanalysisrelationship.EdgeControls:
 		return m.clearedcontrols
 	case systemanalysisrelationship.EdgeSignals:
@@ -31163,11 +31071,8 @@ func (m *SystemAnalysisRelationshipMutation) ClearEdge(name string) error {
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		m.ClearSystemAnalysis()
 		return nil
-	case systemanalysisrelationship.EdgeSourceComponent:
-		m.ClearSourceComponent()
-		return nil
-	case systemanalysisrelationship.EdgeTargetComponent:
-		m.ClearTargetComponent()
+	case systemanalysisrelationship.EdgeComponentRelationship:
+		m.ClearComponentRelationship()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysisRelationship unique edge %s", name)
@@ -31180,11 +31085,8 @@ func (m *SystemAnalysisRelationshipMutation) ResetEdge(name string) error {
 	case systemanalysisrelationship.EdgeSystemAnalysis:
 		m.ResetSystemAnalysis()
 		return nil
-	case systemanalysisrelationship.EdgeSourceComponent:
-		m.ResetSourceComponent()
-		return nil
-	case systemanalysisrelationship.EdgeTargetComponent:
-		m.ResetTargetComponent()
+	case systemanalysisrelationship.EdgeComponentRelationship:
+		m.ResetComponentRelationship()
 		return nil
 	case systemanalysisrelationship.EdgeControls:
 		m.ResetControls()
@@ -31205,47 +31107,48 @@ func (m *SystemAnalysisRelationshipMutation) ResetEdge(name string) error {
 // SystemComponentMutation represents an operation that mutates the SystemComponent nodes in the graph.
 type SystemComponentMutation struct {
 	config
-	op                         Op
-	typ                        string
-	id                         *uuid.UUID
-	name                       *string
-	description                *string
-	properties                 *map[string]interface{}
-	created_at                 *time.Time
-	updated_at                 *time.Time
-	clearedFields              map[string]struct{}
-	kind                       *uuid.UUID
-	clearedkind                bool
-	analyses                   map[uuid.UUID]struct{}
-	removedanalyses            map[uuid.UUID]struct{}
-	clearedanalyses            bool
-	related                    map[uuid.UUID]struct{}
-	removedrelated             map[uuid.UUID]struct{}
-	clearedrelated             bool
-	events                     map[uuid.UUID]struct{}
-	removedevents              map[uuid.UUID]struct{}
-	clearedevents              bool
-	constraints                map[uuid.UUID]struct{}
-	removedconstraints         map[uuid.UUID]struct{}
-	clearedconstraints         bool
-	controls                   map[uuid.UUID]struct{}
-	removedcontrols            map[uuid.UUID]struct{}
-	clearedcontrols            bool
-	signals                    map[uuid.UUID]struct{}
-	removedsignals             map[uuid.UUID]struct{}
-	clearedsignals             bool
-	analysis_components        map[uuid.UUID]struct{}
-	removedanalysis_components map[uuid.UUID]struct{}
-	clearedanalysis_components bool
-	relationships              map[uuid.UUID]struct{}
-	removedrelationships       map[uuid.UUID]struct{}
-	clearedrelationships       bool
-	event_components           map[uuid.UUID]struct{}
-	removedevent_components    map[uuid.UUID]struct{}
-	clearedevent_components    bool
-	done                       bool
-	oldValue                   func(context.Context) (*SystemComponent, error)
-	predicates                 []predicate.SystemComponent
+	op                                Op
+	typ                               string
+	id                                *uuid.UUID
+	name                              *string
+	provider_id                       *string
+	description                       *string
+	properties                        *map[string]interface{}
+	created_at                        *time.Time
+	updated_at                        *time.Time
+	clearedFields                     map[string]struct{}
+	kind                              *uuid.UUID
+	clearedkind                       bool
+	related                           map[uuid.UUID]struct{}
+	removedrelated                    map[uuid.UUID]struct{}
+	clearedrelated                    bool
+	system_analyses                   map[uuid.UUID]struct{}
+	removedsystem_analyses            map[uuid.UUID]struct{}
+	clearedsystem_analyses            bool
+	events                            map[uuid.UUID]struct{}
+	removedevents                     map[uuid.UUID]struct{}
+	clearedevents                     bool
+	constraints                       map[uuid.UUID]struct{}
+	removedconstraints                map[uuid.UUID]struct{}
+	clearedconstraints                bool
+	controls                          map[uuid.UUID]struct{}
+	removedcontrols                   map[uuid.UUID]struct{}
+	clearedcontrols                   bool
+	signals                           map[uuid.UUID]struct{}
+	removedsignals                    map[uuid.UUID]struct{}
+	clearedsignals                    bool
+	component_relationships           map[uuid.UUID]struct{}
+	removedcomponent_relationships    map[uuid.UUID]struct{}
+	clearedcomponent_relationships    bool
+	system_analysis_components        map[uuid.UUID]struct{}
+	removedsystem_analysis_components map[uuid.UUID]struct{}
+	clearedsystem_analysis_components bool
+	event_components                  map[uuid.UUID]struct{}
+	removedevent_components           map[uuid.UUID]struct{}
+	clearedevent_components           bool
+	done                              bool
+	oldValue                          func(context.Context) (*SystemComponent, error)
+	predicates                        []predicate.SystemComponent
 }
 
 var _ ent.Mutation = (*SystemComponentMutation)(nil)
@@ -31386,6 +31289,55 @@ func (m *SystemComponentMutation) OldName(ctx context.Context) (v string, err er
 // ResetName resets all changes to the "name" field.
 func (m *SystemComponentMutation) ResetName() {
 	m.name = nil
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *SystemComponentMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *SystemComponentMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the SystemComponent entity.
+// If the SystemComponent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *SystemComponentMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[systemcomponent.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *SystemComponentMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponent.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *SystemComponentMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, systemcomponent.FieldProviderID)
 }
 
 // SetKindID sets the "kind_id" field.
@@ -31608,60 +31560,6 @@ func (m *SystemComponentMutation) ResetKind() {
 	m.clearedkind = false
 }
 
-// AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by ids.
-func (m *SystemComponentMutation) AddAnalysisIDs(ids ...uuid.UUID) {
-	if m.analyses == nil {
-		m.analyses = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.analyses[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAnalyses clears the "analyses" edge to the SystemAnalysis entity.
-func (m *SystemComponentMutation) ClearAnalyses() {
-	m.clearedanalyses = true
-}
-
-// AnalysesCleared reports if the "analyses" edge to the SystemAnalysis entity was cleared.
-func (m *SystemComponentMutation) AnalysesCleared() bool {
-	return m.clearedanalyses
-}
-
-// RemoveAnalysisIDs removes the "analyses" edge to the SystemAnalysis entity by IDs.
-func (m *SystemComponentMutation) RemoveAnalysisIDs(ids ...uuid.UUID) {
-	if m.removedanalyses == nil {
-		m.removedanalyses = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.analyses, ids[i])
-		m.removedanalyses[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAnalyses returns the removed IDs of the "analyses" edge to the SystemAnalysis entity.
-func (m *SystemComponentMutation) RemovedAnalysesIDs() (ids []uuid.UUID) {
-	for id := range m.removedanalyses {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AnalysesIDs returns the "analyses" edge IDs in the mutation.
-func (m *SystemComponentMutation) AnalysesIDs() (ids []uuid.UUID) {
-	for id := range m.analyses {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAnalyses resets all changes to the "analyses" edge.
-func (m *SystemComponentMutation) ResetAnalyses() {
-	m.analyses = nil
-	m.clearedanalyses = false
-	m.removedanalyses = nil
-}
-
 // AddRelatedIDs adds the "related" edge to the SystemComponent entity by ids.
 func (m *SystemComponentMutation) AddRelatedIDs(ids ...uuid.UUID) {
 	if m.related == nil {
@@ -31714,6 +31612,60 @@ func (m *SystemComponentMutation) ResetRelated() {
 	m.related = nil
 	m.clearedrelated = false
 	m.removedrelated = nil
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by ids.
+func (m *SystemComponentMutation) AddSystemAnalysisIDs(ids ...uuid.UUID) {
+	if m.system_analyses == nil {
+		m.system_analyses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.system_analyses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSystemAnalyses clears the "system_analyses" edge to the SystemAnalysis entity.
+func (m *SystemComponentMutation) ClearSystemAnalyses() {
+	m.clearedsystem_analyses = true
+}
+
+// SystemAnalysesCleared reports if the "system_analyses" edge to the SystemAnalysis entity was cleared.
+func (m *SystemComponentMutation) SystemAnalysesCleared() bool {
+	return m.clearedsystem_analyses
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (m *SystemComponentMutation) RemoveSystemAnalysisIDs(ids ...uuid.UUID) {
+	if m.removedsystem_analyses == nil {
+		m.removedsystem_analyses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.system_analyses, ids[i])
+		m.removedsystem_analyses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSystemAnalyses returns the removed IDs of the "system_analyses" edge to the SystemAnalysis entity.
+func (m *SystemComponentMutation) RemovedSystemAnalysesIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_analyses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SystemAnalysesIDs returns the "system_analyses" edge IDs in the mutation.
+func (m *SystemComponentMutation) SystemAnalysesIDs() (ids []uuid.UUID) {
+	for id := range m.system_analyses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSystemAnalyses resets all changes to the "system_analyses" edge.
+func (m *SystemComponentMutation) ResetSystemAnalyses() {
+	m.system_analyses = nil
+	m.clearedsystem_analyses = false
+	m.removedsystem_analyses = nil
 }
 
 // AddEventIDs adds the "events" edge to the IncidentEvent entity by ids.
@@ -31932,112 +31884,112 @@ func (m *SystemComponentMutation) ResetSignals() {
 	m.removedsignals = nil
 }
 
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by ids.
-func (m *SystemComponentMutation) AddAnalysisComponentIDs(ids ...uuid.UUID) {
-	if m.analysis_components == nil {
-		m.analysis_components = make(map[uuid.UUID]struct{})
+// AddComponentRelationshipIDs adds the "component_relationships" edge to the SystemComponentRelationship entity by ids.
+func (m *SystemComponentMutation) AddComponentRelationshipIDs(ids ...uuid.UUID) {
+	if m.component_relationships == nil {
+		m.component_relationships = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.analysis_components[ids[i]] = struct{}{}
+		m.component_relationships[ids[i]] = struct{}{}
 	}
 }
 
-// ClearAnalysisComponents clears the "analysis_components" edge to the SystemAnalysisComponent entity.
-func (m *SystemComponentMutation) ClearAnalysisComponents() {
-	m.clearedanalysis_components = true
+// ClearComponentRelationships clears the "component_relationships" edge to the SystemComponentRelationship entity.
+func (m *SystemComponentMutation) ClearComponentRelationships() {
+	m.clearedcomponent_relationships = true
 }
 
-// AnalysisComponentsCleared reports if the "analysis_components" edge to the SystemAnalysisComponent entity was cleared.
-func (m *SystemComponentMutation) AnalysisComponentsCleared() bool {
-	return m.clearedanalysis_components
+// ComponentRelationshipsCleared reports if the "component_relationships" edge to the SystemComponentRelationship entity was cleared.
+func (m *SystemComponentMutation) ComponentRelationshipsCleared() bool {
+	return m.clearedcomponent_relationships
 }
 
-// RemoveAnalysisComponentIDs removes the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (m *SystemComponentMutation) RemoveAnalysisComponentIDs(ids ...uuid.UUID) {
-	if m.removedanalysis_components == nil {
-		m.removedanalysis_components = make(map[uuid.UUID]struct{})
+// RemoveComponentRelationshipIDs removes the "component_relationships" edge to the SystemComponentRelationship entity by IDs.
+func (m *SystemComponentMutation) RemoveComponentRelationshipIDs(ids ...uuid.UUID) {
+	if m.removedcomponent_relationships == nil {
+		m.removedcomponent_relationships = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.analysis_components, ids[i])
-		m.removedanalysis_components[ids[i]] = struct{}{}
+		delete(m.component_relationships, ids[i])
+		m.removedcomponent_relationships[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedAnalysisComponents returns the removed IDs of the "analysis_components" edge to the SystemAnalysisComponent entity.
-func (m *SystemComponentMutation) RemovedAnalysisComponentsIDs() (ids []uuid.UUID) {
-	for id := range m.removedanalysis_components {
+// RemovedComponentRelationships returns the removed IDs of the "component_relationships" edge to the SystemComponentRelationship entity.
+func (m *SystemComponentMutation) RemovedComponentRelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.removedcomponent_relationships {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// AnalysisComponentsIDs returns the "analysis_components" edge IDs in the mutation.
-func (m *SystemComponentMutation) AnalysisComponentsIDs() (ids []uuid.UUID) {
-	for id := range m.analysis_components {
+// ComponentRelationshipsIDs returns the "component_relationships" edge IDs in the mutation.
+func (m *SystemComponentMutation) ComponentRelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.component_relationships {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetAnalysisComponents resets all changes to the "analysis_components" edge.
-func (m *SystemComponentMutation) ResetAnalysisComponents() {
-	m.analysis_components = nil
-	m.clearedanalysis_components = false
-	m.removedanalysis_components = nil
+// ResetComponentRelationships resets all changes to the "component_relationships" edge.
+func (m *SystemComponentMutation) ResetComponentRelationships() {
+	m.component_relationships = nil
+	m.clearedcomponent_relationships = false
+	m.removedcomponent_relationships = nil
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by ids.
-func (m *SystemComponentMutation) AddRelationshipIDs(ids ...uuid.UUID) {
-	if m.relationships == nil {
-		m.relationships = make(map[uuid.UUID]struct{})
+// AddSystemAnalysisComponentIDs adds the "system_analysis_components" edge to the SystemAnalysisComponent entity by ids.
+func (m *SystemComponentMutation) AddSystemAnalysisComponentIDs(ids ...uuid.UUID) {
+	if m.system_analysis_components == nil {
+		m.system_analysis_components = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.relationships[ids[i]] = struct{}{}
+		m.system_analysis_components[ids[i]] = struct{}{}
 	}
 }
 
-// ClearRelationships clears the "relationships" edge to the SystemAnalysisRelationship entity.
-func (m *SystemComponentMutation) ClearRelationships() {
-	m.clearedrelationships = true
+// ClearSystemAnalysisComponents clears the "system_analysis_components" edge to the SystemAnalysisComponent entity.
+func (m *SystemComponentMutation) ClearSystemAnalysisComponents() {
+	m.clearedsystem_analysis_components = true
 }
 
-// RelationshipsCleared reports if the "relationships" edge to the SystemAnalysisRelationship entity was cleared.
-func (m *SystemComponentMutation) RelationshipsCleared() bool {
-	return m.clearedrelationships
+// SystemAnalysisComponentsCleared reports if the "system_analysis_components" edge to the SystemAnalysisComponent entity was cleared.
+func (m *SystemComponentMutation) SystemAnalysisComponentsCleared() bool {
+	return m.clearedsystem_analysis_components
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (m *SystemComponentMutation) RemoveRelationshipIDs(ids ...uuid.UUID) {
-	if m.removedrelationships == nil {
-		m.removedrelationships = make(map[uuid.UUID]struct{})
+// RemoveSystemAnalysisComponentIDs removes the "system_analysis_components" edge to the SystemAnalysisComponent entity by IDs.
+func (m *SystemComponentMutation) RemoveSystemAnalysisComponentIDs(ids ...uuid.UUID) {
+	if m.removedsystem_analysis_components == nil {
+		m.removedsystem_analysis_components = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.relationships, ids[i])
-		m.removedrelationships[ids[i]] = struct{}{}
+		delete(m.system_analysis_components, ids[i])
+		m.removedsystem_analysis_components[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedRelationships returns the removed IDs of the "relationships" edge to the SystemAnalysisRelationship entity.
-func (m *SystemComponentMutation) RemovedRelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.removedrelationships {
+// RemovedSystemAnalysisComponents returns the removed IDs of the "system_analysis_components" edge to the SystemAnalysisComponent entity.
+func (m *SystemComponentMutation) RemovedSystemAnalysisComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_analysis_components {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// RelationshipsIDs returns the "relationships" edge IDs in the mutation.
-func (m *SystemComponentMutation) RelationshipsIDs() (ids []uuid.UUID) {
-	for id := range m.relationships {
+// SystemAnalysisComponentsIDs returns the "system_analysis_components" edge IDs in the mutation.
+func (m *SystemComponentMutation) SystemAnalysisComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.system_analysis_components {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetRelationships resets all changes to the "relationships" edge.
-func (m *SystemComponentMutation) ResetRelationships() {
-	m.relationships = nil
-	m.clearedrelationships = false
-	m.removedrelationships = nil
+// ResetSystemAnalysisComponents resets all changes to the "system_analysis_components" edge.
+func (m *SystemComponentMutation) ResetSystemAnalysisComponents() {
+	m.system_analysis_components = nil
+	m.clearedsystem_analysis_components = false
+	m.removedsystem_analysis_components = nil
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by ids.
@@ -32128,9 +32080,12 @@ func (m *SystemComponentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemComponentMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.name != nil {
 		fields = append(fields, systemcomponent.FieldName)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, systemcomponent.FieldProviderID)
 	}
 	if m.kind != nil {
 		fields = append(fields, systemcomponent.FieldKindID)
@@ -32157,6 +32112,8 @@ func (m *SystemComponentMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case systemcomponent.FieldName:
 		return m.Name()
+	case systemcomponent.FieldProviderID:
+		return m.ProviderID()
 	case systemcomponent.FieldKindID:
 		return m.KindID()
 	case systemcomponent.FieldDescription:
@@ -32178,6 +32135,8 @@ func (m *SystemComponentMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case systemcomponent.FieldName:
 		return m.OldName(ctx)
+	case systemcomponent.FieldProviderID:
+		return m.OldProviderID(ctx)
 	case systemcomponent.FieldKindID:
 		return m.OldKindID(ctx)
 	case systemcomponent.FieldDescription:
@@ -32203,6 +32162,13 @@ func (m *SystemComponentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case systemcomponent.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
 		return nil
 	case systemcomponent.FieldKindID:
 		v, ok := value.(uuid.UUID)
@@ -32269,6 +32235,9 @@ func (m *SystemComponentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *SystemComponentMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(systemcomponent.FieldProviderID) {
+		fields = append(fields, systemcomponent.FieldProviderID)
+	}
 	if m.FieldCleared(systemcomponent.FieldDescription) {
 		fields = append(fields, systemcomponent.FieldDescription)
 	}
@@ -32286,6 +32255,9 @@ func (m *SystemComponentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemComponentMutation) ClearField(name string) error {
 	switch name {
+	case systemcomponent.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	case systemcomponent.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -32299,6 +32271,9 @@ func (m *SystemComponentMutation) ResetField(name string) error {
 	switch name {
 	case systemcomponent.FieldName:
 		m.ResetName()
+		return nil
+	case systemcomponent.FieldProviderID:
+		m.ResetProviderID()
 		return nil
 	case systemcomponent.FieldKindID:
 		m.ResetKindID()
@@ -32325,11 +32300,11 @@ func (m *SystemComponentMutation) AddedEdges() []string {
 	if m.kind != nil {
 		edges = append(edges, systemcomponent.EdgeKind)
 	}
-	if m.analyses != nil {
-		edges = append(edges, systemcomponent.EdgeAnalyses)
-	}
 	if m.related != nil {
 		edges = append(edges, systemcomponent.EdgeRelated)
+	}
+	if m.system_analyses != nil {
+		edges = append(edges, systemcomponent.EdgeSystemAnalyses)
 	}
 	if m.events != nil {
 		edges = append(edges, systemcomponent.EdgeEvents)
@@ -32343,11 +32318,11 @@ func (m *SystemComponentMutation) AddedEdges() []string {
 	if m.signals != nil {
 		edges = append(edges, systemcomponent.EdgeSignals)
 	}
-	if m.analysis_components != nil {
-		edges = append(edges, systemcomponent.EdgeAnalysisComponents)
+	if m.component_relationships != nil {
+		edges = append(edges, systemcomponent.EdgeComponentRelationships)
 	}
-	if m.relationships != nil {
-		edges = append(edges, systemcomponent.EdgeRelationships)
+	if m.system_analysis_components != nil {
+		edges = append(edges, systemcomponent.EdgeSystemAnalysisComponents)
 	}
 	if m.event_components != nil {
 		edges = append(edges, systemcomponent.EdgeEventComponents)
@@ -32363,15 +32338,15 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.kind; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemcomponent.EdgeAnalyses:
-		ids := make([]ent.Value, 0, len(m.analyses))
-		for id := range m.analyses {
-			ids = append(ids, id)
-		}
-		return ids
 	case systemcomponent.EdgeRelated:
 		ids := make([]ent.Value, 0, len(m.related))
 		for id := range m.related {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeSystemAnalyses:
+		ids := make([]ent.Value, 0, len(m.system_analyses))
+		for id := range m.system_analyses {
 			ids = append(ids, id)
 		}
 		return ids
@@ -32399,15 +32374,15 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemcomponent.EdgeAnalysisComponents:
-		ids := make([]ent.Value, 0, len(m.analysis_components))
-		for id := range m.analysis_components {
+	case systemcomponent.EdgeComponentRelationships:
+		ids := make([]ent.Value, 0, len(m.component_relationships))
+		for id := range m.component_relationships {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemcomponent.EdgeRelationships:
-		ids := make([]ent.Value, 0, len(m.relationships))
-		for id := range m.relationships {
+	case systemcomponent.EdgeSystemAnalysisComponents:
+		ids := make([]ent.Value, 0, len(m.system_analysis_components))
+		for id := range m.system_analysis_components {
 			ids = append(ids, id)
 		}
 		return ids
@@ -32424,11 +32399,11 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemComponentMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 10)
-	if m.removedanalyses != nil {
-		edges = append(edges, systemcomponent.EdgeAnalyses)
-	}
 	if m.removedrelated != nil {
 		edges = append(edges, systemcomponent.EdgeRelated)
+	}
+	if m.removedsystem_analyses != nil {
+		edges = append(edges, systemcomponent.EdgeSystemAnalyses)
 	}
 	if m.removedevents != nil {
 		edges = append(edges, systemcomponent.EdgeEvents)
@@ -32442,11 +32417,11 @@ func (m *SystemComponentMutation) RemovedEdges() []string {
 	if m.removedsignals != nil {
 		edges = append(edges, systemcomponent.EdgeSignals)
 	}
-	if m.removedanalysis_components != nil {
-		edges = append(edges, systemcomponent.EdgeAnalysisComponents)
+	if m.removedcomponent_relationships != nil {
+		edges = append(edges, systemcomponent.EdgeComponentRelationships)
 	}
-	if m.removedrelationships != nil {
-		edges = append(edges, systemcomponent.EdgeRelationships)
+	if m.removedsystem_analysis_components != nil {
+		edges = append(edges, systemcomponent.EdgeSystemAnalysisComponents)
 	}
 	if m.removedevent_components != nil {
 		edges = append(edges, systemcomponent.EdgeEventComponents)
@@ -32458,15 +32433,15 @@ func (m *SystemComponentMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case systemcomponent.EdgeAnalyses:
-		ids := make([]ent.Value, 0, len(m.removedanalyses))
-		for id := range m.removedanalyses {
-			ids = append(ids, id)
-		}
-		return ids
 	case systemcomponent.EdgeRelated:
 		ids := make([]ent.Value, 0, len(m.removedrelated))
 		for id := range m.removedrelated {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemcomponent.EdgeSystemAnalyses:
+		ids := make([]ent.Value, 0, len(m.removedsystem_analyses))
+		for id := range m.removedsystem_analyses {
 			ids = append(ids, id)
 		}
 		return ids
@@ -32494,15 +32469,15 @@ func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemcomponent.EdgeAnalysisComponents:
-		ids := make([]ent.Value, 0, len(m.removedanalysis_components))
-		for id := range m.removedanalysis_components {
+	case systemcomponent.EdgeComponentRelationships:
+		ids := make([]ent.Value, 0, len(m.removedcomponent_relationships))
+		for id := range m.removedcomponent_relationships {
 			ids = append(ids, id)
 		}
 		return ids
-	case systemcomponent.EdgeRelationships:
-		ids := make([]ent.Value, 0, len(m.removedrelationships))
-		for id := range m.removedrelationships {
+	case systemcomponent.EdgeSystemAnalysisComponents:
+		ids := make([]ent.Value, 0, len(m.removedsystem_analysis_components))
+		for id := range m.removedsystem_analysis_components {
 			ids = append(ids, id)
 		}
 		return ids
@@ -32522,11 +32497,11 @@ func (m *SystemComponentMutation) ClearedEdges() []string {
 	if m.clearedkind {
 		edges = append(edges, systemcomponent.EdgeKind)
 	}
-	if m.clearedanalyses {
-		edges = append(edges, systemcomponent.EdgeAnalyses)
-	}
 	if m.clearedrelated {
 		edges = append(edges, systemcomponent.EdgeRelated)
+	}
+	if m.clearedsystem_analyses {
+		edges = append(edges, systemcomponent.EdgeSystemAnalyses)
 	}
 	if m.clearedevents {
 		edges = append(edges, systemcomponent.EdgeEvents)
@@ -32540,11 +32515,11 @@ func (m *SystemComponentMutation) ClearedEdges() []string {
 	if m.clearedsignals {
 		edges = append(edges, systemcomponent.EdgeSignals)
 	}
-	if m.clearedanalysis_components {
-		edges = append(edges, systemcomponent.EdgeAnalysisComponents)
+	if m.clearedcomponent_relationships {
+		edges = append(edges, systemcomponent.EdgeComponentRelationships)
 	}
-	if m.clearedrelationships {
-		edges = append(edges, systemcomponent.EdgeRelationships)
+	if m.clearedsystem_analysis_components {
+		edges = append(edges, systemcomponent.EdgeSystemAnalysisComponents)
 	}
 	if m.clearedevent_components {
 		edges = append(edges, systemcomponent.EdgeEventComponents)
@@ -32558,10 +32533,10 @@ func (m *SystemComponentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case systemcomponent.EdgeKind:
 		return m.clearedkind
-	case systemcomponent.EdgeAnalyses:
-		return m.clearedanalyses
 	case systemcomponent.EdgeRelated:
 		return m.clearedrelated
+	case systemcomponent.EdgeSystemAnalyses:
+		return m.clearedsystem_analyses
 	case systemcomponent.EdgeEvents:
 		return m.clearedevents
 	case systemcomponent.EdgeConstraints:
@@ -32570,10 +32545,10 @@ func (m *SystemComponentMutation) EdgeCleared(name string) bool {
 		return m.clearedcontrols
 	case systemcomponent.EdgeSignals:
 		return m.clearedsignals
-	case systemcomponent.EdgeAnalysisComponents:
-		return m.clearedanalysis_components
-	case systemcomponent.EdgeRelationships:
-		return m.clearedrelationships
+	case systemcomponent.EdgeComponentRelationships:
+		return m.clearedcomponent_relationships
+	case systemcomponent.EdgeSystemAnalysisComponents:
+		return m.clearedsystem_analysis_components
 	case systemcomponent.EdgeEventComponents:
 		return m.clearedevent_components
 	}
@@ -32598,11 +32573,11 @@ func (m *SystemComponentMutation) ResetEdge(name string) error {
 	case systemcomponent.EdgeKind:
 		m.ResetKind()
 		return nil
-	case systemcomponent.EdgeAnalyses:
-		m.ResetAnalyses()
-		return nil
 	case systemcomponent.EdgeRelated:
 		m.ResetRelated()
+		return nil
+	case systemcomponent.EdgeSystemAnalyses:
+		m.ResetSystemAnalyses()
 		return nil
 	case systemcomponent.EdgeEvents:
 		m.ResetEvents()
@@ -32616,11 +32591,11 @@ func (m *SystemComponentMutation) ResetEdge(name string) error {
 	case systemcomponent.EdgeSignals:
 		m.ResetSignals()
 		return nil
-	case systemcomponent.EdgeAnalysisComponents:
-		m.ResetAnalysisComponents()
+	case systemcomponent.EdgeComponentRelationships:
+		m.ResetComponentRelationships()
 		return nil
-	case systemcomponent.EdgeRelationships:
-		m.ResetRelationships()
+	case systemcomponent.EdgeSystemAnalysisComponents:
+		m.ResetSystemAnalysisComponents()
 		return nil
 	case systemcomponent.EdgeEventComponents:
 		m.ResetEventComponents()
@@ -33943,6 +33918,7 @@ type SystemComponentKindMutation struct {
 	op                Op
 	typ               string
 	id                *uuid.UUID
+	provider_id       *string
 	label             *string
 	description       *string
 	created_at        *time.Time
@@ -34057,6 +34033,55 @@ func (m *SystemComponentKindMutation) IDs(ctx context.Context) ([]uuid.UUID, err
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *SystemComponentKindMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *SystemComponentKindMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the SystemComponentKind entity.
+// If the SystemComponentKind object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentKindMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *SystemComponentKindMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[systemcomponentkind.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *SystemComponentKindMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponentkind.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *SystemComponentKindMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, systemcomponentkind.FieldProviderID)
 }
 
 // SetLabel sets the "label" field.
@@ -34268,7 +34293,10 @@ func (m *SystemComponentKindMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemComponentKindMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
+	if m.provider_id != nil {
+		fields = append(fields, systemcomponentkind.FieldProviderID)
+	}
 	if m.label != nil {
 		fields = append(fields, systemcomponentkind.FieldLabel)
 	}
@@ -34286,6 +34314,8 @@ func (m *SystemComponentKindMutation) Fields() []string {
 // schema.
 func (m *SystemComponentKindMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case systemcomponentkind.FieldProviderID:
+		return m.ProviderID()
 	case systemcomponentkind.FieldLabel:
 		return m.Label()
 	case systemcomponentkind.FieldDescription:
@@ -34301,6 +34331,8 @@ func (m *SystemComponentKindMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SystemComponentKindMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case systemcomponentkind.FieldProviderID:
+		return m.OldProviderID(ctx)
 	case systemcomponentkind.FieldLabel:
 		return m.OldLabel(ctx)
 	case systemcomponentkind.FieldDescription:
@@ -34316,6 +34348,13 @@ func (m *SystemComponentKindMutation) OldField(ctx context.Context, name string)
 // type.
 func (m *SystemComponentKindMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case systemcomponentkind.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
 	case systemcomponentkind.FieldLabel:
 		v, ok := value.(string)
 		if !ok {
@@ -34367,6 +34406,9 @@ func (m *SystemComponentKindMutation) AddField(name string, value ent.Value) err
 // mutation.
 func (m *SystemComponentKindMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(systemcomponentkind.FieldProviderID) {
+		fields = append(fields, systemcomponentkind.FieldProviderID)
+	}
 	if m.FieldCleared(systemcomponentkind.FieldDescription) {
 		fields = append(fields, systemcomponentkind.FieldDescription)
 	}
@@ -34384,6 +34426,9 @@ func (m *SystemComponentKindMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *SystemComponentKindMutation) ClearField(name string) error {
 	switch name {
+	case systemcomponentkind.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	case systemcomponentkind.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -34395,6 +34440,9 @@ func (m *SystemComponentKindMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SystemComponentKindMutation) ResetField(name string) error {
 	switch name {
+	case systemcomponentkind.FieldProviderID:
+		m.ResetProviderID()
+		return nil
 	case systemcomponentkind.FieldLabel:
 		m.ResetLabel()
 		return nil
@@ -34490,6 +34538,780 @@ func (m *SystemComponentKindMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponentKind edge %s", name)
+}
+
+// SystemComponentRelationshipMutation represents an operation that mutates the SystemComponentRelationship nodes in the graph.
+type SystemComponentRelationshipMutation struct {
+	config
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	provider_id            *string
+	description            *string
+	created_at             *time.Time
+	clearedFields          map[string]struct{}
+	source                 *uuid.UUID
+	clearedsource          bool
+	target                 *uuid.UUID
+	clearedtarget          bool
+	system_analyses        map[uuid.UUID]struct{}
+	removedsystem_analyses map[uuid.UUID]struct{}
+	clearedsystem_analyses bool
+	done                   bool
+	oldValue               func(context.Context) (*SystemComponentRelationship, error)
+	predicates             []predicate.SystemComponentRelationship
+}
+
+var _ ent.Mutation = (*SystemComponentRelationshipMutation)(nil)
+
+// systemcomponentrelationshipOption allows management of the mutation configuration using functional options.
+type systemcomponentrelationshipOption func(*SystemComponentRelationshipMutation)
+
+// newSystemComponentRelationshipMutation creates new mutation for the SystemComponentRelationship entity.
+func newSystemComponentRelationshipMutation(c config, op Op, opts ...systemcomponentrelationshipOption) *SystemComponentRelationshipMutation {
+	m := &SystemComponentRelationshipMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemComponentRelationship,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemComponentRelationshipID sets the ID field of the mutation.
+func withSystemComponentRelationshipID(id uuid.UUID) systemcomponentrelationshipOption {
+	return func(m *SystemComponentRelationshipMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemComponentRelationship
+		)
+		m.oldValue = func(ctx context.Context) (*SystemComponentRelationship, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemComponentRelationship.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemComponentRelationship sets the old SystemComponentRelationship of the mutation.
+func withSystemComponentRelationship(node *SystemComponentRelationship) systemcomponentrelationshipOption {
+	return func(m *SystemComponentRelationshipMutation) {
+		m.oldValue = func(context.Context) (*SystemComponentRelationship, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemComponentRelationshipMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemComponentRelationshipMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemComponentRelationship entities.
+func (m *SystemComponentRelationshipMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemComponentRelationshipMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemComponentRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemComponentRelationship.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *SystemComponentRelationshipMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *SystemComponentRelationshipMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the SystemComponentRelationship entity.
+// If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentRelationshipMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *SystemComponentRelationshipMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[systemcomponentrelationship.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[systemcomponentrelationship.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *SystemComponentRelationshipMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, systemcomponentrelationship.FieldProviderID)
+}
+
+// SetSourceID sets the "source_id" field.
+func (m *SystemComponentRelationshipMutation) SetSourceID(u uuid.UUID) {
+	m.source = &u
+}
+
+// SourceID returns the value of the "source_id" field in the mutation.
+func (m *SystemComponentRelationshipMutation) SourceID() (r uuid.UUID, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceID returns the old "source_id" field's value of the SystemComponentRelationship entity.
+// If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentRelationshipMutation) OldSourceID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceID: %w", err)
+	}
+	return oldValue.SourceID, nil
+}
+
+// ResetSourceID resets all changes to the "source_id" field.
+func (m *SystemComponentRelationshipMutation) ResetSourceID() {
+	m.source = nil
+}
+
+// SetTargetID sets the "target_id" field.
+func (m *SystemComponentRelationshipMutation) SetTargetID(u uuid.UUID) {
+	m.target = &u
+}
+
+// TargetID returns the value of the "target_id" field in the mutation.
+func (m *SystemComponentRelationshipMutation) TargetID() (r uuid.UUID, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTargetID returns the old "target_id" field's value of the SystemComponentRelationship entity.
+// If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentRelationshipMutation) OldTargetID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTargetID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTargetID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTargetID: %w", err)
+	}
+	return oldValue.TargetID, nil
+}
+
+// ResetTargetID resets all changes to the "target_id" field.
+func (m *SystemComponentRelationshipMutation) ResetTargetID() {
+	m.target = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *SystemComponentRelationshipMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *SystemComponentRelationshipMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the SystemComponentRelationship entity.
+// If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentRelationshipMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *SystemComponentRelationshipMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[systemcomponentrelationship.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[systemcomponentrelationship.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *SystemComponentRelationshipMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, systemcomponentrelationship.FieldDescription)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SystemComponentRelationshipMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SystemComponentRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SystemComponentRelationship entity.
+// If the SystemComponentRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemComponentRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SystemComponentRelationshipMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// ClearSource clears the "source" edge to the SystemComponent entity.
+func (m *SystemComponentRelationshipMutation) ClearSource() {
+	m.clearedsource = true
+	m.clearedFields[systemcomponentrelationship.FieldSourceID] = struct{}{}
+}
+
+// SourceCleared reports if the "source" edge to the SystemComponent entity was cleared.
+func (m *SystemComponentRelationshipMutation) SourceCleared() bool {
+	return m.clearedsource
+}
+
+// SourceIDs returns the "source" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SourceID instead. It exists only for internal usage by the builders.
+func (m *SystemComponentRelationshipMutation) SourceIDs() (ids []uuid.UUID) {
+	if id := m.source; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetSource resets all changes to the "source" edge.
+func (m *SystemComponentRelationshipMutation) ResetSource() {
+	m.source = nil
+	m.clearedsource = false
+}
+
+// ClearTarget clears the "target" edge to the SystemComponent entity.
+func (m *SystemComponentRelationshipMutation) ClearTarget() {
+	m.clearedtarget = true
+	m.clearedFields[systemcomponentrelationship.FieldTargetID] = struct{}{}
+}
+
+// TargetCleared reports if the "target" edge to the SystemComponent entity was cleared.
+func (m *SystemComponentRelationshipMutation) TargetCleared() bool {
+	return m.clearedtarget
+}
+
+// TargetIDs returns the "target" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TargetID instead. It exists only for internal usage by the builders.
+func (m *SystemComponentRelationshipMutation) TargetIDs() (ids []uuid.UUID) {
+	if id := m.target; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTarget resets all changes to the "target" edge.
+func (m *SystemComponentRelationshipMutation) ResetTarget() {
+	m.target = nil
+	m.clearedtarget = false
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysisRelationship entity by ids.
+func (m *SystemComponentRelationshipMutation) AddSystemAnalysisIDs(ids ...uuid.UUID) {
+	if m.system_analyses == nil {
+		m.system_analyses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.system_analyses[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSystemAnalyses clears the "system_analyses" edge to the SystemAnalysisRelationship entity.
+func (m *SystemComponentRelationshipMutation) ClearSystemAnalyses() {
+	m.clearedsystem_analyses = true
+}
+
+// SystemAnalysesCleared reports if the "system_analyses" edge to the SystemAnalysisRelationship entity was cleared.
+func (m *SystemComponentRelationshipMutation) SystemAnalysesCleared() bool {
+	return m.clearedsystem_analyses
+}
+
+// RemoveSystemAnalysisIDs removes the "system_analyses" edge to the SystemAnalysisRelationship entity by IDs.
+func (m *SystemComponentRelationshipMutation) RemoveSystemAnalysisIDs(ids ...uuid.UUID) {
+	if m.removedsystem_analyses == nil {
+		m.removedsystem_analyses = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.system_analyses, ids[i])
+		m.removedsystem_analyses[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSystemAnalyses returns the removed IDs of the "system_analyses" edge to the SystemAnalysisRelationship entity.
+func (m *SystemComponentRelationshipMutation) RemovedSystemAnalysesIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_analyses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SystemAnalysesIDs returns the "system_analyses" edge IDs in the mutation.
+func (m *SystemComponentRelationshipMutation) SystemAnalysesIDs() (ids []uuid.UUID) {
+	for id := range m.system_analyses {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSystemAnalyses resets all changes to the "system_analyses" edge.
+func (m *SystemComponentRelationshipMutation) ResetSystemAnalyses() {
+	m.system_analyses = nil
+	m.clearedsystem_analyses = false
+	m.removedsystem_analyses = nil
+}
+
+// Where appends a list predicates to the SystemComponentRelationshipMutation builder.
+func (m *SystemComponentRelationshipMutation) Where(ps ...predicate.SystemComponentRelationship) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemComponentRelationshipMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemComponentRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemComponentRelationship, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemComponentRelationshipMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemComponentRelationshipMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemComponentRelationship).
+func (m *SystemComponentRelationshipMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemComponentRelationshipMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.provider_id != nil {
+		fields = append(fields, systemcomponentrelationship.FieldProviderID)
+	}
+	if m.source != nil {
+		fields = append(fields, systemcomponentrelationship.FieldSourceID)
+	}
+	if m.target != nil {
+		fields = append(fields, systemcomponentrelationship.FieldTargetID)
+	}
+	if m.description != nil {
+		fields = append(fields, systemcomponentrelationship.FieldDescription)
+	}
+	if m.created_at != nil {
+		fields = append(fields, systemcomponentrelationship.FieldCreatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemComponentRelationshipMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemcomponentrelationship.FieldProviderID:
+		return m.ProviderID()
+	case systemcomponentrelationship.FieldSourceID:
+		return m.SourceID()
+	case systemcomponentrelationship.FieldTargetID:
+		return m.TargetID()
+	case systemcomponentrelationship.FieldDescription:
+		return m.Description()
+	case systemcomponentrelationship.FieldCreatedAt:
+		return m.CreatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemComponentRelationshipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemcomponentrelationship.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case systemcomponentrelationship.FieldSourceID:
+		return m.OldSourceID(ctx)
+	case systemcomponentrelationship.FieldTargetID:
+		return m.OldTargetID(ctx)
+	case systemcomponentrelationship.FieldDescription:
+		return m.OldDescription(ctx)
+	case systemcomponentrelationship.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemComponentRelationship field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemComponentRelationshipMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemcomponentrelationship.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case systemcomponentrelationship.FieldSourceID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceID(v)
+		return nil
+	case systemcomponentrelationship.FieldTargetID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTargetID(v)
+		return nil
+	case systemcomponentrelationship.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case systemcomponentrelationship.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemComponentRelationshipMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemComponentRelationshipMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemComponentRelationshipMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemComponentRelationshipMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(systemcomponentrelationship.FieldProviderID) {
+		fields = append(fields, systemcomponentrelationship.FieldProviderID)
+	}
+	if m.FieldCleared(systemcomponentrelationship.FieldDescription) {
+		fields = append(fields, systemcomponentrelationship.FieldDescription)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemComponentRelationshipMutation) ClearField(name string) error {
+	switch name {
+	case systemcomponentrelationship.FieldProviderID:
+		m.ClearProviderID()
+		return nil
+	case systemcomponentrelationship.FieldDescription:
+		m.ClearDescription()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemComponentRelationshipMutation) ResetField(name string) error {
+	switch name {
+	case systemcomponentrelationship.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case systemcomponentrelationship.FieldSourceID:
+		m.ResetSourceID()
+		return nil
+	case systemcomponentrelationship.FieldTargetID:
+		m.ResetTargetID()
+		return nil
+	case systemcomponentrelationship.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case systemcomponentrelationship.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemComponentRelationshipMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.source != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeSource)
+	}
+	if m.target != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeTarget)
+	}
+	if m.system_analyses != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemComponentRelationshipMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case systemcomponentrelationship.EdgeSource:
+		if id := m.source; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemcomponentrelationship.EdgeTarget:
+		if id := m.target; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemcomponentrelationship.EdgeSystemAnalyses:
+		ids := make([]ent.Value, 0, len(m.system_analyses))
+		for id := range m.system_analyses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemComponentRelationshipMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedsystem_analyses != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemComponentRelationshipMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case systemcomponentrelationship.EdgeSystemAnalyses:
+		ids := make([]ent.Value, 0, len(m.removedsystem_analyses))
+		for id := range m.removedsystem_analyses {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedsource {
+		edges = append(edges, systemcomponentrelationship.EdgeSource)
+	}
+	if m.clearedtarget {
+		edges = append(edges, systemcomponentrelationship.EdgeTarget)
+	}
+	if m.clearedsystem_analyses {
+		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemComponentRelationshipMutation) EdgeCleared(name string) bool {
+	switch name {
+	case systemcomponentrelationship.EdgeSource:
+		return m.clearedsource
+	case systemcomponentrelationship.EdgeTarget:
+		return m.clearedtarget
+	case systemcomponentrelationship.EdgeSystemAnalyses:
+		return m.clearedsystem_analyses
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemComponentRelationshipMutation) ClearEdge(name string) error {
+	switch name {
+	case systemcomponentrelationship.EdgeSource:
+		m.ClearSource()
+		return nil
+	case systemcomponentrelationship.EdgeTarget:
+		m.ClearTarget()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemComponentRelationshipMutation) ResetEdge(name string) error {
+	switch name {
+	case systemcomponentrelationship.EdgeSource:
+		m.ResetSource()
+		return nil
+	case systemcomponentrelationship.EdgeTarget:
+		m.ResetTarget()
+		return nil
+	case systemcomponentrelationship.EdgeSystemAnalyses:
+		m.ResetSystemAnalyses()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemComponentRelationship edge %s", name)
 }
 
 // SystemComponentSignalMutation represents an operation that mutates the SystemComponentSignal nodes in the graph.

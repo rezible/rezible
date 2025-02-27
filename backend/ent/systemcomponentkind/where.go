@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.SystemComponentKind {
 	return predicate.SystemComponentKind(sql.FieldLTE(FieldID, id))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldEQ(FieldProviderID, v))
+}
+
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.SystemComponentKind {
 	return predicate.SystemComponentKind(sql.FieldEQ(FieldDescription, v))
@@ -64,6 +69,81 @@ func Description(v string) predicate.SystemComponentKind {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemComponentKind {
 	return predicate.SystemComponentKind(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldEQ(FieldProviderID, v))
+}
+
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldNEQ(FieldProviderID, v))
+}
+
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldIn(FieldProviderID, vs...))
+}
+
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldNotIn(FieldProviderID, vs...))
+}
+
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldGT(FieldProviderID, v))
+}
+
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldGTE(FieldProviderID, v))
+}
+
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldLT(FieldProviderID, v))
+}
+
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldLTE(FieldProviderID, v))
+}
+
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldContains(FieldProviderID, v))
+}
+
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldHasPrefix(FieldProviderID, v))
+}
+
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
+func ProviderIDIsNil() predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldIsNull(FieldProviderID))
+}
+
+// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
+func ProviderIDNotNil() predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldNotNull(FieldProviderID))
+}
+
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldEqualFold(FieldProviderID, v))
+}
+
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.SystemComponentKind {
+	return predicate.SystemComponentKind(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // LabelEQ applies the EQ predicate on the "label" field.

@@ -17,11 +17,11 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 )
 
@@ -36,6 +36,20 @@ type SystemComponentCreate struct {
 // SetName sets the "name" field.
 func (scc *SystemComponentCreate) SetName(s string) *SystemComponentCreate {
 	scc.mutation.SetName(s)
+	return scc
+}
+
+// SetProviderID sets the "provider_id" field.
+func (scc *SystemComponentCreate) SetProviderID(s string) *SystemComponentCreate {
+	scc.mutation.SetProviderID(s)
+	return scc
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (scc *SystemComponentCreate) SetNillableProviderID(s *string) *SystemComponentCreate {
+	if s != nil {
+		scc.SetProviderID(*s)
+	}
 	return scc
 }
 
@@ -112,21 +126,6 @@ func (scc *SystemComponentCreate) SetKind(s *SystemComponentKind) *SystemCompone
 	return scc.SetKindID(s.ID)
 }
 
-// AddAnalysisIDs adds the "analyses" edge to the SystemAnalysis entity by IDs.
-func (scc *SystemComponentCreate) AddAnalysisIDs(ids ...uuid.UUID) *SystemComponentCreate {
-	scc.mutation.AddAnalysisIDs(ids...)
-	return scc
-}
-
-// AddAnalyses adds the "analyses" edges to the SystemAnalysis entity.
-func (scc *SystemComponentCreate) AddAnalyses(s ...*SystemAnalysis) *SystemComponentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return scc.AddAnalysisIDs(ids...)
-}
-
 // AddRelatedIDs adds the "related" edge to the SystemComponent entity by IDs.
 func (scc *SystemComponentCreate) AddRelatedIDs(ids ...uuid.UUID) *SystemComponentCreate {
 	scc.mutation.AddRelatedIDs(ids...)
@@ -140,6 +139,21 @@ func (scc *SystemComponentCreate) AddRelated(s ...*SystemComponent) *SystemCompo
 		ids[i] = s[i].ID
 	}
 	return scc.AddRelatedIDs(ids...)
+}
+
+// AddSystemAnalysisIDs adds the "system_analyses" edge to the SystemAnalysis entity by IDs.
+func (scc *SystemComponentCreate) AddSystemAnalysisIDs(ids ...uuid.UUID) *SystemComponentCreate {
+	scc.mutation.AddSystemAnalysisIDs(ids...)
+	return scc
+}
+
+// AddSystemAnalyses adds the "system_analyses" edges to the SystemAnalysis entity.
+func (scc *SystemComponentCreate) AddSystemAnalyses(s ...*SystemAnalysis) *SystemComponentCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scc.AddSystemAnalysisIDs(ids...)
 }
 
 // AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
@@ -202,34 +216,34 @@ func (scc *SystemComponentCreate) AddSignals(s ...*SystemComponentSignal) *Syste
 	return scc.AddSignalIDs(ids...)
 }
 
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (scc *SystemComponentCreate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentCreate {
-	scc.mutation.AddAnalysisComponentIDs(ids...)
+// AddComponentRelationshipIDs adds the "component_relationships" edge to the SystemComponentRelationship entity by IDs.
+func (scc *SystemComponentCreate) AddComponentRelationshipIDs(ids ...uuid.UUID) *SystemComponentCreate {
+	scc.mutation.AddComponentRelationshipIDs(ids...)
 	return scc
 }
 
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (scc *SystemComponentCreate) AddAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentCreate {
+// AddComponentRelationships adds the "component_relationships" edges to the SystemComponentRelationship entity.
+func (scc *SystemComponentCreate) AddComponentRelationships(s ...*SystemComponentRelationship) *SystemComponentCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scc.AddAnalysisComponentIDs(ids...)
+	return scc.AddComponentRelationshipIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (scc *SystemComponentCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemComponentCreate {
-	scc.mutation.AddRelationshipIDs(ids...)
+// AddSystemAnalysisComponentIDs adds the "system_analysis_components" edge to the SystemAnalysisComponent entity by IDs.
+func (scc *SystemComponentCreate) AddSystemAnalysisComponentIDs(ids ...uuid.UUID) *SystemComponentCreate {
+	scc.mutation.AddSystemAnalysisComponentIDs(ids...)
 	return scc
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (scc *SystemComponentCreate) AddRelationships(s ...*SystemAnalysisRelationship) *SystemComponentCreate {
+// AddSystemAnalysisComponents adds the "system_analysis_components" edges to the SystemAnalysisComponent entity.
+func (scc *SystemComponentCreate) AddSystemAnalysisComponents(s ...*SystemAnalysisComponent) *SystemComponentCreate {
 	ids := make([]uuid.UUID, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
 	}
-	return scc.AddRelationshipIDs(ids...)
+	return scc.AddSystemAnalysisComponentIDs(ids...)
 }
 
 // AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
@@ -361,6 +375,10 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		_spec.SetField(systemcomponent.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := scc.mutation.ProviderID(); ok {
+		_spec.SetField(systemcomponent.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
 	if value, ok := scc.mutation.Description(); ok {
 		_spec.SetField(systemcomponent.FieldDescription, field.TypeString, value)
 		_node.Description = value
@@ -394,29 +412,6 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		_node.KindID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scc.mutation.AnalysesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   systemcomponent.AnalysesTable,
-			Columns: systemcomponent.AnalysesPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: scc.config, mutation: newSystemAnalysisComponentMutation(scc.config, OpCreate)}
-		createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := scc.mutation.RelatedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -431,7 +426,30 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisRelationshipCreate{config: scc.config, mutation: newSystemAnalysisRelationshipMutation(scc.config, OpCreate)}
+		createE := &SystemComponentRelationshipCreate{config: scc.config, mutation: newSystemComponentRelationshipMutation(scc.config, OpCreate)}
+		createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := scc.mutation.SystemAnalysesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   systemcomponent.SystemAnalysesTable,
+			Columns: systemcomponent.SystemAnalysesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &SystemAnalysisComponentCreate{config: scc.config, mutation: newSystemAnalysisComponentMutation(scc.config, OpCreate)}
 		createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
@@ -511,15 +529,15 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scc.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := scc.mutation.ComponentRelationshipsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.AnalysisComponentsTable,
-			Columns: []string{systemcomponent.AnalysisComponentsColumn},
+			Table:   systemcomponent.ComponentRelationshipsTable,
+			Columns: []string{systemcomponent.ComponentRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -527,15 +545,15 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := scc.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := scc.mutation.SystemAnalysisComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemcomponent.RelationshipsTable,
-			Columns: []string{systemcomponent.RelationshipsColumn},
+			Table:   systemcomponent.SystemAnalysisComponentsTable,
+			Columns: []string{systemcomponent.SystemAnalysisComponentsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -620,6 +638,24 @@ func (u *SystemComponentUpsert) SetName(v string) *SystemComponentUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *SystemComponentUpsert) UpdateName() *SystemComponentUpsert {
 	u.SetExcluded(systemcomponent.FieldName)
+	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentUpsert) SetProviderID(v string) *SystemComponentUpsert {
+	u.Set(systemcomponent.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentUpsert) UpdateProviderID() *SystemComponentUpsert {
+	u.SetExcluded(systemcomponent.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentUpsert) ClearProviderID() *SystemComponentUpsert {
+	u.SetNull(systemcomponent.FieldProviderID)
 	return u
 }
 
@@ -748,6 +784,27 @@ func (u *SystemComponentUpsertOne) SetName(v string) *SystemComponentUpsertOne {
 func (u *SystemComponentUpsertOne) UpdateName() *SystemComponentUpsertOne {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentUpsertOne) SetProviderID(v string) *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertOne) UpdateProviderID() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentUpsertOne) ClearProviderID() *SystemComponentUpsertOne {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearProviderID()
 	})
 }
 
@@ -1054,6 +1111,27 @@ func (u *SystemComponentUpsertBulk) SetName(v string) *SystemComponentUpsertBulk
 func (u *SystemComponentUpsertBulk) UpdateName() *SystemComponentUpsertBulk {
 	return u.Update(func(s *SystemComponentUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *SystemComponentUpsertBulk) SetProviderID(v string) *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *SystemComponentUpsertBulk) UpdateProviderID() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *SystemComponentUpsertBulk) ClearProviderID() *SystemComponentUpsertBulk {
+	return u.Update(func(s *SystemComponentUpsert) {
+		s.ClearProviderID()
 	})
 }
 

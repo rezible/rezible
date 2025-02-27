@@ -52,6 +52,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
@@ -480,7 +481,7 @@ func init() {
 	systemanalysisrelationshipFields := schema.SystemAnalysisRelationship{}.Fields()
 	_ = systemanalysisrelationshipFields
 	// systemanalysisrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipFields[5].Descriptor()
+	systemanalysisrelationshipDescCreatedAt := systemanalysisrelationshipFields[4].Descriptor()
 	// systemanalysisrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysisrelationship.DefaultCreatedAt = systemanalysisrelationshipDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisrelationshipDescID is the schema descriptor for id field.
@@ -494,11 +495,11 @@ func init() {
 	// systemcomponent.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	systemcomponent.NameValidator = systemcomponentDescName.Validators[0].(func(string) error)
 	// systemcomponentDescCreatedAt is the schema descriptor for created_at field.
-	systemcomponentDescCreatedAt := systemcomponentFields[5].Descriptor()
+	systemcomponentDescCreatedAt := systemcomponentFields[6].Descriptor()
 	// systemcomponent.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemcomponent.DefaultCreatedAt = systemcomponentDescCreatedAt.Default.(func() time.Time)
 	// systemcomponentDescUpdatedAt is the schema descriptor for updated_at field.
-	systemcomponentDescUpdatedAt := systemcomponentFields[6].Descriptor()
+	systemcomponentDescUpdatedAt := systemcomponentFields[7].Descriptor()
 	// systemcomponent.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemcomponent.DefaultUpdatedAt = systemcomponentDescUpdatedAt.Default.(func() time.Time)
 	// systemcomponent.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
@@ -530,13 +531,23 @@ func init() {
 	systemcomponentkindFields := schema.SystemComponentKind{}.Fields()
 	_ = systemcomponentkindFields
 	// systemcomponentkindDescCreatedAt is the schema descriptor for created_at field.
-	systemcomponentkindDescCreatedAt := systemcomponentkindFields[3].Descriptor()
+	systemcomponentkindDescCreatedAt := systemcomponentkindFields[4].Descriptor()
 	// systemcomponentkind.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemcomponentkind.DefaultCreatedAt = systemcomponentkindDescCreatedAt.Default.(func() time.Time)
 	// systemcomponentkindDescID is the schema descriptor for id field.
 	systemcomponentkindDescID := systemcomponentkindFields[0].Descriptor()
 	// systemcomponentkind.DefaultID holds the default value on creation for the id field.
 	systemcomponentkind.DefaultID = systemcomponentkindDescID.Default.(func() uuid.UUID)
+	systemcomponentrelationshipFields := schema.SystemComponentRelationship{}.Fields()
+	_ = systemcomponentrelationshipFields
+	// systemcomponentrelationshipDescCreatedAt is the schema descriptor for created_at field.
+	systemcomponentrelationshipDescCreatedAt := systemcomponentrelationshipFields[5].Descriptor()
+	// systemcomponentrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemcomponentrelationship.DefaultCreatedAt = systemcomponentrelationshipDescCreatedAt.Default.(func() time.Time)
+	// systemcomponentrelationshipDescID is the schema descriptor for id field.
+	systemcomponentrelationshipDescID := systemcomponentrelationshipFields[0].Descriptor()
+	// systemcomponentrelationship.DefaultID holds the default value on creation for the id field.
+	systemcomponentrelationship.DefaultID = systemcomponentrelationshipDescID.Default.(func() uuid.UUID)
 	systemcomponentsignalFields := schema.SystemComponentSignal{}.Fields()
 	_ = systemcomponentsignalFields
 	// systemcomponentsignalDescCreatedAt is the schema descriptor for created_at field.
