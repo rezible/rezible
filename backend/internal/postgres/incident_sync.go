@@ -3,16 +3,18 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"time"
+
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type incidentDataSyncer struct {

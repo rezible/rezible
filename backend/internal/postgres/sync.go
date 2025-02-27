@@ -2,10 +2,12 @@ package postgres
 
 import (
 	"context"
+	"time"
+
 	"entgo.io/ent/dialect/sql"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providersynchistory"
-	"time"
 )
 
 func getLastSyncTime(ctx context.Context, db *ent.Client, dataType string) time.Time {

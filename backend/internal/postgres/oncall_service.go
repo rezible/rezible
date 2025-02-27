@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -23,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/jobs"
 )
 
 type OncallService struct {

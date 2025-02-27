@@ -2,12 +2,14 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
-	"github.com/rs/zerolog/log"
 )
 
 type RetrospectiveService struct {
