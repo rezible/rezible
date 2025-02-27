@@ -1,11 +1,11 @@
-import { createIncidentEventMutation, updateIncidentEventMutation, type CreateIncidentEventAttributes, type CreateIncidentEventResponseBody, type Incident, type IncidentEvent, type UpdateIncidentEventAttributes } from "$lib/api";
+import { createIncidentEventMutation, updateIncidentEventMutation, type CreateIncidentEventAttributes, type Incident, type IncidentEvent, type UpdateIncidentEventAttributes } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
+import { incidentCtx } from "$features/incidents/lib/context";
 import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
-import { incidentCtx } from "$src/features/incidents/lib/context";
 
 type EditorDialogView = "closed" | "create" | "edit";
 
-const createEventEditorDialogState = () => {
+const createEventDialogState = () => {
 	let incident = $state<Incident>();
 	let editingEvent = $state<IncidentEvent>();
 	let view = $state<EditorDialogView>("closed");
@@ -20,13 +20,13 @@ const createEventEditorDialogState = () => {
 		setView("closed");
 	};
 
-	const onMutationSuccess = ({data: event}: {data: IncidentEvent}) => {
+	const onMutationSuccess = ({ data: event }: { data: IncidentEvent }) => {
 		console.log("event!", event);
 		clear();
 	}
 
 	const makeCreateMutation = () => createMutation(() => ({
-		...createIncidentEventMutation(), 
+		...createIncidentEventMutation(),
 		onSuccess: onMutationSuccess,
 	}));
 	const makeUpdateMutation = () => createMutation(() => ({
@@ -59,21 +59,21 @@ const createEventEditorDialogState = () => {
 	const confirm = () => {
 		const attrs = eventAttributes.snapshot();
 		if (view === "create" && createMut && incident?.id) {
-			const path = {id: $state.snapshot(incident.id)};
+			const path = { id: $state.snapshot(incident.id) };
 			const attributes: CreateIncidentEventAttributes = {
 				kind: attrs.kind,
 				timestamp: attrs.timestamp,
 				title: attrs.title,
 			}
-			createMut.mutate({path, body: {attributes}});
+			createMut.mutate({ path, body: { attributes } });
 		} else if (view === "edit" && updateMut && editingEvent) {
-			const path = {id: editingEvent.id};
+			const path = { id: editingEvent.id };
 			const attributes: UpdateIncidentEventAttributes = {
 				kind: attrs.kind,
 				timestamp: attrs.timestamp,
 				title: attrs.title,
 			};
-			updateMut.mutate({path, body: {attributes}});
+			updateMut.mutate({ path, body: { attributes } });
 		} else {
 			console.error("something went wrong", $state.snapshot(view), !!createMut, !!updateMut);
 		}
@@ -103,4 +103,4 @@ const createEventEditorDialogState = () => {
 	};
 };
 
-export const eventDialog = createEventEditorDialogState();
+export const eventDialog = createEventDialogState();

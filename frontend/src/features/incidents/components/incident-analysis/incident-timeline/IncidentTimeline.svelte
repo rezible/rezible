@@ -1,7 +1,7 @@
 <script lang="ts">
 	import "vis-timeline/dist/vis-timeline-graph2d.min.css";
 	import { timeline } from "./timeline.svelte";
-	import EventEditorDialog from "./event-editor/EventEditorDialog.svelte";
+	import EventDialog from "./event-dialog/EventDialog.svelte";
 	import IncidentTimelineActionsBar from "./IncidentTimelineActionsBar.svelte";
 
 	let containerEl = $state<HTMLElement>();
@@ -12,7 +12,7 @@
 
 <IncidentTimelineActionsBar />
 
-<EventEditorDialog />
+<EventDialog />
 
 <style lang="postcss">
 	/* the root timeline container element */
