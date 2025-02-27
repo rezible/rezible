@@ -1,4 +1,11 @@
-import { createIncidentEventMutation, updateIncidentEventMutation, type CreateIncidentEventAttributes, type Incident, type IncidentEvent, type UpdateIncidentEventAttributes } from "$lib/api";
+import { 
+	createIncidentEventMutation,
+	updateIncidentEventMutation,
+	type CreateIncidentEventAttributes,
+	type Incident,
+	type IncidentEvent,
+	type UpdateIncidentEventAttributes,
+} from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { incidentCtx } from "$features/incidents/lib/context";
 import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
