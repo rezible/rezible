@@ -208,9 +208,7 @@ var ListSystemComponents = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListSystemComponentsRequest struct {
-	ListRequest
-}
+type ListSystemComponentsRequest ListRequest
 type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
 
 var GetSystemComponent = huma.Operation{
@@ -289,8 +287,8 @@ var ListSystemComponentRelationships = huma.Operation{
 
 type ListSystemComponentRelationshipsRequest struct {
 	ListRequest
-	SourceId *uuid.UUID `query:"sourceId"`
-	TargetId *uuid.UUID `query:"targetId"`
+	SourceId uuid.UUID `query:"sourceId"`
+	TargetId uuid.UUID `query:"targetId"`
 }
 type ListSystemComponentRelationshipsResponse PaginatedResponse[SystemComponentRelationship]
 

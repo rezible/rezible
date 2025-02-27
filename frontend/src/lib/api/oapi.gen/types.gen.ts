@@ -545,6 +545,28 @@ export type CreateSystemComponentKindResponseBody = {
     data: SystemComponentKind;
 };
 
+export type CreateSystemComponentRelationshipAttributes = {
+    description: string;
+    sourceComponentId: string;
+    targetComponentId: string;
+};
+
+export type CreateSystemComponentRelationshipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateSystemComponentRelationshipAttributes;
+};
+
+export type CreateSystemComponentRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentRelationship;
+};
+
 export type CreateSystemComponentRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -929,6 +951,14 @@ export type GetSystemComponentKindResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponentKind;
+};
+
+export type GetSystemComponentRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentRelationship;
 };
 
 export type GetSystemComponentResponseBody = {
@@ -1511,6 +1541,15 @@ export type ListSystemComponentKindsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListSystemComponentRelationshipsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<SystemComponentRelationship>;
+    pagination: ResponsePagination;
+};
+
 export type ListSystemComponentsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1912,6 +1951,17 @@ export type SystemComponentKind = {
 export type SystemComponentKindAttributes = {
     description: string;
     label: string;
+};
+
+export type SystemComponentRelationship = {
+    attributes: SystemComponentRelationshipAttributes;
+    id: string;
+};
+
+export type SystemComponentRelationshipAttributes = {
+    description: string;
+    sourceId: string;
+    targetId: string;
 };
 
 export type SystemComponentSignal = {
@@ -2462,6 +2512,26 @@ export type UpdateSystemComponentKindResponseBody = {
      */
     readonly $schema?: string;
     data: SystemComponentKind;
+};
+
+export type UpdateSystemComponentRelationshipAttributes = {
+    description?: string;
+};
+
+export type UpdateSystemComponentRelationshipRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemComponentRelationshipAttributes;
+};
+
+export type UpdateSystemComponentRelationshipResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemComponentRelationship;
 };
 
 export type UpdateSystemComponentRequestBody = {
@@ -8733,6 +8803,244 @@ export type UpdateSystemComponentKindResponses = {
 };
 
 export type UpdateSystemComponentKindResponse = UpdateSystemComponentKindResponses[keyof UpdateSystemComponentKindResponses];
+
+export type ListSystemComponentRelationshipsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        sourceId?: string;
+        targetId?: string;
+    };
+    url: '/system_component_relationships';
+};
+
+export type ListSystemComponentRelationshipsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListSystemComponentRelationshipsError = ListSystemComponentRelationshipsErrors[keyof ListSystemComponentRelationshipsErrors];
+
+export type ListSystemComponentRelationshipsResponses = {
+    /**
+     * OK
+     */
+    200: ListSystemComponentRelationshipsResponseBody;
+};
+
+export type ListSystemComponentRelationshipsResponse = ListSystemComponentRelationshipsResponses[keyof ListSystemComponentRelationshipsResponses];
+
+export type CreateSystemComponentRelationshipData = {
+    body: CreateSystemComponentRelationshipRequestBody;
+    path?: never;
+    query?: never;
+    url: '/system_component_relationships';
+};
+
+export type CreateSystemComponentRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateSystemComponentRelationshipError = CreateSystemComponentRelationshipErrors[keyof CreateSystemComponentRelationshipErrors];
+
+export type CreateSystemComponentRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: CreateSystemComponentRelationshipResponseBody;
+};
+
+export type CreateSystemComponentRelationshipResponse = CreateSystemComponentRelationshipResponses[keyof CreateSystemComponentRelationshipResponses];
+
+export type ArchiveSystemComponentRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_relationships/{id}';
+};
+
+export type ArchiveSystemComponentRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveSystemComponentRelationshipError = ArchiveSystemComponentRelationshipErrors[keyof ArchiveSystemComponentRelationshipErrors];
+
+export type ArchiveSystemComponentRelationshipResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveSystemComponentRelationshipResponse = ArchiveSystemComponentRelationshipResponses[keyof ArchiveSystemComponentRelationshipResponses];
+
+export type GetSystemComponentRelationshipData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_relationships/{id}';
+};
+
+export type GetSystemComponentRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetSystemComponentRelationshipError = GetSystemComponentRelationshipErrors[keyof GetSystemComponentRelationshipErrors];
+
+export type GetSystemComponentRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: GetSystemComponentRelationshipResponseBody;
+};
+
+export type GetSystemComponentRelationshipResponse = GetSystemComponentRelationshipResponses[keyof GetSystemComponentRelationshipResponses];
+
+export type UpdateSystemComponentRelationshipData = {
+    body: UpdateSystemComponentRelationshipRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/system_component_relationships/{id}';
+};
+
+export type UpdateSystemComponentRelationshipErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateSystemComponentRelationshipError = UpdateSystemComponentRelationshipErrors[keyof UpdateSystemComponentRelationshipErrors];
+
+export type UpdateSystemComponentRelationshipResponses = {
+    /**
+     * OK
+     */
+    200: UpdateSystemComponentRelationshipResponseBody;
+};
+
+export type UpdateSystemComponentRelationshipResponse = UpdateSystemComponentRelationshipResponses[keyof UpdateSystemComponentRelationshipResponses];
 
 export type ArchiveSystemComponentSignalData = {
     body?: never;
