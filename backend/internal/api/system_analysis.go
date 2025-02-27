@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
-	
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -117,24 +117,24 @@ func (s *systemAnalysisHandler) ListSystemAnalysisRelationships(ctx context.Cont
 func (s *systemAnalysisHandler) CreateSystemAnalysisRelationship(ctx context.Context, request *oapi.CreateSystemAnalysisRelationshipRequest) (*oapi.CreateSystemAnalysisRelationshipResponse, error) {
 	var resp oapi.CreateSystemAnalysisRelationshipResponse
 
-	attr := request.Body.Attributes
+	//attr := request.Body.Attributes
 
 	var created *ent.SystemAnalysisRelationship
 
 	createRelationshipTx := func(tx *ent.Tx) error {
-		create := tx.SystemAnalysisRelationship.Create().
-			SetAnalysisID(request.Id).
-			SetSourceComponentID(attr.SourceId).
-			SetTargetComponentID(attr.TargetId).
-			SetDescription(attr.Description)
-		rel, createErr := create.Save(ctx)
-		if createErr != nil {
-			return createErr
-		}
-
-		// TODO: controls & signals
-
-		created = rel
+		//create := tx.SystemAnalysisRelationship.Create().
+		//	SetAnalysisID(request.Id).
+		//	SetSourceComponentID(attr.SourceId).
+		//	SetTargetComponentID(attr.TargetId).
+		//	SetDescription(attr.Description)
+		//rel, createErr := create.Save(ctx)
+		//if createErr != nil {
+		//	return createErr
+		//}
+		//
+		//// TODO: controls & signals
+		//
+		//created = rel
 
 		return nil
 	}

@@ -107,6 +107,40 @@ func (s *systemComponentsHandler) ArchiveSystemComponent(ctx context.Context, re
 	return &resp, nil
 }
 
+// Relationships
+
+func (s *systemComponentsHandler) ListSystemComponentRelationships(ctx context.Context, request *oapi.ListSystemComponentRelationshipsRequest) (*oapi.ListSystemComponentRelationshipsResponse, error) {
+	var resp oapi.ListSystemComponentRelationshipsResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) CreateSystemComponentRelationship(ctx context.Context, request *oapi.CreateSystemComponentRelationshipRequest) (*oapi.CreateSystemComponentRelationshipResponse, error) {
+	var resp oapi.CreateSystemComponentRelationshipResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) GetSystemComponentRelationship(ctx context.Context, request *oapi.GetSystemComponentRelationshipRequest) (*oapi.GetSystemComponentRelationshipResponse, error) {
+	var resp oapi.GetSystemComponentRelationshipResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) UpdateSystemComponentRelationship(ctx context.Context, request *oapi.UpdateSystemComponentRelationshipRequest) (*oapi.UpdateSystemComponentRelationshipResponse, error) {
+	var resp oapi.UpdateSystemComponentRelationshipResponse
+
+	return &resp, nil
+}
+
+func (s *systemComponentsHandler) ArchiveSystemComponentRelationship(ctx context.Context, request *oapi.ArchiveSystemComponentRelationshipRequest) (*oapi.ArchiveSystemComponentRelationshipResponse, error) {
+	var resp oapi.ArchiveSystemComponentRelationshipResponse
+
+	return &resp, nil
+}
+
+// Kinds
+
 func (s *systemComponentsHandler) ListSystemComponentKinds(ctx context.Context, request *oapi.ListSystemComponentKindsRequest) (*oapi.ListSystemComponentKindsResponse, error) {
 	var resp oapi.ListSystemComponentKindsResponse
 

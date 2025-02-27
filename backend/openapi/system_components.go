@@ -15,6 +15,12 @@ type SystemComponentsHandler interface {
 	UpdateSystemComponent(context.Context, *UpdateSystemComponentRequest) (*UpdateSystemComponentResponse, error)
 	ArchiveSystemComponent(context.Context, *ArchiveSystemComponentRequest) (*ArchiveSystemComponentResponse, error)
 
+	ListSystemComponentRelationships(context.Context, *ListSystemComponentRelationshipsRequest) (*ListSystemComponentRelationshipsResponse, error)
+	CreateSystemComponentRelationship(context.Context, *CreateSystemComponentRelationshipRequest) (*CreateSystemComponentRelationshipResponse, error)
+	GetSystemComponentRelationship(context.Context, *GetSystemComponentRelationshipRequest) (*GetSystemComponentRelationshipResponse, error)
+	UpdateSystemComponentRelationship(context.Context, *UpdateSystemComponentRelationshipRequest) (*UpdateSystemComponentRelationshipResponse, error)
+	ArchiveSystemComponentRelationship(context.Context, *ArchiveSystemComponentRelationshipRequest) (*ArchiveSystemComponentRelationshipResponse, error)
+
 	ListSystemComponentKinds(context.Context, *ListSystemComponentKindsRequest) (*ListSystemComponentKindsResponse, error)
 	CreateSystemComponentKind(context.Context, *CreateSystemComponentKindRequest) (*CreateSystemComponentKindResponse, error)
 	GetSystemComponentKind(context.Context, *GetSystemComponentKindRequest) (*GetSystemComponentKindResponse, error)
@@ -43,6 +49,12 @@ func (o operations) RegisterSystemComponents(api huma.API) {
 	huma.Register(api, GetSystemComponent, o.GetSystemComponent)
 	huma.Register(api, UpdateSystemComponent, o.UpdateSystemComponent)
 	huma.Register(api, ArchiveSystemComponent, o.ArchiveSystemComponent)
+
+	huma.Register(api, ListSystemComponentRelationships, o.ListSystemComponentRelationships)
+	huma.Register(api, CreateSystemComponentRelationship, o.CreateSystemComponentRelationship)
+	huma.Register(api, GetSystemComponentRelationship, o.GetSystemComponentRelationship)
+	huma.Register(api, UpdateSystemComponentRelationship, o.UpdateSystemComponentRelationship)
+	huma.Register(api, ArchiveSystemComponentRelationship, o.ArchiveSystemComponentRelationship)
 
 	huma.Register(api, ListSystemComponentKinds, o.ListSystemComponentKinds)
 	huma.Register(api, CreateSystemComponentKind, o.CreateSystemComponentKind)
@@ -79,6 +91,16 @@ type (
 		Constraints []SystemComponentConstraint `json:"constraints"`
 		Signals     []SystemComponentSignal     `json:"signals"`
 		Controls    []SystemComponentControl    `json:"controls"`
+	}
+
+	SystemComponentRelationship struct {
+		Id         uuid.UUID                             `json:"id"`
+		Attributes SystemComponentRelationshipAttributes `json:"attributes"`
+	}
+	SystemComponentRelationshipAttributes struct {
+		SourceId    uuid.UUID `json:"sourceId"`
+		TargetId    uuid.UUID `json:"targetId"`
+		Description string    `json:"description"`
 	}
 
 	SystemComponentKind struct {
@@ -124,6 +146,13 @@ func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
 		Attributes: SystemComponentAttributes{
 			Name: sc.Name,
 		},
+	}
+}
+
+func SystemComponentRelationshipFromEnt(sc *ent.SystemComponentRelationship) SystemComponentRelationship {
+	return SystemComponentRelationship{
+		Id:         sc.ID,
+		Attributes: SystemComponentRelationshipAttributes{},
 	}
 }
 
@@ -246,6 +275,80 @@ var ArchiveSystemComponent = huma.Operation{
 
 type ArchiveSystemComponentRequest ArchiveIdRequest
 type ArchiveSystemComponentResponse EmptyResponse
+
+// System Component Relationships
+
+var ListSystemComponentRelationships = huma.Operation{
+	OperationID: "list-system-component-relationships",
+	Method:      http.MethodGet,
+	Path:        "/system_component_relationships",
+	Summary:     "List System Component Relationships",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type ListSystemComponentRelationshipsRequest struct {
+	ListRequest
+	SourceId *uuid.UUID `query:"sourceId"`
+	TargetId *uuid.UUID `query:"targetId"`
+}
+type ListSystemComponentRelationshipsResponse PaginatedResponse[SystemComponentRelationship]
+
+var GetSystemComponentRelationship = huma.Operation{
+	OperationID: "get-system-component-relationship",
+	Method:      http.MethodGet,
+	Path:        "/system_component_relationships/{id}",
+	Summary:     "Get a System Component Relationship",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type GetSystemComponentRelationshipRequest GetIdRequest
+type GetSystemComponentRelationshipResponse ItemResponse[SystemComponentRelationship]
+
+var CreateSystemComponentRelationship = huma.Operation{
+	OperationID: "create-system-component-relationship",
+	Method:      http.MethodPost,
+	Path:        "/system_component_relationships",
+	Summary:     "Create a System Component Relationship",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type CreateSystemComponentRelationshipAttributes struct {
+	SourceComponentId uuid.UUID `json:"sourceComponentId"`
+	TargetComponentId uuid.UUID `json:"targetComponentId"`
+	Description       string    `json:"description"`
+}
+type CreateSystemComponentRelationshipRequest RequestWithBodyAttributes[CreateSystemComponentRelationshipAttributes]
+type CreateSystemComponentRelationshipResponse ItemResponse[SystemComponentRelationship]
+
+var UpdateSystemComponentRelationship = huma.Operation{
+	OperationID: "update-system-component-relationship",
+	Method:      http.MethodPatch,
+	Path:        "/system_component_relationships/{id}",
+	Summary:     "Update a System Component Relationship",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type UpdateSystemComponentRelationshipAttributes struct {
+	Description *string `json:"description,omitempty"`
+}
+type UpdateSystemComponentRelationshipRequest UpdateIdRequest[UpdateSystemComponentRelationshipAttributes]
+type UpdateSystemComponentRelationshipResponse ItemResponse[SystemComponentRelationship]
+
+var ArchiveSystemComponentRelationship = huma.Operation{
+	OperationID: "archive-system-component-relationship",
+	Method:      http.MethodDelete,
+	Path:        "/system_component_relationships/{id}",
+	Summary:     "Archive a System Component Relationship",
+	Tags:        systemComponentsTags,
+	Errors:      errorCodes(),
+}
+
+type ArchiveSystemComponentRelationshipRequest ArchiveIdRequest
+type ArchiveSystemComponentRelationshipResponse EmptyResponse
 
 // System Component Kinds
 
