@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+	rez "github.com/rezible/rezible"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -11,11 +12,12 @@ import (
 )
 
 type systemAnalysisHandler struct {
-	db *ent.Client
+	db         *ent.Client
+	components rez.SystemComponentsService
 }
 
-func newSystemAnalysisHandler(db *ent.Client) *systemAnalysisHandler {
-	return &systemAnalysisHandler{db: db}
+func newSystemAnalysisHandler(db *ent.Client, cmp rez.SystemComponentsService) *systemAnalysisHandler {
+	return &systemAnalysisHandler{db: db, components: cmp}
 }
 
 func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
@@ -117,29 +119,29 @@ func (s *systemAnalysisHandler) ListSystemAnalysisRelationships(ctx context.Cont
 func (s *systemAnalysisHandler) CreateSystemAnalysisRelationship(ctx context.Context, request *oapi.CreateSystemAnalysisRelationshipRequest) (*oapi.CreateSystemAnalysisRelationshipResponse, error) {
 	var resp oapi.CreateSystemAnalysisRelationshipResponse
 
-	//attr := request.Body.Attributes
+	attr := request.Body.Attributes
 
-	var created *ent.SystemAnalysisRelationship
-
-	createRelationshipTx := func(tx *ent.Tx) error {
-		//create := tx.SystemAnalysisRelationship.Create().
-		//	SetAnalysisID(request.Id).
-		//	SetSourceComponentID(attr.SourceId).
-		//	SetTargetComponentID(attr.TargetId).
-		//	SetDescription(attr.Description)
-		//rel, createErr := create.Save(ctx)
-		//if createErr != nil {
-		//	return createErr
-		//}
-		//
-		//// TODO: controls & signals
-		//
-		//created = rel
-
-		return nil
+	signals := make([]rez.ComponentTraitReference, len(attr.FeedbackSignals))
+	for i, sig := range attr.FeedbackSignals {
+		signals[i] = rez.ComponentTraitReference{Id: sig.SignalId, Description: sig.Description}
 	}
 
-	if createErr := ent.WithTx(ctx, s.db, createRelationshipTx); createErr != nil {
+	actions := make([]rez.ComponentTraitReference, len(attr.ControlActions))
+	for i, act := range attr.ControlActions {
+		actions[i] = rez.ComponentTraitReference{Id: act.ControlId, Description: act.Description}
+	}
+
+	params := rez.CreateSystemAnalysisRelationshipParams{
+		AnalysisId:      request.Id,
+		SourceId:        attr.SourceId,
+		TargetId:        attr.TargetId,
+		Description:     attr.Description,
+		FeedbackSignals: signals,
+		ControlActions:  actions,
+	}
+
+	created, createErr := s.components.CreateSystemAnalysisRelationship(ctx, params)
+	if createErr != nil {
 		return nil, detailError("failed to create system analysis relationship", createErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisRelationshipFromEnt(created)

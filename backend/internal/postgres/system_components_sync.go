@@ -144,7 +144,6 @@ func (ds *systemComponentsDataSyncer) syncBatch(ctx context.Context, batch []*en
 
 func (ds *systemComponentsDataSyncer) createBatchSyncMutations(ctx context.Context, batch []*ent.SystemComponent) error {
 	ids := make([]string, len(batch))
-
 	for i, c := range batch {
 		ids[i] = c.ProviderID
 	}
@@ -162,6 +161,10 @@ func (ds *systemComponentsDataSyncer) createBatchSyncMutations(ctx context.Conte
 	}
 
 	for _, provCmp := range batch {
+		if provCmp.Edges.Kind != nil {
+			provCmp.KindID = ds.syncComponentKind(provCmp.Edges.Kind)
+		}
+
 		dbCmp, exists := dbIdMap[provCmp.ProviderID]
 		if exists {
 			// don't delete this component
@@ -169,37 +172,9 @@ func (ds *systemComponentsDataSyncer) createBatchSyncMutations(ctx context.Conte
 		_ = ds.syncComponent(dbCmp, provCmp)
 	}
 
+	// TODO: sync component relationships
+
 	return nil
-}
-
-func (ds *systemComponentsDataSyncer) syncComponent(db, prov *ent.SystemComponent) uuid.UUID {
-	var m *ent.SystemComponentMutation
-	var componentId uuid.UUID
-	needsSync := true
-	if db == nil {
-		componentId = uuid.New()
-		m = ds.db.SystemComponent.Create().SetID(componentId).Mutation()
-	} else {
-		componentId = db.ID
-		m = ds.db.SystemComponent.UpdateOneID(componentId).Mutation()
-
-		// TODO: get provider mapping support for fields
-		needsSync = db.Name != prov.Name
-	}
-
-	m.SetProviderID(prov.ProviderID)
-	m.SetName(prov.Name)
-	if prov.Edges.Kind != nil {
-		m.SetKindID(ds.syncComponentKind(prov.Edges.Kind))
-	}
-	m.SetProperties(prov.Properties)
-	m.SetDescription(prov.Description)
-
-	if needsSync {
-		ds.mutations = append(ds.mutations, m)
-	}
-
-	return componentId
 }
 
 func (ds *systemComponentsDataSyncer) syncComponentKind(prov *ent.SystemComponentKind) uuid.UUID {
@@ -234,4 +209,34 @@ func (ds *systemComponentsDataSyncer) syncComponentKind(prov *ent.SystemComponen
 	}
 
 	return kindId
+}
+
+func (ds *systemComponentsDataSyncer) syncComponent(db, prov *ent.SystemComponent) uuid.UUID {
+	var m *ent.SystemComponentMutation
+	var componentId uuid.UUID
+	needsSync := true
+	if db == nil {
+		componentId = uuid.New()
+		m = ds.db.SystemComponent.Create().SetID(componentId).Mutation()
+	} else {
+		componentId = db.ID
+		m = ds.db.SystemComponent.UpdateOneID(componentId).Mutation()
+
+		// TODO: get provider mapping support for fields
+		needsSync = db.Name != prov.Name
+	}
+
+	m.SetProviderID(prov.ProviderID)
+	m.SetName(prov.Name)
+	if prov.KindID != uuid.Nil {
+		m.SetKindID(prov.KindID)
+	}
+	m.SetProperties(prov.Properties)
+	m.SetDescription(prov.Description)
+
+	if needsSync {
+		ds.mutations = append(ds.mutations, m)
+	}
+
+	return componentId
 }

@@ -95,8 +95,26 @@ type (
 		PullSystemComponents(context.Context) iter.Seq2[*ent.SystemComponent, error]
 	}
 
+	ComponentTraitReference struct {
+		Id          uuid.UUID
+		Description string
+	}
+
+	CreateSystemAnalysisRelationshipParams struct {
+		AnalysisId      uuid.UUID
+		SourceId        uuid.UUID
+		TargetId        uuid.UUID
+		Description     string
+		FeedbackSignals []ComponentTraitReference
+		ControlActions  []ComponentTraitReference
+	}
+
 	SystemComponentsService interface {
 		SyncData(context.Context) error
+
+		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
+		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
+		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)
 	}
 )
 
