@@ -5,11 +5,7 @@
 </script>
 
 <script lang="ts">
-	import {
-		type UpdateIncidentFieldOptionAttributes,
-		type CreateIncidentFieldOptionAttributes,
-		type fieldOptionType as OptionType,
-	} from "$lib/api";
+	import type { UpdateIncidentFieldOptionAttributes, CreateIncidentFieldOptionAttributes, IncidentFieldOptionAttributes } from "$lib/api";
 	import EditableListGroup from "$components/editable-list/EditableList.svelte";
 	import type { EditorSnippetProps } from "$features/settings/components/mutating-table";
 	import { SelectField, ToggleGroup, ToggleOption, type MenuOption } from "svelte-ux";
@@ -17,6 +13,7 @@
 	type Props = EditorSnippetProps<IncidentFieldOptions>;
 	const { id, value, onUpdate }: Props = $props();
 
+	type OptionType = IncidentFieldOptionAttributes["optionType"];
 	const creating = $derived(!value);
 	const optionTypes: OptionType[] = ["custom", "derived"];
 	let optionsType = $state<OptionType>("derived");
@@ -62,15 +59,13 @@
 		// onUpdate(options);
 	};
 
-	const customOptionAdded = (e: CustomEvent) => {
-		const val = e.detail as string;
+	const customOptionAdded = (val: string) => {
 		customOptions = [...customOptions, { label: val, value: "", archived: false }];
 		console.log("add custom options");
 		valueChanged();
 	};
 
-	const customOptionArchiveToggled = (e: CustomEvent) => {
-		const idx = e.detail as number;
+	const customOptionArchiveToggled = (idx: number) => {
 		if (!customOptions[idx]) return;
 		if (creating) {
 			customOptions.splice(idx - 1, 1);
@@ -98,10 +93,10 @@
 		<div class:hidden={optionsType !== "custom"}>
 			<EditableListGroup
 				{id}
-				bind:items={customOptions}
+				items={customOptions}
 				deleteItems={creating}
-				on:addItem={customOptionAdded}
-				on:toggleArchived={customOptionArchiveToggled}
+				onAddItem={customOptionAdded}
+				onToggleArchived={customOptionArchiveToggled}
 			/>
 		</div>
 

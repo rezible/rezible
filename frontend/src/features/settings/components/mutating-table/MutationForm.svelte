@@ -5,12 +5,11 @@
 </script>
 
 <script lang="ts" generics="DataType extends ApiDataObject, CreateAttributes">
-	import { z } from "zod";
+	import { Switch, Toggle } from "svelte-ux";
 	import type { ErrorModel } from "$lib/api";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import LoadingSelect from "$components/loading-select/LoadingSelect.svelte";
-	import { type FormFields, type Field, isSelectField, unwrappedSchema } from "./fields.svelte";
-	import { Field as UxField, Switch, TextField, Toggle } from "svelte-ux";
+	import type { FormFields, Field } from "./fields.svelte";
+	import MutationFormField from "./MutationFormField.svelte";
 
 	type Props = {
 		fields: FormFields;
@@ -104,7 +103,7 @@
 			{#if field.schema.isOptional()}
 				{@render optionalFormField(name, field)}
 			{:else}
-				{@render formField(name, field)}
+				<MutationFormField {name} {dataType} {field} {editing} {values} {errors} {onFieldUpdate} />
 			{/if}
 		{/each}
 	</div>
@@ -139,53 +138,8 @@
 		</div>
 
 		{#if on}
-			{@render formField(name, field)}
+			<MutationFormField {name} {field} {dataType} {editing} {values} {errors} {onFieldUpdate} />
 		{/if}
 	</Toggle>
 {/snippet}
 
-{#snippet formField(name: string, field: Field)}
-	{@const id = `${editing ? "edit" : "create"}-${dataType}-${name}`}
-	{@const label = field.label}
-	{@const error = errors[name]}
-	{@const schemaBase = unwrappedSchema(field.schema)}
-	{@const onChange = () => onFieldUpdate(name)}
-
-	{#if field.editor}
-		<field.editor
-			{id}
-			value={values[name]}
-			onUpdate={(value) => {
-				values[name] = value;
-				onChange();
-			}}
-		/>
-	{:else if isSelectField(field)}
-		{#if !Array.isArray(field.options)}
-			<LoadingSelect {id} bind:value={values[name]} options={field.options} {label} />
-		{:else}
-			<span>regular select</span>
-		{/if}
-	{:else if schemaBase instanceof z.ZodString}
-		<TextField
-			{label}
-			{error}
-			labelPlacement="float"
-			value={values[name]}
-			debounceChange={100}
-			on:change={({ detail }) => {
-				values[name] = detail.value ?? "";
-				onChange();
-			}}
-		/>
-	{:else if schemaBase instanceof z.ZodBoolean}
-		<UxField label={field.label} let:id {error}>
-			<Switch {id} bind:checked={values[name]} on:change={onChange} />
-		</UxField>
-	{:else if schemaBase instanceof z.ZodNumber}
-		<span>number</span>
-	{:else}
-		<span>unknown {typeof field}</span>
-		<span>{field.label} {typeof field.schema}</span>
-	{/if}
-{/snippet}

@@ -8,26 +8,27 @@
 
 <script lang="ts">
 	import { mdiArchive, mdiArchiveMinus, mdiPlus, mdiTrashCan } from "@mdi/js";
-	import { createEventDispatcher } from "svelte";
 	import { Button, TextField } from "svelte-ux";
 
-	export let id;
-	export let items: ListItemType[] = [];
-	export let deleteItems = false;
+	type Props = {
+		id: string;
+		items: ListItemType[];
+		deleteItems: boolean;
+		onAddItem: (value: string) => void;
+		onToggleArchived: (idx: number) => void;
+	}
 
-	const dispatch = createEventDispatcher();
+	const { id, items, deleteItems, onAddItem, onToggleArchived }: Props = $props();
 
-	let newVal = "";
+	let newVal = $state("");
 
 	const addNewItem = () => {
-		//items = [...items, {name: newVal, value: "", archived: false}];
-		dispatch("addItem", newVal);
+		onAddItem($state.snapshot(newVal));
 		newVal = "";
 	};
 
 	const toggleArchiveItem = (idx: number) => {
-		//items[idx].archived = !items[idx].archived;
-		dispatch("toggleArchived", idx);
+		onToggleArchived(idx);
 	};
 
 	const getItemIcon = (isArchived: boolean) => {
