@@ -58,7 +58,6 @@
 		"@tiptap/extension-collaboration-cursor": "^2.11.5",
 		"@tiptap/pm": "^2.11.5",
 		"@xyflow/svelte": "^0.1.30",
-		"bits-ui": "^1.3.4",
 		"d3-array": "^3.2.4",
 		"d3-random": "^3.0.1",
 		"d3-scale": "^4.0.2",

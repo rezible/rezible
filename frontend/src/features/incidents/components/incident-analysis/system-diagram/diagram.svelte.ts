@@ -264,6 +264,8 @@ const createDiagramState = () => {
 			edgeId: "edge" in detail ? detail.edge?.id : undefined,
 			top: posY > boundTop ? height - ContextMenuHeight : posY,
 			left: posX > boundLeft ? posX - ContextMenuWidth : posX,
+			x: posX,
+			y: posY,
 		};
 	};
 

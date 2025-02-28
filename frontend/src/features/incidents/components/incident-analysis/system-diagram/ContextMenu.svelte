@@ -14,8 +14,10 @@
 
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
-	import { diagram } from "./diagram.svelte";
 	import { componentDialog } from "$features/incidents/components/incident-analysis/component-dialog/dialogState.svelte";
+	import { diagram } from "./diagram.svelte";
+	import { Button, Header, Icon } from "svelte-ux";
+	import { mdiPlusCircle, mdiPlusCircleOutline, mdiTrashCan } from "@mdi/js";
 
 	const props = $derived(diagram.ctxMenuProps);
 	const nodes = useNodes();
@@ -36,9 +38,11 @@
 
 {#if !!props}
 	<div
-		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; height: {ContextMenuHeight}px"
+		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; max-height: {ContextMenuHeight}px"
 		class="absolute context-menu border bg-surface-200"
 	>
+		<Header title="Actions" class="px-2 py-1" />
+
 		{#if props.nodeId}
 			{@render nodeMenu(props.nodeId)}
 		{:else if props.edgeId}
@@ -50,20 +54,19 @@
 {/if}
 
 {#snippet nodeMenu(id: string)}
-	<p style="margin: 0.5em;">
-		<small>node id: {id}</small>
-	</p>
-	<button onclick={() => {deleteNode(id)}}>delete node</button>
+	<Button variant="fill-light" icon={mdiTrashCan} rounded={false} classes={{root: "w-full gap-2"}} on:click={() => {deleteNode(id)}}>
+		Delete Component
+	</Button>
 {/snippet}
 
 {#snippet edgeMenu(id: string)}
-	<p style="margin: 0.5em;">
-		<small>edge id: {id}</small>
-	</p>
+	edge
 {/snippet}
 
 {#snippet paneMenu()}
-	<button onclick={addComponent}>add component</button>
+	<Button variant="fill-light" icon={mdiPlusCircle} rounded={false} classes={{root: "w-full gap-2"}} on:click={addComponent}>
+		Add Component
+	</Button>
 {/snippet}
 
 <style>
@@ -72,17 +75,5 @@
 		box-shadow: 10px 19px 20px rgba(0, 0, 0, 10%);
 
 		z-index: 10;
-	}
-
-	.context-menu button {
-		border: none;
-		display: block;
-		padding: 0.5em;
-		text-align: left;
-		width: 100%;
-	}
-
-	.context-menu button:hover {
-		background: white;
 	}
 </style>
