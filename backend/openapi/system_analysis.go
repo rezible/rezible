@@ -114,26 +114,29 @@ type (
 func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
 	attr := SystemAnalysisAttributes{}
 
-	// TODO
-
-	return SystemAnalysis{
-		Id:         sc.ID,
-		Attributes: attr,
+	attr.Components = make([]SystemAnalysisComponent, len(sc.Edges.Components))
+	for i, cmp := range sc.Edges.AnalysisComponents {
+		attr.Components[i] = SystemAnalysisComponentFromEnt(cmp)
 	}
+
+	attr.Relationships = make([]SystemAnalysisRelationship, len(sc.Edges.Relationships))
+	for i, rel := range sc.Edges.Relationships {
+		attr.Relationships[i] = SystemAnalysisRelationshipFromEnt(rel)
+	}
+
+	return SystemAnalysis{Id: sc.ID, Attributes: attr}
 }
 
 func SystemAnalysisComponentFromEnt(sc *ent.SystemAnalysisComponent) SystemAnalysisComponent {
-	return SystemAnalysisComponent{
-		Id:         sc.ID,
-		Attributes: SystemAnalysisComponentAttributes{},
-	}
+	attr := SystemAnalysisComponentAttributes{}
+
+	return SystemAnalysisComponent{Id: sc.ID, Attributes: attr}
 }
 
 func SystemAnalysisRelationshipFromEnt(sc *ent.SystemAnalysisRelationship) SystemAnalysisRelationship {
-	return SystemAnalysisRelationship{
-		Id:         sc.ID,
-		Attributes: SystemAnalysisRelationshipAttributes{},
-	}
+	attr := SystemAnalysisRelationshipAttributes{}
+	
+	return SystemAnalysisRelationship{Id: sc.ID, Attributes: attr}
 }
 
 var systemAnalysisTags = []string{"System Analysis"}

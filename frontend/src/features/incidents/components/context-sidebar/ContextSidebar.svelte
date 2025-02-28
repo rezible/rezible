@@ -25,4 +25,6 @@
 			<Button iconOnly icon={mdiChevronRight} />
 		</div>
 	</Header>
+
+	<a href="/incidents/test-incident/analysis">other</a>
 </div>

@@ -76,6 +76,10 @@ func (s *IncidentService) GetByID(ctx context.Context, id uuid.UUID) (*ent.Incid
 	return s.db.Incident.Get(ctx, id)
 }
 
+func (s *IncidentService) GetIdForSlug(ctx context.Context, slug string) (uuid.UUID, error) {
+	return s.db.Incident.Query().Where(incident.Slug(slug)).OnlyID(ctx)
+}
+
 func (s *IncidentService) GetBySlug(ctx context.Context, slug string) (*ent.Incident, error) {
 	return s.db.Incident.Query().Where(incident.Slug(slug)).Only(ctx)
 }

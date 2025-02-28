@@ -9,7 +9,12 @@
 	import ComponentDialog from "./component-dialog/ComponentDialog.svelte";
 	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
 
-	analysis.setup();
+	type Props = {
+		id: string;
+	};
+	const { id }: Props = $props();
+
+	analysis.setup(id);
 
 	let hideTimeline = $state(false);
 </script>

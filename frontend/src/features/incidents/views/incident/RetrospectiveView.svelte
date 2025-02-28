@@ -2,34 +2,30 @@
 	import { incidentCtx, retrospectiveCtx } from "$features/incidents/lib/context.ts";
 	import { collaboration } from "$features/incidents/lib/collaboration.svelte";
 	import type { Incident, Retrospective } from "$lib/api";
-	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 
-	import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "$features/incidents/components/incident-analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "$features/incidents/components/incident-report/IncidentReport.svelte";
-	import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 
 	type Props = {
 		incident: Incident;
 		retrospective: Retrospective;
-		viewParam: IncidentViewRouteParam;
+		view: "analysis" | "retrospective";
 	};
-	const { incident, retrospective, viewParam }: Props = $props();
+	const { incident, retrospective, view }: Props = $props();
+
+	const systemAnalysisId = $derived(retrospective.attributes.systemAnalysisId);
 
 	incidentCtx.set(incident);
 	retrospectiveCtx.set(retrospective);
-
 	collaboration.setup(retrospective.id);
 </script>
 
-<div class="flex-1 min-h-0 overflow-y-auto border p-2">
-	{#if viewParam === undefined}
-		<IncidentOverview />
-	{:else if viewParam === "analysis"}
-		<IncidentAnalysis />
-	{:else if viewParam === "report"}
-		<IncidentReport />
+{#if view === "analysis"}
+	{#if systemAnalysisId}
+		<IncidentAnalysis id={systemAnalysisId} />
+	{:else}
+		<span>no system analysis for this retrospective</span>
 	{/if}
-</div>
-
-<ContextSidebar />
+{:else if view === "retrospective"}
+	<IncidentReport />
+{/if}

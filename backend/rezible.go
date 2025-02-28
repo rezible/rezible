@@ -238,6 +238,7 @@ type (
 		SyncData(context.Context) error
 
 		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
+		GetIdForSlug(context.Context, string) (uuid.UUID, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
 		ListIncidents(context.Context, ListIncidentsParams) ([]*ent.Incident, error)
 	}
@@ -278,8 +279,9 @@ type (
 	}
 
 	RetrospectiveService interface {
-		GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error)
-		GetByIncident(ctx context.Context, inc *ent.Incident, createMissing bool) (*ent.Retrospective, error)
+		Create(context.Context, ent.Retrospective) (*ent.Retrospective, error)
+		GetById(context.Context, uuid.UUID) (*ent.Retrospective, error)
+		GetByIncidentId(context.Context, uuid.UUID) (*ent.Retrospective, error)
 
 		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
 		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)

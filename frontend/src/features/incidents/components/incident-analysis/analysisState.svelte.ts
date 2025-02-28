@@ -6,7 +6,6 @@ import {
 	type SystemAnalysisRelationship,
 	type SystemComponent,
 } from "$lib/api";
-import { incidentCtx } from "$features/incidents/lib/context";
 import type { XYPosition } from "@xyflow/svelte";
 
 const createAnalysisState = () => {
@@ -15,16 +14,13 @@ const createAnalysisState = () => {
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
-	const setup = () => {
-		analysisId = incidentCtx.get().attributes.systemAnalysisId;
+	const setup = (id: string) => {
+		console.log("analysis setup", id);
 
 		const queryClient = useQueryClient();
 
 		const analysisQuery = createQuery(
-			() => ({
-				...getSystemAnalysisOptions({ path: { id: analysisId ?? "" } }),
-				enabled: !!analysisId,
-			}),
+			() => getSystemAnalysisOptions({ path: { id } }),
 			queryClient
 		);
 

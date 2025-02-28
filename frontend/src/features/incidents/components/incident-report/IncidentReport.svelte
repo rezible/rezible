@@ -15,7 +15,7 @@
 	let {}: Props = $props();
 
 	const retrospective = retrospectiveCtx.get();
-	const sections = $derived(retrospective.attributes.sections);
+	const sections = $derived(retrospective.attributes.reportSections ?? []);
 
 	let sectionsSidebarVisible = $state(false);
 
@@ -38,7 +38,7 @@
 
 <div class="flex flex-col min-h-0 overflow-y-auto bg-surface-300 grow">
 	<div class="w-full overflow-y-auto flex flex-col gap-4" bind:this={containerEl}>
-		{#if sections && collaboration.provider}
+		{#if collaboration.provider}
 			{#each sections as section, i}
 				<div bind:this={sectionElements[section.field]}>
 					<FieldEditorWrapper

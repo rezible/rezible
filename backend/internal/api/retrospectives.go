@@ -4,6 +4,7 @@ import (
 	"context"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/retrospective"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -28,6 +29,21 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 func (h *retrospectivesHandler) CreateRetrospective(ctx context.Context, request *oapi.CreateRetrospectiveRequest) (*oapi.CreateRetrospectiveResponse, error) {
 	var resp oapi.CreateRetrospectiveResponse
 
+	attrs := request.Body.Attributes
+	params := ent.Retrospective{
+		IncidentID: attrs.IncidentId,
+		Type:       retrospective.TypeSimple,
+	}
+	if attrs.SystemAnalysis {
+		params.Type = retrospective.TypeFull
+	}
+
+	retro, createErr := h.retros.Create(ctx, params)
+	if createErr != nil {
+		return nil, detailError("failed to create retro", createErr)
+	}
+	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
+
 	return &resp, nil
 }
 
@@ -46,18 +62,16 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context, input *oapi.GetRetrospectiveForIncidentRequest) (*oapi.GetRetrospectiveForIncidentResponse, error) {
 	var resp oapi.GetRetrospectiveForIncidentResponse
 
-	var inc *ent.Incident
-	var incErr error
-	if input.Id.IsUUID {
-		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
-	} else {
-		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
-	}
-	if incErr != nil {
-		return nil, detailError("failed to get incident", incErr)
+	incidentId := input.Id.UUID
+	if input.Id.IsSlug {
+		var incErr error
+		incidentId, incErr = h.incidents.GetIdForSlug(ctx, input.Id.Slug)
+		if incErr != nil {
+			return nil, detailError("failed to get incident", incErr)
+		}
 	}
 
-	retro, retroErr := h.retros.GetByIncident(ctx, inc, true)
+	retro, retroErr := h.retros.GetByIncidentId(ctx, incidentId)
 	if retroErr != nil {
 		return nil, detailError("failed to get retrospective", retroErr)
 	}

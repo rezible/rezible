@@ -2,10 +2,9 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -33,25 +32,54 @@ func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context,
 	return retrospective.TypeFull, nil
 }
 
-func (s *RetrospectiveService) GetByIncident(ctx context.Context, inc *ent.Incident, createMissing bool) (*ent.Retrospective, error) {
-	retro, retroErr := inc.QueryRetrospective().Only(ctx)
-	if retroErr == nil && retro != nil {
-		return retro, nil
+func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospective) (*ent.Retrospective, error) {
+	inc, incErr := s.db.Incident.Get(ctx, params.IncidentID)
+	if incErr != nil {
+		return nil, incErr
 	}
-	if ent.IsNotFound(retroErr) && createMissing {
-		retroType, typeErr := s.getIncidentRetrospectiveType(ctx, inc)
-		if typeErr != nil {
-			retroType = retrospective.TypeFull
-			log.Error().Err(typeErr).Str("id", inc.ID.String()).Msgf("Failed to get retrospective type for incident")
-		}
-		return s.db.Retrospective.Create().
+
+	var createdRetro *ent.Retrospective
+	var createdAnalysis *ent.SystemAnalysis
+
+	createTxFn := func(tx *ent.Tx) error {
+		var createErr error
+		createdRetro, createErr = tx.Retrospective.Create().
 			SetIncidentID(inc.ID).
 			SetDocumentName(inc.Slug + "-retrospective").
-			SetType(retroType).
+			SetType(params.Type).
 			SetState(retrospective.StateDraft).
 			Save(ctx)
+		if createErr != nil {
+			return createErr
+		}
+		if params.Type == retrospective.TypeSimple {
+			return nil
+		}
+		createdAnalysis, createErr = tx.SystemAnalysis.Create().
+			SetRetrospectiveID(createdRetro.ID).
+			Save(ctx)
+		if createErr != nil {
+			return createErr
+		}
+		return nil
 	}
-	return nil, retroErr
+	if txErr := ent.WithTx(ctx, s.db, createTxFn); txErr != nil {
+		return nil, fmt.Errorf("create tx failed: %w", txErr)
+	}
+
+	if createdAnalysis != nil {
+		createdRetro.SystemAnalysisID = createdAnalysis.ID
+		createdRetro.Edges.SystemAnalysis = createdAnalysis
+	}
+	return createdRetro, nil
+}
+
+func (s *RetrospectiveService) GetByIncidentId(ctx context.Context, incId uuid.UUID) (*ent.Retrospective, error) {
+	retro, retroErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(incId)).Only(ctx)
+	if retroErr != nil {
+		return nil, retroErr
+	}
+	return retro, nil
 }
 
 func (s *RetrospectiveService) CreateDiscussion(ctx context.Context, params rez.CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error) {

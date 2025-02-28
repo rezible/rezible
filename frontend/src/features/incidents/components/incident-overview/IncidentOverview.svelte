@@ -1,17 +1,22 @@
 <script lang="ts">
+	import type { Incident } from "$lib/api";
+	import { incidentCtx } from "$features/incidents/lib/context.ts";
 	import LinkedIncidents from "./LinkedIncidents.svelte";
 	import IncidentVisibility from "./IncidentVisibility.svelte";
 	import IncidentSeverity from "./IncidentSeverity.svelte";
 	import RoleAssignments from "./RoleAssignments.svelte";
 	import TeamAssignments from "./TeamAssignments.svelte";
 
-	type Props = {};
-	const {}: Props = $props();
+	type Props = {
+		incident: Incident;
+	};
+	const { incident }: Props = $props();
+
+
+	incidentCtx.set(incident);
 </script>
 
 <div class="flex flex-col gap-2 overflow-y-auto">
-	<a href="/incidents/test-incident">other</a>
-
 	<div class="grid grid-cols-2 gap-2">
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">

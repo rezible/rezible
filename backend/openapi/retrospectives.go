@@ -120,16 +120,16 @@ type (
 )
 
 func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
-	ret := Retrospective{
-		Id: r.ID,
-		Attributes: RetrospectiveAttributes{
-			Type:  RetrospectiveType(r.Type.String()),
-			State: RetrospectiveState(r.State.String()),
-		},
+	attr := RetrospectiveAttributes{
+		Type:  RetrospectiveType(r.Type.String()),
+		State: RetrospectiveState(r.State.String()),
+	}
+	if r.SystemAnalysisID != uuid.Nil {
+		attr.SystemAnalysisId = &r.SystemAnalysisID
 	}
 
 	// TODO: fetch this
-	ret.Attributes.ReportSections = []RetrospectiveReportSection{
+	attr.ReportSections = []RetrospectiveReportSection{
 		{
 			Type:        "field",
 			Title:       "Background",
@@ -144,7 +144,7 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 		},
 	}
 
-	return ret
+	return Retrospective{Id: r.ID, Attributes: attr}
 }
 
 func RetrospectiveDiscussionFromEnt(d *ent.RetrospectiveDiscussion) RetrospectiveDiscussion {
