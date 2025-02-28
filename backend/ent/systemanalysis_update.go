@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -34,16 +34,16 @@ func (sau *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAn
 	return sau
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (sau *SystemAnalysisUpdate) SetIncidentID(u uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.SetIncidentID(u)
+// SetRetrospectiveID sets the "retrospective_id" field.
+func (sau *SystemAnalysisUpdate) SetRetrospectiveID(u uuid.UUID) *SystemAnalysisUpdate {
+	sau.mutation.SetRetrospectiveID(u)
 	return sau
 }
 
-// SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (sau *SystemAnalysisUpdate) SetNillableIncidentID(u *uuid.UUID) *SystemAnalysisUpdate {
+// SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
+func (sau *SystemAnalysisUpdate) SetNillableRetrospectiveID(u *uuid.UUID) *SystemAnalysisUpdate {
 	if u != nil {
-		sau.SetIncidentID(*u)
+		sau.SetRetrospectiveID(*u)
 	}
 	return sau
 }
@@ -68,9 +68,9 @@ func (sau *SystemAnalysisUpdate) SetUpdatedAt(t time.Time) *SystemAnalysisUpdate
 	return sau
 }
 
-// SetIncident sets the "incident" edge to the Incident entity.
-func (sau *SystemAnalysisUpdate) SetIncident(i *Incident) *SystemAnalysisUpdate {
-	return sau.SetIncidentID(i.ID)
+// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
+func (sau *SystemAnalysisUpdate) SetRetrospective(r *Retrospective) *SystemAnalysisUpdate {
+	return sau.SetRetrospectiveID(r.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -123,9 +123,9 @@ func (sau *SystemAnalysisUpdate) Mutation() *SystemAnalysisMutation {
 	return sau.mutation
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (sau *SystemAnalysisUpdate) ClearIncident() *SystemAnalysisUpdate {
-	sau.mutation.ClearIncident()
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (sau *SystemAnalysisUpdate) ClearRetrospective() *SystemAnalysisUpdate {
+	sau.mutation.ClearRetrospective()
 	return sau
 }
 
@@ -230,8 +230,8 @@ func (sau *SystemAnalysisUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sau *SystemAnalysisUpdate) check() error {
-	if sau.mutation.IncidentCleared() && len(sau.mutation.IncidentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.incident"`)
+	if sau.mutation.RetrospectiveCleared() && len(sau.mutation.RetrospectiveIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}
 	return nil
 }
@@ -260,28 +260,28 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 	if value, ok := sau.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if sau.mutation.IncidentCleared() {
+	if sau.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.IncidentTable,
-			Columns: []string{systemanalysis.IncidentColumn},
+			Table:   systemanalysis.RetrospectiveTable,
+			Columns: []string{systemanalysis.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sau.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := sau.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.IncidentTable,
-			Columns: []string{systemanalysis.IncidentColumn},
+			Table:   systemanalysis.RetrospectiveTable,
+			Columns: []string{systemanalysis.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -467,16 +467,16 @@ type SystemAnalysisUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (sauo *SystemAnalysisUpdateOne) SetIncidentID(u uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.SetIncidentID(u)
+// SetRetrospectiveID sets the "retrospective_id" field.
+func (sauo *SystemAnalysisUpdateOne) SetRetrospectiveID(u uuid.UUID) *SystemAnalysisUpdateOne {
+	sauo.mutation.SetRetrospectiveID(u)
 	return sauo
 }
 
-// SetNillableIncidentID sets the "incident_id" field if the given value is not nil.
-func (sauo *SystemAnalysisUpdateOne) SetNillableIncidentID(u *uuid.UUID) *SystemAnalysisUpdateOne {
+// SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
+func (sauo *SystemAnalysisUpdateOne) SetNillableRetrospectiveID(u *uuid.UUID) *SystemAnalysisUpdateOne {
 	if u != nil {
-		sauo.SetIncidentID(*u)
+		sauo.SetRetrospectiveID(*u)
 	}
 	return sauo
 }
@@ -501,9 +501,9 @@ func (sauo *SystemAnalysisUpdateOne) SetUpdatedAt(t time.Time) *SystemAnalysisUp
 	return sauo
 }
 
-// SetIncident sets the "incident" edge to the Incident entity.
-func (sauo *SystemAnalysisUpdateOne) SetIncident(i *Incident) *SystemAnalysisUpdateOne {
-	return sauo.SetIncidentID(i.ID)
+// SetRetrospective sets the "retrospective" edge to the Retrospective entity.
+func (sauo *SystemAnalysisUpdateOne) SetRetrospective(r *Retrospective) *SystemAnalysisUpdateOne {
+	return sauo.SetRetrospectiveID(r.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -556,9 +556,9 @@ func (sauo *SystemAnalysisUpdateOne) Mutation() *SystemAnalysisMutation {
 	return sauo.mutation
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (sauo *SystemAnalysisUpdateOne) ClearIncident() *SystemAnalysisUpdateOne {
-	sauo.mutation.ClearIncident()
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (sauo *SystemAnalysisUpdateOne) ClearRetrospective() *SystemAnalysisUpdateOne {
+	sauo.mutation.ClearRetrospective()
 	return sauo
 }
 
@@ -676,8 +676,8 @@ func (sauo *SystemAnalysisUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sauo *SystemAnalysisUpdateOne) check() error {
-	if sauo.mutation.IncidentCleared() && len(sauo.mutation.IncidentIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.incident"`)
+	if sauo.mutation.RetrospectiveCleared() && len(sauo.mutation.RetrospectiveIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}
 	return nil
 }
@@ -723,28 +723,28 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 	if value, ok := sauo.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if sauo.mutation.IncidentCleared() {
+	if sauo.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.IncidentTable,
-			Columns: []string{systemanalysis.IncidentColumn},
+			Table:   systemanalysis.RetrospectiveTable,
+			Columns: []string{systemanalysis.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := sauo.mutation.IncidentIDs(); len(nodes) > 0 {
+	if nodes := sauo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   systemanalysis.IncidentTable,
-			Columns: []string{systemanalysis.IncidentColumn},
+			Table:   systemanalysis.RetrospectiveTable,
+			Columns: []string{systemanalysis.RetrospectiveColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
 // RetrospectiveCreate is the builder for creating a Retrospective entity.
@@ -81,6 +82,21 @@ func (rc *RetrospectiveCreate) AddDiscussions(r ...*RetrospectiveDiscussion) *Re
 		ids[i] = r[i].ID
 	}
 	return rc.AddDiscussionIDs(ids...)
+}
+
+// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
+func (rc *RetrospectiveCreate) AddSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveCreate {
+	rc.mutation.AddSystemAnalysiIDs(ids...)
+	return rc
+}
+
+// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
+func (rc *RetrospectiveCreate) AddSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return rc.AddSystemAnalysiIDs(ids...)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
@@ -225,6 +241,22 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivediscussion.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   retrospective.SystemAnalysisTable,
+			Columns: []string{retrospective.SystemAnalysisColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

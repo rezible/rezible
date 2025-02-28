@@ -1005,9 +1005,6 @@ type IncidentMutation struct {
 	retrospective           map[uuid.UUID]struct{}
 	removedretrospective    map[uuid.UUID]struct{}
 	clearedretrospective    bool
-	system_analysis         map[uuid.UUID]struct{}
-	removedsystem_analysis  map[uuid.UUID]struct{}
-	clearedsystem_analysis  bool
 	linked_incidents        map[uuid.UUID]struct{}
 	removedlinked_incidents map[uuid.UUID]struct{}
 	clearedlinked_incidents bool
@@ -1951,60 +1948,6 @@ func (m *IncidentMutation) ResetRetrospective() {
 	m.removedretrospective = nil
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by ids.
-func (m *IncidentMutation) AddSystemAnalysiIDs(ids ...uuid.UUID) {
-	if m.system_analysis == nil {
-		m.system_analysis = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.system_analysis[ids[i]] = struct{}{}
-	}
-}
-
-// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
-func (m *IncidentMutation) ClearSystemAnalysis() {
-	m.clearedsystem_analysis = true
-}
-
-// SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
-func (m *IncidentMutation) SystemAnalysisCleared() bool {
-	return m.clearedsystem_analysis
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (m *IncidentMutation) RemoveSystemAnalysiIDs(ids ...uuid.UUID) {
-	if m.removedsystem_analysis == nil {
-		m.removedsystem_analysis = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.system_analysis, ids[i])
-		m.removedsystem_analysis[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSystemAnalysis returns the removed IDs of the "system_analysis" edge to the SystemAnalysis entity.
-func (m *IncidentMutation) RemovedSystemAnalysisIDs() (ids []uuid.UUID) {
-	for id := range m.removedsystem_analysis {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
-func (m *IncidentMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
-	for id := range m.system_analysis {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetSystemAnalysis resets all changes to the "system_analysis" edge.
-func (m *IncidentMutation) ResetSystemAnalysis() {
-	m.system_analysis = nil
-	m.clearedsystem_analysis = false
-	m.removedsystem_analysis = nil
-}
-
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by ids.
 func (m *IncidentMutation) AddLinkedIncidentIDs(ids ...uuid.UUID) {
 	if m.linked_incidents == nil {
@@ -2707,7 +2650,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.environments != nil {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -2731,9 +2674,6 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.retrospective != nil {
 		edges = append(edges, incident.EdgeRetrospective)
-	}
-	if m.system_analysis != nil {
-		edges = append(edges, incident.EdgeSystemAnalysis)
 	}
 	if m.linked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -2807,12 +2747,6 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeSystemAnalysis:
-		ids := make([]ent.Value, 0, len(m.system_analysis))
-		for id := range m.system_analysis {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeLinkedIncidents:
 		ids := make([]ent.Value, 0, len(m.linked_incidents))
 		for id := range m.linked_incidents {
@@ -2861,7 +2795,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.removedenvironments != nil {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -2879,9 +2813,6 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedretrospective != nil {
 		edges = append(edges, incident.EdgeRetrospective)
-	}
-	if m.removedsystem_analysis != nil {
-		edges = append(edges, incident.EdgeSystemAnalysis)
 	}
 	if m.removedlinked_incidents != nil {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -2947,12 +2878,6 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case incident.EdgeSystemAnalysis:
-		ids := make([]ent.Value, 0, len(m.removedsystem_analysis))
-		for id := range m.removedsystem_analysis {
-			ids = append(ids, id)
-		}
-		return ids
 	case incident.EdgeLinkedIncidents:
 		ids := make([]ent.Value, 0, len(m.removedlinked_incidents))
 		for id := range m.removedlinked_incidents {
@@ -3001,7 +2926,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 16)
+	edges := make([]string, 0, 15)
 	if m.clearedenvironments {
 		edges = append(edges, incident.EdgeEnvironments)
 	}
@@ -3025,9 +2950,6 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.clearedretrospective {
 		edges = append(edges, incident.EdgeRetrospective)
-	}
-	if m.clearedsystem_analysis {
-		edges = append(edges, incident.EdgeSystemAnalysis)
 	}
 	if m.clearedlinked_incidents {
 		edges = append(edges, incident.EdgeLinkedIncidents)
@@ -3073,8 +2995,6 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedevents
 	case incident.EdgeRetrospective:
 		return m.clearedretrospective
-	case incident.EdgeSystemAnalysis:
-		return m.clearedsystem_analysis
 	case incident.EdgeLinkedIncidents:
 		return m.clearedlinked_incidents
 	case incident.EdgeFieldSelections:
@@ -3134,9 +3054,6 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeRetrospective:
 		m.ResetRetrospective()
-		return nil
-	case incident.EdgeSystemAnalysis:
-		m.ResetSystemAnalysis()
 		return nil
 	case incident.EdgeLinkedIncidents:
 		m.ResetLinkedIncidents()
@@ -26123,21 +26040,24 @@ func (m *ProviderSyncHistoryMutation) ResetEdge(name string) error {
 // RetrospectiveMutation represents an operation that mutates the Retrospective nodes in the graph.
 type RetrospectiveMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	document_name      *string
-	_type              *retrospective.Type
-	state              *retrospective.State
-	clearedFields      map[string]struct{}
-	incident           *uuid.UUID
-	clearedincident    bool
-	discussions        map[uuid.UUID]struct{}
-	removeddiscussions map[uuid.UUID]struct{}
-	cleareddiscussions bool
-	done               bool
-	oldValue           func(context.Context) (*Retrospective, error)
-	predicates         []predicate.Retrospective
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	document_name          *string
+	_type                  *retrospective.Type
+	state                  *retrospective.State
+	clearedFields          map[string]struct{}
+	incident               *uuid.UUID
+	clearedincident        bool
+	discussions            map[uuid.UUID]struct{}
+	removeddiscussions     map[uuid.UUID]struct{}
+	cleareddiscussions     bool
+	system_analysis        map[uuid.UUID]struct{}
+	removedsystem_analysis map[uuid.UUID]struct{}
+	clearedsystem_analysis bool
+	done                   bool
+	oldValue               func(context.Context) (*Retrospective, error)
+	predicates             []predicate.Retrospective
 }
 
 var _ ent.Mutation = (*RetrospectiveMutation)(nil)
@@ -26469,6 +26389,60 @@ func (m *RetrospectiveMutation) ResetDiscussions() {
 	m.removeddiscussions = nil
 }
 
+// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by ids.
+func (m *RetrospectiveMutation) AddSystemAnalysiIDs(ids ...uuid.UUID) {
+	if m.system_analysis == nil {
+		m.system_analysis = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.system_analysis[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
+func (m *RetrospectiveMutation) ClearSystemAnalysis() {
+	m.clearedsystem_analysis = true
+}
+
+// SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
+func (m *RetrospectiveMutation) SystemAnalysisCleared() bool {
+	return m.clearedsystem_analysis
+}
+
+// RemoveSystemAnalysiIDs removes the "system_analysis" edge to the SystemAnalysis entity by IDs.
+func (m *RetrospectiveMutation) RemoveSystemAnalysiIDs(ids ...uuid.UUID) {
+	if m.removedsystem_analysis == nil {
+		m.removedsystem_analysis = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.system_analysis, ids[i])
+		m.removedsystem_analysis[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSystemAnalysis returns the removed IDs of the "system_analysis" edge to the SystemAnalysis entity.
+func (m *RetrospectiveMutation) RemovedSystemAnalysisIDs() (ids []uuid.UUID) {
+	for id := range m.removedsystem_analysis {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
+func (m *RetrospectiveMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
+	for id := range m.system_analysis {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSystemAnalysis resets all changes to the "system_analysis" edge.
+func (m *RetrospectiveMutation) ResetSystemAnalysis() {
+	m.system_analysis = nil
+	m.clearedsystem_analysis = false
+	m.removedsystem_analysis = nil
+}
+
 // Where appends a list predicates to the RetrospectiveMutation builder.
 func (m *RetrospectiveMutation) Where(ps ...predicate.Retrospective) {
 	m.predicates = append(m.predicates, ps...)
@@ -26653,12 +26627,15 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RetrospectiveMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.incident != nil {
 		edges = append(edges, retrospective.EdgeIncident)
 	}
 	if m.discussions != nil {
 		edges = append(edges, retrospective.EdgeDiscussions)
+	}
+	if m.system_analysis != nil {
+		edges = append(edges, retrospective.EdgeSystemAnalysis)
 	}
 	return edges
 }
@@ -26677,15 +26654,24 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case retrospective.EdgeSystemAnalysis:
+		ids := make([]ent.Value, 0, len(m.system_analysis))
+		for id := range m.system_analysis {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RetrospectiveMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removeddiscussions != nil {
 		edges = append(edges, retrospective.EdgeDiscussions)
+	}
+	if m.removedsystem_analysis != nil {
+		edges = append(edges, retrospective.EdgeSystemAnalysis)
 	}
 	return edges
 }
@@ -26700,18 +26686,27 @@ func (m *RetrospectiveMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case retrospective.EdgeSystemAnalysis:
+		ids := make([]ent.Value, 0, len(m.removedsystem_analysis))
+		for id := range m.removedsystem_analysis {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RetrospectiveMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedincident {
 		edges = append(edges, retrospective.EdgeIncident)
 	}
 	if m.cleareddiscussions {
 		edges = append(edges, retrospective.EdgeDiscussions)
+	}
+	if m.clearedsystem_analysis {
+		edges = append(edges, retrospective.EdgeSystemAnalysis)
 	}
 	return edges
 }
@@ -26724,6 +26719,8 @@ func (m *RetrospectiveMutation) EdgeCleared(name string) bool {
 		return m.clearedincident
 	case retrospective.EdgeDiscussions:
 		return m.cleareddiscussions
+	case retrospective.EdgeSystemAnalysis:
+		return m.clearedsystem_analysis
 	}
 	return false
 }
@@ -26748,6 +26745,9 @@ func (m *RetrospectiveMutation) ResetEdge(name string) error {
 		return nil
 	case retrospective.EdgeDiscussions:
 		m.ResetDiscussions()
+		return nil
+	case retrospective.EdgeSystemAnalysis:
+		m.ResetSystemAnalysis()
 		return nil
 	}
 	return fmt.Errorf("unknown Retrospective edge %s", name)
@@ -28612,8 +28612,8 @@ type SystemAnalysisMutation struct {
 	created_at                 *time.Time
 	updated_at                 *time.Time
 	clearedFields              map[string]struct{}
-	incident                   *uuid.UUID
-	clearedincident            bool
+	retrospective              *uuid.UUID
+	clearedretrospective       bool
 	components                 map[uuid.UUID]struct{}
 	removedcomponents          map[uuid.UUID]struct{}
 	clearedcomponents          bool
@@ -28732,40 +28732,40 @@ func (m *SystemAnalysisMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetIncidentID sets the "incident_id" field.
-func (m *SystemAnalysisMutation) SetIncidentID(u uuid.UUID) {
-	m.incident = &u
+// SetRetrospectiveID sets the "retrospective_id" field.
+func (m *SystemAnalysisMutation) SetRetrospectiveID(u uuid.UUID) {
+	m.retrospective = &u
 }
 
-// IncidentID returns the value of the "incident_id" field in the mutation.
-func (m *SystemAnalysisMutation) IncidentID() (r uuid.UUID, exists bool) {
-	v := m.incident
+// RetrospectiveID returns the value of the "retrospective_id" field in the mutation.
+func (m *SystemAnalysisMutation) RetrospectiveID() (r uuid.UUID, exists bool) {
+	v := m.retrospective
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIncidentID returns the old "incident_id" field's value of the SystemAnalysis entity.
+// OldRetrospectiveID returns the old "retrospective_id" field's value of the SystemAnalysis entity.
 // If the SystemAnalysis object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisMutation) OldIncidentID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *SystemAnalysisMutation) OldRetrospectiveID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
+		return v, errors.New("OldRetrospectiveID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIncidentID requires an ID field in the mutation")
+		return v, errors.New("OldRetrospectiveID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIncidentID: %w", err)
+		return v, fmt.Errorf("querying old value for OldRetrospectiveID: %w", err)
 	}
-	return oldValue.IncidentID, nil
+	return oldValue.RetrospectiveID, nil
 }
 
-// ResetIncidentID resets all changes to the "incident_id" field.
-func (m *SystemAnalysisMutation) ResetIncidentID() {
-	m.incident = nil
+// ResetRetrospectiveID resets all changes to the "retrospective_id" field.
+func (m *SystemAnalysisMutation) ResetRetrospectiveID() {
+	m.retrospective = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -28840,31 +28840,31 @@ func (m *SystemAnalysisMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// ClearIncident clears the "incident" edge to the Incident entity.
-func (m *SystemAnalysisMutation) ClearIncident() {
-	m.clearedincident = true
-	m.clearedFields[systemanalysis.FieldIncidentID] = struct{}{}
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (m *SystemAnalysisMutation) ClearRetrospective() {
+	m.clearedretrospective = true
+	m.clearedFields[systemanalysis.FieldRetrospectiveID] = struct{}{}
 }
 
-// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
-func (m *SystemAnalysisMutation) IncidentCleared() bool {
-	return m.clearedincident
+// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
+func (m *SystemAnalysisMutation) RetrospectiveCleared() bool {
+	return m.clearedretrospective
 }
 
-// IncidentIDs returns the "incident" edge IDs in the mutation.
+// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// IncidentID instead. It exists only for internal usage by the builders.
-func (m *SystemAnalysisMutation) IncidentIDs() (ids []uuid.UUID) {
-	if id := m.incident; id != nil {
+// RetrospectiveID instead. It exists only for internal usage by the builders.
+func (m *SystemAnalysisMutation) RetrospectiveIDs() (ids []uuid.UUID) {
+	if id := m.retrospective; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetIncident resets all changes to the "incident" edge.
-func (m *SystemAnalysisMutation) ResetIncident() {
-	m.incident = nil
-	m.clearedincident = false
+// ResetRetrospective resets all changes to the "retrospective" edge.
+func (m *SystemAnalysisMutation) ResetRetrospective() {
+	m.retrospective = nil
+	m.clearedretrospective = false
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by ids.
@@ -29064,8 +29064,8 @@ func (m *SystemAnalysisMutation) Type() string {
 // AddedFields().
 func (m *SystemAnalysisMutation) Fields() []string {
 	fields := make([]string, 0, 3)
-	if m.incident != nil {
-		fields = append(fields, systemanalysis.FieldIncidentID)
+	if m.retrospective != nil {
+		fields = append(fields, systemanalysis.FieldRetrospectiveID)
 	}
 	if m.created_at != nil {
 		fields = append(fields, systemanalysis.FieldCreatedAt)
@@ -29081,8 +29081,8 @@ func (m *SystemAnalysisMutation) Fields() []string {
 // schema.
 func (m *SystemAnalysisMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case systemanalysis.FieldIncidentID:
-		return m.IncidentID()
+	case systemanalysis.FieldRetrospectiveID:
+		return m.RetrospectiveID()
 	case systemanalysis.FieldCreatedAt:
 		return m.CreatedAt()
 	case systemanalysis.FieldUpdatedAt:
@@ -29096,8 +29096,8 @@ func (m *SystemAnalysisMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SystemAnalysisMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case systemanalysis.FieldIncidentID:
-		return m.OldIncidentID(ctx)
+	case systemanalysis.FieldRetrospectiveID:
+		return m.OldRetrospectiveID(ctx)
 	case systemanalysis.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case systemanalysis.FieldUpdatedAt:
@@ -29111,12 +29111,12 @@ func (m *SystemAnalysisMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *SystemAnalysisMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case systemanalysis.FieldIncidentID:
+	case systemanalysis.FieldRetrospectiveID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIncidentID(v)
+		m.SetRetrospectiveID(v)
 		return nil
 	case systemanalysis.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -29181,8 +29181,8 @@ func (m *SystemAnalysisMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SystemAnalysisMutation) ResetField(name string) error {
 	switch name {
-	case systemanalysis.FieldIncidentID:
-		m.ResetIncidentID()
+	case systemanalysis.FieldRetrospectiveID:
+		m.ResetRetrospectiveID()
 		return nil
 	case systemanalysis.FieldCreatedAt:
 		m.ResetCreatedAt()
@@ -29197,8 +29197,8 @@ func (m *SystemAnalysisMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemAnalysisMutation) AddedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.incident != nil {
-		edges = append(edges, systemanalysis.EdgeIncident)
+	if m.retrospective != nil {
+		edges = append(edges, systemanalysis.EdgeRetrospective)
 	}
 	if m.components != nil {
 		edges = append(edges, systemanalysis.EdgeComponents)
@@ -29216,8 +29216,8 @@ func (m *SystemAnalysisMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *SystemAnalysisMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case systemanalysis.EdgeIncident:
-		if id := m.incident; id != nil {
+	case systemanalysis.EdgeRetrospective:
+		if id := m.retrospective; id != nil {
 			return []ent.Value{*id}
 		}
 	case systemanalysis.EdgeComponents:
@@ -29286,8 +29286,8 @@ func (m *SystemAnalysisMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemAnalysisMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 4)
-	if m.clearedincident {
-		edges = append(edges, systemanalysis.EdgeIncident)
+	if m.clearedretrospective {
+		edges = append(edges, systemanalysis.EdgeRetrospective)
 	}
 	if m.clearedcomponents {
 		edges = append(edges, systemanalysis.EdgeComponents)
@@ -29305,8 +29305,8 @@ func (m *SystemAnalysisMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 	switch name {
-	case systemanalysis.EdgeIncident:
-		return m.clearedincident
+	case systemanalysis.EdgeRetrospective:
+		return m.clearedretrospective
 	case systemanalysis.EdgeComponents:
 		return m.clearedcomponents
 	case systemanalysis.EdgeRelationships:
@@ -29321,8 +29321,8 @@ func (m *SystemAnalysisMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *SystemAnalysisMutation) ClearEdge(name string) error {
 	switch name {
-	case systemanalysis.EdgeIncident:
-		m.ClearIncident()
+	case systemanalysis.EdgeRetrospective:
+		m.ClearRetrospective()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemAnalysis unique edge %s", name)
@@ -29332,8 +29332,8 @@ func (m *SystemAnalysisMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SystemAnalysisMutation) ResetEdge(name string) error {
 	switch name {
-	case systemanalysis.EdgeIncident:
-		m.ResetIncident()
+	case systemanalysis.EdgeRetrospective:
+		m.ResetRetrospective()
 		return nil
 	case systemanalysis.EdgeComponents:
 		m.ResetComponents()

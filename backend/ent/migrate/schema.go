@@ -939,7 +939,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "retrospective_id", Type: field.TypeUUID},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
@@ -948,9 +948,9 @@ var (
 		PrimaryKey: []*schema.Column{SystemAnalysesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analyses_incidents_incident",
+				Symbol:     "system_analyses_retrospectives_retrospective",
 				Columns:    []*schema.Column{SystemAnalysesColumns[3]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1713,7 +1713,7 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = RetrospectiveDiscussionsTable
-	SystemAnalysesTable.ForeignKeys[0].RefTable = IncidentsTable
+	SystemAnalysesTable.ForeignKeys[0].RefTable = RetrospectivesTable
 	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
 	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = SystemAnalysesTable

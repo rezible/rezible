@@ -1184,22 +1184,6 @@ func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
 	return query
 }
 
-// QuerySystemAnalysis queries the system_analysis edge of a Incident.
-func (c *IncidentClient) QuerySystemAnalysis(i *Incident) *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.SystemAnalysisTable, incident.SystemAnalysisColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryLinkedIncidents queries the linked_incidents edge of a Incident.
 func (c *IncidentClient) QueryLinkedIncidents(i *Incident) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -7002,6 +6986,22 @@ func (c *RetrospectiveClient) QueryDiscussions(r *Retrospective) *RetrospectiveD
 	return query
 }
 
+// QuerySystemAnalysis queries the system_analysis edge of a Retrospective.
+func (c *RetrospectiveClient) QuerySystemAnalysis(r *Retrospective) *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *RetrospectiveClient) Hooks() []Hook {
 	return c.hooks.Retrospective
@@ -7694,15 +7694,15 @@ func (c *SystemAnalysisClient) GetX(ctx context.Context, id uuid.UUID) *SystemAn
 	return obj
 }
 
-// QueryIncident queries the incident edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryIncident(sa *SystemAnalysis) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
+// QueryRetrospective queries the retrospective edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryRetrospective(sa *SystemAnalysis) *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := sa.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.IncidentTable, systemanalysis.IncidentColumn),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
 		fromV = sqlgraph.Neighbors(sa.driver.Dialect(), step)
 		return fromV, nil

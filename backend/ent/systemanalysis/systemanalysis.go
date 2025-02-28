@@ -15,14 +15,14 @@ const (
 	Label = "system_analysis"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldIncidentID holds the string denoting the incident_id field in the database.
-	FieldIncidentID = "incident_id"
+	// FieldRetrospectiveID holds the string denoting the retrospective_id field in the database.
+	FieldRetrospectiveID = "retrospective_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeIncident holds the string denoting the incident edge name in mutations.
-	EdgeIncident = "incident"
+	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
+	EdgeRetrospective = "retrospective"
 	// EdgeComponents holds the string denoting the components edge name in mutations.
 	EdgeComponents = "components"
 	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
@@ -31,13 +31,13 @@ const (
 	EdgeAnalysisComponents = "analysis_components"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
-	// IncidentTable is the table that holds the incident relation/edge.
-	IncidentTable = "system_analyses"
-	// IncidentInverseTable is the table name for the Incident entity.
-	// It exists in this package in order to avoid circular dependency with the "incident" package.
-	IncidentInverseTable = "incidents"
-	// IncidentColumn is the table column denoting the incident relation/edge.
-	IncidentColumn = "incident_id"
+	// RetrospectiveTable is the table that holds the retrospective relation/edge.
+	RetrospectiveTable = "system_analyses"
+	// RetrospectiveInverseTable is the table name for the Retrospective entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
+	RetrospectiveInverseTable = "retrospectives"
+	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
+	RetrospectiveColumn = "retrospective_id"
 	// ComponentsTable is the table that holds the components relation/edge. The primary key declared below.
 	ComponentsTable = "system_analysis_components"
 	// ComponentsInverseTable is the table name for the SystemComponent entity.
@@ -62,7 +62,7 @@ const (
 // Columns holds all SQL columns for systemanalysis fields.
 var Columns = []string{
 	FieldID,
-	FieldIncidentID,
+	FieldRetrospectiveID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -102,9 +102,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByIncidentID orders the results by the incident_id field.
-func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
+// ByRetrospectiveID orders the results by the retrospective_id field.
+func ByRetrospectiveID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRetrospectiveID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -117,10 +117,10 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByIncidentField orders the results by incident field.
-func ByIncidentField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByRetrospectiveField orders the results by retrospective field.
+func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -165,11 +165,11 @@ func ByAnalysisComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOptio
 		sqlgraph.OrderByNeighborTerms(s, newAnalysisComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newIncidentStep() *sqlgraph.Step {
+func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+		sqlgraph.To(RetrospectiveInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
 func newComponentsStep() *sqlgraph.Step {

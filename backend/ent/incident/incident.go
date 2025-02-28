@@ -51,8 +51,6 @@ const (
 	EdgeEvents = "events"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
-	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
-	EdgeSystemAnalysis = "system_analysis"
 	// EdgeLinkedIncidents holds the string denoting the linked_incidents edge name in mutations.
 	EdgeLinkedIncidents = "linked_incidents"
 	// EdgeFieldSelections holds the string denoting the field_selections edge name in mutations.
@@ -123,13 +121,6 @@ const (
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
 	RetrospectiveColumn = "incident_id"
-	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
-	SystemAnalysisTable = "system_analyses"
-	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
-	SystemAnalysisInverseTable = "system_analyses"
-	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
-	SystemAnalysisColumn = "incident_id"
 	// LinkedIncidentsTable is the table that holds the linked_incidents relation/edge. The primary key declared below.
 	LinkedIncidentsTable = "incident_links"
 	// FieldSelectionsTable is the table that holds the field_selections relation/edge. The primary key declared below.
@@ -382,20 +373,6 @@ func ByRetrospective(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySystemAnalysisCount orders the results by system_analysis count.
-func BySystemAnalysisCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysisStep(), opts...)
-	}
-}
-
-// BySystemAnalysis orders the results by system_analysis terms.
-func BySystemAnalysis(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByLinkedIncidentsCount orders the results by linked_incidents count.
 func ByLinkedIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -547,13 +524,6 @@ func newRetrospectiveStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveTable, RetrospectiveColumn),
-	)
-}
-func newSystemAnalysisStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }
 func newLinkedIncidentsStep() *sqlgraph.Step {

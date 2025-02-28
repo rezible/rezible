@@ -38,9 +38,11 @@ type RetrospectiveEdges struct {
 	Incident *Incident `json:"incident,omitempty"`
 	// Discussions holds the value of the discussions edge.
 	Discussions []*RetrospectiveDiscussion `json:"discussions,omitempty"`
+	// SystemAnalysis holds the value of the system_analysis edge.
+	SystemAnalysis []*SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -61,6 +63,15 @@ func (e RetrospectiveEdges) DiscussionsOrErr() ([]*RetrospectiveDiscussion, erro
 		return e.Discussions, nil
 	}
 	return nil, &NotLoadedError{edge: "discussions"}
+}
+
+// SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
+// was not loaded in eager-loading.
+func (e RetrospectiveEdges) SystemAnalysisOrErr() ([]*SystemAnalysis, error) {
+	if e.loadedTypes[2] {
+		return e.SystemAnalysis, nil
+	}
+	return nil, &NotLoadedError{edge: "system_analysis"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -138,6 +149,11 @@ func (r *Retrospective) QueryIncident() *IncidentQuery {
 // QueryDiscussions queries the "discussions" edge of the Retrospective entity.
 func (r *Retrospective) QueryDiscussions() *RetrospectiveDiscussionQuery {
 	return NewRetrospectiveClient(r.config).QueryDiscussions(r)
+}
+
+// QuerySystemAnalysis queries the "system_analysis" edge of the Retrospective entity.
+func (r *Retrospective) QuerySystemAnalysis() *SystemAnalysisQuery {
+	return NewRetrospectiveClient(r.config).QuerySystemAnalysis(r)
 }
 
 // Update returns a builder for updating this Retrospective.

@@ -412,6 +412,11 @@ export type CreateOncallShiftHandoverTemplateResponseBody = {
     data: OncallShiftHandoverTemplate;
 };
 
+export type CreateRetrospectiveAttributes = {
+    incidentId: string;
+    systemAnalysis: boolean;
+};
+
 export type CreateRetrospectiveDiscussionAttributes = {
     content: unknown;
 };
@@ -430,6 +435,22 @@ export type CreateRetrospectiveDiscussionResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveDiscussion;
+};
+
+export type CreateRetrospectiveRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateRetrospectiveAttributes;
+};
+
+export type CreateRetrospectiveResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Retrospective;
 };
 
 export type CreateRetrospectiveReviewRequestBody = {
@@ -1034,7 +1055,6 @@ export type IncidentAttributes = {
     severity: IncidentSeverity;
     slug: string;
     summary: string;
-    systemAnalysisId: string;
     tags: Array<IncidentTag>;
     tasks: Array<Task>;
     teams: Array<IncidentTeamAssignment>;
@@ -1786,7 +1806,7 @@ export type Retrospective = {
 };
 
 export type RetrospectiveAttributes = {
-    sections: Array<RetrospectiveSection>;
+    reportSections: Array<RetrospectiveReportSection>;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
     type: 'quick' | 'full';
 };
@@ -1813,6 +1833,13 @@ export type RetrospectiveDiscussionReplyAttributes = {
     replies: Array<RetrospectiveDiscussionReply>;
 };
 
+export type RetrospectiveReportSection = {
+    description: string;
+    field: string;
+    title: string;
+    type: 'field';
+};
+
 export type RetrospectiveReview = {
     attributes: RetrospectiveReviewAttributes;
     id: string;
@@ -1820,13 +1847,6 @@ export type RetrospectiveReview = {
 
 export type RetrospectiveReviewAttributes = {
     [key: string]: never;
-};
-
-export type RetrospectiveSection = {
-    description: string;
-    field: string;
-    title: string;
-    type: 'field' | 'timeline';
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -7376,6 +7396,51 @@ export type ListRetrospectivesResponses = {
 };
 
 export type ListRetrospectivesResponse = ListRetrospectivesResponses[keyof ListRetrospectivesResponses];
+
+export type CreateRetrospectiveData = {
+    body: CreateRetrospectiveRequestBody;
+    path?: never;
+    query?: never;
+    url: '/retrospectives';
+};
+
+export type CreateRetrospectiveErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateRetrospectiveError = CreateRetrospectiveErrors[keyof CreateRetrospectiveErrors];
+
+export type CreateRetrospectiveResponses = {
+    /**
+     * OK
+     */
+    200: CreateRetrospectiveResponseBody;
+};
+
+export type CreateRetrospectiveResponse = CreateRetrospectiveResponses[keyof CreateRetrospectiveResponses];
 
 export type GetRetrospectiveData = {
     body?: never;

@@ -27,7 +27,6 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -317,21 +316,6 @@ func (iu *IncidentUpdate) AddRetrospective(r ...*Retrospective) *IncidentUpdate 
 	return iu.AddRetrospectiveIDs(ids...)
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (iu *IncidentUpdate) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.AddSystemAnalysiIDs(ids...)
-	return iu
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (iu *IncidentUpdate) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return iu.AddSystemAnalysiIDs(ids...)
-}
-
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
 func (iu *IncidentUpdate) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdate {
 	iu.mutation.AddLinkedIncidentIDs(ids...)
@@ -578,27 +562,6 @@ func (iu *IncidentUpdate) RemoveRetrospective(r ...*Retrospective) *IncidentUpda
 		ids[i] = r[i].ID
 	}
 	return iu.RemoveRetrospectiveIDs(ids...)
-}
-
-// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
-func (iu *IncidentUpdate) ClearSystemAnalysis() *IncidentUpdate {
-	iu.mutation.ClearSystemAnalysis()
-	return iu
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
-func (iu *IncidentUpdate) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.RemoveSystemAnalysiIDs(ids...)
-	return iu
-}
-
-// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
-func (iu *IncidentUpdate) RemoveSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return iu.RemoveSystemAnalysiIDs(ids...)
 }
 
 // ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
@@ -1141,51 +1104,6 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iu.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !iu.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1802,21 +1720,6 @@ func (iuo *IncidentUpdateOne) AddRetrospective(r ...*Retrospective) *IncidentUpd
 	return iuo.AddRetrospectiveIDs(ids...)
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (iuo *IncidentUpdateOne) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.AddSystemAnalysiIDs(ids...)
-	return iuo
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (iuo *IncidentUpdateOne) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return iuo.AddSystemAnalysiIDs(ids...)
-}
-
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
 func (iuo *IncidentUpdateOne) AddLinkedIncidentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	iuo.mutation.AddLinkedIncidentIDs(ids...)
@@ -2063,27 +1966,6 @@ func (iuo *IncidentUpdateOne) RemoveRetrospective(r ...*Retrospective) *Incident
 		ids[i] = r[i].ID
 	}
 	return iuo.RemoveRetrospectiveIDs(ids...)
-}
-
-// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
-func (iuo *IncidentUpdateOne) ClearSystemAnalysis() *IncidentUpdateOne {
-	iuo.mutation.ClearSystemAnalysis()
-	return iuo
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
-func (iuo *IncidentUpdateOne) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.RemoveSystemAnalysiIDs(ids...)
-	return iuo
-}
-
-// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
-func (iuo *IncidentUpdateOne) RemoveSystemAnalysis(s ...*SystemAnalysis) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return iuo.RemoveSystemAnalysiIDs(ids...)
 }
 
 // ClearLinkedIncidents clears all "linked_incidents" edges to the Incident entity.
@@ -2656,51 +2538,6 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if iuo.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !iuo.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -235,6 +235,29 @@ func HasDiscussionsWith(preds ...predicate.RetrospectiveDiscussion) predicate.Re
 	})
 }
 
+// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
+func HasSystemAnalysis() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
+func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newSystemAnalysisStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.Retrospective) predicate.Retrospective {
 	return predicate.Retrospective(sql.AndPredicates(predicates...))

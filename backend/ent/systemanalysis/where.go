@@ -56,9 +56,9 @@ func IDLTE(id uuid.UUID) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldID, id))
 }
 
-// IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
-func IncidentID(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldIncidentID, v))
+// RetrospectiveID applies equality check predicate on the "retrospective_id" field. It's identical to RetrospectiveIDEQ.
+func RetrospectiveID(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldRetrospectiveID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -71,24 +71,24 @@ func UpdatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// IncidentIDEQ applies the EQ predicate on the "incident_id" field.
-func IncidentIDEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldIncidentID, v))
+// RetrospectiveIDEQ applies the EQ predicate on the "retrospective_id" field.
+func RetrospectiveIDEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldRetrospectiveID, v))
 }
 
-// IncidentIDNEQ applies the NEQ predicate on the "incident_id" field.
-func IncidentIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNEQ(FieldIncidentID, v))
+// RetrospectiveIDNEQ applies the NEQ predicate on the "retrospective_id" field.
+func RetrospectiveIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldRetrospectiveID, v))
 }
 
-// IncidentIDIn applies the In predicate on the "incident_id" field.
-func IncidentIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldIn(FieldIncidentID, vs...))
+// RetrospectiveIDIn applies the In predicate on the "retrospective_id" field.
+func RetrospectiveIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldRetrospectiveID, vs...))
 }
 
-// IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
-func IncidentIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNotIn(FieldIncidentID, vs...))
+// RetrospectiveIDNotIn applies the NotIn predicate on the "retrospective_id" field.
+func RetrospectiveIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldRetrospectiveID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -171,21 +171,21 @@ func UpdatedAtLTE(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasIncident applies the HasEdge predicate on the "incident" edge.
-func HasIncident() predicate.SystemAnalysis {
+// HasRetrospective applies the HasEdge predicate on the "retrospective" edge.
+func HasRetrospective() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, RetrospectiveTable, RetrospectiveColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasIncidentWith applies the HasEdge predicate on the "incident" edge with a given conditions (other predicates).
-func HasIncidentWith(preds ...predicate.Incident) predicate.SystemAnalysis {
+// HasRetrospectiveWith applies the HasEdge predicate on the "retrospective" edge with a given conditions (other predicates).
+func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newIncidentStep()
+		step := newRetrospectiveStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -820,29 +820,6 @@ func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Incident {
 	})
 }
 
-// HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.
-func HasSystemAnalysis() predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasSystemAnalysisWith applies the HasEdge predicate on the "system_analysis" edge with a given conditions (other predicates).
-func HasSystemAnalysisWith(preds ...predicate.SystemAnalysis) predicate.Incident {
-	return predicate.Incident(func(s *sql.Selector) {
-		step := newSystemAnalysisStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasLinkedIncidents applies the HasEdge predicate on the "linked_incidents" edge.
 func HasLinkedIncidents() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {

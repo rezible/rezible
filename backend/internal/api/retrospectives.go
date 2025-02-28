@@ -25,6 +25,12 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 	return &resp, nil
 }
 
+func (h *retrospectivesHandler) CreateRetrospective(ctx context.Context, request *oapi.CreateRetrospectiveRequest) (*oapi.CreateRetrospectiveResponse, error) {
+	var resp oapi.CreateRetrospectiveResponse
+
+	return &resp, nil
+}
+
 func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oapi.GetRetrospectiveRequest) (*oapi.GetRetrospectiveResponse, error) {
 	var resp oapi.GetRetrospectiveResponse
 

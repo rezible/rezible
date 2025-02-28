@@ -27,6 +27,8 @@ const (
 	EdgeIncident = "incident"
 	// EdgeDiscussions holds the string denoting the discussions edge name in mutations.
 	EdgeDiscussions = "discussions"
+	// EdgeSystemAnalysis holds the string denoting the system_analysis edge name in mutations.
+	EdgeSystemAnalysis = "system_analysis"
 	// Table holds the table name of the retrospective in the database.
 	Table = "retrospectives"
 	// IncidentTable is the table that holds the incident relation/edge.
@@ -43,6 +45,13 @@ const (
 	DiscussionsInverseTable = "retrospective_discussions"
 	// DiscussionsColumn is the table column denoting the discussions relation/edge.
 	DiscussionsColumn = "retrospective_id"
+	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
+	SystemAnalysisTable = "system_analyses"
+	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
+	SystemAnalysisInverseTable = "system_analyses"
+	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
+	SystemAnalysisColumn = "retrospective_id"
 )
 
 // Columns holds all SQL columns for retrospective fields.
@@ -165,6 +174,20 @@ func ByDiscussions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newDiscussionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// BySystemAnalysisCount orders the results by system_analysis count.
+func BySystemAnalysisCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysisStep(), opts...)
+	}
+}
+
+// BySystemAnalysis orders the results by system_analysis terms.
+func BySystemAnalysis(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -177,5 +200,12 @@ func newDiscussionsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DiscussionsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, DiscussionsTable, DiscussionsColumn),
+	)
+}
+func newSystemAnalysisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }

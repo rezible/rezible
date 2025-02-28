@@ -13,6 +13,7 @@ import (
 type RetrospectivesHandler interface {
 	ListRetrospectives(context.Context, *ListRetrospectivesRequest) (*ListRetrospectivesResponse, error)
 	GetRetrospective(context.Context, *GetRetrospectiveRequest) (*GetRetrospectiveResponse, error)
+	CreateRetrospective(context.Context, *CreateRetrospectiveRequest) (*CreateRetrospectiveResponse, error)
 	GetRetrospectiveForIncident(context.Context, *GetRetrospectiveForIncidentRequest) (*GetRetrospectiveForIncidentResponse, error)
 
 	ListRetrospectiveReviews(context.Context, *ListRetrospectiveReviewsRequest) (*ListRetrospectiveReviewsResponse, error)
@@ -35,6 +36,7 @@ type RetrospectivesHandler interface {
 func (o operations) RegisterRetrospectives(api huma.API) {
 	huma.Register(api, ListRetrospectives, o.ListRetrospectives)
 	huma.Register(api, GetRetrospective, o.GetRetrospective)
+	huma.Register(api, CreateRetrospective, o.CreateRetrospective)
 	huma.Register(api, GetRetrospectiveForIncident, o.GetRetrospectiveForIncident)
 
 	huma.Register(api, ListRetrospectiveReviews, o.ListRetrospectiveReviews)
@@ -61,9 +63,9 @@ type (
 	}
 
 	RetrospectiveAttributes struct {
-		Type     RetrospectiveType      `json:"type" enum:"quick,full"`
-		Sections []RetrospectiveSection `json:"sections"`
-		State    RetrospectiveState     `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
+		Type           RetrospectiveType            `json:"type" enum:"quick,full"`
+		State          RetrospectiveState           `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
+		ReportSections []RetrospectiveReportSection `json:"reportSections"`
 	}
 
 	RetrospectiveType  string
@@ -77,17 +79,17 @@ type (
 	RetrospectiveReviewAttributes struct {
 	}
 
-	RetrospectiveTemplate struct {
-		Id         uuid.UUID                       `json:"id"`
-		Attributes RetrospectiveTemplateAttributes `json:"attributes"`
+	RetrospectiveReportTemplate struct {
+		Id         uuid.UUID                             `json:"id"`
+		Attributes RetrospectiveReportTemplateAttributes `json:"attributes"`
 	}
 
-	RetrospectiveTemplateAttributes struct {
-		Sections []RetrospectiveSection `json:"sections"`
+	RetrospectiveReportTemplateAttributes struct {
+		Sections []RetrospectiveReportSection `json:"sections"`
 	}
 
-	RetrospectiveSection struct {
-		Type        string `json:"type" enum:"field,timeline"`
+	RetrospectiveReportSection struct {
+		Type        string `json:"type" enum:"field"`
 		Title       string `json:"title"`
 		Field       string `json:"field"`
 		Description string `json:"description"`
@@ -126,8 +128,7 @@ func RetrospectiveFromEnt(r *ent.Retrospective) Retrospective {
 	}
 
 	// TODO: fetch this
-	// ret.Attributes.Sections = make([]RetrospectiveSection, 3)
-	ret.Attributes.Sections = []RetrospectiveSection{
+	ret.Attributes.ReportSections = []RetrospectiveReportSection{
 		{
 			Type:        "field",
 			Title:       "Background",
@@ -216,6 +217,24 @@ var GetRetrospectiveForIncident = huma.Operation{
 
 type GetRetrospectiveForIncidentRequest = GetFlexibleIdRequest
 type GetRetrospectiveForIncidentResponse ItemResponse[Retrospective]
+
+var CreateRetrospective = huma.Operation{
+	OperationID: "create-retrospective",
+	Method:      http.MethodPost,
+	Path:        "/retrospectives",
+	Summary:     "Create an Incident Retrospective",
+	Tags:        retrospectivesTags,
+	Errors:      errorCodes(),
+}
+
+type CreateRetrospectiveAttributes struct {
+	IncidentId     uuid.UUID `json:"incidentId" required:"true"`
+	SystemAnalysis bool      `json:"systemAnalysis"`
+}
+type CreateRetrospectiveRequest RequestWithBodyAttributes[CreateRetrospectiveAttributes]
+type CreateRetrospectiveResponse ItemResponse[Retrospective]
+
+// Reviews
 
 var ListRetrospectiveReviews = huma.Operation{
 	OperationID: "list-retrospective-reviews",

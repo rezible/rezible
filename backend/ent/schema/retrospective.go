@@ -31,5 +31,7 @@ func (Retrospective) Edges() []ent.Edge {
 			Unique().Required().Field("incident_id"),
 		edge.From("discussions", RetrospectiveDiscussion.Type).
 			Ref("retrospective"),
+		edge.From("system_analysis", SystemAnalysis.Type).
+			Ref("retrospective"),
 	}
 }

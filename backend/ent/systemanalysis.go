@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
@@ -19,8 +19,8 @@ type SystemAnalysis struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// IncidentID holds the value of the "incident_id" field.
-	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// RetrospectiveID holds the value of the "retrospective_id" field.
+	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -33,8 +33,8 @@ type SystemAnalysis struct {
 
 // SystemAnalysisEdges holds the relations/edges for other nodes in the graph.
 type SystemAnalysisEdges struct {
-	// Incident holds the value of the incident edge.
-	Incident *Incident `json:"incident,omitempty"`
+	// Retrospective holds the value of the retrospective edge.
+	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// Components holds the value of the components edge.
 	Components []*SystemComponent `json:"components,omitempty"`
 	// Relationships holds the value of the relationships edge.
@@ -46,15 +46,15 @@ type SystemAnalysisEdges struct {
 	loadedTypes [4]bool
 }
 
-// IncidentOrErr returns the Incident value or an error if the edge
+// RetrospectiveOrErr returns the Retrospective value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemAnalysisEdges) IncidentOrErr() (*Incident, error) {
-	if e.Incident != nil {
-		return e.Incident, nil
+func (e SystemAnalysisEdges) RetrospectiveOrErr() (*Retrospective, error) {
+	if e.Retrospective != nil {
+		return e.Retrospective, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: incident.Label}
+		return nil, &NotFoundError{label: retrospective.Label}
 	}
-	return nil, &NotLoadedError{edge: "incident"}
+	return nil, &NotLoadedError{edge: "retrospective"}
 }
 
 // ComponentsOrErr returns the Components value or an error if the edge
@@ -91,7 +91,7 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysis.FieldID, systemanalysis.FieldIncidentID:
+		case systemanalysis.FieldID, systemanalysis.FieldRetrospectiveID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -114,11 +114,11 @@ func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				sa.ID = *value
 			}
-		case systemanalysis.FieldIncidentID:
+		case systemanalysis.FieldRetrospectiveID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
+				return fmt.Errorf("unexpected type %T for field retrospective_id", values[i])
 			} else if value != nil {
-				sa.IncidentID = *value
+				sa.RetrospectiveID = *value
 			}
 		case systemanalysis.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -145,9 +145,9 @@ func (sa *SystemAnalysis) Value(name string) (ent.Value, error) {
 	return sa.selectValues.Get(name)
 }
 
-// QueryIncident queries the "incident" edge of the SystemAnalysis entity.
-func (sa *SystemAnalysis) QueryIncident() *IncidentQuery {
-	return NewSystemAnalysisClient(sa.config).QueryIncident(sa)
+// QueryRetrospective queries the "retrospective" edge of the SystemAnalysis entity.
+func (sa *SystemAnalysis) QueryRetrospective() *RetrospectiveQuery {
+	return NewSystemAnalysisClient(sa.config).QueryRetrospective(sa)
 }
 
 // QueryComponents queries the "components" edge of the SystemAnalysis entity.
@@ -188,8 +188,8 @@ func (sa *SystemAnalysis) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysis(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sa.ID))
-	builder.WriteString("incident_id=")
-	builder.WriteString(fmt.Sprintf("%v", sa.IncidentID))
+	builder.WriteString("retrospective_id=")
+	builder.WriteString(fmt.Sprintf("%v", sa.RetrospectiveID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(sa.CreatedAt.Format(time.ANSIC))

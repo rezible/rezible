@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -28,7 +28,7 @@ type SystemAnalysisQuery struct {
 	order                  []systemanalysis.OrderOption
 	inters                 []Interceptor
 	predicates             []predicate.SystemAnalysis
-	withIncident           *IncidentQuery
+	withRetrospective      *RetrospectiveQuery
 	withComponents         *SystemComponentQuery
 	withRelationships      *SystemAnalysisRelationshipQuery
 	withAnalysisComponents *SystemAnalysisComponentQuery
@@ -69,9 +69,9 @@ func (saq *SystemAnalysisQuery) Order(o ...systemanalysis.OrderOption) *SystemAn
 	return saq
 }
 
-// QueryIncident chains the current query on the "incident" edge.
-func (saq *SystemAnalysisQuery) QueryIncident() *IncidentQuery {
-	query := (&IncidentClient{config: saq.config}).Query()
+// QueryRetrospective chains the current query on the "retrospective" edge.
+func (saq *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: saq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := saq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -82,8 +82,8 @@ func (saq *SystemAnalysisQuery) QueryIncident() *IncidentQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.IncidentTable, systemanalysis.IncidentColumn),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
 		return fromU, nil
@@ -349,7 +349,7 @@ func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		order:                  append([]systemanalysis.OrderOption{}, saq.order...),
 		inters:                 append([]Interceptor{}, saq.inters...),
 		predicates:             append([]predicate.SystemAnalysis{}, saq.predicates...),
-		withIncident:           saq.withIncident.Clone(),
+		withRetrospective:      saq.withRetrospective.Clone(),
 		withComponents:         saq.withComponents.Clone(),
 		withRelationships:      saq.withRelationships.Clone(),
 		withAnalysisComponents: saq.withAnalysisComponents.Clone(),
@@ -360,14 +360,14 @@ func (saq *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 	}
 }
 
-// WithIncident tells the query-builder to eager-load the nodes that are connected to
-// the "incident" edge. The optional arguments are used to configure the query builder of the edge.
-func (saq *SystemAnalysisQuery) WithIncident(opts ...func(*IncidentQuery)) *SystemAnalysisQuery {
-	query := (&IncidentClient{config: saq.config}).Query()
+// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
+// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
+func (saq *SystemAnalysisQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *SystemAnalysisQuery {
+	query := (&RetrospectiveClient{config: saq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	saq.withIncident = query
+	saq.withRetrospective = query
 	return saq
 }
 
@@ -410,12 +410,12 @@ func (saq *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnaly
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemAnalysis.Query().
-//		GroupBy(systemanalysis.FieldIncidentID).
+//		GroupBy(systemanalysis.FieldRetrospectiveID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemAnalysisGroupBy {
@@ -433,11 +433,11 @@ func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemA
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
 //	}
 //
 //	client.SystemAnalysis.Query().
-//		Select(systemanalysis.FieldIncidentID).
+//		Select(systemanalysis.FieldRetrospectiveID).
 //		Scan(ctx, &v)
 func (saq *SystemAnalysisQuery) Select(fields ...string) *SystemAnalysisSelect {
 	saq.ctx.Fields = append(saq.ctx.Fields, fields...)
@@ -483,7 +483,7 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		nodes       = []*SystemAnalysis{}
 		_spec       = saq.querySpec()
 		loadedTypes = [4]bool{
-			saq.withIncident != nil,
+			saq.withRetrospective != nil,
 			saq.withComponents != nil,
 			saq.withRelationships != nil,
 			saq.withAnalysisComponents != nil,
@@ -510,9 +510,9 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := saq.withIncident; query != nil {
-		if err := saq.loadIncident(ctx, query, nodes, nil,
-			func(n *SystemAnalysis, e *Incident) { n.Edges.Incident = e }); err != nil {
+	if query := saq.withRetrospective; query != nil {
+		if err := saq.loadRetrospective(ctx, query, nodes, nil,
+			func(n *SystemAnalysis, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -544,11 +544,11 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
-func (saq *SystemAnalysisQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Incident)) error {
+func (saq *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Retrospective)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysis)
 	for i := range nodes {
-		fk := nodes[i].IncidentID
+		fk := nodes[i].RetrospectiveID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -557,7 +557,7 @@ func (saq *SystemAnalysisQuery) loadIncident(ctx context.Context, query *Inciden
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(incident.IDIn(ids...))
+	query.Where(retrospective.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -565,7 +565,7 @@ func (saq *SystemAnalysisQuery) loadIncident(ctx context.Context, query *Inciden
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "incident_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "retrospective_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -723,8 +723,8 @@ func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if saq.withIncident != nil {
-			_spec.Node.AddColumnOnce(systemanalysis.FieldIncidentID)
+		if saq.withRetrospective != nil {
+			_spec.Node.AddColumnOnce(systemanalysis.FieldRetrospectiveID)
 		}
 	}
 	if ps := saq.predicates; len(ps) > 0 {

@@ -28,7 +28,6 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -47,7 +46,6 @@ type IncidentQuery struct {
 	withMilestones      *IncidentMilestoneQuery
 	withEvents          *IncidentEventQuery
 	withRetrospective   *RetrospectiveQuery
-	withSystemAnalysis  *SystemAnalysisQuery
 	withLinkedIncidents *IncidentQuery
 	withFieldSelections *IncidentFieldOptionQuery
 	withTasks           *TaskQuery
@@ -261,28 +259,6 @@ func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QuerySystemAnalysis chains the current query on the "system_analysis" edge.
-func (iq *IncidentQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
-	query := (&SystemAnalysisClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.SystemAnalysisTable, incident.SystemAnalysisColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -644,7 +620,6 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		withMilestones:      iq.withMilestones.Clone(),
 		withEvents:          iq.withEvents.Clone(),
 		withRetrospective:   iq.withRetrospective.Clone(),
-		withSystemAnalysis:  iq.withSystemAnalysis.Clone(),
 		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
 		withFieldSelections: iq.withFieldSelections.Clone(),
 		withTasks:           iq.withTasks.Clone(),
@@ -744,17 +719,6 @@ func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *I
 		opt(query)
 	}
 	iq.withRetrospective = query
-	return iq
-}
-
-// WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
-// the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *IncidentQuery {
-	query := (&SystemAnalysisClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withSystemAnalysis = query
 	return iq
 }
 
@@ -913,7 +877,7 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [16]bool{
+		loadedTypes = [15]bool{
 			iq.withEnvironments != nil,
 			iq.withSeverity != nil,
 			iq.withType != nil,
@@ -922,7 +886,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			iq.withMilestones != nil,
 			iq.withEvents != nil,
 			iq.withRetrospective != nil,
-			iq.withSystemAnalysis != nil,
 			iq.withLinkedIncidents != nil,
 			iq.withFieldSelections != nil,
 			iq.withTasks != nil,
@@ -1008,13 +971,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := iq.loadRetrospective(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
 			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withSystemAnalysis; query != nil {
-		if err := iq.loadSystemAnalysis(ctx, query, nodes,
-			func(n *Incident) { n.Edges.SystemAnalysis = []*SystemAnalysis{} },
-			func(n *Incident, e *SystemAnalysis) { n.Edges.SystemAnalysis = append(n.Edges.SystemAnalysis, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1326,36 +1282,6 @@ func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 	}
 	query.Where(predicate.Retrospective(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(incident.RetrospectiveColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *SystemAnalysis)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemanalysis.FieldIncidentID)
-	}
-	query.Where(predicate.SystemAnalysis(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.SystemAnalysisColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

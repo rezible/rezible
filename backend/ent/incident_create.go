@@ -27,7 +27,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/task"
 )
 
@@ -249,21 +248,6 @@ func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate 
 		ids[i] = r[i].ID
 	}
 	return ic.AddRetrospectiveIDs(ids...)
-}
-
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (ic *IncidentCreate) AddSystemAnalysiIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddSystemAnalysiIDs(ids...)
-	return ic
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (ic *IncidentCreate) AddSystemAnalysis(s ...*SystemAnalysis) *IncidentCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ic.AddSystemAnalysiIDs(ids...)
 }
 
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
@@ -637,22 +621,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.SystemAnalysisTable,
-			Columns: []string{incident.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

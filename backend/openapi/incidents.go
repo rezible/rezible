@@ -33,24 +33,23 @@ type (
 	}
 
 	IncidentAttributes struct {
-		Slug             string                   `json:"slug"`
-		Title            string                   `json:"title"`
-		Summary          string                   `json:"summary"`
-		Private          bool                     `json:"private"`
-		CurrentStatus    string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
-		OpenedAt         time.Time                `json:"openedAt"`
-		ClosedAt         time.Time                `json:"closedAt"`
-		Severity         IncidentSeverity         `json:"severity"`
-		Type             IncidentType             `json:"type"`
-		SystemAnalysisId uuid.UUID                `json:"systemAnalysisId"`
-		Environments     []Environment            `json:"environments"`
-		Tags             []IncidentTag            `json:"tags"`
-		Ticket           ExternalTicket           `json:"ticket"`
-		Tasks            []Task                   `json:"tasks"`
-		RoleAssignments  []IncidentRoleAssignment `json:"roles"`
-		TeamAssignments  []IncidentTeamAssignment `json:"teams"`
-		LinkedIncidents  []IncidentLink           `json:"linkedIncidents"`
-		ChatChannel      IncidentChatChannel      `json:"chatChannel"`
+		Slug            string                   `json:"slug"`
+		Title           string                   `json:"title"`
+		Summary         string                   `json:"summary"`
+		Private         bool                     `json:"private"`
+		CurrentStatus   string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
+		OpenedAt        time.Time                `json:"openedAt"`
+		ClosedAt        time.Time                `json:"closedAt"`
+		Severity        IncidentSeverity         `json:"severity"`
+		Type            IncidentType             `json:"type"`
+		Environments    []Environment            `json:"environments"`
+		Tags            []IncidentTag            `json:"tags"`
+		Ticket          ExternalTicket           `json:"ticket"`
+		Tasks           []Task                   `json:"tasks"`
+		RoleAssignments []IncidentRoleAssignment `json:"roles"`
+		TeamAssignments []IncidentTeamAssignment `json:"teams"`
+		LinkedIncidents []IncidentLink           `json:"linkedIncidents"`
+		ChatChannel     IncidentChatChannel      `json:"chatChannel"`
 	}
 
 	IncidentLink struct {

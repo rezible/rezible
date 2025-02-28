@@ -124,7 +124,7 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros)
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros, cmps)
 
 	httpServer, httpErr := http.NewServer(listenAddr, pl, auth, apiHandler.MakeAdapter())
 	if httpErr != nil {

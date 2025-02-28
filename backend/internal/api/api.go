@@ -50,6 +50,7 @@ func NewHandler(
 	alerts rez.AlertsService,
 	documents rez.DocumentsService,
 	retros rez.RetrospectiveService,
+	cmp rez.SystemComponentsService,
 ) *Handler {
 	return &Handler{
 		middlewareHandler: newMiddlewareHandler(auth),
@@ -71,7 +72,7 @@ func NewHandler(
 		meetingsHandler:           newMeetingsHandler(),
 		oncallHandler:             newOncallHandler(auth, users, incidents, oncall, alerts),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(db),
+		systemAnalysisHandler:     newSystemAnalysisHandler(db, cmp),
 		systemComponentsHandler:   newSystemComponentsHandler(db),
 		subscriptionsHandler:      newSubscriptionsHandler(),
 		teamsHandler:              newTeamsHandler(db.Team),

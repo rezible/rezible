@@ -17,18 +17,20 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
+	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
 // RetrospectiveQuery is the builder for querying Retrospective entities.
 type RetrospectiveQuery struct {
 	config
-	ctx             *QueryContext
-	order           []retrospective.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Retrospective
-	withIncident    *IncidentQuery
-	withDiscussions *RetrospectiveDiscussionQuery
-	modifiers       []func(*sql.Selector)
+	ctx                *QueryContext
+	order              []retrospective.OrderOption
+	inters             []Interceptor
+	predicates         []predicate.Retrospective
+	withIncident       *IncidentQuery
+	withDiscussions    *RetrospectiveDiscussionQuery
+	withSystemAnalysis *SystemAnalysisQuery
+	modifiers          []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -102,6 +104,28 @@ func (rq *RetrospectiveQuery) QueryDiscussions() *RetrospectiveDiscussionQuery {
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
 			sqlgraph.To(retrospectivediscussion.Table, retrospectivediscussion.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.DiscussionsTable, retrospective.DiscussionsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySystemAnalysis chains the current query on the "system_analysis" edge.
+func (rq *RetrospectiveQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
+	query := (&SystemAnalysisClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
+			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -296,13 +320,14 @@ func (rq *RetrospectiveQuery) Clone() *RetrospectiveQuery {
 		return nil
 	}
 	return &RetrospectiveQuery{
-		config:          rq.config,
-		ctx:             rq.ctx.Clone(),
-		order:           append([]retrospective.OrderOption{}, rq.order...),
-		inters:          append([]Interceptor{}, rq.inters...),
-		predicates:      append([]predicate.Retrospective{}, rq.predicates...),
-		withIncident:    rq.withIncident.Clone(),
-		withDiscussions: rq.withDiscussions.Clone(),
+		config:             rq.config,
+		ctx:                rq.ctx.Clone(),
+		order:              append([]retrospective.OrderOption{}, rq.order...),
+		inters:             append([]Interceptor{}, rq.inters...),
+		predicates:         append([]predicate.Retrospective{}, rq.predicates...),
+		withIncident:       rq.withIncident.Clone(),
+		withDiscussions:    rq.withDiscussions.Clone(),
+		withSystemAnalysis: rq.withSystemAnalysis.Clone(),
 		// clone intermediate query.
 		sql:       rq.sql.Clone(),
 		path:      rq.path,
@@ -329,6 +354,17 @@ func (rq *RetrospectiveQuery) WithDiscussions(opts ...func(*RetrospectiveDiscuss
 		opt(query)
 	}
 	rq.withDiscussions = query
+	return rq
+}
+
+// WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
+// the "system_analysis" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RetrospectiveQuery) WithSystemAnalysis(opts ...func(*SystemAnalysisQuery)) *RetrospectiveQuery {
+	query := (&SystemAnalysisClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withSystemAnalysis = query
 	return rq
 }
 
@@ -410,9 +446,10 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*Retrospective{}
 		_spec       = rq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			rq.withIncident != nil,
 			rq.withDiscussions != nil,
+			rq.withSystemAnalysis != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -448,6 +485,13 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			func(n *Retrospective, e *RetrospectiveDiscussion) {
 				n.Edges.Discussions = append(n.Edges.Discussions, e)
 			}); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withSystemAnalysis; query != nil {
+		if err := rq.loadSystemAnalysis(ctx, query, nodes,
+			func(n *Retrospective) { n.Edges.SystemAnalysis = []*SystemAnalysis{} },
+			func(n *Retrospective, e *SystemAnalysis) { n.Edges.SystemAnalysis = append(n.Edges.SystemAnalysis, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -498,6 +542,36 @@ func (rq *RetrospectiveQuery) loadDiscussions(ctx context.Context, query *Retros
 	}
 	query.Where(predicate.RetrospectiveDiscussion(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(retrospective.DiscussionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RetrospectiveID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "retrospective_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (rq *RetrospectiveQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *SystemAnalysis)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Retrospective)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(systemanalysis.FieldRetrospectiveID)
+	}
+	query.Where(predicate.SystemAnalysis(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(retrospective.SystemAnalysisColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
