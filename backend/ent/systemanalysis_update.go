@@ -34,20 +34,6 @@ func (sau *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAn
 	return sau
 }
 
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (sau *SystemAnalysisUpdate) SetRetrospectiveID(u uuid.UUID) *SystemAnalysisUpdate {
-	sau.mutation.SetRetrospectiveID(u)
-	return sau
-}
-
-// SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (sau *SystemAnalysisUpdate) SetNillableRetrospectiveID(u *uuid.UUID) *SystemAnalysisUpdate {
-	if u != nil {
-		sau.SetRetrospectiveID(*u)
-	}
-	return sau
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (sau *SystemAnalysisUpdate) SetCreatedAt(t time.Time) *SystemAnalysisUpdate {
 	sau.mutation.SetCreatedAt(t)
@@ -65,6 +51,12 @@ func (sau *SystemAnalysisUpdate) SetNillableCreatedAt(t *time.Time) *SystemAnaly
 // SetUpdatedAt sets the "updated_at" field.
 func (sau *SystemAnalysisUpdate) SetUpdatedAt(t time.Time) *SystemAnalysisUpdate {
 	sau.mutation.SetUpdatedAt(t)
+	return sau
+}
+
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (sau *SystemAnalysisUpdate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdate {
+	sau.mutation.SetRetrospectiveID(id)
 	return sau
 }
 
@@ -262,7 +254,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if sau.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   systemanalysis.RetrospectiveTable,
 			Columns: []string{systemanalysis.RetrospectiveColumn},
@@ -275,7 +267,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 	}
 	if nodes := sau.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   systemanalysis.RetrospectiveTable,
 			Columns: []string{systemanalysis.RetrospectiveColumn},
@@ -467,20 +459,6 @@ type SystemAnalysisUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (sauo *SystemAnalysisUpdateOne) SetRetrospectiveID(u uuid.UUID) *SystemAnalysisUpdateOne {
-	sauo.mutation.SetRetrospectiveID(u)
-	return sauo
-}
-
-// SetNillableRetrospectiveID sets the "retrospective_id" field if the given value is not nil.
-func (sauo *SystemAnalysisUpdateOne) SetNillableRetrospectiveID(u *uuid.UUID) *SystemAnalysisUpdateOne {
-	if u != nil {
-		sauo.SetRetrospectiveID(*u)
-	}
-	return sauo
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (sauo *SystemAnalysisUpdateOne) SetCreatedAt(t time.Time) *SystemAnalysisUpdateOne {
 	sauo.mutation.SetCreatedAt(t)
@@ -498,6 +476,12 @@ func (sauo *SystemAnalysisUpdateOne) SetNillableCreatedAt(t *time.Time) *SystemA
 // SetUpdatedAt sets the "updated_at" field.
 func (sauo *SystemAnalysisUpdateOne) SetUpdatedAt(t time.Time) *SystemAnalysisUpdateOne {
 	sauo.mutation.SetUpdatedAt(t)
+	return sauo
+}
+
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (sauo *SystemAnalysisUpdateOne) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisUpdateOne {
+	sauo.mutation.SetRetrospectiveID(id)
 	return sauo
 }
 
@@ -725,7 +709,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 	}
 	if sauo.mutation.RetrospectiveCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   systemanalysis.RetrospectiveTable,
 			Columns: []string{systemanalysis.RetrospectiveColumn},
@@ -738,7 +722,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 	}
 	if nodes := sauo.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   systemanalysis.RetrospectiveTable,
 			Columns: []string{systemanalysis.RetrospectiveColumn},

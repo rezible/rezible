@@ -15,8 +15,6 @@ const (
 	Label = "system_analysis"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldRetrospectiveID holds the string denoting the retrospective_id field in the database.
-	FieldRetrospectiveID = "retrospective_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -32,12 +30,12 @@ const (
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
-	RetrospectiveTable = "system_analyses"
+	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
 	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
-	RetrospectiveColumn = "retrospective_id"
+	RetrospectiveColumn = "system_analysis_id"
 	// ComponentsTable is the table that holds the components relation/edge. The primary key declared below.
 	ComponentsTable = "system_analysis_components"
 	// ComponentsInverseTable is the table name for the SystemComponent entity.
@@ -62,7 +60,6 @@ const (
 // Columns holds all SQL columns for systemanalysis fields.
 var Columns = []string{
 	FieldID,
-	FieldRetrospectiveID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -100,11 +97,6 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
-
-// ByRetrospectiveID orders the results by the retrospective_id field.
-func ByRetrospectiveID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRetrospectiveID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -169,7 +161,7 @@ func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, RetrospectiveTable, RetrospectiveColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
 func newComponentsStep() *sqlgraph.Step {

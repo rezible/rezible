@@ -83,7 +83,7 @@ func (saq *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(saq.driver.Dialect(), step)
 		return fromU, nil
@@ -410,12 +410,12 @@ func (saq *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnaly
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemAnalysis.Query().
-//		GroupBy(systemanalysis.FieldRetrospectiveID).
+//		GroupBy(systemanalysis.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemAnalysisGroupBy {
@@ -433,11 +433,11 @@ func (saq *SystemAnalysisQuery) GroupBy(field string, fields ...string) *SystemA
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.SystemAnalysis.Query().
-//		Select(systemanalysis.FieldRetrospectiveID).
+//		Select(systemanalysis.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (saq *SystemAnalysisQuery) Select(fields ...string) *SystemAnalysisSelect {
 	saq.ctx.Fields = append(saq.ctx.Fields, fields...)
@@ -545,31 +545,29 @@ func (saq *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 }
 
 func (saq *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *Retrospective)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*SystemAnalysis)
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
-		fk := nodes[i].RetrospectiveID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(retrospective.FieldSystemAnalysisID)
 	}
-	query.Where(retrospective.IDIn(ids...))
+	query.Where(predicate.Retrospective(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.RetrospectiveColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.SystemAnalysisID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "retrospective_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "system_analysis_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }
@@ -722,9 +720,6 @@ func (saq *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemanalysis.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if saq.withRetrospective != nil {
-			_spec.Node.AddColumnOnce(systemanalysis.FieldRetrospectiveID)
 		}
 	}
 	if ps := saq.predicates; len(ps) > 0 {

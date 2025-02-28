@@ -63,9 +63,10 @@ type (
 	}
 
 	RetrospectiveAttributes struct {
-		Type           RetrospectiveType            `json:"type" enum:"quick,full"`
-		State          RetrospectiveState           `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
-		ReportSections []RetrospectiveReportSection `json:"reportSections"`
+		Type             RetrospectiveType            `json:"type" enum:"simple,full"`
+		State            RetrospectiveState           `json:"state" enum:"draft,in_review,meeting_scheduled,completed"`
+		ReportSections   []RetrospectiveReportSection `json:"reportSections"`
+		SystemAnalysisId *uuid.UUID                   `json:"systemAnalysisId,omitempty"`
 	}
 
 	RetrospectiveType  string

@@ -125,7 +125,7 @@ func (rq *RetrospectiveQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, selector),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -489,9 +489,8 @@ func (rq *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		}
 	}
 	if query := rq.withSystemAnalysis; query != nil {
-		if err := rq.loadSystemAnalysis(ctx, query, nodes,
-			func(n *Retrospective) { n.Edges.SystemAnalysis = []*SystemAnalysis{} },
-			func(n *Retrospective, e *SystemAnalysis) { n.Edges.SystemAnalysis = append(n.Edges.SystemAnalysis, e) }); err != nil {
+		if err := rq.loadSystemAnalysis(ctx, query, nodes, nil,
+			func(n *Retrospective, e *SystemAnalysis) { n.Edges.SystemAnalysis = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -558,32 +557,31 @@ func (rq *RetrospectiveQuery) loadDiscussions(ctx context.Context, query *Retros
 	return nil
 }
 func (rq *RetrospectiveQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*Retrospective, init func(*Retrospective), assign func(*Retrospective, *SystemAnalysis)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Retrospective)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Retrospective)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		fk := nodes[i].SystemAnalysisID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
 		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemanalysis.FieldRetrospectiveID)
+	if len(ids) == 0 {
+		return nil
 	}
-	query.Where(predicate.SystemAnalysis(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(retrospective.SystemAnalysisColumn), fks...))
-	}))
+	query.Where(systemanalysis.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.RetrospectiveID
-		node, ok := nodeids[fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "retrospective_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "system_analysis_id" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -618,6 +616,9 @@ func (rq *RetrospectiveQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if rq.withIncident != nil {
 			_spec.Node.AddColumnOnce(retrospective.FieldIncidentID)
+		}
+		if rq.withSystemAnalysis != nil {
+			_spec.Node.AddColumnOnce(retrospective.FieldSystemAnalysisID)
 		}
 	}
 	if ps := rq.predicates; len(ps) > 0 {

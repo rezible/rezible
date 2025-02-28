@@ -6994,7 +6994,7 @@ func (c *RetrospectiveClient) QuerySystemAnalysis(r *Retrospective) *SystemAnaly
 		step := sqlgraph.NewStep(
 			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
 		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
 		return fromV, nil
@@ -7702,7 +7702,7 @@ func (c *SystemAnalysisClient) QueryRetrospective(sa *SystemAnalysis) *Retrospec
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
 		fromV = sqlgraph.Neighbors(sa.driver.Dialect(), step)
 		return fromV, nil

@@ -17,6 +17,8 @@ const (
 	FieldID = "id"
 	// FieldIncidentID holds the string denoting the incident_id field in the database.
 	FieldIncidentID = "incident_id"
+	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
+	FieldSystemAnalysisID = "system_analysis_id"
 	// FieldDocumentName holds the string denoting the document_name field in the database.
 	FieldDocumentName = "document_name"
 	// FieldType holds the string denoting the type field in the database.
@@ -46,18 +48,19 @@ const (
 	// DiscussionsColumn is the table column denoting the discussions relation/edge.
 	DiscussionsColumn = "retrospective_id"
 	// SystemAnalysisTable is the table that holds the system_analysis relation/edge.
-	SystemAnalysisTable = "system_analyses"
+	SystemAnalysisTable = "retrospectives"
 	// SystemAnalysisInverseTable is the table name for the SystemAnalysis entity.
 	// It exists in this package in order to avoid circular dependency with the "systemanalysis" package.
 	SystemAnalysisInverseTable = "system_analyses"
 	// SystemAnalysisColumn is the table column denoting the system_analysis relation/edge.
-	SystemAnalysisColumn = "retrospective_id"
+	SystemAnalysisColumn = "system_analysis_id"
 )
 
 // Columns holds all SQL columns for retrospective fields.
 var Columns = []string{
 	FieldID,
 	FieldIncidentID,
+	FieldSystemAnalysisID,
 	FieldDocumentName,
 	FieldType,
 	FieldState,
@@ -83,8 +86,8 @@ type Type string
 
 // Type values.
 const (
-	TypeQuick Type = "quick"
-	TypeFull  Type = "full"
+	TypeSimple Type = "simple"
+	TypeFull   Type = "full"
 )
 
 func (_type Type) String() string {
@@ -94,7 +97,7 @@ func (_type Type) String() string {
 // TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
 func TypeValidator(_type Type) error {
 	switch _type {
-	case TypeQuick, TypeFull:
+	case TypeSimple, TypeFull:
 		return nil
 	default:
 		return fmt.Errorf("retrospective: invalid enum value for type field: %q", _type)
@@ -139,6 +142,11 @@ func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
 }
 
+// BySystemAnalysisID orders the results by the system_analysis_id field.
+func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
+}
+
 // ByDocumentName orders the results by the document_name field.
 func ByDocumentName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentName, opts...).ToFunc()
@@ -175,17 +183,10 @@ func ByDiscussions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySystemAnalysisCount orders the results by system_analysis count.
-func BySystemAnalysisCount(opts ...sql.OrderTermOption) OrderOption {
+// BySystemAnalysisField orders the results by system_analysis field.
+func BySystemAnalysisField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSystemAnalysisStep(), opts...)
-	}
-}
-
-// BySystemAnalysis orders the results by system_analysis terms.
-func BySystemAnalysis(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysisStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newIncidentStep() *sqlgraph.Step {
@@ -206,6 +207,6 @@ func newSystemAnalysisStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SystemAnalysisInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
+		sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
 	)
 }

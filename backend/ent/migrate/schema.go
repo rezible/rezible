@@ -828,9 +828,10 @@ var (
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "document_name", Type: field.TypeString},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"quick", "full"}},
+		{Name: "type", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
 		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// RetrospectivesTable holds the schema information for the "retrospectives" table.
 	RetrospectivesTable = &schema.Table{
@@ -843,6 +844,12 @@ var (
 				Columns:    []*schema.Column{RetrospectivesColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospectives_system_analyses_retrospective",
+				Columns:    []*schema.Column{RetrospectivesColumns[5]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -939,21 +946,12 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "retrospective_id", Type: field.TypeUUID},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
 		Name:       "system_analyses",
 		Columns:    SystemAnalysesColumns,
 		PrimaryKey: []*schema.Column{SystemAnalysesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_analyses_retrospectives_retrospective",
-				Columns:    []*schema.Column{SystemAnalysesColumns[3]},
-				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
 	}
 	// SystemAnalysisComponentsColumns holds the columns for the "system_analysis_components" table.
 	SystemAnalysisComponentsColumns = []*schema.Column{
@@ -1706,6 +1704,7 @@ func init() {
 	OncallUserShiftCoversTable.ForeignKeys[1].RefTable = UsersTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
+	RetrospectivesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = RetrospectivesTable
 	RetrospectiveDiscussionRepliesTable.ForeignKeys[0].RefTable = RetrospectiveDiscussionsTable
 	RetrospectiveDiscussionRepliesTable.ForeignKeys[1].RefTable = RetrospectiveDiscussionRepliesTable
@@ -1713,7 +1712,6 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = RetrospectiveDiscussionsTable
-	SystemAnalysesTable.ForeignKeys[0].RefTable = RetrospectivesTable
 	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
 	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = SystemAnalysesTable

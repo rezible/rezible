@@ -59,6 +59,11 @@ func IncidentID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldIncidentID, v))
 }
 
+// SystemAnalysisID applies equality check predicate on the "system_analysis_id" field. It's identical to SystemAnalysisIDEQ.
+func SystemAnalysisID(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
 // DocumentName applies equality check predicate on the "document_name" field. It's identical to DocumentNameEQ.
 func DocumentName(v string) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldDocumentName, v))
@@ -82,6 +87,36 @@ func IncidentIDIn(vs ...uuid.UUID) predicate.Retrospective {
 // IncidentIDNotIn applies the NotIn predicate on the "incident_id" field.
 func IncidentIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldIncidentID, vs...))
+}
+
+// SystemAnalysisIDEQ applies the EQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDNEQ applies the NEQ predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNEQ(v uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldSystemAnalysisID, v))
+}
+
+// SystemAnalysisIDIn applies the In predicate on the "system_analysis_id" field.
+func SystemAnalysisIDIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldSystemAnalysisID, vs...))
+}
+
+// SystemAnalysisIDNotIn applies the NotIn predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNotIn(vs ...uuid.UUID) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldSystemAnalysisID, vs...))
+}
+
+// SystemAnalysisIDIsNil applies the IsNil predicate on the "system_analysis_id" field.
+func SystemAnalysisIDIsNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIsNull(FieldSystemAnalysisID))
+}
+
+// SystemAnalysisIDNotNil applies the NotNil predicate on the "system_analysis_id" field.
+func SystemAnalysisIDNotNil() predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotNull(FieldSystemAnalysisID))
 }
 
 // DocumentNameEQ applies the EQ predicate on the "document_name" field.
@@ -240,7 +275,7 @@ func HasSystemAnalysis() predicate.Retrospective {
 	return predicate.Retrospective(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysisTable, SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, SystemAnalysisTable, SystemAnalysisColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

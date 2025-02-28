@@ -16,7 +16,6 @@ func (SystemAnalysis) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
-		field.UUID("retrospective_id", uuid.UUID{}),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
@@ -28,7 +27,7 @@ func (SystemAnalysis) Fields() []ent.Field {
 func (SystemAnalysis) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("retrospective", Retrospective.Type).
-			Unique().Required().Field("retrospective_id"),
+			Unique().Required(),
 		edge.From("components", SystemComponent.Type).
 			Ref("system_analyses").
 			Through("analysis_components", SystemAnalysisComponent.Type),

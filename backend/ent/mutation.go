@@ -26052,8 +26052,7 @@ type RetrospectiveMutation struct {
 	discussions            map[uuid.UUID]struct{}
 	removeddiscussions     map[uuid.UUID]struct{}
 	cleareddiscussions     bool
-	system_analysis        map[uuid.UUID]struct{}
-	removedsystem_analysis map[uuid.UUID]struct{}
+	system_analysis        *uuid.UUID
 	clearedsystem_analysis bool
 	done                   bool
 	oldValue               func(context.Context) (*Retrospective, error)
@@ -26198,6 +26197,55 @@ func (m *RetrospectiveMutation) OldIncidentID(ctx context.Context) (v uuid.UUID,
 // ResetIncidentID resets all changes to the "incident_id" field.
 func (m *RetrospectiveMutation) ResetIncidentID() {
 	m.incident = nil
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (m *RetrospectiveMutation) SetSystemAnalysisID(u uuid.UUID) {
+	m.system_analysis = &u
+}
+
+// SystemAnalysisID returns the value of the "system_analysis_id" field in the mutation.
+func (m *RetrospectiveMutation) SystemAnalysisID() (r uuid.UUID, exists bool) {
+	v := m.system_analysis
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSystemAnalysisID returns the old "system_analysis_id" field's value of the Retrospective entity.
+// If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RetrospectiveMutation) OldSystemAnalysisID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSystemAnalysisID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSystemAnalysisID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSystemAnalysisID: %w", err)
+	}
+	return oldValue.SystemAnalysisID, nil
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (m *RetrospectiveMutation) ClearSystemAnalysisID() {
+	m.system_analysis = nil
+	m.clearedFields[retrospective.FieldSystemAnalysisID] = struct{}{}
+}
+
+// SystemAnalysisIDCleared returns if the "system_analysis_id" field was cleared in this mutation.
+func (m *RetrospectiveMutation) SystemAnalysisIDCleared() bool {
+	_, ok := m.clearedFields[retrospective.FieldSystemAnalysisID]
+	return ok
+}
+
+// ResetSystemAnalysisID resets all changes to the "system_analysis_id" field.
+func (m *RetrospectiveMutation) ResetSystemAnalysisID() {
+	m.system_analysis = nil
+	delete(m.clearedFields, retrospective.FieldSystemAnalysisID)
 }
 
 // SetDocumentName sets the "document_name" field.
@@ -26389,49 +26437,23 @@ func (m *RetrospectiveMutation) ResetDiscussions() {
 	m.removeddiscussions = nil
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by ids.
-func (m *RetrospectiveMutation) AddSystemAnalysiIDs(ids ...uuid.UUID) {
-	if m.system_analysis == nil {
-		m.system_analysis = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.system_analysis[ids[i]] = struct{}{}
-	}
-}
-
 // ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
 func (m *RetrospectiveMutation) ClearSystemAnalysis() {
 	m.clearedsystem_analysis = true
+	m.clearedFields[retrospective.FieldSystemAnalysisID] = struct{}{}
 }
 
 // SystemAnalysisCleared reports if the "system_analysis" edge to the SystemAnalysis entity was cleared.
 func (m *RetrospectiveMutation) SystemAnalysisCleared() bool {
-	return m.clearedsystem_analysis
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (m *RetrospectiveMutation) RemoveSystemAnalysiIDs(ids ...uuid.UUID) {
-	if m.removedsystem_analysis == nil {
-		m.removedsystem_analysis = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.system_analysis, ids[i])
-		m.removedsystem_analysis[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedSystemAnalysis returns the removed IDs of the "system_analysis" edge to the SystemAnalysis entity.
-func (m *RetrospectiveMutation) RemovedSystemAnalysisIDs() (ids []uuid.UUID) {
-	for id := range m.removedsystem_analysis {
-		ids = append(ids, id)
-	}
-	return
+	return m.SystemAnalysisIDCleared() || m.clearedsystem_analysis
 }
 
 // SystemAnalysisIDs returns the "system_analysis" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// SystemAnalysisID instead. It exists only for internal usage by the builders.
 func (m *RetrospectiveMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
-	for id := range m.system_analysis {
-		ids = append(ids, id)
+	if id := m.system_analysis; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -26440,7 +26462,6 @@ func (m *RetrospectiveMutation) SystemAnalysisIDs() (ids []uuid.UUID) {
 func (m *RetrospectiveMutation) ResetSystemAnalysis() {
 	m.system_analysis = nil
 	m.clearedsystem_analysis = false
-	m.removedsystem_analysis = nil
 }
 
 // Where appends a list predicates to the RetrospectiveMutation builder.
@@ -26477,9 +26498,12 @@ func (m *RetrospectiveMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RetrospectiveMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.incident != nil {
 		fields = append(fields, retrospective.FieldIncidentID)
+	}
+	if m.system_analysis != nil {
+		fields = append(fields, retrospective.FieldSystemAnalysisID)
 	}
 	if m.document_name != nil {
 		fields = append(fields, retrospective.FieldDocumentName)
@@ -26500,6 +26524,8 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case retrospective.FieldIncidentID:
 		return m.IncidentID()
+	case retrospective.FieldSystemAnalysisID:
+		return m.SystemAnalysisID()
 	case retrospective.FieldDocumentName:
 		return m.DocumentName()
 	case retrospective.FieldType:
@@ -26517,6 +26543,8 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 	switch name {
 	case retrospective.FieldIncidentID:
 		return m.OldIncidentID(ctx)
+	case retrospective.FieldSystemAnalysisID:
+		return m.OldSystemAnalysisID(ctx)
 	case retrospective.FieldDocumentName:
 		return m.OldDocumentName(ctx)
 	case retrospective.FieldType:
@@ -26538,6 +26566,13 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIncidentID(v)
+		return nil
+	case retrospective.FieldSystemAnalysisID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSystemAnalysisID(v)
 		return nil
 	case retrospective.FieldDocumentName:
 		v, ok := value.(string)
@@ -26589,7 +26624,11 @@ func (m *RetrospectiveMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *RetrospectiveMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(retrospective.FieldSystemAnalysisID) {
+		fields = append(fields, retrospective.FieldSystemAnalysisID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -26602,6 +26641,11 @@ func (m *RetrospectiveMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *RetrospectiveMutation) ClearField(name string) error {
+	switch name {
+	case retrospective.FieldSystemAnalysisID:
+		m.ClearSystemAnalysisID()
+		return nil
+	}
 	return fmt.Errorf("unknown Retrospective nullable field %s", name)
 }
 
@@ -26611,6 +26655,9 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 	switch name {
 	case retrospective.FieldIncidentID:
 		m.ResetIncidentID()
+		return nil
+	case retrospective.FieldSystemAnalysisID:
+		m.ResetSystemAnalysisID()
 		return nil
 	case retrospective.FieldDocumentName:
 		m.ResetDocumentName()
@@ -26655,11 +26702,9 @@ func (m *RetrospectiveMutation) AddedIDs(name string) []ent.Value {
 		}
 		return ids
 	case retrospective.EdgeSystemAnalysis:
-		ids := make([]ent.Value, 0, len(m.system_analysis))
-		for id := range m.system_analysis {
-			ids = append(ids, id)
+		if id := m.system_analysis; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -26669,9 +26714,6 @@ func (m *RetrospectiveMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removeddiscussions != nil {
 		edges = append(edges, retrospective.EdgeDiscussions)
-	}
-	if m.removedsystem_analysis != nil {
-		edges = append(edges, retrospective.EdgeSystemAnalysis)
 	}
 	return edges
 }
@@ -26683,12 +26725,6 @@ func (m *RetrospectiveMutation) RemovedIDs(name string) []ent.Value {
 	case retrospective.EdgeDiscussions:
 		ids := make([]ent.Value, 0, len(m.removeddiscussions))
 		for id := range m.removeddiscussions {
-			ids = append(ids, id)
-		}
-		return ids
-	case retrospective.EdgeSystemAnalysis:
-		ids := make([]ent.Value, 0, len(m.removedsystem_analysis))
-		for id := range m.removedsystem_analysis {
 			ids = append(ids, id)
 		}
 		return ids
@@ -26731,6 +26767,9 @@ func (m *RetrospectiveMutation) ClearEdge(name string) error {
 	switch name {
 	case retrospective.EdgeIncident:
 		m.ClearIncident()
+		return nil
+	case retrospective.EdgeSystemAnalysis:
+		m.ClearSystemAnalysis()
 		return nil
 	}
 	return fmt.Errorf("unknown Retrospective unique edge %s", name)
@@ -28732,42 +28771,6 @@ func (m *SystemAnalysisMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (m *SystemAnalysisMutation) SetRetrospectiveID(u uuid.UUID) {
-	m.retrospective = &u
-}
-
-// RetrospectiveID returns the value of the "retrospective_id" field in the mutation.
-func (m *SystemAnalysisMutation) RetrospectiveID() (r uuid.UUID, exists bool) {
-	v := m.retrospective
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRetrospectiveID returns the old "retrospective_id" field's value of the SystemAnalysis entity.
-// If the SystemAnalysis object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisMutation) OldRetrospectiveID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRetrospectiveID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRetrospectiveID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRetrospectiveID: %w", err)
-	}
-	return oldValue.RetrospectiveID, nil
-}
-
-// ResetRetrospectiveID resets all changes to the "retrospective_id" field.
-func (m *SystemAnalysisMutation) ResetRetrospectiveID() {
-	m.retrospective = nil
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *SystemAnalysisMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -28840,15 +28843,27 @@ func (m *SystemAnalysisMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by id.
+func (m *SystemAnalysisMutation) SetRetrospectiveID(id uuid.UUID) {
+	m.retrospective = &id
+}
+
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
 func (m *SystemAnalysisMutation) ClearRetrospective() {
 	m.clearedretrospective = true
-	m.clearedFields[systemanalysis.FieldRetrospectiveID] = struct{}{}
 }
 
 // RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
 func (m *SystemAnalysisMutation) RetrospectiveCleared() bool {
 	return m.clearedretrospective
+}
+
+// RetrospectiveID returns the "retrospective" edge ID in the mutation.
+func (m *SystemAnalysisMutation) RetrospectiveID() (id uuid.UUID, exists bool) {
+	if m.retrospective != nil {
+		return *m.retrospective, true
+	}
+	return
 }
 
 // RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
@@ -29063,10 +29078,7 @@ func (m *SystemAnalysisMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SystemAnalysisMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.retrospective != nil {
-		fields = append(fields, systemanalysis.FieldRetrospectiveID)
-	}
+	fields := make([]string, 0, 2)
 	if m.created_at != nil {
 		fields = append(fields, systemanalysis.FieldCreatedAt)
 	}
@@ -29081,8 +29093,6 @@ func (m *SystemAnalysisMutation) Fields() []string {
 // schema.
 func (m *SystemAnalysisMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case systemanalysis.FieldRetrospectiveID:
-		return m.RetrospectiveID()
 	case systemanalysis.FieldCreatedAt:
 		return m.CreatedAt()
 	case systemanalysis.FieldUpdatedAt:
@@ -29096,8 +29106,6 @@ func (m *SystemAnalysisMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SystemAnalysisMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case systemanalysis.FieldRetrospectiveID:
-		return m.OldRetrospectiveID(ctx)
 	case systemanalysis.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case systemanalysis.FieldUpdatedAt:
@@ -29111,13 +29119,6 @@ func (m *SystemAnalysisMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *SystemAnalysisMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case systemanalysis.FieldRetrospectiveID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRetrospectiveID(v)
-		return nil
 	case systemanalysis.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -29181,9 +29182,6 @@ func (m *SystemAnalysisMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SystemAnalysisMutation) ResetField(name string) error {
 	switch name {
-	case systemanalysis.FieldRetrospectiveID:
-		m.ResetRetrospectiveID()
-		return nil
 	case systemanalysis.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil

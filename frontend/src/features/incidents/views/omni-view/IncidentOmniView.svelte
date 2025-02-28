@@ -20,6 +20,8 @@
 
 	const currRoute = $derived(viewParam || "");
 
+	const analysisEnabled = $derived(false)//retrospective?.attributes.analysis_enabled);
+
 	const title = $derived(incident?.attributes.title);
 
 	setPageBreadcrumbs(() => [
@@ -50,10 +52,12 @@
 			<span class="text-surface-content/75">Details</span>
 			{@render navMenuItem("Overview", "")}
 		</div>
+
 		<div class="flex flex-col gap-1">
 			<span class="text-surface-content/75">Retrospective</span>
-			<!-- todo: check if analysis enabled -->
-			{@render navMenuItem("System Analysis", "analysis")}
+			{#if analysisEnabled}
+				{@render navMenuItem("System Analysis", "analysis")}
+			{/if}
 			{@render navMenuItem("Report", "report")}
 		</div>
 	</div>

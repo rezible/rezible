@@ -46,6 +46,26 @@ func (ru *RetrospectiveUpdate) SetNillableIncidentID(u *uuid.UUID) *Retrospectiv
 	return ru
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (ru *RetrospectiveUpdate) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveUpdate {
+	ru.mutation.SetSystemAnalysisID(u)
+	return ru
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (ru *RetrospectiveUpdate) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveUpdate {
+	if u != nil {
+		ru.SetSystemAnalysisID(*u)
+	}
+	return ru
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (ru *RetrospectiveUpdate) ClearSystemAnalysisID() *RetrospectiveUpdate {
+	ru.mutation.ClearSystemAnalysisID()
+	return ru
+}
+
 // SetDocumentName sets the "document_name" field.
 func (ru *RetrospectiveUpdate) SetDocumentName(s string) *RetrospectiveUpdate {
 	ru.mutation.SetDocumentName(s)
@@ -108,19 +128,9 @@ func (ru *RetrospectiveUpdate) AddDiscussions(r ...*RetrospectiveDiscussion) *Re
 	return ru.AddDiscussionIDs(ids...)
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (ru *RetrospectiveUpdate) AddSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.AddSystemAnalysiIDs(ids...)
-	return ru
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (ru *RetrospectiveUpdate) AddSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ru.AddSystemAnalysiIDs(ids...)
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (ru *RetrospectiveUpdate) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveUpdate {
+	return ru.SetSystemAnalysisID(s.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
@@ -155,25 +165,10 @@ func (ru *RetrospectiveUpdate) RemoveDiscussions(r ...*RetrospectiveDiscussion) 
 	return ru.RemoveDiscussionIDs(ids...)
 }
 
-// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
 func (ru *RetrospectiveUpdate) ClearSystemAnalysis() *RetrospectiveUpdate {
 	ru.mutation.ClearSystemAnalysis()
 	return ru
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
-func (ru *RetrospectiveUpdate) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveUpdate {
-	ru.mutation.RemoveSystemAnalysiIDs(ids...)
-	return ru
-}
-
-// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
-func (ru *RetrospectiveUpdate) RemoveSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveUpdate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ru.RemoveSystemAnalysiIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -324,7 +319,7 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ru.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
@@ -332,28 +327,12 @@ func (ru *RetrospectiveUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ru.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !ru.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   retrospective.SystemAnalysisTable,
-			Columns: []string{retrospective.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := ru.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
@@ -400,6 +379,26 @@ func (ruo *RetrospectiveUpdateOne) SetNillableIncidentID(u *uuid.UUID) *Retrospe
 	if u != nil {
 		ruo.SetIncidentID(*u)
 	}
+	return ruo
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (ruo *RetrospectiveUpdateOne) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveUpdateOne {
+	ruo.mutation.SetSystemAnalysisID(u)
+	return ruo
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (ruo *RetrospectiveUpdateOne) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveUpdateOne {
+	if u != nil {
+		ruo.SetSystemAnalysisID(*u)
+	}
+	return ruo
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (ruo *RetrospectiveUpdateOne) ClearSystemAnalysisID() *RetrospectiveUpdateOne {
+	ruo.mutation.ClearSystemAnalysisID()
 	return ruo
 }
 
@@ -465,19 +464,9 @@ func (ruo *RetrospectiveUpdateOne) AddDiscussions(r ...*RetrospectiveDiscussion)
 	return ruo.AddDiscussionIDs(ids...)
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (ruo *RetrospectiveUpdateOne) AddSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.AddSystemAnalysiIDs(ids...)
-	return ruo
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (ruo *RetrospectiveUpdateOne) AddSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ruo.AddSystemAnalysiIDs(ids...)
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (ruo *RetrospectiveUpdateOne) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveUpdateOne {
+	return ruo.SetSystemAnalysisID(s.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
@@ -512,25 +501,10 @@ func (ruo *RetrospectiveUpdateOne) RemoveDiscussions(r ...*RetrospectiveDiscussi
 	return ruo.RemoveDiscussionIDs(ids...)
 }
 
-// ClearSystemAnalysis clears all "system_analysis" edges to the SystemAnalysis entity.
+// ClearSystemAnalysis clears the "system_analysis" edge to the SystemAnalysis entity.
 func (ruo *RetrospectiveUpdateOne) ClearSystemAnalysis() *RetrospectiveUpdateOne {
 	ruo.mutation.ClearSystemAnalysis()
 	return ruo
-}
-
-// RemoveSystemAnalysiIDs removes the "system_analysis" edge to SystemAnalysis entities by IDs.
-func (ruo *RetrospectiveUpdateOne) RemoveSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveUpdateOne {
-	ruo.mutation.RemoveSystemAnalysiIDs(ids...)
-	return ruo
-}
-
-// RemoveSystemAnalysis removes "system_analysis" edges to SystemAnalysis entities.
-func (ruo *RetrospectiveUpdateOne) RemoveSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveUpdateOne {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return ruo.RemoveSystemAnalysiIDs(ids...)
 }
 
 // Where appends a list predicates to the RetrospectiveUpdate builder.
@@ -711,7 +685,7 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 	}
 	if ruo.mutation.SystemAnalysisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
@@ -719,28 +693,12 @@ func (ruo *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospe
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ruo.mutation.RemovedSystemAnalysisIDs(); len(nodes) > 0 && !ruo.mutation.SystemAnalysisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   retrospective.SystemAnalysisTable,
-			Columns: []string{retrospective.SystemAnalysisColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := ruo.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},

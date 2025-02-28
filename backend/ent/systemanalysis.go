@@ -19,8 +19,6 @@ type SystemAnalysis struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// RetrospectiveID holds the value of the "retrospective_id" field.
-	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -91,7 +89,7 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case systemanalysis.FieldID, systemanalysis.FieldRetrospectiveID:
+		case systemanalysis.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -113,12 +111,6 @@ func (sa *SystemAnalysis) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sa.ID = *value
-			}
-		case systemanalysis.FieldRetrospectiveID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field retrospective_id", values[i])
-			} else if value != nil {
-				sa.RetrospectiveID = *value
 			}
 		case systemanalysis.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -188,9 +180,6 @@ func (sa *SystemAnalysis) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysis(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sa.ID))
-	builder.WriteString("retrospective_id=")
-	builder.WriteString(fmt.Sprintf("%v", sa.RetrospectiveID))
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(sa.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")

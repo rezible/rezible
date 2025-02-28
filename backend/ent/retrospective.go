@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/ent/systemanalysis"
 )
 
 // Retrospective is the model entity for the Retrospective schema.
@@ -20,6 +21,8 @@ type Retrospective struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
+	// SystemAnalysisID holds the value of the "system_analysis_id" field.
+	SystemAnalysisID uuid.UUID `json:"system_analysis_id,omitempty"`
 	// DocumentName holds the value of the "document_name" field.
 	DocumentName string `json:"document_name,omitempty"`
 	// Type holds the value of the "type" field.
@@ -39,7 +42,7 @@ type RetrospectiveEdges struct {
 	// Discussions holds the value of the discussions edge.
 	Discussions []*RetrospectiveDiscussion `json:"discussions,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
-	SystemAnalysis []*SystemAnalysis `json:"system_analysis,omitempty"`
+	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -66,10 +69,12 @@ func (e RetrospectiveEdges) DiscussionsOrErr() ([]*RetrospectiveDiscussion, erro
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
-// was not loaded in eager-loading.
-func (e RetrospectiveEdges) SystemAnalysisOrErr() ([]*SystemAnalysis, error) {
-	if e.loadedTypes[2] {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
+	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
 }
@@ -81,7 +86,7 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case retrospective.FieldDocumentName, retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
-		case retrospective.FieldID, retrospective.FieldIncidentID:
+		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldSystemAnalysisID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -109,6 +114,12 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
 			} else if value != nil {
 				r.IncidentID = *value
+			}
+		case retrospective.FieldSystemAnalysisID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field system_analysis_id", values[i])
+			} else if value != nil {
+				r.SystemAnalysisID = *value
 			}
 		case retrospective.FieldDocumentName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -181,6 +192,9 @@ func (r *Retrospective) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.IncidentID))
+	builder.WriteString(", ")
+	builder.WriteString("system_analysis_id=")
+	builder.WriteString(fmt.Sprintf("%v", r.SystemAnalysisID))
 	builder.WriteString(", ")
 	builder.WriteString("document_name=")
 	builder.WriteString(r.DocumentName)

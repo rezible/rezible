@@ -447,11 +447,11 @@ func init() {
 	systemanalysisFields := schema.SystemAnalysis{}.Fields()
 	_ = systemanalysisFields
 	// systemanalysisDescCreatedAt is the schema descriptor for created_at field.
-	systemanalysisDescCreatedAt := systemanalysisFields[2].Descriptor()
+	systemanalysisDescCreatedAt := systemanalysisFields[1].Descriptor()
 	// systemanalysis.DefaultCreatedAt holds the default value on creation for the created_at field.
 	systemanalysis.DefaultCreatedAt = systemanalysisDescCreatedAt.Default.(func() time.Time)
 	// systemanalysisDescUpdatedAt is the schema descriptor for updated_at field.
-	systemanalysisDescUpdatedAt := systemanalysisFields[3].Descriptor()
+	systemanalysisDescUpdatedAt := systemanalysisFields[2].Descriptor()
 	// systemanalysis.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	systemanalysis.DefaultUpdatedAt = systemanalysisDescUpdatedAt.Default.(func() time.Time)
 	// systemanalysis.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

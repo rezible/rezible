@@ -56,11 +56,6 @@ func IDLTE(id uuid.UUID) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldID, id))
 }
 
-// RetrospectiveID applies equality check predicate on the "retrospective_id" field. It's identical to RetrospectiveIDEQ.
-func RetrospectiveID(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldRetrospectiveID, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldCreatedAt, v))
@@ -69,26 +64,6 @@ func CreatedAt(v time.Time) predicate.SystemAnalysis {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// RetrospectiveIDEQ applies the EQ predicate on the "retrospective_id" field.
-func RetrospectiveIDEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldEQ(FieldRetrospectiveID, v))
-}
-
-// RetrospectiveIDNEQ applies the NEQ predicate on the "retrospective_id" field.
-func RetrospectiveIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNEQ(FieldRetrospectiveID, v))
-}
-
-// RetrospectiveIDIn applies the In predicate on the "retrospective_id" field.
-func RetrospectiveIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldIn(FieldRetrospectiveID, vs...))
-}
-
-// RetrospectiveIDNotIn applies the NotIn predicate on the "retrospective_id" field.
-func RetrospectiveIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
-	return predicate.SystemAnalysis(sql.FieldNotIn(FieldRetrospectiveID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -176,7 +151,7 @@ func HasRetrospective() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, RetrospectiveTable, RetrospectiveColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

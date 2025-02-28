@@ -32,6 +32,20 @@ func (rc *RetrospectiveCreate) SetIncidentID(u uuid.UUID) *RetrospectiveCreate {
 	return rc
 }
 
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (rc *RetrospectiveCreate) SetSystemAnalysisID(u uuid.UUID) *RetrospectiveCreate {
+	rc.mutation.SetSystemAnalysisID(u)
+	return rc
+}
+
+// SetNillableSystemAnalysisID sets the "system_analysis_id" field if the given value is not nil.
+func (rc *RetrospectiveCreate) SetNillableSystemAnalysisID(u *uuid.UUID) *RetrospectiveCreate {
+	if u != nil {
+		rc.SetSystemAnalysisID(*u)
+	}
+	return rc
+}
+
 // SetDocumentName sets the "document_name" field.
 func (rc *RetrospectiveCreate) SetDocumentName(s string) *RetrospectiveCreate {
 	rc.mutation.SetDocumentName(s)
@@ -84,19 +98,9 @@ func (rc *RetrospectiveCreate) AddDiscussions(r ...*RetrospectiveDiscussion) *Re
 	return rc.AddDiscussionIDs(ids...)
 }
 
-// AddSystemAnalysiIDs adds the "system_analysis" edge to the SystemAnalysis entity by IDs.
-func (rc *RetrospectiveCreate) AddSystemAnalysiIDs(ids ...uuid.UUID) *RetrospectiveCreate {
-	rc.mutation.AddSystemAnalysiIDs(ids...)
-	return rc
-}
-
-// AddSystemAnalysis adds the "system_analysis" edges to the SystemAnalysis entity.
-func (rc *RetrospectiveCreate) AddSystemAnalysis(s ...*SystemAnalysis) *RetrospectiveCreate {
-	ids := make([]uuid.UUID, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
-	}
-	return rc.AddSystemAnalysiIDs(ids...)
+// SetSystemAnalysis sets the "system_analysis" edge to the SystemAnalysis entity.
+func (rc *RetrospectiveCreate) SetSystemAnalysis(s *SystemAnalysis) *RetrospectiveCreate {
+	return rc.SetSystemAnalysisID(s.ID)
 }
 
 // Mutation returns the RetrospectiveMutation object of the builder.
@@ -250,7 +254,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 	}
 	if nodes := rc.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   retrospective.SystemAnalysisTable,
 			Columns: []string{retrospective.SystemAnalysisColumn},
@@ -262,6 +266,7 @@ func (rc *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.SystemAnalysisID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -325,6 +330,24 @@ func (u *RetrospectiveUpsert) SetIncidentID(v uuid.UUID) *RetrospectiveUpsert {
 // UpdateIncidentID sets the "incident_id" field to the value that was provided on create.
 func (u *RetrospectiveUpsert) UpdateIncidentID() *RetrospectiveUpsert {
 	u.SetExcluded(retrospective.FieldIncidentID)
+	return u
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *RetrospectiveUpsert) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldSystemAnalysisID, v)
+	return u
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateSystemAnalysisID() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldSystemAnalysisID)
+	return u
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *RetrospectiveUpsert) ClearSystemAnalysisID() *RetrospectiveUpsert {
+	u.SetNull(retrospective.FieldSystemAnalysisID)
 	return u
 }
 
@@ -423,6 +446,27 @@ func (u *RetrospectiveUpsertOne) SetIncidentID(v uuid.UUID) *RetrospectiveUpsert
 func (u *RetrospectiveUpsertOne) UpdateIncidentID() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *RetrospectiveUpsertOne) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetSystemAnalysisID(v)
+	})
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateSystemAnalysisID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateSystemAnalysisID()
+	})
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *RetrospectiveUpsertOne) ClearSystemAnalysisID() *RetrospectiveUpsertOne {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearSystemAnalysisID()
 	})
 }
 
@@ -694,6 +738,27 @@ func (u *RetrospectiveUpsertBulk) SetIncidentID(v uuid.UUID) *RetrospectiveUpser
 func (u *RetrospectiveUpsertBulk) UpdateIncidentID() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
 		s.UpdateIncidentID()
+	})
+}
+
+// SetSystemAnalysisID sets the "system_analysis_id" field.
+func (u *RetrospectiveUpsertBulk) SetSystemAnalysisID(v uuid.UUID) *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.SetSystemAnalysisID(v)
+	})
+}
+
+// UpdateSystemAnalysisID sets the "system_analysis_id" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateSystemAnalysisID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.UpdateSystemAnalysisID()
+	})
+}
+
+// ClearSystemAnalysisID clears the value of the "system_analysis_id" field.
+func (u *RetrospectiveUpsertBulk) ClearSystemAnalysisID() *RetrospectiveUpsertBulk {
+	return u.Update(func(s *RetrospectiveUpsert) {
+		s.ClearSystemAnalysisID()
 	})
 }
 

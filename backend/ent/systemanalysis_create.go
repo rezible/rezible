@@ -28,12 +28,6 @@ type SystemAnalysisCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (sac *SystemAnalysisCreate) SetRetrospectiveID(u uuid.UUID) *SystemAnalysisCreate {
-	sac.mutation.SetRetrospectiveID(u)
-	return sac
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (sac *SystemAnalysisCreate) SetCreatedAt(t time.Time) *SystemAnalysisCreate {
 	sac.mutation.SetCreatedAt(t)
@@ -73,6 +67,12 @@ func (sac *SystemAnalysisCreate) SetNillableID(u *uuid.UUID) *SystemAnalysisCrea
 	if u != nil {
 		sac.SetID(*u)
 	}
+	return sac
+}
+
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
+func (sac *SystemAnalysisCreate) SetRetrospectiveID(id uuid.UUID) *SystemAnalysisCreate {
+	sac.mutation.SetRetrospectiveID(id)
 	return sac
 }
 
@@ -177,9 +177,6 @@ func (sac *SystemAnalysisCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (sac *SystemAnalysisCreate) check() error {
-	if _, ok := sac.mutation.RetrospectiveID(); !ok {
-		return &ValidationError{Name: "retrospective_id", err: errors.New(`ent: missing required field "SystemAnalysis.retrospective_id"`)}
-	}
 	if _, ok := sac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysis.created_at"`)}
 	}
@@ -235,7 +232,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 	}
 	if nodes := sac.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   systemanalysis.RetrospectiveTable,
 			Columns: []string{systemanalysis.RetrospectiveColumn},
@@ -247,7 +244,6 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.RetrospectiveID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sac.mutation.ComponentsIDs(); len(nodes) > 0 {
@@ -312,7 +308,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 // of the `INSERT` statement. For example:
 //
 //	client.SystemAnalysis.Create().
-//		SetRetrospectiveID(v).
+//		SetCreatedAt(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -321,7 +317,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisUpsert) {
-//			SetRetrospectiveID(v+v).
+//			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
 func (sac *SystemAnalysisCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisUpsertOne {
@@ -356,18 +352,6 @@ type (
 		*sql.UpdateSet
 	}
 )
-
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (u *SystemAnalysisUpsert) SetRetrospectiveID(v uuid.UUID) *SystemAnalysisUpsert {
-	u.Set(systemanalysis.FieldRetrospectiveID, v)
-	return u
-}
-
-// UpdateRetrospectiveID sets the "retrospective_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsert) UpdateRetrospectiveID() *SystemAnalysisUpsert {
-	u.SetExcluded(systemanalysis.FieldRetrospectiveID)
-	return u
-}
 
 // SetCreatedAt sets the "created_at" field.
 func (u *SystemAnalysisUpsert) SetCreatedAt(v time.Time) *SystemAnalysisUpsert {
@@ -439,20 +423,6 @@ func (u *SystemAnalysisUpsertOne) Update(set func(*SystemAnalysisUpsert)) *Syste
 		set(&SystemAnalysisUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (u *SystemAnalysisUpsertOne) SetRetrospectiveID(v uuid.UUID) *SystemAnalysisUpsertOne {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.SetRetrospectiveID(v)
-	})
-}
-
-// UpdateRetrospectiveID sets the "retrospective_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsertOne) UpdateRetrospectiveID() *SystemAnalysisUpsertOne {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.UpdateRetrospectiveID()
-	})
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -619,7 +589,7 @@ func (sacb *SystemAnalysisCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisUpsert) {
-//			SetRetrospectiveID(v+v).
+//			SetCreatedAt(v+v).
 //		}).
 //		Exec(ctx)
 func (sacb *SystemAnalysisCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisUpsertBulk {
@@ -696,20 +666,6 @@ func (u *SystemAnalysisUpsertBulk) Update(set func(*SystemAnalysisUpsert)) *Syst
 		set(&SystemAnalysisUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetRetrospectiveID sets the "retrospective_id" field.
-func (u *SystemAnalysisUpsertBulk) SetRetrospectiveID(v uuid.UUID) *SystemAnalysisUpsertBulk {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.SetRetrospectiveID(v)
-	})
-}
-
-// UpdateRetrospectiveID sets the "retrospective_id" field to the value that was provided on create.
-func (u *SystemAnalysisUpsertBulk) UpdateRetrospectiveID() *SystemAnalysisUpsertBulk {
-	return u.Update(func(s *SystemAnalysisUpsert) {
-		s.UpdateRetrospectiveID()
-	})
 }
 
 // SetCreatedAt sets the "created_at" field.
