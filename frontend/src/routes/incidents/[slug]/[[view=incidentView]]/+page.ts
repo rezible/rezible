@@ -1,7 +1,7 @@
 import { getIncidentOptions } from "$lib/api";
 import { redirect } from "@sveltejs/kit";
 import { validate as isValidUUID } from "uuid";
-import type { LayoutLoad } from "../$types";
+import type { PageLoad } from "./$types";
 
 export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();
@@ -17,4 +17,4 @@ export const load = (async ({ params, parent, url }) => {
 	}
 
 	return { id };
-}) satisfies LayoutLoad;
+}) satisfies PageLoad;
