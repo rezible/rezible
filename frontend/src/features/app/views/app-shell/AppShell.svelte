@@ -16,7 +16,7 @@
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-200 text-surface-content">
 	{#if !session.user}
-		<div class="grid grid-rows-layout flex-1">
+		<div class="grid grid-rows-app-shell-layout flex-1">
 			<nav class="w-full h-16 border-b">
 				<HeaderLogo />
 			</nav>
@@ -28,7 +28,7 @@
 	{:else}
 		<Sidebar />
 
-		<div class="grid grid-rows-layout flex-1">
+		<div class="grid grid-rows-app-shell-layout flex-1">
 			<nav class="w-full h-16">
 				<Header />
 			</nav>

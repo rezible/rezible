@@ -1,4 +1,3 @@
-const colors = require('tailwindcss/colors');
 const layerstack = require("@layerstack/tailwind/plugin");
 
 /** @type {import('tailwindcss').Config} */
@@ -9,17 +8,15 @@ module.exports = {
 		"../node_modules/layerchart/**/*.{svelte,js}",
 	],
 	plugins: [
-		require("@tailwindcss/typography"),
 		layerstack({ colorSpace: "oklch" }),
 	],
 	ux: {
 		themes: require("./src/themes.json"),
 	},
-	// darkMode: 'selector',
 	theme: {
 		extend: {
 			gridTemplateRows: {
-				layout: "auto 1fr",
+				"app-shell-layout": "auto 1fr",
 			},
 		},
 	},
