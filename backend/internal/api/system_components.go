@@ -2,16 +2,18 @@ package api
 
 import (
 	"context"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type systemComponentsHandler struct {
-	db *ent.Client
+	db         *ent.Client
+	components rez.SystemComponentsService
 }
 
-func newSystemComponentsHandler(db *ent.Client) *systemComponentsHandler {
-	return &systemComponentsHandler{db: db}
+func newSystemComponentsHandler(db *ent.Client, components rez.SystemComponentsService) *systemComponentsHandler {
+	return &systemComponentsHandler{db: db, components: components}
 }
 
 func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
@@ -37,27 +39,31 @@ func (s *systemComponentsHandler) CreateSystemComponent(ctx context.Context, req
 
 	attr := request.Body.Attributes
 
-	var created *ent.SystemComponent
-
-	createComponentTx := func(tx *ent.Tx) error {
-		create := tx.SystemComponent.Create().
-			SetName(attr.Name).
-			SetDescription(attr.Description).
-			SetKindID(attr.KindId)
-
-		cmp, createErr := create.Save(ctx)
-		if createErr != nil {
-			return createErr
-		}
-
-		// TODO: controls, constraints & signals
-
-		created = cmp
-
-		return nil
+	cmp := ent.SystemComponent{
+		Name:        attr.Name,
+		KindID:      attr.KindId,
+		Description: attr.Description,
+		Properties:  attr.Properties,
+		Edges:       ent.SystemComponentEdges{},
 	}
 
-	if createErr := ent.WithTx(ctx, s.db, createComponentTx); createErr != nil {
+	cmp.Edges.Constraints = make([]*ent.SystemComponentConstraint, len(attr.Constraints))
+	for i, cstr := range attr.Constraints {
+		cmp.Edges.Constraints[i] = &ent.SystemComponentConstraint{Label: cstr.Label, Description: cstr.Description}
+	}
+
+	cmp.Edges.Controls = make([]*ent.SystemComponentControl, len(attr.Controls))
+	for i, ctrl := range attr.Controls {
+		cmp.Edges.Controls[i] = &ent.SystemComponentControl{Label: ctrl.Label, Description: ctrl.Description}
+	}
+
+	cmp.Edges.Signals = make([]*ent.SystemComponentSignal, len(attr.Signals))
+	for i, sig := range attr.Signals {
+		cmp.Edges.Signals[i] = &ent.SystemComponentSignal{Label: sig.Label, Description: sig.Description}
+	}
+
+	created, createErr := s.components.Create(ctx, cmp)
+	if createErr != nil {
 		return nil, detailError("failed to create system component", createErr)
 	}
 	resp.Body.Data = oapi.SystemComponentFromEnt(created)

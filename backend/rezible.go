@@ -112,6 +112,8 @@ type (
 	SystemComponentsService interface {
 		SyncData(context.Context) error
 
+		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
+
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
 		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)

@@ -73,7 +73,7 @@ func NewHandler(
 		oncallHandler:             newOncallHandler(auth, users, incidents, oncall, alerts),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, cmp),
-		systemComponentsHandler:   newSystemComponentsHandler(db),
+		systemComponentsHandler:   newSystemComponentsHandler(db, cmp),
 		subscriptionsHandler:      newSubscriptionsHandler(),
 		teamsHandler:              newTeamsHandler(db.Team),
 		usersHandler:              newUsersHandler(users),
