@@ -19,10 +19,12 @@
 	import ContextMenu from "./ContextMenu.svelte";
 	import ConnectionLine from "./ConnectionLine.svelte";
 	import ActionsBar from "./SystemDiagramActionsBar.svelte";
-	import ComponentNode from "./nodes/ComponentNode.svelte";
-	import RelationshipEdge from "./edges/RelationshipEdge.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
 	import AddingComponentGhostNode from "./AddingComponentGhostNode.svelte";
+	import ComponentNode from "./ComponentNode.svelte";
+	import RelationshipEdge from "./RelationshipEdge.svelte";
+	import ComponentDialog from "./component-dialog/ComponentDialog.svelte";
+	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -106,3 +108,7 @@
 		<ActionsBar />
 	</div>
 </SvelteFlowProvider>
+
+<ComponentDialog />
+
+<RelationshipDialog />

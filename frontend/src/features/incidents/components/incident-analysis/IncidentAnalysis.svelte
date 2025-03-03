@@ -6,8 +6,6 @@
 
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
-	import ComponentDialog from "./component-dialog/ComponentDialog.svelte";
-	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
 
 	type Props = {
 		id: string;
@@ -39,7 +37,3 @@
 		</Button>
 	</div>
 {/snippet}
-
-<ComponentDialog />
-
-<RelationshipDialog />

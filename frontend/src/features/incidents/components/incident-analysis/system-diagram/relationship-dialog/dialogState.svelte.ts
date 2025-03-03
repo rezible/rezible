@@ -1,5 +1,6 @@
 import { createMutation } from "@tanstack/svelte-query";
 import { v4 as uuidv4 } from "uuid";
+import { SvelteSet } from "svelte/reactivity";
 import {
 	createSystemAnalysisRelationshipMutation,
 	updateSystemAnalysisRelationshipMutation,
@@ -10,12 +11,9 @@ import {
 	type SystemAnalysisRelationshipControlActionAttributes,
 	type SystemAnalysisRelationshipFeedbackSignal,
 	type SystemAnalysisRelationshipFeedbackSignalAttributes,
-	type SystemComponentControl,
-	type SystemComponentSignal,
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
-import { analysis } from "../analysisState.svelte";
-import { SvelteSet } from "svelte/reactivity";
+import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 
 const compareControlActions = (a: SystemAnalysisRelationshipControlAction, b: SystemAnalysisRelationshipControlAction) => {
 	if (a.id !== b.id) return false;

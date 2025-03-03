@@ -14,10 +14,10 @@
 
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
-	import { componentDialog } from "$features/incidents/components/incident-analysis/component-dialog/dialogState.svelte";
-	import { diagram } from "./diagram.svelte";
-	import { Button, Header, Icon } from "svelte-ux";
-	import { mdiPlusCircle, mdiPlusCircleOutline, mdiTrashCan } from "@mdi/js";
+	import { Button, Header } from "svelte-ux";
+	import { mdiPlusCircle, mdiTrashCan } from "@mdi/js";
+	import { componentDialog } from "$features/incidents/components/incident-analysis/system-diagram/component-dialog/dialogState.svelte";
+	import { diagram } from "$features/incidents/components/incident-analysis/system-diagram/diagram.svelte";
 
 	const props = $derived(diagram.ctxMenuProps);
 	const nodes = useNodes();

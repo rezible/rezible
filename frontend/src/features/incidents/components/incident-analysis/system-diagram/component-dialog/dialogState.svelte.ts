@@ -18,9 +18,9 @@ import {
 	type SystemComponentKind,
 	type UpdateSystemComponentAttributes,
 } from "$lib/api";
-import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 import type { XYPosition } from "@xyflow/svelte";
-import { diagram } from "../system-diagram/diagram.svelte";
+import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
+import { diagram } from "$features/incidents/components/incident-analysis/system-diagram/diagram.svelte";
 
 const emptyComponentKind = () => ({
 	id: "",

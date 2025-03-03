@@ -2,9 +2,9 @@
 	import { ViewportPortal } from "@xyflow/svelte";
 	import { Button, ButtonGroup } from "svelte-ux";
 	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
+	import { componentDialog } from "$features/incidents/components/incident-analysis/system-diagram/component-dialog/dialogState.svelte";
+	import { relationshipDialog } from "$features/incidents/components/incident-analysis/system-diagram/relationship-dialog/dialogState.svelte";
 	import { diagram } from "./diagram.svelte";
-	import { componentDialog } from "$features/incidents/components/incident-analysis/component-dialog/dialogState.svelte";
-	import { relationshipDialog } from "$features/incidents/components/incident-analysis/relationship-dialog/dialogState.svelte";
 
 	const { node, edge } = $derived(diagram.selected);
 	const component = $derived(node?.data ? (node.data.component as SystemAnalysisComponent) : undefined);

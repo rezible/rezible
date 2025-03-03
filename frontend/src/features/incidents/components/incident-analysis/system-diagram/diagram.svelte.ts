@@ -14,7 +14,7 @@ import {
 
 import type { SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent } from "$lib/api";
 import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
-import { relationshipDialog } from "$features/incidents/components/incident-analysis/relationship-dialog/dialogState.svelte";
+import { relationshipDialog } from "$features/incidents/components/incident-analysis/system-diagram/relationship-dialog/dialogState.svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 

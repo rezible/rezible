@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiShapeSquareRoundedPlus, mdiTimelinePlus } from "@mdi/js";
+	import { mdiTimelinePlus } from "@mdi/js";
 	import { Button, Icon } from "svelte-ux";
 	import { eventDialog } from "./event-dialog/dialogState.svelte";
 
