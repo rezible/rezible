@@ -46,8 +46,8 @@ func (SystemAnalysisComponent) Fields() []ent.Field {
 		field.UUID("analysis_id", uuid.UUID{}),
 		field.UUID("component_id", uuid.UUID{}),
 		field.Text("description").Optional(),
-		field.Int("pos_x").Default(0),
-		field.Int("pos_y").Default(0),
+		field.Float("pos_x").Default(0),
+		field.Float("pos_y").Default(0),
 		field.Time("created_at").Default(time.Now),
 	}
 }

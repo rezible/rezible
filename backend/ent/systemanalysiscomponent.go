@@ -27,9 +27,9 @@ type SystemAnalysisComponent struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// PosX holds the value of the "pos_x" field.
-	PosX int `json:"pos_x,omitempty"`
+	PosX float64 `json:"pos_x,omitempty"`
 	// PosY holds the value of the "pos_y" field.
-	PosY int `json:"pos_y,omitempty"`
+	PosY float64 `json:"pos_y,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -77,7 +77,7 @@ func (*SystemAnalysisComponent) scanValues(columns []string) ([]any, error) {
 	for i := range columns {
 		switch columns[i] {
 		case systemanalysiscomponent.FieldPosX, systemanalysiscomponent.FieldPosY:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(sql.NullFloat64)
 		case systemanalysiscomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemanalysiscomponent.FieldCreatedAt:
@@ -124,16 +124,16 @@ func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any)
 				sac.Description = value.String
 			}
 		case systemanalysiscomponent.FieldPosX:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field pos_x", values[i])
 			} else if value.Valid {
-				sac.PosX = int(value.Int64)
+				sac.PosX = value.Float64
 			}
 		case systemanalysiscomponent.FieldPosY:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
 				return fmt.Errorf("unexpected type %T for field pos_y", values[i])
 			} else if value.Valid {
-				sac.PosY = int(value.Int64)
+				sac.PosY = value.Float64
 			}
 		case systemanalysiscomponent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {

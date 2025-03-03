@@ -957,8 +957,8 @@ var (
 	SystemAnalysisComponentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "pos_x", Type: field.TypeInt, Default: 0},
-		{Name: "pos_y", Type: field.TypeInt, Default: 0},
+		{Name: "pos_x", Type: field.TypeFloat64, Default: 0},
+		{Name: "pos_y", Type: field.TypeFloat64, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "analysis_id", Type: field.TypeUUID},
 		{Name: "component_id", Type: field.TypeUUID},

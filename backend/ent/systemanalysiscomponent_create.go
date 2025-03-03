@@ -53,29 +53,29 @@ func (sacc *SystemAnalysisComponentCreate) SetNillableDescription(s *string) *Sy
 }
 
 // SetPosX sets the "pos_x" field.
-func (sacc *SystemAnalysisComponentCreate) SetPosX(i int) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetPosX(i)
+func (sacc *SystemAnalysisComponentCreate) SetPosX(f float64) *SystemAnalysisComponentCreate {
+	sacc.mutation.SetPosX(f)
 	return sacc
 }
 
 // SetNillablePosX sets the "pos_x" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillablePosX(i *int) *SystemAnalysisComponentCreate {
-	if i != nil {
-		sacc.SetPosX(*i)
+func (sacc *SystemAnalysisComponentCreate) SetNillablePosX(f *float64) *SystemAnalysisComponentCreate {
+	if f != nil {
+		sacc.SetPosX(*f)
 	}
 	return sacc
 }
 
 // SetPosY sets the "pos_y" field.
-func (sacc *SystemAnalysisComponentCreate) SetPosY(i int) *SystemAnalysisComponentCreate {
-	sacc.mutation.SetPosY(i)
+func (sacc *SystemAnalysisComponentCreate) SetPosY(f float64) *SystemAnalysisComponentCreate {
+	sacc.mutation.SetPosY(f)
 	return sacc
 }
 
 // SetNillablePosY sets the "pos_y" field if the given value is not nil.
-func (sacc *SystemAnalysisComponentCreate) SetNillablePosY(i *int) *SystemAnalysisComponentCreate {
-	if i != nil {
-		sacc.SetPosY(*i)
+func (sacc *SystemAnalysisComponentCreate) SetNillablePosY(f *float64) *SystemAnalysisComponentCreate {
+	if f != nil {
+		sacc.SetPosY(*f)
 	}
 	return sacc
 }
@@ -235,11 +235,11 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 		_node.Description = value
 	}
 	if value, ok := sacc.mutation.PosX(); ok {
-		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeInt, value)
+		_spec.SetField(systemanalysiscomponent.FieldPosX, field.TypeFloat64, value)
 		_node.PosX = value
 	}
 	if value, ok := sacc.mutation.PosY(); ok {
-		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeInt, value)
+		_spec.SetField(systemanalysiscomponent.FieldPosY, field.TypeFloat64, value)
 		_node.PosY = value
 	}
 	if value, ok := sacc.mutation.CreatedAt(); ok {
@@ -375,7 +375,7 @@ func (u *SystemAnalysisComponentUpsert) ClearDescription() *SystemAnalysisCompon
 }
 
 // SetPosX sets the "pos_x" field.
-func (u *SystemAnalysisComponentUpsert) SetPosX(v int) *SystemAnalysisComponentUpsert {
+func (u *SystemAnalysisComponentUpsert) SetPosX(v float64) *SystemAnalysisComponentUpsert {
 	u.Set(systemanalysiscomponent.FieldPosX, v)
 	return u
 }
@@ -387,13 +387,13 @@ func (u *SystemAnalysisComponentUpsert) UpdatePosX() *SystemAnalysisComponentUps
 }
 
 // AddPosX adds v to the "pos_x" field.
-func (u *SystemAnalysisComponentUpsert) AddPosX(v int) *SystemAnalysisComponentUpsert {
+func (u *SystemAnalysisComponentUpsert) AddPosX(v float64) *SystemAnalysisComponentUpsert {
 	u.Add(systemanalysiscomponent.FieldPosX, v)
 	return u
 }
 
 // SetPosY sets the "pos_y" field.
-func (u *SystemAnalysisComponentUpsert) SetPosY(v int) *SystemAnalysisComponentUpsert {
+func (u *SystemAnalysisComponentUpsert) SetPosY(v float64) *SystemAnalysisComponentUpsert {
 	u.Set(systemanalysiscomponent.FieldPosY, v)
 	return u
 }
@@ -405,7 +405,7 @@ func (u *SystemAnalysisComponentUpsert) UpdatePosY() *SystemAnalysisComponentUps
 }
 
 // AddPosY adds v to the "pos_y" field.
-func (u *SystemAnalysisComponentUpsert) AddPosY(v int) *SystemAnalysisComponentUpsert {
+func (u *SystemAnalysisComponentUpsert) AddPosY(v float64) *SystemAnalysisComponentUpsert {
 	u.Add(systemanalysiscomponent.FieldPosY, v)
 	return u
 }
@@ -520,14 +520,14 @@ func (u *SystemAnalysisComponentUpsertOne) ClearDescription() *SystemAnalysisCom
 }
 
 // SetPosX sets the "pos_x" field.
-func (u *SystemAnalysisComponentUpsertOne) SetPosX(v int) *SystemAnalysisComponentUpsertOne {
+func (u *SystemAnalysisComponentUpsertOne) SetPosX(v float64) *SystemAnalysisComponentUpsertOne {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.SetPosX(v)
 	})
 }
 
 // AddPosX adds v to the "pos_x" field.
-func (u *SystemAnalysisComponentUpsertOne) AddPosX(v int) *SystemAnalysisComponentUpsertOne {
+func (u *SystemAnalysisComponentUpsertOne) AddPosX(v float64) *SystemAnalysisComponentUpsertOne {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.AddPosX(v)
 	})
@@ -541,14 +541,14 @@ func (u *SystemAnalysisComponentUpsertOne) UpdatePosX() *SystemAnalysisComponent
 }
 
 // SetPosY sets the "pos_y" field.
-func (u *SystemAnalysisComponentUpsertOne) SetPosY(v int) *SystemAnalysisComponentUpsertOne {
+func (u *SystemAnalysisComponentUpsertOne) SetPosY(v float64) *SystemAnalysisComponentUpsertOne {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.SetPosY(v)
 	})
 }
 
 // AddPosY adds v to the "pos_y" field.
-func (u *SystemAnalysisComponentUpsertOne) AddPosY(v int) *SystemAnalysisComponentUpsertOne {
+func (u *SystemAnalysisComponentUpsertOne) AddPosY(v float64) *SystemAnalysisComponentUpsertOne {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.AddPosY(v)
 	})
@@ -840,14 +840,14 @@ func (u *SystemAnalysisComponentUpsertBulk) ClearDescription() *SystemAnalysisCo
 }
 
 // SetPosX sets the "pos_x" field.
-func (u *SystemAnalysisComponentUpsertBulk) SetPosX(v int) *SystemAnalysisComponentUpsertBulk {
+func (u *SystemAnalysisComponentUpsertBulk) SetPosX(v float64) *SystemAnalysisComponentUpsertBulk {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.SetPosX(v)
 	})
 }
 
 // AddPosX adds v to the "pos_x" field.
-func (u *SystemAnalysisComponentUpsertBulk) AddPosX(v int) *SystemAnalysisComponentUpsertBulk {
+func (u *SystemAnalysisComponentUpsertBulk) AddPosX(v float64) *SystemAnalysisComponentUpsertBulk {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.AddPosX(v)
 	})
@@ -861,14 +861,14 @@ func (u *SystemAnalysisComponentUpsertBulk) UpdatePosX() *SystemAnalysisComponen
 }
 
 // SetPosY sets the "pos_y" field.
-func (u *SystemAnalysisComponentUpsertBulk) SetPosY(v int) *SystemAnalysisComponentUpsertBulk {
+func (u *SystemAnalysisComponentUpsertBulk) SetPosY(v float64) *SystemAnalysisComponentUpsertBulk {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.SetPosY(v)
 	})
 }
 
 // AddPosY adds v to the "pos_y" field.
-func (u *SystemAnalysisComponentUpsertBulk) AddPosY(v int) *SystemAnalysisComponentUpsertBulk {
+func (u *SystemAnalysisComponentUpsertBulk) AddPosY(v float64) *SystemAnalysisComponentUpsertBulk {
 	return u.Update(func(s *SystemAnalysisComponentUpsert) {
 		s.AddPosY(v)
 	})

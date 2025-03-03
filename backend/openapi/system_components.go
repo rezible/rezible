@@ -287,8 +287,9 @@ var ListSystemComponentRelationships = huma.Operation{
 
 type ListSystemComponentRelationshipsRequest struct {
 	ListRequest
-	SourceId uuid.UUID `query:"sourceId"`
-	TargetId uuid.UUID `query:"targetId"`
+	ComponentId uuid.UUID `json:"componentId"`
+	SourceId    uuid.UUID `query:"sourceId"`
+	TargetId    uuid.UUID `query:"targetId"`
 }
 type ListSystemComponentRelationshipsResponse PaginatedResponse[SystemComponentRelationship]
 

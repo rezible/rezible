@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -15,26 +16,64 @@ func newIncidentEventsHandler(db *ent.Client) *incidentEventsHandler {
 	return &incidentEventsHandler{db}
 }
 
-func (i *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request *oapi.ListIncidentEventsRequest) (*oapi.ListIncidentEventsResponse, error) {
+func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request *oapi.ListIncidentEventsRequest) (*oapi.ListIncidentEventsResponse, error) {
 	var resp oapi.ListIncidentEventsResponse
 
+	query := h.db.IncidentEvent.Query().
+		Where(incidentevent.IncidentID(request.Id))
+	events, eventsErr := query.All(ctx)
+	if eventsErr != nil {
+		return nil, detailError("failed to list incident events", eventsErr)
+	}
+	resp.Body.Data = make([]oapi.IncidentEvent, len(events))
+	for i, e := range events {
+		resp.Body.Data[i] = oapi.IncidentEventFromEnt(e)
+	}
+
 	return &resp, nil
 }
 
-func (i *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request *oapi.CreateIncidentEventRequest) (*oapi.CreateIncidentEventResponse, error) {
+func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request *oapi.CreateIncidentEventRequest) (*oapi.CreateIncidentEventResponse, error) {
 	var resp oapi.CreateIncidentEventResponse
 
+	attr := request.Body.Attributes
+	create := h.db.IncidentEvent.Create().
+		SetIncidentID(request.Id).
+		SetTitle(attr.Title).
+		SetTimestamp(attr.Timestamp)
+
+	created, createErr := create.Save(ctx)
+	if createErr != nil {
+		return nil, detailError("failed to create incident event", createErr)
+	}
+	resp.Body.Data = oapi.IncidentEventFromEnt(created)
+
 	return &resp, nil
 }
 
-func (i *incidentEventsHandler) UpdateIncidentEvent(ctx context.Context, request *oapi.UpdateIncidentEventRequest) (*oapi.UpdateIncidentEventResponse, error) {
+func (h *incidentEventsHandler) UpdateIncidentEvent(ctx context.Context, request *oapi.UpdateIncidentEventRequest) (*oapi.UpdateIncidentEventResponse, error) {
 	var resp oapi.UpdateIncidentEventResponse
 
+	attr := request.Body.Attributes
+	update := h.db.IncidentEvent.UpdateOneID(request.Id).
+		SetNillableTitle(attr.Title).
+		SetNillableTimestamp(attr.Timestamp)
+
+	updated, updateErr := update.Save(ctx)
+	if updateErr != nil {
+		return nil, detailError("failed to update incident event", updateErr)
+	}
+	resp.Body.Data = oapi.IncidentEventFromEnt(updated)
+
 	return &resp, nil
 }
 
-func (i *incidentEventsHandler) DeleteIncidentEvent(ctx context.Context, request *oapi.DeleteIncidentEventRequest) (*oapi.DeleteIncidentEventResponse, error) {
+func (h *incidentEventsHandler) DeleteIncidentEvent(ctx context.Context, request *oapi.DeleteIncidentEventRequest) (*oapi.DeleteIncidentEventResponse, error) {
 	var resp oapi.DeleteIncidentEventResponse
+
+	if deleteErr := h.db.IncidentEvent.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
+		return nil, detailError("failed to delete incident event", deleteErr)
+	}
 
 	return &resp, nil
 }
@@ -275,7 +314,7 @@ var incidentEventFactorCategories = []oapi.IncidentEventContributingFactorCatego
 	},
 }
 
-func (i *incidentEventsHandler) ListIncidentEventContributingFactors(ctx context.Context, request *oapi.ListIncidentEventContributingFactorsRequest) (*oapi.ListIncidentEventContributingFactorsResponse, error) {
+func (h *incidentEventsHandler) ListIncidentEventContributingFactors(ctx context.Context, request *oapi.ListIncidentEventContributingFactorsRequest) (*oapi.ListIncidentEventContributingFactorsResponse, error) {
 	var resp oapi.ListIncidentEventContributingFactorsResponse
 
 	resp.Body.Data = incidentEventFactorCategories

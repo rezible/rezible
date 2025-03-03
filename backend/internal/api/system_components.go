@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -19,8 +21,10 @@ func newSystemComponentsHandler(db *ent.Client, components rez.SystemComponentsS
 func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, request *oapi.ListSystemComponentsRequest) (*oapi.ListSystemComponentsResponse, error) {
 	var resp oapi.ListSystemComponentsResponse
 
-	query := s.db.SystemComponent.Query()
-	// TODO ListParams
+	query := s.db.SystemComponent.Query().
+		Limit(request.Limit).
+		Offset(request.Offset)
+	// TODO ListParams Search & Archived
 
 	cmps, queryErr := query.All(ctx)
 	if queryErr != nil {
@@ -118,11 +122,48 @@ func (s *systemComponentsHandler) ArchiveSystemComponent(ctx context.Context, re
 func (s *systemComponentsHandler) ListSystemComponentRelationships(ctx context.Context, request *oapi.ListSystemComponentRelationshipsRequest) (*oapi.ListSystemComponentRelationshipsResponse, error) {
 	var resp oapi.ListSystemComponentRelationshipsResponse
 
+	query := s.db.SystemComponentRelationship.Query().
+		Limit(request.Limit).
+		Offset(request.Offset)
+
+	srcPred := systemcomponentrelationship.SourceID(request.SourceId)
+	if request.SourceId != uuid.Nil {
+		query.Where(srcPred)
+	}
+	targetPred := systemcomponentrelationship.TargetID(request.TargetId)
+	if request.TargetId != uuid.Nil {
+		query.Where(targetPred)
+	}
+	if request.ComponentId != uuid.Nil {
+		query.Where(systemcomponentrelationship.Or(srcPred, targetPred))
+	}
+
+	rels, relsErr := query.All(ctx)
+	if relsErr != nil {
+		return nil, detailError("failed to query system component relationships", relsErr)
+	}
+	resp.Body.Data = make([]oapi.SystemComponentRelationship, len(rels))
+	for i, r := range rels {
+		resp.Body.Data[i] = oapi.SystemComponentRelationshipFromEnt(r)
+	}
+
 	return &resp, nil
 }
 
 func (s *systemComponentsHandler) CreateSystemComponentRelationship(ctx context.Context, request *oapi.CreateSystemComponentRelationshipRequest) (*oapi.CreateSystemComponentRelationshipResponse, error) {
 	var resp oapi.CreateSystemComponentRelationshipResponse
+
+	attr := request.Body.Attributes
+	create := s.db.SystemComponentRelationship.Create().
+		SetSourceID(attr.SourceComponentId).
+		SetTargetID(attr.TargetComponentId).
+		SetDescription(attr.Description)
+
+	created, createErr := create.Save(ctx)
+	if createErr != nil {
+		return nil, detailError("failed to create system component relationship", createErr)
+	}
+	resp.Body.Data = oapi.SystemComponentRelationshipFromEnt(created)
 
 	return &resp, nil
 }
@@ -130,17 +171,37 @@ func (s *systemComponentsHandler) CreateSystemComponentRelationship(ctx context.
 func (s *systemComponentsHandler) GetSystemComponentRelationship(ctx context.Context, request *oapi.GetSystemComponentRelationshipRequest) (*oapi.GetSystemComponentRelationshipResponse, error) {
 	var resp oapi.GetSystemComponentRelationshipResponse
 
+	rel, relErr := s.db.SystemComponentRelationship.Get(ctx, request.Id)
+	if relErr != nil {
+		return nil, detailError("failed to query system component relationship", relErr)
+	}
+	resp.Body.Data = oapi.SystemComponentRelationshipFromEnt(rel)
+
 	return &resp, nil
 }
 
 func (s *systemComponentsHandler) UpdateSystemComponentRelationship(ctx context.Context, request *oapi.UpdateSystemComponentRelationshipRequest) (*oapi.UpdateSystemComponentRelationshipResponse, error) {
 	var resp oapi.UpdateSystemComponentRelationshipResponse
 
+	attr := request.Body.Attributes
+	update := s.db.SystemComponentRelationship.UpdateOneID(request.Id)
+	update.SetNillableDescription(attr.Description)
+
+	updated, updateErr := update.Save(ctx)
+	if updateErr != nil {
+		return nil, detailError("failed to update system component relationship", updateErr)
+	}
+	resp.Body.Data = oapi.SystemComponentRelationshipFromEnt(updated)
+
 	return &resp, nil
 }
 
 func (s *systemComponentsHandler) ArchiveSystemComponentRelationship(ctx context.Context, request *oapi.ArchiveSystemComponentRelationshipRequest) (*oapi.ArchiveSystemComponentRelationshipResponse, error) {
 	var resp oapi.ArchiveSystemComponentRelationshipResponse
+
+	if delErr := s.db.SystemComponent.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
+		return nil, detailError("failed to delete system component", delErr)
+	}
 
 	return &resp, nil
 }

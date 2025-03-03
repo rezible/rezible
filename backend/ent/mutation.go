@@ -29353,10 +29353,10 @@ type SystemAnalysisComponentMutation struct {
 	typ              string
 	id               *uuid.UUID
 	description      *string
-	pos_x            *int
-	addpos_x         *int
-	pos_y            *int
-	addpos_y         *int
+	pos_x            *float64
+	addpos_x         *float64
+	pos_y            *float64
+	addpos_y         *float64
 	created_at       *time.Time
 	clearedFields    map[string]struct{}
 	analysis         *uuid.UUID
@@ -29594,13 +29594,13 @@ func (m *SystemAnalysisComponentMutation) ResetDescription() {
 }
 
 // SetPosX sets the "pos_x" field.
-func (m *SystemAnalysisComponentMutation) SetPosX(i int) {
-	m.pos_x = &i
+func (m *SystemAnalysisComponentMutation) SetPosX(f float64) {
+	m.pos_x = &f
 	m.addpos_x = nil
 }
 
 // PosX returns the value of the "pos_x" field in the mutation.
-func (m *SystemAnalysisComponentMutation) PosX() (r int, exists bool) {
+func (m *SystemAnalysisComponentMutation) PosX() (r float64, exists bool) {
 	v := m.pos_x
 	if v == nil {
 		return
@@ -29611,7 +29611,7 @@ func (m *SystemAnalysisComponentMutation) PosX() (r int, exists bool) {
 // OldPosX returns the old "pos_x" field's value of the SystemAnalysisComponent entity.
 // If the SystemAnalysisComponent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisComponentMutation) OldPosX(ctx context.Context) (v int, err error) {
+func (m *SystemAnalysisComponentMutation) OldPosX(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPosX is only allowed on UpdateOne operations")
 	}
@@ -29625,17 +29625,17 @@ func (m *SystemAnalysisComponentMutation) OldPosX(ctx context.Context) (v int, e
 	return oldValue.PosX, nil
 }
 
-// AddPosX adds i to the "pos_x" field.
-func (m *SystemAnalysisComponentMutation) AddPosX(i int) {
+// AddPosX adds f to the "pos_x" field.
+func (m *SystemAnalysisComponentMutation) AddPosX(f float64) {
 	if m.addpos_x != nil {
-		*m.addpos_x += i
+		*m.addpos_x += f
 	} else {
-		m.addpos_x = &i
+		m.addpos_x = &f
 	}
 }
 
 // AddedPosX returns the value that was added to the "pos_x" field in this mutation.
-func (m *SystemAnalysisComponentMutation) AddedPosX() (r int, exists bool) {
+func (m *SystemAnalysisComponentMutation) AddedPosX() (r float64, exists bool) {
 	v := m.addpos_x
 	if v == nil {
 		return
@@ -29650,13 +29650,13 @@ func (m *SystemAnalysisComponentMutation) ResetPosX() {
 }
 
 // SetPosY sets the "pos_y" field.
-func (m *SystemAnalysisComponentMutation) SetPosY(i int) {
-	m.pos_y = &i
+func (m *SystemAnalysisComponentMutation) SetPosY(f float64) {
+	m.pos_y = &f
 	m.addpos_y = nil
 }
 
 // PosY returns the value of the "pos_y" field in the mutation.
-func (m *SystemAnalysisComponentMutation) PosY() (r int, exists bool) {
+func (m *SystemAnalysisComponentMutation) PosY() (r float64, exists bool) {
 	v := m.pos_y
 	if v == nil {
 		return
@@ -29667,7 +29667,7 @@ func (m *SystemAnalysisComponentMutation) PosY() (r int, exists bool) {
 // OldPosY returns the old "pos_y" field's value of the SystemAnalysisComponent entity.
 // If the SystemAnalysisComponent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SystemAnalysisComponentMutation) OldPosY(ctx context.Context) (v int, err error) {
+func (m *SystemAnalysisComponentMutation) OldPosY(ctx context.Context) (v float64, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPosY is only allowed on UpdateOne operations")
 	}
@@ -29681,17 +29681,17 @@ func (m *SystemAnalysisComponentMutation) OldPosY(ctx context.Context) (v int, e
 	return oldValue.PosY, nil
 }
 
-// AddPosY adds i to the "pos_y" field.
-func (m *SystemAnalysisComponentMutation) AddPosY(i int) {
+// AddPosY adds f to the "pos_y" field.
+func (m *SystemAnalysisComponentMutation) AddPosY(f float64) {
 	if m.addpos_y != nil {
-		*m.addpos_y += i
+		*m.addpos_y += f
 	} else {
-		m.addpos_y = &i
+		m.addpos_y = &f
 	}
 }
 
 // AddedPosY returns the value that was added to the "pos_y" field in this mutation.
-func (m *SystemAnalysisComponentMutation) AddedPosY() (r int, exists bool) {
+func (m *SystemAnalysisComponentMutation) AddedPosY() (r float64, exists bool) {
 	v := m.addpos_y
 	if v == nil {
 		return
@@ -29920,14 +29920,14 @@ func (m *SystemAnalysisComponentMutation) SetField(name string, value ent.Value)
 		m.SetDescription(v)
 		return nil
 	case systemanalysiscomponent.FieldPosX:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPosX(v)
 		return nil
 	case systemanalysiscomponent.FieldPosY:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -29976,14 +29976,14 @@ func (m *SystemAnalysisComponentMutation) AddedField(name string) (ent.Value, bo
 func (m *SystemAnalysisComponentMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case systemanalysiscomponent.FieldPosX:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.AddPosX(v)
 		return nil
 	case systemanalysiscomponent.FieldPosY:
-		v, ok := value.(int)
+		v, ok := value.(float64)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

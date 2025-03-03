@@ -72,12 +72,12 @@ func Description(v string) predicate.SystemAnalysisComponent {
 }
 
 // PosX applies equality check predicate on the "pos_x" field. It's identical to PosXEQ.
-func PosX(v int) predicate.SystemAnalysisComponent {
+func PosX(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldEQ(FieldPosX, v))
 }
 
 // PosY applies equality check predicate on the "pos_y" field. It's identical to PosYEQ.
-func PosY(v int) predicate.SystemAnalysisComponent {
+func PosY(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldEQ(FieldPosY, v))
 }
 
@@ -202,82 +202,82 @@ func DescriptionContainsFold(v string) predicate.SystemAnalysisComponent {
 }
 
 // PosXEQ applies the EQ predicate on the "pos_x" field.
-func PosXEQ(v int) predicate.SystemAnalysisComponent {
+func PosXEQ(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldEQ(FieldPosX, v))
 }
 
 // PosXNEQ applies the NEQ predicate on the "pos_x" field.
-func PosXNEQ(v int) predicate.SystemAnalysisComponent {
+func PosXNEQ(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldNEQ(FieldPosX, v))
 }
 
 // PosXIn applies the In predicate on the "pos_x" field.
-func PosXIn(vs ...int) predicate.SystemAnalysisComponent {
+func PosXIn(vs ...float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldIn(FieldPosX, vs...))
 }
 
 // PosXNotIn applies the NotIn predicate on the "pos_x" field.
-func PosXNotIn(vs ...int) predicate.SystemAnalysisComponent {
+func PosXNotIn(vs ...float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldNotIn(FieldPosX, vs...))
 }
 
 // PosXGT applies the GT predicate on the "pos_x" field.
-func PosXGT(v int) predicate.SystemAnalysisComponent {
+func PosXGT(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldGT(FieldPosX, v))
 }
 
 // PosXGTE applies the GTE predicate on the "pos_x" field.
-func PosXGTE(v int) predicate.SystemAnalysisComponent {
+func PosXGTE(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldGTE(FieldPosX, v))
 }
 
 // PosXLT applies the LT predicate on the "pos_x" field.
-func PosXLT(v int) predicate.SystemAnalysisComponent {
+func PosXLT(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldLT(FieldPosX, v))
 }
 
 // PosXLTE applies the LTE predicate on the "pos_x" field.
-func PosXLTE(v int) predicate.SystemAnalysisComponent {
+func PosXLTE(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldLTE(FieldPosX, v))
 }
 
 // PosYEQ applies the EQ predicate on the "pos_y" field.
-func PosYEQ(v int) predicate.SystemAnalysisComponent {
+func PosYEQ(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldEQ(FieldPosY, v))
 }
 
 // PosYNEQ applies the NEQ predicate on the "pos_y" field.
-func PosYNEQ(v int) predicate.SystemAnalysisComponent {
+func PosYNEQ(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldNEQ(FieldPosY, v))
 }
 
 // PosYIn applies the In predicate on the "pos_y" field.
-func PosYIn(vs ...int) predicate.SystemAnalysisComponent {
+func PosYIn(vs ...float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldIn(FieldPosY, vs...))
 }
 
 // PosYNotIn applies the NotIn predicate on the "pos_y" field.
-func PosYNotIn(vs ...int) predicate.SystemAnalysisComponent {
+func PosYNotIn(vs ...float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldNotIn(FieldPosY, vs...))
 }
 
 // PosYGT applies the GT predicate on the "pos_y" field.
-func PosYGT(v int) predicate.SystemAnalysisComponent {
+func PosYGT(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldGT(FieldPosY, v))
 }
 
 // PosYGTE applies the GTE predicate on the "pos_y" field.
-func PosYGTE(v int) predicate.SystemAnalysisComponent {
+func PosYGTE(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldGTE(FieldPosY, v))
 }
 
 // PosYLT applies the LT predicate on the "pos_y" field.
-func PosYLT(v int) predicate.SystemAnalysisComponent {
+func PosYLT(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldLT(FieldPosY, v))
 }
 
 // PosYLTE applies the LTE predicate on the "pos_y" field.
-func PosYLTE(v int) predicate.SystemAnalysisComponent {
+func PosYLTE(v float64) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(sql.FieldLTE(FieldPosY, v))
 }
 

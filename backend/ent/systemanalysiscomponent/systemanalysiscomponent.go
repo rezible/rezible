@@ -72,9 +72,9 @@ func ValidColumn(column string) bool {
 
 var (
 	// DefaultPosX holds the default value on creation for the "pos_x" field.
-	DefaultPosX int
+	DefaultPosX float64
 	// DefaultPosY holds the default value on creation for the "pos_y" field.
-	DefaultPosY int
+	DefaultPosY float64
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.

@@ -465,11 +465,11 @@ func init() {
 	// systemanalysiscomponentDescPosX is the schema descriptor for pos_x field.
 	systemanalysiscomponentDescPosX := systemanalysiscomponentFields[4].Descriptor()
 	// systemanalysiscomponent.DefaultPosX holds the default value on creation for the pos_x field.
-	systemanalysiscomponent.DefaultPosX = systemanalysiscomponentDescPosX.Default.(int)
+	systemanalysiscomponent.DefaultPosX = systemanalysiscomponentDescPosX.Default.(float64)
 	// systemanalysiscomponentDescPosY is the schema descriptor for pos_y field.
 	systemanalysiscomponentDescPosY := systemanalysiscomponentFields[5].Descriptor()
 	// systemanalysiscomponent.DefaultPosY holds the default value on creation for the pos_y field.
-	systemanalysiscomponent.DefaultPosY = systemanalysiscomponentDescPosY.Default.(int)
+	systemanalysiscomponent.DefaultPosY = systemanalysiscomponentDescPosY.Default.(float64)
 	// systemanalysiscomponentDescCreatedAt is the schema descriptor for created_at field.
 	systemanalysiscomponentDescCreatedAt := systemanalysiscomponentFields[6].Descriptor()
 	// systemanalysiscomponent.DefaultCreatedAt holds the default value on creation for the created_at field.

@@ -53,6 +53,19 @@ func (s *systemAnalysisHandler) ListSystemAnalysisComponents(ctx context.Context
 func (s *systemAnalysisHandler) AddSystemAnalysisComponent(ctx context.Context, request *oapi.AddSystemAnalysisComponentRequest) (*oapi.AddSystemAnalysisComponentResponse, error) {
 	var resp oapi.AddSystemAnalysisComponentResponse
 
+	attr := request.Body.Attributes
+	create := s.db.SystemAnalysisComponent.Create().
+		SetAnalysisID(request.Id).
+		SetComponentID(attr.ComponentId).
+		SetPosY(attr.Position.Y).
+		SetPosX(attr.Position.X)
+
+	added, addErr := create.Save(ctx)
+	if addErr != nil {
+		return nil, detailError("failed to add system analysis component", addErr)
+	}
+	resp.Body.Data = oapi.SystemAnalysisComponentFromEnt(added)
+
 	return &resp, nil
 }
 
@@ -75,8 +88,8 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisComponent(ctx context.Contex
 	update := s.db.SystemAnalysisComponent.UpdateOneID(request.Id)
 
 	if attr.Position != nil {
-		//update.SetPosX(attr.Position.X)
-		//update.SetPosY(attr.Position.Y)
+		update.SetPosX(attr.Position.X)
+		update.SetPosY(attr.Position.Y)
 	}
 
 	updated, updateErr := update.Save(ctx)
