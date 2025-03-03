@@ -42,17 +42,9 @@ func (iec *IncidentEventCreate) SetTimestamp(t time.Time) *IncidentEventCreate {
 	return iec
 }
 
-// SetNillableTimestamp sets the "timestamp" field if the given value is not nil.
-func (iec *IncidentEventCreate) SetNillableTimestamp(t *time.Time) *IncidentEventCreate {
-	if t != nil {
-		iec.SetTimestamp(*t)
-	}
-	return iec
-}
-
-// SetType sets the "type" field.
-func (iec *IncidentEventCreate) SetType(i incidentevent.Type) *IncidentEventCreate {
-	iec.mutation.SetType(i)
+// SetKind sets the "kind" field.
+func (iec *IncidentEventCreate) SetKind(i incidentevent.Kind) *IncidentEventCreate {
+	iec.mutation.SetKind(i)
 	return iec
 }
 
@@ -72,6 +64,20 @@ func (iec *IncidentEventCreate) SetDescription(s string) *IncidentEventCreate {
 func (iec *IncidentEventCreate) SetNillableDescription(s *string) *IncidentEventCreate {
 	if s != nil {
 		iec.SetDescription(*s)
+	}
+	return iec
+}
+
+// SetIsKey sets the "is_key" field.
+func (iec *IncidentEventCreate) SetIsKey(b bool) *IncidentEventCreate {
+	iec.mutation.SetIsKey(b)
+	return iec
+}
+
+// SetNillableIsKey sets the "is_key" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableIsKey(b *bool) *IncidentEventCreate {
+	if b != nil {
+		iec.SetIsKey(*b)
 	}
 	return iec
 }
@@ -113,6 +119,14 @@ func (iec *IncidentEventCreate) SetCreatedBy(u uuid.UUID) *IncidentEventCreate {
 // SetSequence sets the "sequence" field.
 func (iec *IncidentEventCreate) SetSequence(i int) *IncidentEventCreate {
 	iec.mutation.SetSequence(i)
+	return iec
+}
+
+// SetNillableSequence sets the "sequence" field if the given value is not nil.
+func (iec *IncidentEventCreate) SetNillableSequence(i *int) *IncidentEventCreate {
+	if i != nil {
+		iec.SetSequence(*i)
+	}
 	return iec
 }
 
@@ -263,6 +277,10 @@ func (iec *IncidentEventCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (iec *IncidentEventCreate) defaults() {
+	if _, ok := iec.mutation.IsKey(); !ok {
+		v := incidentevent.DefaultIsKey
+		iec.mutation.SetIsKey(v)
+	}
 	if _, ok := iec.mutation.CreatedAt(); !ok {
 		v := incidentevent.DefaultCreatedAt()
 		iec.mutation.SetCreatedAt(v)
@@ -270,6 +288,10 @@ func (iec *IncidentEventCreate) defaults() {
 	if _, ok := iec.mutation.UpdatedAt(); !ok {
 		v := incidentevent.DefaultUpdatedAt()
 		iec.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := iec.mutation.Sequence(); !ok {
+		v := incidentevent.DefaultSequence
+		iec.mutation.SetSequence(v)
 	}
 	if _, ok := iec.mutation.IsDraft(); !ok {
 		v := incidentevent.DefaultIsDraft
@@ -286,12 +308,15 @@ func (iec *IncidentEventCreate) check() error {
 	if _, ok := iec.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentEvent.incident_id"`)}
 	}
-	if _, ok := iec.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "IncidentEvent.type"`)}
+	if _, ok := iec.mutation.Timestamp(); !ok {
+		return &ValidationError{Name: "timestamp", err: errors.New(`ent: missing required field "IncidentEvent.timestamp"`)}
 	}
-	if v, ok := iec.mutation.GetType(); ok {
-		if err := incidentevent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.type": %w`, err)}
+	if _, ok := iec.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentEvent.kind"`)}
+	}
+	if v, ok := iec.mutation.Kind(); ok {
+		if err := incidentevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
 	if _, ok := iec.mutation.Title(); !ok {
@@ -301,6 +326,9 @@ func (iec *IncidentEventCreate) check() error {
 		if err := incidentevent.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.title": %w`, err)}
 		}
+	}
+	if _, ok := iec.mutation.IsKey(); !ok {
+		return &ValidationError{Name: "is_key", err: errors.New(`ent: missing required field "IncidentEvent.is_key"`)}
 	}
 	if _, ok := iec.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEvent.created_at"`)}
@@ -358,11 +386,11 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 	}
 	if value, ok := iec.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
-		_node.Timestamp = &value
+		_node.Timestamp = value
 	}
-	if value, ok := iec.mutation.GetType(); ok {
-		_spec.SetField(incidentevent.FieldType, field.TypeEnum, value)
-		_node.Type = value
+	if value, ok := iec.mutation.Kind(); ok {
+		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
 	}
 	if value, ok := iec.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
@@ -371,6 +399,10 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 	if value, ok := iec.mutation.Description(); ok {
 		_spec.SetField(incidentevent.FieldDescription, field.TypeString, value)
 		_node.Description = value
+	}
+	if value, ok := iec.mutation.IsKey(); ok {
+		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
+		_node.IsKey = value
 	}
 	if value, ok := iec.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
@@ -572,21 +604,15 @@ func (u *IncidentEventUpsert) UpdateTimestamp() *IncidentEventUpsert {
 	return u
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (u *IncidentEventUpsert) ClearTimestamp() *IncidentEventUpsert {
-	u.SetNull(incidentevent.FieldTimestamp)
+// SetKind sets the "kind" field.
+func (u *IncidentEventUpsert) SetKind(v incidentevent.Kind) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldKind, v)
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *IncidentEventUpsert) SetType(v incidentevent.Type) *IncidentEventUpsert {
-	u.Set(incidentevent.FieldType, v)
-	return u
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentEventUpsert) UpdateType() *IncidentEventUpsert {
-	u.SetExcluded(incidentevent.FieldType)
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateKind() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldKind)
 	return u
 }
 
@@ -617,6 +643,18 @@ func (u *IncidentEventUpsert) UpdateDescription() *IncidentEventUpsert {
 // ClearDescription clears the value of the "description" field.
 func (u *IncidentEventUpsert) ClearDescription() *IncidentEventUpsert {
 	u.SetNull(incidentevent.FieldDescription)
+	return u
+}
+
+// SetIsKey sets the "is_key" field.
+func (u *IncidentEventUpsert) SetIsKey(v bool) *IncidentEventUpsert {
+	u.Set(incidentevent.FieldIsKey, v)
+	return u
+}
+
+// UpdateIsKey sets the "is_key" field to the value that was provided on create.
+func (u *IncidentEventUpsert) UpdateIsKey() *IncidentEventUpsert {
+	u.SetExcluded(incidentevent.FieldIsKey)
 	return u
 }
 
@@ -762,24 +800,17 @@ func (u *IncidentEventUpsertOne) UpdateTimestamp() *IncidentEventUpsertOne {
 	})
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (u *IncidentEventUpsertOne) ClearTimestamp() *IncidentEventUpsertOne {
+// SetKind sets the "kind" field.
+func (u *IncidentEventUpsertOne) SetKind(v incidentevent.Kind) *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.ClearTimestamp()
+		s.SetKind(v)
 	})
 }
 
-// SetType sets the "type" field.
-func (u *IncidentEventUpsertOne) SetType(v incidentevent.Type) *IncidentEventUpsertOne {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateKind() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetType(v)
-	})
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentEventUpsertOne) UpdateType() *IncidentEventUpsertOne {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 
@@ -815,6 +846,20 @@ func (u *IncidentEventUpsertOne) UpdateDescription() *IncidentEventUpsertOne {
 func (u *IncidentEventUpsertOne) ClearDescription() *IncidentEventUpsertOne {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetIsKey sets the "is_key" field.
+func (u *IncidentEventUpsertOne) SetIsKey(v bool) *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIsKey(v)
+	})
+}
+
+// UpdateIsKey sets the "is_key" field to the value that was provided on create.
+func (u *IncidentEventUpsertOne) UpdateIsKey() *IncidentEventUpsertOne {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIsKey()
 	})
 }
 
@@ -1138,24 +1183,17 @@ func (u *IncidentEventUpsertBulk) UpdateTimestamp() *IncidentEventUpsertBulk {
 	})
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (u *IncidentEventUpsertBulk) ClearTimestamp() *IncidentEventUpsertBulk {
+// SetKind sets the "kind" field.
+func (u *IncidentEventUpsertBulk) SetKind(v incidentevent.Kind) *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.ClearTimestamp()
+		s.SetKind(v)
 	})
 }
 
-// SetType sets the "type" field.
-func (u *IncidentEventUpsertBulk) SetType(v incidentevent.Type) *IncidentEventUpsertBulk {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateKind() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
-		s.SetType(v)
-	})
-}
-
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentEventUpsertBulk) UpdateType() *IncidentEventUpsertBulk {
-	return u.Update(func(s *IncidentEventUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 
@@ -1191,6 +1229,20 @@ func (u *IncidentEventUpsertBulk) UpdateDescription() *IncidentEventUpsertBulk {
 func (u *IncidentEventUpsertBulk) ClearDescription() *IncidentEventUpsertBulk {
 	return u.Update(func(s *IncidentEventUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetIsKey sets the "is_key" field.
+func (u *IncidentEventUpsertBulk) SetIsKey(v bool) *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.SetIsKey(v)
+	})
+}
+
+// UpdateIsKey sets the "is_key" field to the value that was provided on create.
+func (u *IncidentEventUpsertBulk) UpdateIsKey() *IncidentEventUpsertBulk {
+	return u.Update(func(s *IncidentEventUpsert) {
+		s.UpdateIsKey()
 	})
 }
 

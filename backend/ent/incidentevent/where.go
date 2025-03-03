@@ -76,6 +76,11 @@ func Description(v string) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldDescription, v))
 }
 
+// IsKey applies equality check predicate on the "is_key" field. It's identical to IsKeyEQ.
+func IsKey(v bool) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldIsKey, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldEQ(FieldCreatedAt, v))
@@ -161,34 +166,24 @@ func TimestampLTE(v time.Time) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldLTE(FieldTimestamp, v))
 }
 
-// TimestampIsNil applies the IsNil predicate on the "timestamp" field.
-func TimestampIsNil() predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldIsNull(FieldTimestamp))
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldKind, v))
 }
 
-// TimestampNotNil applies the NotNil predicate on the "timestamp" field.
-func TimestampNotNil() predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNotNull(FieldTimestamp))
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNEQ(FieldKind, v))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldEQ(FieldType, v))
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldIn(FieldKind, vs...))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNEQ(FieldType, v))
-}
-
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldIn(FieldType, vs...))
-}
-
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.IncidentEvent {
-	return predicate.IncidentEvent(sql.FieldNotIn(FieldType, vs...))
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNotIn(FieldKind, vs...))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -329,6 +324,16 @@ func DescriptionEqualFold(v string) predicate.IncidentEvent {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.IncidentEvent {
 	return predicate.IncidentEvent(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// IsKeyEQ applies the EQ predicate on the "is_key" field.
+func IsKeyEQ(v bool) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldEQ(FieldIsKey, v))
+}
+
+// IsKeyNEQ applies the NEQ predicate on the "is_key" field.
+func IsKeyNEQ(v bool) predicate.IncidentEvent {
+	return predicate.IncidentEvent(sql.FieldNEQ(FieldIsKey, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

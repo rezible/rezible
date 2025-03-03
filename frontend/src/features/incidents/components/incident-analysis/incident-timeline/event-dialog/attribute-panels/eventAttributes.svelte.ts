@@ -1,13 +1,10 @@
 import type { IncidentEventDecisionContext, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent, Incident } from "$lib/api";
 import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 import type { Content, JSONContent } from "@tiptap/core";
-import {now, getLocalTimeZone, type ZonedDateTime, fromDate} from '@internationalized/date';
+import {now, getLocalTimeZone, type ZonedDateTime, fromDate, parseAbsolute, parseAbsoluteToLocal} from '@internationalized/date';
 
 const makeTimeAnchor = (from?: string): ZonedDateTime => {
-	if (from) {
-		console.log("parse from");
-		// return fromDate(from, "");
-	}
+	if (from) return parseAbsoluteToLocal(from);
 	return now(getLocalTimeZone());
 };
 

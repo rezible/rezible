@@ -46,6 +46,7 @@ const createEventDialogState = () => {
 		const attributes: CreateIncidentEventAttributes = {
 			kind: attrs.kind,
 			timestamp: attrs.timestamp,
+			isKey: attrs.isKey,
 			title: attrs.title,
 		};
 		createMut.mutate({ path, body: { attributes } });

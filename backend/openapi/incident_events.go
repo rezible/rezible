@@ -38,7 +38,7 @@ type (
 		Timestamp           time.Time                         `json:"timestamp"`
 		IsKey               bool                              `json:"isKey"`
 		Title               string                            `json:"title"`
-		Description         *string                           `json:"description,omitempty"`
+		Description         string                            `json:"description,omitempty"`
 		Sequence            int                               `json:"sequence"`
 		DecisionContext     *IncidentEventDecisionContext     `json:"decisionContext,omitempty"`
 		ContributingFactors []IncidentEventContributingFactor `json:"contributingFactors"`
@@ -109,11 +109,77 @@ type (
 	}
 )
 
-func IncidentEventFromEnt(m *ent.IncidentEvent) IncidentEvent {
-	return IncidentEvent{
-		Id: m.ID,
-		Attributes: IncidentEventAttributes{
-			Kind: m.Type.String(),
+func IncidentEventFromEnt(e *ent.IncidentEvent) IncidentEvent {
+	attr := IncidentEventAttributes{
+		IncidentId:  e.IncidentID,
+		Kind:        e.Kind.String(),
+		Timestamp:   e.Timestamp,
+		IsKey:       e.IsKey,
+		Title:       e.Title,
+		Description: e.Description,
+		Sequence:    e.Sequence,
+	}
+
+	if e.Edges.Context != nil {
+		c := IncidentEventDecisionContextFromEnt(e.Edges.Context)
+		attr.DecisionContext = &c
+	}
+
+	attr.ContributingFactors = make([]IncidentEventContributingFactor, len(e.Edges.Factors))
+	for i, f := range e.Edges.Factors {
+		attr.ContributingFactors[i] = IncidentEventContributingFactorFromEnt(f)
+	}
+
+	attr.Evidence = make([]IncidentEventEvidence, len(e.Edges.Evidence))
+	for i, evi := range e.Edges.Evidence {
+		attr.Evidence[i] = IncidentEventEvidenceFromEnt(evi)
+	}
+
+	attr.SystemContext = make([]IncidentEventSystemComponent, len(e.Edges.EventComponents))
+	for i, c := range e.Edges.EventComponents {
+		attr.SystemContext[i] = IncidentEventSystemComponentFromEnt(c)
+	}
+
+	return IncidentEvent{Id: e.ID, Attributes: attr}
+}
+
+func IncidentEventDecisionContextFromEnt(c *ent.IncidentEventContext) IncidentEventDecisionContext {
+	return IncidentEventDecisionContext{
+		OptionsConsidered: c.DecisionOptions,
+		//Constraints:       nil,
+		DecisionRationale: c.DecisionRationale,
+	}
+}
+
+func IncidentEventContributingFactorFromEnt(f *ent.IncidentEventContributingFactor) IncidentEventContributingFactor {
+	return IncidentEventContributingFactor{
+		Id: f.ID,
+		Attributes: IncidentEventContributingFactorAttributes{
+			// FactorTypeId: f.FactorType,
+			Description: f.Description,
+			// Links:        nil,
+		},
+	}
+}
+
+func IncidentEventEvidenceFromEnt(evi *ent.IncidentEventEvidence) IncidentEventEvidence {
+	return IncidentEventEvidence{
+		Id:         evi.ID,
+		Attributes: IncidentEventEvidenceAttributes{
+			//Source:     "",
+			//Value:      "",
+			//Properties: nil,
+		},
+	}
+}
+
+func IncidentEventSystemComponentFromEnt(c *ent.IncidentEventSystemComponent) IncidentEventSystemComponent {
+	return IncidentEventSystemComponent{
+		Id:         c.ID,
+		Attributes: IncidentEventSystemComponentAttributes{
+			//AnalysisComponentId: uuid.UUID{},
+			//Status:              "",
+			//Description:         "",
 		},
 	}
 }
@@ -131,7 +197,7 @@ var ListIncidentEvents = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListIncidentEventsRequest GetIdRequest
+type ListIncidentEventsRequest ListIdRequest
 type ListIncidentEventsResponse PaginatedResponse[IncidentEvent]
 
 var CreateIncidentEvent = huma.Operation{
@@ -145,7 +211,8 @@ var CreateIncidentEvent = huma.Operation{
 
 type CreateIncidentEventAttributes struct {
 	Title     string    `json:"title"`
-	Kind      string    `json:"kind"`
+	Kind      string    `json:"kind" enum:"observation,action,decision,context"`
+	IsKey     bool      `json:"isKey" required:"false"`
 	Timestamp time.Time `json:"timestamp"`
 }
 type CreateIncidentEventRequest CreateIdRequest[CreateIncidentEventAttributes]
@@ -162,7 +229,7 @@ var UpdateIncidentEvent = huma.Operation{
 
 type UpdateIncidentEventAttributes struct {
 	Title     *string    `json:"title,omitempty"`
-	Kind      *string    `json:"kind,omitempty"`
+	Kind      *string    `json:"kind,omitempty" enum:"observation,action,decision,context"`
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 type UpdateIncidentEventRequest UpdateIdRequest[UpdateIncidentEventAttributes]

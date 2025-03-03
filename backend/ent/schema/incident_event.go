@@ -20,22 +20,21 @@ func (IncidentEvent) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
-		field.Time("timestamp").
-			Optional().
-			Nillable(),
-		field.Enum("type").
+		field.Time("timestamp"),
+		field.Enum("kind").
 			Values("observation", "action", "decision", "context"),
 		field.String("title").
 			NotEmpty(),
 		field.Text("description").
 			Optional(),
+		field.Bool("is_key").Default(false),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
 			Default(time.Now).
 			UpdateDefault(time.Now),
 		field.UUID("created_by", uuid.UUID{}),
-		field.Int("sequence"),
+		field.Int("sequence").Default(0),
 		field.Bool("is_draft").Default(false),
 	}
 }

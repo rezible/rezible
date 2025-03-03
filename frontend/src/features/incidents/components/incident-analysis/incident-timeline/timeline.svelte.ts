@@ -6,17 +6,19 @@ import { createQuery, useQueryClient, type CreateQueryResult } from "@tanstack/s
 import { watch } from "runed";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
+	listIncidentEventsOptions,
 	listIncidentMilestonesOptions,
 	type IncidentEvent,
+	type ListIncidentEventsResponseBody,
 	type ListIncidentMilestonesResponseBody,
 } from "$lib/api";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
 
-const createTimelineEventElement = (id: string) => {
-	let props = $state<TimelineEventComponentProps>({ label: "example" });
+const createTimelineEventElement = (event: IncidentEvent) => {
+	let props = $state<TimelineEventComponentProps>({ event });
 
 	const target = document.createElement("div");
-	target.setAttribute("event-id", id);
+	target.setAttribute("event-id", $state.snapshot(event.id));
 
 	const component = mount(IncidentTimelineEvent, { target, props });
 
@@ -24,7 +26,6 @@ const createTimelineEventElement = (id: string) => {
 		get element() {
 			return target;
 		},
-		setLabel: (label: string) => (props.label = label),
 		unmount: () => (unmount(component)),
 	};
 };
@@ -37,15 +38,18 @@ const createTimelineState = () => {
 	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
 	const items = new DataSet<any>([]);
 
-	const updateItems = () => {
-	};
+	const clearEventComponents = () => {
+		eventComponents.forEach(c => c.unmount());
+		eventComponents.clear();
+	}
 
-	const onMilestonesQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
+	const onMilestonesQueryDataUpdated = (body?: ListIncidentMilestonesResponseBody) => {
 		
 	};
 
-	const onEventsQueryDataUpdated = (res: CreateQueryResult<ListIncidentMilestonesResponseBody, Error>) => {
-		
+	const onEventsQueryDataUpdated = (body?: ListIncidentEventsResponseBody) => {
+		if (!body) return;
+
 	};
 
 	const createQueries = () => {
@@ -54,19 +58,18 @@ const createTimelineState = () => {
 
 		const milestonesQueryOptsFn = () => listIncidentMilestonesOptions({ path: { id: incidentId } });
 		const milestonesQuery = createQuery(milestonesQueryOptsFn, queryClient);
-		watch(() => milestonesQuery, onMilestonesQueryDataUpdated);
+		watch(() => milestonesQuery.data, onMilestonesQueryDataUpdated);
 
-		// TODO: swap this for correct query
-		const eventsQueryOpts = () => listIncidentMilestonesOptions({ path: { id: incidentId } });
+		const eventsQueryOpts = () => listIncidentEventsOptions({ path: { id: incidentId } });
 		const eventsQuery = createQuery(eventsQueryOpts, queryClient);
-		watch(() => eventsQuery, onEventsQueryDataUpdated);
+		watch(() => eventsQuery.data, onEventsQueryDataUpdated);
 	};
 
-	const addEvent = (id: IdType) => {
-		const created = createTimelineEventElement(id.toString());
-		items.add({ id: 1, content: created.element, start: new Date(2025, 1, 12, 7) });
-		eventComponents.set(id, created);
-	};
+	// const addEvent = (id: IdType) => {
+	// 	const created = createTimelineEventElement(id.toString());
+	// 	items.add({ id: 1, content: created.element, start: new Date(2025, 1, 12, 7) });
+	// 	eventComponents.set(id, created);
+	// };
 
 	const mountContainer = (el?: HTMLElement) => {
 		if (!el) return;
@@ -79,8 +82,7 @@ const createTimelineState = () => {
 
 	const onUnmount = () => {
 		timeline?.destroy();
-		eventComponents.forEach(c => c.unmount());
-		eventComponents.clear();
+		clearEventComponents();
 		items.clear();
 	};
 

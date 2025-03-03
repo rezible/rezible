@@ -1,13 +1,14 @@
 <script lang="ts" module>
+	import type { IncidentEvent } from "$lib/api";
 	export type TimelineEventComponentProps = {
-		label: string;
+		event: IncidentEvent;
 	};
 </script>
 
 <script lang="ts">
 	import { onMount } from "svelte";
 
-	let { label }: TimelineEventComponentProps = $props();
+	let { event }: TimelineEventComponentProps = $props();
 
 	onMount(() => {
 		// console.log("mounted");
@@ -15,4 +16,4 @@
 	});
 </script>
 
-<span>{label}</span>
+<span>{event.id}</span>

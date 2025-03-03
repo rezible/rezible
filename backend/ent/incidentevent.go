@@ -23,13 +23,15 @@ type IncidentEvent struct {
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
-	Timestamp *time.Time `json:"timestamp,omitempty"`
-	// Type holds the value of the "type" field.
-	Type incidentevent.Type `json:"type,omitempty"`
+	Timestamp time.Time `json:"timestamp,omitempty"`
+	// Kind holds the value of the "kind" field.
+	Kind incidentevent.Kind `json:"kind,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// IsKey holds the value of the "is_key" field.
+	IsKey bool `json:"is_key,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -128,11 +130,11 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentevent.FieldIsDraft:
+		case incidentevent.FieldIsKey, incidentevent.FieldIsDraft:
 			values[i] = new(sql.NullBool)
 		case incidentevent.FieldSequence:
 			values[i] = new(sql.NullInt64)
-		case incidentevent.FieldType, incidentevent.FieldTitle, incidentevent.FieldDescription:
+		case incidentevent.FieldKind, incidentevent.FieldTitle, incidentevent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentevent.FieldTimestamp, incidentevent.FieldCreatedAt, incidentevent.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -169,14 +171,13 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
 			} else if value.Valid {
-				ie.Timestamp = new(time.Time)
-				*ie.Timestamp = value.Time
+				ie.Timestamp = value.Time
 			}
-		case incidentevent.FieldType:
+		case incidentevent.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field type", values[i])
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				ie.Type = incidentevent.Type(value.String)
+				ie.Kind = incidentevent.Kind(value.String)
 			}
 		case incidentevent.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -189,6 +190,12 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				ie.Description = value.String
+			}
+		case incidentevent.FieldIsKey:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_key", values[i])
+			} else if value.Valid {
+				ie.IsKey = value.Bool
 			}
 		case incidentevent.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -289,19 +296,20 @@ func (ie *IncidentEvent) String() string {
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
 	builder.WriteString(", ")
-	if v := ie.Timestamp; v != nil {
-		builder.WriteString("timestamp=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("timestamp=")
+	builder.WriteString(ie.Timestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("type=")
-	builder.WriteString(fmt.Sprintf("%v", ie.Type))
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", ie.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(ie.Title)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(ie.Description)
+	builder.WriteString(", ")
+	builder.WriteString("is_key=")
+	builder.WriteString(fmt.Sprintf("%v", ie.IsKey))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(ie.CreatedAt.Format(time.ANSIC))

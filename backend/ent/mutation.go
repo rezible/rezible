@@ -5844,9 +5844,10 @@ type IncidentEventMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	timestamp                *time.Time
-	_type                    *incidentevent.Type
+	kind                     *incidentevent.Kind
 	title                    *string
 	description              *string
+	is_key                   *bool
 	created_at               *time.Time
 	updated_at               *time.Time
 	created_by               *uuid.UUID
@@ -6032,7 +6033,7 @@ func (m *IncidentEventMutation) Timestamp() (r time.Time, exists bool) {
 // OldTimestamp returns the old "timestamp" field's value of the IncidentEvent entity.
 // If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentEventMutation) OldTimestamp(ctx context.Context) (v *time.Time, err error) {
+func (m *IncidentEventMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
 	}
@@ -6046,58 +6047,45 @@ func (m *IncidentEventMutation) OldTimestamp(ctx context.Context) (v *time.Time,
 	return oldValue.Timestamp, nil
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (m *IncidentEventMutation) ClearTimestamp() {
-	m.timestamp = nil
-	m.clearedFields[incidentevent.FieldTimestamp] = struct{}{}
-}
-
-// TimestampCleared returns if the "timestamp" field was cleared in this mutation.
-func (m *IncidentEventMutation) TimestampCleared() bool {
-	_, ok := m.clearedFields[incidentevent.FieldTimestamp]
-	return ok
-}
-
 // ResetTimestamp resets all changes to the "timestamp" field.
 func (m *IncidentEventMutation) ResetTimestamp() {
 	m.timestamp = nil
-	delete(m.clearedFields, incidentevent.FieldTimestamp)
 }
 
-// SetType sets the "type" field.
-func (m *IncidentEventMutation) SetType(i incidentevent.Type) {
-	m._type = &i
+// SetKind sets the "kind" field.
+func (m *IncidentEventMutation) SetKind(i incidentevent.Kind) {
+	m.kind = &i
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *IncidentEventMutation) GetType() (r incidentevent.Type, exists bool) {
-	v := m._type
+// Kind returns the value of the "kind" field in the mutation.
+func (m *IncidentEventMutation) Kind() (r incidentevent.Kind, exists bool) {
+	v := m.kind
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the IncidentEvent entity.
+// OldKind returns the old "kind" field's value of the IncidentEvent entity.
 // If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentEventMutation) OldType(ctx context.Context) (v incidentevent.Type, err error) {
+func (m *IncidentEventMutation) OldKind(ctx context.Context) (v incidentevent.Kind, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldKind requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.Kind, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *IncidentEventMutation) ResetType() {
-	m._type = nil
+// ResetKind resets all changes to the "kind" field.
+func (m *IncidentEventMutation) ResetKind() {
+	m.kind = nil
 }
 
 // SetTitle sets the "title" field.
@@ -6183,6 +6171,42 @@ func (m *IncidentEventMutation) DescriptionCleared() bool {
 func (m *IncidentEventMutation) ResetDescription() {
 	m.description = nil
 	delete(m.clearedFields, incidentevent.FieldDescription)
+}
+
+// SetIsKey sets the "is_key" field.
+func (m *IncidentEventMutation) SetIsKey(b bool) {
+	m.is_key = &b
+}
+
+// IsKey returns the value of the "is_key" field in the mutation.
+func (m *IncidentEventMutation) IsKey() (r bool, exists bool) {
+	v := m.is_key
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsKey returns the old "is_key" field's value of the IncidentEvent entity.
+// If the IncidentEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentEventMutation) OldIsKey(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsKey is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsKey requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsKey: %w", err)
+	}
+	return oldValue.IsKey, nil
+}
+
+// ResetIsKey resets all changes to the "is_key" field.
+func (m *IncidentEventMutation) ResetIsKey() {
+	m.is_key = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -6701,21 +6725,24 @@ func (m *IncidentEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentEventMutation) Fields() []string {
-	fields := make([]string, 0, 10)
+	fields := make([]string, 0, 11)
 	if m.incident != nil {
 		fields = append(fields, incidentevent.FieldIncidentID)
 	}
 	if m.timestamp != nil {
 		fields = append(fields, incidentevent.FieldTimestamp)
 	}
-	if m._type != nil {
-		fields = append(fields, incidentevent.FieldType)
+	if m.kind != nil {
+		fields = append(fields, incidentevent.FieldKind)
 	}
 	if m.title != nil {
 		fields = append(fields, incidentevent.FieldTitle)
 	}
 	if m.description != nil {
 		fields = append(fields, incidentevent.FieldDescription)
+	}
+	if m.is_key != nil {
+		fields = append(fields, incidentevent.FieldIsKey)
 	}
 	if m.created_at != nil {
 		fields = append(fields, incidentevent.FieldCreatedAt)
@@ -6744,12 +6771,14 @@ func (m *IncidentEventMutation) Field(name string) (ent.Value, bool) {
 		return m.IncidentID()
 	case incidentevent.FieldTimestamp:
 		return m.Timestamp()
-	case incidentevent.FieldType:
-		return m.GetType()
+	case incidentevent.FieldKind:
+		return m.Kind()
 	case incidentevent.FieldTitle:
 		return m.Title()
 	case incidentevent.FieldDescription:
 		return m.Description()
+	case incidentevent.FieldIsKey:
+		return m.IsKey()
 	case incidentevent.FieldCreatedAt:
 		return m.CreatedAt()
 	case incidentevent.FieldUpdatedAt:
@@ -6773,12 +6802,14 @@ func (m *IncidentEventMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldIncidentID(ctx)
 	case incidentevent.FieldTimestamp:
 		return m.OldTimestamp(ctx)
-	case incidentevent.FieldType:
-		return m.OldType(ctx)
+	case incidentevent.FieldKind:
+		return m.OldKind(ctx)
 	case incidentevent.FieldTitle:
 		return m.OldTitle(ctx)
 	case incidentevent.FieldDescription:
 		return m.OldDescription(ctx)
+	case incidentevent.FieldIsKey:
+		return m.OldIsKey(ctx)
 	case incidentevent.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case incidentevent.FieldUpdatedAt:
@@ -6812,12 +6843,12 @@ func (m *IncidentEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTimestamp(v)
 		return nil
-	case incidentevent.FieldType:
-		v, ok := value.(incidentevent.Type)
+	case incidentevent.FieldKind:
+		v, ok := value.(incidentevent.Kind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetKind(v)
 		return nil
 	case incidentevent.FieldTitle:
 		v, ok := value.(string)
@@ -6832,6 +6863,13 @@ func (m *IncidentEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
+		return nil
+	case incidentevent.FieldIsKey:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsKey(v)
 		return nil
 	case incidentevent.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -6913,9 +6951,6 @@ func (m *IncidentEventMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *IncidentEventMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(incidentevent.FieldTimestamp) {
-		fields = append(fields, incidentevent.FieldTimestamp)
-	}
 	if m.FieldCleared(incidentevent.FieldDescription) {
 		fields = append(fields, incidentevent.FieldDescription)
 	}
@@ -6933,9 +6968,6 @@ func (m *IncidentEventMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentEventMutation) ClearField(name string) error {
 	switch name {
-	case incidentevent.FieldTimestamp:
-		m.ClearTimestamp()
-		return nil
 	case incidentevent.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -6953,14 +6985,17 @@ func (m *IncidentEventMutation) ResetField(name string) error {
 	case incidentevent.FieldTimestamp:
 		m.ResetTimestamp()
 		return nil
-	case incidentevent.FieldType:
-		m.ResetType()
+	case incidentevent.FieldKind:
+		m.ResetKind()
 		return nil
 	case incidentevent.FieldTitle:
 		m.ResetTitle()
 		return nil
 	case incidentevent.FieldDescription:
 		m.ResetDescription()
+		return nil
+	case incidentevent.FieldIsKey:
+		m.ResetIsKey()
 		return nil
 	case incidentevent.FieldCreatedAt:
 		m.ResetCreatedAt()

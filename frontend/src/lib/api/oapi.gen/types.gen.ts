@@ -128,7 +128,8 @@ export type CreateIncidentDebriefQuestionResponseBody = {
 };
 
 export type CreateIncidentEventAttributes = {
-    kind: string;
+    isKey?: boolean;
+    kind: 'observation' | 'action' | 'decision' | 'context';
     timestamp: string;
     title: string;
 };
@@ -2105,7 +2106,7 @@ export type UpdateIncidentDebriefResponseBody = {
 };
 
 export type UpdateIncidentEventAttributes = {
-    kind?: string;
+    kind?: 'observation' | 'action' | 'decision' | 'context';
     timestamp?: string;
     title?: string;
 };
@@ -5441,7 +5442,12 @@ export type ListIncidentEventsData = {
     path: {
         id: string;
     };
-    query?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
     url: '/incidents/{id}/events';
 };
 

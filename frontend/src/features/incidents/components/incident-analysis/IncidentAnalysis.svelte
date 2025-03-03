@@ -2,6 +2,7 @@
 	import { Button, Icon } from "svelte-ux";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
+	import { systemAnalysisIdCtx } from "$features/incidents/lib/context";
 	import { analysis } from "./analysisState.svelte";
 
 	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
@@ -12,6 +13,7 @@
 	};
 	const { analysisId }: Props = $props();
 
+	systemAnalysisIdCtx.set(analysisId);
 	analysis.setup(analysisId);
 
 	let hideTimeline = $state(false);

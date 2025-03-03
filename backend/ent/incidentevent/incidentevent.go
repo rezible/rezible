@@ -20,12 +20,14 @@ const (
 	FieldIncidentID = "incident_id"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldIsKey holds the string denoting the is_key field in the database.
+	FieldIsKey = "is_key"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -97,9 +99,10 @@ var Columns = []string{
 	FieldID,
 	FieldIncidentID,
 	FieldTimestamp,
-	FieldType,
+	FieldKind,
 	FieldTitle,
 	FieldDescription,
+	FieldIsKey,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldCreatedBy,
@@ -126,40 +129,44 @@ func ValidColumn(column string) bool {
 var (
 	// TitleValidator is a validator for the "title" field. It is called by the builders before save.
 	TitleValidator func(string) error
+	// DefaultIsKey holds the default value on creation for the "is_key" field.
+	DefaultIsKey bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultSequence holds the default value on creation for the "sequence" field.
+	DefaultSequence int
 	// DefaultIsDraft holds the default value on creation for the "is_draft" field.
 	DefaultIsDraft bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// Type values.
+// Kind values.
 const (
-	TypeObservation Type = "observation"
-	TypeAction      Type = "action"
-	TypeDecision    Type = "decision"
-	TypeContext     Type = "context"
+	KindObservation Kind = "observation"
+	KindAction      Kind = "action"
+	KindDecision    Kind = "decision"
+	KindContext     Kind = "context"
 )
 
-func (_type Type) String() string {
-	return string(_type)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeObservation, TypeAction, TypeDecision, TypeContext:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindObservation, KindAction, KindDecision, KindContext:
 		return nil
 	default:
-		return fmt.Errorf("incidentevent: invalid enum value for type field: %q", _type)
+		return fmt.Errorf("incidentevent: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -181,9 +188,9 @@ func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimestamp, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.
@@ -194,6 +201,11 @@ func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 // ByDescription orders the results by the description field.
 func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByIsKey orders the results by the is_key field.
+func ByIsKey(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsKey, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

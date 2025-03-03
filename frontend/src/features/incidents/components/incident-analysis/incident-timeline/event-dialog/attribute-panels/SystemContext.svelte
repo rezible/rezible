@@ -7,7 +7,7 @@
 		type SystemAnalysisComponent,
 	} from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
-	import { incidentCtx } from "$features/incidents/lib/context";
+	import { systemAnalysisIdCtx } from "$features/incidents/lib/context";
 	import { Button, Field, Icon, ListItem, State, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { mdiPencil, mdiPlus, mdiShapeSquareRoundedPlus, mdiTrashCan } from "@mdi/js";
 	import { getIconForComponentKind } from "$lib/systemComponents";
@@ -15,7 +15,7 @@
 	import { eventAttributes } from "./eventAttributes.svelte";
 	import { SvelteMap } from "svelte/reactivity";
 
-	const analysisId = incidentCtx.get().attributes.systemAnalysisId;
+	const analysisId = systemAnalysisIdCtx.get();
 
 	const analysisComponentsQuery = createQuery(() => ({
 		...listSystemAnalysisComponentsOptions({ path: { id: analysisId } }),

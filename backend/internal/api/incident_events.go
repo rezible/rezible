@@ -3,17 +3,19 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type incidentEventsHandler struct {
-	db *ent.Client
+	db   *ent.Client
+	auth rez.AuthService
 }
 
-func newIncidentEventsHandler(db *ent.Client) *incidentEventsHandler {
-	return &incidentEventsHandler{db}
+func newIncidentEventsHandler(db *ent.Client, auth rez.AuthService) *incidentEventsHandler {
+	return &incidentEventsHandler{db, auth}
 }
 
 func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request *oapi.ListIncidentEventsRequest) (*oapi.ListIncidentEventsResponse, error) {
@@ -37,9 +39,20 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 	var resp oapi.CreateIncidentEventResponse
 
 	attr := request.Body.Attributes
+
+	kind := incidentevent.Kind(attr.Kind)
+	if kindErr := incidentevent.KindValidator(kind); kindErr != nil {
+		return nil, detailError("invalid kind", kindErr)
+	}
+
+	sess := mustGetAuthSession(ctx, h.auth)
+
 	create := h.db.IncidentEvent.Create().
 		SetIncidentID(request.Id).
 		SetTitle(attr.Title).
+		SetKind(kind).
+		SetIsKey(attr.IsKey).
+		SetCreatedBy(sess.UserId).
 		SetTimestamp(attr.Timestamp)
 
 	created, createErr := create.Save(ctx)
@@ -55,9 +68,18 @@ func (h *incidentEventsHandler) UpdateIncidentEvent(ctx context.Context, request
 	var resp oapi.UpdateIncidentEventResponse
 
 	attr := request.Body.Attributes
+
 	update := h.db.IncidentEvent.UpdateOneID(request.Id).
 		SetNillableTitle(attr.Title).
 		SetNillableTimestamp(attr.Timestamp)
+
+	if attr.Kind != nil {
+		kind := incidentevent.Kind(*attr.Kind)
+		if kindErr := incidentevent.KindValidator(kind); kindErr != nil {
+			return nil, detailError("invalid kind", kindErr)
+		}
+		update.SetKind(kind)
+	}
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {

@@ -64,22 +64,16 @@ func (ieu *IncidentEventUpdate) SetNillableTimestamp(t *time.Time) *IncidentEven
 	return ieu
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (ieu *IncidentEventUpdate) ClearTimestamp() *IncidentEventUpdate {
-	ieu.mutation.ClearTimestamp()
+// SetKind sets the "kind" field.
+func (ieu *IncidentEventUpdate) SetKind(i incidentevent.Kind) *IncidentEventUpdate {
+	ieu.mutation.SetKind(i)
 	return ieu
 }
 
-// SetType sets the "type" field.
-func (ieu *IncidentEventUpdate) SetType(i incidentevent.Type) *IncidentEventUpdate {
-	ieu.mutation.SetType(i)
-	return ieu
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (ieu *IncidentEventUpdate) SetNillableType(i *incidentevent.Type) *IncidentEventUpdate {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (ieu *IncidentEventUpdate) SetNillableKind(i *incidentevent.Kind) *IncidentEventUpdate {
 	if i != nil {
-		ieu.SetType(*i)
+		ieu.SetKind(*i)
 	}
 	return ieu
 }
@@ -115,6 +109,20 @@ func (ieu *IncidentEventUpdate) SetNillableDescription(s *string) *IncidentEvent
 // ClearDescription clears the value of the "description" field.
 func (ieu *IncidentEventUpdate) ClearDescription() *IncidentEventUpdate {
 	ieu.mutation.ClearDescription()
+	return ieu
+}
+
+// SetIsKey sets the "is_key" field.
+func (ieu *IncidentEventUpdate) SetIsKey(b bool) *IncidentEventUpdate {
+	ieu.mutation.SetIsKey(b)
+	return ieu
+}
+
+// SetNillableIsKey sets the "is_key" field if the given value is not nil.
+func (ieu *IncidentEventUpdate) SetNillableIsKey(b *bool) *IncidentEventUpdate {
+	if b != nil {
+		ieu.SetIsKey(*b)
+	}
 	return ieu
 }
 
@@ -410,9 +418,9 @@ func (ieu *IncidentEventUpdate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ieu *IncidentEventUpdate) check() error {
-	if v, ok := ieu.mutation.GetType(); ok {
-		if err := incidentevent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.type": %w`, err)}
+	if v, ok := ieu.mutation.Kind(); ok {
+		if err := incidentevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
 	if v, ok := ieu.mutation.Title(); ok {
@@ -447,11 +455,8 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := ieu.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
 	}
-	if ieu.mutation.TimestampCleared() {
-		_spec.ClearField(incidentevent.FieldTimestamp, field.TypeTime)
-	}
-	if value, ok := ieu.mutation.GetType(); ok {
-		_spec.SetField(incidentevent.FieldType, field.TypeEnum, value)
+	if value, ok := ieu.mutation.Kind(); ok {
+		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := ieu.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
@@ -461,6 +466,9 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	}
 	if ieu.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentevent.FieldDescription, field.TypeString)
+	}
+	if value, ok := ieu.mutation.IsKey(); ok {
+		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
 	if value, ok := ieu.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)
@@ -789,22 +797,16 @@ func (ieuo *IncidentEventUpdateOne) SetNillableTimestamp(t *time.Time) *Incident
 	return ieuo
 }
 
-// ClearTimestamp clears the value of the "timestamp" field.
-func (ieuo *IncidentEventUpdateOne) ClearTimestamp() *IncidentEventUpdateOne {
-	ieuo.mutation.ClearTimestamp()
+// SetKind sets the "kind" field.
+func (ieuo *IncidentEventUpdateOne) SetKind(i incidentevent.Kind) *IncidentEventUpdateOne {
+	ieuo.mutation.SetKind(i)
 	return ieuo
 }
 
-// SetType sets the "type" field.
-func (ieuo *IncidentEventUpdateOne) SetType(i incidentevent.Type) *IncidentEventUpdateOne {
-	ieuo.mutation.SetType(i)
-	return ieuo
-}
-
-// SetNillableType sets the "type" field if the given value is not nil.
-func (ieuo *IncidentEventUpdateOne) SetNillableType(i *incidentevent.Type) *IncidentEventUpdateOne {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (ieuo *IncidentEventUpdateOne) SetNillableKind(i *incidentevent.Kind) *IncidentEventUpdateOne {
 	if i != nil {
-		ieuo.SetType(*i)
+		ieuo.SetKind(*i)
 	}
 	return ieuo
 }
@@ -840,6 +842,20 @@ func (ieuo *IncidentEventUpdateOne) SetNillableDescription(s *string) *IncidentE
 // ClearDescription clears the value of the "description" field.
 func (ieuo *IncidentEventUpdateOne) ClearDescription() *IncidentEventUpdateOne {
 	ieuo.mutation.ClearDescription()
+	return ieuo
+}
+
+// SetIsKey sets the "is_key" field.
+func (ieuo *IncidentEventUpdateOne) SetIsKey(b bool) *IncidentEventUpdateOne {
+	ieuo.mutation.SetIsKey(b)
+	return ieuo
+}
+
+// SetNillableIsKey sets the "is_key" field if the given value is not nil.
+func (ieuo *IncidentEventUpdateOne) SetNillableIsKey(b *bool) *IncidentEventUpdateOne {
+	if b != nil {
+		ieuo.SetIsKey(*b)
+	}
 	return ieuo
 }
 
@@ -1148,9 +1164,9 @@ func (ieuo *IncidentEventUpdateOne) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ieuo *IncidentEventUpdateOne) check() error {
-	if v, ok := ieuo.mutation.GetType(); ok {
-		if err := incidentevent.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.type": %w`, err)}
+	if v, ok := ieuo.mutation.Kind(); ok {
+		if err := incidentevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentEvent.kind": %w`, err)}
 		}
 	}
 	if v, ok := ieuo.mutation.Title(); ok {
@@ -1202,11 +1218,8 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 	if value, ok := ieuo.mutation.Timestamp(); ok {
 		_spec.SetField(incidentevent.FieldTimestamp, field.TypeTime, value)
 	}
-	if ieuo.mutation.TimestampCleared() {
-		_spec.ClearField(incidentevent.FieldTimestamp, field.TypeTime)
-	}
-	if value, ok := ieuo.mutation.GetType(); ok {
-		_spec.SetField(incidentevent.FieldType, field.TypeEnum, value)
+	if value, ok := ieuo.mutation.Kind(); ok {
+		_spec.SetField(incidentevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := ieuo.mutation.Title(); ok {
 		_spec.SetField(incidentevent.FieldTitle, field.TypeString, value)
@@ -1216,6 +1229,9 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 	}
 	if ieuo.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentevent.FieldDescription, field.TypeString)
+	}
+	if value, ok := ieuo.mutation.IsKey(); ok {
+		_spec.SetField(incidentevent.FieldIsKey, field.TypeBool, value)
 	}
 	if value, ok := ieuo.mutation.CreatedAt(); ok {
 		_spec.SetField(incidentevent.FieldCreatedAt, field.TypeTime, value)

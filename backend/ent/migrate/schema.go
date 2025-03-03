@@ -158,14 +158,15 @@ var (
 	// IncidentEventsColumns holds the columns for the "incident_events" table.
 	IncidentEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "timestamp", Type: field.TypeTime, Nullable: true},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"observation", "action", "decision", "context"}},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"observation", "action", "decision", "context"}},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "is_key", Type: field.TypeBool, Default: false},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "created_by", Type: field.TypeUUID},
-		{Name: "sequence", Type: field.TypeInt},
+		{Name: "sequence", Type: field.TypeInt, Default: 0},
 		{Name: "is_draft", Type: field.TypeBool, Default: false},
 		{Name: "incident_id", Type: field.TypeUUID},
 	}
@@ -177,7 +178,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incident_events_incidents_events",
-				Columns:    []*schema.Column{IncidentEventsColumns[10]},
+				Columns:    []*schema.Column{IncidentEventsColumns[11]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -186,7 +187,7 @@ var (
 			{
 				Name:    "incidentevent_incident_id_timestamp_sequence",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentEventsColumns[10], IncidentEventsColumns[1], IncidentEventsColumns[8]},
+				Columns: []*schema.Column{IncidentEventsColumns[11], IncidentEventsColumns[1], IncidentEventsColumns[9]},
 			},
 		},
 	}
