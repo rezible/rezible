@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 )
 
 type SystemComponentsService struct {
@@ -102,41 +104,112 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 }
 
 func (s *SystemComponentsService) GetRelationship(ctx context.Context, id1 uuid.UUID, id2 uuid.UUID) (*ent.SystemComponentRelationship, error) {
+	pred1 := systemcomponentrelationship.And(
+		systemcomponentrelationship.SourceID(id1),
+		systemcomponentrelationship.TargetID(id2))
+	pred2 := systemcomponentrelationship.And(
+		systemcomponentrelationship.SourceID(id2),
+		systemcomponentrelationship.TargetID(id1))
 
-	return nil, fmt.Errorf("not implemented")
+	query := s.db.SystemComponentRelationship.Query().
+		Where(systemcomponentrelationship.Or(pred1, pred2))
+
+	return query.Only(ctx)
 }
 
 func (s *SystemComponentsService) CreateRelationship(ctx context.Context, rel ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error) {
+	create := s.db.SystemComponentRelationship.Create().
+		SetSourceID(rel.SourceID).
+		SetTargetID(rel.TargetID).
+		SetDescription(rel.Description)
+	return create.Save(ctx)
+}
 
-	return nil, fmt.Errorf("not implemented")
+func (s *SystemComponentsService) GetSystemAnalysis(ctx context.Context, id uuid.UUID) (*ent.SystemAnalysis, error) {
+	query := s.db.SystemAnalysis.Query().
+		Where(systemanalysis.ID(id))
+
+	// TODO: optimize this
+
+	query.WithAnalysisComponents(func(q *ent.SystemAnalysisComponentQuery) {
+		q.WithComponent(func(cq *ent.SystemComponentQuery) {
+			cq.WithControls()
+			cq.WithConstraints()
+			cq.WithSignals()
+		})
+	})
+
+	query.WithRelationships(func(q *ent.SystemAnalysisRelationshipQuery) {
+		q.WithComponentRelationship()
+		q.WithControlActions()
+		q.WithFeedbackSignals()
+	})
+
+	return query.Only(ctx)
 }
 
 func (s *SystemComponentsService) CreateSystemAnalysisRelationship(ctx context.Context, params rez.CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error) {
+	var created *ent.SystemAnalysisRelationship
 
-	/*
-		var created *ent.SystemAnalysisRelationship
+	cmpRel, relErr := s.GetRelationship(ctx, params.SourceId, params.TargetId)
+	if relErr != nil && !ent.IsNotFound(relErr) {
+		return nil, fmt.Errorf("failed to look up existing relationship: %w", relErr)
+	}
 
-		createRelationshipTx := func(tx *ent.Tx) error {
-			//create := tx.SystemAnalysisRelationship.Create().
-			//	SetAnalysisID(request.Id).
-			//	SetSourceComponentID(attr.SourceId).
-			//	SetTargetComponentID(attr.TargetId).
-			//	SetDescription(attr.Description)
-			//rel, createErr := create.Save(ctx)
-			//if createErr != nil {
-			//	return createErr
-			//}
-			//
-			//// TODO: controls & signals
-			//
-			//created = rel
+	signals := params.FeedbackSignals
+	mapCreateSignals := func(c *ent.SystemRelationshipFeedbackSignalCreate, i int) {
+		sig := signals[i]
+		c.SetDescription(sig.Description).SetSignalID(sig.Id)
+	}
 
-			return nil
+	controls := params.ControlActions
+	mapCreateControls := func(c *ent.SystemRelationshipControlActionCreate, i int) {
+		ctrl := controls[i]
+		c.SetDescription(ctrl.Description).SetControlID(ctrl.Id)
+	}
+
+	createRelationshipTx := func(tx *ent.Tx) error {
+		var createErr error
+
+		if cmpRel == nil {
+			createRel := tx.SystemComponentRelationship.Create().
+				SetSourceID(params.SourceId).
+				SetTargetID(params.TargetId)
+			cmpRel, createErr = createRel.Save(ctx)
+			if createErr != nil {
+				return fmt.Errorf("creating base relationship: %w", createErr)
+			}
 		}
 
-		if createErr := ent.WithTx(ctx, s.db, createRelationshipTx); createErr != nil {
-			return nil, detailError("failed to create system analysis relationship", createErr)
+		createAnRel := tx.SystemAnalysisRelationship.Create().
+			SetAnalysisID(params.AnalysisId).
+			SetDescription(params.Description).
+			SetComponentRelationshipID(cmpRel.ID)
+		created, createErr = createAnRel.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("creating analysis relationship: %w", createErr)
 		}
-	*/
-	return nil, fmt.Errorf("not implemented")
+
+		created.Edges.ComponentRelationship = cmpRel
+
+		createSignals := tx.SystemRelationshipFeedbackSignal.MapCreateBulk(signals, mapCreateSignals)
+		created.Edges.FeedbackSignals, createErr = createSignals.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("creating feedback signals: %w", createErr)
+		}
+
+		createControls := tx.SystemRelationshipControlAction.MapCreateBulk(controls, mapCreateControls)
+		created.Edges.ControlActions, createErr = createControls.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("creating control actions: %w", createErr)
+		}
+
+		return nil
+	}
+
+	if createErr := ent.WithTx(ctx, s.db, createRelationshipTx); createErr != nil {
+		return nil, fmt.Errorf("failed to create system analysis relationship: %w", createErr)
+	}
+
+	return created, nil
 }

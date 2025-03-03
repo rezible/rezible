@@ -3,8 +3,8 @@ package api
 import (
 	"context"
 	"fmt"
+	
 	rez "github.com/rezible/rezible"
-
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -23,11 +23,11 @@ func newSystemAnalysisHandler(db *ent.Client, cmp rez.SystemComponentsService) *
 func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
 	var resp oapi.GetSystemAnalysisResponse
 
-	sysAn, getErr := s.db.SystemAnalysis.Get(ctx, request.Id)
-	if getErr != nil {
-		return nil, detailError("failed to get system analysis", getErr)
+	analysis, queryErr := s.components.GetSystemAnalysis(ctx, request.Id)
+	if queryErr != nil {
+		return nil, detailError("failed to get system analysis", queryErr)
 	}
-	resp.Body.Data = oapi.SystemAnalysisFromEnt(sysAn)
+	resp.Body.Data = oapi.SystemAnalysisFromEnt(analysis)
 
 	return &resp, nil
 }

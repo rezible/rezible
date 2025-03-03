@@ -22,19 +22,11 @@ import type { XYPosition } from "@xyflow/svelte";
 import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 import { diagram } from "$features/incidents/components/incident-analysis/system-diagram/diagram.svelte";
 
-const emptyComponentKind = () => ({
-	id: "",
-	attributes: {
-		description: "",
-		label: ""
-	},
-});
-
 const emptyComponentAttributes = (): SystemComponentAttributes => ({
 	constraints: [],
 	controls: [],
 	description: "",
-	kind: emptyComponentKind(),
+	kindId: "",
 	name: "",
 	properties: {},
 	signals: []
@@ -46,7 +38,7 @@ type ComponentDialogView = "closed" | "add" | "create" | "edit";
 
 const createComponentAttributesState = () => {
 	let name = $state<SystemComponentAttributes["name"]>("");
-	let kind = $state<SystemComponentKind>(emptyComponentKind());
+	let kindId = $state<SystemComponentAttributes["kindId"]>("");
 	let description = $state<SystemComponentAttributes["description"]>("");
 	let constraints = $state<SystemComponentAttributes["constraints"]>([]);
 	let controls = $state<SystemComponentAttributes["controls"]>([]);
@@ -58,7 +50,7 @@ const createComponentAttributesState = () => {
 	const init = (c?: SystemComponent) => {
 		const a = c ? c.attributes : emptyComponentAttributes();
 		name = a.name;
-		kind = a.kind;
+		kindId = a.kindId;
 		description = a.description;
 		constraints = a.constraints;
 		controls = a.controls;
@@ -69,12 +61,7 @@ const createComponentAttributesState = () => {
 
 	const onUpdate = () => {
 		// TODO: actually check if attributes valid;
-		valid = !!name && !!kind.id;
-	}
-
-	const updateKind = (k?: SystemComponentKind) => {
-		kind = (k ?? emptyComponentKind());
-		onUpdate(); 
+		valid = !!name && !!kindId;
 	}
 
 	const updateConstraint = (c: SystemComponentConstraint) => {
@@ -102,8 +89,8 @@ const createComponentAttributesState = () => {
 		init,
 		get name() { return name },
 		set name(n: string) { name = n; onUpdate(); },
-		get kind() { return kind },
-		updateKind,
+		get kindId() { return kindId },
+		set kindId(id: string) { kindId = id; onUpdate() },
 		get description() { return description },
 		set description(d: string) { description = d; onUpdate(); },
 		get constraints() { return constraints },
@@ -113,7 +100,7 @@ const createComponentAttributesState = () => {
 		get signals() { return signals },
 		updateSignal,
 		snapshot(): SystemComponentAttributes {
-			return $state.snapshot({ name, kind, description, constraints, controls, signals, properties })
+			return $state.snapshot({ name, kindId, description, constraints, controls, signals, properties })
 		},
 		get valid() { return valid },
 	}
@@ -157,7 +144,6 @@ const createComponentDialogState = () => {
 	}
 
 	const onSuccess = ({ data }: { data: SystemComponent }) => {
-		console.log("success", creatingToAdd);
 		if (creatingToAdd) {
 			goBack();
 			selectedAddComponent = data;
@@ -201,7 +187,7 @@ const createComponentDialogState = () => {
 		const attr = componentAttributes.snapshot();
 		const attributes: CreateSystemComponentAttributes = {
 			name: attr.name,
-			kindId: attr.kind.id,
+			kindId: attr.kindId,
 			description: attr.description,
 			properties: attr.properties,
 			constraints: attr.constraints.map(c => c.attributes),
@@ -217,21 +203,24 @@ const createComponentDialogState = () => {
 		const attr = componentAttributes.snapshot();
 		const attributes: UpdateSystemComponentAttributes = {
 			name: attr.name,
-			kindId: attr.kind.id,
+			kindId: attr.kindId,
 			description: attr.description,
 			properties: attr.properties,
 		};
 		updateMut?.mutate({ path: { id }, body: { attributes } });
 	}
 
-	const doAdd = () => {
+	const doAdd = async () => {
 		if (!selectedAddComponent) return;
 		const component = $state.snapshot(selectedAddComponent);
 		const pos = $state.snapshot(addingPosition);
 		if (pos) {
-			analysis.addComponent(component, pos);
-			// TODO: check if success then clear
-			clear();
+			const added = await analysis.addComponent(component, pos);
+			if (added) {
+				clear();
+			} else {
+				console.log("failed to add");
+			}
 		} else {
 			diagram.setAddingComponent(component);
 			clear();

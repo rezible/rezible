@@ -114,7 +114,7 @@ type (
 func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
 	attr := SystemAnalysisAttributes{}
 
-	attr.Components = make([]SystemAnalysisComponent, len(sc.Edges.Components))
+	attr.Components = make([]SystemAnalysisComponent, len(sc.Edges.AnalysisComponents))
 	for i, cmp := range sc.Edges.AnalysisComponents {
 		attr.Components[i] = SystemAnalysisComponentFromEnt(cmp)
 	}
@@ -128,15 +128,61 @@ func SystemAnalysisFromEnt(sc *ent.SystemAnalysis) SystemAnalysis {
 }
 
 func SystemAnalysisComponentFromEnt(sc *ent.SystemAnalysisComponent) SystemAnalysisComponent {
-	attr := SystemAnalysisComponentAttributes{}
+	attr := SystemAnalysisComponentAttributes{
+		Position: SystemAnalysisDiagramPosition{
+			X: sc.PosX,
+			Y: sc.PosY,
+			Z: nil,
+		},
+	}
+
+	if sc.Edges.Component != nil {
+		attr.Component = SystemComponentFromEnt(sc.Edges.Component)
+	}
 
 	return SystemAnalysisComponent{Id: sc.ID, Attributes: attr}
 }
 
 func SystemAnalysisRelationshipFromEnt(sc *ent.SystemAnalysisRelationship) SystemAnalysisRelationship {
-	attr := SystemAnalysisRelationshipAttributes{}
-	
+	attr := SystemAnalysisRelationshipAttributes{
+		Description: sc.Description,
+	}
+
+	rel := sc.Edges.ComponentRelationship
+	if rel != nil {
+		attr.SourceId = rel.SourceID
+		attr.TargetId = rel.TargetID
+	}
+
+	attr.ControlActions = make([]SystemAnalysisRelationshipControlAction, len(sc.Edges.ControlActions))
+	for i, ca := range sc.Edges.ControlActions {
+		attr.ControlActions[i] = SystemAnalysisRelationshipControlActionFromEnt(ca)
+	}
+
+	attr.FeedbackSignals = make([]SystemAnalysisRelationshipFeedbackSignal, len(sc.Edges.FeedbackSignals))
+	for i, fs := range sc.Edges.FeedbackSignals {
+		attr.FeedbackSignals[i] = SystemAnalysisRelationshipFeedbackSignalFromEnt(fs)
+	}
+
 	return SystemAnalysisRelationship{Id: sc.ID, Attributes: attr}
+}
+
+func SystemAnalysisRelationshipControlActionFromEnt(ca *ent.SystemRelationshipControlAction) SystemAnalysisRelationshipControlAction {
+	attr := SystemAnalysisRelationshipControlActionAttributes{
+		ControlId:   ca.ControlID,
+		Description: ca.Description,
+	}
+
+	return SystemAnalysisRelationshipControlAction{Id: ca.ID, Attributes: attr}
+}
+
+func SystemAnalysisRelationshipFeedbackSignalFromEnt(fs *ent.SystemRelationshipFeedbackSignal) SystemAnalysisRelationshipFeedbackSignal {
+	attr := SystemAnalysisRelationshipFeedbackSignalAttributes{
+		SignalId:    fs.SignalID,
+		Description: fs.Description,
+	}
+
+	return SystemAnalysisRelationshipFeedbackSignal{Id: fs.ID, Attributes: attr}
 }
 
 var systemAnalysisTags = []string{"System Analysis"}

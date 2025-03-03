@@ -116,6 +116,8 @@ type (
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
+
+		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
 		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)
 	}
 )

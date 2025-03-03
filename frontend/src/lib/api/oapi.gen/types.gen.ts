@@ -1938,7 +1938,7 @@ export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
     controls: Array<SystemComponentControl>;
     description: string;
-    kind: SystemComponentKind;
+    kindId: string;
     name: string;
     properties: {};
     signals: Array<SystemComponentSignal>;

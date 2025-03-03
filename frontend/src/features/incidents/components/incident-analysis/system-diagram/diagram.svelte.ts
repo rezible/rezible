@@ -231,6 +231,7 @@ const createDiagramState = () => {
 			const pos = {x: event.pageX - x, y: event.pageY - y};
 			const component = $state.snapshot(addingComponent);
 			analysis.addComponent(component, pos);
+			// TODO: check if success? show pending state?
 			setAddingComponent();
 		}
 	};

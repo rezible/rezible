@@ -8,11 +8,11 @@
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
 
 	type Props = {
-		id: string;
+		analysisId: string;
 	};
-	const { id }: Props = $props();
+	const { analysisId }: Props = $props();
 
-	analysis.setup(id);
+	analysis.setup(analysisId);
 
 	let hideTimeline = $state(false);
 </script>

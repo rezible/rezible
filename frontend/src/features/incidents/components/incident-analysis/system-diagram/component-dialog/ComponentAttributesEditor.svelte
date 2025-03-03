@@ -13,10 +13,10 @@
 
 	const kindsQuery = createQuery(() => listSystemComponentKindsOptions({}));
 	const kinds = $derived(kindsQuery.data?.data ?? []);
-	const kindsMap = $derived(new SvelteMap(kinds.map((k) => [k.id, k])));
+	// const kindsMap = $derived(new SvelteMap(kinds.map((k) => [k.id, k])));
 	const kindOptions = $derived(getSystemComponentKindMenuOptions(kinds));
 	const onKindSelected = ({detail}: CustomEvent<{value?: string | null}>) => {
-		attr.updateKind(!!detail.value ? kindsMap.get(detail.value) : undefined);
+		attr.kindId = detail.value ?? "";
 	};
 </script>
 
@@ -31,7 +31,7 @@
 			labelPlacement="float"
 			options={kindOptions}
 			loading={kindsQuery.isFetching}
-			value={attr.kind.id}
+			value={attr.kindId}
 			on:change={onKindSelected}
 		/>
 	</div>

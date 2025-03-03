@@ -13,7 +13,7 @@
 	};
 	const { incident, retrospective, view }: Props = $props();
 
-	const systemAnalysisId = $derived(retrospective.attributes.systemAnalysisId);
+	const analysisId = $derived(retrospective.attributes.systemAnalysisId);
 
 	incidentCtx.set(incident);
 	retrospectiveCtx.set(retrospective);
@@ -21,8 +21,8 @@
 </script>
 
 {#if view === "analysis"}
-	{#if systemAnalysisId}
-		<IncidentAnalysis id={systemAnalysisId} />
+	{#if analysisId}
+		<IncidentAnalysis {analysisId} />
 	{:else}
 		<span>no system analysis for this retrospective</span>
 	{/if}

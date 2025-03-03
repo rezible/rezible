@@ -85,7 +85,7 @@ type (
 	}
 	SystemComponentAttributes struct {
 		Name        string                      `json:"name"`
-		Kind        SystemComponentKind         `json:"kind"`
+		KindId      uuid.UUID                   `json:"kindId"`
 		Description string                      `json:"description"`
 		Properties  map[string]any              `json:"properties"`
 		Constraints []SystemComponentConstraint `json:"constraints"`
@@ -141,18 +141,42 @@ type (
 )
 
 func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
+	attr := SystemComponentAttributes{
+		Name:        sc.Name,
+		KindId:      sc.KindID,
+		Description: sc.Description,
+		Properties:  sc.Properties,
+	}
+
+	attr.Constraints = make([]SystemComponentConstraint, len(sc.Edges.Constraints))
+	for i, cstr := range sc.Edges.Constraints {
+		attr.Constraints[i] = SystemComponentConstraintFromEnt(cstr)
+	}
+
+	attr.Controls = make([]SystemComponentControl, len(sc.Edges.Controls))
+	for i, ctrl := range sc.Edges.Controls {
+		attr.Controls[i] = SystemComponentControlFromEnt(ctrl)
+	}
+
+	attr.Signals = make([]SystemComponentSignal, len(sc.Edges.Signals))
+	for i, sig := range sc.Edges.Signals {
+		attr.Signals[i] = SystemComponentSignalFromEnt(sig)
+	}
+
 	return SystemComponent{
-		Id: sc.ID,
-		Attributes: SystemComponentAttributes{
-			Name: sc.Name,
-		},
+		Id:         sc.ID,
+		Attributes: attr,
 	}
 }
 
 func SystemComponentRelationshipFromEnt(sc *ent.SystemComponentRelationship) SystemComponentRelationship {
 	return SystemComponentRelationship{
-		Id:         sc.ID,
-		Attributes: SystemComponentRelationshipAttributes{},
+		Id: sc.ID,
+		Attributes: SystemComponentRelationshipAttributes{
+			SourceId:    sc.SourceID,
+			TargetId:    sc.TargetID,
+			Description: sc.Description,
+		},
 	}
 }
 

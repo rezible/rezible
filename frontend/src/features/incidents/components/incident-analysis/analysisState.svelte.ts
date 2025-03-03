@@ -1,8 +1,8 @@
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { watch } from "runed";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import {
+	addSystemAnalysisComponentMutation,
 	getSystemAnalysisOptions,
-	type SystemAnalysis,
+	type AddSystemAnalysisComponentData,
 	type SystemAnalysisRelationship,
 	type SystemComponent,
 } from "$lib/api";
@@ -10,25 +10,40 @@ import type { XYPosition } from "@xyflow/svelte";
 
 const createAnalysisState = () => {
 	let analysisId = $state<string>();
-	let data = $state<SystemAnalysis>();
+
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
+	const makeAnalysisQuery = (id: string) => createQuery(() => getSystemAnalysisOptions({ path: { id } }));
+	let analysisQuery = $state<ReturnType<typeof makeAnalysisQuery>>();
+
+	const analysisData = $derived(analysisQuery?.data?.data);
+
+	const makeAddComponentMutation = () => createMutation(() => addSystemAnalysisComponentMutation());
+	let addComponentMut = $state<ReturnType<typeof makeAddComponentMutation>>();
+
+	// const components = $derived(analysisData?.attributes.components ?? []);
+	// const relationships = $derived(analysisData?.attributes.relationships ?? []);
+
 	const setup = (id: string) => {
-		console.log("analysis setup", id);
+		analysisId = id;
 
-		const queryClient = useQueryClient();
-
-		const analysisQuery = createQuery(
-			() => getSystemAnalysisOptions({ path: { id } }),
-			queryClient
-		);
-
-		watch(() => analysisQuery.data, res => { if (res?.data) data = res.data });
+		analysisQuery = makeAnalysisQuery(id);
+		addComponentMut = makeAddComponentMutation();
 	};
 
 	const addComponent = async (component: SystemComponent, pos: XYPosition) => {
-		console.log("add component");
+		if (!addComponentMut || !analysisId) return false;
+
+		const path = { id: analysisId };
+		const body = { attributes: { componentId: component.id, position: pos } };
+
+		try {
+			const resp = await addComponentMut.mutateAsync({ path, body});
+			return resp.data;
+		} catch (e) {
+			return false;
+		}
 	}
 
 	const setRelationshipDialogOpen = (open: boolean, editRel?: SystemAnalysisRelationship) => {
@@ -40,7 +55,7 @@ const createAnalysisState = () => {
 		setup,
 		get id() { return analysisId },
 		get data() {
-			return data;
+			return analysisData;
 		},
 		addComponent,
 		get relationshipDialogOpen() {
