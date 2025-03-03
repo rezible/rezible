@@ -24,6 +24,7 @@ export const load: LayoutLoad = async ({ fetch, route }) => {
 	const sessionOk = await session.load(fetch);
 
 	if (!sessionOk && !isAuthRoute) return redirect(301, "/auth");
+	if (sessionOk && isAuthRoute) return redirect(301, "/");
 
 	return {queryClient};
 };
