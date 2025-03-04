@@ -31,9 +31,9 @@ func (imc *IncidentMilestoneCreate) SetIncidentID(u uuid.UUID) *IncidentMileston
 	return imc
 }
 
-// SetType sets the "type" field.
-func (imc *IncidentMilestoneCreate) SetType(i incidentmilestone.Type) *IncidentMilestoneCreate {
-	imc.mutation.SetType(i)
+// SetKind sets the "kind" field.
+func (imc *IncidentMilestoneCreate) SetKind(i incidentmilestone.Kind) *IncidentMilestoneCreate {
+	imc.mutation.SetKind(i)
 	return imc
 }
 
@@ -108,12 +108,12 @@ func (imc *IncidentMilestoneCreate) check() error {
 	if _, ok := imc.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentMilestone.incident_id"`)}
 	}
-	if _, ok := imc.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "IncidentMilestone.type"`)}
+	if _, ok := imc.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "IncidentMilestone.kind"`)}
 	}
-	if v, ok := imc.mutation.GetType(); ok {
-		if err := incidentmilestone.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.type": %w`, err)}
+	if v, ok := imc.mutation.Kind(); ok {
+		if err := incidentmilestone.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
 	if _, ok := imc.mutation.Time(); !ok {
@@ -158,9 +158,9 @@ func (imc *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := imc.mutation.GetType(); ok {
-		_spec.SetField(incidentmilestone.FieldType, field.TypeEnum, value)
-		_node.Type = value
+	if value, ok := imc.mutation.Kind(); ok {
+		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
 	}
 	if value, ok := imc.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
@@ -247,15 +247,15 @@ func (u *IncidentMilestoneUpsert) UpdateIncidentID() *IncidentMilestoneUpsert {
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *IncidentMilestoneUpsert) SetType(v incidentmilestone.Type) *IncidentMilestoneUpsert {
-	u.Set(incidentmilestone.FieldType, v)
+// SetKind sets the "kind" field.
+func (u *IncidentMilestoneUpsert) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldKind, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsert) UpdateType() *IncidentMilestoneUpsert {
-	u.SetExcluded(incidentmilestone.FieldType)
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateKind() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldKind)
 	return u
 }
 
@@ -333,17 +333,17 @@ func (u *IncidentMilestoneUpsertOne) UpdateIncidentID() *IncidentMilestoneUpsert
 	})
 }
 
-// SetType sets the "type" field.
-func (u *IncidentMilestoneUpsertOne) SetType(v incidentmilestone.Type) *IncidentMilestoneUpsertOne {
+// SetKind sets the "kind" field.
+func (u *IncidentMilestoneUpsertOne) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetType(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertOne) UpdateType() *IncidentMilestoneUpsertOne {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateKind() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 
@@ -590,17 +590,17 @@ func (u *IncidentMilestoneUpsertBulk) UpdateIncidentID() *IncidentMilestoneUpser
 	})
 }
 
-// SetType sets the "type" field.
-func (u *IncidentMilestoneUpsertBulk) SetType(v incidentmilestone.Type) *IncidentMilestoneUpsertBulk {
+// SetKind sets the "kind" field.
+func (u *IncidentMilestoneUpsertBulk) SetKind(v incidentmilestone.Kind) *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.SetType(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *IncidentMilestoneUpsertBulk) UpdateType() *IncidentMilestoneUpsertBulk {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateKind() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 

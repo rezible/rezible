@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Button, Dialog, Icon } from "svelte-ux";
-	import { mdiMagicStaff } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import MilestoneAttributesEditor from "./MilestoneAttributesEditor.svelte";
 	import { milestoneDialog } from "./dialogState.svelte";
@@ -16,18 +15,10 @@
 	on:close={() => milestoneDialog.clear}
 	persistent
 	portal
-	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-7xl max-h-full h-fit" }}
+	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-5xl max-h-full h-fit" }}
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
 		<span class="text-xl flex-1">{creating ? "Create" : "Edit"} Milestone</span>
-		<!--div class="">
-			<Button variant="fill-light" color="secondary">
-				<span class="flex gap-2 items-center">
-					AI Draft
-					<Icon data={mdiMagicStaff} />
-				</span>
-			</Button>
-		</div-->
 	</div>
 
 	<div class="flex-1 min-h-0 overflow-y-auto flex">

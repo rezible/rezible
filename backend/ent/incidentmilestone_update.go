@@ -45,16 +45,16 @@ func (imu *IncidentMilestoneUpdate) SetNillableIncidentID(u *uuid.UUID) *Inciden
 	return imu
 }
 
-// SetType sets the "type" field.
-func (imu *IncidentMilestoneUpdate) SetType(i incidentmilestone.Type) *IncidentMilestoneUpdate {
-	imu.mutation.SetType(i)
+// SetKind sets the "kind" field.
+func (imu *IncidentMilestoneUpdate) SetKind(i incidentmilestone.Kind) *IncidentMilestoneUpdate {
+	imu.mutation.SetKind(i)
 	return imu
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (imu *IncidentMilestoneUpdate) SetNillableType(i *incidentmilestone.Type) *IncidentMilestoneUpdate {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (imu *IncidentMilestoneUpdate) SetNillableKind(i *incidentmilestone.Kind) *IncidentMilestoneUpdate {
 	if i != nil {
-		imu.SetType(*i)
+		imu.SetKind(*i)
 	}
 	return imu
 }
@@ -118,9 +118,9 @@ func (imu *IncidentMilestoneUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (imu *IncidentMilestoneUpdate) check() error {
-	if v, ok := imu.mutation.GetType(); ok {
-		if err := incidentmilestone.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.type": %w`, err)}
+	if v, ok := imu.mutation.Kind(); ok {
+		if err := incidentmilestone.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
 	if imu.mutation.IncidentCleared() && len(imu.mutation.IncidentIDs()) > 0 {
@@ -147,8 +147,8 @@ func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err err
 			}
 		}
 	}
-	if value, ok := imu.mutation.GetType(); ok {
-		_spec.SetField(incidentmilestone.FieldType, field.TypeEnum, value)
+	if value, ok := imu.mutation.Kind(); ok {
+		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := imu.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
@@ -218,16 +218,16 @@ func (imuo *IncidentMilestoneUpdateOne) SetNillableIncidentID(u *uuid.UUID) *Inc
 	return imuo
 }
 
-// SetType sets the "type" field.
-func (imuo *IncidentMilestoneUpdateOne) SetType(i incidentmilestone.Type) *IncidentMilestoneUpdateOne {
-	imuo.mutation.SetType(i)
+// SetKind sets the "kind" field.
+func (imuo *IncidentMilestoneUpdateOne) SetKind(i incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
+	imuo.mutation.SetKind(i)
 	return imuo
 }
 
-// SetNillableType sets the "type" field if the given value is not nil.
-func (imuo *IncidentMilestoneUpdateOne) SetNillableType(i *incidentmilestone.Type) *IncidentMilestoneUpdateOne {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (imuo *IncidentMilestoneUpdateOne) SetNillableKind(i *incidentmilestone.Kind) *IncidentMilestoneUpdateOne {
 	if i != nil {
-		imuo.SetType(*i)
+		imuo.SetKind(*i)
 	}
 	return imuo
 }
@@ -304,9 +304,9 @@ func (imuo *IncidentMilestoneUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (imuo *IncidentMilestoneUpdateOne) check() error {
-	if v, ok := imuo.mutation.GetType(); ok {
-		if err := incidentmilestone.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.type": %w`, err)}
+	if v, ok := imuo.mutation.Kind(); ok {
+		if err := incidentmilestone.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
 	if imuo.mutation.IncidentCleared() && len(imuo.mutation.IncidentIDs()) > 0 {
@@ -350,8 +350,8 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 			}
 		}
 	}
-	if value, ok := imuo.mutation.GetType(); ok {
-		_spec.SetField(incidentmilestone.FieldType, field.TypeEnum, value)
+	if value, ok := imuo.mutation.Kind(); ok {
+		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := imuo.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)

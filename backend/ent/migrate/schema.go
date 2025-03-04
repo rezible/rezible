@@ -185,6 +185,11 @@ var (
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "incidentevent_incident_id_timestamp",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventsColumns[11], IncidentEventsColumns[1]},
+			},
+			{
 				Name:    "incidentevent_incident_id_timestamp_sequence",
 				Unique:  true,
 				Columns: []*schema.Column{IncidentEventsColumns[11], IncidentEventsColumns[1], IncidentEventsColumns[9]},
@@ -368,7 +373,7 @@ var (
 	// IncidentMilestonesColumns holds the columns for the "incident_milestones" table.
 	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"impact", "detected", "investigating", "mitigated", "resolved"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detected", "investigating", "mitigated", "resolved"}},
 		{Name: "time", Type: field.TypeTime},
 		{Name: "incident_id", Type: field.TypeUUID},
 	}

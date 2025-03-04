@@ -17,8 +17,8 @@ const (
 	FieldID = "id"
 	// FieldIncidentID holds the string denoting the incident_id field in the database.
 	FieldIncidentID = "incident_id"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldTime holds the string denoting the time field in the database.
 	FieldTime = "time"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -38,7 +38,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldIncidentID,
-	FieldType,
+	FieldKind,
 	FieldTime,
 }
 
@@ -57,29 +57,29 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// Type values.
+// Kind values.
 const (
-	TypeImpact        Type = "impact"
-	TypeDetected      Type = "detected"
-	TypeInvestigating Type = "investigating"
-	TypeMitigated     Type = "mitigated"
-	TypeResolved      Type = "resolved"
+	KindImpact        Kind = "impact"
+	KindDetected      Kind = "detected"
+	KindInvestigating Kind = "investigating"
+	KindMitigated     Kind = "mitigated"
+	KindResolved      Kind = "resolved"
 )
 
-func (_type Type) String() string {
-	return string(_type)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeImpact, TypeDetected, TypeInvestigating, TypeMitigated, TypeResolved:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindImpact, KindDetected, KindInvestigating, KindMitigated, KindResolved:
 		return nil
 	default:
-		return fmt.Errorf("incidentmilestone: invalid enum value for type field: %q", _type)
+		return fmt.Errorf("incidentmilestone: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -96,9 +96,9 @@ func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIncidentID, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByTime orders the results by the time field.

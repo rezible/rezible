@@ -179,9 +179,9 @@ export type CreateIncidentFieldResponseBody = {
 };
 
 export type CreateIncidentMilestoneAttributes = {
+    kind: string;
     timestamp: string;
     title: string;
-    type: string;
 };
 
 export type CreateIncidentMilestoneRequestBody = {
@@ -1234,9 +1234,9 @@ export type IncidentMilestone = {
 
 export type IncidentMilestoneAttributes = {
     incidentId: string;
+    kind: string;
     timestamp: string;
     title: string;
-    type: string;
 };
 
 export type IncidentRole = {
@@ -2159,9 +2159,9 @@ export type UpdateIncidentFieldResponseBody = {
 };
 
 export type UpdateIncidentMilestoneAttributes = {
+    kind: string;
     timestamp: string;
     title: string;
-    type: string;
 };
 
 export type UpdateIncidentMilestoneRequestBody = {

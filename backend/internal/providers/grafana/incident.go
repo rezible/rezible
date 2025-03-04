@@ -317,12 +317,12 @@ func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIn
 	}
 
 	start := &ent.IncidentMilestone{
-		Type: incidentmilestone.TypeImpact,
+		Kind: incidentmilestone.KindImpact,
 		Time: startedAt,
 	}
 
 	end := &ent.IncidentMilestone{
-		Type: incidentmilestone.TypeResolved,
+		Kind: incidentmilestone.KindResolved,
 		Time: endedAt,
 	}
 

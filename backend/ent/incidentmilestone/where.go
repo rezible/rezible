@@ -86,24 +86,24 @@ func IncidentIDNotIn(vs ...uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldNotIn(FieldIncidentID, vs...))
 }
 
-// TypeEQ applies the EQ predicate on the "type" field.
-func TypeEQ(v Type) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldEQ(FieldType, v))
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldKind, v))
 }
 
-// TypeNEQ applies the NEQ predicate on the "type" field.
-func TypeNEQ(v Type) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNEQ(FieldType, v))
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldKind, v))
 }
 
-// TypeIn applies the In predicate on the "type" field.
-func TypeIn(vs ...Type) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldIn(FieldType, vs...))
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldKind, vs...))
 }
 
-// TypeNotIn applies the NotIn predicate on the "type" field.
-func TypeNotIn(vs ...Type) predicate.IncidentMilestone {
-	return predicate.IncidentMilestone(sql.FieldNotIn(FieldType, vs...))
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldKind, vs...))
 }
 
 // TimeEQ applies the EQ predicate on the "time" field.

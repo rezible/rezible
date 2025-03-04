@@ -32,7 +32,7 @@ type (
 	}
 	IncidentMilestoneAttributes struct {
 		IncidentId uuid.UUID `json:"incidentId"`
-		Type       string    `json:"type"`
+		Kind       string    `json:"kind"`
 		Title      string    `json:"title"`
 		Timestamp  time.Time `json:"timestamp"`
 	}
@@ -42,7 +42,7 @@ func IncidentMilestoneFromEnt(m *ent.IncidentMilestone) IncidentMilestone {
 	return IncidentMilestone{
 		Id: m.ID,
 		Attributes: IncidentMilestoneAttributes{
-			Type:      m.Type.String(),
+			Kind:      m.Kind.String(),
 			Timestamp: m.Time,
 		},
 	}
@@ -75,7 +75,7 @@ var CreateIncidentMilestone = huma.Operation{
 
 type CreateIncidentMilestoneAttributes struct {
 	Title     string    `json:"title"`
-	Type      string    `json:"type"`
+	Kind      string    `json:"kind"`
 	Timestamp time.Time `json:"timestamp"`
 }
 type CreateIncidentMilestoneRequest CreateIdRequest[CreateIncidentMilestoneAttributes]
@@ -92,7 +92,7 @@ var UpdateIncidentMilestone = huma.Operation{
 
 type UpdateIncidentMilestoneAttributes struct {
 	Title     *string    `json:"title"`
-	Type      *string    `json:"type"`
+	Kind      *string    `json:"kind"`
 	Timestamp *time.Time `json:"timestamp"`
 }
 type UpdateIncidentMilestoneRequest UpdateIdRequest[UpdateIncidentMilestoneAttributes]

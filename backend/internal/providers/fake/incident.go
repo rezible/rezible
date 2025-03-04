@@ -65,7 +65,7 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 
 	milestones := []*ent.IncidentMilestone{
 		{
-			Type:  "",
+			Kind:  "",
 			Time:  time.Now().Add(-8 * time.Hour),
 			Edges: ent.IncidentMilestoneEdges{},
 		},

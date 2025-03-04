@@ -41,7 +41,7 @@ func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context,
 
 	attrs := input.Body.Attributes
 	query := h.events.Create().
-		SetType(incidentmilestone.Type(attrs.Type))
+		SetKind(incidentmilestone.Kind(attrs.Kind))
 
 	ev, createErr := query.Save(ctx)
 	if createErr != nil {
@@ -59,8 +59,8 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	query := h.events.UpdateOneID(input.Id)
 
-	if attrs.Type != nil {
-		query.SetType(incidentmilestone.Type(*attrs.Type))
+	if attrs.Kind != nil {
+		query.SetKind(incidentmilestone.Kind(*attrs.Kind))
 	}
 
 	ev, createErr := query.Save(ctx)

@@ -11570,7 +11570,7 @@ type IncidentMilestoneMutation struct {
 	op              Op
 	typ             string
 	id              *uuid.UUID
-	_type           *incidentmilestone.Type
+	kind            *incidentmilestone.Kind
 	time            *time.Time
 	clearedFields   map[string]struct{}
 	incident        *uuid.UUID
@@ -11720,40 +11720,40 @@ func (m *IncidentMilestoneMutation) ResetIncidentID() {
 	m.incident = nil
 }
 
-// SetType sets the "type" field.
-func (m *IncidentMilestoneMutation) SetType(i incidentmilestone.Type) {
-	m._type = &i
+// SetKind sets the "kind" field.
+func (m *IncidentMilestoneMutation) SetKind(i incidentmilestone.Kind) {
+	m.kind = &i
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *IncidentMilestoneMutation) GetType() (r incidentmilestone.Type, exists bool) {
-	v := m._type
+// Kind returns the value of the "kind" field in the mutation.
+func (m *IncidentMilestoneMutation) Kind() (r incidentmilestone.Kind, exists bool) {
+	v := m.kind
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the IncidentMilestone entity.
+// OldKind returns the old "kind" field's value of the IncidentMilestone entity.
 // If the IncidentMilestone object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMilestoneMutation) OldType(ctx context.Context) (v incidentmilestone.Type, err error) {
+func (m *IncidentMilestoneMutation) OldKind(ctx context.Context) (v incidentmilestone.Kind, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldKind requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.Kind, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *IncidentMilestoneMutation) ResetType() {
-	m._type = nil
+// ResetKind resets all changes to the "kind" field.
+func (m *IncidentMilestoneMutation) ResetKind() {
+	m.kind = nil
 }
 
 // SetTime sets the "time" field.
@@ -11857,8 +11857,8 @@ func (m *IncidentMilestoneMutation) Fields() []string {
 	if m.incident != nil {
 		fields = append(fields, incidentmilestone.FieldIncidentID)
 	}
-	if m._type != nil {
-		fields = append(fields, incidentmilestone.FieldType)
+	if m.kind != nil {
+		fields = append(fields, incidentmilestone.FieldKind)
 	}
 	if m.time != nil {
 		fields = append(fields, incidentmilestone.FieldTime)
@@ -11873,8 +11873,8 @@ func (m *IncidentMilestoneMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case incidentmilestone.FieldIncidentID:
 		return m.IncidentID()
-	case incidentmilestone.FieldType:
-		return m.GetType()
+	case incidentmilestone.FieldKind:
+		return m.Kind()
 	case incidentmilestone.FieldTime:
 		return m.Time()
 	}
@@ -11888,8 +11888,8 @@ func (m *IncidentMilestoneMutation) OldField(ctx context.Context, name string) (
 	switch name {
 	case incidentmilestone.FieldIncidentID:
 		return m.OldIncidentID(ctx)
-	case incidentmilestone.FieldType:
-		return m.OldType(ctx)
+	case incidentmilestone.FieldKind:
+		return m.OldKind(ctx)
 	case incidentmilestone.FieldTime:
 		return m.OldTime(ctx)
 	}
@@ -11908,12 +11908,12 @@ func (m *IncidentMilestoneMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetIncidentID(v)
 		return nil
-	case incidentmilestone.FieldType:
-		v, ok := value.(incidentmilestone.Type)
+	case incidentmilestone.FieldKind:
+		v, ok := value.(incidentmilestone.Kind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetKind(v)
 		return nil
 	case incidentmilestone.FieldTime:
 		v, ok := value.(time.Time)
@@ -11974,8 +11974,8 @@ func (m *IncidentMilestoneMutation) ResetField(name string) error {
 	case incidentmilestone.FieldIncidentID:
 		m.ResetIncidentID()
 		return nil
-	case incidentmilestone.FieldType:
-		m.ResetType()
+	case incidentmilestone.FieldKind:
+		m.ResetKind()
 		return nil
 	case incidentmilestone.FieldTime:
 		m.ResetTime()
