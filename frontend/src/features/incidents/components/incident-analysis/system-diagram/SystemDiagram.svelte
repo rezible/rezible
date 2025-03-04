@@ -12,8 +12,11 @@
 		type SvelteFlowProps,
 		type NodeTypes,
 		type EdgeTypes,
+		type ColorMode,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
+
+	import { settings } from "$lib/settings.svelte";
 
 	import { diagram } from "./diagram.svelte";
 	import ContextMenu from "./ContextMenu.svelte";
@@ -32,44 +35,36 @@
 	let containerEl = $state<HTMLElement>();
 	diagram.setup(() => containerEl);
 
-	const colorMode = $derived("dark"); // TODO: get from svelte-ux theme
+	const colorMode = $derived<ColorMode>(settings.theme.dark ? "dark" : "light");
 
-	const nodeTypes: NodeTypes = {
-		// @ts-expect-error this will be resolved
-		default: ComponentNode,
-		// @ts-expect-error this will be resolved
-		component: ComponentNode,
-	};
-
-	const edgeTypes: EdgeTypes = {
-		// @ts-expect-error this will be resolved
-		default: RelationshipEdge,
-		// @ts-expect-error this will be resolved
-		relationship: RelationshipEdge,
-	};
-
-	const flowProps = $derived<SvelteFlowProps>({
-		nodeTypes,
-		edgeTypes,
-		nodes: diagram.nodes,
-		edges: diagram.edges,
-		colorMode,
+	const flowSettings: SvelteFlowProps = {
+		nodeTypes: {
+			// @ts-expect-error this will be resolved
+			default: ComponentNode,
+			// @ts-expect-error this will be resolved
+			component: ComponentNode,
+		},
+		edgeTypes: {
+			// @ts-expect-error this will be resolved
+			default: RelationshipEdge,
+			// @ts-expect-error this will be resolved
+			relationship: RelationshipEdge,
+		},
 		snapGrid: [25, 25],
 		connectionRadius: 40,
 		fitView: true,
 		proOptions: { hideAttribution: true },
-		onconnect: diagram.onEdgeConnect,
-	});
+	};
 
-	const backgroundProps: BackgroundProps = {
+	const backgroundSettings: BackgroundProps = {
 		variant: BackgroundVariant.Dots,
 	};
 
-	const controlsProps: ControlsProps = {
+	const controlsSettings: ControlsProps = {
 		position: "top-left",
 	};
 
-	const minimapProps: MiniMapProps = {
+	const minimapSettings: MiniMapProps = {
 		position: "top-right",
 	};
 </script>
@@ -82,10 +77,12 @@
 		oncontextmenu={(e) => e.preventDefault()}
 	>
 		<SvelteFlow
-			{...flowProps}
-			oninit={() => {
-				diagram.onFlowInit();
-			}}
+			{...flowSettings}
+			{colorMode}
+			nodes={diagram.nodes}
+			edges={diagram.edges}
+			oninit={diagram.onFlowInit}
+			onconnect={diagram.onEdgeConnect}
 			on:panecontextmenu={diagram.handleContextMenuEvent}
 			on:edgecontextmenu={diagram.handleContextMenuEvent}
 			on:nodecontextmenu={diagram.handleContextMenuEvent}
@@ -96,9 +93,9 @@
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={diagram.handleEdgeClicked}
 		>
-			<Background {...backgroundProps} />
-			<Controls {...controlsProps} />
-			<MiniMap {...minimapProps} />
+			<Background {...backgroundSettings} />
+			<Controls {...controlsSettings} />
+			<MiniMap {...minimapSettings} />
 			<ConnectionLine slot="connectionLine" />
 			<ContextMenu />
 			<EditToolbar />

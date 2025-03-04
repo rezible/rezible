@@ -1,0 +1,57 @@
+/* the root timeline container element */
+.vis-timeline {
+	background-color: oklch(var(--color-surface-200) / var(--tw-bg-opacity, 1));
+	border-color: #3e3e3e;
+}
+
+/* horizontal timeline line (item dots connect to this) */
+.vis-panel.vis-center {
+	border-color: oklch(var(--border-surface-content) * .75);
+	border-color: #b1b1b7;
+}
+
+/* vertical grid lines */
+.vis-time-axis .vis-grid.vis-minor {
+	border-color: #b1b1b7;
+}
+.vis-time-axis .vis-grid.vis-major {
+	border-color: #b1b1b7;
+}
+
+/* item dot connecting to horizontal timeline line */
+/* .vis-item.vis-dot {} */
+
+/* line from dot to item */
+/* .vis-item, .vis-item.vis-line {} */
+
+/* timeline item */
+.vis-item {
+	background-color: oklch(var(--color-neutral) / var(--tw-bg-opacity, 1));
+	color: oklch(var(--color-neutral-content) / var(--tw-bg-opacity, 1));
+	border-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
+	/* @apply bg-neutral text-neutral-content border-accent; */
+}
+
+/* selected timeline item */
+.vis-item.vis-selected {
+	background-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
+	color: oklch(var(--color-accent-content) / var(--tw-bg-opacity, 1));
+	border-color: oklch(var(--color-accent) / var(--tw-bg-opacity, 1));
+	/* @apply bg-accent text-accent-content border-accent; */
+}
+
+/* text of time axis, eg Mon 10 */
+.vis-time-axis .vis-text {
+	padding-top: 4px;
+	padding-left: 4px;
+}
+
+/* text of major time axis, eg February 2025 */
+.vis-time-axis .vis-text.vis-major {
+	font-weight: bold;
+}
+
+/* current time vertical line */
+.vis-current-time {
+	background-color: oklch(var(--color-secondary) / var(--tw-bg-opacity, 1));
+}

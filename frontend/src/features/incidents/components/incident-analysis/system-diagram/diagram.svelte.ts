@@ -163,6 +163,7 @@ const createDiagramState = () => {
 	let flow = $state<ReturnType<typeof useSvelteFlow>>();
 	let flowStore = $state<ReturnType<typeof useSvelteFlowStore>>();
 	const onFlowInit = () => {
+		console.log("init!");
 		flow = useSvelteFlow();
 		flowStore = useSvelteFlowStore();
 	};
