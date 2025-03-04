@@ -7,6 +7,7 @@ const createSettingsState = () => {
 
 	const currentTheme = $derived(fromStore(settings.currentTheme));
 	const locale = $derived(fromStore(settings.locale));
+	const format = $derived(fromStore(settings.format));
 
 	const setup = () => {
 		const themes = themesCfg as Record<string, Record<string, string>>;
@@ -25,6 +26,7 @@ const createSettingsState = () => {
 		setup,
 		get theme() { return currentTheme.current },
 		get locale() { return locale.current },
+		get format() { return format.current },
 	}
 }
 

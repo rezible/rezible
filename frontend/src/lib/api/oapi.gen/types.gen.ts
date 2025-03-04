@@ -179,7 +179,7 @@ export type CreateIncidentFieldResponseBody = {
 };
 
 export type CreateIncidentMilestoneAttributes = {
-    kind: string;
+    kind: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
     timestamp: string;
     title: string;
 };
@@ -1234,7 +1234,7 @@ export type IncidentMilestone = {
 
 export type IncidentMilestoneAttributes = {
     incidentId: string;
-    kind: string;
+    kind: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
     timestamp: string;
     title: string;
 };
@@ -2159,9 +2159,9 @@ export type UpdateIncidentFieldResponseBody = {
 };
 
 export type UpdateIncidentMilestoneAttributes = {
-    kind: string;
-    timestamp: string;
-    title: string;
+    kind?: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
+    timestamp?: string;
+    title?: string;
 };
 
 export type UpdateIncidentMilestoneRequestBody = {

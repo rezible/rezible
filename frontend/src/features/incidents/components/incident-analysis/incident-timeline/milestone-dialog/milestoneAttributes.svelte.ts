@@ -1,4 +1,4 @@
-import type { IncidentEventAttributes, Incident, IncidentMilestoneAttributes } from "$lib/api";
+import type { Incident, IncidentMilestoneAttributes } from "$lib/api";
 import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 import type { Content } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
@@ -9,9 +9,10 @@ const makeTimeAnchor = (from?: string): ZonedDateTime => {
 };
 
 type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
-type MilestoneKind = IncidentEventAttributes["kind"];
+type MilestoneKind = IncidentMilestoneAttributes["kind"];
 const createMilestoneAttributesState = () => {
 	let title = $state<string>("");
+	let kind = $state<MilestoneKind>("impact");
 	let descriptionContent = $state<Content>();
 	let descriptionEditor = $state<DescriptionEditor>(null);
 	let timestamp = $state<ZonedDateTime>(makeTimeAnchor());
@@ -48,6 +49,8 @@ const createMilestoneAttributesState = () => {
 		set timestamp(t: ZonedDateTime) { timestamp = t; onUpdate(); },
 		get title() { return title },
 		set title(t: string) { title = t; onUpdate(); },
+		get kind() { return kind },
+		set kind(k: MilestoneKind) { kind = k; onUpdate(); },
 		mountDescriptionEditor,
 		get descriptionEditor() { return descriptionEditor },
 
@@ -57,6 +60,7 @@ const createMilestoneAttributesState = () => {
 			return $state.snapshot({
 				incidentId: "",
 				title,
+				kind,
 				description: getDescriptionContent(),
 				timestamp: timestamp.toAbsoluteString(),
 				type: "",

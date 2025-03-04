@@ -322,7 +322,7 @@ func (p *IncidentDataProvider) getIncidentMilestones(ctx context.Context, i *gIn
 	}
 
 	end := &ent.IncidentMilestone{
-		Kind: incidentmilestone.KindResolved,
+		Kind: incidentmilestone.KindResolution,
 		Time: endedAt,
 	}
 

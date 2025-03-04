@@ -32,7 +32,7 @@ type (
 	}
 	IncidentMilestoneAttributes struct {
 		IncidentId uuid.UUID `json:"incidentId"`
-		Kind       string    `json:"kind"`
+		Kind       string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
 		Title      string    `json:"title"`
 		Timestamp  time.Time `json:"timestamp"`
 	}
@@ -75,7 +75,7 @@ var CreateIncidentMilestone = huma.Operation{
 
 type CreateIncidentMilestoneAttributes struct {
 	Title     string    `json:"title"`
-	Kind      string    `json:"kind"`
+	Kind      string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
 	Timestamp time.Time `json:"timestamp"`
 }
 type CreateIncidentMilestoneRequest CreateIdRequest[CreateIncidentMilestoneAttributes]
@@ -91,9 +91,9 @@ var UpdateIncidentMilestone = huma.Operation{
 }
 
 type UpdateIncidentMilestoneAttributes struct {
-	Title     *string    `json:"title"`
-	Kind      *string    `json:"kind"`
-	Timestamp *time.Time `json:"timestamp"`
+	Title     *string    `json:"title,omitempty"`
+	Kind      *string    `json:"kind,omitempty" enum:"impact,detection,investigation,mitigation,resolution"`
+	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
 type UpdateIncidentMilestoneRequest UpdateIdRequest[UpdateIncidentMilestoneAttributes]
 type UpdateIncidentMilestoneResponse ItemResponse[IncidentMilestone]
