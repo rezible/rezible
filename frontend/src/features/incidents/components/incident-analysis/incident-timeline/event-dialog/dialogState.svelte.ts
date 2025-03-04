@@ -9,6 +9,7 @@ import {
 import { createMutation } from "@tanstack/svelte-query";
 import { incidentCtx } from "$features/incidents/lib/context";
 import { eventAttributes } from "./attribute-panels/eventAttributes.svelte";
+import { timeline } from "$features/incidents/components/incident-analysis/incident-timeline/timeline.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
 
@@ -18,6 +19,8 @@ const createEventDialogState = () => {
 	let view = $state<EditorDialogView>("closed");
 	let previousView = $state<EditorDialogView>("closed");
 
+	const open = $derived(view !== "closed");
+
 	const setView = (v: EditorDialogView) => {
 		previousView = $state.snapshot(view);
 		view = v;
@@ -25,10 +28,11 @@ const createEventDialogState = () => {
 
 	const clear = () => {
 		setView("closed");
+		editingEvent = undefined;
 	};
 
 	const onSuccess = ({ data: event }: { data: IncidentEvent }) => {
-		console.log("event!", event);
+		timeline.eventAdded(event);
 		clear();
 	}
 
@@ -100,7 +104,7 @@ const createEventDialogState = () => {
 			return previousView;
 		},
 		get open() {
-			return view !== "closed";
+			return open;
 		},
 		setCreating,
 		setEditing,

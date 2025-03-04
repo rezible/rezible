@@ -42,6 +42,7 @@ func (IncidentEvent) Fields() []ent.Field {
 // Indexes of the IncidentEvent.
 func (IncidentEvent) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("incident_id", "timestamp"),
 		index.Fields("incident_id", "timestamp", "sequence").Unique(),
 	}
 }

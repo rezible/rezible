@@ -7,6 +7,8 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi"
+	"github.com/rs/zerolog/log"
+	"time"
 )
 
 type incidentEventsHandler struct {
@@ -35,6 +37,17 @@ func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request 
 	return &resp, nil
 }
 
+func (h *incidentEventsHandler) getEventSequence(ctx context.Context, incidentId uuid.UUID, timestamp time.Time) (int, error) {
+	query := h.db.IncidentEvent.Query().
+		Where(incidentevent.And(incidentevent.IncidentID(incidentId), incidentevent.Timestamp(timestamp)))
+
+	num, countErr := query.Count(ctx)
+	if countErr != nil {
+		return -1, countErr
+	}
+	return num + 1, nil
+}
+
 func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request *oapi.CreateIncidentEventRequest) (*oapi.CreateIncidentEventResponse, error) {
 	var resp oapi.CreateIncidentEventResponse
 
@@ -45,18 +58,25 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 		return nil, detailError("invalid kind", kindErr)
 	}
 
-	sess := mustGetAuthSession(ctx, h.auth)
+	userId := mustGetAuthSession(ctx, h.auth).UserId
+
+	sequence, seqErr := h.getEventSequence(ctx, request.Id, attr.Timestamp)
+	if seqErr != nil {
+		return nil, detailError("failed to get sequence for incident event", seqErr)
+	}
 
 	create := h.db.IncidentEvent.Create().
 		SetIncidentID(request.Id).
 		SetTitle(attr.Title).
 		SetKind(kind).
 		SetIsKey(attr.IsKey).
-		SetCreatedBy(sess.UserId).
-		SetTimestamp(attr.Timestamp)
+		SetCreatedBy(userId).
+		SetTimestamp(attr.Timestamp).
+		SetSequence(sequence)
 
 	created, createErr := create.Save(ctx)
 	if createErr != nil {
+		log.Error().Err(createErr).Msg("failed to create")
 		return nil, detailError("failed to create incident event", createErr)
 	}
 	resp.Body.Data = oapi.IncidentEventFromEnt(created)

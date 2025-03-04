@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	oapi "github.com/rezible/rezible/openapi"
+	"time"
 )
 
 type incidentMilestonesHandler struct {
@@ -15,7 +17,7 @@ func newIncidentMilestonesHandler(events *ent.IncidentMilestoneClient) *incident
 	return &incidentMilestonesHandler{events}
 }
 
-func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, input *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
+func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, request *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
 	var resp oapi.ListIncidentMilestonesResponse
 
 	query := h.events.Query()
@@ -28,9 +30,18 @@ func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, 
 		return nil, detailError("failed to query incident events", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentMilestone, len(results))
+	resp.Body.Data = make([]oapi.IncidentMilestone, len(results)+1)
 	for i, ev := range results {
 		resp.Body.Data[i] = oapi.IncidentMilestoneFromEnt(ev)
+	}
+	resp.Body.Data[len(resp.Body.Data)-1] = oapi.IncidentMilestone{
+		Id: uuid.New(),
+		Attributes: oapi.IncidentMilestoneAttributes{
+			IncidentId: request.Id,
+			Type:       "mitigated",
+			Title:      "Incident Mitigated",
+			Timestamp:  time.Now(),
+		},
 	}
 
 	return &resp, nil

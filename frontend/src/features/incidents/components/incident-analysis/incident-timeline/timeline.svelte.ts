@@ -1,20 +1,23 @@
 import { mount, onMount, unmount } from "svelte";
-import { Timeline, type IdType, type TimelineOptions } from "vis-timeline/esnext";
+import { Timeline, type DataGroup, type DataItem, type DataItemCollectionType, type IdType, type TimelineItem, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
-import { createQuery, useQueryClient, type CreateQueryResult } from "@tanstack/svelte-query";
+import { createQuery, QueryClient, useQueryClient, type CreateQueryResult } from "@tanstack/svelte-query";
 import { watch } from "runed";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import {
 	listIncidentEventsOptions,
 	listIncidentMilestonesOptions,
+	type Incident,
 	type IncidentEvent,
+	type IncidentMilestone,
 	type ListIncidentEventsResponseBody,
 	type ListIncidentMilestonesResponseBody,
 } from "$lib/api";
 import IncidentTimelineEvent, { type TimelineEventComponentProps } from "./IncidentTimelineEvent.svelte";
+import { SvelteMap } from "svelte/reactivity";
 
-const createTimelineEventElement = (event: IncidentEvent) => {
+const createTimelineElement = (event: IncidentEvent) => {
 	let props = $state<TimelineEventComponentProps>({ event });
 
 	const target = document.createElement("div");
@@ -23,82 +26,171 @@ const createTimelineEventElement = (event: IncidentEvent) => {
 	const component = mount(IncidentTimelineEvent, { target, props });
 
 	return {
-		get element() {
+		get ref() {
 			return target;
 		},
+		get props() { return props },
+		set props(newProps: TimelineEventComponentProps) { props = newProps },
 		unmount: () => (unmount(component)),
 	};
 };
+type TimelineEventElement = ReturnType<typeof createTimelineElement>;
 
 const createTimelineState = () => {
-	let containerEl = $state<HTMLElement>();
+	let incident = $state<Incident>();
+	// const incidentEnd = $derived(incident ? new Date(incident.attributes.closedAt) : new Date(Date.now() + 1000));
+	const incidentId = $derived(incident?.id ?? "");
+	let queryClient = $state<QueryClient>();
+
+	const items = new DataSet<TimelineItem>([]);
 	let timeline = $state<Timeline>();
 
-	let milestoneItems = new DataSet<any>([]);
-	const eventComponents = new Map<IdType, ReturnType<typeof createTimelineEventElement>>();
-	const items = new DataSet<any>([]);
+	const listMilestonesQueryOpts = $derived(listIncidentMilestonesOptions({ path: { id: incidentId } }));
+	let milestonesQuery = $state<CreateQueryResult<ListIncidentMilestonesResponseBody>>();
+	const milestones = $derived(milestonesQuery?.data?.data ?? []);
 
-	const clearEventComponents = () => {
-		eventComponents.forEach(c => c.unmount());
-		eventComponents.clear();
+	const listEventsQueryOpts = $derived(listIncidentEventsOptions({ path: { id: incidentId } }));
+	let eventsQuery = $state<CreateQueryResult<ListIncidentEventsResponseBody>>();
+	const events = $derived(eventsQuery?.data?.data ?? []);
+	const timelineEventElements = $state(new SvelteMap<string, TimelineEventElement>());
+
+	const makeTimelineEventItem = (el: TimelineEventElement, event: IncidentEvent) => {
+		const start = new Date(event.attributes.timestamp);
+		return { id: event.id, content: el.ref, start } as TimelineItem;
 	}
 
-	const onMilestonesQueryDataUpdated = (body?: ListIncidentMilestonesResponseBody) => {
+	const addEvent = (event: IncidentEvent) => {
+		const id = event.id;
+		const el = createTimelineElement(event);
+		timelineEventElements.set(id, el);
+		items.add(makeTimelineEventItem(el, event));
+	}
+
+	const maybeUpdateEvent = (el: TimelineEventElement, event: IncidentEvent) => {
+		if (el.props.event.attributes.timestamp === event.attributes.timestamp) return;
+		items.update(makeTimelineEventItem(el, event));
+	}
+
+	const removeEvent = (id: string) => {
+		const el = timelineEventElements.get(id);
+		if (el) el.unmount();
+		items.remove(id);
+		timelineEventElements.delete(id);
+	}
+
+	const clearEventElements = () => {
+		timelineEventElements.forEach(c => c.unmount());
+		timelineEventElements.clear();
+	}
+
+	const onMilestonesDataUpdated = () => {
+		const dataMap = new Map(milestones.map(m => [m.id, m]));
+		const msExists = new Map(milestones.map(m => [m.id, false]));
+		// const removeIds: string[] = [];
 		
+		items.forEach((item, rawId) => {
+			if (item.type !== "background") return;
+			const id = String(rawId);
+			if (dataMap.get(id)) {
+				msExists.set(id, true);
+			} else {
+				// TODO: maybe don't remove while iterating?
+				// removeIds.push(id);
+				items.remove(id);
+			}
+		});
+
+		//removeIds.forEach(id => items.remove(id));
+
+		// TODO: don't constantly make new Date objects
+		const ordered = milestones.toSorted((a, b) => new Date(a.attributes.timestamp).valueOf() - new Date(b.attributes.timestamp).valueOf());
+		ordered.forEach((milestone, idx, arr) => {
+			const start = new Date(milestone.attributes.timestamp);
+
+			const next = idx < arr.length - 1 ? arr[idx + 1] : undefined;
+			const end = next ? new Date(next.attributes.timestamp) : new Date(start.valueOf() + 1000000);
+
+			const updated: TimelineItem = { id: milestone.id, type: "background", content: milestone.attributes.title, start, end };
+			if (msExists) {
+				items.update(updated);
+			} else {
+				items.add(updated);
+			}
+		});
+
+		if (items.flush) items.flush();
 	};
 
-	const onEventsQueryDataUpdated = (body?: ListIncidentEventsResponseBody) => {
-		if (!body) return;
+	const onEventsDataUpdated = () => {
+		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
+		// const removeIds: string[] = [];
 
+		items.forEach((item, rawId) => {
+			if (item.type === "background") return;
+			const id = String(rawId);
+			if (eventsMap.has(id)) return;
+			// TODO: maybe don't remove while iterating?
+			// removeIds.push(id);
+			removeEvent(id);
+		});
+
+		//removeIds.forEach(removeEvent);
+
+		eventsMap.forEach((event, id) => {
+			const curr = timelineEventElements.get(id);
+			if (curr) {
+				maybeUpdateEvent(curr, event);
+			} else {
+				addEvent(event);
+			}
+		});
+
+		if (items.flush) items.flush();
+	};
+
+	const eventAdded = (event: IncidentEvent) => {
+		queryClient?.setQueryData(listEventsQueryOpts.queryKey, current => {
+			if (!current) return current;
+			return {...current, data: [...current.data, event]};
+		});
 	};
 
 	const createQueries = () => {
-		const queryClient = useQueryClient();
-		const incidentId = incidentCtx.get().id;
+		queryClient = useQueryClient();
 
-		const milestonesQueryOptsFn = () => listIncidentMilestonesOptions({ path: { id: incidentId } });
-		const milestonesQuery = createQuery(milestonesQueryOptsFn, queryClient);
-		watch(() => milestonesQuery.data, onMilestonesQueryDataUpdated);
+		milestonesQuery = createQuery(() => listMilestonesQueryOpts);
+		watch(() => milestones, onMilestonesDataUpdated);
 
-		const eventsQueryOpts = () => listIncidentEventsOptions({ path: { id: incidentId } });
-		const eventsQuery = createQuery(eventsQueryOpts, queryClient);
-		watch(() => eventsQuery.data, onEventsQueryDataUpdated);
+		eventsQuery = createQuery(() => listEventsQueryOpts);
+		watch(() => events, onEventsDataUpdated);
 	};
 
-	// const addEvent = (id: IdType) => {
-	// 	const created = createTimelineEventElement(id.toString());
-	// 	items.add({ id: 1, content: created.element, start: new Date(2025, 1, 12, 7) });
-	// 	eventComponents.set(id, created);
-	// };
-
-	const mountContainer = (el?: HTMLElement) => {
-		if (!el) return;
-		containerEl = el;
+	const mount = (containerRef: HTMLElement) => {
 		const options: TimelineOptions = {
 			height: "100%",
 		};
-		timeline = new Timeline(containerEl, items, options);
+		// @ts-expect-error incorrect timeline DataItem typing for content
+		timeline = new Timeline(containerRef, items, options);
 	};
 
-	const onUnmount = () => {
+	const unmount = () => {
 		timeline?.destroy();
-		clearEventComponents();
+		clearEventElements();
 		items.clear();
 	};
 
-	const setup = (containerElFn: () => HTMLElement | undefined) => {
-		createQueries();
-		watch(containerElFn, mountContainer);
-		onMount(() => onUnmount);
-	};
+	const setup = (containerRefFn: () => HTMLElement | undefined) => {
+		incident = incidentCtx.get();
 
-	let editingEvent = $state<IncidentEvent>();
+		createQueries();
+
+		watch(containerRefFn, ref => { if (ref) mount(ref) });
+		onMount(() => unmount);
+	};
 
 	return {
 		setup,
-		get editingEvent() {
-			return editingEvent;
-		},
+		eventAdded,
 	};
 };
 export const timeline = createTimelineState();
