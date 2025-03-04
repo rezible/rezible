@@ -10,11 +10,10 @@
 		type ControlsProps,
 		type MiniMapProps,
 		type SvelteFlowProps,
-		type NodeTypes,
-		type EdgeTypes,
 		type ColorMode,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
+	import "./diagram-styles.css";
 
 	import { settings } from "$lib/settings.svelte";
 
@@ -107,5 +106,4 @@
 </SvelteFlowProvider>
 
 <ComponentDialog />
-
 <RelationshipDialog />
