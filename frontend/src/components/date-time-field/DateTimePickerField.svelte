@@ -6,6 +6,7 @@
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import TimePicker from "$components/time-picker/TimePicker.svelte";
 	import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
+	import { convertTime, format } from "./format.svelte";
 
 	type Props = {
 		name?: string;
@@ -16,55 +17,14 @@
 	};
 	let { name = "", label, current, exactTime, onChange }: Props = $props();
 
-	const { format, localeSettings } = getSettings();
-	// const dictionary = $derived($format.settings.dictionary);
-
-	type InternalValue = {
-		date: Date;
-		time: Time;
-		period: "AM" | "PM";
-		timezone: string;
-	};
-	const convertTime = (t: ZonedDateTime): InternalValue => {
-		const d = t.copy();
-		return {
-			date: d.toDate(),
-			time: new Time(d.hour, d.minute, d.second),
-			period: d.hour >= 12 ? "PM" : "AM",
-			timezone: d.timeZone,
-		};
-	};
-
-	const hour12 = (hour: number) => {
-		if (hour == 0) return 12;
-		if (hour >= 12) return hour - 12;
-		return hour;
-	};
-
-	const currentValue = $derived(convertTime(current));
-	const currentDate = $derived(current.toDate());
-	const currentPeriod = $derived(current.hour >= 12 ? "pm" : "am");
-
-	let value = $state(convertTime(current));
-
 	let open = $state(false);
 
-	const periodType = PeriodType.Day;
-	const primaryFormat = [DateToken.Month_long, DateToken.DayOfMonth_withOrdinal, DateToken.Year_numeric];
-	let secondaryFormat = DateToken.DayOfWeek_long;
-
-	const pad = (n: number) => String(n).padStart(2, "0");
-
-	const formatHourMinute = $derived(
-		`${pad(hour12(currentValue.time.hour))}:${pad(currentValue.time.minute)}`
-	);
-	const formatTime = $derived(formatHourMinute + currentPeriod);
-
-	const formatDayOfWeek = $derived($format(currentDate, PeriodType.Day, { custom: secondaryFormat }));
-	const formatDate = $derived($format(currentDate, PeriodType.Day, { custom: primaryFormat }));
+	let value = $state(convertTime(current));
+	const currentVal = $derived(convertTime(current));
 
 	const onConfirm = () => {
 		const valStr = `${value.date.toISOString().split("T")[0]}T${value.time}[${value.timezone}]`;
+		console.log(valStr);
 		const newValue = parseZonedDateTime(valStr);
 		onChange(newValue);
 		open = false;
@@ -92,9 +52,9 @@
 			style="text-align: inherit"
 			onclick={() => (open = true)}
 		>
-			{formatTime}
-			{formatDayOfWeek}
-			{formatDate}
+			{format.asTime(currentVal.time)}
+			{format.asWeekday(currentVal.date)}
+			{format.asCalendarDate(currentVal.date)}
 		</button>
 	</Field>
 
@@ -104,21 +64,13 @@
 				transition:slide
 				class="flex flex-col justify-center bg-primary text-primary-content px-6 h-24"
 			>
-				<div class="text-sm opacity-50">
-					{$format(value.date, PeriodType.Day, {
-						custom: secondaryFormat,
-					})}
-				</div>
-				<div class="text-3xl">
-					{$format(value.date, PeriodType.Day, {
-						custom: primaryFormat,
-					})}
-				</div>
+				<div class="text-sm opacity-50">{format.asWeekday(value.date)}</div>
+				<div class="text-3xl">{format.asCalendarDate(value.date)}</div>
 			</div>
 		{/if}
 
 		<div class="p-2 w-96">
-			<DateSelect selected={value.date} {periodType} on:dateChange={(e) => (value.date = e.detail)} />
+			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => (value.date = e.detail)} />
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}

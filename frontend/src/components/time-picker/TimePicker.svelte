@@ -3,7 +3,7 @@
 <script lang="ts">
 	import { Time } from '@internationalized/date';
 	import TimePickerInput from './TimePickerInput.svelte';
-	import TimePeriodSelect from "./TimePickerSelect.svelte";
+	import TimePeriodSelect from "./TimePeriodSelect.svelte";
 	import { cls } from '@layerstack/tailwind';
 	import type { Period } from './utils';
 
