@@ -2,6 +2,7 @@
 	import { mdiFlagPlus, mdiTimelineClock, mdiTimelinePlus } from "@mdi/js";
 	import { Button, Icon } from "svelte-ux";
 	import { eventDialog } from "./event-dialog/dialogState.svelte";
+	import { milestoneDialog } from "./milestone-dialog/dialogState.svelte";
 
 	type Props = {};
 	let {}: Props = $props();
@@ -11,7 +12,7 @@
 	<div
 		class="w-fit group flex flex-col gap-2 justify-center mx-auto p-1 rounded-lg border border-surface bg-surface-100/20"
 	>
-		<Button color="primary" variant="fill" on:click={eventDialog.setCreating}>
+		<Button color="primary" variant="fill" on:click={milestoneDialog.setCreating}>
 			<span class="flex items-center gap-2">
 				<span class="group-hover:inline hidden">Create Milestone</span>
 				<Icon data={mdiFlagPlus} classes={{root: ""}} />
