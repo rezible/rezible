@@ -1,4 +1,3 @@
-import { settings as svelteUxSettings } from "svelte-ux";
 import { watch } from "runed";
 import type { AvatarProps } from "$components/avatar/Avatar.svelte";
 import type { Component } from "svelte";
@@ -22,10 +21,6 @@ const createAppShellState = () => {
 	let pageActions = $state<PageActions>();
 
 	const setup = () => {
-		svelteUxSettings({
-			themes: { light: ["light-old"], dark: ["dark", "bleh"] },
-		});
-
 		onNavigate(nav => {
 			if (!pageActions) return;
 			if (!nav.to?.route.id?.startsWith(pageActions.routeBase)) {

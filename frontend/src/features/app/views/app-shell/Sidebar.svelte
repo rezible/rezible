@@ -46,8 +46,8 @@
 		class={cls(
 			"inline-block px-4 py-3 flex items-center gap-2 text-center border-none-2 rounded-lg",
 			active
-				? "text-primary-content bg-primary-900"
-				: "text-neutral-content border-transparent hover:text-primary-content hover:border-primary/50 hover:bg-primary-900/50"
+				? "text-neutral-content bg-primary-900"
+				: "border-transparent hover:text-primary-content hover:border-primary/50 hover:bg-primary-900/50"
 		)}
 	>
 		<Icon data={r.icon} classes={{ root: expandingHover ? "group-hover:mr-3" : "mr-3" }} />

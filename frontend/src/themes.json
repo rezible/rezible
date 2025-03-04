@@ -9,63 +9,45 @@
 		"surface-200": "hsl(210, 14%, 6%)",
 		"surface-300": "hsl(210, 14%, 2%)"
 	},
-	"light-old": {
+	"light": {
 		"color-scheme": "light",
+		"primary": "#5E81AC",
+		"secondary": "#81A1C1",
+		"accent": "#88C0D0",
+		"neutral": "#4C566A",
+		"neutral-content": "#D8DEE9",
+		"surface-100": "#ECEFF4",
+		"surface-200": "#E5E9F0",
+		"surface-300": "#D8DEE9",
+		"surface-content": "#2E3440",
+		"info": "#B48EAD",
+		"success": "#A3BE8C",
+		"warning": "#EBCB8B",
+		"danger": "#BF616A",
+		"--rounded-box": "0.4rem",
+		"--rounded-btn": "0.2rem",
+		"--rounded-badge": "0.4rem",
+		"--tab-radius": "0.2rem"
+	},
+	"light-old": {
 		"primary": "#B8431B",
 		"primary-content": "#f5dad2",
-
 		"secondary": "#517664",
 		"secondary-content": "#dae2de",
-
 		"accent": "#388697",
 		"accent-content": "#010608",
-
 		"neutral": "#ccc5b9",
 		"neutral-content": "#0f0e0d",
-
 		"surface-100": "#211E1C",
 		"surface-200": "#1b1917",
 		"surface-300": "#161312",
 		"surface-content": "#cdcdcc",
-
 		"info": "#177e89",
 		"info-content": "#d4e4e7",
-
 		"success": "#4d7c0f",
 		"success-content": "#d9e4d1",
-
 		"warning": "#ffc857",
 		"warning-content": "#160f02",
-
-		"danger": "#991b1b",
-		"danger-content": "#efd3cf"
-	},
-	"dark-old": {
-		"color-scheme": "dark",
-		"primary": "#851F3F",
-
-		"secondary": "#456789",
-
-		"accent": "#388697",
-		"accent-content": "#010608",
-
-		"neutral": "#ccc5b9",
-		"neutral-content": "#0f0e0d",
-
-		"surface-100": "#211E1C",
-		"surface-200": "#1b1917",
-		"surface-300": "#161312",
-		"surface-content": "#cdcdcc",
-
-		"info": "#177e89",
-		"info-content": "#d4e4e7",
-
-		"success": "#4d7c0f",
-		"success-content": "#d9e4d1",
-
-		"warning": "#ffc857",
-		"warning-content": "#160f02",
-
 		"danger": "#991b1b",
 		"danger-content": "#efd3cf"
 	}
