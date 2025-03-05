@@ -9,4 +9,4 @@
 	let { milestone }: Props = $props();
 </script>
 
-<span>ms: {milestone.attributes.kind}</span>
+<span>{milestone.attributes.kind}</span>

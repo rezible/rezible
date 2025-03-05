@@ -6,16 +6,20 @@
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import TimePicker from "$components/time-picker/TimePicker.svelte";
 	import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
-	import { convertTime, format } from "./format.svelte";
+	import { convertTime, format, type Period } from "./format.svelte";
+	import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
+	import { isSameDay } from "date-fns";
 
 	type Props = {
 		name?: string;
 		label: string;
 		current: ZonedDateTime;
 		exactTime?: boolean;
+		rangeMin?: ZonedDateTime;
+		rangeMax?: ZonedDateTime;
 		onChange: (newValue: ZonedDateTime) => void;
 	};
-	let { name = "", label, current, exactTime, onChange }: Props = $props();
+	let { name = "", label, current, exactTime, rangeMin, rangeMax, onChange }: Props = $props();
 
 	let open = $state(false);
 
@@ -37,6 +41,21 @@
 
 	const selectClasses =
 		"py-2 px-3 block border-base-content rounded-lg text-md focus:border-accent focus:ring-accent-content dark:bg-neutral dark:border-base-100 dark:text-neutral-content dark:placeholder-base-content dark:focus:ring-neutral";
+
+	const rangeMinDate = $derived(rangeMin?.toDate());
+	const isMinDate = $derived(rangeMinDate && isSameDay(value.date, rangeMinDate));
+	const rangeMaxDate = $derived(rangeMax?.toDate());
+	const isMaxDate = $derived(rangeMaxDate && isSameDay(value.date, rangeMaxDate));
+
+	const timeTooEarly = $derived(rangeMin && isMinDate && value.time.compare(rangeMin) < 0);
+	const timeTooLate = $derived(rangeMax && isMaxDate && value.time.compare(rangeMax) > 0);
+	const timeValid = $derived(!timeTooEarly && !timeTooLate);
+
+	const disabledDates = (date: Date) => {
+		if (rangeMinDate && differenceInCalendarDays(date, rangeMinDate) < 0) return true;
+		if (rangeMaxDate && differenceInCalendarDays(date, rangeMaxDate) > 0) return true;
+		return false;
+	}
 </script>
 
 <div>
@@ -70,7 +89,7 @@
 		{/if}
 
 		<div class="p-2 w-96">
-			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => (value.date = e.detail)} />
+			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => (value.date = e.detail)} {disabledDates} />
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}
@@ -101,7 +120,7 @@
 		</div>
 
 		<div slot="actions">
-			<ConfirmChangeButtons {onConfirm} {onClose} />
+			<ConfirmChangeButtons {onConfirm} {onClose} saveEnabled={timeValid} />
 		</div>
 	</Dialog>
 </div>

@@ -1,15 +1,8 @@
 <script lang="ts">
 	import { Field, Icon, Tooltip, ToggleGroup, ToggleOption } from "svelte-ux";
-	import {
-		mdiAlertDecagram,
-		mdiAccountAlert,
-		mdiAccountEye,
-		mdiFireExtinguisher,
-		mdiTimelineClock,
-		mdiShape,
-	} from "@mdi/js";
+	import { mdiShape } from "@mdi/js";
 	import { EditorContent } from "svelte-tiptap";
-	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
+	import { createMutation } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
 	import {
 		createIncidentMilestoneMutation,
@@ -19,23 +12,24 @@
 		type IncidentMilestoneAttributes,
 		type UpdateIncidentMilestoneAttributes,
 	} from "$lib/api";
-	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
 	import { type ZonedDateTime, parseAbsoluteToLocal } from "@internationalized/date";
-	import { incidentCtx } from "$src/features/incidents/lib/context";
-	import ConfirmButtons from "$src/components/confirm-buttons/ConfirmButtons.svelte";
-	import { createMutation } from "@tanstack/svelte-query";
+	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
+	import { incidentCtx } from "$features/incidents/lib/context";
+	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
+	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "$src/features/incidents/lib/milestones";
 
 	type Props = {
 		milestone?: IncidentMilestone;
+		otherMilestones: IncidentMilestone[];
 		onClose: () => void;
 		onSaved: (milestone: IncidentMilestone) => void;
 	};
-	const { milestone, onClose, onSaved }: Props = $props();
+	const { milestone, otherMilestones, onClose, onSaved }: Props = $props();
 
 	type MilestoneKindOption = {
 		label: string;
 		value: IncidentMilestoneAttributes["kind"];
-		icon: string;
 		hint: string;
 		unique?: boolean;
 	};
@@ -43,32 +37,27 @@
 		{
 			label: "Impact Start",
 			value: "impact",
-			icon: mdiAlertDecagram,
 			hint: "Impact begins",
 			unique: true,
 		},
 		{
 			label: "Detection",
 			value: "detection",
-			icon: mdiAccountAlert,
 			hint: "Impact is detected (monitoring, alerts, user reports, etc)",
 		},
 		{
 			label: "Response",
 			value: "investigation",
-			icon: mdiAccountEye,
 			hint: "A human is investigating",
 		},
 		{
 			label: "Mitigation",
 			value: "mitigation",
-			icon: mdiFireExtinguisher,
 			hint: "Impact is mitigated",
 		},
 		{
 			label: "Resolution",
 			value: "resolution",
-			icon: mdiTimelineClock,
 			hint: "Impact is resolved",
 		},
 	];
@@ -80,7 +69,13 @@
 
 	let kind = $state<MilestoneKind>(milestone?.attributes.kind ?? "impact");
 	let descriptionEditor = $state<DescriptionEditor>(null);
-	const defaultTimestamp = milestone?.attributes.timestamp ?? incident.attributes.openedAt
+
+	const prevMs = $derived(getPreviousOrderedMilestone(kind, otherMilestones));
+	const timeMin = $derived(prevMs ? parseAbsoluteToLocal(prevMs.attributes.timestamp) : undefined);
+	const nextMs = $derived(getNextOrderedMilestone(kind, otherMilestones));
+	const timeMax = $derived(nextMs ? parseAbsoluteToLocal(nextMs.attributes.timestamp) : undefined);
+
+	const defaultTimestamp = milestone?.attributes.timestamp ?? incident.attributes.openedAt;
 	let timestamp = $state<ZonedDateTime>(parseAbsoluteToLocal(defaultTimestamp));
 
 	const saveEnabled = $derived(true);
@@ -141,7 +136,7 @@
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
 						<span class="flex items-center justify-center gap-2 px-2">
-							<Icon data={opt.icon} />
+							<Icon data={getIconForIncidentMilestoneKind(opt.value)} />
 							{opt.label}
 						</span>
 					</Tooltip>
@@ -150,7 +145,7 @@
 		</ToggleGroup>
 	</Field>
 
-	<DateTimePickerField label="Time" current={timestamp} onChange={(ts) => (timestamp = ts)} exactTime />
+	<DateTimePickerField label="Time" current={timestamp} onChange={(ts) => (timestamp = ts)} exactTime rangeMin={timeMin} rangeMax={timeMax} />
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}

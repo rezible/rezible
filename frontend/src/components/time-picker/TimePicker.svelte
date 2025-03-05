@@ -11,6 +11,8 @@
 		time?: Time;
 		period?: Period;
 		view?: 'labels' | 'dotted';
+		rangeMin?: Time;
+		rangeMax?: Time;
 		setTime?: (time: Time) => void;
 		setPeriod?: (period: Period) => void;
 	};

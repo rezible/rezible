@@ -2,7 +2,7 @@ import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date
 import { DateToken, PeriodType } from "@layerstack/utils";
 import { settings } from "$lib/settings.svelte";
 
-type Period = "AM" | "PM";
+export type Period = "AM" | "PM";
 type InternalValue = {
 	date: Date;
 	time: Time;
