@@ -170,7 +170,7 @@ const createTimelineMilestonesState = ({ items, fitTimeline }: CreateTimelineIte
 			type: "point",
 			group: "default",
 			subgroup: "milestones",
-			title: ms.attributes.title,
+			title: ms.attributes.kind,
 			content: el.ref,
 			align: "left",
 			start,

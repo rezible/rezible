@@ -18,7 +18,7 @@ func (IncidentMilestone) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.Enum("kind").Values("impact", "detection", "investigation", "mitigation", "resolution"),
-		field.String("title"),
+		field.String("description").Optional(),
 		field.Time("time"),
 	}
 }

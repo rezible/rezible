@@ -59,6 +59,26 @@ func (imu *IncidentMilestoneUpdate) SetNillableKind(i *incidentmilestone.Kind) *
 	return imu
 }
 
+// SetDescription sets the "description" field.
+func (imu *IncidentMilestoneUpdate) SetDescription(s string) *IncidentMilestoneUpdate {
+	imu.mutation.SetDescription(s)
+	return imu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (imu *IncidentMilestoneUpdate) SetNillableDescription(s *string) *IncidentMilestoneUpdate {
+	if s != nil {
+		imu.SetDescription(*s)
+	}
+	return imu
+}
+
+// ClearDescription clears the value of the "description" field.
+func (imu *IncidentMilestoneUpdate) ClearDescription() *IncidentMilestoneUpdate {
+	imu.mutation.ClearDescription()
+	return imu
+}
+
 // SetTime sets the "time" field.
 func (imu *IncidentMilestoneUpdate) SetTime(t time.Time) *IncidentMilestoneUpdate {
 	imu.mutation.SetTime(t)
@@ -150,6 +170,12 @@ func (imu *IncidentMilestoneUpdate) sqlSave(ctx context.Context) (n int, err err
 	if value, ok := imu.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 	}
+	if value, ok := imu.mutation.Description(); ok {
+		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
+	}
+	if imu.mutation.DescriptionCleared() {
+		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
+	}
 	if value, ok := imu.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
 	}
@@ -229,6 +255,26 @@ func (imuo *IncidentMilestoneUpdateOne) SetNillableKind(i *incidentmilestone.Kin
 	if i != nil {
 		imuo.SetKind(*i)
 	}
+	return imuo
+}
+
+// SetDescription sets the "description" field.
+func (imuo *IncidentMilestoneUpdateOne) SetDescription(s string) *IncidentMilestoneUpdateOne {
+	imuo.mutation.SetDescription(s)
+	return imuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (imuo *IncidentMilestoneUpdateOne) SetNillableDescription(s *string) *IncidentMilestoneUpdateOne {
+	if s != nil {
+		imuo.SetDescription(*s)
+	}
+	return imuo
+}
+
+// ClearDescription clears the value of the "description" field.
+func (imuo *IncidentMilestoneUpdateOne) ClearDescription() *IncidentMilestoneUpdateOne {
+	imuo.mutation.ClearDescription()
 	return imuo
 }
 
@@ -352,6 +398,12 @@ func (imuo *IncidentMilestoneUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 	}
 	if value, ok := imuo.mutation.Kind(); ok {
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
+	}
+	if value, ok := imuo.mutation.Description(); ok {
+		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
+	}
+	if imuo.mutation.DescriptionCleared() {
+		_spec.ClearField(incidentmilestone.FieldDescription, field.TypeString)
 	}
 	if value, ok := imuo.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)

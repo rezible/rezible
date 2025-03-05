@@ -37,6 +37,20 @@ func (imc *IncidentMilestoneCreate) SetKind(i incidentmilestone.Kind) *IncidentM
 	return imc
 }
 
+// SetDescription sets the "description" field.
+func (imc *IncidentMilestoneCreate) SetDescription(s string) *IncidentMilestoneCreate {
+	imc.mutation.SetDescription(s)
+	return imc
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (imc *IncidentMilestoneCreate) SetNillableDescription(s *string) *IncidentMilestoneCreate {
+	if s != nil {
+		imc.SetDescription(*s)
+	}
+	return imc
+}
+
 // SetTime sets the "time" field.
 func (imc *IncidentMilestoneCreate) SetTime(t time.Time) *IncidentMilestoneCreate {
 	imc.mutation.SetTime(t)
@@ -162,6 +176,10 @@ func (imc *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.
 		_spec.SetField(incidentmilestone.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
 	}
+	if value, ok := imc.mutation.Description(); ok {
+		_spec.SetField(incidentmilestone.FieldDescription, field.TypeString, value)
+		_node.Description = value
+	}
 	if value, ok := imc.mutation.Time(); ok {
 		_spec.SetField(incidentmilestone.FieldTime, field.TypeTime, value)
 		_node.Time = value
@@ -259,6 +277,24 @@ func (u *IncidentMilestoneUpsert) UpdateKind() *IncidentMilestoneUpsert {
 	return u
 }
 
+// SetDescription sets the "description" field.
+func (u *IncidentMilestoneUpsert) SetDescription(v string) *IncidentMilestoneUpsert {
+	u.Set(incidentmilestone.FieldDescription, v)
+	return u
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsert) UpdateDescription() *IncidentMilestoneUpsert {
+	u.SetExcluded(incidentmilestone.FieldDescription)
+	return u
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentMilestoneUpsert) ClearDescription() *IncidentMilestoneUpsert {
+	u.SetNull(incidentmilestone.FieldDescription)
+	return u
+}
+
 // SetTime sets the "time" field.
 func (u *IncidentMilestoneUpsert) SetTime(v time.Time) *IncidentMilestoneUpsert {
 	u.Set(incidentmilestone.FieldTime, v)
@@ -344,6 +380,27 @@ func (u *IncidentMilestoneUpsertOne) SetKind(v incidentmilestone.Kind) *Incident
 func (u *IncidentMilestoneUpsertOne) UpdateKind() *IncidentMilestoneUpsertOne {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateKind()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *IncidentMilestoneUpsertOne) SetDescription(v string) *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertOne) UpdateDescription() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentMilestoneUpsertOne) ClearDescription() *IncidentMilestoneUpsertOne {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearDescription()
 	})
 }
 
@@ -601,6 +658,27 @@ func (u *IncidentMilestoneUpsertBulk) SetKind(v incidentmilestone.Kind) *Inciden
 func (u *IncidentMilestoneUpsertBulk) UpdateKind() *IncidentMilestoneUpsertBulk {
 	return u.Update(func(s *IncidentMilestoneUpsert) {
 		s.UpdateKind()
+	})
+}
+
+// SetDescription sets the "description" field.
+func (u *IncidentMilestoneUpsertBulk) SetDescription(v string) *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.SetDescription(v)
+	})
+}
+
+// UpdateDescription sets the "description" field to the value that was provided on create.
+func (u *IncidentMilestoneUpsertBulk) UpdateDescription() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.UpdateDescription()
+	})
+}
+
+// ClearDescription clears the value of the "description" field.
+func (u *IncidentMilestoneUpsertBulk) ClearDescription() *IncidentMilestoneUpsertBulk {
+	return u.Update(func(s *IncidentMilestoneUpsert) {
+		s.ClearDescription()
 	})
 }
 

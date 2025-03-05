@@ -15,14 +15,14 @@ type IncidentMilestonesHandler interface {
 	ListIncidentMilestones(context.Context, *ListIncidentMilestonesRequest) (*ListIncidentMilestonesResponse, error)
 	CreateIncidentMilestone(context.Context, *CreateIncidentMilestoneRequest) (*CreateIncidentMilestoneResponse, error)
 	UpdateIncidentMilestone(context.Context, *UpdateIncidentMilestoneRequest) (*UpdateIncidentMilestoneResponse, error)
-	ArchiveIncidentMilestone(context.Context, *ArchiveIncidentMilestoneRequest) (*ArchiveIncidentMilestoneResponse, error)
+	DeleteIncidentMilestone(context.Context, *DeleteIncidentMilestoneRequest) (*DeleteIncidentMilestoneResponse, error)
 }
 
 func (o operations) RegisterIncidentMilestones(api huma.API) {
 	huma.Register(api, ListIncidentMilestones, o.ListIncidentMilestones)
 	huma.Register(api, CreateIncidentMilestone, o.CreateIncidentMilestone)
 	huma.Register(api, UpdateIncidentMilestone, o.UpdateIncidentMilestone)
-	huma.Register(api, ArchiveIncidentMilestone, o.ArchiveIncidentMilestone)
+	huma.Register(api, DeleteIncidentMilestone, o.DeleteIncidentMilestone)
 }
 
 type (
@@ -31,10 +31,9 @@ type (
 		Attributes IncidentMilestoneAttributes `json:"attributes"`
 	}
 	IncidentMilestoneAttributes struct {
-		IncidentId uuid.UUID `json:"incidentId"`
-		Kind       string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
-		Title      string    `json:"title"`
-		Timestamp  time.Time `json:"timestamp"`
+		Kind        string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
+		Description string    `json:"description"`
+		Timestamp   time.Time `json:"timestamp"`
 	}
 )
 
@@ -74,9 +73,9 @@ var CreateIncidentMilestone = huma.Operation{
 }
 
 type CreateIncidentMilestoneAttributes struct {
-	Title     string    `json:"title"`
-	Kind      string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
-	Timestamp time.Time `json:"timestamp"`
+	Kind        string    `json:"kind" enum:"impact,detection,investigation,mitigation,resolution"`
+	Timestamp   time.Time `json:"timestamp"`
+	Description string    `json:"description"`
 }
 type CreateIncidentMilestoneRequest CreateIdRequest[CreateIncidentMilestoneAttributes]
 type CreateIncidentMilestoneResponse ItemResponse[IncidentMilestone]
@@ -91,21 +90,21 @@ var UpdateIncidentMilestone = huma.Operation{
 }
 
 type UpdateIncidentMilestoneAttributes struct {
-	Title     *string    `json:"title,omitempty"`
-	Kind      *string    `json:"kind,omitempty" enum:"impact,detection,investigation,mitigation,resolution"`
-	Timestamp *time.Time `json:"timestamp,omitempty"`
+	Kind        *string    `json:"kind,omitempty" enum:"impact,detection,investigation,mitigation,resolution"`
+	Timestamp   *time.Time `json:"timestamp,omitempty"`
+	Description *string    `json:"description,omitempty"`
 }
 type UpdateIncidentMilestoneRequest UpdateIdRequest[UpdateIncidentMilestoneAttributes]
 type UpdateIncidentMilestoneResponse ItemResponse[IncidentMilestone]
 
-var ArchiveIncidentMilestone = huma.Operation{
-	OperationID: "archive-incident-milestone",
+var DeleteIncidentMilestone = huma.Operation{
+	OperationID: "delete-incident-milestone",
 	Method:      http.MethodDelete,
 	Path:        "/incident_milestones/{id}",
-	Summary:     "Archive an Incident Milestone",
+	Summary:     "Delete an Incident Milestone",
 	Tags:        incidentMilestonesTags,
 	Errors:      errorCodes(),
 }
 
-type ArchiveIncidentMilestoneRequest ArchiveIdRequest
-type ArchiveIncidentMilestoneResponse EmptyResponse
+type DeleteIncidentMilestoneRequest DeleteIdRequest
+type DeleteIncidentMilestoneResponse EmptyResponse

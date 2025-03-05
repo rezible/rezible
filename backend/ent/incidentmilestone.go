@@ -23,6 +23,8 @@ type IncidentMilestone struct {
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// Kind holds the value of the "kind" field.
 	Kind incidentmilestone.Kind `json:"kind,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
 	// Time holds the value of the "time" field.
 	Time time.Time `json:"time,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -56,7 +58,7 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentmilestone.FieldKind:
+		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentmilestone.FieldTime:
 			values[i] = new(sql.NullTime)
@@ -94,6 +96,12 @@ func (im *IncidentMilestone) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
 				im.Kind = incidentmilestone.Kind(value.String)
+			}
+		case incidentmilestone.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				im.Description = value.String
 			}
 		case incidentmilestone.FieldTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -147,6 +155,9 @@ func (im *IncidentMilestone) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", im.Kind))
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(im.Description)
 	builder.WriteString(", ")
 	builder.WriteString("time=")
 	builder.WriteString(im.Time.Format(time.ANSIC))

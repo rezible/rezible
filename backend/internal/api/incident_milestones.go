@@ -74,8 +74,8 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 	return &resp, nil
 }
 
-func (h *incidentMilestonesHandler) ArchiveIncidentMilestone(ctx context.Context, input *oapi.ArchiveIncidentMilestoneRequest) (*oapi.ArchiveIncidentMilestoneResponse, error) {
-	var resp oapi.ArchiveIncidentMilestoneResponse
+func (h *incidentMilestonesHandler) DeleteIncidentMilestone(ctx context.Context, input *oapi.DeleteIncidentMilestoneRequest) (*oapi.DeleteIncidentMilestoneResponse, error) {
+	var resp oapi.DeleteIncidentMilestoneResponse
 
 	deleteErr := h.db.IncidentMilestone.DeleteOneID(input.Id).Exec(ctx)
 	if deleteErr != nil {

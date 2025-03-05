@@ -179,9 +179,9 @@ export type CreateIncidentFieldResponseBody = {
 };
 
 export type CreateIncidentMilestoneAttributes = {
+    description: string;
     kind: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
     timestamp: string;
-    title: string;
 };
 
 export type CreateIncidentMilestoneRequestBody = {
@@ -1233,10 +1233,9 @@ export type IncidentMilestone = {
 };
 
 export type IncidentMilestoneAttributes = {
-    incidentId: string;
+    description: string;
     kind: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
     timestamp: string;
-    title: string;
 };
 
 export type IncidentRole = {
@@ -2159,9 +2158,9 @@ export type UpdateIncidentFieldResponseBody = {
 };
 
 export type UpdateIncidentMilestoneAttributes = {
+    description?: string;
     kind?: 'impact' | 'detection' | 'investigation' | 'mitigation' | 'resolution';
     timestamp?: string;
-    title?: string;
 };
 
 export type UpdateIncidentMilestoneRequestBody = {
@@ -4115,7 +4114,7 @@ export type UpdateIncidentFieldResponses = {
 
 export type UpdateIncidentFieldResponse = UpdateIncidentFieldResponses[keyof UpdateIncidentFieldResponses];
 
-export type ArchiveIncidentMilestoneData = {
+export type DeleteIncidentMilestoneData = {
     body?: never;
     path: {
         id: string;
@@ -4124,7 +4123,7 @@ export type ArchiveIncidentMilestoneData = {
     url: '/incident_milestones/{id}';
 };
 
-export type ArchiveIncidentMilestoneErrors = {
+export type DeleteIncidentMilestoneErrors = {
     /**
      * Bad Request
      */
@@ -4151,16 +4150,16 @@ export type ArchiveIncidentMilestoneErrors = {
     500: ErrorModel;
 };
 
-export type ArchiveIncidentMilestoneError = ArchiveIncidentMilestoneErrors[keyof ArchiveIncidentMilestoneErrors];
+export type DeleteIncidentMilestoneError = DeleteIncidentMilestoneErrors[keyof DeleteIncidentMilestoneErrors];
 
-export type ArchiveIncidentMilestoneResponses = {
+export type DeleteIncidentMilestoneResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type ArchiveIncidentMilestoneResponse = ArchiveIncidentMilestoneResponses[keyof ArchiveIncidentMilestoneResponses];
+export type DeleteIncidentMilestoneResponse = DeleteIncidentMilestoneResponses[keyof DeleteIncidentMilestoneResponses];
 
 export type UpdateIncidentMilestoneData = {
     body: UpdateIncidentMilestoneRequestBody;

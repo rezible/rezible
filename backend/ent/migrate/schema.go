@@ -374,6 +374,7 @@ var (
 	IncidentMilestonesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "kind", Type: field.TypeEnum, Enums: []string{"impact", "detection", "investigation", "mitigation", "resolution"}},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "time", Type: field.TypeTime},
 		{Name: "incident_id", Type: field.TypeUUID},
 	}
@@ -385,7 +386,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incident_milestones_incidents_milestones",
-				Columns:    []*schema.Column{IncidentMilestonesColumns[3]},
+				Columns:    []*schema.Column{IncidentMilestonesColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

@@ -4,7 +4,7 @@
 	import { timeline } from "./timeline.svelte";
 	import IncidentTimelineActionsBar from "./IncidentTimelineActionsBar.svelte";
 	import EventDialog from "./event-dialog/EventDialog.svelte";
-	import MilestoneDialog from "./milestone-dialog/MilestoneDialog.svelte";
+	import MilestonesDialog from "./milestones-dialog/MilestonesDialog.svelte";
 
 	let containerEl = $state<HTMLElement>();
 	timeline.setup(() => containerEl);
@@ -15,4 +15,4 @@
 <IncidentTimelineActionsBar />
 
 <EventDialog />
-<MilestoneDialog />
+<MilestonesDialog />

@@ -19,6 +19,8 @@ const (
 	FieldIncidentID = "incident_id"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// FieldTime holds the string denoting the time field in the database.
 	FieldTime = "time"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -39,6 +41,7 @@ var Columns = []string{
 	FieldID,
 	FieldIncidentID,
 	FieldKind,
+	FieldDescription,
 	FieldTime,
 }
 
@@ -99,6 +102,11 @@ func ByIncidentID(opts ...sql.OrderTermOption) OrderOption {
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByTime orders the results by the time field.
