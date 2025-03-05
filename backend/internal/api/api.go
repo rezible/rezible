@@ -61,7 +61,7 @@ func NewHandler(
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),
 		incidentEventsHandler:     newIncidentEventsHandler(db, auth),
 		incidentFieldsHandler:     newIncidentFieldsHandler(db),
-		incidentMilestonesHandler: newIncidentMilestonesHandler(db.IncidentMilestone),
+		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		incidentRolesHandler:      newincidentRolesHandler(db.IncidentRole),
 		incidentSeverityHandler:   newIncidentSeverityHandler(db.IncidentSeverity),
 		incidentTagsHandler:       newIncidentTagsHandler(db.IncidentTag),

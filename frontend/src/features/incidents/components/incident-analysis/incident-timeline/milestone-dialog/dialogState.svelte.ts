@@ -46,6 +46,7 @@ const createMilestoneDialogState = () => {
 	const doCreate = () => {
 		if (!incident || !createMut) return;
 		const attrs = milestoneAttributes.snapshot();
+		if (!milestoneAttributes.valid || !attrs.kind) return;
 		const path = { id: $state.snapshot(incident.id) };
 		const attributes: CreateIncidentMilestoneAttributes = {
 			kind: attrs.kind,

@@ -8,17 +8,17 @@ import (
 )
 
 type incidentMilestonesHandler struct {
-	events *ent.IncidentMilestoneClient
+	db *ent.Client
 }
 
-func newIncidentMilestonesHandler(events *ent.IncidentMilestoneClient) *incidentMilestonesHandler {
-	return &incidentMilestonesHandler{events}
+func newIncidentMilestonesHandler(db *ent.Client) *incidentMilestonesHandler {
+	return &incidentMilestonesHandler{db: db}
 }
 
 func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, request *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
 	var resp oapi.ListIncidentMilestonesResponse
 
-	query := h.events.Query()
+	query := h.db.IncidentMilestone.Query()
 
 	query.Limit(10)
 	query.Offset(0)
@@ -28,7 +28,7 @@ func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, 
 		return nil, detailError("failed to query incident events", queryErr)
 	}
 
-	resp.Body.Data = make([]oapi.IncidentMilestone, len(results)+1)
+	resp.Body.Data = make([]oapi.IncidentMilestone, len(results))
 	for i, ev := range results {
 		resp.Body.Data[i] = oapi.IncidentMilestoneFromEnt(ev)
 	}
@@ -36,12 +36,14 @@ func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, 
 	return &resp, nil
 }
 
-func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context, input *oapi.CreateIncidentMilestoneRequest) (*oapi.CreateIncidentMilestoneResponse, error) {
+func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context, request *oapi.CreateIncidentMilestoneRequest) (*oapi.CreateIncidentMilestoneResponse, error) {
 	var resp oapi.CreateIncidentMilestoneResponse
 
-	attrs := input.Body.Attributes
-	query := h.events.Create().
-		SetKind(incidentmilestone.Kind(attrs.Kind))
+	attrs := request.Body.Attributes
+	query := h.db.IncidentMilestone.Create().
+		SetIncidentID(request.Id).
+		SetKind(incidentmilestone.Kind(attrs.Kind)).
+		SetTime(attrs.Timestamp)
 
 	ev, createErr := query.Save(ctx)
 	if createErr != nil {
@@ -57,7 +59,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	attrs := input.Body.Attributes
 
-	query := h.events.UpdateOneID(input.Id)
+	query := h.db.IncidentMilestone.UpdateOneID(input.Id)
 
 	if attrs.Kind != nil {
 		query.SetKind(incidentmilestone.Kind(*attrs.Kind))
@@ -75,7 +77,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 func (h *incidentMilestonesHandler) ArchiveIncidentMilestone(ctx context.Context, input *oapi.ArchiveIncidentMilestoneRequest) (*oapi.ArchiveIncidentMilestoneResponse, error) {
 	var resp oapi.ArchiveIncidentMilestoneResponse
 
-	deleteErr := h.events.DeleteOneID(input.Id).Exec(ctx)
+	deleteErr := h.db.IncidentMilestone.DeleteOneID(input.Id).Exec(ctx)
 	if deleteErr != nil {
 		return nil, detailError("failed to archive incident event", deleteErr)
 	}

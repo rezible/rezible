@@ -13,7 +13,7 @@ type MilestoneKind = IncidentMilestoneAttributes["kind"];
 
 const createMilestoneAttributesState = () => {
 	let title = $state<string>("");
-	let kind = $state<MilestoneKind>("impact");
+	let kind = $state<MilestoneKind>();
 	let descriptionContent = $state<Content>();
 	let descriptionEditor = $state<DescriptionEditor>(null);
 	let timestamp = $state<ZonedDateTime>(makeTimeAnchor());
@@ -22,6 +22,7 @@ const createMilestoneAttributesState = () => {
 
 	const init = (inc?: Incident, e?: IncidentMilestoneAttributes) => {
 		title = $state.snapshot(e?.title) ?? "";
+		kind = $state.snapshot(e?.kind);
 		// descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;
 		timestamp = makeTimeAnchor(e?.timestamp ?? inc?.attributes.openedAt);
 	}
@@ -51,7 +52,7 @@ const createMilestoneAttributesState = () => {
 		get title() { return title },
 		set title(t: string) { title = t; onUpdate(); },
 		get kind() { return kind },
-		set kind(k: MilestoneKind) { kind = k; onUpdate(); },
+		set kind(k: MilestoneKind | undefined) { kind = k; onUpdate(); },
 		mountDescriptionEditor,
 		get descriptionEditor() { return descriptionEditor },
 

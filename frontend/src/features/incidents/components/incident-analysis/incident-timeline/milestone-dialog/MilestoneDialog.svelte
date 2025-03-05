@@ -18,7 +18,7 @@
 	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-5xl max-h-full h-fit" }}
 >
 	<div slot="header" class="border-b p-2 flex justify-between items-center">
-		<span class="text-xl flex-1">{creating ? "Create" : "Edit"} Milestone</span>
+		<span class="text-xl flex-1">{creating ? "Create" : "Edit"} Incident Milestone</span>
 	</div>
 
 	<div class="flex-1 min-h-0 overflow-y-auto flex">
