@@ -10,6 +10,7 @@ const makeTimeAnchor = (from?: string): ZonedDateTime => {
 
 type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
 type MilestoneKind = IncidentMilestoneAttributes["kind"];
+
 const createMilestoneAttributesState = () => {
 	let title = $state<string>("");
 	let kind = $state<MilestoneKind>("impact");
@@ -56,14 +57,12 @@ const createMilestoneAttributesState = () => {
 
 		get valid() { return valid },
 		
-		snapshot(): IncidentMilestoneAttributes {
+		snapshot() {
 			return $state.snapshot({
-				incidentId: "",
 				title,
 				kind,
 				description: getDescriptionContent(),
 				timestamp: timestamp.toAbsoluteString(),
-				type: "",
 			})
 		},
 	}

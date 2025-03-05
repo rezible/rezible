@@ -84,10 +84,8 @@ const createEventAttributesState = () => {
 
 		get valid() { return valid },
 		
-		snapshot(): IncidentEventAttributes {
+		snapshot() {
 			return $state.snapshot({
-				incidentId: "",
-				sequence: -1,
 				kind,
 				title,
 				description: getDescriptionContent(),

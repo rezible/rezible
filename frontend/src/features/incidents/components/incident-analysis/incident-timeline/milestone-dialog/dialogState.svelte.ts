@@ -48,7 +48,7 @@ const createMilestoneDialogState = () => {
 		const attrs = milestoneAttributes.snapshot();
 		const path = { id: $state.snapshot(incident.id) };
 		const attributes: CreateIncidentMilestoneAttributes = {
-			type: attrs.type,
+			kind: attrs.kind,
 			timestamp: attrs.timestamp,
 			title: attrs.title,
 		};
@@ -60,7 +60,7 @@ const createMilestoneDialogState = () => {
 		const attrs = milestoneAttributes.snapshot();
 		const path = { id: $state.snapshot(editingMilestone.id) };
 		const attributes: UpdateIncidentMilestoneAttributes = {
-			type: attrs.type,
+			kind: attrs.kind,
 			timestamp: attrs.timestamp,
 			title: attrs.title,
 		};

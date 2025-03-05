@@ -7,10 +7,8 @@
 
 <div class="grid place-items-center">
     <div class="w-64 flex flex-col gap-2">
-        <span>auth</span>
-
         {#if session.error}
-            <span class="text-danger">error: {errorText}</span>
+            <span class="text-danger">Auth Error: {errorText}</span>
         {/if}
 
         <Button href={AUTH_REDIRECT_URL} color="primary" variant="fill">Sign in</Button>

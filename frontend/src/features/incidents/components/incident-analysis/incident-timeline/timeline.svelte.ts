@@ -191,6 +191,8 @@ const createTimelineState = () => {
 	return {
 		setup,
 		eventAdded,
+		get milestones() { return milestones },
+		get events() { return events },
 	};
 };
 export const timeline = createTimelineState();

@@ -1,55 +1,67 @@
 <script lang="ts">
-	import { Field, Header, Icon, ToggleGroup, ToggleOption, Tooltip } from "svelte-ux";
-	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
+	import { Field, Icon, Tooltip } from "svelte-ux";
+	import { mdiAlertDecagram, mdiAccountAlert, mdiAccountEye, mdiFireExtinguisher, mdiTimelineClock, mdiShape } from "@mdi/js";
+	import { EditorContent } from "svelte-tiptap";
 	import type { IncidentMilestoneAttributes } from "$lib/api";
+	import ToggleGroup from "$components/toggle-group/ToggleGroup.svelte";
+	import ToggleOption from "$components/toggle-group/ToggleOption.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 	import { milestoneAttributes } from "./milestoneAttributes.svelte";
+	import { onMount } from "svelte";
+	import { SvelteSet } from "svelte/reactivity";
+	import { timeline } from "../timeline.svelte";
 
 	type MilestoneKindOption = {
 		label: string;
 		value: IncidentMilestoneAttributes["kind"];
 		icon: string;
 		hint: string;
-	}
+		unique?: boolean;
+	};
 	const milestoneKindOptions: MilestoneKindOption[] = [
 		{
 			label: "Impact Start",
 			value: "impact",
-			icon: mdiMagnify,
-			hint: "impact",
+			icon: mdiAlertDecagram,
+			hint: "Impact begins",
+			unique: true,
 		},
 		{
 			label: "Detection",
 			value: "detection",
-			icon: mdiExclamation,
-			hint: "first detection",
+			icon: mdiAccountAlert,
+			hint: "Impact is detected (monitoring, alerts, user reports, etc)",
 		},
 		{
 			label: "Response",
 			value: "investigation",
-			icon: mdiBook,
-			hint: "response begins",
+			icon: mdiAccountEye,
+			hint: "A human is investigating",
 		},
 		{
 			label: "Mitigation",
 			value: "mitigation",
-			icon: mdiBrain,
-			hint: "impact is mitigated",
+			icon: mdiFireExtinguisher,
+			hint: "Impact is mitigated",
 		},
 		{
 			label: "Resolution",
 			value: "resolution",
-			icon: mdiBrain,
-			hint: "impact is resolved",
+			icon: mdiTimelineClock,
+			hint: "Impact is resolved",
 		},
 	];
+
+	const seenKinds = $derived(new SvelteSet(timeline.milestones.map(m => m.attributes.kind)));
+
+	onMount(milestoneAttributes.mountDescriptionEditor);
 </script>
 
 <div class="flex flex-col min-h-0 max-h-full flex-1 gap-2 p-2">
-	<Field label="Kind">
+	<Field label="Kind" icon={mdiShape}>
 		<ToggleGroup bind:value={milestoneAttributes.kind} variant="fill" inset class="w-full">
 			{#each milestoneKindOptions as opt}
-				<ToggleOption value={opt.value}>
+				<ToggleOption value={opt.value} disabled={opt.unique || seenKinds.has(opt.value)}>
 					<Tooltip title={opt.hint}>
 						<span class="flex items-center justify-center gap-2 px-2">
 							<Icon data={opt.icon} />
@@ -67,4 +79,10 @@
 		onChange={ts => (milestoneAttributes.timestamp = ts)}
 		exactTime
 	/>
+
+	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
+		{#if milestoneAttributes.descriptionEditor}
+			<EditorContent editor={milestoneAttributes.descriptionEditor} />
+		{/if}
+	</Field>
 </div>
