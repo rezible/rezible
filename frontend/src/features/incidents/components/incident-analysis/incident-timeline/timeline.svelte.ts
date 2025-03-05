@@ -3,7 +3,7 @@ import { Timeline, type DataGroup, type TimelineItem, type TimelineOptions } fro
 import { DataSet } from "vis-data/esnext";
 
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { watch } from "runed";
+import { Previous, watch } from "runed";
 import { incidentCtx } from "$features/incidents/lib/context.ts";
 import { listIncidentEventsOptions, listIncidentMilestonesOptions, type IncidentEvent, type IncidentMilestone } from "$lib/api";
 
@@ -13,7 +13,7 @@ import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneCo
 import { debounce } from "$src/lib/utils.svelte";
 
 const createTimelineEventElement = (event: IncidentEvent) => {
-	let props = $state<TimelineEventComponentProps>({ event });
+	let props = $state<TimelineEventComponentProps>({ event, selected: false });
 
 	const target = document.createElement("div");
 	target.setAttribute("event-id", $state.snapshot(event.id));
@@ -29,12 +29,13 @@ const createTimelineEventElement = (event: IncidentEvent) => {
 };
 type TimelineEventElement = ReturnType<typeof createTimelineEventElement>;
 
-type CreateTimelineItemsStateParams = {
-	items: DataSet<TimelineItem>;
-	fitTimeline: () => void;
-}
+const EventsSubgroup = "events";
+const MilestonesSubgroup = "milestones";
 
-const createTimelineEventsState = ({ items, fitTimeline }: CreateTimelineItemsStateParams) => {
+const fitTimeline = debounce((t: Timeline) => { t?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } }) }, 500);
+
+const createTimelineEventsState = (items: DataSet<TimelineItem>) => {
+	let timeline: Timeline;
 	const incident = incidentCtx.get();
 	const queryClient = useQueryClient();
 
@@ -47,7 +48,7 @@ const createTimelineEventsState = ({ items, fitTimeline }: CreateTimelineItemsSt
 
 	const makeTimelineEventItem = (el: TimelineEventElement, event: IncidentEvent) => {
 		const start = new Date(event.attributes.timestamp);
-		return { id: event.id, type: "box", group: "default", subgroup: "events", content: el.ref, start } as TimelineItem;
+		return { id: event.id, type: "box", group: "default", subgroup: EventsSubgroup, content: el.ref, start } as TimelineItem;
 	}
 
 	const setEvent = (event: IncidentEvent) => {
@@ -84,31 +85,44 @@ const createTimelineEventsState = ({ items, fitTimeline }: CreateTimelineItemsSt
 
 		if (items.flush) items.flush();
 
-		fitTimeline();
+		fitTimeline(timeline);
 	};
 	watch(() => events, onEventsDataUpdated);
 
 	const eventAdded = (event: IncidentEvent) => {
-		queryClient?.setQueryData(listEventsQueryOpts.queryKey, current => {
+		queryClient.setQueryData(listEventsQueryOpts.queryKey, current => {
 			if (!current) return current;
 			return { ...current, data: [...current.data, event] };
 		});
+		queryClient.invalidateQueries(listEventsQueryOpts);
 	};
+
+	const setSelected = (id: string, selected: boolean) => {
+		const el = timelineElements.get(id);
+		if (!el) return;
+		el.props.selected = selected;
+	}
 
 	const clear = () => {
 		timelineElements.forEach(c => c.unmount());
 		timelineElements.clear();
 	}
 
+	const setTimeline = (t: Timeline) => {
+		timeline = t;
+	}
+
 	return {
 		eventAdded,
+		setSelected,
+		setTimeline,
 		get eventsData() { return events },
 		clear,
 	}
 }
 
 const createTimelineMilestoneElement = (milestone: IncidentMilestone) => {
-	let props = $state<TimelineMilestoneComponentProps>({ milestone });
+	let props = $state<TimelineMilestoneComponentProps>({ milestone, selected: false });
 
 	const target = document.createElement("div");
 	target.setAttribute("milestone-id", $state.snapshot(milestone.id));
@@ -117,8 +131,8 @@ const createTimelineMilestoneElement = (milestone: IncidentMilestone) => {
 
 	return {
 		get ref() { return target },
-		get props() { return props },
-		set props(newProps: TimelineMilestoneComponentProps) { props = newProps },
+		get selected() { return props.selected },
+		set selected(s: boolean) { props.selected = s },
 		unmount: () => (unmount(component)),
 	};
 };
@@ -138,9 +152,11 @@ const getBackgroundStylesForMilestone = (m: IncidentMilestone) => {
 	return "opacity: 0.15;" + getBackgroundColorForMilestoneKind(m.attributes.kind);
 }
 
-const createTimelineMilestonesState = ({ items, fitTimeline }: CreateTimelineItemsStateParams) => {
+const createTimelineMilestonesState = (items: DataSet<TimelineItem>) => {
 	const incident = incidentCtx.get();
 	const incidentEnd = new Date(incident.attributes.closedAt);
+
+	let timeline: Timeline;
 
 	const listMilestonesQueryOpts = $derived(listIncidentMilestonesOptions({ path: { id: incident.id } }));
 	const milestonesQuery = createQuery(() => listMilestonesQueryOpts);
@@ -169,7 +185,7 @@ const createTimelineMilestonesState = ({ items, fitTimeline }: CreateTimelineIte
 			id: ids.box,
 			type: "point",
 			group: "default",
-			subgroup: "milestones",
+			subgroup: MilestonesSubgroup,
 			title: ms.attributes.kind,
 			content: el.ref,
 			align: "left",
@@ -225,7 +241,7 @@ const createTimelineMilestonesState = ({ items, fitTimeline }: CreateTimelineIte
 
 		if (items.flush) items.flush();
 
-		fitTimeline();
+		fitTimeline(timeline);
 	};
 	watch(() => milestones, onMilestonesDataUpdated);
 
@@ -234,8 +250,21 @@ const createTimelineMilestonesState = ({ items, fitTimeline }: CreateTimelineIte
 		timelineElements.clear();
 	}
 
+	const setSelected = (id: string, selected: boolean) => {
+		const msId = id.split("_")[0];
+		const el = timelineElements.get(msId);
+		if (!el) return;
+		el.selected = selected;
+	}
+
+	const setTimeline = (t: Timeline) => {
+		timeline = t;
+	}
+
 	return {
 		clear,
+		setSelected,
+		setTimeline,
 		get milestonesData() { return milestones },
 	}
 }
@@ -246,16 +275,28 @@ const createTimelineState = () => {
 	let milestones = $state<ReturnType<typeof createTimelineMilestonesState>>();
 
 	let timeline = $state<Timeline>();
+	let selectedItems = $state<Set<string>>(new Set());
 
-	const fitTimeline = debounce(() => { timeline?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } }) }, 500);
+	const onTimelineSelect = (e: any) => {
+		const newSelected = new Set(e.items as string[]);
+		const deselectedItems = selectedItems.difference(newSelected);
+		selectedItems = new Set(e.items as string[]);
+		
+		deselectedItems.forEach(id => {
+			events?.setSelected(id, false);
+			milestones?.setSelected(id, false);
+		});
+		selectedItems.forEach(id => {
+			events?.setSelected(id, true);
+			milestones?.setSelected(id, true);
+		});
+	}
 
 	const setup = (containerRefFn: () => HTMLElement | undefined) => {
 		const incident = incidentCtx.get();
 
-		const params = { items, fitTimeline };
-
-		events = createTimelineEventsState(params);
-		milestones = createTimelineMilestonesState(params);
+		events = createTimelineEventsState(items);
+		milestones = createTimelineMilestonesState(items);
 
 		const openedAt = new Date(incident.attributes.openedAt);
 		const closedAt = new Date(incident.attributes.closedAt);
@@ -281,6 +322,10 @@ const createTimelineState = () => {
 			if (timeline) timeline.destroy();
 			// @ts-expect-error incorrect timeline DataItem typing for content
 			timeline = new Timeline(ref, items, timelineGroups, timelineOpts);
+			events?.setTimeline(timeline);
+			milestones?.setTimeline(timeline);
+
+			timeline.on("select", onTimelineSelect)
 		});
 		onMount(() => {
 			return () => {

@@ -32,7 +32,7 @@ const createEventDialogState = () => {
 	};
 
 	const onSuccess = ({ data: event }: { data: IncidentEvent }) => {
-		timeline.eventAdded(event);
+		timeline.onEventAdded(event);
 		clear();
 	}
 
