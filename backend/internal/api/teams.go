@@ -3,7 +3,6 @@ package api
 import (
 	"context"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
 	oapi "github.com/rezible/rezible/openapi"
@@ -73,10 +72,8 @@ func (h *teamsHandler) CreateTeam(ctx context.Context, request *oapi.CreateTeamR
 func (h *teamsHandler) GetTeam(ctx context.Context, request *oapi.GetTeamRequest) (*oapi.GetTeamResponse, error) {
 	var resp oapi.GetTeamResponse
 
-	var pred predicate.Team
-	if request.Id.IsUUID {
-		pred = entteam.ID(request.Id.UUID)
-	} else {
+	pred := entteam.ID(request.Id.UUID)
+	if request.Id.IsSlug {
 		pred = entteam.Slug(request.Id.Slug)
 	}
 	team, queryErr := h.teams.Query().Where(pred).Only(ctx)

@@ -7,9 +7,7 @@ export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();
 
 	if (!isValidUUID(params.slug)) {
-		return {
-			id: params.slug,
-		};
+		return {slug: params.slug};
 	}
 
 	const id = params.slug;

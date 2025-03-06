@@ -16,13 +16,16 @@
 	import TeamRosters from "./TeamRosters.svelte";
 
 	type Props = {
-		teamId: string;
+		teamSlug: string;
 	}
-	let { teamId }: Props = $props();
+	let { teamSlug }: Props = $props();
 
-	const teamQuery = createQuery(() => getTeamOptions({ path: { id: teamId } }));
-	const usersQuery = createQuery(() => listUsersOptions({ query: { teamId } }));
-	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: { teamId } }));
+	const teamQuery = createQuery(() => getTeamOptions({ path: { id: teamSlug } }));
+	const team = $derived(teamQuery.data?.data);
+	const teamId = $derived(team?.id ?? "");
+
+	const usersQuery = createQuery(() => ({...listUsersOptions({ query: { teamId } }), enabled: !!teamId }));
+	const rostersQuery = createQuery(() => ({...listOncallRostersOptions({ query: { teamId } }), enabled: !!teamId }));
 </script>
 
 <div class="flex gap-2">
