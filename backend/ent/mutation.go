@@ -38373,6 +38373,7 @@ type TeamMutation struct {
 	typ                         string
 	id                          *uuid.UUID
 	slug                        *string
+	provider_id                 *string
 	name                        *string
 	chat_channel_id             *string
 	timezone                    *string
@@ -38532,6 +38533,55 @@ func (m *TeamMutation) OldSlug(ctx context.Context) (v string, err error) {
 // ResetSlug resets all changes to the "slug" field.
 func (m *TeamMutation) ResetSlug() {
 	m.slug = nil
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *TeamMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *TeamMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the Team entity.
+// If the Team object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TeamMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *TeamMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[team.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *TeamMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[team.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *TeamMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, team.FieldProviderID)
 }
 
 // SetName sets the "name" field.
@@ -38918,9 +38968,12 @@ func (m *TeamMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TeamMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.slug != nil {
 		fields = append(fields, team.FieldSlug)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, team.FieldProviderID)
 	}
 	if m.name != nil {
 		fields = append(fields, team.FieldName)
@@ -38941,6 +38994,8 @@ func (m *TeamMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case team.FieldSlug:
 		return m.Slug()
+	case team.FieldProviderID:
+		return m.ProviderID()
 	case team.FieldName:
 		return m.Name()
 	case team.FieldChatChannelID:
@@ -38958,6 +39013,8 @@ func (m *TeamMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case team.FieldSlug:
 		return m.OldSlug(ctx)
+	case team.FieldProviderID:
+		return m.OldProviderID(ctx)
 	case team.FieldName:
 		return m.OldName(ctx)
 	case team.FieldChatChannelID:
@@ -38979,6 +39036,13 @@ func (m *TeamMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSlug(v)
+		return nil
+	case team.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
 		return nil
 	case team.FieldName:
 		v, ok := value.(string)
@@ -39031,6 +39095,9 @@ func (m *TeamMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *TeamMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(team.FieldProviderID) {
+		fields = append(fields, team.FieldProviderID)
+	}
 	if m.FieldCleared(team.FieldChatChannelID) {
 		fields = append(fields, team.FieldChatChannelID)
 	}
@@ -39051,6 +39118,9 @@ func (m *TeamMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *TeamMutation) ClearField(name string) error {
 	switch name {
+	case team.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	case team.FieldChatChannelID:
 		m.ClearChatChannelID()
 		return nil
@@ -39067,6 +39137,9 @@ func (m *TeamMutation) ResetField(name string) error {
 	switch name {
 	case team.FieldSlug:
 		m.ResetSlug()
+		return nil
+	case team.FieldProviderID:
+		m.ResetProviderID()
 		return nil
 	case team.FieldName:
 		m.ResetName()

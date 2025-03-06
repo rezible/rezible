@@ -126,7 +126,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 
 func loadConfigCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return providers.LoadFromFile(ctx, db.Client(), ".dev_provider_configs.json")
+		return providers.LoadConfigFromFile(ctx, db.Client(), ".dev_provider_configs.json")
 	})
 }
 

@@ -59,6 +59,11 @@ func Slug(v string) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldSlug, v))
 }
 
+// ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
+func ProviderID(v string) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldProviderID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldName, v))
@@ -137,6 +142,81 @@ func SlugEqualFold(v string) predicate.Team {
 // SlugContainsFold applies the ContainsFold predicate on the "slug" field.
 func SlugContainsFold(v string) predicate.Team {
 	return predicate.Team(sql.FieldContainsFold(FieldSlug, v))
+}
+
+// ProviderIDEQ applies the EQ predicate on the "provider_id" field.
+func ProviderIDEQ(v string) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldProviderID, v))
+}
+
+// ProviderIDNEQ applies the NEQ predicate on the "provider_id" field.
+func ProviderIDNEQ(v string) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldProviderID, v))
+}
+
+// ProviderIDIn applies the In predicate on the "provider_id" field.
+func ProviderIDIn(vs ...string) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldProviderID, vs...))
+}
+
+// ProviderIDNotIn applies the NotIn predicate on the "provider_id" field.
+func ProviderIDNotIn(vs ...string) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldProviderID, vs...))
+}
+
+// ProviderIDGT applies the GT predicate on the "provider_id" field.
+func ProviderIDGT(v string) predicate.Team {
+	return predicate.Team(sql.FieldGT(FieldProviderID, v))
+}
+
+// ProviderIDGTE applies the GTE predicate on the "provider_id" field.
+func ProviderIDGTE(v string) predicate.Team {
+	return predicate.Team(sql.FieldGTE(FieldProviderID, v))
+}
+
+// ProviderIDLT applies the LT predicate on the "provider_id" field.
+func ProviderIDLT(v string) predicate.Team {
+	return predicate.Team(sql.FieldLT(FieldProviderID, v))
+}
+
+// ProviderIDLTE applies the LTE predicate on the "provider_id" field.
+func ProviderIDLTE(v string) predicate.Team {
+	return predicate.Team(sql.FieldLTE(FieldProviderID, v))
+}
+
+// ProviderIDContains applies the Contains predicate on the "provider_id" field.
+func ProviderIDContains(v string) predicate.Team {
+	return predicate.Team(sql.FieldContains(FieldProviderID, v))
+}
+
+// ProviderIDHasPrefix applies the HasPrefix predicate on the "provider_id" field.
+func ProviderIDHasPrefix(v string) predicate.Team {
+	return predicate.Team(sql.FieldHasPrefix(FieldProviderID, v))
+}
+
+// ProviderIDHasSuffix applies the HasSuffix predicate on the "provider_id" field.
+func ProviderIDHasSuffix(v string) predicate.Team {
+	return predicate.Team(sql.FieldHasSuffix(FieldProviderID, v))
+}
+
+// ProviderIDIsNil applies the IsNil predicate on the "provider_id" field.
+func ProviderIDIsNil() predicate.Team {
+	return predicate.Team(sql.FieldIsNull(FieldProviderID))
+}
+
+// ProviderIDNotNil applies the NotNil predicate on the "provider_id" field.
+func ProviderIDNotNil() predicate.Team {
+	return predicate.Team(sql.FieldNotNull(FieldProviderID))
+}
+
+// ProviderIDEqualFold applies the EqualFold predicate on the "provider_id" field.
+func ProviderIDEqualFold(v string) predicate.Team {
+	return predicate.Team(sql.FieldEqualFold(FieldProviderID, v))
+}
+
+// ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
+func ProviderIDContainsFold(v string) predicate.Team {
+	return predicate.Team(sql.FieldContainsFold(FieldProviderID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.

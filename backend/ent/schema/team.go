@@ -17,6 +17,7 @@ func (Team) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("slug").Unique(),
+		field.String("provider_id").Optional(),
 		field.String("name"),
 		field.String("chat_channel_id").Optional(),
 		field.String("timezone").Optional(),

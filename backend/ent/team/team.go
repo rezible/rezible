@@ -15,6 +15,8 @@ const (
 	FieldID = "id"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldChatChannelID holds the string denoting the chat_channel_id field in the database.
@@ -59,6 +61,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldSlug,
+	FieldProviderID,
 	FieldName,
 	FieldChatChannelID,
 	FieldTimezone,
@@ -102,6 +105,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // BySlug orders the results by the slug field.
 func BySlug(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSlug, opts...).ToFunc()
+}
+
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

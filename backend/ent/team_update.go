@@ -47,6 +47,26 @@ func (tu *TeamUpdate) SetNillableSlug(s *string) *TeamUpdate {
 	return tu
 }
 
+// SetProviderID sets the "provider_id" field.
+func (tu *TeamUpdate) SetProviderID(s string) *TeamUpdate {
+	tu.mutation.SetProviderID(s)
+	return tu
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (tu *TeamUpdate) SetNillableProviderID(s *string) *TeamUpdate {
+	if s != nil {
+		tu.SetProviderID(*s)
+	}
+	return tu
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (tu *TeamUpdate) ClearProviderID() *TeamUpdate {
+	tu.mutation.ClearProviderID()
+	return tu
+}
+
 // SetName sets the "name" field.
 func (tu *TeamUpdate) SetName(s string) *TeamUpdate {
 	tu.mutation.SetName(s)
@@ -295,6 +315,12 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
+	if value, ok := tu.mutation.ProviderID(); ok {
+		_spec.SetField(team.FieldProviderID, field.TypeString, value)
+	}
+	if tu.mutation.ProviderIDCleared() {
+		_spec.ClearField(team.FieldProviderID, field.TypeString)
+	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 	}
@@ -523,6 +549,26 @@ func (tuo *TeamUpdateOne) SetNillableSlug(s *string) *TeamUpdateOne {
 	if s != nil {
 		tuo.SetSlug(*s)
 	}
+	return tuo
+}
+
+// SetProviderID sets the "provider_id" field.
+func (tuo *TeamUpdateOne) SetProviderID(s string) *TeamUpdateOne {
+	tuo.mutation.SetProviderID(s)
+	return tuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (tuo *TeamUpdateOne) SetNillableProviderID(s *string) *TeamUpdateOne {
+	if s != nil {
+		tuo.SetProviderID(*s)
+	}
+	return tuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (tuo *TeamUpdateOne) ClearProviderID() *TeamUpdateOne {
+	tuo.mutation.ClearProviderID()
 	return tuo
 }
 
@@ -803,6 +849,12 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 	}
 	if value, ok := tuo.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
+	}
+	if value, ok := tuo.mutation.ProviderID(); ok {
+		_spec.SetField(team.FieldProviderID, field.TypeString, value)
+	}
+	if tuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(team.FieldProviderID, field.TypeString)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)

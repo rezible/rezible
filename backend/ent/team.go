@@ -19,6 +19,8 @@ type Team struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// ChatChannelID holds the value of the "chat_channel_id" field.
@@ -87,7 +89,7 @@ func (*Team) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case team.FieldSlug, team.FieldName, team.FieldChatChannelID, team.FieldTimezone:
+		case team.FieldSlug, team.FieldProviderID, team.FieldName, team.FieldChatChannelID, team.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case team.FieldID:
 			values[i] = new(uuid.UUID)
@@ -117,6 +119,12 @@ func (t *Team) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
 				t.Slug = value.String
+			}
+		case team.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				t.ProviderID = value.String
 			}
 		case team.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -194,6 +202,9 @@ func (t *Team) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
 	builder.WriteString("slug=")
 	builder.WriteString(t.Slug)
+	builder.WriteString(", ")
+	builder.WriteString("provider_id=")
+	builder.WriteString(t.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(t.Name)

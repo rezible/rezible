@@ -33,6 +33,20 @@ func (tc *TeamCreate) SetSlug(s string) *TeamCreate {
 	return tc
 }
 
+// SetProviderID sets the "provider_id" field.
+func (tc *TeamCreate) SetProviderID(s string) *TeamCreate {
+	tc.mutation.SetProviderID(s)
+	return tc
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (tc *TeamCreate) SetNillableProviderID(s *string) *TeamCreate {
+	if s != nil {
+		tc.SetProviderID(*s)
+	}
+	return tc
+}
+
 // SetName sets the "name" field.
 func (tc *TeamCreate) SetName(s string) *TeamCreate {
 	tc.mutation.SetName(s)
@@ -230,6 +244,10 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 		_node.Slug = value
 	}
+	if value, ok := tc.mutation.ProviderID(); ok {
+		_spec.SetField(team.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
 	if value, ok := tc.mutation.Name(); ok {
 		_spec.SetField(team.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -370,6 +388,24 @@ func (u *TeamUpsert) UpdateSlug() *TeamUpsert {
 	return u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *TeamUpsert) SetProviderID(v string) *TeamUpsert {
+	u.Set(team.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TeamUpsert) UpdateProviderID() *TeamUpsert {
+	u.SetExcluded(team.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *TeamUpsert) ClearProviderID() *TeamUpsert {
+	u.SetNull(team.FieldProviderID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *TeamUpsert) SetName(v string) *TeamUpsert {
 	u.Set(team.FieldName, v)
@@ -477,6 +513,27 @@ func (u *TeamUpsertOne) SetSlug(v string) *TeamUpsertOne {
 func (u *TeamUpsertOne) UpdateSlug() *TeamUpsertOne {
 	return u.Update(func(s *TeamUpsert) {
 		s.UpdateSlug()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *TeamUpsertOne) SetProviderID(v string) *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TeamUpsertOne) UpdateProviderID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *TeamUpsertOne) ClearProviderID() *TeamUpsertOne {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearProviderID()
 	})
 }
 
@@ -762,6 +819,27 @@ func (u *TeamUpsertBulk) SetSlug(v string) *TeamUpsertBulk {
 func (u *TeamUpsertBulk) UpdateSlug() *TeamUpsertBulk {
 	return u.Update(func(s *TeamUpsert) {
 		s.UpdateSlug()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *TeamUpsertBulk) SetProviderID(v string) *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *TeamUpsertBulk) UpdateProviderID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *TeamUpsertBulk) ClearProviderID() *TeamUpsertBulk {
+	return u.Update(func(s *TeamUpsert) {
+		s.ClearProviderID()
 	})
 }
 

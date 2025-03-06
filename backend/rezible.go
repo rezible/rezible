@@ -124,6 +124,7 @@ type (
 
 type (
 	TeamDataProvider interface {
+		TeamDataMapping() *ent.Team
 		PullTeams(context.Context) iter.Seq2[*ent.Team, error]
 	}
 

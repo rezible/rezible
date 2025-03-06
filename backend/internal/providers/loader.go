@@ -73,7 +73,7 @@ type providerConfigFile struct {
 	} `json:"configs"`
 }
 
-func LoadFromFile(ctx context.Context, client *ent.Client, fileName string) error {
+func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string) error {
 	f, openErr := os.Open(fileName)
 	if openErr != nil {
 		return fmt.Errorf("opening file: %w", openErr)
@@ -270,7 +270,7 @@ func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider
 
 	switch pCfg.Name {
 	case "slack":
-		return loadProvider(slack.NewUserDataProvider, pCfg)
+		return loadProvider(slack.NewDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid user data provider: %s", pCfg.Name)
 	}
