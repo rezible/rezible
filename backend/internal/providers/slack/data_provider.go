@@ -36,8 +36,15 @@ var (
 		Timezone: "y",
 	}
 
+	userIdOnlyDataMapping = ent.User{
+		ChatID: "y",
+	}
+
 	teamDataMapping = ent.Team{
 		Name: "y",
+		Edges: ent.TeamEdges{
+			Users: []*ent.User{&userIdOnlyDataMapping},
+		},
 	}
 )
 
@@ -49,18 +56,18 @@ func (p *DataProvider) TeamDataMapping() *ent.Team {
 	return &teamDataMapping
 }
 
-func (p *DataProvider) pullTeams(ctx context.Context) iter.Seq2[*slack.Team, error] {
+func (p *DataProvider) pullSlackTeams(ctx context.Context) iter.Seq2[*slack.Team, error] {
 	var cursor string
 	return func(yield func(*slack.Team, error) bool) {
 		for cursor != "" {
 			params := slack.ListTeamsParameters{Limit: 20, Cursor: cursor}
-			teams, newCursor, listErr := p.client.ListTeamsContext(ctx, params)
+			slackTeams, newCursor, listErr := p.client.ListTeamsContext(ctx, params)
 			if listErr != nil {
 				yield(nil, listErr)
 				break
 			}
-			for _, team := range teams {
-				yield(&team, nil)
+			for _, slackTeam := range slackTeams {
+				yield(&slackTeam, nil)
 			}
 			cursor = newCursor
 		}
@@ -69,23 +76,41 @@ func (p *DataProvider) pullTeams(ctx context.Context) iter.Seq2[*slack.Team, err
 
 func (p *DataProvider) PullTeams(ctx context.Context) iter.Seq2[*ent.Team, error] {
 	return func(yield func(*ent.Team, error) bool) {
-		for team, teamsErr := range p.pullTeams(ctx) {
+		for slackTeam, teamsErr := range p.pullSlackTeams(ctx) {
 			if teamsErr != nil {
 				yield(nil, fmt.Errorf("get teams: %w", teamsErr))
 				return
 			}
 
-			mapped := &ent.Team{
-				Name: team.Name,
+			userGroups, userGroupsErr := p.client.GetUserGroupsContext(ctx,
+				slack.GetUserGroupsOptionWithTeamID(slackTeam.ID),
+				slack.GetUserGroupsOptionIncludeUsers(true))
+			if userGroupsErr != nil {
+				yield(nil, fmt.Errorf("error getting user groups: %w", userGroupsErr))
+				return
 			}
-			yield(mapped, nil)
+
+			for _, userGroup := range userGroups {
+				ugUsers := make([]*ent.User, len(userGroup.Users))
+				for i, userId := range userGroup.Users {
+					ugUsers[i] = &ent.User{ChatID: userId}
+				}
+				mapped := &ent.Team{
+					ProviderID: userGroup.ID,
+					Name:       userGroup.Name,
+					Edges: ent.TeamEdges{
+						Users: ugUsers,
+					},
+				}
+				yield(mapped, nil)
+			}
 		}
 	}
 }
 
 func (p *DataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, error] {
 	return func(yield func(*ent.User, error) bool) {
-		for team, teamsErr := range p.pullTeams(ctx) {
+		for team, teamsErr := range p.pullSlackTeams(ctx) {
 			if teamsErr != nil {
 				yield(nil, fmt.Errorf("get teams: %w", teamsErr))
 				return

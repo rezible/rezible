@@ -13,7 +13,7 @@ type ProviderConfig struct {
 	ent.Schema
 }
 
-var ProviderTypes = []string{"auth_session", "users", "chat", "incidents", "oncall", "alerts", "ai", "system_components"}
+var ProviderTypes = []string{"auth_session", "users", "teams", "chat", "incidents", "oncall", "alerts", "ai", "system_components"}
 
 // Fields of the ProviderConfig.
 func (ProviderConfig) Fields() []ent.Field {

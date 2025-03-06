@@ -63,6 +63,7 @@ type (
 		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
+		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
 		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
 	}
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
