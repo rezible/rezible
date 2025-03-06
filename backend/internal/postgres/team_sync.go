@@ -17,17 +17,19 @@ type teamDataSyncer struct {
 	db       *ent.Client
 	provider rez.TeamDataProvider
 
+	slugs     *slugTracker
 	mutations []ent.Mutation
 }
 
 func newTeamDataSyncer(db *ent.Client, prov rez.TeamDataProvider) *teamDataSyncer {
-	ds := &teamDataSyncer{db: db, provider: prov}
+	ds := &teamDataSyncer{db: db, provider: prov, slugs: newSlugTracker()}
 	ds.resetState()
 	return ds
 }
 
 func (ds *teamDataSyncer) resetState() {
 	ds.mutations = make([]ent.Mutation, 0)
+	ds.slugs.reset()
 }
 
 func (ds *teamDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
@@ -65,12 +67,11 @@ func (ds *teamDataSyncer) syncAllProviderTeams(ctx context.Context) error {
 	var numMutations int
 
 	batchSize := 10
-	for team, pullErr := range ds.provider.PullTeams(ctx) {
+	for provTeam, pullErr := range ds.provider.PullTeams(ctx) {
 		if pullErr != nil {
 			return fmt.Errorf("pull teams: %w", pullErr)
 		}
-
-		batch = append(batch, team)
+		batch = append(batch, provTeam)
 
 		if len(batch) >= batchSize {
 			batchMuts, syncErr := ds.syncBatch(ctx, batch)
@@ -134,13 +135,16 @@ func (ds *teamDataSyncer) createBatchSyncMutations(ctx context.Context, batch []
 		if exists {
 			// don't delete this user
 		}
-		_ = ds.syncTeam(dbTeam, provTeam)
+		_, syncErr := ds.syncTeam(ctx, dbTeam, provTeam)
+		if syncErr != nil {
+			return fmt.Errorf("syncing team: %w", syncErr)
+		}
 	}
 
 	return nil
 }
 
-func (ds *teamDataSyncer) syncTeam(db, prov *ent.Team) uuid.UUID {
+func (ds *teamDataSyncer) syncTeam(ctx context.Context, db, prov *ent.Team) (uuid.UUID, error) {
 	var m *ent.TeamMutation
 	var teamId uuid.UUID
 	needsSync := true
@@ -155,12 +159,21 @@ func (ds *teamDataSyncer) syncTeam(db, prov *ent.Team) uuid.UUID {
 		needsSync = db.Name != prov.Name || db.Timezone != prov.Timezone
 	}
 
+	slug, slugErr := ds.slugs.generateUnique(prov.Name, func(prefix string) (int, error) {
+		return ds.db.Team.Query().Where(team.SlugHasPrefix(prefix)).Count(ctx)
+	})
+	if slugErr != nil {
+		return uuid.Nil, fmt.Errorf("failed to create unique incident slug: %w", slugErr)
+	}
+
+	m.SetProviderID(prov.ProviderID)
 	m.SetName(prov.Name)
+	m.SetSlug(slug)
 	m.SetTimezone(prov.Timezone)
 
 	if needsSync {
 		ds.mutations = append(ds.mutations, m)
 	}
 
-	return teamId
+	return teamId, nil
 }

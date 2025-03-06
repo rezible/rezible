@@ -280,7 +280,7 @@ func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider
 }
 
 func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
+	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTeams)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}

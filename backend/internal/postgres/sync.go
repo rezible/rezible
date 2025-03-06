@@ -2,7 +2,10 @@ package postgres
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/gosimple/slug"
 
 	"entgo.io/ent/dialect/sql"
 
@@ -35,4 +38,45 @@ func applySyncMutations(ctx context.Context, client *ent.Client, mutations []ent
 		}
 		return nil
 	})
+}
+
+// TODO: just do this in postgres
+type slugTracker struct {
+	existingSlugs map[string]int
+	newSlugs      map[string]int
+}
+
+func newSlugTracker() *slugTracker {
+	return &slugTracker{
+		newSlugs:      make(map[string]int),
+		existingSlugs: make(map[string]int),
+	}
+}
+
+func (s *slugTracker) reset() {
+	s.newSlugs = make(map[string]int)
+	s.existingSlugs = make(map[string]int)
+}
+
+func (s *slugTracker) generateUnique(base string, countFn func(string) (int, error)) (string, error) {
+	tmp := slug.MakeLang(base, "en")
+
+	numExisting := s.existingSlugs[tmp]
+	if numExisting == 0 {
+		var countErr error
+		numExisting, countErr = countFn(tmp)
+		if countErr != nil {
+			return "", countErr
+		}
+		s.existingSlugs[tmp] = numExisting
+	}
+	numNew := s.newSlugs[tmp]
+
+	slugCount := numExisting + numNew + 1
+	if slugCount > 1 {
+		tmp = fmt.Sprintf("%s-%d", tmp, slugCount)
+	}
+	s.newSlugs[tmp] = slugCount
+
+	return tmp, nil
 }

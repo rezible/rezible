@@ -59,6 +59,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: use cli flags
 		const (
+			syncTeams      = true
 			syncUsers      = true
 			syncOncall     = true
 			syncIncidents  = true
@@ -78,6 +79,16 @@ func syncCmd(ctx context.Context, opts *Options) error {
 		users, usersErr := postgres.NewUserService(c, pl)
 		if usersErr != nil {
 			return fmt.Errorf("user service: %w", usersErr)
+		}
+
+		if syncTeams {
+			teams, teamsErr := postgres.NewTeamService(c, pl)
+			if teamsErr != nil {
+				return fmt.Errorf("to create teams: %w", teamsErr)
+			}
+			if syncErr := teams.SyncData(ctx); syncErr != nil {
+				return fmt.Errorf("teams sync failed: %w", syncErr)
+			}
 		}
 
 		if syncUsers {

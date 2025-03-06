@@ -7,7 +7,6 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/gosimple/slug"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -22,21 +21,21 @@ type incidentDataSyncer struct {
 	users    rez.UserService
 	provider rez.IncidentDataProvider
 
-	newIncSlugs   map[string]int
+	slugs         *slugTracker
 	roleProvIdMap map[string]uuid.UUID
 
 	mutations []ent.Mutation
 }
 
 func newIncidentDataSyncer(db *ent.Client, users rez.UserService, prov rez.IncidentDataProvider) *incidentDataSyncer {
-	ds := &incidentDataSyncer{db: db, users: users, provider: prov}
+	ds := &incidentDataSyncer{db: db, users: users, provider: prov, slugs: newSlugTracker()}
 	ds.resetState()
 	return ds
 }
 
 func (ds *incidentDataSyncer) resetState() {
 	ds.mutations = make([]ent.Mutation, 0)
-	ds.newIncSlugs = make(map[string]int)
+	ds.slugs.reset()
 	ds.roleProvIdMap = make(map[string]uuid.UUID)
 }
 
@@ -280,22 +279,6 @@ func (ds *incidentDataSyncer) createIncidentBatchSyncMutations(ctx context.Conte
 	return nil
 }
 
-// TODO: do this in postgres
-func (ds *incidentDataSyncer) ensureUniqueIncidentSlug(ctx context.Context, db *ent.Client, title string) (string, error) {
-	tmp := slug.MakeLang(title, "en")
-	numExists, slugErr := db.Incident.Query().Where(incident.SlugHasPrefix(tmp)).Count(ctx)
-	if slugErr != nil {
-		return "", slugErr
-	}
-	numCreated := ds.newIncSlugs[tmp]
-	numExists += numCreated
-	if numExists > 0 {
-		tmp = fmt.Sprintf("%s-%d", tmp, numExists+1)
-	}
-	ds.newIncSlugs[tmp] = numCreated + 1
-	return tmp, nil
-}
-
 func (ds *incidentDataSyncer) syncIncident(ctx context.Context, db, prov *ent.Incident) (uuid.UUID, error) {
 	var m *ent.IncidentMutation
 	var incId uuid.UUID
@@ -309,11 +292,13 @@ func (ds *incidentDataSyncer) syncIncident(ctx context.Context, db, prov *ent.In
 		// TODO: get provider mapping support for fields
 		needsSync = db.Title != prov.Title
 	}
-	incSlug, slugErr := ds.ensureUniqueIncidentSlug(ctx, ds.db, prov.Title)
+	slug, slugErr := ds.slugs.generateUnique(prov.Title, func(prefix string) (int, error) {
+		return ds.db.Incident.Query().Where(incident.SlugHasPrefix(prefix)).Count(ctx)
+	})
 	if slugErr != nil {
-		return uuid.Nil, fmt.Errorf("failed to ensure unique incident slug: %w", slugErr)
+		return uuid.Nil, fmt.Errorf("failed to create unique incident slug: %w", slugErr)
 	}
-	m.SetSlug(incSlug)
+	m.SetSlug(slug)
 	m.SetTitle(prov.Title)
 	m.SetSummary(prov.Summary)
 	m.SetProviderID(prov.ProviderID)

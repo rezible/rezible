@@ -33,7 +33,7 @@ func (p *TeamDataProvider) TeamDataMapping() *ent.Team {
 func (p *TeamDataProvider) PullTeams(ctx context.Context) iter.Seq2[*ent.Team, error] {
 	fakeTeam1 := &ent.Team{
 		ProviderID: "test-team",
-		Name:       "Test Team 1",
+		Name:       "Test Team",
 		Edges:      ent.TeamEdges{Users: ent.Users{}},
 	}
 	debugEmail := os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
