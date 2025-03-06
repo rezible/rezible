@@ -61,6 +61,7 @@ func (l *Loader) updateWebhooks(provKey string, hooks rez.Webhooks) {
 			m.Handle("/"+route, handler)
 		}
 	}
+
 	l.webhookMux = m
 }
 

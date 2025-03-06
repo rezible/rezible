@@ -76,7 +76,7 @@ func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 		if cbErr == nil {
 			return true
 		}
-		s.invalidateSession(w, r)
+		s.ClearSession(w, r)
 		log.Error().Err(cbErr).Msg("could not handle oauth2 callback")
 		return false
 	}
@@ -231,7 +231,7 @@ func (s *SessionProvider) updateSessionAuth(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (s *SessionProvider) invalidateSession(w http.ResponseWriter, r *http.Request) {
+func (s *SessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
 	if logoutErr := gothic.Logout(w, r); logoutErr != nil {
 		log.Error().Err(logoutErr).Msg("logout failed")
 	}

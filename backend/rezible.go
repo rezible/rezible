@@ -79,6 +79,7 @@ type (
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
 		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
+		ClearSession(w http.ResponseWriter, r *http.Request)
 	}
 
 	AuthService interface {

@@ -17,9 +17,18 @@ var frontendFiles embed.FS
 
 const frontendDir = "dist"
 
+func makeApiDocsHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		if _, wErr := w.Write(docsBodyScalar); wErr != nil {
+			log.Error().Err(wErr).Msg("failed to write embedded docs body")
+		}
+	})
+}
+
 func makeEmbeddedFrontendServer() (http.Handler, error) {
 	if rez.DebugMode {
-		// redirect to frontend dev server
+		// redirect to frontend vite dev server
 		return http.RedirectHandler(rez.FrontendUrl, http.StatusFound), nil
 	}
 
@@ -28,7 +37,7 @@ func makeEmbeddedFrontendServer() (http.Handler, error) {
 		return nil, fmt.Errorf("failed to open embedded frontend files: %w", filesErr)
 	}
 
-	// TODO: check frontend files exists
+	// TODO: check frontend files dir is not empty
 
 	fileServer := http.FileServer(http.FS(files))
 	handlerFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +63,8 @@ func makeEmbeddedFrontendServer() (http.Handler, error) {
 	return handlerFunc, nil
 }
 
-var docsBodyScalar = []byte(`<!doctype html>
+var (
+	docsBodyScalar = []byte(`<!doctype html>
 <html lang="en">
 	<head>
 		<title>API Reference</title>
@@ -69,7 +79,7 @@ var docsBodyScalar = []byte(`<!doctype html>
 	</body>
 </html>`)
 
-var docsBodyStoplight = []byte(`<!doctype html>
+	docsBodyStoplight = []byte(`<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -88,10 +98,4 @@ var docsBodyStoplight = []byte(`<!doctype html>
     />
   </body>
 </html>`)
-
-func makeApiDocsHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		w.Write(docsBodyScalar)
-	})
-}
+)

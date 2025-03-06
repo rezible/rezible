@@ -111,7 +111,7 @@ func (s *AuthService) MakeAuthHandler() http.Handler {
 		}
 
 		if r.URL.Path == "/auth/logout" {
-			// TODO: do logout
+			s.clearAuthSession(w, r)
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 			return
 		}
@@ -161,8 +161,8 @@ func (s *AuthService) providerAuthFlow(w http.ResponseWriter, r *http.Request) b
 func (s *AuthService) lookupProviderUserId(ctx context.Context, usr *ent.User) (uuid.UUID, error) {
 	email := usr.Email
 	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
-		log.Debug().Msg("using debug email")
 		email = os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL")
+		log.Debug().Str("email", email).Msg("using debug auth email")
 	}
 
 	// TODO: use provider mapping to match user details
@@ -177,18 +177,13 @@ func (s *AuthService) lookupProviderUserId(ctx context.Context, usr *ent.User) (
 	return user.ID, nil
 }
 
-func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
-	token, tokenErr := s.IssueSessionToken(sess)
-	if tokenErr != nil {
-		return tokenErr
-	}
-
+func (s *AuthService) makeSessionCookie(r *http.Request, value string, expires time.Time) *http.Cookie {
 	cookie := &http.Cookie{
 		Name:     authSessionCookieName,
-		Value:    token,
+		Value:    value,
 		Domain:   r.Host,
 		Path:     "/",
-		Expires:  sess.ExpiresAt,
+		Expires:  expires,
 		Secure:   r.URL.Scheme == "https",
 		HttpOnly: true,
 		// SameSite: http.SameSiteLaxMode,
@@ -196,9 +191,26 @@ func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, s
 	if domain, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
 		cookie.Domain = domain
 	}
+	return cookie
+}
 
+func (s *AuthService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
+	token, tokenErr := s.IssueSessionToken(sess)
+	if tokenErr != nil {
+		return tokenErr
+	}
+
+	cookie := s.makeSessionCookie(r, token, sess.ExpiresAt)
 	http.SetCookie(w, cookie)
+
 	return nil
+}
+
+func (s *AuthService) clearAuthSession(w http.ResponseWriter, r *http.Request) {
+	clearCookie := s.makeSessionCookie(r, "", time.Now())
+	clearCookie.MaxAge = -1
+	http.SetCookie(w, clearCookie)
+	s.sessProvider.ClearSession(w, r)
 }
 
 func (s *AuthService) getRequestAuthSession(r *http.Request) (*rez.AuthSession, error) {

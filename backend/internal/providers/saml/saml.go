@@ -147,6 +147,10 @@ func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 	return false
 }
 
+func (p *SessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
+	// TODO: logout
+}
+
 // mostly taken from samlsp
 func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
 	if parseErr := r.ParseForm(); parseErr != nil {

@@ -3,6 +3,10 @@
 	import { Button } from "svelte-ux";
 
 	const errorText = $derived(session.error?.category ?? "unknown");
+	
+	// clear the session if user is not found
+	const authPath = $derived(session.error?.category === "no_user" ? "/logout" : "");
+	const buttonHref = $derived(`${AUTH_REDIRECT_URL}${authPath}`);
 </script>
 
 <div class="grid place-items-center">
@@ -11,6 +15,6 @@
             <span class="text-danger">Auth Error: {errorText}</span>
         {/if}
 
-        <Button href={AUTH_REDIRECT_URL} color="primary" variant="fill">Sign in</Button>
+        <Button href={buttonHref} color="primary" variant="fill">Sign in</Button>
     </div>
 </div>

@@ -4,72 +4,51 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/go-chi/chi/v5/middleware"
+	oapi "github.com/rezible/rezible/openapi"
 	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
-	oapi "github.com/rezible/rezible/openapi"
 )
 
 type Server struct {
-	srv           *http.Server
-	webhookRouter *chi.Mux
+	httpServer *http.Server
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	s.srv.BaseContext = func(l net.Listener) context.Context {
-		return ctx
-	}
-
-	log.Info().Msgf("Serving on %s", s.srv.Addr)
-
-	if err := s.srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("server error: %w", err)
-	}
-	return nil
-}
-
-func (s *Server) Stop(ctx context.Context) error {
-	if s.srv == nil {
-		return nil
-	}
-	return s.srv.Shutdown(ctx)
+func mount(r chi.Router, prefix string, h http.Handler) {
+	r.Mount(prefix, http.StripPrefix(prefix, h))
 }
 
 func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdapter oapi.Adapter) (*Server, error) {
-	var server Server
+	s := Server{}
 
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
-
-	router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
 
 	embeddedFeServer, feErr := makeEmbeddedFrontendServer()
 	if feErr != nil {
 		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feErr)
 	}
 
-	frontendAuthMw := makeAuthMiddleware(auth, true, []string{"/favicon.ico"})
-	frontendHandler := chi.Chain(
-		frontendAuthMw,
-	).Handler(embeddedFeServer)
+	frontendMiddleware := chi.Chain(
+		makeAuthMiddleware(auth, true, []string{"/favicon.ico"}),
+	)
+	frontendHandler := frontendMiddleware.Handler(embeddedFeServer)
 
-	apiAuthMw := makeAuthMiddleware(auth, false, []string{"/openapi.json"})
-	apiHandler := chi.Chain(
+	apiMiddleware := chi.Chain(
 		middleware.Logger,
-		apiAuthMw,
-	).Handler(apiAdapter)
+		makeAuthMiddleware(auth, false, []string{"/openapi.json"}),
+	)
+	apiHandler := apiMiddleware.Handler(apiAdapter)
 
-	webhookHandler := makeWebhookHandler(http.HandlerFunc(pl.HandleWebhookRequest))
+	webhookHandler := makeWebhookHandler(pl.HandleWebhookRequest)
 
 	/* /api/ - API Routing Group */
-	mount(router, "/api", router.Group(func(r chi.Router) {
+	apiGroup := router.Group(func(r chi.Router) {
 		/* /api/v1/ - OpenAPI Operations */
 		mount(r, "/v1", apiHandler)
 
@@ -78,7 +57,8 @@ func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdap
 
 		/* /api/docs/ - OpenAPI Docs */
 		r.Handle("/docs", makeApiDocsHandler())
-	}))
+	})
+	mount(router, "/api", apiGroup)
 
 	/* /auth/ - Auth Service Routing */
 	router.Mount("/auth", auth.MakeAuthHandler())
@@ -86,19 +66,41 @@ func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdap
 	/* Serve static files for any other route */
 	router.Handle("/*", frontendHandler)
 
-	server.srv = &http.Server{
+	router.Get("/health", s.handleHealthcheck)
+
+	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: router,
 	}
 
-	return &server, nil
+	return &s, nil
 }
 
-func mount(r chi.Router, prefix string, h http.Handler) {
-	r.Mount(prefix, http.StripPrefix(prefix, h))
+func (s *Server) Start(ctx context.Context) error {
+	s.httpServer.BaseContext = func(l net.Listener) context.Context {
+		return ctx
+	}
+
+	log.Info().Msgf("Serving on %s", s.httpServer.Addr)
+
+	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("server error: %w", err)
+	}
+	return nil
 }
 
-func makeWebhookHandler(providerHandler http.Handler) http.Handler {
+func (s *Server) handleHealthcheck(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) Stop(ctx context.Context) error {
+	if s.httpServer == nil {
+		return nil
+	}
+	return s.httpServer.Shutdown(ctx)
+}
+
+func makeWebhookHandler(providerHandler http.HandlerFunc) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		providerHandler.ServeHTTP(w, r)
 	})
