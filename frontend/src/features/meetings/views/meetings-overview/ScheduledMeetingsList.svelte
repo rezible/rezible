@@ -9,7 +9,6 @@
 	import { Button, ListItem, Header, Icon } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { mdiChevronDown, mdiChevronRight, mdiFilter } from "@mdi/js";
-	import ScheduledMeetingCard from "$features/meetings/components/scheduled-meeting-card/ScheduledMeetingCard.svelte";
 	import { addMinutes } from "date-fns";
 
 	let queryParams = $state<ListMeetingSchedulesData["query"]>({});

@@ -31,17 +31,24 @@
 		</div>
 	</Header>
 
-	<div class="border">
-		<Month selected={selectedWeek} on:dateChange={onMonthDateChange} />
-	</div>
+	<div class="grid grid-cols-2 h-full gap-2">
+		<div class="h-full flex flex-col gap-2">
+			<div class="pb-2 border">
+				<Month bind:selected={selectedWeek} on:dateChange={onMonthDateChange} />
+			</div>
+		</div>
 
-	<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
-		<LoadingQueryWrapper {query}>
-			{#snippet view(sessions: MeetingSession[])}
-				{#each sessions as session}
-					<MeetingSessionCard {session} />
-				{/each}
-			{/snippet}
-		</LoadingQueryWrapper>
+		<div class="flex-1 flex flex-col gap-2 overflow-y-auto p-2">
+			<LoadingQueryWrapper {query}>
+				{#snippet view(sessions: MeetingSession[])}
+					{#each sessions as session}
+						<MeetingSessionCard {session} />
+					{/each}
+					{#if !sessions || sessions.length === 0}
+						<span>No upcoming sessions</span>
+					{/if}
+				{/snippet}
+			</LoadingQueryWrapper>
+		</div>
 	</div>
 </div>

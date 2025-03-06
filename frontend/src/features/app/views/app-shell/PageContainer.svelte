@@ -9,9 +9,9 @@
 	const { children }: Props = $props();
 </script>
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-2 pb-2 pt-1 border rounded-lg bg-surface-300">
-	<div class="border-b flex justify-between items-bottom">
-		<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end">
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-2 pb-2 border rounded-lg bg-surface-300">
+	<div class="border-b flex justify-between items-bottom h-11">
+		<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end px-1">
 			{#each appShell.breadcrumbs as c, i}
 				{@const last = i === appShell.breadcrumbs.length - 1}
 				{#if i > 0}
@@ -33,7 +33,7 @@
 		</span>
 
 		{#if appShell.pageActionsComponent}
-			<div class="pb-1">
+			<div class="flex items-center">
 				<appShell.pageActionsComponent />
 			</div>
 		{/if}
