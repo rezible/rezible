@@ -2,9 +2,9 @@
 	import { mdiChevronRight, mdiFilter, mdiChevronDown } from "@mdi/js";
 	import { Button, Header, Collapse, Icon, ListItem } from "svelte-ux";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import ReportsPageActions from "$features/reports/components/reports-page-actions/ReportsPageActions.svelte";
+	import DashboardPageActions from "./DashboardPageActions.svelte";
 
-	appShell.setPageActions(ReportsPageActions, true);
+	appShell.setPageActions(DashboardPageActions, false);
 
 	const reports = [
 		{id: "foo", attributes: {title: "Test Report", author: "tex", slug: "test"}},

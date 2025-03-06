@@ -4,17 +4,18 @@
 
 	type Props = {
 		nav: Snippet;
+		navClosed?: boolean;
 		children: Snippet;
 	};
-	const { nav, children }: Props = $props();
+	const { nav, navClosed, children }: Props = $props();
 </script>
 
-<div class="grid grid-cols-4 gap-2 h-full max-h-full divide-x">
-	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden pl-1">
+<div class="flex gap-2 w-full h-full max-h-full divide-x">
+	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden pl-1 w-1/5">
 		{@render nav()}
 	</div>
 
-	<div class="col-span-3 flex flex-col min-h-0 gap-2 max-h-full px-2 overflow-y-auto">
+	<div class="flex-1 flex flex-col min-h-0 gap-2 max-h-full px-2 overflow-y-auto">
 		{@render children()}
 	</div>
 </div>

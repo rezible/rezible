@@ -19,14 +19,16 @@ export type PageActions = {
 const createAppShellState = () => {
 	let breadcrumbs = $state<PageBreadcrumb[]>([]);
 	let pageActions = $state<PageActions>();
+	const pageActionsComponent = $derived(pageActions?.component);
+
+	const checkPageActions = (newRouteId: string) => {
+		if (!pageActions) return;
+		const isChild = newRouteId.startsWith(pageActions.routeBase);
+		if (!isChild || !pageActions.allowChildren) {pageActions = undefined}
+	}
 
 	const setup = () => {
-		onNavigate(nav => {
-			if (!pageActions) return;
-			if (!nav.to?.route.id?.startsWith(pageActions.routeBase)) {
-				pageActions = undefined;
-			}
-		})
+		onNavigate(nav => checkPageActions(nav.to?.route.id ?? ""));
 	}
 
 	const setPageActions = (component: Component, allowChildren: boolean) => {
@@ -38,7 +40,7 @@ const createAppShellState = () => {
 		get breadcrumbs() { return breadcrumbs },
 		set	breadcrumbs(value: PageBreadcrumb[]) { breadcrumbs = value },
 		setPageActions,
-		get pageActionsComponent() { return pageActions?.component },
+		get pageActionsComponent() { return pageActionsComponent },
 	};
 };
 export const appShell = createAppShellState();

@@ -7,8 +7,6 @@
 		data: PageData;
 	}
 	const {data}: Props = $props();
-
-	console.log(data);
 </script>
 
 {#if data.id && !data.builder}
