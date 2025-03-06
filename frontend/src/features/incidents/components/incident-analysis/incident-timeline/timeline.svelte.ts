@@ -32,7 +32,7 @@ type TimelineEventElement = ReturnType<typeof createTimelineEventElement>;
 const EventsSubgroup = "events";
 const MilestonesSubgroup = "milestones";
 
-const fitTimeline = debounce((t: Timeline) => { t?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } }) }, 500);
+const fitTimeline = debounce((t: Timeline) => { t?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } }) }, 100);
 
 const createTimelineEventsState = (items: DataSet<TimelineItem>) => {
 	let timeline: Timeline;
@@ -320,7 +320,7 @@ const createTimelineState = () => {
 
 		watch(containerRefFn, ref => {
 			if (!ref) return;
-			if (timeline) timeline.destroy();
+			// if (timeline) timeline.destroy();
 			// @ts-expect-error incorrect timeline DataItem typing for content
 			timeline = new Timeline(ref, items, timelineGroups, timelineOpts);
 			events?.setTimeline(timeline);

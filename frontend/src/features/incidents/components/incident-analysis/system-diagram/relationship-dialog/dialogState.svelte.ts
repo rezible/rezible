@@ -163,6 +163,7 @@ const createRelationshipDialogState = () => {
 
 	const onSuccess = () => {
 		clear();
+		analysis.invalidateQueryData();
 	}
 
 	const makeCreateMutation = () => createMutation(() => ({ ...createSystemAnalysisRelationshipMutation(), onSuccess }));

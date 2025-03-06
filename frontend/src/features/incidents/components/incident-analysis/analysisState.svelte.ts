@@ -1,4 +1,4 @@
-import { createMutation, createQuery } from "@tanstack/svelte-query";
+import { createMutation, createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import {
 	addSystemAnalysisComponentMutation,
 	getSystemAnalysisOptions,
@@ -10,16 +10,22 @@ import type { XYPosition } from "@xyflow/svelte";
 
 const createAnalysisState = () => {
 	let analysisId = $state<string>();
-
+	
 	let relationshipDialogOpen = $state(false);
 	let editingRelationship = $state<SystemAnalysisRelationship>();
 
-	const makeAnalysisQuery = (id: string) => createQuery(() => getSystemAnalysisOptions({ path: { id } }));
+	let queryClient = $state<QueryClient>();
+	const analysisQueryOpts = $derived(getSystemAnalysisOptions({ path: { id: (analysisId ?? "") } }))
+	const makeAnalysisQuery = () => createQuery(() => ({...analysisQueryOpts, enabled: !!analysisId}));
 	let analysisQuery = $state<ReturnType<typeof makeAnalysisQuery>>();
 
 	const analysisData = $derived(analysisQuery?.data?.data);
 
-	const makeAddComponentMutation = () => createMutation(() => addSystemAnalysisComponentMutation());
+	const invalidateQueryData = () => {
+		queryClient?.invalidateQueries(analysisQueryOpts);
+	}
+
+	const makeAddComponentMutation = () => createMutation(() => ({...addSystemAnalysisComponentMutation(), onSuccess: invalidateQueryData}));
 	let addComponentMut = $state<ReturnType<typeof makeAddComponentMutation>>();
 
 	// const components = $derived(analysisData?.attributes.components ?? []);
@@ -27,8 +33,9 @@ const createAnalysisState = () => {
 
 	const setup = (id: string) => {
 		analysisId = id;
+		queryClient = useQueryClient();
 
-		analysisQuery = makeAnalysisQuery(id);
+		analysisQuery = makeAnalysisQuery();
 		addComponentMut = makeAddComponentMutation();
 	};
 
@@ -57,6 +64,7 @@ const createAnalysisState = () => {
 		get data() {
 			return analysisData;
 		},
+		invalidateQueryData,
 		addComponent,
 		get relationshipDialogOpen() {
 			return relationshipDialogOpen;
