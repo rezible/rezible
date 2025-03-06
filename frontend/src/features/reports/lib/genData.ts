@@ -95,6 +95,59 @@ export function createDateSeries<TKey extends string>(options: {
 	});
 }
 
+export const fakeDateSeries = [
+	{
+		"date": new Date('2025-02-24T16:00:00.000Z'),
+		"value": 96,
+		"baseline": 94
+	},
+	{
+		"date": new Date('2025-02-25T16:00:00.000Z'),
+		"value": 88,
+		"baseline": 94
+	},
+	{
+		"date": new Date('2025-02-26T16:00:00.000Z'),
+		"value": 51,
+		"baseline": 84
+	},
+	{
+		"date": new Date('2025-02-27T16:00:00.000Z'),
+		"value": 87,
+		"baseline": 74
+	},
+	{
+		"date": new Date('2025-02-28T16:00:00.000Z'),
+		"value": 57,
+		"baseline": 94
+	},
+	{
+		"date": new Date('2025-03-01T16:00:00.000Z'),
+		"value": 63,
+		"baseline": 40
+	},
+	{
+		"date": new Date('2025-03-02T16:00:00.000Z'),
+		"value": 37,
+		"baseline": 33
+	},
+	{
+		"date": new Date('2025-03-03T16:00:00.000Z'),
+		"value": 26,
+		"baseline": 90
+	},
+	{
+		"date": new Date('2025-03-04T16:00:00.000Z'),
+		"value": 95,
+		"baseline": 42
+	},
+	{
+		"date": new Date('2025-03-05T16:00:00.000Z'),
+		"value": 52,
+		"baseline": 37
+	}
+];
+
 export function createTimeSeries<TKey extends string>(options: {
 	count?: number;
 	min: number;

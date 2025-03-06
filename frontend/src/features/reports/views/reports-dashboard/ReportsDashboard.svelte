@@ -1,6 +1,10 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiFilter, mdiPlus } from "@mdi/js";
+	import { mdiChevronRight, mdiFilter, mdiChevronDown } from "@mdi/js";
 	import { Button, Header, Collapse, Icon, ListItem } from "svelte-ux";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import ReportsPageActions from "$features/reports/components/reports-page-actions/ReportsPageActions.svelte";
+
+	appShell.setPageActions(ReportsPageActions, true);
 
 	const reports = [
 		{id: "foo", attributes: {title: "Test Report", author: "tex", slug: "test"}},
@@ -9,25 +13,15 @@
 
 <div class="flex flex-col gap-2 h-full">
 	<Header title="Browse" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
-		<svelte:fragment slot="actions">
-			<Button color="primary" variant="fill" href="/reports/new">
-				<span class="flex gap-2 items-center">
-					Create New
-					<Icon data={mdiPlus} />
+		<div slot="actions" class="">
+			<Button icon={mdiFilter} iconOnly>
+				<span class="flex gap-1 items-center">
+					Filters
+					<Icon data={mdiChevronDown} />
 				</span>
 			</Button>
-		</svelte:fragment>
+		</div>
 	</Header>
-
-	<Collapse>
-		<div slot="trigger" class="flex-1">
-			<Button icon={mdiFilter} iconOnly />
-			Filters
-		</div>
-		<div class="px-3 pb-3 border-t">
-			show filters
-		</div>
-	</Collapse>
 
 	<div class="flex flex-col gap-2 flex-1 overflow-y-auto">
 		{#each reports as r}

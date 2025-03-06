@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
-	import ReportsList from "$features/reports/views/reports-list/ReportsList.svelte";
+	import ReportsDashboard from "$features/reports/views/reports-dashboard/ReportsDashboard.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Reports" }]);
 </script>
 
-<ReportsList />
+<ReportsDashboard />
