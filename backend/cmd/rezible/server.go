@@ -73,6 +73,8 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
+	// TODO: teams
+
 	chat, chatErr := documents.NewChatService(ctx, pl, users)
 	if chatErr != nil {
 		return fmt.Errorf("failed to create chat service: %w", chatErr)

@@ -3,8 +3,6 @@
 	import { mdiArrowRight, mdiChevronRight } from "@mdi/js";
 	import type { OncallShift } from "$lib/api";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { session } from "$lib/auth.svelte";
-	import { buildShiftTimeDetails } from "$features/oncall/lib/shift";
 	import ShiftStats from "./ShiftStats.svelte";
 	import ShiftAnnotationsList from "$features/oncall/components/shift-annotations/ShiftAnnotationsList.svelte";
 
@@ -16,24 +14,7 @@
 	const attr = $derived(shift.attributes);
 	const roster = $derived(attr.roster);
 	const user = $derived(attr.user);
-
-	const timeDetails = $derived(buildShiftTimeDetails(shift));
-	const isSessionUser = $derived(session.userId == user.id);
 </script>
-
-{#if timeDetails.status === "active" && isSessionUser}
-	<div class="mb-2 w-full">
-		<Button
-			href="/oncall/shifts/{shift.id}/handover"
-			variant="fill"
-			color="secondary"
-			classes={{ root: "w-full" }}
-		>
-			<span>Edit Handover</span>
-			<Icon data={mdiArrowRight} />
-		</Button>
-	</div>
-{/if}
 
 <div class="grid grid-cols-2 gap-2 h-full max-h-full min-h-0 overflow-hidden">
 	<div class="flex flex-col gap-1 h-full min-h-0">

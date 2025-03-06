@@ -4,10 +4,11 @@
 		getOncallShiftOptions,
 		type OncallShift,
 	} from "$lib/api";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { formatShiftDates } from "$features/oncall/lib/shift";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import ShiftHandoverDetails from "./ShiftHandoverDetails.svelte";
+	import PageActions from "./PageActions.svelte";
 
 	type Props = {
 		shiftId: string;
@@ -24,6 +25,8 @@
 		{ label: shiftDates, href: "/oncall/shifts/" + shiftId },
 		{ label: "Handover", href: "/oncall/shifts/" + shiftId + "/handover" },
 	]);
+
+	appShell.setPageActions(PageActions, false);
 </script>
 
 <LoadingQueryWrapper query={shiftQuery}>

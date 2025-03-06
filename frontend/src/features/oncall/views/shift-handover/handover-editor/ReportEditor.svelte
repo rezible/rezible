@@ -2,7 +2,7 @@
 	import { Button, Header, MenuItem } from "svelte-ux";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import { EditorContent } from "svelte-tiptap";
-	import { handoverState } from "./handover.svelte";
+	import { handoverState } from "../handover.svelte";
 	import type { ChainedCommands } from "@tiptap/core";
 	import {
 		listOncallShiftAnnotationsOptions,

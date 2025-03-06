@@ -67,6 +67,7 @@
 
 	const saveAnnotation = () => {
 		if (!draftAnnotation) return;
+		const occurredAt = draftAnnotation.event.occurredAt.toAbsoluteString();
 		const d = $state.snapshot(draftAnnotation);
 		const body: CreateOncallShiftAnnotationRequestBody = {
 			attributes: {
@@ -75,7 +76,7 @@
 				notes: d.notes,
 				pinned: d.pinned,
 				minutesOccupied: 0,
-				occurredAt: d.event.occurredAt,
+				occurredAt: occurredAt,
 				title: d.event.title,
 			},
 		};
@@ -157,7 +158,7 @@
 	>
 		<div class="justify-self-start">
 			<span class="flex items-center">
-				{event.occurredAt.toLocaleString()}
+				<!--{event.occurredAt()}-->(time)
 			</span>
 		</div>
 
