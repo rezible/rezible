@@ -73,7 +73,10 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 		return fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
-	// TODO: teams
+	teams, teamsErr := postgres.NewTeamService(dbc, pl)
+	if teamsErr != nil {
+		return fmt.Errorf("postgres.TeamService: %w", teamsErr)
+	}
 
 	chat, chatErr := documents.NewChatService(ctx, pl, users)
 	if chatErr != nil {
@@ -134,7 +137,7 @@ func (s *rezServer) setupServices(ctx context.Context) error {
 	}
 	s.httpServer = httpServer
 
-	jobsErr := s.jobs.RegisterWorkers(users, incidents, oncall, alerts, debriefs, cmps)
+	jobsErr := s.jobs.RegisterWorkers(users, teams, incidents, oncall, alerts, debriefs, cmps)
 	if jobsErr != nil {
 		return fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
 	}

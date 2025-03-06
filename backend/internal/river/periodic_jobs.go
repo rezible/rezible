@@ -32,6 +32,7 @@ func (s *JobService) registerOncallHandoverScanPeriodicJob(interval time.Duratio
 func (s *JobService) registerProviderDataSyncPeriodicJob(
 	interval time.Duration,
 	users rez.UserService,
+	teams rez.TeamService,
 	incidents rez.IncidentService,
 	oncall rez.OncallService,
 	alerts rez.AlertsService,
@@ -39,6 +40,7 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 ) error {
 	args := &jobs.SyncProviderData{
 		Users:            true,
+		Teams:            true,
 		Incidents:        true,
 		Oncall:           true,
 		Alerts:           true,
@@ -63,6 +65,9 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 		var err error
 		if j.Args.Users {
 			err = errors.Join(err, users.SyncData(ctx))
+		}
+		if j.Args.Teams {
+			err = errors.Join(err, teams.SyncData(ctx))
 		}
 		if j.Args.Oncall {
 			err = errors.Join(err, oncall.SyncData(ctx))

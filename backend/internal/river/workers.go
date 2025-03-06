@@ -13,6 +13,7 @@ import (
 
 func (s *JobService) RegisterWorkers(
 	users rez.UserService,
+	teams rez.TeamService,
 	incidents rez.IncidentService,
 	oncall rez.OncallService,
 	alerts rez.AlertsService,
@@ -24,7 +25,7 @@ func (s *JobService) RegisterWorkers(
 		s.registerGenerateDebriefResponse(debriefs),
 		s.registerEnsureShiftHandovers(oncall),
 		s.registerOncallHandoverScanPeriodicJob(time.Hour, oncall),
-		s.registerProviderDataSyncPeriodicJob(time.Hour, users, incidents, oncall, alerts, components),
+		s.registerProviderDataSyncPeriodicJob(time.Hour, users, teams, incidents, oncall, alerts, components),
 	)
 }
 

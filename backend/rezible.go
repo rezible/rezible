@@ -42,7 +42,7 @@ type (
 
 type (
 	BackgroundJobService interface {
-		RegisterWorkers(UserService, IncidentService, OncallService, AlertsService, DebriefService, SystemComponentsService) error
+		RegisterWorkers(UserService, TeamService, IncidentService, OncallService, AlertsService, DebriefService, SystemComponentsService) error
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 
@@ -131,7 +131,9 @@ type (
 	}
 
 	TeamService interface {
-		Create(context.Context, ent.Team) (*ent.Team, error)
+		SyncData(context.Context) error
+
+		GetById(context.Context, uuid.UUID) (*ent.Team, error)
 	}
 )
 

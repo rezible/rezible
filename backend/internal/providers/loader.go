@@ -288,6 +288,8 @@ func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider
 	switch pCfg.Name {
 	case "slack":
 		return loadProvider(slack.NewDataProvider, pCfg)
+	case "fake":
+		return loadProvider(fakeprovider.NewTeamsDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid user data provider: %s", pCfg.Name)
 	}

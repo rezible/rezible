@@ -23,6 +23,7 @@ type (
 
 type SyncProviderData struct {
 	Users            bool
+	Teams            bool
 	Incidents        bool
 	Oncall           bool
 	Alerts           bool
