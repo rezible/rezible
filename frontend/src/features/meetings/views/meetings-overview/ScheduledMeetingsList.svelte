@@ -5,9 +5,9 @@
 		type MeetingSchedule,
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, Collapse, Header } from "svelte-ux";
+	import { Button, Collapse, Header, Icon } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { mdiFilter } from "@mdi/js";
+	import { mdiChevronDown, mdiFilter } from "@mdi/js";
 	import ScheduledMeetingCard from "$features/meetings/components/scheduled-meeting-card/ScheduledMeetingCard.svelte";
 
 	let queryParams = $state<ListMeetingSchedulesData["query"]>({});
@@ -15,16 +15,17 @@
 </script>
 
 <div class="flex flex-col gap-2 min-h-0 h-full">
-	<Collapse>
-		<div slot="trigger" class="flex-1">
-			<Button icon={mdiFilter} iconOnly />
-			Filters
+	<Header title="Scheduled" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+		<div slot="actions" class="">
+			<Button icon={mdiFilter} iconOnly>
+				<span class="flex gap-1 items-center">
+					Filters
+					<Icon data={mdiChevronDown} />
+				</span>
+			</Button>
 		</div>
-		<div class="px-3 pb-3 border-t">
-			show filters
-		</div>
-	</Collapse>
-
+	</Header>
+	
 	<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
 		<LoadingQueryWrapper {query}>
 			{#snippet view(schedules: MeetingSchedule[])}

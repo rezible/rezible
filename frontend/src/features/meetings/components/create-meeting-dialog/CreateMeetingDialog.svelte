@@ -14,17 +14,16 @@
 		Header,
 	} from "svelte-ux";
 	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
+	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 	import {
 		CreateMeetingFormSchema,
 		getEmptyForm,
 		weekdays,
 		type CreateMeetingFormData,
 		type Weekday,
-	} from "./meetings";
-	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-
-	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
-	import UserPickerField from "./UserPickerField.svelte";
+	} from "$features/meetings/lib/meetings";
+	import UserPickerField from "$features/meetings/views/meetings-overview/UserPickerField.svelte";
 
 	type Props = {
 		open: boolean;
@@ -95,11 +94,20 @@
 	on:close={resetMeetingState}
 	classes={{ root: "py-2", dialog: "max-h-full min-h-0 flex flex-col" }}
 >
-	<div slot="title">Create Meeting</div>
+	<div slot="header" class="border-b p-2 flex justify-between items-center">
+		<span class="text-xl flex-1">Create Meeting</span>
+		<!--div class="">
+			<Button variant="fill-light" color="secondary">
+				<span class="flex gap-2 items-center">
+					AI Draft
+				</span>
+			</Button>
+		</div-->
+	</div>
 
 	<div class="flex flex-row gap-2 overflow-y-auto p-2 w-fit">
 		<div class="w-fit flex flex-col gap-1 max-h-full">
-			<Header title="Details" />
+			<!-- <Header title="Details" /> -->
 
 			<TextField label="Title" bind:value={formData.name} />
 
@@ -168,8 +176,8 @@
 			<div class="flex gap-1">
 				{#each weekdays as day, i}
 					<Button
-						color={daySelected[i] ? "primary" : "secondary"}
-						variant={daySelected[i] ? "fill" : "outline"}
+						color={daySelected[i] ? "primary" : "default"}
+						variant={daySelected[i] ? "fill" : "fill-light"}
 						on:click={() => toggleWeekday(day.value)}
 					>
 						{day.value}

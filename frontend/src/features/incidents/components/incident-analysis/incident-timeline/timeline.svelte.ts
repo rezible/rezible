@@ -280,16 +280,17 @@ const createTimelineState = () => {
 	const onTimelineSelect = (e: any) => {
 		const newSelected = new Set(e.items as string[]);
 		const deselectedItems = selectedItems.difference(newSelected);
-		selectedItems = new Set(e.items as string[]);
 		
 		deselectedItems.forEach(id => {
 			events?.setSelected(id, false);
 			milestones?.setSelected(id, false);
 		});
-		selectedItems.forEach(id => {
+		newSelected.forEach(id => {
 			events?.setSelected(id, true);
 			milestones?.setSelected(id, true);
 		});
+
+		selectedItems = newSelected;
 	}
 
 	const setup = (containerRefFn: () => HTMLElement | undefined) => {

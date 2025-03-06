@@ -59,7 +59,9 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	attrs := input.Body.Attributes
 
-	query := h.db.IncidentMilestone.UpdateOneID(input.Id)
+	query := h.db.IncidentMilestone.UpdateOneID(input.Id).
+		SetNillableDescription(attrs.Description).
+		SetNillableTime(attrs.Timestamp)
 
 	if attrs.Kind != nil {
 		query.SetKind(incidentmilestone.Kind(*attrs.Kind))
