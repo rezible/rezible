@@ -4,14 +4,10 @@
 	import { watch } from "runed";
 	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions } from "$lib/api";
-	import {
-		appShell,
-		setPageBreadcrumbs,
-		type PageBreadcrumb,
-	} from "$features/app/lib/appShellState.svelte";
-	import IncidentPageActions from "$features/incidents/components/incident-page-actions/IncidentPageActions.svelte";
+	import { appShell, setPageBreadcrumbs, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
 	import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
 	import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
+	import PageActions from "./PageActions.svelte";
 	import RetrospectiveView from "./RetrospectiveView.svelte";
 	import CreateRetrospectiveDialog from "./CreateRetrospectiveDialog.svelte";
 
@@ -21,7 +17,7 @@
 	};
 	const { incidentId, view }: Props = $props();
 
-	appShell.setPageActions(IncidentPageActions, true);
+	appShell.setPageActions(PageActions, true);
 
 	const isIncidentView = $derived(view === undefined);
 
