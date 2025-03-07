@@ -89,6 +89,7 @@
 			on:nodeclick={diagram.handleNodeClicked}
 			on:nodedragstart={diagram.handleNodeDragStart}
 			on:nodedrag={diagram.handleNodeDrag}
+			on:nodedragstop={diagram.handleNodeDragStop}
 			on:paneclick={diagram.handlePaneClicked}
 			on:edgeclick={diagram.handleEdgeClicked}
 		>

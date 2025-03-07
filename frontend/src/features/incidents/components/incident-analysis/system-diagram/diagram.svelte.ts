@@ -12,11 +12,12 @@ import {
 	type Connection,
 } from "@xyflow/svelte";
 
-import type { SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent } from "$lib/api";
+import { updateSystemAnalysisComponentMutation, type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
 import { analysis } from "$features/incidents/components/incident-analysis/analysisState.svelte";
 import { relationshipDialog } from "$features/incidents/components/incident-analysis/system-diagram/relationship-dialog/dialogState.svelte";
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
+import { createMutation } from "@tanstack/svelte-query";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -81,7 +82,7 @@ const translateIncidentComponents = (incidentComponents: IncidentSystemComponent
 */
 
 export type SystemComponentNodeData = {
-	component: SystemAnalysisComponent;
+	analysisComponent: SystemAnalysisComponent;
 };
 
 export type SystemRelationshipEdgeData = {
@@ -92,15 +93,13 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
 	let edges: Edge[] = [];
 
-	an.attributes.components.forEach((component) => {
-		const { position } = component.attributes;
+	an.attributes.components.forEach(analysisComponent => {
+		const { position, component } = analysisComponent.attributes;
 
-		const data: SystemComponentNodeData = {
-			component,
-		};
+		const data: SystemComponentNodeData = {analysisComponent};
 
 		nodes.push({
-			id: component.attributes.component.id,
+			id: component.id,
 			type: "component",
 			data,
 			position,
@@ -144,7 +143,12 @@ const createDiagramState = () => {
 	const nodes = writable<Node[]>([]);
 	const edges = writable<Edge[]>([]);
 
+	const makeUpdateAnalysisComponentMutation = () => createMutation(() => updateSystemAnalysisComponentMutation());
+	let updateAnalysisComponentMut = $state<ReturnType<typeof makeUpdateAnalysisComponentMutation>>();
+
 	const setup = (containerElFn: () => HTMLElement | undefined) => {
+		updateAnalysisComponentMut = makeUpdateAnalysisComponentMutation();
+
 		onMount(() => {
 			containerEl = containerElFn();
 		});
@@ -211,6 +215,14 @@ const createDiagramState = () => {
 		if (selected.node?.id === e.detail.targetNode?.id) {
 			updateToolbarPosition();
 		}
+	};
+
+	const handleNodeDragStop = (e: SvelteFlowEvents["nodedragstop"]) => {
+		const node = e.detail.targetNode;
+		if (!node) return;
+		const {analysisComponent} = node.data as SystemComponentNodeData;
+		const attributes = {position: node.position};
+		updateAnalysisComponentMut?.mutate({path: {id: analysisComponent.id}, body: {attributes}});
 	};
 
 	const setAddingComponent = (c?: SystemComponent) => {
@@ -306,6 +318,7 @@ const createDiagramState = () => {
 		handleNodeClicked,
 		handleNodeDragStart,
 		handleNodeDrag,
+		handleNodeDragStop,
 		handleEdgeClicked,
 		handlePaneClicked,
 		onEdgeConnect,
