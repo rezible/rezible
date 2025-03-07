@@ -2,11 +2,13 @@
 	import { page } from "$app/state";
 	import {
 		mdiAccountGroup,
+		mdiBookshelf,
 		mdiChartBox,
 		mdiCogBox,
 		mdiFire,
 		mdiHome,
 		mdiPhoneRing,
+		mdiVectorPolyline,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
@@ -31,6 +33,8 @@
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
 		{ path: "/oncall", label: "Oncall", icon: mdiPhoneRing },
 		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
+		{ path: "/wiki", label: "Wiki", icon: mdiBookshelf },
+		{ path: "/services", label: "Services", icon: mdiVectorPolyline },
 		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
 		{ path: "/reports", label: "Reports", icon: mdiChartBox },
 	];
