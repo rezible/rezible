@@ -11,32 +11,34 @@
 	const userOncallQuery = createQuery(() => getUserOncallDetailsOptions());
 </script>
 
-{#snippet rostersNav()}
-	<Header title="Rosters" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+<SplitPage>
+	{#snippet nav()}
+		<Header title="Rosters" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+			<svelte:fragment slot="actions">
+				<Button href="/oncall/rosters">
+					View All
+				</Button>
+			</svelte:fragment>
+		</Header>
+
+		<LoadingQueryWrapper query={userOncallQuery}>
+			{#snippet view(details: UserOncallDetails)}
+				<UserRostersList rosters={details.rosters} />
+			{/snippet}
+		</LoadingQueryWrapper>
+	{/snippet}
+
+	<Header title="Your Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
 		<svelte:fragment slot="actions">
-			<Button href="/oncall/rosters">
-				View All
+			<Button href="/oncall/shifts">
+				<span>View All</span>
 			</Button>
 		</svelte:fragment>
 	</Header>
 
 	<LoadingQueryWrapper query={userOncallQuery}>
 		{#snippet view(details: UserOncallDetails)}
-			<UserRostersList rosters={details.rosters} />
-		{/snippet}
-	</LoadingQueryWrapper>
-{/snippet}
-
-<SplitPage nav={rostersNav}>
-	<Header title="Your Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }} />
-
-	<LoadingQueryWrapper query={userOncallQuery}>
-		{#snippet view(details: UserOncallDetails)}
-			<UserShiftsDisplay
-				activeShifts={details.activeShifts}
-				upcomingShifts={details.upcomingShifts}
-				pastShifts={details.pastShifts}
-			/>
+			<UserShiftsDisplay {details} />
 		{/snippet}
 	</LoadingQueryWrapper>
 </SplitPage>

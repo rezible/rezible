@@ -34,7 +34,7 @@
 	<div class="grid grid-cols-2 h-full gap-2">
 		<div class="h-full flex flex-col gap-2">
 			<div class="pb-2 border">
-				<Month bind:selected={selectedWeek} on:dateChange={onMonthDateChange} />
+				<Month bind:selected={selectedWeek} on:dateChange={onMonthDateChange} showOutsideDays />
 			</div>
 		</div>
 
