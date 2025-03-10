@@ -6,6 +6,6 @@ export const getSystemComponentKindMenuOptions = (kinds: SystemComponentKind[]):
 	return kinds.map(k => ({ label: k.attributes.label, value: k.id }));
 }
 
-export const getIconForComponentKind = (kind: SystemComponentKind) => {
+export const getIconForComponentKind = (kindId: string) => {
 	return mdiDelta;
 }

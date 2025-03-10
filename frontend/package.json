@@ -62,6 +62,7 @@
 		"d3-random": "^3.0.1",
 		"d3-scale": "^4.0.2",
 		"date-fns": "^4.1.0",
+		"echarts": "^5.6.0",
 		"js-cookie": "^3.0.5",
 		"layerchart": "^1.0.0",
 		"runed": "^0.23.4",

@@ -160,7 +160,7 @@
 				noShadow
 			>
 				<div slot="avatar" class="rounded-xl size-8 grid place-content-center">
-					<Icon data={getIconForComponentKind(attr.kind)} classes={{ root: "size-5" }} />
+					<Icon data={getIconForComponentKind(attr.kindId)} classes={{ root: "size-5" }} />
 				</div>
 				<div slot="actions">
 					<Button

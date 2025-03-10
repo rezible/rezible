@@ -44,7 +44,7 @@
 				"oklch(var(--color-danger))",
 			]}
 		/-->
-		<BarChart data={fakeDateSeries} x="date" y="value" renderContext="svg" debug={false}>
+		<BarChart data={fakeDateSeries} x="date" y="value" renderContext="canvas" debug={false} tooltip={false}>
 			<svelte:fragment slot="marks" let:series let:getBarsProps>
 				{#each series as s, i (s.key)}
 					<LinearGradient

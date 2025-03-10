@@ -67,6 +67,9 @@ const refineZonedDateTimeString = (dateStr: string) => {
 export const ZodZonedDateTime = z.string().
 	refine(refineZonedDateTimeString, "Invalid ZonedDateTime format");
 
-// export const convertDateTimeAnchor = (a: DateTimeAnchor) => {
-// 	return parseAbsolute(`${a.date.toISOString().split("T")[0]}T${a.time}Z`, a.timezone).toDate();
-// }
+export const DayHours = [
+	'12am', '1am', '2am', '3am', '4am', '5am', '6am',
+	'7am', '8am', '9am', '10am', '11am',
+	'12pm', '1pm', '2pm', '3pm', '4pm', '5pm',
+	'6pm', '7pm', '8pm', '9pm', '10pm', '11pm'
+];
