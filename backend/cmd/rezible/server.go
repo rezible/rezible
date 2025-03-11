@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog"
 	"net"
 	"os"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/documents"
 	"github.com/rezible/rezible/internal/http"
