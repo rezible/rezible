@@ -1,4 +1,4 @@
-package postgres
+package providers
 
 import (
 	"context"
@@ -18,7 +18,6 @@ import (
 
 type incidentDataSyncer struct {
 	db       *ent.Client
-	users    rez.UserService
 	provider rez.IncidentDataProvider
 
 	slugs         *slugTracker
@@ -27,8 +26,8 @@ type incidentDataSyncer struct {
 	mutations []ent.Mutation
 }
 
-func newIncidentDataSyncer(db *ent.Client, users rez.UserService, prov rez.IncidentDataProvider) *incidentDataSyncer {
-	ds := &incidentDataSyncer{db: db, users: users, provider: prov, slugs: newSlugTracker()}
+func newIncidentDataSyncer(db *ent.Client, prov rez.IncidentDataProvider) *incidentDataSyncer {
+	ds := &incidentDataSyncer{db: db, provider: prov, slugs: newSlugTracker()}
 	ds.resetState()
 	return ds
 }
@@ -51,7 +50,7 @@ func (ds *incidentDataSyncer) saveSyncHistory(ctx context.Context, start time.Ti
 	}
 }
 
-func (ds *incidentDataSyncer) syncProviderData(ctx context.Context) error {
+func (ds *incidentDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, "incidents")
@@ -346,7 +345,7 @@ func (ds *incidentDataSyncer) syncIncidentRoleAssignments(ctx context.Context, d
 			return fmt.Errorf("missing db role for id: %s", provRole.ProviderID)
 		}
 
-		usr, usrErr := ds.users.GetByEmail(ctx, provUser.Email)
+		usr, usrErr := getUserByEmail(ctx, ds.db, provUser.Email)
 		if usrErr != nil {
 			log.Warn().Str("email", provUser.Email).Msg("failed to lookup incident role user by email")
 			//return fmt.Errorf("role user: %w", usrErr)

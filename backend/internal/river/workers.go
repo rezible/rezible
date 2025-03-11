@@ -11,21 +11,12 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-func (s *JobService) RegisterWorkers(
-	users rez.UserService,
-	teams rez.TeamService,
-	incidents rez.IncidentService,
-	oncall rez.OncallService,
-	alerts rez.AlertsService,
-	debriefs rez.DebriefService,
-	components rez.SystemComponentsService,
-) error {
+func (s *JobService) RegisterWorkers(oncall rez.OncallService, debriefs rez.DebriefService) error {
 	return errors.Join(
 		s.registerSendDebriefRequests(debriefs),
 		s.registerGenerateDebriefResponse(debriefs),
 		s.registerEnsureShiftHandovers(oncall),
 		s.registerOncallHandoverScanPeriodicJob(time.Hour, oncall),
-		s.registerProviderDataSyncPeriodicJob(time.Hour, users, teams, incidents, oncall, alerts, components),
 	)
 }
 

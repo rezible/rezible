@@ -1,9 +1,8 @@
-package postgres
+package providers
 
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/team"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +10,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/team"
 )
 
 type teamDataSyncer struct {
@@ -44,7 +44,7 @@ func (ds *teamDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, 
 	}
 }
 
-func (ds *teamDataSyncer) syncProviderData(ctx context.Context) error {
+func (ds *teamDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, "teams")

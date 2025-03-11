@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -16,39 +15,32 @@ import (
 )
 
 type IncidentService struct {
-	db       *ent.Client
-	jobs     rez.BackgroundJobService
-	loader   rez.ProviderLoader
-	provider rez.IncidentDataProvider
-	chat     rez.ChatService
-	users    rez.UserService
+	db    *ent.Client
+	jobs  rez.JobsService
+	chat  rez.ChatService
+	users rez.UserService
 }
 
-func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.BackgroundJobService, pl rez.ProviderLoader, ai rez.AiService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
+func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:     db,
-		jobs:   jobs,
-		loader: pl,
-		chat:   chat,
-		users:  users,
-	}
-
-	if dataErr := svc.LoadDataProvider(ctx); dataErr != nil {
-		return nil, dataErr
+		db:    db,
+		jobs:  jobs,
+		chat:  chat,
+		users: users,
 	}
 
 	return svc, nil
 }
 
-func (s *IncidentService) LoadDataProvider(ctx context.Context) error {
-	provider, providerErr := s.loader.LoadIncidentDataProvider(ctx)
-	if providerErr != nil {
-		return fmt.Errorf("failed to load incident data provider: %w", providerErr)
-	}
-	s.provider = provider
-	provider.SetOnIncidentUpdatedCallback(s.onProviderIncidentUpdated)
-	return nil
-}
+//func (s *IncidentService) LoadDataProvider(ctx context.Context) error {
+//	provider, providerErr := s.loader.LoadIncidentDataProvider(ctx)
+//	if providerErr != nil {
+//		return fmt.Errorf("failed to load incident data provider: %w", providerErr)
+//	}
+//	s.provider = provider
+//	provider.SetOnIncidentUpdatedCallback(s.onProviderIncidentUpdated)
+//	return nil
+//}
 
 func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt time.Time) {
 	//ctx := context.Background()
@@ -65,11 +57,6 @@ func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt
 	log.Debug().Str("id", providerId).Msg("incident updated")
 
 	// check resolved, send debrief requests
-}
-
-func (s *IncidentService) SyncData(ctx context.Context) error {
-	syncer := newIncidentDataSyncer(s.db, s.users, s.provider)
-	return syncer.syncProviderData(ctx)
 }
 
 func (s *IncidentService) GetByID(ctx context.Context, id uuid.UUID) (*ent.Incident, error) {

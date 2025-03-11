@@ -41,8 +41,42 @@ type (
 )
 
 type (
-	BackgroundJobService interface {
-		RegisterWorkers(UserService, TeamService, IncidentService, OncallService, AlertsService, DebriefService, SystemComponentsService) error
+	ProviderLoader interface {
+		WebhookHandler() http.Handler
+
+		LoadProviders(context.Context) (*Providers, error)
+
+		LoadAiModelProvider(context.Context) (AiModelProvider, error)
+		LoadChatProvider(context.Context) (ChatProvider, error)
+		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
+
+		LoadAlertsDataProvider(context.Context) (AlertsDataProvider, error)
+		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
+		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
+		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
+		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
+		LoadUserDataProvider(context.Context) (UserDataProvider, error)
+	}
+	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+
+	Providers struct {
+		AiModel     AiModelProvider
+		AuthSession AuthSessionProvider
+		Chat        ChatProvider
+
+		AlertsData           AlertsDataProvider
+		IncidentData         IncidentDataProvider
+		OncallData           OncallDataProvider
+		SystemComponentsData SystemComponentsDataProvider
+		TeamData             TeamDataProvider
+		UserData             UserDataProvider
+	}
+)
+
+type (
+	JobsService interface {
+		RegisterWorkers(OncallService, DebriefService) error
+
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 
@@ -50,23 +84,6 @@ type (
 		InsertMany(ctx context.Context, params []jobs.InsertManyParams) error
 		InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs, opts *jobs.InsertOpts) error
 	}
-)
-
-type (
-	ProviderLoader interface {
-		HandleWebhookRequest(w http.ResponseWriter, r *http.Request)
-
-		LoadAiModelProvider(context.Context) (AiModelProvider, error)
-		LoadChatProvider(context.Context) (ChatProvider, error)
-		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
-		LoadAlertsDataProvider(context.Context) (AlertsDataProvider, error)
-		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
-		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
-		LoadUserDataProvider(context.Context) (UserDataProvider, error)
-		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
-		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
-	}
-	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 )
 
 type (
@@ -112,8 +129,6 @@ type (
 	}
 
 	SystemComponentsService interface {
-		SyncData(context.Context) error
-
 		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
@@ -131,8 +146,6 @@ type (
 	}
 
 	TeamService interface {
-		SyncData(context.Context) error
-
 		GetById(context.Context, uuid.UUID) (*ent.Team, error)
 	}
 )
@@ -148,8 +161,6 @@ type (
 	}
 
 	UserService interface {
-		SyncData(context.Context) error
-
 		Create(context.Context, ent.User) (*ent.User, error)
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
@@ -215,7 +226,7 @@ type (
 	AiModel = llms.Model
 
 	AiModelProvider interface {
-		GetModel() AiModel
+		Model() AiModel
 	}
 
 	AiService interface {
@@ -244,8 +255,6 @@ type (
 	}
 
 	IncidentService interface {
-		SyncData(context.Context) error
-
 		GetByID(context.Context, uuid.UUID) (*ent.Incident, error)
 		GetIdForSlug(context.Context, string) (uuid.UUID, error)
 		GetBySlug(context.Context, string) (*ent.Incident, error)
@@ -342,7 +351,6 @@ type (
 	}
 
 	OncallService interface {
-		SyncData(context.Context) error
 		ScanForShiftsNeedingHandover(context.Context) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
@@ -383,7 +391,6 @@ type (
 	}
 
 	AlertsService interface {
-		SyncData(ctx context.Context) error
 		ListAlerts(ctx context.Context, params ListAlertsParams) ([]*ent.OncallAlert, error)
 	}
 )

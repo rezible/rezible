@@ -3,7 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
+	"github.com/rs/zerolog"
 	"net"
+	"os"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -35,6 +40,16 @@ type rezServer struct {
 	httpServer *http.Server
 }
 
+func newRezServer(opts *Options) *rezServer {
+	if opts.Mode == "PROD" {
+		rez.DebugMode = false
+	} else {
+		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+
+	return &rezServer{opts: opts}
+}
+
 func (s *rezServer) Start() {
 	ctx := context.Background()
 
@@ -58,91 +73,108 @@ func (s *rezServer) setup(ctx context.Context) error {
 	}
 
 	s.db = db
+	s.jobs = river.NewJobService(db.Pool)
 
-	return s.setupServices(ctx)
+	srv, srvErr := s.setupServices(ctx, db.Client(), s.jobs)
+	if srvErr != nil {
+		if dbErr := db.Close(); dbErr != nil {
+			log.Error().Err(dbErr).Msg("failed to close database connection")
+		}
+		return fmt.Errorf("failed to setup http server: %w", srvErr)
+	}
+
+	s.httpServer = srv
+
+	return nil
 }
 
-func (s *rezServer) setupServices(ctx context.Context) error {
-	dbc := s.db.Client()
-
-	s.jobs = river.NewJobService(s.db.Pool)
+func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.JobsService) (*http.Server, error) {
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
+	provs, provsErr := pl.LoadProviders(ctx)
+	if provsErr != nil {
+		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
+	}
 
-	users, usersErr := postgres.NewUserService(dbc, pl)
+	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
-		return fmt.Errorf("postgres.UserService: %w", usersErr)
+		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
-	teams, teamsErr := postgres.NewTeamService(dbc, pl)
-	if teamsErr != nil {
-		return fmt.Errorf("postgres.TeamService: %w", teamsErr)
-	}
+	//teams, teamsErr := postgres.NewTeamService(dbc)
+	//if teamsErr != nil {
+	//	return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
+	//}
 
-	chat, chatErr := documents.NewChatService(ctx, pl, users)
+	chat, chatErr := documents.NewChatService(ctx, provs.Chat, users)
 	if chatErr != nil {
-		return fmt.Errorf("failed to create chat service: %w", chatErr)
+		return nil, fmt.Errorf("failed to create chat service: %w", chatErr)
 	}
 
-	ai, aiErr := langchain.NewAiService(ctx, pl)
+	ai, aiErr := langchain.NewAiService(ctx, provs.AiModel)
 	if aiErr != nil {
-		return fmt.Errorf("failed to create AI service: %w", aiErr)
+		return nil, fmt.Errorf("failed to create AI service: %w", aiErr)
 	}
 
 	docs, docsErr := documents.NewService(s.opts.DocumentServerAddress, users)
 	if docsErr != nil {
-		return fmt.Errorf("failed to create document service: %w", docsErr)
+		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, s.jobs, pl, ai, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, ai, chat, users)
 	if incidentsErr != nil {
-		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
+		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, handoverErr := postgres.NewOncallService(ctx, dbc, s.jobs, pl, docs, chat, users, incidents)
+	oncall, handoverErr := postgres.NewOncallService(ctx, dbc, j, docs, chat, users, incidents)
 	if handoverErr != nil {
-		return fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
+		return nil, fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
 	}
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, s.jobs, ai, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, ai, chat)
 	if debriefsErr != nil {
-		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
+		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
 
 	retros, retrosErr := postgres.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
-		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
+		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
-	cmps, cmpsErr := postgres.NewSystemComponentsService(dbc, pl)
+	componentsSvc, cmpsErr := postgres.NewSystemComponentsService(dbc)
 	if cmpsErr != nil {
-		return fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpsErr)
+		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpsErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertsService(ctx, dbc, s.jobs, pl, users)
+	alerts, alertsErr := postgres.NewAlertsService(ctx, dbc, users)
 	if alertsErr != nil {
-		return fmt.Errorf("postgres.NewAlertsService: %w", alertsErr)
+		return nil, fmt.Errorf("postgres.NewAlertsService: %w", alertsErr)
 	}
 
-	auth, authErr := http.NewAuthService(ctx, users, pl, s.opts.AuthSessionSecretKey)
+	auth, authErr := http.NewAuthService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
 	if authErr != nil {
-		return fmt.Errorf("http auth service: %w", authErr)
+		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros, cmps)
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros, componentsSvc)
 
-	httpServer, httpErr := http.NewServer(listenAddr, pl, auth, apiHandler.MakeAdapter())
+	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler.MakeAdapter(), pl.WebhookHandler())
 	if httpErr != nil {
-		return fmt.Errorf("http.NewServer: %w", httpErr)
-	}
-	s.httpServer = httpServer
-
-	jobsErr := s.jobs.RegisterWorkers(users, teams, incidents, oncall, alerts, debriefs, cmps)
-	if jobsErr != nil {
-		return fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
+		return nil, fmt.Errorf("http.NewServer: %w", httpErr)
 	}
 
-	return nil
+	// TODO: register jobs as needed
+	if jobsErr := j.RegisterWorkers(oncall, debriefs); jobsErr != nil {
+		return nil, fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
+	}
+	provSyncFn := func(ctx context.Context, a jobs.SyncProviderData) error {
+		return providers.SyncData(ctx, &a, dbc, pl)
+	}
+	if syncErr := j.(*river.JobService).RegisterProviderDataSyncPeriodicJob(time.Hour, provSyncFn); syncErr != nil {
+		return nil, fmt.Errorf("ProviderDataSyncPeriodicJob: %w", syncErr)
+	}
+
+	return httpServer, nil
 }
 
 func (s *rezServer) Stop() {

@@ -2,27 +2,17 @@ package main
 
 import (
 	"context"
-	"os"
-
+	
 	"github.com/danielgtaylor/huma/v2/humacli"
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-
-	rez "github.com/rezible/rezible"
 )
 
 func main() {
 	onParsed := func(hooks humacli.Hooks, opts *Options) {
-		if opts.Mode == "PROD" {
-			rez.DebugMode = false
-		} else {
-			log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
-		}
-
-		srv := &rezServer{opts: opts}
-		hooks.OnStart(srv.Start)
-		hooks.OnStop(srv.Stop)
+		rezSrv := newRezServer(opts)
+		hooks.OnStart(rezSrv.Start)
+		hooks.OnStop(rezSrv.Stop)
 	}
 	cli := humacli.New(onParsed)
 

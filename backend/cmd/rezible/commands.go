@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/internal/documents"
 	"github.com/rezible/rezible/internal/river"
+	"github.com/rezible/rezible/jobs"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 
@@ -58,80 +58,21 @@ func migrateCmd(ctx context.Context, opts *Options) error {
 func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: use cli flags
-		const (
-			syncTeams      = true
-			syncUsers      = true
-			syncOncall     = true
-			syncIncidents  = true
-			syncComponents = true
-
-			hardSync = true
-		)
-
-		c := db.Client()
-
-		if hardSync {
-			c.ProviderSyncHistory.Delete().ExecX(ctx)
+		args := &jobs.SyncProviderData{
+			Hard:             true,
+			Users:            true,
+			Teams:            true,
+			Incidents:        true,
+			Oncall:           true,
+			Alerts:           true,
+			SystemComponents: true,
 		}
 
-		pl := providers.NewProviderLoader(c.ProviderConfig)
+		dbc := db.Client()
 
-		users, usersErr := postgres.NewUserService(c, pl)
-		if usersErr != nil {
-			return fmt.Errorf("user service: %w", usersErr)
-		}
+		pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
-		if syncTeams {
-			teams, teamsErr := postgres.NewTeamService(c, pl)
-			if teamsErr != nil {
-				return fmt.Errorf("to create teams: %w", teamsErr)
-			}
-			if syncErr := teams.SyncData(ctx); syncErr != nil {
-				return fmt.Errorf("teams sync failed: %w", syncErr)
-			}
-		}
-
-		if syncUsers {
-			_, chatErr := documents.NewChatService(ctx, pl, users)
-			if chatErr != nil {
-				return fmt.Errorf("to create chat: %w", chatErr)
-			}
-			if syncErr := users.SyncData(ctx); syncErr != nil {
-				return fmt.Errorf("users sync failed: %w", syncErr)
-			}
-		}
-
-		if syncOncall {
-			oncall, oncallErr := postgres.NewOncallService(ctx, c, nil, pl, nil, nil, users, nil)
-			if oncallErr != nil {
-				return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
-			}
-			if syncErr := oncall.SyncData(ctx); syncErr != nil {
-				return fmt.Errorf("oncall sync failed: %w", syncErr)
-			}
-		}
-
-		if syncIncidents {
-			inc, incErr := postgres.NewIncidentService(ctx, c, nil, pl, nil, nil, users)
-			if incErr != nil {
-				return fmt.Errorf("postgres.NewIncidentService: %w", incErr)
-			}
-			if syncErr := inc.SyncData(ctx); syncErr != nil {
-				return fmt.Errorf("incidents sync failed: %w", syncErr)
-			}
-		}
-
-		if syncComponents {
-			cmp, cmpErr := postgres.NewSystemComponentsService(c, pl)
-			if cmpErr != nil {
-				return fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpErr)
-			}
-			if syncErr := cmp.SyncData(ctx); syncErr != nil {
-				return fmt.Errorf("system components sync failed: %w", syncErr)
-			}
-		}
-
-		return nil
+		return providers.SyncData(ctx, args, dbc, pl)
 	})
 }
 

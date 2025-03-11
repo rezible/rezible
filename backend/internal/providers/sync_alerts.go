@@ -1,12 +1,14 @@
-package postgres
+package providers
 
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type alertsDataSyncer struct {
@@ -21,7 +23,7 @@ func newAlertsDataSyncer(db *ent.Client, users rez.UserService, provider rez.Ale
 	return &alertsDataSyncer{db: db, users: users, provider: provider}
 }
 
-func (as *alertsDataSyncer) syncProviderData(ctx context.Context) error {
+func (as *alertsDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now().Add(-time.Hour * 24)
 	end := time.Now()
 

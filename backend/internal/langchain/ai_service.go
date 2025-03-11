@@ -18,12 +18,7 @@ type AiService struct {
 	prov rez.AiModelProvider
 }
 
-func NewAiService(ctx context.Context, pl rez.ProviderLoader) (*AiService, error) {
-	prov, aiProvErr := pl.LoadAiModelProvider(ctx)
-	if aiProvErr != nil {
-		return nil, fmt.Errorf("failed to create AI model provider: %w", aiProvErr)
-	}
-
+func NewAiService(ctx context.Context, prov rez.AiModelProvider) (*AiService, error) {
 	return &AiService{prov: prov}, nil
 }
 
@@ -64,7 +59,7 @@ func (s *AiService) GenerateDebriefResponse(ctx context.Context, debrief *ent.In
 	}
 	thread := append([]llms.MessageContent{systemMessage}, convertDebriefMessagesToThread(debriefMessages)...)
 
-	model := s.prov.GetModel()
+	model := s.prov.Model()
 	content, genErr := model.GenerateContent(ctx, thread, llms.WithTools(debriefResponseTools))
 	if genErr != nil {
 		return nil, fmt.Errorf("generate content: %w", genErr)

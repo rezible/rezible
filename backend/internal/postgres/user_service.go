@@ -14,26 +14,15 @@ import (
 )
 
 type UserService struct {
-	db     *ent.Client
-	loader rez.ProviderLoader
+	db *ent.Client
 }
 
-func NewUserService(db *ent.Client, pl rez.ProviderLoader) (*UserService, error) {
+func NewUserService(db *ent.Client) (*UserService, error) {
 	s := &UserService{
-		db:     db,
-		loader: pl,
+		db: db,
 	}
 
 	return s, nil
-}
-
-func (s *UserService) SyncData(ctx context.Context) error {
-	prov, provErr := s.loader.LoadUserDataProvider(ctx)
-	if provErr != nil {
-		return fmt.Errorf("loading user data provider: %w", provErr)
-	}
-	syncer := newUserDataSyncer(s.db, prov)
-	return syncer.syncProviderData(ctx)
 }
 
 func (s *UserService) Create(ctx context.Context, user ent.User) (*ent.User, error) {

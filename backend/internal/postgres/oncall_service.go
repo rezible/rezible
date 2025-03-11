@@ -27,28 +27,21 @@ import (
 
 type OncallService struct {
 	db        *ent.Client
-	jobs      rez.BackgroundJobService
-	loader    rez.ProviderLoader
-	provider  rez.OncallDataProvider
+	jobs      rez.JobsService
 	docs      rez.DocumentsService
 	chat      rez.ChatService
 	users     rez.UserService
 	incidents rez.IncidentService
 }
 
-func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.BackgroundJobService, pl rez.ProviderLoader, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
+func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
 	s := &OncallService{
 		db:        db,
 		jobs:      jobs,
-		loader:    pl,
 		docs:      docs,
 		chat:      chat,
 		users:     users,
 		incidents: incidents,
-	}
-
-	if provErr := s.LoadDataProvider(ctx); provErr != nil {
-		return nil, provErr
 	}
 
 	s.setChatCreateAnnotationFunc()
@@ -58,59 +51,55 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.BackgroundJo
 	return s, nil
 }
 
-func (s *OncallService) LoadDataProvider(ctx context.Context) error {
-	provider, providerErr := s.loader.LoadOncallDataProvider(ctx)
-	if providerErr != nil {
-		return fmt.Errorf("failed to load data provider: %w", providerErr)
-	}
-	s.provider = provider
-	return nil
-}
+//func (s *OncallService) LoadDataProvider(ctx context.Context) error {
+//	provider, providerErr := s.loader.LoadOncallDataProvider(ctx)
+//	if providerErr != nil {
+//		return fmt.Errorf("failed to load data provider: %w", providerErr)
+//	}
+//	s.provider = provider
+//	return nil
+//}
 
-func (s *OncallService) SyncData(ctx context.Context) error {
-	dataSyncer := newOncallDataSyncer(s.db, s.users, s.provider)
-	return dataSyncer.syncProviderData(ctx)
+func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
+	anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
+		Where(oncallusershiftannotation.And(
+			oncallusershiftannotation.ShiftID(shiftId), oncallusershiftannotation.EventID(msgId))).
+		Only(ctx)
+	if queryErr != nil {
+		if ent.IsNotFound(queryErr) {
+			anno = &ent.OncallUserShiftAnnotation{
+				ShiftID: shiftId,
+				EventID: msgId,
+			}
+		} else {
+			return fmt.Errorf("failed to query: %w", queryErr)
+		}
+	}
+	prevId := anno.ID.String()
+	setFn(anno)
+	if anno.ID.String() != prevId {
+		return fmt.Errorf("annotation id mismatch: %s", anno.ID)
+	}
+
+	upsertQuery := s.db.OncallUserShiftAnnotation.Create().
+		SetShiftID(anno.ShiftID).
+		SetEventID(anno.EventID).
+		SetEventKind(anno.EventKind).
+		SetOccurredAt(anno.OccurredAt).
+		SetTitle(anno.Title).
+		SetNotes(anno.Notes).
+		SetPinned(anno.Pinned).
+		SetMinutesOccupied(anno.MinutesOccupied).
+		OnConflictColumns(oncallusershiftannotation.FieldShiftID, oncallusershiftannotation.FieldEventID).
+		UpdateNewValues()
+
+	return upsertQuery.Exec(ctx)
 }
 
 func (s *OncallService) setChatCreateAnnotationFunc() {
-	if s.chat == nil {
-		return
+	if s.chat != nil {
+		s.chat.SetCreateAnnotationFunc(s.createChatAnnotation)
 	}
-	s.chat.SetCreateAnnotationFunc(func(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
-		anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
-			Where(oncallusershiftannotation.And(
-				oncallusershiftannotation.ShiftID(shiftId), oncallusershiftannotation.EventID(msgId))).
-			Only(ctx)
-		if queryErr != nil {
-			if ent.IsNotFound(queryErr) {
-				anno = &ent.OncallUserShiftAnnotation{
-					ShiftID: shiftId,
-					EventID: msgId,
-				}
-			} else {
-				return fmt.Errorf("failed to query: %w", queryErr)
-			}
-		}
-		prevId := anno.ID.String()
-		setFn(anno)
-		if anno.ID.String() != prevId {
-			return fmt.Errorf("annotation id mismatch: %s", anno.ID)
-		}
-
-		upsertQuery := s.db.OncallUserShiftAnnotation.Create().
-			SetShiftID(anno.ShiftID).
-			SetEventID(anno.EventID).
-			SetEventKind(anno.EventKind).
-			SetOccurredAt(anno.OccurredAt).
-			SetTitle(anno.Title).
-			SetNotes(anno.Notes).
-			SetPinned(anno.Pinned).
-			SetMinutesOccupied(anno.MinutesOccupied).
-			OnConflictColumns(oncallusershiftannotation.FieldShiftID, oncallusershiftannotation.FieldEventID).
-			UpdateNewValues()
-
-		return upsertQuery.Exec(ctx)
-	})
 }
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {

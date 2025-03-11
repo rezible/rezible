@@ -2,7 +2,6 @@ package river
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/riverqueue/river"
@@ -29,15 +28,7 @@ func (s *JobService) registerOncallHandoverScanPeriodicJob(interval time.Duratio
 	return river.AddWorkerSafely(s.clientCfg.Workers, worker)
 }
 
-func (s *JobService) registerProviderDataSyncPeriodicJob(
-	interval time.Duration,
-	users rez.UserService,
-	teams rez.TeamService,
-	incidents rez.IncidentService,
-	oncall rez.OncallService,
-	alerts rez.AlertsService,
-	components rez.SystemComponentsService,
-) error {
+func (s *JobService) RegisterProviderDataSyncPeriodicJob(interval time.Duration, workFn func(ctx context.Context, args jobs.SyncProviderData) error) error {
 	args := &jobs.SyncProviderData{
 		Users:            true,
 		Teams:            true,
@@ -61,28 +52,7 @@ func (s *JobService) registerProviderDataSyncPeriodicJob(
 		},
 	))
 
-	workFn := river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SyncProviderData]) error {
-		var err error
-		if j.Args.Users {
-			err = errors.Join(err, users.SyncData(ctx))
-		}
-		if j.Args.Teams {
-			err = errors.Join(err, teams.SyncData(ctx))
-		}
-		if j.Args.Oncall {
-			err = errors.Join(err, oncall.SyncData(ctx))
-		}
-		if j.Args.Incidents {
-			err = errors.Join(err, incidents.SyncData(ctx))
-		}
-		if j.Args.Alerts {
-			err = errors.Join(err, alerts.SyncData(ctx))
-		}
-		if j.Args.SystemComponents {
-			err = errors.Join(err, components.SyncData(ctx))
-		}
-		return err
-	})
-
-	return river.AddWorkerSafely(s.clientCfg.Workers, workFn)
+	return river.AddWorkerSafely(s.clientCfg.Workers, river.WorkFunc(func(ctx context.Context, j *river.Job[jobs.SyncProviderData]) error {
+		return workFn(ctx, j.Args)
+	}))
 }

@@ -1,4 +1,4 @@
-package postgres
+package providers
 
 import (
 	"context"
@@ -42,7 +42,7 @@ func (ds *userDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, 
 	}
 }
 
-func (ds *userDataSyncer) syncProviderData(ctx context.Context) error {
+func (ds *userDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, "users")

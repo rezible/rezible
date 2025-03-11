@@ -3,7 +3,6 @@ package river
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -20,6 +19,7 @@ import (
 	"github.com/riverqueue/river/rivertype"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 )
 
 var (

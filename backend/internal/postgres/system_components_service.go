@@ -11,26 +11,15 @@ import (
 )
 
 type SystemComponentsService struct {
-	db     *ent.Client
-	loader rez.ProviderLoader
+	db *ent.Client
 }
 
-func NewSystemComponentsService(db *ent.Client, pl rez.ProviderLoader) (*SystemComponentsService, error) {
+func NewSystemComponentsService(db *ent.Client) (*SystemComponentsService, error) {
 	s := &SystemComponentsService{
-		db:     db,
-		loader: pl,
+		db: db,
 	}
 
 	return s, nil
-}
-
-func (s *SystemComponentsService) SyncData(ctx context.Context) error {
-	prov, provErr := s.loader.LoadSystemComponentsDataProvider(ctx)
-	if provErr != nil {
-		return fmt.Errorf("loading system components data provider: %w", provErr)
-	}
-	syncer := newSystemComponentsDataSyncer(s.db, prov)
-	return syncer.syncProviderData(ctx)
 }
 
 func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComponent) (*ent.SystemComponent, error) {

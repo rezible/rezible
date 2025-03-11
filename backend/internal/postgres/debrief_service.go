@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -13,16 +12,17 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/jobs"
 )
 
 type DebriefService struct {
 	db   *ent.Client
-	jobs rez.BackgroundJobService
+	jobs rez.JobsService
 	ai   rez.AiService
 	chat rez.ChatService
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.BackgroundJobService, ai rez.AiService, chat rez.ChatService) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatService) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
 		jobs: jobs,

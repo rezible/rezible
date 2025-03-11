@@ -39,17 +39,18 @@ type Loader struct {
 }
 
 func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
-	pl := &Loader{
-		client:           client,
-		providerWebhooks: make(map[string]rez.Webhooks),
-		webhookMux:       chi.NewMux(),
-	}
+	l := &Loader{client: client}
 
-	return pl
+	l.providerWebhooks = make(map[string]rez.Webhooks)
+	l.webhookMux = chi.NewMux()
+
+	return l
 }
 
-func (l *Loader) HandleWebhookRequest(w http.ResponseWriter, r *http.Request) {
-	l.webhookMux.ServeHTTP(w, r)
+func (l *Loader) WebhookHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		l.webhookMux.ServeHTTP(w, r)
+	})
 }
 
 func (l *Loader) updateWebhooks(provKey string, hooks rez.Webhooks) {
@@ -111,6 +112,58 @@ func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string
 		}
 		return nil
 	})
+}
+
+func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
+	var provs rez.Providers
+	var loadErr error
+
+	provs.AiModel, loadErr = l.LoadAiModelProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("ai model: %w", loadErr)
+	}
+
+	provs.AuthSession, loadErr = l.LoadAuthSessionProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("auth: %w", loadErr)
+	}
+
+	provs.Chat, loadErr = l.LoadChatProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("chat: %w", loadErr)
+	}
+
+	provs.AlertsData, loadErr = l.LoadAlertsDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("alerts: %w", loadErr)
+	}
+
+	provs.IncidentData, loadErr = l.LoadIncidentDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("incident data: %w", loadErr)
+	}
+
+	provs.OncallData, loadErr = l.LoadOncallDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("oncall data: %w", loadErr)
+	}
+
+	provs.SystemComponentsData, loadErr = l.LoadSystemComponentsDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("system components: %w", loadErr)
+	}
+
+	provs.TeamData, loadErr = l.LoadTeamDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("team data: %w", loadErr)
+	}
+
+	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("user data: %w", loadErr)
+	}
+
+	return &provs, nil
 }
 
 type loadedConfig struct {

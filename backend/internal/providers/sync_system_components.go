@@ -1,9 +1,8 @@
-package postgres
+package providers
 
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"time"
 
 	"github.com/google/uuid"
@@ -11,6 +10,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 const (
@@ -48,7 +48,7 @@ func (ds *systemComponentsDataSyncer) saveSyncHistory(ctx context.Context, start
 	}
 }
 
-func (ds *systemComponentsDataSyncer) syncProviderData(ctx context.Context) error {
+func (ds *systemComponentsDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, systemComponentsDataType)

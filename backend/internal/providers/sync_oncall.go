@@ -1,4 +1,4 @@
-package postgres
+package providers
 
 import (
 	"context"
@@ -20,17 +20,16 @@ import (
 
 type oncallDataSyncer struct {
 	db       *ent.Client
-	users    rez.UserService
 	provider rez.OncallDataProvider
 
 	mutations []ent.Mutation
 }
 
-func newOncallDataSyncer(db *ent.Client, users rez.UserService, provider rez.OncallDataProvider) *oncallDataSyncer {
-	return &oncallDataSyncer{db: db, users: users, provider: provider}
+func newOncallDataSyncer(db *ent.Client, provider rez.OncallDataProvider) *oncallDataSyncer {
+	return &oncallDataSyncer{db: db, provider: provider}
 }
 
-func (ds *oncallDataSyncer) syncProviderData(ctx context.Context) error {
+func (ds *oncallDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastRostersSync := getLastSyncTime(ctx, ds.db, "oncall_rosters")
@@ -40,7 +39,7 @@ func (ds *oncallDataSyncer) syncProviderData(ctx context.Context) error {
 	skipShifts := lastShiftsSync.Add(time.Minute * 30).After(start)
 
 	if !skipRosters {
-		if rostersErr := ds.syncAllProviderRosters(ctx); rostersErr != nil {
+		if rostersErr := ds.syncAllRosters(ctx); rostersErr != nil {
 			return fmt.Errorf("failed to deep sync roster data: %w", rostersErr)
 		}
 	}
@@ -113,7 +112,7 @@ func (ds *oncallDataSyncer) saveSyncHistory(ctx context.Context, start time.Time
 	}
 }
 
-func (ds *oncallDataSyncer) syncAllProviderRosters(ctx context.Context) error {
+func (ds *oncallDataSyncer) syncAllRosters(ctx context.Context) error {
 	start := time.Now()
 	var numMutations int
 
@@ -228,11 +227,12 @@ func (ds *oncallDataSyncer) buildOncallRostersSyncMutations(ctx context.Context,
 				provPart := part
 				provPart.ScheduleID = provSched.ID
 
-				userId, userErr := ds.syncOncallUser(ctx, provPart.Edges.User)
-				if userErr != nil {
-					return fmt.Errorf("syncing user: %w", userErr)
+				provUser := provPart.Edges.User
+				currUser, userErr := getUserByEmail(ctx, ds.db, provPart.Edges.User.Email)
+				if userErr != nil && !ent.IsNotFound(userErr) {
+					return fmt.Errorf("querying for existing schedule user: %w", userErr)
 				}
-				provPart.UserID = userId
+				provPart.UserID = ds.syncOncallUser(currUser, provUser)
 
 				uid := participantUniqueId(provPart)
 				currPart, exists := participantIdMap[uid]
@@ -352,27 +352,31 @@ func (ds *oncallDataSyncer) syncScheduleParticipant(
 	return partId
 }
 
-func (ds *oncallDataSyncer) syncOncallUser(ctx context.Context, user *ent.User) (uuid.UUID, error) {
-	dbUser, emailErr := ds.users.GetByEmail(ctx, user.Email)
-	if emailErr == nil {
-		return dbUser.ID, nil
+func (ds *oncallDataSyncer) syncOncallUser(curr *ent.User, prov *ent.User) uuid.UUID {
+	var mut *ent.UserMutation
+	// TODO: check if we should sync
+
+	var userId uuid.UUID
+	needsUpdate := true
+	if curr == nil {
+		userId = uuid.New()
+		mut = ds.db.User.Create().SetID(userId).Mutation()
+		// TODO: add to lookup struct so we don't create twice?
+	} else {
+		userId = curr.ID
+		mut = ds.db.User.UpdateOneID(userId).Mutation()
+
+		// needsUpdate = curr.ID != userId && curr.Name != prov.Name
+		needsUpdate = false
 	}
-	if !ent.IsNotFound(emailErr) {
-		return uuid.Nil, fmt.Errorf("get user by email: %w", emailErr)
-	}
-	// TODO: check if we should create
-	if false {
-		return uuid.Nil, fmt.Errorf("no user found, not creating")
+	mut.SetName(prov.Name)
+	mut.SetEmail(prov.Email)
+
+	if needsUpdate {
+		ds.mutations = append(ds.mutations, mut)
 	}
 
-	userId := uuid.New()
-	createUser := ds.db.User.Create().
-		SetID(userId).
-		SetName(user.Name).
-		SetEmail(user.Email)
-	ds.mutations = append(ds.mutations, createUser.Mutation())
-
-	return userId, nil
+	return userId
 }
 
 func (ds *oncallDataSyncer) syncAllOncallShifts(ctx context.Context) error {
@@ -461,7 +465,7 @@ func (ds *oncallDataSyncer) buildRosterShiftsSyncMutations(ctx context.Context, 
 		shift.RosterID = roster.ID
 
 		userEmail := shift.Edges.User.Email
-		usr, usrErr := ds.users.GetByEmail(ctx, userEmail)
+		usr, usrErr := getUserByEmail(ctx, ds.db, userEmail)
 		if usrErr != nil {
 			log.Error().Err(usrErr).Str("email", userEmail).Msg("failed to get user")
 			continue

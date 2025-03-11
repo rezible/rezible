@@ -31,6 +31,6 @@ func NewClaudeAiModelProvider(cfg Config) (*ModelProvider, error) {
 	return &ModelProvider{model: m}, nil
 }
 
-func (p *ModelProvider) GetModel() rez.AiModel {
+func (p *ModelProvider) Model() rez.AiModel {
 	return p.model
 }

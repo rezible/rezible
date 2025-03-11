@@ -31,12 +31,7 @@ type AuthService struct {
 	sessionSecret []byte
 }
 
-func NewAuthService(ctx context.Context, users rez.UserService, pl rez.ProviderLoader, sessionSecretKey string) (*AuthService, error) {
-	sessProv, sessErr := pl.LoadAuthSessionProvider(ctx)
-	if sessErr != nil {
-		return nil, sessErr
-	}
-
+func NewAuthService(ctx context.Context, users rez.UserService, sessProv rez.AuthSessionProvider, sessionSecretKey string) (*AuthService, error) {
 	return &AuthService{
 		users:         users,
 		sessProvider:  sessProv,

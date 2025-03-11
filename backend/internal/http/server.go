@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-chi/chi/v5/middleware"
-	oapi "github.com/rezible/rezible/openapi"
 	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
+	oapi "github.com/rezible/rezible/openapi"
 )
 
 type Server struct {
@@ -23,8 +24,8 @@ func mount(r chi.Router, prefix string, h http.Handler) {
 	r.Mount(prefix, http.StripPrefix(prefix, h))
 }
 
-func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdapter oapi.Adapter) (*Server, error) {
-	s := Server{}
+func NewServer(addr string, auth rez.AuthService, oapiAdapter oapi.Adapter, webhookHandler http.Handler) (*Server, error) {
+	var s Server
 
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
@@ -43,9 +44,7 @@ func NewServer(addr string, pl rez.ProviderLoader, auth rez.AuthService, apiAdap
 		middleware.Logger,
 		makeAuthMiddleware(auth, false, []string{"/openapi.json"}),
 	)
-	apiHandler := apiMiddleware.Handler(apiAdapter)
-
-	webhookHandler := makeWebhookHandler(pl.HandleWebhookRequest)
+	apiHandler := apiMiddleware.Handler(oapiAdapter)
 
 	/* /api/ - API Routing Group */
 	apiGroup := router.Group(func(r chi.Router) {
@@ -100,11 +99,11 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func makeWebhookHandler(providerHandler http.HandlerFunc) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		providerHandler.ServeHTTP(w, r)
-	})
-}
+//func makeWebhookHandler(providerHandler http.HandlerFunc) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		providerHandler.ServeHTTP(w, r)
+//	})
+//}
 
 func makeAuthMiddleware(s rez.AuthService, redirect bool, skipPaths []string) func(http.Handler) http.Handler {
 	authMw := s.MakeRequireAuthMiddleware(redirect)
