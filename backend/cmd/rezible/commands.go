@@ -58,7 +58,7 @@ func migrateCmd(ctx context.Context, opts *Options) error {
 func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: use cli flags
-		args := &jobs.SyncProviderData{
+		args := jobs.SyncProviderData{
 			Hard:             true,
 			Users:            true,
 			Teams:            true,
@@ -69,10 +69,8 @@ func syncCmd(ctx context.Context, opts *Options) error {
 		}
 
 		dbc := db.Client()
-
-		pl := providers.NewProviderLoader(dbc.ProviderConfig)
-
-		return providers.SyncData(ctx, args, dbc, pl)
+		syncer := providers.NewDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
+		return syncer.SyncData(ctx, args)
 	})
 }
 

@@ -29,18 +29,10 @@ func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.JobsServic
 		users: users,
 	}
 
+	//	provider.SetOnIncidentUpdatedCallback(svc.onProviderIncidentUpdated)
+
 	return svc, nil
 }
-
-//func (s *IncidentService) LoadDataProvider(ctx context.Context) error {
-//	provider, providerErr := s.loader.LoadIncidentDataProvider(ctx)
-//	if providerErr != nil {
-//		return fmt.Errorf("failed to load incident data provider: %w", providerErr)
-//	}
-//	s.provider = provider
-//	provider.SetOnIncidentUpdatedCallback(s.onProviderIncidentUpdated)
-//	return nil
-//}
 
 func (s *IncidentService) onProviderIncidentUpdated(providerId string, updatedAt time.Time) {
 	//ctx := context.Background()

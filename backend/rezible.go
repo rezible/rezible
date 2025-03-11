@@ -75,7 +75,9 @@ type (
 
 type (
 	JobsService interface {
-		RegisterWorkers(OncallService, DebriefService) error
+		//RegisterWorker(jobs.Worker) error
+		RegisterPeriodicJob(*jobs.PeriodicJob)
+		// RegisterWorkers(OncallService, DebriefService) error
 
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
@@ -264,13 +266,13 @@ type (
 
 type (
 	DebriefService interface {
-		SendUserDebriefRequests(ctx context.Context, incidentId uuid.UUID) error
+		HandleSendRequestsJob(context.Context, jobs.SendIncidentDebriefRequests) error
+		HandleGenerateResponseJob(context.Context, jobs.GenerateIncidentDebriefResponse) error
 
 		CreateDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
 		GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error)
 		GetUserDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
 		AddUserDebriefMessage(ctx context.Context, debriefID uuid.UUID, text string) (*ent.IncidentDebriefMessage, error)
-		GenerateResponse(ctx context.Context, debriefId uuid.UUID) error
 		StartDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
 		CompleteDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
 	}
@@ -351,7 +353,8 @@ type (
 	}
 
 	OncallService interface {
-		ScanForShiftsNeedingHandover(context.Context) error
+		HandleScanForShiftsNeedingHandoverJob(context.Context, jobs.ScanOncallHandovers) error
+		HandleEnsureShiftHandoverJob(context.Context, jobs.EnsureShiftHandover) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
@@ -371,7 +374,6 @@ type (
 
 		GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error)
 		GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error)
-		EnsureShiftHandover(ctx context.Context, shiftId uuid.UUID) error
 		SendShiftHandover(ctx context.Context, id uuid.UUID, contents []OncallShiftHandoverSection) (*ent.OncallUserShiftHandover, error)
 	}
 )

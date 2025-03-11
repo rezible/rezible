@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -46,19 +47,34 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService,
 
 	s.setChatCreateAnnotationFunc()
 
+	if jobsErr := s.registerBackgroundJobs(); jobsErr != nil {
+		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
+	}
+
 	go s.registerHandoverSchema()
 
 	return s, nil
 }
 
-//func (s *OncallService) LoadDataProvider(ctx context.Context) error {
-//	provider, providerErr := s.loader.LoadOncallDataProvider(ctx)
-//	if providerErr != nil {
-//		return fmt.Errorf("failed to load data provider: %w", providerErr)
-//	}
-//	s.provider = provider
-//	return nil
-//}
+func (s *OncallService) registerBackgroundJobs() error {
+	interval := time.Hour
+
+	job := jobs.NewPeriodicJob(
+		jobs.PeriodicInterval(interval),
+		func() (jobs.JobArgs, *jobs.InsertOpts) {
+			return &jobs.ScanOncallHandovers{}, nil
+		},
+		&jobs.PeriodicJobOpts{
+			RunOnStart: true,
+		},
+	)
+	s.jobs.RegisterPeriodicJob(job)
+
+	return errors.Join(
+		jobs.RegisterWorkerFunc(s.HandleScanForShiftsNeedingHandoverJob),
+		jobs.RegisterWorkerFunc(s.HandleEnsureShiftHandoverJob),
+	)
+}
 
 func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
 	anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
@@ -224,7 +240,7 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 	return query.All(params.GetQueryContext(ctx))
 }
 
-func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) error {
+func (s *OncallService) HandleScanForShiftsNeedingHandoverJob(ctx context.Context, args jobs.ScanOncallHandovers) error {
 	// check for shifts ending within window, that don't have reminder sent
 	window := time.Hour
 	shiftEndingWithinWindow := oncallusershift.And(
@@ -285,7 +301,9 @@ func (s *OncallService) ScanForShiftsNeedingHandover(ctx context.Context) error 
 	return nil
 }
 
-func (s *OncallService) EnsureShiftHandover(ctx context.Context, shiftId uuid.UUID) error {
+func (s *OncallService) HandleEnsureShiftHandoverJob(ctx context.Context, args jobs.EnsureShiftHandover) error {
+	shiftId := args.ShiftId
+
 	shift, shiftErr := s.GetShiftByID(ctx, shiftId)
 	if shiftErr != nil {
 		return fmt.Errorf("failed to get shift: %w", shiftErr)

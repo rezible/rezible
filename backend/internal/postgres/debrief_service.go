@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -30,7 +31,18 @@ func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiService, c
 		chat: chat,
 	}
 
+	if jobsErr := svc.registerBackgroundJobs(); jobsErr != nil {
+		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
+	}
+
 	return svc, nil
+}
+
+func (s *DebriefService) registerBackgroundJobs() error {
+	return errors.Join(
+		jobs.RegisterWorkerFunc(s.HandleSendRequestsJob),
+		jobs.RegisterWorkerFunc(s.HandleGenerateResponseJob),
+	)
 }
 
 func (s *DebriefService) CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {
@@ -142,7 +154,8 @@ func (s *DebriefService) GetUserDebrief(ctx context.Context, incidentId uuid.UUI
 		Only(ctx)
 }
 
-func (s *DebriefService) SendUserDebriefRequests(ctx context.Context, incidentId uuid.UUID) error {
+func (s *DebriefService) HandleSendRequestsJob(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
+	incidentId := args.IncidentId
 	inc, incErr := s.db.Incident.Get(ctx, incidentId)
 	if incErr != nil {
 		return fmt.Errorf("get incident %s failed: %w", incidentId.String(), incErr)
@@ -234,7 +247,8 @@ func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uu
 	return msg, nil
 }
 
-func (s *DebriefService) GenerateResponse(ctx context.Context, debriefId uuid.UUID) error {
+func (s *DebriefService) HandleGenerateResponseJob(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
+	debriefId := args.DebriefId
 	debrief, debriefErr := s.db.IncidentDebrief.Query().
 		Where(incidentdebrief.ID(debriefId)).
 		WithMessages().

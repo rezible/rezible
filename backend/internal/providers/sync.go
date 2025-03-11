@@ -3,78 +3,114 @@ package providers
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/jobs"
 	"time"
 
 	"github.com/gosimple/slug"
 
 	"entgo.io/ent/dialect/sql"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/jobs"
 )
 
-type DataSyncer interface {
-	GetSyncMutations(ctx context.Context) error
+func NewDataSyncer(db *ent.Client, loader *Loader) *DataSyncer {
+	return &DataSyncer{db: db, l: loader}
 }
 
-func SyncData(ctx context.Context, args *jobs.SyncProviderData, dbc *ent.Client, l *Loader) error {
+type DataSyncer struct {
+	db *ent.Client
+	l  *Loader
+}
+
+func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Duration) error {
+	args := &jobs.SyncProviderData{
+		Users:            true,
+		Teams:            true,
+		Incidents:        true,
+		Oncall:           true,
+		Alerts:           true,
+		SystemComponents: true,
+	}
+
+	opts := &jobs.InsertOpts{
+		Uniqueness: &jobs.UniquenessOpts{
+			ByState: jobs.NonCompletedJobStates,
+		},
+	}
+
+	job := jobs.NewPeriodicJob(
+		jobs.PeriodicInterval(interval),
+		func() (jobs.JobArgs, *jobs.InsertOpts) {
+			return args, opts
+		},
+		&jobs.PeriodicJobOpts{
+			RunOnStart: true,
+		},
+	)
+
+	j.RegisterPeriodicJob(job)
+	return jobs.RegisterWorkerFunc(s.SyncData)
+}
+
+func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) error {
 	if args.Hard {
 		// TODO: maybe just pass a flag?
-		dbc.ProviderSyncHistory.Delete().ExecX(ctx)
+		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}
 
 	if args.Teams {
-		teamsProv, provErr := l.LoadTeamDataProvider(ctx)
+		teamsProv, provErr := s.l.LoadTeamDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load teams data provider: %w", provErr)
 		}
-		syncer := newTeamDataSyncer(dbc, teamsProv)
+		syncer := newTeamDataSyncer(s.db, teamsProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("teams sync failed: %w", syncErr)
 		}
 	}
 
 	if args.Users {
-		usersProv, provErr := l.LoadUserDataProvider(ctx)
+		usersProv, provErr := s.l.LoadUserDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load users data provider: %w", provErr)
 		}
-		syncer := newUserDataSyncer(dbc, usersProv)
+		syncer := newUserDataSyncer(s.db, usersProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("users sync failed: %w", syncErr)
 		}
 	}
 
 	if args.Oncall {
-		oncallProv, provErr := l.LoadOncallDataProvider(ctx)
+		oncallProv, provErr := s.l.LoadOncallDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}
-		syncer := newOncallDataSyncer(dbc, oncallProv)
+		syncer := newOncallDataSyncer(s.db, oncallProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("oncall sync failed: %w", syncErr)
 		}
 	}
 
 	if args.Incidents {
-		incProv, provErr := l.LoadIncidentDataProvider(ctx)
+		incProv, provErr := s.l.LoadIncidentDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}
-		syncer := newIncidentDataSyncer(dbc, incProv)
+		syncer := newIncidentDataSyncer(s.db, incProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("incidents sync failed: %w", syncErr)
 		}
 	}
 
 	if args.SystemComponents {
-		cmpProv, provErr := l.LoadSystemComponentsDataProvider(ctx)
+		cmpProv, provErr := s.l.LoadSystemComponentsDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}
-		syncer := newSystemComponentsDataSyncer(dbc, cmpProv)
+		syncer := newSystemComponentsDataSyncer(s.db, cmpProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("system components sync failed: %w", syncErr)
 		}

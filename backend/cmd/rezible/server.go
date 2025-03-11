@@ -5,7 +5,6 @@ import (
 	"fmt"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog"
 	"net"
 	"os"
@@ -54,6 +53,7 @@ func (s *rezServer) Start() {
 	ctx := context.Background()
 
 	if setupErr := s.setup(ctx); setupErr != nil {
+		s.Stop()
 		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
 	}
 
@@ -71,18 +71,18 @@ func (s *rezServer) setup(ctx context.Context) error {
 	if poolErr != nil {
 		return fmt.Errorf("failed to open db: %w", poolErr)
 	}
-
 	s.db = db
-	s.jobs = river.NewJobService(db.Pool)
 
-	srv, srvErr := s.setupServices(ctx, db.Client(), s.jobs)
+	jobSvc, jobsErr := river.NewJobService(db.Pool)
+	if jobsErr != nil {
+		return fmt.Errorf("failed to create job service: %w", jobsErr)
+	}
+	s.jobs = jobSvc
+
+	srv, srvErr := s.setupServices(ctx, db.Client(), jobSvc)
 	if srvErr != nil {
-		if dbErr := db.Close(); dbErr != nil {
-			log.Error().Err(dbErr).Msg("failed to close database connection")
-		}
 		return fmt.Errorf("failed to setup http server: %w", srvErr)
 	}
-
 	s.httpServer = srv
 
 	return nil
@@ -100,10 +100,10 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
-	//teams, teamsErr := postgres.NewTeamService(dbc)
-	//if teamsErr != nil {
-	//	return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
-	//}
+	_, teamsErr := postgres.NewTeamService(dbc)
+	if teamsErr != nil {
+		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
+	}
 
 	chat, chatErr := documents.NewChatService(ctx, provs.Chat, users)
 	if chatErr != nil {
@@ -163,15 +163,9 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("http.NewServer: %w", httpErr)
 	}
 
-	// TODO: register jobs as needed
-	if jobsErr := j.RegisterWorkers(oncall, debriefs); jobsErr != nil {
-		return nil, fmt.Errorf("jobs.RegisterWorkers: %w", jobsErr)
-	}
-	provSyncFn := func(ctx context.Context, a jobs.SyncProviderData) error {
-		return providers.SyncData(ctx, &a, dbc, pl)
-	}
-	if syncErr := j.(*river.JobService).RegisterProviderDataSyncPeriodicJob(time.Hour, provSyncFn); syncErr != nil {
-		return nil, fmt.Errorf("ProviderDataSyncPeriodicJob: %w", syncErr)
+	syncer := providers.NewDataSyncer(dbc, pl)
+	if syncErr := syncer.RegisterPeriodicSyncJob(j, time.Hour); syncErr != nil {
+		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
 	}
 
 	return httpServer, nil

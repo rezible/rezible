@@ -23,16 +23,22 @@ import (
 )
 
 var (
-	NonCompletedJobStates = []rivertype.JobState{rivertype.JobStateAvailable, rivertype.JobStatePending, rivertype.JobStateRunning, rivertype.JobStateRetryable, rivertype.JobStateScheduled}
+	workers *river.Workers
 )
 
-type JobService struct {
-	driver    riverdriver.Driver[pgx.Tx]
-	clientCfg *river.Config
-	client    *river.Client[pgx.Tx]
-}
+type (
+	pgxClient  = river.Client[pgx.Tx]
+	JobService struct {
+		driver    riverdriver.Driver[pgx.Tx]
+		clientCfg *river.Config
+		client    *pgxClient
+	}
 
-func NewJobService(pool *pgxpool.Pool) *JobService {
+	// Job[T jobs.JobArgs]    = river.Job[T]
+	// Worker[T jobs.JobArgs] = river.Worker[T]
+)
+
+func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
@@ -42,17 +48,25 @@ func NewJobService(pool *pgxpool.Pool) *JobService {
 		Logger: zerolog.DefaultContextLogger,
 	}
 
+	workers = river.NewWorkers()
+
+	if regErr := jobs.SetWorkerRegistry(workers); regErr != nil {
+		return nil, fmt.Errorf("failed to set river.Worker registry: %w", regErr)
+	}
+
 	cfg := &river.Config{
-		Workers:      river.NewWorkers(),
+		Workers:      workers,
 		Queues:       queues,
 		Logger:       slog.New(slogOpts.NewZerologHandler()),
 		PeriodicJobs: []*river.PeriodicJob{},
 	}
 
-	return &JobService{
+	svc := &JobService{
 		driver:    riverpgxv5.New(pool),
 		clientCfg: cfg,
 	}
+
+	return svc, nil
 }
 
 func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
@@ -75,10 +89,6 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool) error {
 	return nil
 }
 
-func (s *JobService) addPeriodicJob(j *river.PeriodicJob) {
-	s.clientCfg.PeriodicJobs = append(s.clientCfg.PeriodicJobs, j)
-}
-
 func (s *JobService) Start(ctx context.Context) error {
 	client, clientErr := river.NewClient(s.driver, s.clientCfg)
 	if clientErr != nil {
@@ -96,25 +106,42 @@ func (s *JobService) Stop(ctx context.Context) error {
 	return s.client.Stop(ctx)
 }
 
-func convertOpts(opts *jobs.InsertOpts) *river.InsertOpts {
+func convertPeriodicOpts(o *jobs.PeriodicJobOpts) *river.PeriodicJobOpts {
+	if o == nil {
+		return nil
+	}
+	return &river.PeriodicJobOpts{
+		RunOnStart: o.RunOnStart,
+	}
+}
+
+func convertInsertOpts(opts *jobs.InsertOpts) *river.InsertOpts {
 	if opts == nil {
 		return nil
 	}
 	riverOpts := &river.InsertOpts{}
 	if opts.Uniqueness != nil {
-		riverOpts.UniqueOpts = river.UniqueOpts{
-			ByArgs: opts.Uniqueness.Args,
-			//ByPeriod:    0,
-			//ByQueue:     false,
-			//ByState:     nil,
-			//ExcludeKind: false,
+		uOpts := river.UniqueOpts{
+			ByArgs:      opts.Uniqueness.Args,
+			ByPeriod:    opts.Uniqueness.ByPeriod,
+			ByQueue:     opts.Uniqueness.ByQueue,
+			ExcludeKind: opts.Uniqueness.ExcludeKind,
 		}
+
+		if opts.Uniqueness.ByState != nil {
+			uOpts.ByState = make([]rivertype.JobState, len(opts.Uniqueness.ByState))
+			for i, s := range opts.Uniqueness.ByState {
+				uOpts.ByState[i] = rivertype.JobState(s)
+			}
+		}
+
+		riverOpts.UniqueOpts = uOpts
 	}
 	return riverOpts
 }
 
 func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error {
-	_, insertErr := s.client.Insert(ctx, args, convertOpts(opts))
+	_, insertErr := s.client.Insert(ctx, args, convertInsertOpts(opts))
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job: %w", insertErr)
 	}
@@ -126,7 +153,7 @@ func (s *JobService) InsertMany(ctx context.Context, params []jobs.InsertManyPar
 	for i, p := range params {
 		insertParams[i] = river.InsertManyParams{
 			Args:       p.Args,
-			InsertOpts: convertOpts(p.Opts),
+			InsertOpts: convertInsertOpts(p.Opts),
 		}
 	}
 	_, insertErr := s.client.InsertMany(ctx, insertParams)
@@ -141,9 +168,18 @@ func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs
 	if pgErr != nil {
 		return fmt.Errorf("not using pgx driver: %w", pgErr)
 	}
-	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, convertOpts(opts))
+	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, convertInsertOpts(opts))
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job in tx: %w", insertErr)
 	}
 	return nil
+}
+
+func (s *JobService) RegisterPeriodicJob(j *jobs.PeriodicJob) {
+	constructor := func() (river.JobArgs, *river.InsertOpts) {
+		args, opts := j.ConstructorFunc()
+		return args, convertInsertOpts(opts)
+	}
+	riverJob := river.NewPeriodicJob(j.Schedule, constructor, convertPeriodicOpts(j.Opts))
+	s.clientCfg.PeriodicJobs = append(s.clientCfg.PeriodicJobs, riverJob)
 }
