@@ -55,9 +55,7 @@
 	</svelte:fragment>
 
 	<div slot="actions" class="flex gap-2 px-2 py-0 justify-end">
-		<Button href="/oncall/shifts/{shift.id}" variant="fill-light" color="secondary">View Handover</Button>
-
-		<Button href="/oncall/shifts/{shift.id}" variant="fill" color="primary">
+		<Button href="/oncall/shifts/{shift.id}" variant="fill" color="success">
 			View Shift
 			<Icon data={mdiArrowRight} />
 		</Button>

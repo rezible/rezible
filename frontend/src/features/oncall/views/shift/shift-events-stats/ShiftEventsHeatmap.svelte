@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { OncallShift } from "$lib/api";
 	import { DayHours } from "$lib/utils.svelte";
 	
 	import { init, use } from "echarts/core";
@@ -12,10 +11,9 @@
 	use([HeatmapChart, GridComponent, CanvasRenderer, TitleComponent, VisualMapComponent, TooltipComponent]);
 
 	type Props = {
-		shift: OncallShift;
 		data: number[][]; // [day, hour, event]
 	};
-	const { shift, data }: Props = $props();
+	const { data }: Props = $props();
 
 	const numDays = $derived(data.length / 24);
 	const WeekDays = [
