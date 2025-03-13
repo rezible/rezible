@@ -1,12 +1,16 @@
 <script lang="ts">
 	import { mdiPlus, mdiPhoneAlert, mdiFire } from "@mdi/js";
 	import { Icon, Button, Header } from "svelte-ux";
+	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
+	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {
 		shiftEvents: ShiftEvent[];
 	};
 	const { shiftEvents }: Props = $props();
+
+	const format = $derived(settings.format);
 
 	const eventKindIcons: Record<ShiftEvent["eventType"], string> = {
 		["incident"]: mdiFire,
@@ -39,7 +43,7 @@
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
-				{occurredAt.toLocaleString()}
+				{format(occurredAt, PeriodType.Day)}
 			</span>
 		</div>
 

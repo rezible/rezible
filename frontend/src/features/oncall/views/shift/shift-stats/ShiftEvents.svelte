@@ -7,6 +7,7 @@
 	import { formatShiftEventCountForHeatmap, shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { getDay } from "date-fns";
 	import { settings } from "$src/lib/settings.svelte";
+	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {
 		shiftEvents: ShiftEvent[];
@@ -43,7 +44,6 @@
 	const incidentsRating = $derived(getEventsRating(incidents.length));
 
 	const hourlyEventCount = $derived(formatShiftEventCountForHeatmap(shiftStart, shiftEnd, shiftEvents, filterKind));
-
 	const numDays = $derived(Math.floor(hourlyEventCount.length / 24));
 	const heatmapDayLabels = $derived.by(() => {
 		const fmt = settings.format;
@@ -51,7 +51,7 @@
 			const date = shiftStart.add({days: day});
 			const dayOfWeek = getDay(date.toAbsoluteString());
 			const dayName = fmt.getDayOfWeekName(dayOfWeek);
-			return `${dayName} ${date.day}`;
+			return `${dayName} ${String(date.day).padStart(2, "0")}`;
 		});
 	});
 

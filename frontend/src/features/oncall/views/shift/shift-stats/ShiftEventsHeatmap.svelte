@@ -43,6 +43,7 @@
 				fontSize: 16,
 			},
 			type: "category",
+			inverse: true,
 			data: dayLabels,
 			splitArea: {show: true},
 		},
