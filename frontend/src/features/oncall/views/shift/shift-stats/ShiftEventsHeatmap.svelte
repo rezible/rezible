@@ -11,16 +11,11 @@
 	use([HeatmapChart, GridComponent, CanvasRenderer, TitleComponent, VisualMapComponent, TooltipComponent]);
 
 	type Props = {
+		dayLabels: string[];
 		data: number[][]; // [day, hour, event]
+		onDataClicked: (idx: number) => void;
 	};
-	const { data }: Props = $props();
-
-	const numDays = $derived(data.length / 24);
-	const WeekDays = [
-		'Saturday', 'Friday', 'Thursday',
-		'Wednesday', 'Tuesday', 'Monday', 'Sunday',
-	] as const;
-	const dayLabels = $derived(Array.from({length: numDays}, (_, i) => WeekDays[i % 7]));
+	const { data, dayLabels, onDataClicked }: Props = $props();
 
 	const nonZeroData = $derived(data.map(d => ([d[1], d[0], d[2] || "-"])));
 
@@ -79,9 +74,7 @@
 		],
 	});
 
-	const onClicked = (e: ECMouseEvent) => {
-		console.log(e);
-	}
+	const onClicked = (e: ECMouseEvent) => (onDataClicked(e.dataIndex));
 </script>
 
 <div class="w-full h-96 p-3 pl-10 bg-surface-100 rounded-lg block overflow-hidden">

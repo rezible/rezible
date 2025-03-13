@@ -30,29 +30,9 @@ export const formatShiftDates = (shift: OncallShift) => {
 };
 
 export type ShiftEvent = {
+	id: string;
 	timestamp: ZonedDateTime;
 	eventType: "alert" | "incident";
-};
-const fakeEvent = (day: ZonedDateTime): ShiftEvent => {
-	const isAlert = Math.random() > 0.25;
-	const timestamp = day
-		.copy()
-		.set({ hour: Math.floor(Math.random() * 24), minute: Math.floor(Math.random() * 60) });
-	return { timestamp, eventType: isAlert ? "alert" : "incident" };
-};
-const dayEvents = (start: ZonedDateTime, day: number): ShiftEvent[] => {
-	const date = start.add({ days: day });
-	const numEvents = Math.floor(Math.random() * 20);
-	return Array.from({ length: numEvents }, (_, i) => fakeEvent(date));
-};
-
-export const makeFakeShiftEvents = (start: ZonedDateTime, end: ZonedDateTime) => {
-	const shiftDays = differenceInCalendarDays(end.toDate(), start.toDate());
-	let events: ShiftEvent[] = [];
-	for (let day = 0; day < shiftDays; day++) {
-		events = events.concat(dayEvents(start, day));
-	}
-	return events;
 };
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
@@ -65,13 +45,14 @@ export const shiftEventMatchesFilter = (event: ShiftEvent, kind: ShiftEventFilte
 }
 
 const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
-export const flatShiftEvents = (start: ZonedDateTime, end: ZonedDateTime, events: ShiftEvent[], kind?: ShiftEventFilterKind) => {
-	const day1 = start.toDate();
+export const formatShiftEventCountForHeatmap = (start: ZonedDateTime, end: ZonedDateTime, events: ShiftEvent[], kind?: ShiftEventFilterKind) => {
+	const startDate = start.toDate();
 
 	const numEvents = new Map<string, number>();
 	events.forEach((event) => {
 		if (!!kind && !shiftEventMatchesFilter(event, kind)) return;
-		const day = differenceInCalendarDays(event.timestamp.toDate(), day1);
+		const eventDate = event.timestamp.toDate();
+		const day = differenceInCalendarDays(eventDate, startDate);
 		const key = eventDayKey(day, event.timestamp.hour);
 		numEvents.set(key, (numEvents.get(key) || 0) + 1);
 	});

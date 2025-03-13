@@ -2,9 +2,9 @@
 	import { Button, Icon } from "svelte-ux";
 	import { mdiArrowRight } from "@mdi/js";
 	import { session } from "$lib/auth.svelte";
-	import { buildShiftTimeDetails } from "$features/oncall/lib/shift";
+	import { buildShiftTimeDetails } from "$features/oncall/lib/utils";
 	import { page } from "$app/state";
-	import { getOncallShiftOptions, type OncallShift } from "$lib/api";
+	import { getOncallShiftOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 
 	const shiftId = $derived(page.params.id);
