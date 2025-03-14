@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OncallRoster } from "$src/lib/api";
-	import { Header } from "svelte-ux";
+	import { Header, Select } from "svelte-ux";
 	import * as echarts from 'echarts/core';
 	import { BarChart, LineChart, PieChart } from 'echarts/charts';
 	import {
@@ -13,7 +13,8 @@
 	} from 'echarts/components';
 	import { LabelLayout, UniversalTransition } from 'echarts/features';
 	import { CanvasRenderer } from 'echarts/renderers';
-	import { onMount } from 'svelte';
+	import EChart from "$src/components/echart/EChart.svelte";
+	import { init } from "echarts/core";
 
 	// Register ECharts components
 	echarts.use([
@@ -50,14 +51,6 @@
 		handoversCompleted: 12,
 		outOfHoursAlerts: 8
 	});
-
-	// Chart references
-	let alertsChartEl: HTMLElement;
-	let incidentTypesChartEl: HTMLElement;
-	let responseTimeChartEl: HTMLElement;
-	let alertsChart: echarts.ECharts;
-	let incidentTypesChart: echarts.ECharts;
-	let responseTimeChart: echarts.ECharts;
 
 	// Mock data for charts
 	const generateAlertsData = (period: string) => {
@@ -124,36 +117,20 @@
 		};
 	};
 
-	// Initialize and update charts
-	const initCharts = () => {
-		// Initialize charts
-		alertsChart = echarts.init(alertsChartEl);
-		incidentTypesChart = echarts.init(incidentTypesChartEl);
-		responseTimeChart = echarts.init(responseTimeChartEl);
-		
-		updateCharts(selectedTimePeriod);
-		
-		// Handle window resize
-		const resizeHandler = () => {
-			alertsChart.resize();
-			incidentTypesChart.resize();
-			responseTimeChart.resize();
-		};
-		
-		window.addEventListener('resize', resizeHandler);
-		
-		return () => {
-			window.removeEventListener('resize', resizeHandler);
-			alertsChart.dispose();
-			incidentTypesChart.dispose();
-			responseTimeChart.dispose();
-		};
-	};
+	// Chart options
+	$effect(() => {
+		alertsChartOptions = getAlertsChartOptions(selectedTimePeriod);
+		incidentTypesChartOptions = getIncidentTypesChartOptions(selectedTimePeriod);
+		responseTimeChartOptions = getResponseTimeChartOptions(selectedTimePeriod);
+	});
 
-	const updateCharts = (period: string) => {
-		// Update alerts chart
+	let alertsChartOptions = $state({});
+	let incidentTypesChartOptions = $state({});
+	let responseTimeChartOptions = $state({});
+
+	const getAlertsChartOptions = (period: string) => {
 		const alertsData = generateAlertsData(period);
-		alertsChart.setOption({
+		return {
 			title: {
 				text: 'Alerts Over Time',
 				left: 'center'
@@ -192,11 +169,12 @@
 					color: '#f87171'
 				}
 			]
-		});
+		};
+	};
 
-		// Update incident types chart
+	const getIncidentTypesChartOptions = (period: string) => {
 		const incidentTypeData = generateIncidentTypeData(period);
-		incidentTypesChart.setOption({
+		return {
 			title: {
 				text: 'Incidents by Type',
 				left: 'center'
@@ -237,11 +215,12 @@
 					data: incidentTypeData
 				}
 			]
-		});
+		};
+	};
 
-		// Update response time chart
+	const getResponseTimeChartOptions = (period: string) => {
 		const responseTimeData = generateResponseTimeData(period);
-		responseTimeChart.setOption({
+		return {
 			title: {
 				text: 'Average Response Time',
 				left: 'center'
@@ -287,20 +266,8 @@
 					}
 				}
 			]
-		});
+		};
 	};
-
-	// Handle time period change
-	$effect(() => {
-		if (alertsChart && incidentTypesChart && responseTimeChart) {
-			updateCharts(selectedTimePeriod);
-		}
-	});
-
-	onMount(() => {
-		const cleanup = initCharts();
-		return cleanup;
-	});
 </script>
 
 <Header title="Roster Stats" />
@@ -338,13 +305,19 @@
 
 <div class="grid grid-cols-2 gap-6 mb-6">
 	<div class="bg-surface-100 p-4 rounded-lg">
-		<div bind:this={alertsChartEl} style="height: 300px;"></div>
+		<div style="height: 300px;">
+			<EChart init={init} options={alertsChartOptions} />
+		</div>
 	</div>
 	<div class="bg-surface-100 p-4 rounded-lg">
-		<div bind:this={incidentTypesChartEl} style="height: 300px;"></div>
+		<div style="height: 300px;">
+			<EChart init={init} options={incidentTypesChartOptions} />
+		</div>
 	</div>
 </div>
 
 <div class="bg-surface-100 p-4 rounded-lg mb-6">
-	<div bind:this={responseTimeChartEl} style="height: 300px;"></div>
+	<div style="height: 300px;">
+		<EChart init={init} options={responseTimeChartOptions} />
+	</div>
 </div>
