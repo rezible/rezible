@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OncallRoster } from "$src/lib/api";
-	import { Header, Select } from "svelte-ux";
+	import { Header } from "svelte-ux";
 	import * as echarts from 'echarts/core';
 	import { BarChart, LineChart, PieChart } from 'echarts/charts';
 	import {
