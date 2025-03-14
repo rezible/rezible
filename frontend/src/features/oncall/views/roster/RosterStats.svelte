@@ -1,37 +1,11 @@
 <script lang="ts">
 	import type { OncallRoster } from "$src/lib/api";
-	import { Button, Header, Icon, Menu, MenuItem, SelectField, Toggle } from "svelte-ux";
-	import * as echarts from "echarts/core";
-	import { BarChart, LineChart, PieChart } from "echarts/charts";
-	import {
-		TitleComponent,
-		TooltipComponent,
-		GridComponent,
-		DatasetComponent,
-		TransformComponent,
-		LegendComponent,
-	} from "echarts/components";
-	import { LabelLayout, UniversalTransition } from "echarts/features";
-	import { CanvasRenderer } from "echarts/renderers";
-	import EChart from "$src/components/echart/EChart.svelte";
-	import { init } from "echarts/core";
-	import { mdiCalendar, mdiChartBar, mdiGraph, mdiSortCalendarDescending } from "@mdi/js";
-
-	// Register ECharts components
-	echarts.use([
-		TitleComponent,
-		TooltipComponent,
-		GridComponent,
-		DatasetComponent,
-		TransformComponent,
-		LegendComponent,
-		BarChart,
-		LineChart,
-		PieChart,
-		LabelLayout,
-		UniversalTransition,
-		CanvasRenderer,
-	]);
+	import { Button, Header, Icon, LayerCake, Menu, MenuItem, Toggle } from "svelte-ux";
+	import { mdiCalendar, mdiChartBar } from "@mdi/js";
+	import { scaleLinear, scaleTime, scaleOrdinal } from "d3-scale";
+	import { extent, max } from "d3-array";
+	import { format } from "date-fns";
+	import { AxisX, AxisY, StackedBar, Legend, Line, Area, Pie } from "svelte-ux/components/charts";
 
 	type Props = { roster: OncallRoster };
 	const { roster }: Props = $props();
@@ -54,221 +28,81 @@
 	});
 
 	// Mock data for charts
+	$effect(() => {
+		alertsData = generateAlertsData(selectedTimePeriod);
+		incidentTypesData = generateIncidentTypeData(selectedTimePeriod);
+		responseTimeData = generateResponseTimeData(selectedTimePeriod);
+	});
+
+	let alertsData = $state([]);
+	let incidentTypesData = $state([]);
+	let responseTimeData = $state([]);
+
 	const generateAlertsData = (period: string) => {
 		const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
 		const data = [];
-		const businessHoursData = [];
-		const outOfHoursData = [];
-
+		
 		const now = new Date();
 		for (let i = days - 1; i >= 0; i--) {
 			const date = new Date();
 			date.setDate(now.getDate() - i);
-			const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
+			
 			// Generate random data with some pattern
 			const business = Math.floor(Math.random() * 5);
 			const outOfHours = Math.floor(Math.random() * 3);
-
-			data.push(dateStr);
-			businessHoursData.push(business);
-			outOfHoursData.push(outOfHours);
+			
+			data.push({
+				date,
+				business,
+				outOfHours
+			});
 		}
-
-		return {
-			dates: data,
-			business: businessHoursData,
-			outOfHours: outOfHoursData,
-		};
+		
+		return data;
 	};
 
 	const generateIncidentTypeData = (period: string) => {
 		// Adjust values based on selected period
 		const multiplier = period === "7d" ? 1 : period === "30d" ? 4 : 12;
 		return [
-			{ value: 5 * multiplier, name: "Infrastructure" },
-			{ value: 8 * multiplier, name: "Application" },
-			{ value: 3 * multiplier, name: "Database" },
-			{ value: 2 * multiplier, name: "Network" },
-			{ value: 4 * multiplier, name: "Security" },
+			{ value: 5 * multiplier, label: "Infrastructure", color: "#4ade80" },
+			{ value: 8 * multiplier, label: "Application", color: "#60a5fa" },
+			{ value: 3 * multiplier, label: "Database", color: "#f97316" },
+			{ value: 2 * multiplier, label: "Network", color: "#8b5cf6" },
+			{ value: 4 * multiplier, label: "Security", color: "#f43f5e" },
 		];
 	};
 
 	const generateResponseTimeData = (period: string) => {
 		const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
 		const data = [];
-		const responseTimeData = [];
-
+		
 		const now = new Date();
 		for (let i = days - 1; i >= 0; i--) {
 			const date = new Date();
 			date.setDate(now.getDate() - i);
-			const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
+			
 			// Generate random response times between 1-15 minutes
 			const responseTime = Math.floor(Math.random() * 14) + 1;
-
-			data.push(dateStr);
-			responseTimeData.push(responseTime);
+			
+			data.push({
+				date,
+				value: responseTime
+			});
 		}
-
-		return {
-			dates: data,
-			responseTimes: responseTimeData,
-		};
+		
+		return data;
 	};
 
-	// Chart options
-	$effect(() => {
-		alertsChartOptions = getAlertsChartOptions(selectedTimePeriod);
-		incidentTypesChartOptions = getIncidentTypesChartOptions(selectedTimePeriod);
-		responseTimeChartOptions = getResponseTimeChartOptions(selectedTimePeriod);
-	});
+	// Chart colors
+	const alertColors = ["#4ade80", "#f87171"];
+	const pieColors = scaleOrdinal()
+		.domain(incidentTypesData.map(d => d.label))
+		.range(incidentTypesData.map(d => d.color));
 
-	let alertsChartOptions = $state({});
-	let incidentTypesChartOptions = $state({});
-	let responseTimeChartOptions = $state({});
-
-	const getAlertsChartOptions = (period: string) => {
-		const alertsData = generateAlertsData(period);
-		return {
-			title: {
-				text: "Alerts Over Time",
-				left: "center",
-			},
-			tooltip: {
-				trigger: "axis",
-				axisPointer: {
-					type: "shadow",
-				},
-			},
-			legend: {
-				data: ["Business Hours", "Out of Hours"],
-				bottom: 0,
-			},
-			xAxis: {
-				type: "category",
-				data: alertsData.dates,
-			},
-			yAxis: {
-				type: "value",
-				name: "Number of Alerts",
-			},
-			series: [
-				{
-					name: "Business Hours",
-					type: "bar",
-					stack: "total",
-					data: alertsData.business,
-					color: "#4ade80",
-				},
-				{
-					name: "Out of Hours",
-					type: "bar",
-					stack: "total",
-					data: alertsData.outOfHours,
-					color: "#f87171",
-				},
-			],
-		};
-	};
-
-	const getIncidentTypesChartOptions = (period: string) => {
-		const incidentTypeData = generateIncidentTypeData(period);
-		return {
-			title: {
-				text: "Incidents by Type",
-				left: "center",
-			},
-			tooltip: {
-				trigger: "item",
-				formatter: "{a} <br/>{b}: {c} ({d}%)",
-			},
-			legend: {
-				orient: "horizontal",
-				bottom: 0,
-			},
-			series: [
-				{
-					name: "Incident Types",
-					type: "pie",
-					radius: ["40%", "70%"],
-					avoidLabelOverlap: false,
-					itemStyle: {
-						borderRadius: 10,
-						borderColor: "#fff",
-						borderWidth: 2,
-					},
-					label: {
-						show: false,
-						position: "center",
-					},
-					emphasis: {
-						label: {
-							show: true,
-							fontSize: 16,
-							fontWeight: "bold",
-						},
-					},
-					labelLine: {
-						show: false,
-					},
-					data: incidentTypeData,
-				},
-			],
-		};
-	};
-
-	const getResponseTimeChartOptions = (period: string) => {
-		const responseTimeData = generateResponseTimeData(period);
-		return {
-			title: {
-				text: "Average Response Time",
-				left: "center",
-			},
-			tooltip: {
-				trigger: "axis",
-				formatter: function (params: any) {
-					return `${params[0].name}: ${params[0].value} minutes`;
-				},
-			},
-			xAxis: {
-				type: "category",
-				data: responseTimeData.dates,
-			},
-			yAxis: {
-				type: "value",
-				name: "Minutes",
-			},
-			series: [
-				{
-					data: responseTimeData.responseTimes,
-					type: "line",
-					smooth: true,
-					color: "#60a5fa",
-					areaStyle: {
-						color: {
-							type: "linear",
-							x: 0,
-							y: 0,
-							x2: 0,
-							y2: 1,
-							colorStops: [
-								{
-									offset: 0,
-									color: "rgba(96, 165, 250, 0.5)",
-								},
-								{
-									offset: 1,
-									color: "rgba(96, 165, 250, 0.05)",
-								},
-							],
-						},
-					},
-				},
-			],
-		};
-	};
+	// Format functions
+	const formatDate = (date) => format(date, "MMM d");
+	const formatMinutes = (value) => `${value} min`;
 </script>
 
 <Header title="Roster Stats" classes={{root: "gap-2 text-lg font-medium"}}>
@@ -291,7 +125,7 @@
 	</div>
 </Header>
 
-<div class="grid grid-cols-2 gap-2">
+<div class="grid grid-cols-2 gap-2 mb-4">
 	<div class="bg-surface-100 p-3 rounded-lg">
 		<div class="text-sm text-surface-600">Alerts (Last 24h)</div>
 		<div class="text-2xl font-semibold">{metrics.alertsLast24h}</div>
@@ -314,21 +148,73 @@
 	</div>
 </div>
 
-<div class="grid grid-cols-2 gap-2">
+<div class="grid grid-cols-2 gap-4 mb-4">
 	<div class="bg-surface-100 p-4 rounded-lg">
+		<h3 class="text-lg font-medium mb-2 text-center">Alerts Over Time</h3>
 		<div style="height: 300px;">
-			<EChart {init} options={alertsChartOptions} />
+			<LayerCake
+				data={alertsData}
+				x="date"
+				y={["business", "outOfHours"]}
+				yDomain={[0, null]}
+				xScale={scaleTime()}
+				yScale={scaleLinear()}
+				padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
+			>
+				<AxisY gridlines />
+				<AxisX formatTick={formatDate} />
+				<StackedBar fill={alertColors} />
+				<Legend
+					labels={["Business Hours", "Out of Hours"]}
+					colors={alertColors}
+					position="bottom"
+				/>
+			</LayerCake>
 		</div>
 	</div>
 	<div class="bg-surface-100 p-4 rounded-lg">
+		<h3 class="text-lg font-medium mb-2 text-center">Incidents by Type</h3>
 		<div style="height: 300px;">
-			<EChart {init} options={incidentTypesChartOptions} />
+			<LayerCake
+				data={incidentTypesData}
+				x="label"
+				y="value"
+				r="value"
+				colors={pieColors}
+				padding={{ top: 20, right: 20, bottom: 60, left: 20 }}
+			>
+				<Pie 
+					innerRadius={0.4}
+					outerRadius={0.8}
+					padAngle={0.03}
+					cornerRadius={4}
+				/>
+				<Legend 
+					labels={incidentTypesData.map(d => d.label)}
+					colors={incidentTypesData.map(d => d.color)}
+					position="bottom"
+				/>
+			</LayerCake>
 		</div>
 	</div>
 </div>
 
-<div class="bg-surface-100 p-4 rounded-lg">
+<div class="bg-surface-100 p-4 rounded-lg mb-4">
+	<h3 class="text-lg font-medium mb-2 text-center">Average Response Time</h3>
 	<div style="height: 300px;">
-		<EChart {init} options={responseTimeChartOptions} />
+		<LayerCake
+			data={responseTimeData}
+			x="date"
+			y="value"
+			yDomain={[0, null]}
+			xScale={scaleTime()}
+			yScale={scaleLinear()}
+			padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
+		>
+			<AxisY gridlines formatTick={formatMinutes} />
+			<AxisX formatTick={formatDate} />
+			<Line stroke="#60a5fa" strokeWidth={2} />
+			<Area fill="#60a5fa" fillOpacity={0.2} />
+		</LayerCake>
 	</div>
 </div>
