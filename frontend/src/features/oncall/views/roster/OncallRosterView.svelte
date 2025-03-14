@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type User, type OncallRoster } from "$lib/api";
-	import { mdiChevronRight, mdiCalendarClock, mdiAlertCircle, mdiCheckCircle, mdiClockOutline } from "@mdi/js";
+	import { mdiChevronRight, mdiCalendarClock, mdiAlertCircle, mdiCheckCircle, mdiClockOutline, mdiGraph, mdiAccount } from "@mdi/js";
 	import { Header, Icon, Button, Badge } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
@@ -59,11 +59,11 @@
 		{@render rosterDetails()}
 	</div>
 
-	<div class="flex flex-col gap-4 h-full min-h-0">
+	<div class="flex flex-col gap-2 h-full min-h-0">
 		{@render rosterShifts()}
 	</div>
 
-	<div class="col-span-2 flex flex-col gap-4 h-full overflow-y-auto min-h-0 border rounded-lg p-4">
+	<div class="col-span-2 flex flex-col gap-2 h-full overflow-y-auto min-h-0 border rounded-lg p-4">
 		<RosterStats {roster} />
 	</div>
 </div>
@@ -71,7 +71,11 @@
 {#snippet rosterDetails()}
 	<div class="border rounded-lg p-4 flex flex-col gap-2">
 		<div class="flex items-center justify-between">
-			<Header title="Members" />
+			<Header title="Members" classes={{root: "gap-2 text-lg font-medium"}}>
+				<div slot="avatar">
+					<Icon data={mdiAccount} class="" />
+				</div>
+			</Header>
 		</div>
 
 		<div class="flex flex-col gap-2 overflow-y-auto flex-1">
@@ -95,7 +99,11 @@
 	</div>
 
 	<div class="border rounded-lg p-4 flex flex-col gap-2">
-		<Header title="Services" />
+		<Header title="Services" classes={{root: "gap-2 text-lg font-medium"}}>
+			<div slot="avatar">
+				<Icon data={mdiGraph} class="" />
+			</div>
+		</Header>
 
 		<div class="flex flex-col gap-2">
 			{#each services as service}
@@ -119,7 +127,7 @@
 {/snippet}
 
 {#snippet rosterShifts()}
-	<div class="border rounded-lg p-4 flex flex-col gap-4 flex-1 overflow-y-auto">
+	<div class="border rounded-lg p-4 flex flex-col gap-2 flex-1 overflow-y-auto">
 		{#if currentShifts.length > 0}
 			<Header title="Active Shifts" classes={{root: "gap-2 text-lg font-medium"}}>
 				<div slot="avatar">
@@ -151,7 +159,7 @@
 			</Header>
 		{/if}
 		
-		<Header title="Recent Shifts" classes={{root: "gap-2 text-lg font-medium"}}>
+		<Header title="Recent Shifts" classes={{root: "gap-2 text-lg font-medium mt-2"}}>
 			<div slot="avatar">
 				<Icon data={mdiCalendarClock} class="text-accent-500" />
 			</div>
@@ -175,7 +183,7 @@
 			{/each}
 		</div>
 
-		<Header title="Upcoming Shifts" classes={{root: "gap-2 text-lg font-medium"}}>
+		<Header title="Upcoming Shifts" classes={{root: "gap-2 text-lg font-medium mt-2"}}>
 			<div slot="avatar">
 				<Icon data={mdiCalendarClock} class="text-accent-500" />
 			</div>

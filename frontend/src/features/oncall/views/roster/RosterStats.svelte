@@ -1,11 +1,10 @@
 <script lang="ts">
-	import type { OncallRoster } from "$src/lib/api";
-	import { Button, Header, Icon, LayerCake, Menu, MenuItem, Toggle } from "svelte-ux";
+	import type { OncallRoster } from "$lib/api";
+	import { Button, Header, Icon, Menu, MenuItem, Toggle } from "svelte-ux";
 	import { mdiCalendar, mdiChartBar } from "@mdi/js";
 	import { scaleLinear, scaleTime, scaleOrdinal } from "d3-scale";
-	import { extent, max } from "d3-array";
 	import { format } from "date-fns";
-	import { AxisX, AxisY, StackedBar, Legend, Line, Area, Pie } from "svelte-ux/components/charts";
+	import { Bar, Legend, Line, Area, Pie, Chart, BarChart, LineChart } from "layerchart";
 
 	type Props = { roster: OncallRoster };
 	const { roster }: Props = $props();
@@ -26,17 +25,6 @@
 		handoversCompleted: 12,
 		outOfHoursAlerts: 8,
 	});
-
-	// Mock data for charts
-	$effect(() => {
-		alertsData = generateAlertsData(selectedTimePeriod);
-		incidentTypesData = generateIncidentTypeData(selectedTimePeriod);
-		responseTimeData = generateResponseTimeData(selectedTimePeriod);
-	});
-
-	let alertsData = $state([]);
-	let incidentTypesData = $state([]);
-	let responseTimeData = $state([]);
 
 	const generateAlertsData = (period: string) => {
 		const days = period === "7d" ? 7 : period === "30d" ? 30 : 90;
@@ -94,15 +82,19 @@
 		return data;
 	};
 
+	const alertsData = $derived(generateAlertsData(selectedTimePeriod));
+	const incidentTypesData = $derived(generateIncidentTypeData(selectedTimePeriod));
+	const responseTimeData = $derived(generateResponseTimeData(selectedTimePeriod));
+
 	// Chart colors
 	const alertColors = ["#4ade80", "#f87171"];
-	const pieColors = scaleOrdinal()
+	const pieColors = $derived(scaleOrdinal()
 		.domain(incidentTypesData.map(d => d.label))
-		.range(incidentTypesData.map(d => d.color));
+		.range(incidentTypesData.map(d => d.color)));
 
 	// Format functions
-	const formatDate = (date) => format(date, "MMM d");
-	const formatMinutes = (value) => `${value} min`;
+	const formatDate = (date: Date) => format(date, "MMM d");
+	const formatMinutes = (value: number) => `${value} min`;
 </script>
 
 <Header title="Roster Stats" classes={{root: "gap-2 text-lg font-medium"}}>
@@ -125,7 +117,7 @@
 	</div>
 </Header>
 
-<div class="grid grid-cols-2 gap-2 mb-4">
+<div class="grid grid-cols-2 gap-2">
 	<div class="bg-surface-100 p-3 rounded-lg">
 		<div class="text-sm text-surface-600">Alerts (Last 24h)</div>
 		<div class="text-2xl font-semibold">{metrics.alertsLast24h}</div>
@@ -148,73 +140,22 @@
 	</div>
 </div>
 
-<div class="grid grid-cols-2 gap-4 mb-4">
-	<div class="bg-surface-100 p-4 rounded-lg">
-		<h3 class="text-lg font-medium mb-2 text-center">Alerts Over Time</h3>
-		<div style="height: 300px;">
-			<LayerCake
-				data={alertsData}
-				x="date"
-				y={["business", "outOfHours"]}
-				yDomain={[0, null]}
-				xScale={scaleTime()}
-				yScale={scaleLinear()}
-				padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
-			>
-				<AxisY gridlines />
-				<AxisX formatTick={formatDate} />
-				<StackedBar fill={alertColors} />
-				<Legend
-					labels={["Business Hours", "Out of Hours"]}
-					colors={alertColors}
-					position="bottom"
-				/>
-			</LayerCake>
-		</div>
-	</div>
-	<div class="bg-surface-100 p-4 rounded-lg">
-		<h3 class="text-lg font-medium mb-2 text-center">Incidents by Type</h3>
-		<div style="height: 300px;">
-			<LayerCake
-				data={incidentTypesData}
-				x="label"
-				y="value"
-				r="value"
-				colors={pieColors}
-				padding={{ top: 20, right: 20, bottom: 60, left: 20 }}
-			>
-				<Pie 
-					innerRadius={0.4}
-					outerRadius={0.8}
-					padAngle={0.03}
-					cornerRadius={4}
-				/>
-				<Legend 
-					labels={incidentTypesData.map(d => d.label)}
-					colors={incidentTypesData.map(d => d.color)}
-					position="bottom"
-				/>
-			</LayerCake>
-		</div>
-	</div>
-</div>
-
-<div class="bg-surface-100 p-4 rounded-lg mb-4">
+<div class="bg-surface-100 p-4 rounded-lg">
 	<h3 class="text-lg font-medium mb-2 text-center">Average Response Time</h3>
 	<div style="height: 300px;">
-		<LayerCake
+		<LineChart
 			data={responseTimeData}
 			x="date"
 			y="value"
+			renderContext="canvas"
 			yDomain={[0, null]}
 			xScale={scaleTime()}
 			yScale={scaleLinear()}
 			padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
-		>
-			<AxisY gridlines formatTick={formatMinutes} />
+		/>
+			<!-- <AxisY gridlines formatTick={formatMinutes} />
 			<AxisX formatTick={formatDate} />
 			<Line stroke="#60a5fa" strokeWidth={2} />
-			<Area fill="#60a5fa" fillOpacity={0.2} />
-		</LayerCake>
+			<Area fill="#60a5fa" fillOpacity={0.2} /> -->
 	</div>
 </div>
