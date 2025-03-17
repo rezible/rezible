@@ -5,11 +5,13 @@
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
 	import { PeriodType } from "@layerstack/utils";
 	import { formatDistanceToNow } from "date-fns";
+	import type { ZonedDateTime } from "@internationalized/date";
 
 	type Props = {
 		shiftEvents: ShiftEvent[];
+		shiftStart: ZonedDateTime;
 	};
-	const { shiftEvents }: Props = $props();
+	const { shiftEvents, shiftStart }: Props = $props();
 
 	const format = $derived(settings.format);
 
@@ -95,7 +97,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				{#if ev.severity}
-					<Badge color="custom" classes={{ root: severityClass }}>
+					<Badge class={severityClass}>
 						{ev.severity}
 					</Badge>
 				{/if}
