@@ -68,7 +68,7 @@
 	</div>
 
 	<div class="flex flex-col gap-1 h-full min-h-0 border rounded-lg p-2">
-		<ShiftEventsList {shiftEvents} />
+		<ShiftEventsList {shiftStart} {shiftEvents} />
 	</div>
 </div>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline } from "@mdi/js";
+	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline, mdiSleep, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Icon, Header, Badge, Tooltip } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
@@ -88,15 +88,15 @@
 						{humanTime}
 					</span>
 					{#if isNightTime}
-						<Tooltip content="Night hours (10pm-6am)" placement="right">
-							<span class="text-indigo-600">
-								<Icon data={mdiWeatherNight} size="16px" />
+						<Tooltip title="Night hours (10pm-6am)" placement="right">
+							<span class="text-danger-600">
+								<Icon data={mdiSleepOff} size="16px" />
 							</span>
 						</Tooltip>
 					{:else if isOutsideBusinessHours}
-						<Tooltip content="Outside business hours (9am-5pm)" placement="right">
-							<span class="text-amber-600">
-								<Icon data={mdiTimerOffOutline} size="16px" />
+						<Tooltip title="Outside business hours (9am-5pm)" placement="right">
+							<span class="text-warning-600">
+								<Icon data={mdiWeatherSunset} size="16px" />
 							</span>
 						</Tooltip>
 					{/if}
