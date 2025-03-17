@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { mdiPlus, mdiPhoneAlert, mdiFire } from "@mdi/js";
-	import { Icon, Button, Header } from "svelte-ux";
+	import { mdiPhoneAlert, mdiFire } from "@mdi/js";
+	import { Icon, Header } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
 	import { PeriodType } from "@layerstack/utils";
