@@ -10,8 +10,7 @@
 	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { shiftCtx } from "$features/oncall/lib/context.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import ShiftEvents from "./shift-stats/ShiftEvents.svelte";
-	import ShiftEventsList from "./shift-events-list/ShiftEventsList.svelte";
+	import ShiftEvents from "./shift-events/ShiftEvents.svelte";
 	import PageActions from "./PageActions.svelte";
 
 	type Props = { shift: OncallShift };
@@ -44,9 +43,9 @@
 					const hour = Math.floor(Math.random() * 24);
 					const minute = Math.floor(Math.random() * 60);
 					const timestamp = dayDate.copy().set({ hour, minute });
-					return { id: uuidv4(), timestamp, eventType };
+					return { id: uuidv4(), timestamp, eventType, description: "description", notes: "some notes" };
 				};
-				const numDayEvents = Math.floor(Math.random() * 20);
+				const numDayEvents = Math.floor(Math.random() * 10);
 				const dayEvents = Array.from({ length: numDayEvents }, makeFakeShiftEvent);
 				events = events.concat(dayEvents);
 			}
@@ -54,69 +53,62 @@
 		}
 	}));
 
-	const shiftEvents = $derived(shiftEventsQuery.data?.data || []);
+	const shiftEventsData = $derived(shiftEventsQuery.data?.data || []);
 
 	const burdenScore = $derived(0.23);
 	const burdenRating = $derived("High");
-
-	let eventsFilter = $state<ShiftEventFilterKind>();
-	const filteredEvents = $derived(shiftEvents.filter(e => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter)));
 </script>
 
-<div class="grid grid-cols-2 gap-2 h-full max-h-full min-h-0 overflow-hidden">
-	<div class="flex flex-col gap-1 h-full min-h-0">
+<div class="flex gap-2 h-full max-h-full min-h-0 overflow-hidden">
+	<div class="flex flex-col gap-2">
 		{@render shiftDetails()}
-
-		<ShiftEvents {shiftStart} {shiftEnd} {shiftEvents} bind:eventsFilter />
 	</div>
 
-	<div class="flex flex-col gap-1 h-full min-h-0 border rounded-lg p-2">
-		<ShiftEventsList {shiftStart} shiftEvents={filteredEvents} />
+	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-lg p-2">
+		<ShiftEvents events={shiftEventsData} {shiftStart} {shiftEnd} />
 	</div>
 </div>
 
 {#snippet shiftDetails()}
-	<div class="grid grid-cols-3 gap-2 auto-rows-min">
-		<div class="flex flex-col gap-1 border rounded-lg p-2">
-			<Header title="Users" />
+	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
+		<Header title="Users" />
 
-			<a href="/users/{user.id}" class="flex-1">
-				<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
-					<Avatar kind="user" size={32} id={user.id} />
-					<div class="flex flex-col">
-						<span class="text-lg">{user.attributes.name}</span>
-						<span>{role}</span>
-					</div>
-					<div class="flex-1 grid justify-items-end">
-						<Icon data={mdiChevronRight} />
-					</div>
-				</div>
-			</a>
-		</div>
-
-		<div class="flex flex-col gap-1 border rounded-lg p-2">
-			<Header title="Roster" />
-
-			<a href="/oncall/rosters/{roster.id}" class="flex-1">
-				<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
-					<Avatar kind="roster" size={32} id={roster.id} />
-					<span class="text-lg">{roster.attributes.name}</span>
-					<div class="flex-1 grid justify-items-end">
-						<Icon data={mdiChevronRight} />
-					</div>
-				</div>
-			</a>
-		</div>
-
-		<div class="flex flex-col gap-1 border rounded-lg p-2">
-			<Header title="Shift Burden" />
-	
-			<div class="flex items-center gap-4 bg-danger-400/20 h-full p-2">
-				<Icon data={mdiArrowUp} />
+		<a href="/users/{user.id}" class="flex-1">
+			<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
+				<Avatar kind="user" size={32} id={user.id} />
 				<div class="flex flex-col">
-					<span class="text-lg">{burdenRating}</span>
-					<span>{burdenScore * 100}% more than usual for roster</span>
+					<span class="text-lg">{user.attributes.name}</span>
+					<span>{role}</span>
 				</div>
+				<div class="flex-1 grid justify-items-end">
+					<Icon data={mdiChevronRight} />
+				</div>
+			</div>
+		</a>
+	</div>
+
+	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
+		<Header title="Roster" />
+
+		<a href="/oncall/rosters/{roster.id}" class="flex-1">
+			<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
+				<Avatar kind="roster" size={32} id={roster.id} />
+				<span class="text-lg">{roster.attributes.name}</span>
+				<div class="flex-1 grid justify-items-end">
+					<Icon data={mdiChevronRight} />
+				</div>
+			</div>
+		</a>
+	</div>
+
+	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
+		<Header title="Shift Burden" />
+
+		<div class="flex items-center gap-4 bg-danger-400/20 h-full p-2">
+			<Icon data={mdiArrowUp} />
+			<div class="flex flex-col">
+				<span class="text-lg">{burdenRating}</span>
+				<span>{burdenScore * 100}% more than usual for roster</span>
 			</div>
 		</div>
 	</div>

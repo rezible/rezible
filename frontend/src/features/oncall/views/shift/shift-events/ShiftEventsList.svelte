@@ -47,21 +47,7 @@
 	};
 </script>
 
-<div class="h-10 flex w-full gap-4 items-center px-2">
-	<Header title="Shift Events" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
-		<!--div slot="actions">
-			<Button
-				color="primary"
-				variant="fill"
-				on:click={() => {}}
-			>
-				Filters <Icon data={mdiPlus} />
-			</Button>
-		</div-->
-	</Header>
-</div>
-
-<div class="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
+<div class="h-full flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
 	{#each shiftEvents as ev}
 		{@render eventListItem(ev)}
 	{/each}
@@ -76,38 +62,11 @@
 	{@const isOutsideBusinessHours = !isBusinessHours(ev.timestamp.hour)}
 	{@const isNightTime = isNightHours(ev.timestamp.hour)}
 	
-	<div class="grid grid-cols-[120px_auto_minmax(0,1fr)] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
-		<div class="justify-self-start flex flex-col items-start">
-			<div class="flex flex-col">
-				<span class="text-sm font-medium flex items-center gap-1">
-					<Icon data={mdiCalendarClock} size="14px" />
-					{humanDate}
-				</span>
-				<div class="flex items-center gap-1">
-					<span class="text-sm text-surface-700">
-						{humanTime}
-					</span>
-					{#if isNightTime}
-						<Tooltip title="Night hours (10pm-6am)" placement="right">
-							<span class="text-danger-600">
-								<Icon data={mdiSleepOff} size="16px" />
-							</span>
-						</Tooltip>
-					{:else if isOutsideBusinessHours}
-						<Tooltip title="Outside business hours (9am-5pm)" placement="right">
-							<span class="text-warning-600">
-								<Icon data={mdiWeatherSunset} size="16px" />
-							</span>
-						</Tooltip>
-					{/if}
-				</div>
-			</div>
-		</div>
-
+	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
 		<div class="items-center static z-10">
 			<Icon
 				data={eventKindIcons[ev.eventType]}
-				classes={{ root: `${ev.eventType === 'incident' ? 'bg-error-600' : 'bg-warning-600'} rounded-full p-2 w-auto h-10 text-white` }}
+				classes={{ root: `${ev.eventType === 'incident' ? 'bg-danger-900/50' : 'bg-warning-700/50'} rounded-full p-2 w-auto h-10 text-white` }}
 			/>
 		</div>
 
@@ -119,6 +78,11 @@
 				{#if ev.source}
 					<div class="text-xs text-surface-600">
 						Source: {ev.source}
+					</div>
+				{/if}
+				{#if ev.description}
+					<div class="text-xs text-surface-600">
+						{ev.description}
 					</div>
 				{/if}
 			</div>
@@ -137,14 +101,36 @@
 			</div>
 		</div>
 
-		{#if ev.description || ev.notes}
+		<div class="justify-self-end flex flex-col items-start">
+			<div class="flex flex-col">
+				<span class="text-sm font-medium flex items-center gap-1">
+					<Icon data={mdiCalendarClock} size="14px" />
+					{humanDate}
+				</span>
+				<div class="flex items-center gap-1">
+					{#if isNightTime}
+						<Tooltip title="Night hours (10pm-6am)" placement="right">
+							<span class="text-danger-600">
+								<Icon data={mdiSleepOff} size="16px" />
+							</span>
+						</Tooltip>
+					{:else if isOutsideBusinessHours}
+						<Tooltip title="Outside business hours (9am-5pm)" placement="right">
+							<span class="text-warning-600">
+								<Icon data={mdiWeatherSunset} size="16px" />
+							</span>
+						</Tooltip>
+					{/if}
+					<span class="text-sm text-surface-700 self-end">
+						{humanTime}
+					</span>
+				</div>
+			</div>
+		</div>
+
+		{#if ev.notes}
 			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-surface-50 text-sm">
-				{#if ev.description}
-					<div class="font-medium mb-1">{ev.description}</div>
-				{/if}
-				{#if ev.notes}
-					<div class="text-surface-700">{ev.notes}</div>
-				{/if}
+				<div class="text-surface-700">{ev.notes}</div>
 			</div>
 		{/if}
 	</div>
