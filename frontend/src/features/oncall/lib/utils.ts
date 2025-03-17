@@ -43,6 +43,14 @@ export type ShiftEvent = {
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
 
+export const isBusinessHours = (hour: number) => {
+	return hour >= 9 && hour < 17; // 9am to 5pm
+};
+
+export const isNightHours = (hour: number) => {
+	return hour >= 22 || hour < 6; // 10pm to 6am
+};
+
 export const shiftEventMatchesFilter = (event: ShiftEvent, kind: ShiftEventFilterKind) => {
 	if ((kind === "alerts" || kind === "nightAlerts") && event.eventType !== "alert") return false;
 	if (kind === "nightAlerts" && (event.timestamp.hour < 18 && event.timestamp.hour > 6)) return false;

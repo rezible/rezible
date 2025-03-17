@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock } from "@mdi/js";
+	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline } from "@mdi/js";
 	import { Icon, Header, Badge, Tooltip } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
+	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { PeriodType } from "@layerstack/utils";
 	import { formatDistanceToNow, format as formatDate, isToday, isYesterday, isTomorrow } from "date-fns";
 	import type { ZonedDateTime } from "@internationalized/date";
@@ -72,6 +73,8 @@
 	{@const humanTime = getHumanReadableTime(occurredAt)}
 	{@const severityClass = severityColors[ev.severity || 'undefined']}
 	{@const statusIcon = statusIcons[ev.status || 'undefined']}
+	{@const isOutsideBusinessHours = !isBusinessHours(ev.timestamp.hour)}
+	{@const isNightTime = isNightHours(ev.timestamp.hour)}
 	
 	<div class="grid grid-cols-[120px_auto_minmax(0,1fr)] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
 		<div class="justify-self-start flex flex-col items-start">
@@ -80,9 +83,24 @@
 					<Icon data={mdiCalendarClock} size="14px" />
 					{humanDate}
 				</span>
-				<span class="text-sm text-surface-700">
-					{humanTime}
-				</span>
+				<div class="flex items-center gap-1">
+					<span class="text-sm text-surface-700">
+						{humanTime}
+					</span>
+					{#if isNightTime}
+						<Tooltip content="Night hours (10pm-6am)" placement="right">
+							<span class="text-indigo-600">
+								<Icon data={mdiWeatherNight} size="16px" />
+							</span>
+						</Tooltip>
+					{:else if isOutsideBusinessHours}
+						<Tooltip content="Outside business hours (9am-5pm)" placement="right">
+							<span class="text-amber-600">
+								<Icon data={mdiTimerOffOutline} size="16px" />
+							</span>
+						</Tooltip>
+					{/if}
+				</div>
 			</div>
 		</div>
 
