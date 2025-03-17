@@ -38,6 +38,22 @@
 	const getRelativeTime = (date: Date) => {
 		return formatDistanceToNow(date, { addSuffix: true });
 	};
+
+	const getTimeRelativeToShift = (eventTime: Date, shiftStartTime: Date) => {
+		const diffMinutes = Math.floor((eventTime.getTime() - shiftStartTime.getTime()) / (1000 * 60));
+		
+		if (diffMinutes < 0) {
+			return `${Math.abs(diffMinutes)}m before shift`;
+		} else if (diffMinutes === 0) {
+			return "at shift start";
+		} else if (diffMinutes < 60) {
+			return `${diffMinutes}m into shift`;
+		} else {
+			const hours = Math.floor(diffMinutes / 60);
+			const mins = diffMinutes % 60;
+			return `${hours}h${mins ? ` ${mins}m` : ''} into shift`;
+		}
+	};
 </script>
 
 <div class="h-10 flex w-full gap-4 items-center px-2">
@@ -63,6 +79,7 @@
 {#snippet eventListItem(ev: ShiftEvent)}
 	{@const occurredAt = ev.timestamp.toDate()}
 	{@const relativeTime = getRelativeTime(occurredAt)}
+	{@const shiftRelativeTime = getTimeRelativeToShift(occurredAt, shiftStart.toDate())}
 	{@const severityClass = severityColors[ev.severity || 'undefined']}
 	{@const statusIcon = statusIcons[ev.status || 'undefined']}
 	
@@ -71,10 +88,15 @@
 			<span class="text-sm font-medium">
 				{format(occurredAt, PeriodType.Day)}
 			</span>
-			<span class="text-xs text-surface-600 flex items-center gap-1">
-				<Icon data={mdiClockOutline} size="14px" />
-				{relativeTime}
-			</span>
+			<div class="flex flex-col text-xs">
+				<span class="text-surface-600 flex items-center gap-1">
+					<Icon data={mdiClockOutline} size="14px" />
+					{relativeTime}
+				</span>
+				<span class="text-primary-600 font-medium">
+					{shiftRelativeTime}
+				</span>
+			</div>
 		</div>
 
 		<div class="items-center static z-10">
