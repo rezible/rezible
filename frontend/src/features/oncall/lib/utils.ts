@@ -58,26 +58,3 @@ export const shiftEventMatchesFilter = (event: ShiftEvent, kind: ShiftEventFilte
 	return true;
 }
 
-const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
-export const formatShiftEventCountForHeatmap = (start: ZonedDateTime, end: ZonedDateTime, events: ShiftEvent[], kind?: ShiftEventFilterKind) => {
-	const startDate = start.toDate();
-
-	const numEvents = new Map<string, number>();
-	events.forEach((event) => {
-		if (!!kind && !shiftEventMatchesFilter(event, kind)) return;
-		const eventDate = event.timestamp.toDate();
-		const day = differenceInCalendarDays(eventDate, startDate);
-		const key = eventDayKey(day, event.timestamp.hour);
-		numEvents.set(key, (numEvents.get(key) || 0) + 1);
-	});
-
-	const numDays = differenceInCalendarDays(end.toDate(), start.toDate());
-
-	return Array.from({ length: numDays }).flatMap((_, day) => {
-		return Array.from({ length: 24 }).map((_, hour) => [
-			day,
-			hour,
-			numEvents.get(eventDayKey(day, hour)) || 0,
-		]);
-	});
-};

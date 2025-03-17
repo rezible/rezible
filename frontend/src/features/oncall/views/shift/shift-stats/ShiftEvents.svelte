@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { Header, Icon } from "svelte-ux";
+	import { Button, Header, Icon } from "svelte-ux";
 	import { mdiAlarmLight, mdiFire, mdiSleepOff } from "@mdi/js";
 	import { ZonedDateTime } from "@internationalized/date";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import { cls } from "@layerstack/tailwind";
-	import { formatShiftEventCountForHeatmap, shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
-	import { getDay } from "date-fns";
+	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
+	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { settings } from "$src/lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
 
@@ -13,16 +13,16 @@
 		shiftEvents: ShiftEvent[];
 		shiftStart: ZonedDateTime;
 		shiftEnd: ZonedDateTime;
+		eventsFilter: ShiftEventFilterKind | undefined;
 	};
-	const { shiftEvents, shiftStart, shiftEnd }: Props = $props();
+	let { shiftEvents, shiftStart, shiftEnd, eventsFilter = $bindable() }: Props = $props();
 
-	let filterKind = $state<ShiftEventFilterKind>();
 	const onEventKindClicked = (kind: ShiftEventFilterKind) => {
-		if (filterKind === kind) {
-			filterKind = undefined;
+		if (eventsFilter === kind) {
+			eventsFilter = undefined;
 			return;
 		}
-		filterKind = kind;
+		eventsFilter = kind;
 	};
 
 	// TODO: Implement this properly
@@ -34,6 +34,30 @@
 		return "High";
 	};
 
+	const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
+	const formatShiftEventCountForHeatmap = (start: ZonedDateTime, end: ZonedDateTime, events: ShiftEvent[], kind?: ShiftEventFilterKind) => {
+		const startDate = start.toDate();
+
+		const numEvents = new Map<string, number>();
+		events.forEach((event) => {
+			if (!!kind && !shiftEventMatchesFilter(event, kind)) return;
+			const eventDate = event.timestamp.toDate();
+			const day = differenceInCalendarDays(eventDate, startDate);
+			const key = eventDayKey(day, event.timestamp.hour);
+			numEvents.set(key, (numEvents.get(key) || 0) + 1);
+		});
+
+		const numDays = differenceInCalendarDays(end.toDate(), start.toDate());
+
+		return Array.from({ length: numDays }).flatMap((_, day) => {
+			return Array.from({ length: 24 }).map((_, hour) => [
+				day,
+				hour,
+				numEvents.get(eventDayKey(day, hour)) || 0,
+			]);
+		});
+	};
+
 	const alerts = $derived(shiftEvents.filter(e => e.eventType === "alert"));
 	const alertRating = $derived(getEventsRating(alerts.length));
 
@@ -43,7 +67,7 @@
 	const incidents = $derived(shiftEvents.filter(e => e.eventType === "incident"));
 	const incidentsRating = $derived(getEventsRating(incidents.length));
 
-	const hourlyEventCount = $derived(formatShiftEventCountForHeatmap(shiftStart, shiftEnd, shiftEvents, filterKind));
+	const hourlyEventCount = $derived(formatShiftEventCountForHeatmap(shiftStart, shiftEnd, shiftEvents, eventsFilter));
 	const numDays = $derived(Math.floor(hourlyEventCount.length / 24));
 	const heatmapDayLabels = $derived.by(() => {
 		const fmt = settings.format;
@@ -64,32 +88,30 @@
 
 <div class="flex flex-col gap-2 flex-1 min-h-0 max-h-full overflow-y-auto border rounded-lg p-2">
 	<div class="">
-		<Header title="Events" subheading="Select a filter below to view specific event types" classes={{ title: "text-xl" }} />
-
-		<div class="grid grid-cols-3 gap-2 auto-rows-min mt-2">
-			<div class="col-span-3 text-sm text-surface-600 mb-1 flex items-center">
-				<span class="font-medium">Filter events:</span>
-				{#if filterKind}
-					<button 
-						class="ml-auto text-xs bg-surface-200 hover:bg-surface-300 px-2 py-1 rounded-md flex items-center"
-						onclick={() => filterKind = undefined}
+		<Header title="Events" subheading="Select a filter below to view specific event types" classes={{ title: "text-xl" }}>
+			<div slot="actions" class="text-sm text-surface-600 mb-1 flex items-center">
+				{#if eventsFilter}
+					<Button variant="fill-light"
+						on:click={() => eventsFilter = undefined}
 					>
 						Clear filter
-					</button>
+					</Button>
 				{:else}
-					<span class="ml-auto text-xs italic">No filter applied</span>
+					<span class="">No filter applied</span>
 				{/if}
 			</div>
-			
+		</Header>
+
+		<div class="grid grid-cols-3 gap-2 auto-rows-min mt-2">	
 			{#snippet eventTypeBox(kind: ShiftEventFilterKind, label: string, rating: string, icon: string)}
-				{@const isFiltered = filterKind === kind}
+				{@const isFiltered = eventsFilter === kind}
 				{@const backgroundCol = rating === "High" ? "bg-warning-400/20" : "bg-surface-100"}
 				<div class="grid">
 					<button
 						class={cls(
 							"flex gap-4 items-center py-2 relative rounded-lg border",
-							(!!filterKind && isFiltered) && "bg-accent-700/25 border-accent-700",
-							(!filterKind && !isFiltered) && backgroundCol)}
+							(!!eventsFilter && isFiltered) && "bg-accent-700/25 border-accent-700",
+							(!eventsFilter && !isFiltered) && backgroundCol)}
 						onclick={() => onEventKindClicked(kind)}
 					>
 						<div class="flex-grow flex items-center justify-center gap-4">
@@ -101,15 +123,6 @@
 								<span class="text-sm">{rating}</span>
 							</div>
 						</div>
-						{#if isFiltered}
-							<div class="absolute top-1 right-1 bg-accent-700 text-white text-xs px-1 rounded">
-								Filtered
-							</div>
-						{:else}
-							<div class="absolute top-1 right-1 text-xs px-1 rounded opacity-70">
-								Click to filter
-							</div>
-						{/if}
 					</button>
 				</div>
 			{/snippet}
@@ -126,15 +139,6 @@
 	</div>
 
 	<div class="relative">
-		{#if filterKind}
-			<div class="absolute -top-6 left-0 text-sm font-medium text-accent-700">
-				Showing heatmap for: {filterKind === "alerts" ? "All Alerts" : filterKind === "nightAlerts" ? "Night Alerts" : "Incidents"}
-			</div>
-		{:else}
-			<div class="absolute -top-6 left-0 text-sm text-surface-600">
-				Showing heatmap for: All Events
-			</div>
-		{/if}
 		<ShiftEventsHeatmap data={hourlyEventCount} dayLabels={heatmapDayLabels} onDataClicked={onHeatmapHourClicked} />
 	</div>
 </div>

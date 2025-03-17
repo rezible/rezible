@@ -7,7 +7,7 @@
 	import { v4 as uuidv4 } from "uuid";
 	import type { OncallShift } from "$lib/api";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import type { ShiftEvent } from "$features/oncall/lib/utils";
+	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { shiftCtx } from "$features/oncall/lib/context.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ShiftEvents from "./shift-stats/ShiftEvents.svelte";
@@ -58,17 +58,20 @@
 
 	const burdenScore = $derived(0.23);
 	const burdenRating = $derived("High");
+
+	let eventsFilter = $state<ShiftEventFilterKind>();
+	const filteredEvents = $derived(shiftEvents.filter(e => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter)));
 </script>
 
 <div class="grid grid-cols-2 gap-2 h-full max-h-full min-h-0 overflow-hidden">
 	<div class="flex flex-col gap-1 h-full min-h-0">
 		{@render shiftDetails()}
 
-		<ShiftEvents {shiftStart} {shiftEnd} {shiftEvents} />
+		<ShiftEvents {shiftStart} {shiftEnd} {shiftEvents} bind:eventsFilter />
 	</div>
 
 	<div class="flex flex-col gap-1 h-full min-h-0 border rounded-lg p-2">
-		<ShiftEventsList {shiftStart} {shiftEvents} />
+		<ShiftEventsList {shiftStart} shiftEvents={filteredEvents} />
 	</div>
 </div>
 
