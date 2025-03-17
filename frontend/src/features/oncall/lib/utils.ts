@@ -33,6 +33,12 @@ export type ShiftEvent = {
 	id: string;
 	timestamp: ZonedDateTime;
 	eventType: "alert" | "incident";
+	title?: string;
+	description?: string;
+	severity?: "critical" | "high" | "medium" | "low";
+	status?: "active" | "resolved" | "acknowledged";
+	source?: string;
+	notes?: string;
 };
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
