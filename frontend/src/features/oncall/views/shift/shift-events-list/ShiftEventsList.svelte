@@ -15,6 +15,8 @@
 
 	const format = $derived(settings.format);
 
+	const shiftTimezone = $derived(shiftStart.timeZone);
+
 	const eventKindIcons: Record<ShiftEvent["eventType"], string> = {
 		["incident"]: mdiFire,
 		["alert"]: mdiPhoneAlert,
@@ -36,45 +38,11 @@
 	};
 
 	const getHumanReadableDate = (date: Date) => {
-		if (isToday(date)) return 'Today';
-		if (isYesterday(date)) return 'Yesterday';
-		if (isTomorrow(date)) return 'Tomorrow';
 		return formatDate(date, 'EEE, MMM d');
 	};
 
 	const getHumanReadableTime = (date: Date) => {
 		return formatDate(date, 'h:mm a');
-	};
-
-	const getFullFormattedDateTime = (date: Date) => {
-		return formatDate(date, 'EEEE, MMMM d, yyyy h:mm:ss a');
-	};
-
-	const getRelativeTime = (date: Date) => {
-		return formatDistanceToNow(date, { addSuffix: true });
-	};
-
-	const getTimeRelativeToShift = (eventTime: Date, shiftStartTime: Date) => {
-		const diffMinutes = Math.floor((eventTime.getTime() - shiftStartTime.getTime()) / (1000 * 60));
-		
-		if (diffMinutes < 0) {
-			const absMinutes = Math.abs(diffMinutes);
-			if (absMinutes < 60) {
-				return `${absMinutes}m before shift`;
-			} else {
-				const hours = Math.floor(absMinutes / 60);
-				const mins = absMinutes % 60;
-				return `${hours}h${mins ? ` ${mins}m` : ''} before shift`;
-			}
-		} else if (diffMinutes === 0) {
-			return "at shift start";
-		} else if (diffMinutes < 60) {
-			return `${diffMinutes}m into shift`;
-		} else {
-			const hours = Math.floor(diffMinutes / 60);
-			const mins = diffMinutes % 60;
-			return `${hours}h${mins ? ` ${mins}m` : ''} into shift`;
-		}
 	};
 </script>
 
@@ -100,39 +68,21 @@
 
 {#snippet eventListItem(ev: ShiftEvent)}
 	{@const occurredAt = ev.timestamp.toDate()}
-	{@const relativeTime = getRelativeTime(occurredAt)}
-	{@const shiftRelativeTime = getTimeRelativeToShift(occurredAt, shiftStart.toDate())}
 	{@const humanDate = getHumanReadableDate(occurredAt)}
 	{@const humanTime = getHumanReadableTime(occurredAt)}
-	{@const fullDateTime = getFullFormattedDateTime(occurredAt)}
 	{@const severityClass = severityColors[ev.severity || 'undefined']}
 	{@const statusIcon = statusIcons[ev.status || 'undefined']}
 	
 	<div class="grid grid-cols-[120px_auto_minmax(0,1fr)] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
 		<div class="justify-self-start flex flex-col items-start">
-			<Tooltip content={fullDateTime} placement="top">
-				<div class="flex flex-col">
-					<span class="text-sm font-medium flex items-center gap-1">
-						<Icon data={mdiCalendarClock} size="14px" />
-						{humanDate}
-					</span>
-					<span class="text-xs text-surface-700">
-						{humanTime}
-					</span>
-				</div>
-			</Tooltip>
-			<div class="flex flex-col text-xs mt-1">
-				<Tooltip content={fullDateTime} placement="bottom">
-					<span class="text-surface-600 flex items-center gap-1">
-						<Icon data={mdiClockOutline} size="14px" />
-						{relativeTime}
-					</span>
-				</Tooltip>
-				<Tooltip content={`Event occurred ${shiftRelativeTime}`} placement="bottom">
-					<span class="text-primary-600 font-medium">
-						{shiftRelativeTime}
-					</span>
-				</Tooltip>
+			<div class="flex flex-col">
+				<span class="text-sm font-medium flex items-center gap-1">
+					<Icon data={mdiCalendarClock} size="14px" />
+					{humanDate}
+				</span>
+				<span class="text-sm text-surface-700">
+					{humanTime}
+				</span>
 			</div>
 		</div>
 
