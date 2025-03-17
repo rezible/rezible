@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle } from "@mdi/js";
-	import { Icon, Header, Badge } from "svelte-ux";
+	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock } from "@mdi/js";
+	import { Icon, Header, Badge, Tooltip } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$features/oncall/lib/utils";
 	import { PeriodType } from "@layerstack/utils";
-	import { formatDistanceToNow } from "date-fns";
+	import { formatDistanceToNow, format as formatDate, isToday, isYesterday, isTomorrow } from "date-fns";
 	import type { ZonedDateTime } from "@internationalized/date";
 
 	type Props = {
@@ -35,6 +35,21 @@
 		undefined: mdiClockOutline
 	};
 
+	const getHumanReadableDate = (date: Date) => {
+		if (isToday(date)) return 'Today';
+		if (isYesterday(date)) return 'Yesterday';
+		if (isTomorrow(date)) return 'Tomorrow';
+		return formatDate(date, 'EEE, MMM d');
+	};
+
+	const getHumanReadableTime = (date: Date) => {
+		return formatDate(date, 'h:mm a');
+	};
+
+	const getFullFormattedDateTime = (date: Date) => {
+		return formatDate(date, 'EEEE, MMMM d, yyyy h:mm:ss a');
+	};
+
 	const getRelativeTime = (date: Date) => {
 		return formatDistanceToNow(date, { addSuffix: true });
 	};
@@ -43,7 +58,14 @@
 		const diffMinutes = Math.floor((eventTime.getTime() - shiftStartTime.getTime()) / (1000 * 60));
 		
 		if (diffMinutes < 0) {
-			return `${Math.abs(diffMinutes)}m before shift`;
+			const absMinutes = Math.abs(diffMinutes);
+			if (absMinutes < 60) {
+				return `${absMinutes}m before shift`;
+			} else {
+				const hours = Math.floor(absMinutes / 60);
+				const mins = absMinutes % 60;
+				return `${hours}h${mins ? ` ${mins}m` : ''} before shift`;
+			}
 		} else if (diffMinutes === 0) {
 			return "at shift start";
 		} else if (diffMinutes < 60) {
@@ -80,22 +102,37 @@
 	{@const occurredAt = ev.timestamp.toDate()}
 	{@const relativeTime = getRelativeTime(occurredAt)}
 	{@const shiftRelativeTime = getTimeRelativeToShift(occurredAt, shiftStart.toDate())}
+	{@const humanDate = getHumanReadableDate(occurredAt)}
+	{@const humanTime = getHumanReadableTime(occurredAt)}
+	{@const fullDateTime = getFullFormattedDateTime(occurredAt)}
 	{@const severityClass = severityColors[ev.severity || 'undefined']}
 	{@const statusIcon = statusIcons[ev.status || 'undefined']}
 	
-	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
+	<div class="grid grid-cols-[120px_auto_minmax(0,1fr)] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
 		<div class="justify-self-start flex flex-col items-start">
-			<span class="text-sm font-medium">
-				{format(occurredAt, PeriodType.Day)}
-			</span>
-			<div class="flex flex-col text-xs">
-				<span class="text-surface-600 flex items-center gap-1">
-					<Icon data={mdiClockOutline} size="14px" />
-					{relativeTime}
-				</span>
-				<span class="text-primary-600 font-medium">
-					{shiftRelativeTime}
-				</span>
+			<Tooltip content={fullDateTime} placement="top">
+				<div class="flex flex-col">
+					<span class="text-sm font-medium flex items-center gap-1">
+						<Icon data={mdiCalendarClock} size="14px" />
+						{humanDate}
+					</span>
+					<span class="text-xs text-surface-700">
+						{humanTime}
+					</span>
+				</div>
+			</Tooltip>
+			<div class="flex flex-col text-xs mt-1">
+				<Tooltip content={fullDateTime} placement="bottom">
+					<span class="text-surface-600 flex items-center gap-1">
+						<Icon data={mdiClockOutline} size="14px" />
+						{relativeTime}
+					</span>
+				</Tooltip>
+				<Tooltip content={`Event occurred ${shiftRelativeTime}`} placement="bottom">
+					<span class="text-primary-600 font-medium">
+						{shiftRelativeTime}
+					</span>
+				</Tooltip>
 			</div>
 		</div>
 
