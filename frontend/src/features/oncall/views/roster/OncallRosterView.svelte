@@ -160,6 +160,9 @@
 		{/if}
 		
 		<Header title="Recent Shifts" classes={{root: "gap-2 text-lg font-medium mt-2"}}>
+			<svelte:fragment slot="actions">
+				<Button variant="text" href="/oncall/shifts">View All</Button>
+			</svelte:fragment>
 			<div slot="avatar">
 				<Icon data={mdiCalendarClock} class="text-accent-500" />
 			</div>
@@ -184,6 +187,9 @@
 		</div>
 
 		<Header title="Upcoming Shifts" classes={{root: "gap-2 text-lg font-medium mt-2"}}>
+			<svelte:fragment slot="actions">
+				<Button variant="text" href="/oncall/shifts">View All</Button>
+			</svelte:fragment>
 			<div slot="avatar">
 				<Icon data={mdiCalendarClock} class="text-accent-500" />
 			</div>
