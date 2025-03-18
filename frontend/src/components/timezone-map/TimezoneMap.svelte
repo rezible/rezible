@@ -74,11 +74,15 @@
 		return result;
 	}
 
-	const now = new Date();
-	const day = new Date(+now).setUTCHours(0, 0, 0, 0);
-	const t = century(now);
-	const longitude = ((day - now.valueOf()) / 864e5) * 360 - 180;
-	const sun = [longitude - equationOfTime(t) / 4, declination(t)] as [number, number];
+	const getSunAntipode = () => {
+		const now = new Date();
+		const day = new Date(+now).setUTCHours(0, 0, 0, 0);
+		const t = century(now);
+		const longitude = ((day - now.valueOf()) / 864e5) * 360 - 180;
+		const sunPos = [longitude - equationOfTime(t) / 4, declination(t)] as [number, number];
+		return antipode(sunPos);
+	}
+	const sunAntipode = getSunAntipode();
 </script>
 
 <div class="h-[480px]">
@@ -113,7 +117,7 @@
 			<ClipPath useId="globe">
 				<Blur>
 					<GeoCircle
-						center={antipode(sun)}
+						center={sunAntipode}
 						class="stroke-none fill-black/50 pointer-events-none"
 					/>
 				</Blur>
