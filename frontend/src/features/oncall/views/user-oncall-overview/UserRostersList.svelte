@@ -4,7 +4,7 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import { Icon, ListItem } from "svelte-ux";
 
-	interface Props {
+	type Props = {
 		rosters: OncallRoster[];
 	}
 	let { rosters }: Props = $props();
@@ -20,6 +20,5 @@
 				<Icon data={mdiChevronRight} />
 			</div>
 		</ListItem>
-		<div class="h-20"></div>
 	</a>
 {/each}

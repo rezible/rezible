@@ -61,7 +61,7 @@
 
 <aside
 	class={cls(
-		"h-full group flex flex-col overflow-hidden bg-surface-200 pb-2",
+		"h-full group flex flex-col overflow-hidden bg-surface-300 pb-2",
 		expandingHover ? "w-fit hover:w-60" : "w-60"
 	)}
 >

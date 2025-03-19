@@ -68,11 +68,11 @@
 				<button 
 					class={cls(
 						"inline-flex self-end h-14 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative", 
-						active && "bg-surface-200 text-secondary",
+						active && "bg-surface-100 text-secondary",
 					)}
 					onclick={() => (currentTab = tab.value)}>
 					{tab.label}
-					<div class="absolute bottom-0 -mb-px left-0 w-full border-b border-surface-200" class:hidden={!active}></div>
+					<div class="absolute bottom-0 -mb-px left-0 w-full border-b border-surface-100" class:hidden={!active}></div>
 				</button>
 			{/each}
 		</div>
@@ -80,7 +80,7 @@
 		<ShiftDetailsBar {shift} {shiftStart} {shiftEnd} />
 	</div>
 
-	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-b-lg rounded-tr-lg p-2 bg-surface-200">
+	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-b-lg rounded-tr-lg p-2 bg-surface-100">
 		{#if currentTab === "details"}
 			<ShiftDetails {shift} {shiftEvents} />
 		{:else if currentTab === "events"}

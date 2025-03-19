@@ -78,6 +78,6 @@
 	const onClicked = (e: ECMouseEvent) => (onDataClicked(e.dataIndex));
 </script>
 
-<div class="w-full h-96 p-3 pl-10 bg-surface-100 rounded-lg block overflow-hidden">
+<div class="w-full h-96 p-3 pl-10 rounded-lg block overflow-hidden">
 	<EChart {init} {options} onclick={onClicked} />
 </div>

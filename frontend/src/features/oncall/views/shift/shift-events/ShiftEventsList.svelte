@@ -47,7 +47,7 @@
 	};
 </script>
 
-<div class="h-full flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
+<div class="h-full flex flex-col gap-4 overflow-y-auto p-3">
 	{#each shiftEvents as ev}
 		{@render eventListItem(ev)}
 	{/each}
@@ -129,8 +129,8 @@
 		</div>
 
 		{#if ev.annotation}
-			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-surface-50 text-sm">
-				<div class="text-surface-700">{ev.annotation}</div>
+			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-neutral text-sm">
+				<div class="text-neutral-content">{ev.annotation}</div>
 			</div>
 		{/if}
 	</div>

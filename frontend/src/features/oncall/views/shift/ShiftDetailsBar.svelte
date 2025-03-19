@@ -27,7 +27,7 @@
 </script>
 
 <div class="flex gap-4 h-16">
-	<div class="flex flex-1 h-full gap-2 max-h-full h-16 pb-2">
+	<div class="flex flex-1 h-full gap-2 max-h-full h-16 pb-1">
 		<div class="flex-1 flex flex-row gap-2 justify-end">
 			<a href="/users/{user.id}" class="">
 				<div class="flex items-center gap-4 bg-surface-100 rounded-lg hover:bg-accent-800/40 h-full p-2 px-4">
