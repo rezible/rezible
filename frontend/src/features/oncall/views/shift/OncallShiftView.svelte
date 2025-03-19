@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { Header, Icon } from "svelte-ux";
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import { mdiArrowUp, mdiChevronRight } from "@mdi/js";
 	import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
+	import { cls } from "@layerstack/tailwind";
 	import { differenceInCalendarDays } from "date-fns";
 	import { v4 as uuidv4 } from "uuid";
 	import type { OncallShift } from "$lib/api";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
+	import { type ShiftEvent } from "$features/oncall/lib/utils";
 	import { shiftCtx } from "$features/oncall/lib/context.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import ShiftEvents from "./shift-events/ShiftEvents.svelte";
 	import PageActions from "./PageActions.svelte";
+	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
+	import ShiftDetails from "./shift-details/ShiftDetails.svelte";
+	import ShiftEvents from "./shift-events/ShiftEvents.svelte";
 
 	type Props = { shift: OncallShift };
 	const { shift }: Props = $props();
@@ -19,10 +19,6 @@
 	appShell.setPageActions(PageActions, false);
 
 	shiftCtx.set(shift);
-
-	const role = $derived(shift.attributes.role);
-	const roster = $derived(shift.attributes.roster);
-	const user = $derived(shift.attributes.user);
 
 	// TODO: default to shift timezone & allow choosing timezone
 	let eventTimezone = $state(getLocalTimeZone());
@@ -43,7 +39,7 @@
 					const hour = Math.floor(Math.random() * 24);
 					const minute = Math.floor(Math.random() * 60);
 					const timestamp = dayDate.copy().set({ hour, minute });
-					return { id: uuidv4(), timestamp, eventType, description: "description", notes: "some notes" };
+					return { id: uuidv4(), timestamp, eventType, description: "description", annotation: "annotation" };
 				};
 				const numDayEvents = Math.floor(Math.random() * 10);
 				const dayEvents = Array.from({ length: numDayEvents }, makeFakeShiftEvent);
@@ -53,63 +49,42 @@
 		}
 	}));
 
-	const shiftEventsData = $derived(shiftEventsQuery.data?.data || []);
+	const shiftEvents = $derived(shiftEventsQuery.data?.data || []);
 
-	const burdenScore = $derived(0.23);
-	const burdenRating = $derived("High");
+	type ShiftViewTab = "details" | "events";
+	const tabs: {value: ShiftViewTab, label: string}[] = [
+		{label: "Overview", value: "details"},
+		{label: "Events", value: "events"},
+	];
+
+	let currentTab = $state<ShiftViewTab>("details");
 </script>
 
-<div class="flex gap-2 h-full max-h-full min-h-0 overflow-hidden">
-	<div class="flex flex-col gap-2">
-		{@render shiftDetails()}
+<div class="flex flex-col h-full max-h-full min-h-0 overflow-hidden">
+	<div class="w-full flex justify-between h-16 z-[1]">
+		<div class="flex gap-2 self-end">
+			{#each tabs as tab}
+				{@const active = tab.value === currentTab}
+				<button 
+					class={cls(
+						"inline-flex self-end h-14 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative", 
+						active && "bg-surface-200 text-secondary",
+					)}
+					onclick={() => (currentTab = tab.value)}>
+					{tab.label}
+					<div class="absolute bottom-0 -mb-px left-0 w-full border-b border-surface-200" class:hidden={!active}></div>
+				</button>
+			{/each}
+		</div>
+
+		<ShiftDetailsBar {shift} {shiftStart} {shiftEnd} />
 	</div>
 
-	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-lg p-2">
-		<ShiftEvents events={shiftEventsData} {shiftStart} {shiftEnd} />
+	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-b-lg rounded-tr-lg p-2 bg-surface-200">
+		{#if currentTab === "details"}
+			<ShiftDetails {shift} {shiftEvents} />
+		{:else if currentTab === "events"}
+			<ShiftEvents events={shiftEvents} {shiftStart} {shiftEnd} />
+		{/if}
 	</div>
 </div>
-
-{#snippet shiftDetails()}
-	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
-		<Header title="Users" />
-
-		<a href="/users/{user.id}" class="flex-1">
-			<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
-				<Avatar kind="user" size={32} id={user.id} />
-				<div class="flex flex-col">
-					<span class="text-lg">{user.attributes.name}</span>
-					<span>{role}</span>
-				</div>
-				<div class="flex-1 grid justify-items-end">
-					<Icon data={mdiChevronRight} />
-				</div>
-			</div>
-		</a>
-	</div>
-
-	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
-		<Header title="Roster" />
-
-		<a href="/oncall/rosters/{roster.id}" class="flex-1">
-			<div class="flex items-center gap-4 bg-surface-100 hover:bg-accent-800/40 h-full p-2">
-				<Avatar kind="roster" size={32} id={roster.id} />
-				<span class="text-lg">{roster.attributes.name}</span>
-				<div class="flex-1 grid justify-items-end">
-					<Icon data={mdiChevronRight} />
-				</div>
-			</div>
-		</a>
-	</div>
-
-	<div class="flex flex-col gap-1 border rounded-lg p-2 min-w-72">
-		<Header title="Shift Burden" />
-
-		<div class="flex items-center gap-4 bg-danger-400/20 h-full p-2">
-			<Icon data={mdiArrowUp} />
-			<div class="flex flex-col">
-				<span class="text-lg">{burdenRating}</span>
-				<span>{burdenScore * 100}% more than usual for roster</span>
-			</div>
-		</div>
-	</div>
-{/snippet}

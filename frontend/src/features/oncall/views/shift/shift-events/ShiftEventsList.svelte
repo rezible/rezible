@@ -128,9 +128,9 @@
 			</div>
 		</div>
 
-		{#if ev.notes}
+		{#if ev.annotation}
 			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-surface-50 text-sm">
-				<div class="text-surface-700">{ev.notes}</div>
+				<div class="text-surface-700">{ev.annotation}</div>
 			</div>
 		{/if}
 	</div>

@@ -1,6 +1,8 @@
-import type { OncallShift } from "$src/lib/api";
+import type { OncallShift } from "$lib/api";
+import { settings } from "$lib/settings.svelte";
 import type { ZonedDateTime } from "@internationalized/date";
-import { differenceInCalendarDays, differenceInMinutes, isFuture, isPast } from "date-fns";
+import { DateToken, PeriodType } from "@layerstack/utils";
+import { differenceInMinutes, isFuture, isPast } from "date-fns";
 
 export type ShiftStatus = "active" | "upcoming" | "finished";
 export type ShiftTimeDetails = {
@@ -23,10 +25,10 @@ export const buildShiftTimeDetails = (shift: OncallShift): ShiftTimeDetails => {
 };
 
 export const formatShiftDates = (shift: OncallShift) => {
-	const start = new Date(shift.attributes.startAt);
-	const end = new Date(shift.attributes.endAt);
+	const startFmt = settings.format(new Date(shift.attributes.startAt), PeriodType.Day);
+	const endFmt = settings.format(new Date(shift.attributes.endAt), PeriodType.Day);
 	const rosterName = shift.attributes.roster.attributes.name;
-	return `${rosterName} - ${start.toDateString()} to ${end.toDateString()}`;
+	return `${rosterName} - ${startFmt} to ${endFmt}`;
 };
 
 export type ShiftEvent = {
@@ -38,7 +40,7 @@ export type ShiftEvent = {
 	severity?: "critical" | "high" | "medium" | "low";
 	status?: "active" | "resolved" | "acknowledged";
 	source?: string;
-	notes?: string;
+	annotation?: string;
 };
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
