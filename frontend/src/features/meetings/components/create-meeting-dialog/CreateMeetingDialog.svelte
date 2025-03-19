@@ -19,11 +19,10 @@
 	import {
 		CreateMeetingFormSchema,
 		getEmptyForm,
-		weekdays,
 		type CreateMeetingFormData,
-		type Weekday,
 	} from "$features/meetings/lib/meetings";
 	import UserPickerField from "$features/meetings/views/meetings-overview/UserPickerField.svelte";
+	import { Weekdays, type Weekday } from "$lib/scheduling";
 
 	type Props = {
 		open: boolean;
@@ -39,8 +38,8 @@
 		formData.weekDays = structuredClone(formData.weekDays);
 	};
 
-	const dayOfWeek = $derived(weekdays[formData.start.toDate().getDay()].label);
-	const daySelected = $derived<boolean[]>(weekdays.map((v) => formData.weekDays.has(v.value)));
+	const dayOfWeek = $derived(Weekdays[formData.start.toDate().getDay()].label);
+	const daySelected = $derived<boolean[]>(Weekdays.map((v) => formData.weekDays.has(v.value)));
 	const pluralSuffix = $derived(formData.repeats !== "daily" && formData.repetitionStep > 1 ? "s" : "");
 
 	const parsedForm = $derived(open ? CreateMeetingFormSchema.safeParse(formData) : null);
@@ -174,7 +173,7 @@
 	{#if formData.repeats === "weekly"}
 		<Field label="On Day(s)">
 			<div class="flex gap-1">
-				{#each weekdays as day, i}
+				{#each Weekdays as day, i}
 					<Button
 						color={daySelected[i] ? "primary" : "default"}
 						variant={daySelected[i] ? "fill" : "fill-light"}

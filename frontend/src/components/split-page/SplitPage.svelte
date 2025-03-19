@@ -11,7 +11,7 @@
 </script>
 
 <div class="flex gap-2 w-full h-full max-h-full divide-x">
-	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden pl-1 w-1/5">
+	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden pl-1 w-72">
 		{@render nav()}
 	</div>
 

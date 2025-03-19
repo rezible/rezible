@@ -5,18 +5,7 @@ import type {
 } from "$lib/api";
 import { getLocalTimeZone, now, type ZonedDateTime } from "@internationalized/date";
 import { ZodZonedDateTime } from "$lib/utils.svelte";
-
-export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
-const WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
-export const weekdays: { value: Weekday; label: string }[] = [
-	{ value: "sun", label: "Sunday" },
-	{ value: "mon", label: "Monday" },
-	{ value: "tue", label: "Tuesday" },
-	{ value: "wed", label: "Wednesday" },
-	{ value: "thu", label: "Thursday" },
-	{ value: "fri", label: "Friday" },
-	{ value: "sat", label: "Saturday" },
-];
+import { WeekdaysShort, type Weekday } from "$lib/scheduling";
 
 export type CreateMeetingFormData = {
 	name: string;
@@ -60,7 +49,7 @@ const meetingFormSchema = z.object({
 	repeats: z.enum(["once", "daily", "weekly", "monthly"]),
 
 	repetitionStep: z.number().min(1),
-	weekDays: z.set(z.enum(WEEKDAYS)),
+	weekDays: z.set(z.enum(WeekdaysShort)),
 	monthlyOn: z.enum(["same_day", "same_weekday"]),
 	untilType: z.enum(["indefinite", "num_repetitions", "date"]),
 	untilDate: ZodZonedDateTime,

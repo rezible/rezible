@@ -270,7 +270,7 @@
 	title="{dataType}s"
 	subheading={description}
 	class="p-4"
-	classes={{ headerContainer: "px-0", content: "bg-surface-200" }}
+	classes={{ headerContainer: "px-0 pt-0", content: "bg-surface-200" }}
 >
 	{#if query.isLoading}
 		<span>Loading...</span>
