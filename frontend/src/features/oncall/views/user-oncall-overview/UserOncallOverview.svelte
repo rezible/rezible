@@ -6,7 +6,6 @@
 	import UserShiftsDisplay from "./UserShiftsDisplay.svelte";
 	import UserRostersList from "./UserRostersList.svelte";
 	import SplitPage from "$components/split-page/SplitPage.svelte";
-	import { mdiArrowRight } from "@mdi/js";
 
 	const userOncallQuery = createQuery(() => getUserOncallDetailsOptions());
 </script>
@@ -28,7 +27,7 @@
 		</LoadingQueryWrapper>
 	{/snippet}
 
-	<Header title="Your Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+	<Header title="Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
 		<svelte:fragment slot="actions">
 			<Button href="/oncall/shifts">
 				<span>View All</span>

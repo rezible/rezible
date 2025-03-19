@@ -52,11 +52,11 @@
 <div class="flex flex-col gap-2 min-h-0">
 	{#if numActive > 0}
 		<div class="flex flex-col col-span-2 border rounded-lg p-2">
-			<Header title="Active" subheading={activeShiftsSubheading} />
+			<Header title="Active" subheading="Current shifts for your rosters" />
 
 			<div class="w-full h-0 border-b mt-1 mb-2"></div>
 
-			<div class="flex flex-row overflow-x-auto gap-2">
+			<div class="flex flex-row gap-2 flex-wrap">
 				{#each activeShifts as shift}
 					<ActiveShiftCard {shift} />
 				{/each}
@@ -74,7 +74,7 @@
 	</div-->
 	<div class="flex-1 min-h-0 grid grid-cols-2 gap-2">
 		<div class="flex flex-col min-h-0 border rounded-lg p-2">
-			<Header title="Past" subheading="Last 30 days" />
+			<Header title="Your Recent Shifts" subheading="Last 30 days" />
 
 			<div class="w-full h-0 border-b my-2"></div>
 
@@ -86,7 +86,7 @@
 		</div>
 
 		<div class="flex flex-col min-h-0 border rounded-lg p-2">
-			<Header title="Upcoming" subheading="Next 7 days" />
+			<Header title="Your Upcoming Shifts" subheading="Next 7 days" />
 
 			<div class="w-full h-0 border-b my-2"></div>
 
