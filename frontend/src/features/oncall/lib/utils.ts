@@ -60,3 +60,119 @@ export const shiftEventMatchesFilter = (event: ShiftEvent, kind: ShiftEventFilte
 	return true;
 }
 
+export type ShiftMetrics = {
+	totalAlerts: number;
+	totalIncidents: number;
+	nightAlerts: number;
+	avgResponseTime: number; // in minutes
+	escalationRate: number; // percentage
+	totalIncidentTime: number; // in minutes
+	longestIncident: number; // in minutes
+	businessHoursAlerts: number;
+	offHoursAlerts: number;
+	peakAlertHour: number;
+	totalOncallTime: number; // in minutes
+	severityBreakdown: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+	};
+	sleepDisruptionScore: number; // 0-100
+	workloadScore: number; // 0-100
+	burdenScore: number; // 0-100
+};
+
+export type ComparisonMetrics = {
+	alertsComparison: number; // percentage difference from average
+	incidentsComparison: number;
+	responseTimeComparison: number;
+	escalationRateComparison: number;
+	nightAlertsComparison: number;
+	severityComparison: {
+		critical: number;
+		high: number;
+		medium: number;
+		low: number;
+	};
+};
+
+export const calculateShiftMetrics = (events: ShiftEvent[], shiftDetails: ShiftTimeDetails): ShiftMetrics => {
+	const alerts = events.filter(e => e.eventType === "alert");
+	const incidents = events.filter(e => e.eventType === "incident");
+	const nightAlerts = alerts.filter(e => isNightHours(e.timestamp.hour));
+	const businessHoursAlerts = alerts.filter(e => isBusinessHours(e.timestamp.hour));
+	const offHoursAlerts = alerts.filter(e => !isBusinessHours(e.timestamp.hour));
+	
+	// Calculate peak alert hour
+	const hourCounts = new Array(24).fill(0);
+	alerts.forEach(alert => {
+		hourCounts[alert.timestamp.hour]++;
+	});
+	const peakAlertHour = hourCounts.indexOf(Math.max(...hourCounts));
+	
+	// Mock response times (in minutes)
+	const responseTimes = alerts.map(() => Math.floor(Math.random() * 30) + 1);
+	const avgResponseTime = responseTimes.length ? 
+		responseTimes.reduce((sum, time) => sum + time, 0) / responseTimes.length : 0;
+	
+	// Mock incident durations (in minutes)
+	const incidentDurations = incidents.map(() => Math.floor(Math.random() * 180) + 30);
+	const totalIncidentTime = incidentDurations.reduce((sum, time) => sum + time, 0);
+	const longestIncident = incidentDurations.length ? Math.max(...incidentDurations) : 0;
+	
+	// Severity breakdown
+	const severityCounts = {
+		critical: incidents.filter(i => i.severity === "critical").length,
+		high: incidents.filter(i => i.severity === "high").length,
+		medium: incidents.filter(i => i.severity === "medium").length,
+		low: incidents.filter(i => i.severity === "low").length
+	};
+	
+	// Calculate scores
+	const sleepDisruptionScore = Math.min(100, (nightAlerts.length * 20));
+	const workloadScore = Math.min(100, (alerts.length * 5) + (incidents.length * 15));
+	const burdenScore = Math.round((sleepDisruptionScore + workloadScore) / 2);
+	
+	return {
+		totalAlerts: alerts.length,
+		totalIncidents: incidents.length,
+		nightAlerts: nightAlerts.length,
+		avgResponseTime,
+		escalationRate: alerts.length ? (incidents.length / alerts.length) * 100 : 0,
+		totalIncidentTime,
+		longestIncident,
+		businessHoursAlerts: businessHoursAlerts.length,
+		offHoursAlerts: offHoursAlerts.length,
+		peakAlertHour,
+		totalOncallTime: differenceInMinutes(shiftDetails.end, shiftDetails.start),
+		severityBreakdown: severityCounts,
+		sleepDisruptionScore,
+		workloadScore,
+		burdenScore
+	};
+};
+
+export const getHourLabel = (hour: number): string => {
+	const ampm = hour >= 12 ? 'PM' : 'AM';
+	const displayHour = hour % 12 || 12;
+	return `${displayHour}${ampm}`;
+};
+
+export const formatDuration = (minutes: number): string => {
+	if (minutes < 60) return `${minutes}m`;
+	const hours = Math.floor(minutes / 60);
+	const mins = minutes % 60;
+	if (mins === 0) return `${hours}h`;
+	return `${hours}h ${mins}m`;
+};
+
+export const formatPercentage = (value: number): string => {
+	return `${Math.round(value)}%`;
+};
+
+export const formatComparisonValue = (value: number): string => {
+	const sign = value > 0 ? '+' : '';
+	return `${sign}${Math.round(value)}%`;
+};
+
