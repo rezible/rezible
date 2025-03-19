@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Card, Text } from "svelte-ux";
+  import { Card } from "svelte-ux";
   import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/utils";
   import { formatComparisonValue } from "$features/oncall/lib/utils";
-  import { PieChart, Pie, Cell, Legend, Tooltip } from "layerchart";
+  import { PieChart, Pie, Legend, Tooltip } from "layerchart";
 
   type Props = {
     metrics: ShiftMetrics;
@@ -12,7 +12,7 @@
   
   let { metrics, comparison, loading }: Props = $props();
   
-  $derived comparisonClass = (value: number) => {
+  const comparisonClass = (value: number) => {
     if (value > 0) return "text-red-500";
     if (value < 0) return "text-green-500";
     return "text-gray-500";
@@ -25,19 +25,19 @@
     low: "#22c55e"       // green
   };
   
-  $derived pieData = [
+  const pieData = $derived([
     { name: "Critical", value: metrics.severityBreakdown.critical, color: COLORS.critical },
     { name: "High", value: metrics.severityBreakdown.high, color: COLORS.high },
     { name: "Medium", value: metrics.severityBreakdown.medium, color: COLORS.medium },
     { name: "Low", value: metrics.severityBreakdown.low, color: COLORS.low }
-  ].filter(item => item.value > 0);
+  ].filter(item => item.value > 0));
   
-  $derived hasSeverityData = pieData.length > 0;
+  const hasSeverityData = $derived(pieData.length > 0);
 </script>
 
 <Card class="p-4">
   <div class="flex items-center justify-between mb-4">
-    <Text variant="title">Severity Breakdown</Text>
+    <span>Severity Breakdown</span>
     {#if loading}
       <div class="text-sm text-gray-500">Loading...</div>
     {/if}
@@ -46,11 +46,10 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <div class="h-64">
       {#if hasSeverityData && !loading}
-        <PieChart>
+		pie chart
+        <!--PieChart>
           <Pie
             data={pieData}
-            dataKey="value"
-            nameKey="name"
             cx="50%"
             cy="50%"
             outerRadius={80}
@@ -60,9 +59,8 @@
               <Cell key={`cell-${index}`} fill={entry.color} />
             {/each}
           </Pie>
-          <Tooltip />
           <Legend />
-        </PieChart>
+        </PieChart-->
       {:else if !loading}
         <div class="flex h-full items-center justify-center text-gray-500">
           No severity data available
@@ -71,7 +69,7 @@
     </div>
     
     <div>
-      <Text variant="subtitle">Comparison to Roster Average</Text>
+      <span>Comparison to Roster Average</span>
       <div class="space-y-3 mt-3">
         {#if metrics.severityBreakdown.critical > 0}
           <div class="flex justify-between items-center">
