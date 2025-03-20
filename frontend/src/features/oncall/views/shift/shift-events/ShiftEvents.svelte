@@ -8,7 +8,7 @@
 		shiftEventMatchesFilter,
 		type ShiftEvent,
 		type ShiftEventFilterKind,
-	} from "$features/oncall/lib/utils";
+	} from "$src/features/oncall/lib/utils";
 	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { settings } from "$src/lib/settings.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";

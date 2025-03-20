@@ -2,8 +2,8 @@
 	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline, mdiSleep, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Icon, Header, Badge, Tooltip } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
-	import type { ShiftEvent } from "$features/oncall/lib/utils";
-	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
+	import type { ShiftEvent } from "$src/features/oncall/lib/utils";
+	import { isBusinessHours, isNightHours } from "$src/features/oncall/lib/utils";
 	import { PeriodType } from "@layerstack/utils";
 	import { formatDistanceToNow, format as formatDate, isToday, isYesterday, isTomorrow } from "date-fns";
 	import type { ZonedDateTime } from "@internationalized/date";

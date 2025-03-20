@@ -51,5 +51,7 @@ export type ListQueryOptionsFunc<T> = (
 
 export { client };
 
+export const simulateApiDelay = async (ms: number) => (await new Promise(res => setTimeout(res, ms)));
+
 export * from "./oapi.gen/@tanstack/svelte-query.gen";
 export * from "./oapi.gen/types.gen";

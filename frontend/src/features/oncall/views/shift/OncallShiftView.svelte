@@ -6,7 +6,7 @@
 	import { v4 as uuidv4 } from "uuid";
 	import type { OncallShift } from "$lib/api";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import { type ShiftEvent } from "$features/oncall/lib/utils";
+	import { type ShiftEvent } from "$src/features/oncall/lib/utils";
 	import { shiftCtx } from "$features/oncall/lib/context.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";

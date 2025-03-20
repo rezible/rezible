@@ -3,7 +3,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftOptions, type OncallShift } from "$lib/api";
 	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
-	import { formatShiftDates } from "$features/oncall/lib/utils";
+	import { formatShiftDates } from "$src/features/oncall/lib/utils";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import ShiftHandoverView from "$features/oncall/views/shift-handover/ShiftHandoverView.svelte";
 

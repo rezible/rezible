@@ -2,7 +2,7 @@
 	import { Button, Icon } from "svelte-ux";
 	import { mdiArrowRight, mdiChevronLeft, mdiChevronRight } from "@mdi/js";
 	import { session } from "$lib/auth.svelte";
-	import { buildShiftTimeDetails } from "$features/oncall/lib/utils";
+	import { buildShiftTimeDetails } from "$src/features/oncall/lib/utils";
 	import { page } from "$app/state";
 	import { getOncallShiftOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
