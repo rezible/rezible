@@ -3,11 +3,10 @@
 	import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/shift-metrics";
 	import { formatDelta } from "$lib/format.svelte";
 	import { PieChart, Pie, Legend, Tooltip, Chart, Svg } from "layerchart";
-	import LoadingIndicator from "$src/components/loader/LoadingIndicator.svelte";
 
 	type Props = {
-		metrics?: ShiftMetrics;
-		comparison?: ComparisonMetrics;
+		metrics: ShiftMetrics;
+		comparison: ComparisonMetrics;
 	};
 
 	let { metrics, comparison }: Props = $props();
@@ -62,30 +61,26 @@
 	];
 </script>
 
-<Card class="p-4">
+<div class="p-4">
 	<div class="flex items-center justify-between mb-4">
 		<span>Interrupt Breakdown</span>
 	</div>
 
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-		{#if !(metrics && comparison)}
-			<LoadingIndicator />
-		{:else}
-			<div class="h-64">
-				<div class="h-[300px] p-4 border rounded">
-					<Chart
-						data={gridData}
-						x="date"
-						y="value"
-						yDomain={[0, 100]}
-						padding={{ top: 20, bottom: 20, left: 20, right: 20 }}
-					>
-						<Svg>
-							<Grid x y />
-						</Svg>
-					</Chart>
-				</div>
+		<div class="h-64">
+			<div class="h-[300px] p-4 border rounded">
+				<Chart
+					data={gridData}
+					x="date"
+					y="value"
+					yDomain={[0, 100]}
+					padding={{ top: 20, bottom: 20, left: 20, right: 20 }}
+				>
+					<Svg>
+						<Grid x y />
+					</Svg>
+				</Chart>
 			</div>
-		{/if}
+		</div>
 	</div>
-</Card>
+</div>

@@ -2,14 +2,15 @@
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
 	import { simulateApiDelay, type OncallShift } from "$lib/api";
 	import { makeFakeComparisonMetrics, makeFakeShiftMetrics, type ComparisonMetrics, type ShiftMetrics } from "$features/oncall/lib/shift-metrics";
-	import { buildShiftTimeDetails, formatShiftDates, type ShiftEvent } from "$src/features/oncall/lib/utils";
+	import { buildShiftTimeDetails, formatShiftDates, type ShiftEvent } from "$features/oncall/lib/utils";
+
+	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
 	// Components
 	import EventStatistics from "./EventStatistics.svelte";
 	import IncidentResponseMetrics from "./IncidentResponseMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
 	import InterruptBreakdown from "./InterruptBreakdown.svelte";
-	import HealthIndicators from "./HealthIndicators.svelte";
 
 	type Props = {
 		shift: OncallShift;
@@ -42,22 +43,22 @@
 		})
 	);
 	const comparison = $derived(shiftComparisonQuery.data?.data);
-
-	const formattedShiftDates = $derived(formatShiftDates(shift));
 </script>
 
-<div class="space-y-2">
-	<WorkloadBreakdown {shift} {metrics} />
+<div class="w-full h-full">
+	{#if metrics && comparison}
+		<div class="p-2 h-full w-full overflow-y-auto space-y-2 ">
+			<EventStatistics {shift} {shiftEvents} {metrics} {comparison} />
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-		<EventStatistics {metrics} {comparison} />
+			<WorkloadBreakdown {shift} {shiftEvents} {metrics} />
 
-		<IncidentResponseMetrics {metrics} {comparison} />
-	</div>
+			<IncidentResponseMetrics {metrics} {comparison} />
 
-	<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-		<InterruptBreakdown {metrics} {comparison} />
-
-		<HealthIndicators {metrics} />
-	</div>
+			<InterruptBreakdown {metrics} {comparison} />
+		</div>
+	{:else}
+		<div class="grid w-full h-full place-items-center">
+			<LoadingIndicator />
+		</div>
+	{/if}
 </div>

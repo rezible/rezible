@@ -10,7 +10,6 @@ export type ShiftMetrics = {
 	longestIncident: number; // in minutes
 	businessHoursAlerts: number;
 	offHoursAlerts: number;
-	peakAlertHour: number;
 	offHoursTime: number;
 	sleepDisruptionScore: number; // 0-100
 	workloadScore: number; // 0-100
@@ -26,7 +25,6 @@ export const makeFakeShiftMetrics = (): ShiftMetrics => ({
 	longestIncident: Math.floor(Math.random() * 120) + 30,
 	businessHoursAlerts: Math.floor(Math.random() * 10) + 3,
 	offHoursAlerts: Math.floor(Math.random() * 8) + 2,
-	peakAlertHour: Math.floor(Math.random() * 24),
 	offHoursTime: Math.floor(Math.random() * 120) + 30,
 	sleepDisruptionScore: Math.floor(Math.random() * 70) + 10,
 	workloadScore: Math.floor(Math.random() * 80) + 20,
@@ -68,10 +66,6 @@ export const calculateShiftMetrics = (events: ShiftEvent[], shiftDetails: ShiftT
 	const businessHoursAlerts = alerts.filter(e => isBusinessHours(e.timestamp.hour));
 	const offHoursAlerts = alerts.filter(e => !isBusinessHours(e.timestamp.hour));
 
-	const hourCounts = new Array(24).fill(0);
-	alerts.forEach(alert => { hourCounts[alert.timestamp.hour]++ });
-	const peakAlertHour = hourCounts.indexOf(Math.max(...hourCounts));
-
 	const incidentDurations = incidents.map(() => Math.floor(Math.random() * 180) + 30);
 	const totalIncidentTime = incidentDurations.reduce((sum, time) => sum + time, 0);
 	const longestIncident = incidentDurations.length ? Math.max(...incidentDurations) : 0;
@@ -90,7 +84,6 @@ export const calculateShiftMetrics = (events: ShiftEvent[], shiftDetails: ShiftT
 		longestIncident,
 		businessHoursAlerts: businessHoursAlerts.length,
 		offHoursAlerts: offHoursAlerts.length,
-		peakAlertHour,
 		offHoursTime: Math.floor(Math.random() * 120) + 30,
 		sleepDisruptionScore,
 		workloadScore,

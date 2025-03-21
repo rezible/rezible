@@ -1,64 +1,149 @@
 <script lang="ts">
-	import { createQuery, queryOptions } from "@tanstack/svelte-query";
 	import { Card, Header, SpringValue } from "svelte-ux";
-	import { BarChart, Bar, Tooltip, Legend, Chart, Svg, Arc, Text, LinearGradient, radiansToDegrees } from "layerchart";
-	import type { OncallShift } from "$lib/api";
-	import { formatPercentage } from "$lib/format.svelte";
+	import {
+		BarChart,
+		Bar,
+		Tooltip,
+		Legend,
+		Chart,
+		Svg,
+		Arc,
+		Text,
+		LinearGradient,
+		radiansToDegrees,
+	} from "layerchart";
+	import { type OncallShift } from "$lib/api";
 	import { formatDuration } from "date-fns";
-	import { getHourLabel } from "$features/oncall/lib/utils";
+	import { getHourLabel, isBusinessHours, type ShiftEvent } from "$features/oncall/lib/utils";
 	import type { ShiftMetrics } from "$features/oncall/lib/shift-metrics";
-	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 	import { cls } from "@layerstack/tailwind";
-	import Stat from "$src/components/viz/Stat.svelte";
 
 	type Props = {
 		shift: OncallShift;
-		metrics?: ShiftMetrics;
+		shiftEvents: ShiftEvent[];
+		metrics: ShiftMetrics;
 	};
 
-	let { shift, metrics }: Props = $props();
+	let { shift, shiftEvents, metrics }: Props = $props();
 
-	function isBusinessHours(hour: number): boolean {
-		return hour >= 9 && hour < 17;
-	}
+	const getScoreColor = (score: number) => {
+		if (score < 30) return "bg-green-500";
+		if (score < 70) return "bg-yellow-500";
+		return "bg-red-500";
+	};
 
-	const hourlyDistributionQuery = createQuery(() =>
-		queryOptions({
-			queryKey: ["hourlyDistribution", shift.id],
-			queryFn: async () => {
-				// Simulate API delay
-				await new Promise((resolve) => setTimeout(resolve, 600));
+	// const sleepDisruptionColor = $derived(getScoreColor(metrics.sleepDisruptionScore));
+	// const workloadColor = $derived(getScoreColor(metrics.workloadScore));
+	// const burdenColor = $derived(getScoreColor(metrics.burdenScore));
 
-				// Generate mock hourly distribution data
-				const hours = Array.from({ length: 24 }, (_, i) => i);
-				return hours.map((hour) => ({
-					hour,
-					alerts: Math.floor(Math.random() * (isBusinessHours(hour) ? 3 : 1.5)),
-					incidents: Math.random() > 0.8 ? Math.floor(Math.random() * 2) : 0,
-				}));
-			},
-			staleTime: 5 * 60 * 1000, // 5 minutes
-		})
-	);
+	const getScoreLabel = (score: number) => {
+		if (score < 30) return "Low";
+		if (score < 70) return "Moderate";
+		return "High";
+	};
 
-	const chartData = $derived(hourlyDistributionQuery.data || []);
-	const formattedChartData = $derived(
-		chartData.map((item) => ({ ...item, hourLabel: getHourLabel(item.hour) }))
-	);
+	type HourEventDistribution = {hour: number, alerts: number, incidents: number};
+	const hourlyDistribution = $derived.by(() => {
+		const hours: HourEventDistribution[] = Array.from({ length: 24 }, (_, i) => ({hour: i, alerts: 0, incidents: 0}));
+		shiftEvents.forEach(ev => {
+			if (ev.eventType === "alert") hours[ev.timestamp.hour].alerts++;
+			if (ev.eventType === "incident") hours[ev.timestamp.hour].incidents++;
+		});
+		return hours;
+	});
+	const hourAlertCounts = $derived.by<number[]>(() => {
+		const counts = new Array(24).fill(0);
+		hourlyDistribution.forEach(d => (counts[d.hour] += d.alerts));
+		return counts;
+	});
+	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
+	const peakAlertHours = $derived(hourlyDistribution.filter((d) => d.alerts === maxAlertCount));
+	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => getHourLabel(v.hour)).join(", "));
+	const hourSegmentAngle = (2 * Math.PI) / 24;
+
+	const alertHourArcFillColor = (hour: number) => {
+		const numAlerts = hourAlertCounts[hour];
+		if (numAlerts === 0) return "fill-surface-content/10";
+		if (hour < 5 || hour > 22) return "oklch(var(--color-danger))";
+		if (numAlerts === maxAlertCount) return "oklch(var(--color-secondary))";
+		return isBusinessHours(hour) ? "oklch(var(--color-accent))" : "oklch(var(--color-warning))";
+	};
 
 	const BurdenArcSegments = 50;
 	const segmentAngle = (2 * Math.PI) / BurdenArcSegments;
 
-	function burdenColor(score: number) {
-		if (score > .70) return "fill-danger";
-		if (score > .35) return "fill-warning";
+	const burdenArcSegmentColor = (score: number) => {
+		if (score > 0.7) return "fill-danger";
+		if (score > 0.35) return "fill-warning";
 		return "fill-success";
-	}
-	const burdenArcColor = $derived(burdenColor(metrics?.burdenScore ?? 0));
+	};
+	const burdenArcColor = $derived(burdenArcSegmentColor(metrics?.burdenScore ?? 0));
 </script>
 
+{#snippet stat(title: string, subheading: string, value: string, comparison?: number)}
+	<Header {title} {subheading} class="p-2 px-4">
+		<div class="ml-4 flex flex-col" slot="actions">
+			<span class="text-2xl font-semibold self-end">{value}</span>
+			{#if comparison}
+				<span class="text-xs text-surface-content self-end">{comparison}</span>
+			{/if}
+		</div>
+	</Header>
+{/snippet}
+
+<div class="flex flex-row flex-wrap justify-stretch gap-2">
+	<div class="border p-2 flex flex-col">
+		<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
+
+		<div class="flex-1 grid grid-cols-3 place-items-center p-2">
+			<div class="h-[250px] w-[250px] p-4 overflow-hidden">
+				{@render burdenScoreCircle(metrics.burdenScore)}
+			</div>
+
+			<div class="col-span-2 border flex flex-col divide-y">
+				{@render stat(
+					"High Severity Incidents",
+					"Incidents with a severity of 1 or 2",
+					metrics.totalIncidents.toString(),
+				)}
+
+				{@render stat(
+					"Sleep Disruption",
+					`Based on ${metrics.nightAlerts} night alerts`,
+					metrics.nightAlerts.toString()
+				)}
+
+				{@render stat(
+					"KTLO Workload",
+					"Based on backlog and ongoing incidents",
+					getScoreLabel(metrics.workloadScore)
+				)}
+
+				{@render stat(
+					"Off-Hours Activity",
+					"Time spent active outside of 8am-6pm",
+					formatDuration({ minutes: metrics.offHoursTime })
+				)}
+			</div>
+		</div>
+	</div>
+
+	<div class="border p-2 flex flex-col w-fit">
+		<Header title="Alert Distribution" subheading="Alerts by time of day" />
+
+		<div class="flex-1 flex gap-8 place-items-center p-2">
+			<div class="h-[250px] w-[250px] border rounded-full overflow-hidden">
+				{@render alertHoursCircle()}
+			</div>
+
+			<div class="col-span-2 border flex flex-col divide-y">
+				{@render stat("Peak Alert Hour", `${maxAlertCount} alerts fired`, peakHourLabel)}
+			</div>
+		</div>
+	</div>
+</div>
+
 {#snippet burdenScoreCircle(score: number)}
-<div class="h-[240px] w-[240px] p-4 overflow-hidden">
 	<Chart>
 		<Svg center>
 			<SpringValue value={score} let:value>
@@ -86,67 +171,48 @@
 			</SpringValue>
 		</Svg>
 	</Chart>
-</div>
 {/snippet}
 
-<Card title="Oncall Workload">
-	<div class="flex flex-row flex-wrap gap-6 px-4">
-		{#if !metrics}
-			<LoadingIndicator />
-		{:else}
-			{@const businessHoursPercentage = (metrics.businessHoursAlerts / metrics.totalAlerts) * 100}
-			{@const offHoursPercentage = (metrics.offHoursAlerts / metrics.totalAlerts) * 100}
-			{@const peakHourLabel = getHourLabel(metrics.peakAlertHour)}
+{#snippet alertHoursCircle()}
+	<Chart let:tooltip>
+		<Svg center>
+			{#each { length: hourAlertCounts.length } as _, hour}
+				{@const startAngle = hour * hourSegmentAngle}
+				{@const endAngle = (hour + 1) * hourSegmentAngle}
+				{@const numAlerts = hourAlertCounts[hour]}
+				{@const fill = alertHourArcFillColor(hour)}
+				{@const outerRadius = (30 + 70 * (numAlerts / maxAlertCount)) / 100}
+				{@const tooltipLabel = `${getHourLabel(hour)} - ${numAlerts} alert${numAlerts > 1 ? "s" : ""}`}
 
-			<div class="border p-2">
-				<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
-				{@render burdenScoreCircle(metrics.burdenScore)}
-			</div>
-
-			<div class="border p-2">
-				<Stat 
-					title="Time Outside of Business Hours" 
-					value={formatDuration({ minutes: metrics.offHoursTime })} 
-					description="Time spent active outside of 8am-6pm" />
-			</div>
-
-			<div class="border p-2">
-
-				<div class="mb-4">
-					<span>Time Distribution</span>
-					<div class="flex justify-between mt-2">
-						<div>
-							<div class="text-lg font-semibold">
-								{formatPercentage(businessHoursPercentage)}
-							</div>
-							<div class="text-sm text-gray-500">Business Hours</div>
-						</div>
-						<div>
-							<div class="text-lg font-semibold">{formatPercentage(offHoursPercentage)}</div>
-							<div class="text-sm text-gray-500">Off Hours</div>
-						</div>
-					</div>
-				</div>
-
-				<div class="mb-4">
-					<span>Peak Alert Time</span>
-					<div class="text-lg font-semibold">{peakHourLabel}</div>
-				</div>
-			</div>
-
-			<div class="h-64">
-				{#if !hourlyDistributionQuery.isLoading && formattedChartData.length > 0}
-					chart
-					<!--BarChart data={formattedChartData} xKey="hourLabel">
-					<XAxis />
-					<YAxis />
-					<Tooltip />
-					<Legend />
-					<Bar name="Alerts" dataKey="alerts" fill="#4f46e5" />
-					<Bar name="Incidents" dataKey="incidents" fill="#ef4444" />
-				</BarChart-->
+				{#if numAlerts !== maxAlertCount}
+					<Arc
+						{startAngle}
+						{endAngle}
+						track
+						outerRadius={1}
+						class="fill-surface-300/10 stroke-surface-content/10"
+						onpointermove={(e) => numAlerts === 0 && tooltip?.show(e, tooltipLabel)}
+						onpointerleave={() => tooltip?.hide()}
+					/>
 				{/if}
-			</div>
-		{/if}
-	</div>
-</Card>
+
+				{#if numAlerts > 0}
+					<Arc
+						{startAngle}
+						{endAngle}
+						track
+						{fill}
+						{outerRadius}
+						class={cls(
+							numAlerts &&
+								"hover:scale-90 origin-center [transform-box:fill-box] transition-transform"
+						)}
+						onpointermove={(e) => tooltip?.show(e, tooltipLabel)}
+						onpointerleave={() => tooltip?.hide()}
+					/>
+				{/if}
+			{/each}
+		</Svg>
+		<Tooltip.Root let:data>{data}</Tooltip.Root>
+	</Chart>
+{/snippet}
