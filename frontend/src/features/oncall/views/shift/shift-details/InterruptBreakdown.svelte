@@ -61,14 +61,14 @@
 	];
 </script>
 
-<div class="p-4">
+<div class="p-4 border">
 	<div class="flex items-center justify-between mb-4">
 		<span>Interrupt Breakdown</span>
 	</div>
 
 	<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 		<div class="h-64">
-			<div class="h-[300px] p-4 border rounded">
+			<div class="h-[300px] p-4 rounded">
 				<Chart
 					data={gridData}
 					x="date"

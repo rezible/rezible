@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
+	import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
 	import { cls } from "@layerstack/tailwind";
 	import { differenceInCalendarDays } from "date-fns";
 	import { v4 as uuidv4 } from "uuid";
@@ -26,6 +26,15 @@
 	const shiftEnd = $derived(parseAbsolute(shift.attributes.endAt, eventTimezone));
 
 	// TODO: Implement this properly
+	const makeFakeShiftEvent = (date: ZonedDateTime): ShiftEvent => {
+		const isAlert = Math.random() > 0.25;
+		const eventType = isAlert ? "alert" : "incident";
+		const hour = Math.floor(Math.random() * 24);
+		const minute = Math.floor(Math.random() * 60);
+		const timestamp = date.copy().set({ hour, minute });
+		return { id: uuidv4(), timestamp, eventType, description: "description", annotation: "annotation" };
+	};
+	
 	const shiftEventsQuery = createQuery(() => queryOptions({
 		queryKey: ["shiftEvents", shift.id],
 		queryFn: async () => {
@@ -33,16 +42,8 @@
 			let events: ShiftEvent[] = [];
 			for (let day = 0; day < shiftDays; day++) {
 				const dayDate = shiftStart.add({ days: day });
-				const makeFakeShiftEvent = (): ShiftEvent => {
-					const isAlert = Math.random() > 0.25;
-					const eventType = isAlert ? "alert" : "incident";
-					const hour = Math.floor(Math.random() * 24);
-					const minute = Math.floor(Math.random() * 60);
-					const timestamp = dayDate.copy().set({ hour, minute });
-					return { id: uuidv4(), timestamp, eventType, description: "description", annotation: "annotation" };
-				};
 				const numDayEvents = Math.floor(Math.random() * 10);
-				const dayEvents = Array.from({ length: numDayEvents }, makeFakeShiftEvent);
+				const dayEvents = Array.from({ length: numDayEvents }, () => makeFakeShiftEvent(dayDate));
 				events = events.concat(dayEvents);
 			}
 			return { data: events };
@@ -51,10 +52,11 @@
 
 	const shiftEvents = $derived(shiftEventsQuery.data?.data || []);
 
-	type ShiftViewTab = "details" | "events";
+	type ShiftViewTab = "details" | "events" | "handover";
 	const tabs: {value: ShiftViewTab, label: string}[] = [
 		{label: "Overview", value: "details"},
 		{label: "Events", value: "events"},
+		{label: "Handover", value: "handover"},
 	];
 
 	let currentTab = $state<ShiftViewTab>("details");

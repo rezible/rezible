@@ -19,21 +19,14 @@
 		return "text-gray-500";
 	};
 
-	const responseComparisonClass = (value: number) => {
-		if (value > 0) return "text-red-500";
-		if (value < 0) return "text-green-500";
-		return "text-gray-500";
-	};
-
 	const incidentBarData = $derived([
 		{ label: 'incident-foo', value: 65, classes: { bar: 'bg-warning' } },
 		{ label: 'incident-bar', value: 15, classes: { bar: 'bg-info' } },
 		{ label: 'incident-baz', value: 10, classes: { bar: 'bg-success' } },
-	])
-	
+	]);
 </script>
 
-<Card class="p-4">
+<div class="p-4 border">
 	<div class="flex items-center justify-between mb-4">
 		<span>Incident Response Metrics</span>
 	</div>
@@ -70,4 +63,4 @@
 			</BarStack>
 		</div>
 	</div>
-</Card>
+</div>

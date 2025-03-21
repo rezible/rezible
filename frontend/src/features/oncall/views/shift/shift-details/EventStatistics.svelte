@@ -50,7 +50,6 @@
 		return Array.from({ length: buckets }, (_, bucket) => {
 			const d = bucketDate(startHour.add({ hours: bucket * hourBucketSize }));
 			const key = d.toAbsoluteString();
-			console.log(key, counts.get(key) || 0);
 			return { date: d.toDate(), value: counts.get(key) || 0 };
 		});
 	});
