@@ -26,9 +26,9 @@
 	]);
 </script>
 
-<div class="p-4 border">
+<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
 	<div class="flex items-center justify-between mb-4">
-		<span>Incident Response Metrics</span>
+		<span>Incidents</span>
 	</div>
 
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-4">

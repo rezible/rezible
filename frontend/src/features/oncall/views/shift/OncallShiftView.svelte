@@ -10,8 +10,7 @@
 	import { shiftCtx } from "$features/oncall/lib/context.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
-	import ShiftDetails from "./shift-details/ShiftDetails.svelte";
-	import ShiftEvents from "./shift-events/ShiftEvents.svelte";
+	import ShiftOverview from "./ShiftOverview.svelte";
 
 	type Props = { shift: OncallShift };
 	const { shift }: Props = $props();
@@ -50,20 +49,20 @@
 		}
 	}));
 
-	const shiftEvents = $derived(shiftEventsQuery.data?.data || []);
+	const events = $derived(shiftEventsQuery.data?.data || []);
 
 	type ShiftViewTab = "details" | "events" | "handover";
 	const tabs: {value: ShiftViewTab, label: string}[] = [
-		{label: "Overview", value: "details"},
-		{label: "Events", value: "events"},
-		{label: "Handover", value: "handover"},
+		// {label: "Overview", value: "details"},
+		// {label: "Events", value: "events"},
+		// {label: "Handover", value: "handover"},
 	];
 
 	let currentTab = $state<ShiftViewTab>("details");
 </script>
 
-<div class="flex flex-col h-full max-h-full min-h-0 overflow-hidden">
-	<div class="w-full flex justify-between h-16 z-[1]">
+<div class="flex flex-col gap-2 h-full max-h-full min-h-0 overflow-hidden">
+	<!--div class="w-full h-16 z-[1]">
 		<div class="flex gap-2 self-end">
 			{#each tabs as tab}
 				{@const active = tab.value === currentTab}
@@ -80,13 +79,12 @@
 		</div>
 
 		<ShiftDetailsBar {shift} {shiftStart} {shiftEnd} />
-	</div>
+	</div-->
 
-	<div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-b-lg rounded-tr-lg p-2 bg-surface-100">
-		{#if currentTab === "details"}
-			<ShiftDetails {shift} {shiftEvents} />
-		{:else if currentTab === "events"}
-			<ShiftEvents events={shiftEvents} {shiftStart} {shiftEnd} />
-		{/if}
+	<ShiftDetailsBar {shift} {shiftStart} {shiftEnd} />
+
+	<!-- <div class="flex-1 min-h-0 max-h-full overflow-y-auto border rounded-b-lg rounded-tr-lg p-2 bg-surface-100"> -->
+	<div class="flex-1 min-h-0 max-h-full overflow-y-auto">
+		<ShiftOverview {shift} {events} />
 	</div>
 </div>

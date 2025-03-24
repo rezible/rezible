@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline, mdiSleep, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
-	import { Icon, Header, Badge, Tooltip } from "svelte-ux";
+	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiMoonWaxingCrescent, mdiWeatherNight, mdiTimerOffOutline, mdiSleep, mdiSleepOff, mdiWeatherSunset, mdiFilter } from "@mdi/js";
+	import { Icon, Header, Badge, Tooltip, Button } from "svelte-ux";
 	import { settings } from "$lib/settings.svelte";
 	import type { ShiftEvent } from "$src/features/oncall/lib/utils";
 	import { isBusinessHours, isNightHours } from "$src/features/oncall/lib/utils";
@@ -47,10 +47,19 @@
 	};
 </script>
 
-<div class="h-full flex flex-col gap-4 overflow-y-auto p-3">
-	{#each shiftEvents as ev}
-		{@render eventListItem(ev)}
-	{/each}
+<div class="flex flex-col gap-2 h-full border bg-surface-100/40 border-surface-content/10 rounded">
+	<div class="h-fit p-2 pb-0">
+		<Header title="Events" subheading="Showing All">
+			<svelte:fragment slot="actions">
+				<Button icon={mdiFilter} iconOnly />
+			</svelte:fragment>
+		</Header>
+	</div>
+	<div class="flex-1 flex flex-col gap-1 px-0 overflow-y-auto">
+		{#each shiftEvents as ev}
+			{@render eventListItem(ev)}
+		{/each}
+	</div>
 </div>
 
 {#snippet eventListItem(ev: ShiftEvent)}
@@ -62,7 +71,7 @@
 	{@const isOutsideBusinessHours = !isBusinessHours(ev.timestamp.hour)}
 	{@const isNightTime = isNightHours(ev.timestamp.hour)}
 	
-	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border rounded-md p-3 bg-surface-100 shadow-sm hover:shadow-md transition-shadow">
+	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border p-3 bg-surface-50 border-surface-content/10 shadow-sm hover:shadow-md transition-shadow">
 		<div class="items-center static z-10">
 			<Icon
 				data={eventKindIcons[ev.eventType]}

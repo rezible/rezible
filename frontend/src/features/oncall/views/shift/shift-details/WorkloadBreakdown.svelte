@@ -26,12 +26,6 @@
 
 	let { shift, shiftEvents, metrics }: Props = $props();
 
-	const getScoreColor = (score: number) => {
-		if (score < 30) return "bg-green-500";
-		if (score < 70) return "bg-yellow-500";
-		return "bg-red-500";
-	};
-
 	// const sleepDisruptionColor = $derived(getScoreColor(metrics.sleepDisruptionScore));
 	// const workloadColor = $derived(getScoreColor(metrics.workloadScore));
 	// const burdenColor = $derived(getScoreColor(metrics.burdenScore));
@@ -64,9 +58,10 @@
 	const alertHourArcFillColor = (hour: number) => {
 		const numAlerts = hourAlertCounts[hour];
 		if (numAlerts === 0) return "fill-surface-content/10";
-		if (hour < 5 || hour > 22) return "oklch(var(--color-danger))";
-		if (numAlerts === maxAlertCount) return "oklch(var(--color-secondary))";
-		return isBusinessHours(hour) ? "oklch(var(--color-accent))" : "oklch(var(--color-warning))";
+		if (numAlerts === maxAlertCount) return "oklch(var(--color-danger))"
+		if (isBusinessHours(hour)) return "oklch(var(--color-accent))";
+		if (hour > 5 && hour < 22) return "oklch(var(--color-warning))"; // off-hours alert
+		return "oklch(var(--color-warning))"; // night alert
 	};
 
 	const BurdenArcSegments = 50;
@@ -91,54 +86,55 @@
 	</Header>
 {/snippet}
 
-<div class="flex flex-row flex-wrap justify-stretch gap-2">
-	<div class="border p-2 flex flex-col">
-		<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
+<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
+	<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
 
-		<div class="flex-1 grid grid-cols-3 place-items-center p-2">
-			<div class="h-[250px] w-[250px] p-4 overflow-hidden">
-				{@render burdenScoreCircle(metrics.burdenScore)}
-			</div>
+	<div class="grid grid-cols-3 gap-4">
+		<div class="h-[250px] w-[250px] p-4 overflow-hidden place-self-center">
+			{@render burdenScoreCircle(metrics.burdenScore)}
+		</div>
 
-			<div class="col-span-2 border flex flex-col divide-y">
-				{@render stat(
-					"High Severity Incidents",
-					"Incidents with a severity of 1 or 2",
-					metrics.totalIncidents.toString(),
-				)}
+		<div class="col-span-2 border rounded-lg flex flex-col divide-y">
+			{@render stat(
+				"High Severity Incidents",
+				"Incidents with a severity of 1 or 2",
+				metrics.totalIncidents.toString(),
+			)}
 
-				{@render stat(
-					"Sleep Disruption",
-					`Based on ${metrics.nightAlerts} night alerts`,
-					metrics.nightAlerts.toString()
-				)}
+			{@render stat(
+				"Sleep Disruption",
+				`Based on ${metrics.nightAlerts} night alerts`,
+				metrics.nightAlerts.toString()
+			)}
 
-				{@render stat(
-					"KTLO Workload",
-					"Based on backlog and ongoing incidents",
-					getScoreLabel(metrics.workloadScore)
-				)}
+			{@render stat(
+				"KTLO Workload",
+				"Based on backlog and ongoing incidents",
+				getScoreLabel(metrics.workloadScore)
+			)}
 
-				{@render stat(
-					"Off-Hours Activity",
-					"Time spent active outside of 8am-6pm",
-					formatDuration({ minutes: metrics.offHoursTime })
-				)}
-			</div>
+			{@render stat(
+				"Off-Hours Activity",
+				"Time spent active outside of 8am-6pm",
+				formatDuration({ minutes: metrics.offHoursTime })
+			)}
 		</div>
 	</div>
+</div>
 
-	<div class="border p-2 flex flex-col w-fit">
-		<Header title="Alert Distribution" subheading="Alerts by time of day" />
+<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
+	<Header title="Alerts" subheading="Alerts by time of day" class="" />
 
-		<div class="flex-1 flex gap-8 place-items-center p-2">
-			<div class="h-[250px] w-[250px] border rounded-full overflow-hidden">
-				{@render alertHoursCircle()}
-			</div>
+	<div class="grid grid-cols-3 gap-4 items-center">
+		<div class="col-span-2 border rounded flex flex-col divide-y h-fit">
+			{@render stat("Peak Alert Hour", `${maxAlertCount} alerts fired`, peakHourLabel)}
+			{@render stat("Stat 2", `desc`, "")}
+			{@render stat("Stat 3", `desc`, "")}
+			{@render stat("Stat 4", `desc`, "")}
+		</div>
 
-			<div class="col-span-2 border flex flex-col divide-y">
-				{@render stat("Peak Alert Hour", `${maxAlertCount} alerts fired`, peakHourLabel)}
-			</div>
+		<div class="h-[250px] w-[250px] border rounded-full overflow-hidden place-self-center">
+			{@render alertHoursCircle()}
 		</div>
 	</div>
 </div>
