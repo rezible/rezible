@@ -11,3 +11,5 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 openapi-ts-error-*
 llmctx-svelte-complete-medium.txt
+static/countries-110m.json
+static/timezones.json

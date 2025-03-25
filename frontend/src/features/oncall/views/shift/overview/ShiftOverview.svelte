@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import { simulateApiDelay } from "$lib/api";
 	import {
 		makeFakeComparisonMetrics,
 		makeFakeShiftMetrics,
@@ -8,10 +7,7 @@
 		type ShiftMetrics,
 	} from "$features/oncall/lib/shift-metrics";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
-	import {
-		shiftEventMatchesFilter,
-		type ShiftEventFilterKind,
-	} from "$features/oncall/lib/utils";
+	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
@@ -20,7 +16,6 @@
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
 	import { shiftState } from "$features/oncall/lib/shift.svelte";
-	import { onMount, tick } from "svelte";
 
 	const shiftId = shiftIdCtx.get();
 
@@ -49,7 +44,9 @@
 	let eventsFilter = $state<ShiftEventFilterKind>();
 	const shiftEvents = $derived.by(() => {
 		if (!eventsFilter) return shiftState.shiftEvents;
-		return shiftState.shiftEvents.filter((e) => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter));
+		return shiftState.shiftEvents.filter(
+			(e) => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter)
+		);
 	});
 </script>
 
