@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { cls } from "@layerstack/tailwind";
+	import type { OncallShiftViewRouteParam } from "$src/params/oncallShiftView";
 	import { appShell, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
 	import { formatShiftDates } from "$features/oncall/lib/utils";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
-	import type { OncallShiftViewRouteParam } from "$src/params/oncallShiftView";
-	import { shiftState } from "$features/oncall/lib/shift.svelte";
+	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
+
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
-
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
 	import ShiftHandover from "./handover/ShiftHandover.svelte";
 

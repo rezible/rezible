@@ -97,65 +97,69 @@
 	const formatMinutes = (value: number) => `${value} min`;
 </script>
 
-<Header title="Roster Stats" classes={{root: "gap-2 text-lg font-medium"}}>
-	<div slot="avatar">
-		<Icon data={mdiChartBar} class="text-primary-300" />
-	</div>
-	
-	<div class="justify-end" slot="actions">
-		<Toggle let:on={open} let:toggle let:toggleOff>
-			<Button on:click={toggle} classes={{root: "flex gap-2 items-center"}}>
-				{selectedTimePeriod}
-				<Menu {open} on:close={toggleOff}>
-					{#each timePeriods as period}
-						<MenuItem on:click={() => (selectedTimePeriod = period.value)}>{period.label}</MenuItem>
-					{/each}
-				</Menu>
-				<Icon data={mdiCalendar} />
-			</Button>
-		</Toggle>
-	</div>
-</Header>
+<div class="overflow-y-auto flex flex-col h-full max-h-full min-h-0 flex-1">
+	<Header title="Roster Stats" classes={{root: "gap-2 text-lg font-medium p-2"}}>
+		<div slot="avatar">
+			<Icon data={mdiChartBar} class="text-primary-300" />
+		</div>
+		
+		<div class="justify-end" slot="actions">
+			<Toggle let:on={open} let:toggle let:toggleOff>
+				<Button on:click={toggle} classes={{root: "flex gap-2 items-center"}}>
+					{selectedTimePeriod}
+					<Menu {open} on:close={toggleOff}>
+						{#each timePeriods as period}
+							<MenuItem on:click={() => (selectedTimePeriod = period.value)}>{period.label}</MenuItem>
+						{/each}
+					</Menu>
+					<Icon data={mdiCalendar} />
+				</Button>
+			</Toggle>
+		</div>
+	</Header>
 
-<div class="grid grid-cols-2 gap-2">
-	<div class="bg-surface-100 p-3 rounded-lg">
-		<div class="text-sm text-surface-600">Alerts (Last 24h)</div>
-		<div class="text-2xl font-semibold">{metrics.alertsLast24h}</div>
-	</div>
-	<div class="bg-surface-100 p-3 rounded-lg">
-		<div class="text-sm text-surface-600">Avg. Response Time</div>
-		<div class="text-2xl font-semibold">{metrics.averageResponseTime}</div>
-	</div>
-	<div class="bg-surface-100 p-3 rounded-lg">
-		<div class="text-sm text-surface-600">Escalations (30d)</div>
-		<div class="text-2xl font-semibold">{metrics.escalationsLast30d}</div>
-	</div>
-	<div class="bg-surface-100 p-3 rounded-lg">
-		<div class="text-sm text-surface-600">Handovers Completed</div>
-		<div class="text-2xl font-semibold">{metrics.handoversCompleted}</div>
-	</div>
-	<div class="bg-surface-100 p-3 rounded-lg col-span-2">
-		<div class="text-sm text-surface-600">Out of Hours Alerts</div>
-		<div class="text-2xl font-semibold">{metrics.outOfHoursAlerts}</div>
-	</div>
-</div>
+	<div class="flex-1 flex flex-col gap-2 overflow-y-auto p-2">
+		<div class="grid grid-cols-2 gap-2">
+			<div class="bg-surface-100 p-3 rounded-lg">
+				<div class="text-sm text-surface-600">Alerts (Last 24h)</div>
+				<div class="text-2xl font-semibold">{metrics.alertsLast24h}</div>
+			</div>
+			<div class="bg-surface-100 p-3 rounded-lg">
+				<div class="text-sm text-surface-600">Avg. Response Time</div>
+				<div class="text-2xl font-semibold">{metrics.averageResponseTime}</div>
+			</div>
+			<div class="bg-surface-100 p-3 rounded-lg">
+				<div class="text-sm text-surface-600">Escalations (30d)</div>
+				<div class="text-2xl font-semibold">{metrics.escalationsLast30d}</div>
+			</div>
+			<div class="bg-surface-100 p-3 rounded-lg">
+				<div class="text-sm text-surface-600">Handovers Completed</div>
+				<div class="text-2xl font-semibold">{metrics.handoversCompleted}</div>
+			</div>
+			<div class="bg-surface-100 p-3 rounded-lg col-span-2">
+				<div class="text-sm text-surface-600">Out of Hours Alerts</div>
+				<div class="text-2xl font-semibold">{metrics.outOfHoursAlerts}</div>
+			</div>
+		</div>
 
-<div class="bg-surface-100 p-4 rounded-lg">
-	<h3 class="text-lg font-medium mb-2 text-center">Average Response Time</h3>
-	<div style="height: 300px;">
-		<LineChart
-			data={responseTimeData}
-			x="date"
-			y="value"
-			renderContext="canvas"
-			yDomain={[0, null]}
-			xScale={scaleTime()}
-			yScale={scaleLinear()}
-			padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
-		/>
-			<!-- <AxisY gridlines formatTick={formatMinutes} />
-			<AxisX formatTick={formatDate} />
-			<Line stroke="#60a5fa" strokeWidth={2} />
-			<Area fill="#60a5fa" fillOpacity={0.2} /> -->
+		<div class="bg-surface-100 p-4 rounded-lg">
+			<h3 class="text-lg font-medium mb-2 text-center">Average Response Time</h3>
+			<div style="height: 300px;">
+				<LineChart
+					data={responseTimeData}
+					x="date"
+					y="value"
+					renderContext="canvas"
+					yDomain={[0, null]}
+					xScale={scaleTime()}
+					yScale={scaleLinear()}
+					padding={{ top: 20, right: 20, bottom: 40, left: 40 }}
+				/>
+					<!-- <AxisY gridlines formatTick={formatMinutes} />
+					<AxisX formatTick={formatDate} />
+					<Line stroke="#60a5fa" strokeWidth={2} />
+					<Area fill="#60a5fa" fillOpacity={0.2} /> -->
+			</div>
+		</div>
 	</div>
 </div>

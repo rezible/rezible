@@ -8,6 +8,7 @@
 	} from "$features/oncall/lib/shift-metrics";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
+	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
@@ -15,7 +16,6 @@
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import { shiftState } from "$features/oncall/lib/shift.svelte";
 
 	const shiftId = shiftIdCtx.get();
 

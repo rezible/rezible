@@ -1,14 +1,12 @@
 <script lang="ts">
 	import type { OncallShift } from "$lib/api";
-	import { session } from "$lib/auth.svelte";
-	import { addMinutes, isFuture, differenceInMinutes, formatDistanceToNowStrict, isPast } from "date-fns";
+	import { isFuture, differenceInMinutes, formatDistanceToNowStrict, isPast } from "date-fns";
 
-	import { Card, Button, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
-	import { cls } from "@layerstack/tailwind";
+	import { Card, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
 	import { mdiCircleMedium, mdiChevronRight } from "@mdi/js";
 	import Avatar from "$src/components/avatar/Avatar.svelte";
 
-	interface Props {
+	type Props = {
 		shift: OncallShift;
 	}
 	let { shift }: Props = $props();

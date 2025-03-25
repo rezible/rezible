@@ -1,11 +1,9 @@
 <script lang="ts">
-	import type { OncallShift } from "$lib/api";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import type { ZonedDateTime } from "@internationalized/date";
-	import { settings } from "$lib/settings.svelte";
 	import { DateToken, PeriodType } from "@layerstack/utils";
 	import { isFuture } from "date-fns";
-	import { shiftState } from "$features/oncall/lib/shift.svelte";
+	import { settings } from "$lib/settings.svelte";
+	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 
 	const attr = $derived(shiftState.shift?.attributes);
 	const role = $derived(attr?.role);

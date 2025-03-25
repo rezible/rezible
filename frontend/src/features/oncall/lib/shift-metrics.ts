@@ -1,4 +1,3 @@
-import { differenceInMinutes } from "date-fns";
 import { isBusinessHours, isNightHours, type ShiftEvent, type ShiftTimeDetails } from "./utils";
 
 export type ShiftMetrics = {

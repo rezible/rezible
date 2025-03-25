@@ -1,20 +1,13 @@
 <script lang="ts">
-	import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/shift-metrics";
-	import { formatDelta } from "$lib/format.svelte";
-	import {
-		shiftEventMatchesFilter,
-		type ShiftEvent,
-		type ShiftEventFilterKind,
-	} from "$features/oncall/lib/utils";
-	import { differenceInHours, roundToNearestHours, differenceInCalendarDays, getDay } from "date-fns";
-	import type { OncallShift } from "$lib/api";
-	import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
+	import { differenceInCalendarDays, getDay } from "date-fns";
+	import { Collapse } from "svelte-ux";
+	import { mdiBellAlert, mdiBellSleep, mdiFire } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
-	import { Collapse, Icon } from "svelte-ux";
+	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
+	import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/shift-metrics";
+	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
-	import { mdiAlarm, mdiBellAlert, mdiBellSleep, mdiFire, mdiSleepOff } from "@mdi/js";
-	import MetricCard from "$src/components/viz/MetricCard.svelte";
-	import { shiftState } from "$src/features/oncall/lib/shift.svelte";
+	import MetricCard from "$components/viz/MetricCard.svelte";
 
 	type Props = {
 		metrics: ShiftMetrics;

@@ -1,7 +1,7 @@
-import { getOncallShiftOptions } from "$src/lib/api";
 import { getLocalTimeZone, now, parseAbsolute, ZonedDateTime } from "@internationalized/date";
 import { createQuery, queryOptions, useQueryClient, type QueryClient } from "@tanstack/svelte-query";
-import type { ShiftEvent } from "./utils";
+import { getOncallShiftOptions } from "$lib/api";
+import type { ShiftEvent } from "$features/oncall/lib/utils";
 import { v4 as uuidv4 } from "uuid";
 import { differenceInCalendarDays } from "date-fns";
 
