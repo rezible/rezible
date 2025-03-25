@@ -8,14 +8,15 @@
 	import { createQuery } from "@tanstack/svelte-query";
 
 	const shiftId = $derived(page.params.id);
-	const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
-	const shift = $derived(query.data?.data);
+	// const currentView = $derived(page.params.view);
+	// const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
+	// const shift = $derived(query.data?.data);
 
 	const previousShiftId = $derived(shiftId);
 	const nextShiftId = $derived(shiftId);
 
-	const isActiveShift = $derived(shift ? buildShiftTimeDetails(shift).status === "active" : false);
-	const isSessionUser = $derived(session.userId == shift?.attributes.user.id);
+	// const isActiveShift = $derived(shift ? buildShiftTimeDetails(shift).status === "active" : false);
+	// const isSessionUser = $derived(session.userId == shift?.attributes.user.id);
 </script>
 
 <div class="flex gap-2">
@@ -24,7 +25,7 @@
 		<span class="">Previous Shift</span>
 	</Button>
 
-	{#if shift && isActiveShift && isSessionUser}
+	<!-- {#if shift && isActiveShift && isSessionUser}
 		<Button
 			href="/oncall/shifts/{shift.id}/handover"
 			variant="fill"
@@ -32,7 +33,7 @@
 		>
 			<span>Edit Handover</span>
 		</Button>
-	{/if}
+	{/if} -->
 
 	<Button href="/oncall/shifts/{nextShiftId}">
 		<span class="">Next Shift</span>

@@ -10,7 +10,7 @@ import type {
 } from "$lib/api";
 import { SvelteMap } from "svelte/reactivity";
 
-type HandoverEditorSection = {
+export type HandoverEditorSection = {
 	header: string;
 	editor: SvelteEditor;
 	activeStatus: Map<string, boolean>;

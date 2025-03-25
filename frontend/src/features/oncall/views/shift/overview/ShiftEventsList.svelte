@@ -10,13 +10,10 @@
 
 	type Props = {
 		shiftEvents: ShiftEvent[];
-		shiftStart: ZonedDateTime;
 	};
-	const { shiftEvents, shiftStart }: Props = $props();
+	const { shiftEvents }: Props = $props();
 
 	const format = $derived(settings.format);
-
-	const shiftTimezone = $derived(shiftStart.timeZone);
 
 	const eventKindIcons: Record<ShiftEvent["eventType"], string> = {
 		["incident"]: mdiFire,

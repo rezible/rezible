@@ -50,7 +50,7 @@
 </script>
 
 <div class="h-10 flex w-full gap-4 items-center px-2">
-	<Header title="Shift Events" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
+	<Header title="Shift Event Annotations" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
 		<div slot="actions" class:hidden={!editable}>
 			<Button
 				color="primary"
@@ -98,7 +98,7 @@
 			{/each}
 		{/if}
 	{:else}
-		<span>No Events Annotated</span>
+		<span>No Annotations</span>
 	{/if}
 </div>
 

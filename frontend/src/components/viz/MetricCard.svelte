@@ -1,0 +1,25 @@
+<script lang="ts">
+	import { Icon } from "svelte-ux";
+	import { type MetricComparison } from "./utils";
+	import ComparisonText from "./ComparisonText.svelte";
+
+	type Props = {
+		title: string;
+		icon: string;
+		metric: number;
+		comparison?: MetricComparison;
+	}
+
+	const { title, icon, metric, comparison }: Props = $props();
+</script>
+
+<div class="flex flex-col border rounded py-3 px-4 bg-surface-100/40 border-surface-content/10">
+	<div class="w-full flex justify-between items-center">
+		<span class="">{title}</span>
+		<span class=""><Icon data={icon} /></span>
+	</div>
+	<span class="text-lg font-bold">{metric}</span>
+	{#if comparison}
+		<ComparisonText {comparison} />
+	{/if}
+</div>

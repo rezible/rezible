@@ -13,22 +13,17 @@
 	import { Collapse, Icon } from "svelte-ux";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import { mdiAlarm, mdiBellAlert, mdiBellSleep, mdiFire, mdiSleepOff } from "@mdi/js";
+	import MetricCard from "$src/components/viz/MetricCard.svelte";
+	import { shiftState } from "$src/features/oncall/lib/shift.svelte";
 
 	type Props = {
-		shift: OncallShift;
 		metrics: ShiftMetrics;
 		comparison: ComparisonMetrics;
 		shiftEvents: ShiftEvent[];
 		eventsFilter: ShiftEventFilterKind | undefined;
 	};
 
-	let { shift, metrics, comparison, shiftEvents, eventsFilter = $bindable() }: Props = $props();
-
-	const comparisonClass = (value: number) => {
-		if (value > 0) return "text-red-500";
-		if (value < 0) return "text-green-500";
-		return "text-gray-500";
-	};
+	let { metrics, comparison, shiftEvents, eventsFilter = $bindable() }: Props = $props();
 
 	const onEventKindClicked = (kind: ShiftEventFilterKind) => {
 		if (eventsFilter === kind) {
@@ -38,6 +33,7 @@
 		eventsFilter = kind;
 	};
 
+	/*
 	const hourBucketSize = 6;
 
 	const bucketDate = (d: ZonedDateTime) => {
@@ -46,14 +42,6 @@
 		return rounded.subtract({ hours: diff });
 	};
 
-	// TODO: use shift state value
-	const shiftStart = $derived(parseAbsolute(shift.attributes.startAt, getLocalTimeZone()));
-	const shiftEnd = $derived(parseAbsolute(shift.attributes.endAt, getLocalTimeZone()));
-
-	// const alerts = $derived(events.filter((e) => e.eventType === "alert"));
-	// const nightAlerts = $derived(events.filter((e) => shiftEventMatchesFilter(e, "nightAlerts")));
-	// const incidents = $derived(events.filter((e) => e.eventType === "incident"));
-
 	const alerts = $derived(shiftEvents.filter((e) => e.eventType === "alert"));
 	const alertHourData = $derived.by(() => {
 		const counts = new Map<string, number>();
@@ -61,7 +49,7 @@
 			const key = bucketDate(ev.timestamp).toAbsoluteString();
 			counts.set(key, (counts.get(key) || 0) + 1);
 		});
-		const startHour = shiftStart.set({ minute: 0, second: 0, millisecond: 0 });
+		const startHour = shiftState.shiftStart.set({ minute: 0, second: 0, millisecond: 0 });
 		const buckets =
 			differenceInHours(roundToNearestHours(shiftEnd.toDate()), startHour.toDate()) / hourBucketSize;
 
@@ -71,26 +59,23 @@
 			return { date: d.toDate(), value: counts.get(key) || 0 };
 		});
 	});
+	*/
+
+	const startDate = $derived(shiftState.shiftStart.toDate());
+	const endDate = $derived(shiftState.shiftEnd.toDate());
 
 	const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
-	const formatShiftEventCountForHeatmap = (
-		start: ZonedDateTime,
-		end: ZonedDateTime,
-		events: ShiftEvent[],
-		kind?: ShiftEventFilterKind
-	) => {
-		const startDate = start.toDate();
+	const hourlyEventCount = $derived.by(() => {
+		const numDays = differenceInCalendarDays(endDate, startDate);
 
 		const numEvents = new Map<string, number>();
-		events.forEach((event) => {
-			if (!!kind && !shiftEventMatchesFilter(event, kind)) return;
+		shiftEvents.forEach((event) => {
+			if (!!eventsFilter && !shiftEventMatchesFilter(event, eventsFilter)) return;
 			const eventDate = event.timestamp.toDate();
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, event.timestamp.hour);
 			numEvents.set(key, (numEvents.get(key) || 0) + 1);
 		});
-
-		const numDays = differenceInCalendarDays(end.toDate(), start.toDate());
 
 		return Array.from({ length: numDays }).flatMap((_, day) => {
 			return Array.from({ length: 24 }).map((_, hour) => [
@@ -99,18 +84,13 @@
 				numEvents.get(eventDayKey(day, hour)) || 0,
 			]);
 		});
-	};
-
-	const hourlyEventCount = $derived(
-		formatShiftEventCountForHeatmap(shiftStart, shiftEnd, shiftEvents, eventsFilter)
-	);
+	});
 	const numDays = $derived(Math.floor(hourlyEventCount.length / 24));
 	const heatmapDayLabels = $derived.by(() => {
-		const fmt = settings.format;
 		return Array.from({ length: numDays }, (_, day) => {
-			const date = shiftStart.add({ days: day });
+			const date = shiftState.shiftStart.add({ days: day });
 			const dayOfWeek = getDay(date.toAbsoluteString());
-			const dayName = fmt.getDayOfWeekName(dayOfWeek);
+			const dayName = settings.format.getDayOfWeekName(dayOfWeek);
 			return `${dayName} ${String(date.day).padStart(2, "0")}`;
 		});
 	});
@@ -122,37 +102,28 @@
 	};
 </script>
 
-{#snippet statBox(title: string, icon: string, metric: number, comparison?: number, hint?: string)}
-	<div class="flex flex-col border rounded py-3 px-4 bg-surface-100/40 border-surface-content/10">
-		<div class="w-full flex justify-between items-center">
-			<span class="">{title}</span>
-			<span class=""><Icon data={icon} /></span>
-		</div>
-		<span class="text-lg font-bold">{metric}</span>
-		{#if comparison}
-			<div class="{comparisonClass(comparison)} flex items-center gap-2">
-				{formatDelta(comparison)} from average
-
-				{#if hint}
-				<div class="text-warning">
-					<Icon data={mdiSleepOff} size={16} classes={{root: "border rounded-full border-warning"}} />
-					<!--div class="text-sm text-gray-500 mt-1">
-						Potential sleep disruptions
-					</div-->
-				</div>
-				{/if}
-			</div>
-		{/if}
-	</div>
-{/snippet}
-
 <div class="grid grid-cols-3 gap-2">
-	{@render statBox("Alerts", mdiBellAlert, metrics.totalAlerts, comparison.alertsComparison)}
-	{@render statBox("Night Alerts", mdiBellSleep, metrics.nightAlerts, comparison.nightAlertsComparison, "Potential sleep disruptions")}
-	{@render statBox("Incidents", mdiFire, metrics.totalIncidents, comparison.incidentsComparison)}
+	<MetricCard
+		title="Alerts"
+		icon={mdiBellAlert}
+		metric={metrics.totalAlerts}
+		comparison={{value: comparison.alertsComparison}}
+	/>
+	<MetricCard
+		title="Night Alerts"
+		icon={mdiBellSleep}
+		metric={metrics.nightAlerts}
+		comparison={{value: comparison.nightAlertsComparison}}
+	/>
+	<MetricCard
+		title="Incidents"
+		icon={mdiFire}
+		metric={metrics.totalIncidents}
+		comparison={{value: comparison.incidentsComparison}}
+	/>
 </div>
 
-<Collapse classes={{root: "border rounded bg-surface-100/40 border-surface-content/10", icon: "mr-2"}}>
+<Collapse classes={{ root: "border rounded bg-surface-100/40 border-surface-content/10", icon: "mr-2" }}>
 	<div slot="trigger" class="flex-1 px-3 py-3">Events Heatmap</div>
 	<div class="border-t border-surface-content/10">
 		<ShiftEventsHeatmap

@@ -2,4 +2,4 @@
 import type { OncallShift } from "$lib/api";
 import { Context } from "runed";
 
-export const shiftCtx = new Context<OncallShift>("shift");
+export const shiftIdCtx = new Context<string>("shiftId");

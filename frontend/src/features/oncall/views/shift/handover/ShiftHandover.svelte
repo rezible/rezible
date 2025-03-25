@@ -6,18 +6,14 @@
 		type OncallShift,
 	} from "$lib/api";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
-	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import ShiftHandoverEditor from "./handover-editor/ShiftHandoverEditor.svelte";
-	import PageActions from "./PageActions.svelte";
+	import ShiftHandoverEditor from "./editor/ShiftHandoverEditor.svelte";
+	import { shiftIdCtx } from "$src/features/oncall/lib/context.svelte";
+	import { shiftState } from "$src/features/oncall/lib/shift.svelte";
 
-	type Props = {
-		shift: OncallShift;
-	};
-	const { shift }: Props = $props();
+	const shiftId = shiftIdCtx.get();
+	const shift = $derived(shiftState.shift);
 
-	appShell.setPageActions(PageActions, false);
-
-	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shift.id } }));
+	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shiftId } }));
 	const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : undefined);
 	const handover = $derived(handoverQuery.data?.data);
 	const isError = $derived(handoverQuery.isError && handoverQueryError?.status !== 404);
@@ -33,7 +29,7 @@
 {:else}
 	{#if isSent}
 		<span>handover already sent: {handover?.id}</span>
-	{:else}
+	{:else if shift}
 		<ShiftHandoverEditor {shift} {handover} />
 	{/if}
 {/if}
