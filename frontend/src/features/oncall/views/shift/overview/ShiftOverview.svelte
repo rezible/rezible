@@ -28,7 +28,6 @@
 		queryOptions({
 			queryKey: ["shiftMetrics", shiftId],
 			queryFn: async (): Promise<{ data: ShiftMetrics }> => {
-				// await simulateApiDelay(500);
 				return { data: makeFakeShiftMetrics() };
 			},
 			staleTime: 5 * 60 * 1000, // 5 minutes
@@ -40,7 +39,6 @@
 		queryOptions({
 			queryKey: ["shiftComparison", shiftId],
 			queryFn: async (): Promise<{ data: ComparisonMetrics }> => {
-				// await simulateApiDelay(500);
 				return { data: makeFakeComparisonMetrics() };
 			},
 			staleTime: 5 * 60 * 1000, // 5 minutes
@@ -49,11 +47,10 @@
 	const comparison = $derived(shiftComparisonQuery.data?.data);
 
 	let eventsFilter = $state<ShiftEventFilterKind>();
-	const shiftEvents = $derived(
-		!eventsFilter
-			? shiftState.shiftEvents
-			: shiftState.shiftEvents.filter((e) => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter))
-	);
+	const shiftEvents = $derived.by(() => {
+		if (!eventsFilter) return shiftState.shiftEvents;
+		return shiftState.shiftEvents.filter((e) => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter));
+	});
 </script>
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
@@ -64,9 +61,7 @@
 	{:else}
 		<div class="col-span-2 h-full w-full overflow-y-auto space-y-2">
 			<ShiftEvents {shiftEvents} {metrics} {comparison} bind:eventsFilter />
-
 			<WorkloadBreakdown {shiftEvents} {metrics} />
-
 			<IncidentMetrics {metrics} {comparison} />
 		</div>
 

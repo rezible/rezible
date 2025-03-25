@@ -3,7 +3,7 @@
 	import { formatDuration } from "date-fns";
 	import { PieChart, Text } from "layerchart";
 	import ChartWithStats from "$src/components/viz/ChartWithStats.svelte";
-	import InlineStat, { type InlineStatProps } from "$src/components/viz/InlineStat.svelte";
+	import { type InlineStatProps } from "$src/components/viz/InlineStat.svelte";
 	import { Header } from "svelte-ux";
 
 	type Props = {

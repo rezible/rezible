@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { type User, type OncallRoster } from "$lib/api";
 	import { mdiChevronRight, mdiCalendarClock, mdiAlertCircle, mdiCheckCircle, mdiClockOutline, mdiGraph, mdiAccount } from "@mdi/js";
-	import { Header, Icon, Button, Badge } from "svelte-ux";
+	import { Header, Icon, Button } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import PageActions from "./PageActions.svelte";
@@ -12,12 +12,14 @@
 
 	appShell.setPageActions(PageActions, false);
 
-	let users = $state<User[]>([
+	const users = $state<User[]>([
 		{ id: "u1", attributes: { name: "Jane Doe", email: "jane@example.com" } },
 		{ id: "u2", attributes: { name: "John Smith", email: "john@example.com" } },
 		{ id: "u3", attributes: { name: "Alex Johnson", email: "alex@example.com" } },
 		{ id: "u4", attributes: { name: "Sarah Williams", email: "sarah@example.com" } }
 	]);
+
+	
 	let currentShifts = $state([
 		{ id: "1", user: "Jane Doe", startTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), endTime: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000) },
 	]);
@@ -34,7 +36,7 @@
 		{ id: "5", user: "Mike Brown", startTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) }
 	]);
 	
-	let services = $state([
+	const services = $state([
 		{ id: "s1", name: "API Gateway", description: "", status: "healthy" },
 		{ id: "s2", name: "Database Cluster", description: "", status: "healthy" },
 		{ id: "s3", name: "Authentication Service", description: "", status: "warning" }
