@@ -5,8 +5,7 @@
 	import { HeatmapChart } from "echarts/charts";
 	import { GridComponent, TitleComponent, VisualMapComponent, TooltipComponent } from "echarts/components";
 	import { CanvasRenderer } from "echarts/renderers";
-	import EChart, { type ChartProps } from "$components/echart/EChart.svelte";
-	import type { ECMouseEvent } from "$components/echart/events";
+	import EChart, { type ChartProps, type ECMouseEvent } from "$components/viz/echart/EChart.svelte";
 
 	use([HeatmapChart, GridComponent, CanvasRenderer, TitleComponent, VisualMapComponent, TooltipComponent]);
 
