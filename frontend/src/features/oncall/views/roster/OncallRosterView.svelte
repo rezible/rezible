@@ -9,7 +9,7 @@
 	} from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
 	import PageActions from "./PageActions.svelte";
-	import RosterStats from "./roster-stats/RosterStats.svelte";
+	import RosterOverview from "./roster-overview/RosterOverview.svelte";
 	import RosterDetails from "./roster-details/RosterDetails.svelte";
 	import ActiveShiftBar from "./ActiveShiftBar.svelte";
 
@@ -45,8 +45,10 @@
 	{#snippet content()}
 		{#if view === "members"}
 			<RosterDetails />
+		{:else if view === "shifts"}
+			
 		{:else}
-			<RosterStats />
+			<RosterOverview />
 		{/if}
 	{/snippet}
 </TabbedViewContainer>
