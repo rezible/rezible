@@ -6,8 +6,8 @@
 	import { format } from "date-fns";
 	import { Bar, Legend, Line, Area, Pie, Chart, BarChart, LineChart } from "layerchart";
 
-	type Props = { roster: OncallRoster };
-	const { roster }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
 
 	// Time period filter options
 	const timePeriods = [

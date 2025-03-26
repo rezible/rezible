@@ -1,22 +1,39 @@
 <script lang="ts">
-	import { type OncallRoster } from "$lib/api";
-	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+	import type { OncallRosterViewRouteParam } from "$src/params/oncallRosterView";
+	import { getOncallRosterOptions } from "$lib/api";
+	import { appShell, type PageBreadcrumb, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+
+	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import PageActions from "./PageActions.svelte";
 	import RosterStats from "./roster-stats/RosterStats.svelte";
 	import RosterDetails from "./roster-details/RosterDetails.svelte";
 
-	type Props = { roster: OncallRoster };
-	const { roster }: Props = $props();
+	type Props = { 
+		rosterId: string;
+		view: OncallRosterViewRouteParam;
+	};
+	const { rosterId, view }: Props = $props();
 
 	appShell.setPageActions(PageActions, false);
+
+	const query = createQuery(() => getOncallRosterOptions({ path: { id: rosterId } }));
+	const rosterName = $derived(query.data?.data.attributes.name ?? "");
+	const rosterBreadcrumb = $derived<PageBreadcrumb[]>([{label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId }}]);
+	setPageBreadcrumbs(() => [
+		{ label: "Oncall", href: "/oncall" },
+		{ label: "Rosters", href: "/oncall/rosters" },
+		...rosterBreadcrumb,
+	]);
+
+	const tabs: Tab[] = [
+		{key: "overview", label: "Overview", href: `/oncall/rosters/${rosterId}`},
+		{key: "members", label: "Members", href: `/oncall/rosters/${rosterId}/members`},
+	];
 </script>
 
-<div class="flex gap-2 w-full h-full max-h-full min-h-0 overflow-hidden">
-	<div class="w-1/3 grid grid-cols-2 grid-rows-3 gap-2">
-		<RosterDetails {roster} />
-	</div>
-
-	<div class="w-2/3 border rounded-lg">
-		<RosterStats {roster} />
-	</div>
-</div>
+<TabbedViewContainer {tabs} activeKey={view}>
+	{#snippet content()}
+		<span>content</span>
+	{/snippet}
+</TabbedViewContainer>

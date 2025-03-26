@@ -5,8 +5,8 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 
-	type Props = { roster: OncallRoster };
-	const { roster }: Props = $props();
+	type Props = {};
+	const {}: Props = $props();
 
 	const users = $state<User[]>([
 		{ id: "u1", attributes: { name: "Jane Doe", email: "jane@example.com" } },

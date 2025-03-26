@@ -35,10 +35,15 @@ const createAppShellState = () => {
 		pageActions = {component, allowChildren, routeBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
+	const setPageBreadcrumbs = (source: () => PageBreadcrumb[]) => {
+		watch(source, crumbs => {breadcrumbs = crumbs});
+	}
+
 	return {
 		setup,
 		get breadcrumbs() { return breadcrumbs },
 		set	breadcrumbs(value: PageBreadcrumb[]) { breadcrumbs = value },
+		setPageBreadcrumbs,
 		setPageActions,
 		get pageActionsComponent() { return pageActionsComponent },
 	};
