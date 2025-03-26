@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { OncallShift } from "$lib/api";
-	import { isFuture, differenceInMinutes, formatDistanceToNowStrict, isPast } from "date-fns";
+	import { isFuture, formatDistanceToNowStrict, isPast } from "date-fns";
 
-	import { Card, Header, ProgressCircle, Tooltip, Icon } from "svelte-ux";
-	import { mdiCircleMedium, mdiChevronRight } from "@mdi/js";
+	import { Card, Header, Icon } from "svelte-ux";
+	import { mdiChevronRight } from "@mdi/js";
 	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";
 
 	type Props = {
 		shift: OncallShift;
@@ -15,8 +16,6 @@
 
 	const start = $derived(new Date(attr.startAt));
 	const end = $derived(new Date(attr.endAt));
-	const progress = $derived((Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf()));
-	const minutesLeft = $derived(differenceInMinutes(end, Date.now()));
 
 	const isUpcoming = $derived(isFuture(start));
 	const isFinished = $derived(isPast(end));
@@ -38,32 +37,7 @@
 					<span class="text-sm">Ends in {formatDistanceToNowStrict(end)}</span>
 				</div>
 				<div slot="actions" class:hidden={!isActive}>
-					<Tooltip>
-						<ProgressCircle
-							size={32}
-							value={100 * progress}
-							track
-							class="text-success [--track-color:theme(colors.success/10%)]"
-						>
-							<Icon data={mdiCircleMedium} class="animate-pulse" />
-						</ProgressCircle>
-						<div
-							slot="title"
-							class="bg-neutral border text-sm text-surface-content p-2 rounded-lg"
-						>
-							<div class="flex flex-col gap-2">
-								<span>{minutesLeft} minutes left</span>
-								<div>
-									<span>Start: </span>
-									<span>{start.toLocaleString()}</span>
-								</div>
-								<div class="">
-									<span>End: </span>
-									<span>{end.toLocaleString()}</span>
-								</div>
-							</div>
-						</div>
-					</Tooltip>
+					<ShiftProgressCircle {shift} size={32} />
 				</div>
 			</Header>
 		</svelte:fragment>

@@ -2,38 +2,51 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import type { OncallRosterViewRouteParam } from "$src/params/oncallRosterView";
 	import { getOncallRosterOptions } from "$lib/api";
-	import { appShell, type PageBreadcrumb, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer, {
+		type Tab,
+	} from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+
 	import PageActions from "./PageActions.svelte";
 	import RosterStats from "./roster-stats/RosterStats.svelte";
 	import RosterDetails from "./roster-details/RosterDetails.svelte";
+	import ActiveShiftBar from "./ActiveShiftBar.svelte";
 
-	type Props = { 
+	type Props = {
 		rosterId: string;
 		view: OncallRosterViewRouteParam;
 	};
 	const { rosterId, view }: Props = $props();
 
-	appShell.setPageActions(PageActions, false);
-
 	const query = createQuery(() => getOncallRosterOptions({ path: { id: rosterId } }));
-	const rosterName = $derived(query.data?.data.attributes.name ?? "");
-	const rosterBreadcrumb = $derived<PageBreadcrumb[]>([{label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId }}]);
-	setPageBreadcrumbs(() => [
+	const roster = $derived(query.data?.data);
+	const rosterName = $derived(roster?.attributes.name ?? "");
+
+	appShell.setPageActions(PageActions, true);
+	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall", href: "/oncall" },
 		{ label: "Rosters", href: "/oncall/rosters" },
-		...rosterBreadcrumb,
+		{ label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId } },
 	]);
 
-	const tabs: Tab[] = [
-		{key: "overview", label: "Overview", href: `/oncall/rosters/${rosterId}`},
-		{key: "members", label: "Members", href: `/oncall/rosters/${rosterId}/members`},
-	];
+	const tabs: Tab[] = $derived([
+		{ label: "Overview", path: "" },
+		{ label: "Members", path: "members" },
+		{ label: "Shifts", path: "shifts" },
+	]);
 </script>
 
-<TabbedViewContainer {tabs} activeKey={view}>
+<TabbedViewContainer {tabs} pathBase="/oncall/rosters/{rosterId}">
+	{#snippet actionsBar()}
+		<ActiveShiftBar />
+	{/snippet}
+
 	{#snippet content()}
-		<span>content</span>
+		{#if view === "members"}
+			<RosterDetails />
+		{:else}
+			<RosterStats />
+		{/if}
 	{/snippet}
 </TabbedViewContainer>

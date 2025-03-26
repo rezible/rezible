@@ -17,28 +17,27 @@
 	};
 	const { shiftId, view }: Props = $props();
 
-	appShell.setPageActions(PageActions, true);
-
 	shiftIdCtx.set(shiftId);
 	shiftState.setup(shiftId);
 
 	const shiftBreadcrumb = $derived(shiftState.shift ? [{ label: formatShiftDates(shiftState.shift), href: "/oncall/shifts/" + shiftId }] : []);
 	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/oncall/shifts/${shiftId}/handover`}] : []);
 
-	setPageBreadcrumbs(() => [
+	appShell.setPageActions(PageActions, true);
+	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall", href: "/oncall" },
 		{ label: "Shifts", href: "/oncall/shifts" },
 		...shiftBreadcrumb,
 		...handoverBreadcrumb,
 	]);
 
-	const tabs: Tab[] = [
-		{key: "overview", label: "Overview", href: `/oncall/shifts/${shiftId}`},
-		{key: "handover", label: "Handover", href: `/oncall/shifts/${shiftId}/handover`},
-	];
+	const tabs: Tab[] = $derived([
+		{label: "Overview", path: ""},
+		{label: "Handover", path: "handover"},
+	]);
 </script>
 
-<TabbedViewContainer {tabs} activeKey={view}>
+<TabbedViewContainer {tabs} pathBase="/oncall/shifts/{shiftId}">
 	{#snippet actionsBar()}
 		<ShiftDetailsBar />
 	{/snippet}

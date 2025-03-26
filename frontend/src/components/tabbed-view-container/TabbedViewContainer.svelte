@@ -1,33 +1,35 @@
 <script lang="ts" module>
 	export type Tab = {
-		key: string;
 		label: string;
-		href: string;
+		path: string;
 	}
 
 </script>
 
 <script lang="ts">
+	import { page } from "$app/state";
+
 	import { cls } from "@layerstack/tailwind";
 	import type { Snippet, Component } from "svelte";
 
 	type Props = { 
 		tabs: Tab[];
-		activeKey: string | undefined;
+		pathBase: string;
 		content: Snippet;
 		actionsBar?: Snippet;
 	};
-	const { tabs, activeKey, content, actionsBar }: Props = $props();
+	const { tabs, pathBase, content, actionsBar }: Props = $props();
 
-	const activeIdx = $derived(activeKey ? tabs.findIndex(t => t.key === activeKey) : 0);
+	const activePath = $derived(page.url.pathname.replaceAll(pathBase, "").replace("/", ""));
+	const activeIdx = $derived(tabs.findIndex(t => activePath === t.path));
 </script>
 
 <div class="flex flex-col h-full max-h-full min-h-0 overflow-hidden">
-	<div class="w-full flex h-16 z-[1] justify-between">
+	<div class="w-full flex h-14 z-[1] justify-between">
 		<div class="flex gap-2 self-end">
 			{#each tabs as tab, i}
 				{@const active = i === activeIdx}
-				<a href={tab.href} 
+				<a href="{pathBase}/{tab.path}" 
 					class={cls(
 						"inline-flex self-end h-14 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative", 
 						active && "bg-surface-100 text-secondary",
