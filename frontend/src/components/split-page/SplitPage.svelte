@@ -15,7 +15,7 @@
 		{@render nav()}
 	</div>
 
-	<div class="flex-1 flex flex-col min-h-0 gap-2 max-h-full px-2 overflow-y-auto">
+	<div class="flex-1 flex flex-col min-h-0 max-h-full px-2 overflow-y-auto">
 		{@render children()}
 	</div>
 </div>

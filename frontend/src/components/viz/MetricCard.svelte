@@ -13,7 +13,7 @@
 	const { title, icon, metric, comparison }: Props = $props();
 </script>
 
-<div class="flex flex-col border rounded py-3 px-4 bg-surface-100/40 border-surface-content/10">
+<div class="flex flex-col border rounded py-3 px-4 bg-surface-100/40 border-surface-content/10 min-w-64">
 	<div class="w-full flex justify-between items-center">
 		<span class="">{title}</span>
 		<span class=""><Icon data={icon} /></span>
