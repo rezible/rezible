@@ -49,6 +49,12 @@ export type OncallShiftAttributes = {
 	roster: OncallRoster;
 	startAt: string;
 	user: User;
+	covers: Array<OncallShiftCover>;
+};
+
+export type OncallShiftCover = {
+	user: User;
+	reason: string;
 };
 
 export type BacklogItem = {
@@ -60,4 +66,26 @@ export type BacklogItemAttributes = {
 	title: string;
 	priority: number;
 	createdAt: Date;
+};
+
+export type HealthIndicator = {
+	name: string;
+	value: number;
+	target: number;
+	status: 'good' | 'warning' | 'critical';
+};
+
+export type ActivityItem = {
+	id: string;
+	type: 'incident' | 'handover' | 'playbook' | 'backlog';
+	title: string;
+	timestamp: Date;
+	user?: User;
+};
+
+export type OncallShiftDisplay = {
+	shift: OncallShift;
+	status: 'previous' | 'current' | 'next';
+	startTime: Date;
+	endTime: Date;
 };
