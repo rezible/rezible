@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { mdiBellAlert, mdiBellBadge, mdiFire, mdiPacMan } from "@mdi/js";
+	import { mdiBellAlert, mdiBellBadge, mdiChartBar, mdiFire, mdiPacMan } from "@mdi/js";
 	import MetricCard from "$components/viz/MetricCard.svelte";
-	import { Button, Header } from "svelte-ux";
+	import { Button, Header, Icon } from "svelte-ux";
 	import TimePeriodSelect from "$components/time-period-select/TimePeriodSelect.svelte";
 	import { rosterIdCtx } from "../context";
 
@@ -31,6 +31,9 @@
 	
 	<div class="border p-2 flex flex-col gap-2">
 		<Header title="Key Metrics" classes={{root: "text-lg font-medium w-fit"}}>
+			<div slot="avatar">
+				<Icon data={mdiChartBar} class="text-primary-300" />
+			</div>
 			<div class="" slot="actions">
 				<TimePeriodSelect bind:selected={periodDays} />
 			</div>

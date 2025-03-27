@@ -20,7 +20,7 @@
 		class={cls(
 			viewing ? "border-secondary/40 bg-secondary/10" : "hover:border-secondary hover:bg-secondary/25"
 		)}
-		classes={{ headerContainer: "py-3 px-4" }}
+		classes={{ headerContainer: "py-3 px-4", root: "w-full" }}
 	>
 		<Header {title} slot="header">
 			<div slot="avatar">

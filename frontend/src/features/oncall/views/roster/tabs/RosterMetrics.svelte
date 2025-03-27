@@ -72,16 +72,10 @@
 </script>
 
 <div class="overflow-y-auto flex flex-col h-full max-h-full min-h-0 flex-1">
-	<Header title="Roster Stats" classes={{root: "gap-2 text-lg font-medium p-2"}}>
-		<div slot="avatar">
-			<Icon data={mdiChartBar} class="text-primary-300" />
-		</div>
-		
-		<div class="justify-end" slot="actions">
-			<TimePeriodSelect bind:selected={periodDays} />
-		</div>
-	</Header>
-
 	<div class="flex gap-4">
+<pre>Workload distribution (across team members)
+Oncall Burden score
+Alert patterns (time of day, day of week)
+Comparison with other rosters/company average</pre>
 	</div>
 </div>

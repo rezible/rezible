@@ -1,32 +1,65 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiAccount } from "@mdi/js";
-	import { Header, Icon } from "svelte-ux";
+	import { Button, Card, Header, Icon } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import type { User } from "../types";
+	import { session } from "$lib/auth.svelte";
+	import TimezoneMap from "$components/viz/timezone-map/TimezoneMap.svelte";
+	import { getLocalTimeZone } from "@internationalized/date";
+	import { onMount, tick } from "svelte";
 
 	const makeFakeUsers = (): User[] => {
 		// todo
-		return [];
+		return session.user ? [session.user] : [];
 	}
 	const users: User[] = makeFakeUsers();
+
+	let showTimezone = $state(false);
+	onMount(() => {
+		setTimeout(() => (showTimezone = true), 10);
+	});
 </script>
 
-<div class="flex flex-col gap-2 w-full">
-	<div class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<div class="flex gap-2 w-full h-full">
+	<div class="flex flex-col gap-2 w-96">
 		{#each users as usr}
-			<a href="/users/{usr.id}" class="block w-full">
-				<div class="flex items-center bg-surface-100 hover:bg-accent-800/40 p-2 w-full">
-					<div class="flex items-center gap-2">
-						<Avatar kind="user" size={20} id={usr.id} />
-						<span class="font-medium">{usr.attributes.name}</span>
+		<Card classes={{root: "border-surface-content/20 bg-neutral/30"}}>
+			<div slot="header" class="flex items-center gap-2 w-full">
+				<Header title={usr.attributes.name} classes={{ root: "w-full", title: "font-medium" }}>
+					<div slot="avatar">
+						<Avatar kind="user" size={32} id={usr.id} />
 					</div>
-					<div class="flex-1 grid justify-items-end">
-						<Icon data={mdiChevronRight} />
+					<div slot="actions" class="flex flex-col text-surface-content">
+						<div class="">{getLocalTimeZone()}</div>
+						<div class=""></div>
 					</div>
+				</Header>
+			</div>
+
+			<div slot="contents" class="w-full p-2 border">
+				<div class="">
+<pre>Oncall Burden score
+Last & next oncall shift
+Oncall readiness status?</pre>
 				</div>
-			</a>
+			</div>
+
+			<div slot="actions" class="flex-1 grid justify-items-end">
+				<Button href="/users/{usr.id}">
+					View
+				</Button>
+			</div>
+		</Card>
 		{:else}
 			<div class="text-surface-600 italic p-2">No users assigned to this roster</div>
 		{/each}
+	</div>
+
+	<div class="col-span-2">
+		<div class="h-[420px] w-[862px]">
+			{#if showTimezone}
+				<TimezoneMap />
+			{/if}
+		</div>
 	</div>
 </div>

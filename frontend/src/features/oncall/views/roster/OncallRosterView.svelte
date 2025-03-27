@@ -14,7 +14,7 @@
 	import RosterMembers from "./tabs/RosterMembers.svelte";
 	import RosterSchedule from "./tabs/RosterSchedule.svelte";
 	import RosterBacklog from "./tabs/RosterBacklog.svelte";
-	import RosterAnalysis from "./tabs/RosterAnalysis.svelte";
+	import RosterMetrics from "./tabs/RosterMetrics.svelte";
 	import RosterResources from "./tabs/RosterResources.svelte";
 
 	type Props = {
@@ -38,10 +38,10 @@
 
 	const tabs = $derived([
 		{ label: "Overview", path: "", component: RosterOverview },
-		{ label: "Schedule", path: "schedule", component: RosterSchedule },
+		{ label: "Metrics", path: "metrics", component: RosterMetrics },
+		{ label: "Shifts", path: "schedule", component: RosterSchedule },
 		{ label: "Members", path: "members", component: RosterMembers },
 		{ label: "Backlog", path: "backlog", component: RosterBacklog },
-		{ label: "Analysis", path: "analysis", component: RosterAnalysis },
 		{ label: "Resources", path: "resources", component: RosterResources },
 	]);
 </script>

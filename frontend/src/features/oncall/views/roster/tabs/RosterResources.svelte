@@ -1,0 +1,62 @@
+<script lang="ts">
+	import { mdiChevronRight, mdiPencil } from "@mdi/js";
+	import { Button, Header } from "svelte-ux";
+
+</script>
+
+<div class="grid grid-cols-4 gap-2 h-full">
+	<div class="flex flex-col h-full border">
+		<Header title="Incident Retrospectives" classes={{title: "text-lg font-medium", root: "border-b h-10 px-1"}} />
+
+
+		<div class="flex-1 flex flex-col overflow-y-auto">
+			<div class="">
+			</div>
+		</div>
+	</div>
+
+	<div class="flex flex-col h-full border">
+		<Header title="Links" classes={{title: "text-lg font-medium", root: "border-b h-10 px-1"}}>
+			<svelte:fragment slot="actions">
+				<Button>Add Link</Button>
+			</svelte:fragment>
+		</Header>
+
+
+		<div class="flex-1 flex flex-col overflow-y-auto">
+			<div class="">
+				<pre>Onboarding documents
+Team-specific tools/dashboards
+Recent incident retrospectives
+Recent meeting notes (ops reviews)</pre>
+			</div>
+		</div>
+	</div>
+
+	<div class="flex flex-col h-full border">
+		<Header title="Playbooks" classes={{title: "text-lg font-medium", root: "border-b h-10 px-1"}}>
+			<svelte:fragment slot="actions">
+				<Button>Add Playbook</Button>
+			</svelte:fragment>
+		</Header>
+
+		<div class="flex-1 flex flex-col overflow-y-auto p-1">
+			<!-- playbook list item -->
+			<div class="flex flex-col w-full border p-1">
+				<Header title="Title">
+					<svelte:fragment slot="actions">
+						<Button icon={mdiPencil} iconOnly />
+						<Button icon={mdiChevronRight} iconOnly />
+					</svelte:fragment>
+				</Header>
+				<div class="border">
+				<pre>Last updated date
+Health score (based on usage/feedback)
+Owner
+Quick actions (edit, archive)
+Tags for categorization (service, type of issue)</pre>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

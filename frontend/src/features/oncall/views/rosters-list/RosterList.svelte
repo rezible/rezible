@@ -8,6 +8,7 @@
 	import UserRosters from "./UserRosters.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";
+	import UserRosterCard from "./UserRosterCard.svelte";
 
 	let allParams = $state<ListOncallRostersData>();
 	const allQuery = createQuery(() => listOncallRostersOptions(allParams));
@@ -26,11 +27,19 @@
 	{#snippet nav()}
 		<Header title="Your Rosters" subheading="" classes={{ title: "text-2xl", root: "h-11" }} />
 
-		<LoadingQueryWrapper query={userQuery}>
-			{#snippet view(rosters: OncallRoster[])}
-				<UserRosters {rosters} />
-			{/snippet}
-		</LoadingQueryWrapper>
+		<div class="flex flex-col h-full">
+			<LoadingQueryWrapper query={userQuery}>
+				{#snippet view(rosters: OncallRoster[])}
+					{#each rosters as r (r.id)}
+						<UserRosterCard
+							title={r.attributes.name}
+							href="/oncall/rosters/{r.attributes.slug}"
+							rosterId={r.id}
+						/>
+					{/each}
+				{/snippet}
+			</LoadingQueryWrapper>
+		</div>
 	{/snippet}
 
 	<div class="flex flex-col h-full gap-2 overflow-x-hidden overflow-y-auto">

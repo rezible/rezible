@@ -7,6 +7,8 @@
 	import { Icon } from "svelte-ux";
 	import { mdiSlack } from "@mdi/js";
 
+	const teamId = "";
+
 	const shiftsQuery = createQuery(() => getUserOncallDetailsOptions());
 	const shifts = $derived(shiftsQuery.data?.data);
 
@@ -15,17 +17,7 @@
 	const userLocalTime = new Date(Date.now()).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit", hour12: true})
 </script>
 
-<div class="flex gap-4 h-14 max-h-14 overflow-y-hidden justify-between pb-2">
-	<!-- <a href="/oncall/" class="flex items-center gap-4 px-4 bg-accent-900/50 rounded-lg hover:bg-accent-900/40">
-		<div class="flex flex-col">
-			<span class="text-xs">Slack Channel</span>
-			<div class="flex items-center gap-2">
-				<Icon data={mdiSlack} size={16} />
-				<span class="">#{slackChannel}</span>
-			</div>
-		</div>
-	</a> -->
-	
+<div class="flex gap-2 h-14 max-h-14 overflow-y-hidden justify-between pb-2">
 	{#if activeShift}
 		<a href="/oncall/shifts/{activeShift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
 			<div class="flex flex-col">
@@ -41,4 +33,14 @@
 			</div>
 		</a>
 	{/if}
+
+	<a href="/teams/{teamId}" class="flex items-center gap-4 px-4 bg-accent-900/50 rounded-lg hover:bg-accent-900/40">
+		<div class="flex flex-col">
+			<span class="text-xs">Team</span>
+			<div class="flex items-center gap-2">
+				<Avatar kind="team" size={14} id={teamId} />
+				<span class="text-sm font-semibold">team name</span>
+			</div>
+		</div>
+	</a>
 </div>
