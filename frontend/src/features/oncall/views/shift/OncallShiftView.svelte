@@ -32,21 +32,9 @@
 	]);
 
 	const tabs: Tab[] = $derived([
-		{label: "Overview", path: ""},
-		{label: "Handover", path: "handover"},
+		{label: "Overview", path: "", component: ShiftOverview},
+		{label: "Handover", path: "handover", component: ShiftHandover},
 	]);
 </script>
 
-<TabbedViewContainer {tabs} pathBase="/oncall/shifts/{shiftId}">
-	{#snippet actionsBar()}
-		<ShiftDetailsBar />
-	{/snippet}
-
-	{#snippet content()}
-		{#if view === "handover"}
-			<ShiftHandover />
-		{:else}
-			<ShiftOverview />
-		{/if}
-	{/snippet}
-</TabbedViewContainer>
+<TabbedViewContainer {tabs} pathBase="/oncall/shifts/{shiftId}" infoBar={ShiftDetailsBar} />
