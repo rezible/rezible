@@ -26,34 +26,6 @@
 		eventsFilter = kind;
 	};
 
-	/*
-	const hourBucketSize = 6;
-
-	const bucketDate = (d: ZonedDateTime) => {
-		const rounded = d.set({ minute: 0, second: 0, millisecond: 0 });
-		const diff = rounded.hour % hourBucketSize;
-		return rounded.subtract({ hours: diff });
-	};
-
-	const alerts = $derived(shiftEvents.filter((e) => e.eventType === "alert"));
-	const alertHourData = $derived.by(() => {
-		const counts = new Map<string, number>();
-		alerts.forEach((ev) => {
-			const key = bucketDate(ev.timestamp).toAbsoluteString();
-			counts.set(key, (counts.get(key) || 0) + 1);
-		});
-		const startHour = shiftState.shiftStart.set({ minute: 0, second: 0, millisecond: 0 });
-		const buckets =
-			differenceInHours(roundToNearestHours(shiftEnd.toDate()), startHour.toDate()) / hourBucketSize;
-
-		return Array.from({ length: buckets }, (_, bucket) => {
-			const d = bucketDate(startHour.add({ hours: bucket * hourBucketSize }));
-			const key = d.toAbsoluteString();
-			return { date: d.toDate(), value: counts.get(key) || 0 };
-		});
-	});
-	*/
-
 	const startDate = $derived(shiftState.shiftStart.toDate());
 	const endDate = $derived(shiftState.shiftEnd.toDate());
 
@@ -97,6 +69,12 @@
 
 <div class="grid grid-cols-3 gap-2">
 	<MetricCard
+		title="Incidents"
+		icon={mdiFire}
+		metric={metrics.totalIncidents}
+		comparison={{value: comparison.incidentsComparison}}
+	/>
+	<MetricCard
 		title="Alerts"
 		icon={mdiBellAlert}
 		metric={metrics.totalAlerts}
@@ -107,12 +85,6 @@
 		icon={mdiBellSleep}
 		metric={metrics.nightAlerts}
 		comparison={{value: comparison.nightAlertsComparison}}
-	/>
-	<MetricCard
-		title="Incidents"
-		icon={mdiFire}
-		metric={metrics.totalIncidents}
-		comparison={{value: comparison.incidentsComparison}}
 	/>
 </div>
 

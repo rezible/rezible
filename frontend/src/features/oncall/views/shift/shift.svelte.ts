@@ -12,7 +12,9 @@ const makeFakeShiftEvent = (date: ZonedDateTime): ShiftEvent => {
 	const hour = Math.floor(Math.random() * 24);
 	const minute = Math.floor(Math.random() * 60);
 	const timestamp = date.copy().set({ hour, minute });
-	return { id: uuidv4(), timestamp, eventType, description: "description", annotation: "annotation" };
+	let annotation: string | undefined = undefined;
+	if (Math.random() > .8) annotation = "annotation";
+	return { id: uuidv4(), timestamp, eventType, description: "description", annotation };
 };
 
 const createFakeShiftEvents = (start: ZonedDateTime, days: number): ShiftEvent[] => {

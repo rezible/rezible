@@ -68,13 +68,6 @@ export type BacklogItemAttributes = {
 	createdAt: Date;
 };
 
-export type HealthIndicator = {
-	name: string;
-	value: number;
-	target: number;
-	status: 'good' | 'warning' | 'critical';
-};
-
 export type ActivityItem = {
 	id: string;
 	type: 'incident' | 'handover' | 'playbook' | 'backlog';
@@ -83,9 +76,3 @@ export type ActivityItem = {
 	user?: User;
 };
 
-export type OncallShiftDisplay = {
-	shift: OncallShift;
-	status: 'previous' | 'current' | 'next';
-	startTime: Date;
-	endTime: Date;
-};

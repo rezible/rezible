@@ -33,29 +33,15 @@ export const makeFakeShiftMetrics = (): ShiftMetrics => ({
 export type ComparisonMetrics = {
 	alertsComparison: number;
 	incidentsComparison: number;
-	responseTimeComparison: number;
 	escalationRateComparison: number;
 	nightAlertsComparison: number;
-	severityComparison: {
-		critical: number;
-		high: number;
-		medium: number;
-		low: number;
-	};
 };
 
 export const makeFakeComparisonMetrics = (): ComparisonMetrics => ({
-	alertsComparison: Math.floor(Math.random() * 60) - 30, // -30% to +30%
-	incidentsComparison: Math.floor(Math.random() * 70) - 35,
-	responseTimeComparison: Math.floor(Math.random() * 50) - 25,
-	escalationRateComparison: Math.floor(Math.random() * 40) - 20,
-	nightAlertsComparison: Math.floor(Math.random() * 80) - 40,
-	severityComparison: {
-		critical: Math.floor(Math.random() * 60) - 30,
-		high: Math.floor(Math.random() * 50) - 25,
-		medium: Math.floor(Math.random() * 40) - 20,
-		low: Math.floor(Math.random() * 30) - 15,
-	}
+	alertsComparison: .7 + (Math.random() * .6),
+	incidentsComparison: .7 + (Math.random() * .6),
+	escalationRateComparison: .9 + (Math.random() * .4),
+	nightAlertsComparison: .8 + (Math.random() * .8),
 });
 
 export const calculateShiftMetrics = (events: ShiftEvent[], shiftDetails: ShiftTimeDetails): ShiftMetrics => {

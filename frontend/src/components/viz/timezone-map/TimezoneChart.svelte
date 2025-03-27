@@ -42,6 +42,7 @@
 		GeoCircle,
 		GeoPath,
 		Graticule,
+		Svg,
 		Tooltip,
 		antipode,
 	} from "layerchart";
@@ -60,23 +61,22 @@
 
 	// @ts-expect-error
 	const colorScale = $derived(scaleSequential(colorExtent, interpolateRdBu));
+	// const dateTimer = timerStore();
 
-	const dateTimer = timerStore();
+	// function formatDate(date: Date, timeZone: string | null) {
+	// 	let result = "-";
+	// 	if (timeZone) {
+	// 		try {
+	// 			result = new Intl.DateTimeFormat(undefined, {
+	// 				timeStyle: "medium",
+	// 				dateStyle: "short",
+	// 				timeZone,
+	// 			}).format(date);
+	// 		} catch {}
+	// 	}
 
-	function formatDate(date: Date, timeZone: string | null) {
-		let result = "-";
-		if (timeZone) {
-			try {
-				result = new Intl.DateTimeFormat(undefined, {
-					timeStyle: "medium",
-					dateStyle: "short",
-					timeZone,
-				}).format(date);
-			} catch {}
-		}
-
-		return result;
-	}
+	// 	return result;
+	// }
 
 	const getSunAntipode = () => {
 		const now = new Date();
@@ -87,6 +87,7 @@
 		return antipode(sunPos);
 	};
 	const sunAntipode = getSunAntipode();
+
 </script>
 
 <Chart geo={{ projection: geoEquirectangular, fitGeojson: countriesGeojson }}>
@@ -116,7 +117,7 @@
 		</ClipPath>
 	</Canvas>
 
-	<Tooltip.Root let:data>
+	<!--Tooltip.Root let:data>
 		{@const { tz_name1st, time_zone } = data.properties}
 		<Tooltip.List>
 			<Tooltip.Item label="Name" value={tz_name1st} />
@@ -126,5 +127,5 @@
 				value={formatDate($dateTimer, time_zone.replace("UTC", "").replace("±", "+"))}
 			/>
 		</Tooltip.List>
-	</Tooltip.Root>
+	</Tooltip.Root-->
 </Chart>

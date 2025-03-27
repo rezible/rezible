@@ -2,11 +2,9 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Header, Icon, Button, Month, Field, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { mdiChevronRight, mdiCalendarClock, mdiClockOutline } from "@mdi/js";
-	import { getUserOncallDetailsOptions } from "$lib/api";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import type { OncallShift } from "../types";
-	import { isFuture, isPast } from "date-fns";
-	import { getLocalTimeZone } from "@internationalized/date";
+	import { getUserOncallDetailsOptions, type OncallShift } from "$lib/api";
+	import { formatDate, formatDistanceToNow, isFuture, isPast } from "date-fns";
+	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -27,15 +25,15 @@
 	const coverRequests: string[] = [];
 </script>
 
-<div class="grid grid-cols-4 w-full h-full">
+<div class="grid grid-cols-4 gap-2 w-full h-full">
 	<div class="col-span-2 border flex flex-col">
-		<div class="flex flex-col border p-2">
+		<div class="flex flex-col p-2">
 			<Header title="Schedule Details" classes={{ root: "text-lg font-medium" }} />
 
 			<span>Every <span class="font-bold">Monday</span> at <span class="font-bold">9AM</span> in <span class="font-bold">{getLocalTimeZone()}</span></span>
 		</div>
 
-		<div class="py-2">
+		<div class="py-2 border-y">
 			<Month />
 		</div>
 	</div>
@@ -44,6 +42,7 @@
 		<Header title="Shifts" classes={{ root: "text-lg font-medium" }} />
 
 		{#snippet shiftItem(shift: OncallShift)}
+			{@const start = parseAbsoluteToLocal(shift.attributes.startAt).toDate()}
 			<a href="/oncall/shifts/{shift.id}" class="block">
 				<div
 					class="flex items-center gap-4 bg-surface-100 hover:bg-surface-content/10 p-3 rounded-lg justify-between border"
@@ -51,7 +50,7 @@
 				>
 					<div class="flex flex-col flex-1">
 						<span class="font-medium">{shift.attributes.user.attributes.name}</span>
-						<div class="text-sm text-surface-600">{shift.attributes.startAt} - {shift.attributes.endAt}</div>
+						<div class="text-sm text-surface-600">{formatDate(start, "yyyy-LL-dd")}</div>
 					</div>
 					<div class="justify-items-end">
 						<Icon data={mdiChevronRight} />

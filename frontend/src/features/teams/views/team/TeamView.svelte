@@ -14,6 +14,7 @@
 
 	import TeamUsers from "./TeamUsers.svelte";
 	import TeamRosters from "./TeamRosters.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
 	type Props = {
 		teamSlug: string;
@@ -23,6 +24,12 @@
 	const teamQuery = createQuery(() => getTeamOptions({ path: { id: teamSlug } }));
 	const team = $derived(teamQuery.data?.data);
 	const teamId = $derived(team?.id ?? "");
+	const teamName = $derived(team?.attributes.name ?? "");
+	
+	appShell.setPageBreadcrumbs(() => [
+		{ label: "Teams", href: "/teams" },
+		{ label: teamName, href: `/teams/${teamSlug}`, avatar: { kind: "team", id: teamId } },
+	]);
 
 	const usersQuery = createQuery(() => ({...listUsersOptions({ query: { teamId } }), enabled: !!teamId }));
 	const rostersQuery = createQuery(() => ({...listOncallRostersOptions({ query: { teamId } }), enabled: !!teamId }));

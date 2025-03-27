@@ -6,14 +6,14 @@
 	type Props = {
 		title: string;
 		icon: string;
-		metric: number;
+		metric: any;
 		comparison?: MetricComparison;
 	}
 
 	const { title, icon, metric, comparison }: Props = $props();
 </script>
 
-<div class="flex flex-col border rounded py-3 px-4 bg-surface-100/40 border-surface-content/10 min-w-64">
+<div class="flex flex-col border rounded py-3 px-4 border-neutral-content/10 bg-neutral-900/30 min-w-64">
 	<div class="w-full flex justify-between items-center">
 		<span class="">{title}</span>
 		<span class=""><Icon data={icon} /></span>

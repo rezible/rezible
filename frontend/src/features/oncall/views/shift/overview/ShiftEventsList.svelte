@@ -68,7 +68,7 @@
 	{@const isOutsideBusinessHours = !isBusinessHours(ev.timestamp.hour)}
 	{@const isNightTime = isNightHours(ev.timestamp.hour)}
 	
-	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border p-3 bg-surface-50 border-surface-content/10 shadow-sm hover:shadow-md transition-shadow">
+	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border p-3 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 		<div class="items-center static z-10">
 			<Icon
 				data={eventKindIcons[ev.eventType]}
@@ -135,7 +135,7 @@
 		</div>
 
 		{#if ev.annotation}
-			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-neutral text-sm">
+			<div class="row-start-2 col-span-3 overflow-y-auto max-h-20 border rounded p-2 w-full bg-neutral-700/70 text-sm">
 				<div class="text-neutral-content">{ev.annotation}</div>
 			</div>
 		{/if}

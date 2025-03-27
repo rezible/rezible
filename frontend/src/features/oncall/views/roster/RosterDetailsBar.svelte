@@ -3,11 +3,8 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getUserOncallDetailsOptions } from "$src/lib/api";
 	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";
-	import type { OncallRoster } from "./types";
-	import { Icon } from "svelte-ux";
-	import { mdiSlack } from "@mdi/js";
 
-	const teamId = "";
+	const teamId = "test-team-2";
 
 	const shiftsQuery = createQuery(() => getUserOncallDetailsOptions());
 	const shifts = $derived(shiftsQuery.data?.data);
@@ -39,7 +36,7 @@
 			<span class="text-xs">Team</span>
 			<div class="flex items-center gap-2">
 				<Avatar kind="team" size={14} id={teamId} />
-				<span class="text-sm font-semibold">team name</span>
+				<span class="text-sm font-semibold">Test Team</span>
 			</div>
 		</div>
 	</a>

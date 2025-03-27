@@ -5,6 +5,11 @@
 	import type { CountriesTopology, TimezonesTopology } from "./TimezoneChart.svelte";
 	import TimezoneChart from "./TimezoneChart.svelte";
 
+	type Props = {
+		highlightTz?: string;
+	};
+	const { highlightTz }: Props = $props();
+
 	const countriesQuery = createQuery(() => queryOptions({
 		queryKey: ["countries110mJson"],
 		queryFn: async () => {
@@ -25,7 +30,6 @@
 		}
 	}));
 	const timezonesData = $derived(timezonesQuery.data);
-
 </script>
 
 <div class="h-full">
