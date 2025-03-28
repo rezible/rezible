@@ -24,8 +24,8 @@
 </script>
 
 <Card
-	title="Time Oncall Report"
-	subheading="Set up scheduled export of oncall hours report"
+	title="Oncall Time Report"
+	subheading="Set up scheduled exporting of an oncall hours report"
 	class="p-4 w-full"
 	classes={{ headerContainer: "px-0 pt-0", content: "bg-surface-200" }}
 >

@@ -3,9 +3,7 @@
 	import { TextField, ListItem, Button, Header } from "svelte-ux";
 	import { mdiMagnify, mdiChevronRight } from "@mdi/js";
 	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
-	import { session } from "$lib/auth.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import UserRosters from "./UserRosters.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";
 	import UserRosterCard from "./UserRosterCard.svelte";
