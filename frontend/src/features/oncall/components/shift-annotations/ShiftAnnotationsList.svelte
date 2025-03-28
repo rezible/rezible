@@ -53,8 +53,8 @@
 	<Header title="Shift Event Annotations" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
 		<div slot="actions" class:hidden={!editable}>
 			<Button
-				color="primary"
-				variant="fill"
+				color="secondary"
+				variant="fill-light"
 				on:click={() => {
 					showEditorDialog = true;
 				}}

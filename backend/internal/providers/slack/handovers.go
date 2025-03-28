@@ -41,12 +41,14 @@ func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection)
 	b.blocks = make([]slack.Block, 0)
 
 	b.addHeader()
+	b.addBlocks(slack.NewDividerBlock())
 	for i, section := range content {
 		sectionErr := b.addSection(i, section)
 		if sectionErr != nil {
 			return fmt.Errorf("building section %d: %w", i, sectionErr)
 		}
 	}
+	b.addBlocks(slack.NewDividerBlock())
 	b.addFooter()
 
 	return nil
@@ -67,8 +69,7 @@ func (b *handoverMessageBuilder) addHeader() {
 	b.addBlocks(
 		slack.NewHeaderBlock(headerObject, slack.HeaderBlockOptionBlockID("header")),
 		slack.NewRichTextBlock("header_users", usersBlock),
-		slack.NewContextBlock("header_time", contextObject),
-		slack.NewDividerBlock())
+		slack.NewContextBlock("header_time", contextObject))
 }
 
 func (b *handoverMessageBuilder) addSection(idx int, section rez.OncallShiftHandoverSection) error {
@@ -94,6 +95,11 @@ func (b *handoverMessageBuilder) addSection(idx int, section rez.OncallShiftHand
 }
 
 func (b *handoverMessageBuilder) addAnnotations() {
+	if len(b.annotations) == 0 {
+		b.addBlocks(slack.NewSectionBlock(plainText("No Annotations"), nil, nil))
+		return
+	}
+
 	numListBlocks := 0
 	numNoteBlocks := 0
 
@@ -157,6 +163,6 @@ func (b *handoverMessageBuilder) addIncidents() {
 func (b *handoverMessageBuilder) addFooter() {
 	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.FrontendUrl, b.endingShift.ID)
 	footerEl := slack.NewRichTextSection(slack.NewRichTextSectionLinkElement(
-		endingShiftLink, "View Shift in Rezible", nil))
+		endingShiftLink, "View Full Shift Details in Rezible", nil))
 	b.addBlocks(slack.NewRichTextBlock("handover_footer", footerEl))
 }

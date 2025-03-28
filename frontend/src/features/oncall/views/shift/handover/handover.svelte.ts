@@ -12,8 +12,8 @@ import { SvelteMap } from "svelte/reactivity";
 
 export type HandoverEditorSection = {
 	header: string;
-	editor: SvelteEditor;
-	activeStatus: Map<string, boolean>;
+	editor?: SvelteEditor;
+	activeStatus?: Map<string, boolean>;
 	kind: "regular";
 };
 
@@ -36,9 +36,20 @@ const createHandoverState = () => {
 	let sections = $state<HandoverSection[]>([]);
 
 	const resetState = () => {
+		sent = false;
+		isEmpty = true;
 		activeEditor = undefined;
 		sections = [];
 	};
+
+	const setup = async (handover?: OncallShiftHandover, template?: OncallShiftHandoverTemplate) => {
+		resetState();
+		if (handover) {
+			restoreExisting(handover);
+		} else if (template) {
+			setupTemplate(template)
+		}
+	}
 
 	const setupTemplate = async (template: OncallShiftHandoverTemplate) => {
 		resetState();
@@ -63,18 +74,25 @@ const createHandoverState = () => {
 
 	const restoreExisting = (handover: OncallShiftHandover) => {
 		resetState();
+		sent = new Date(handover.attributes.sentAt).valueOf() > 0;
 		handover.attributes.content.forEach((sec, idx) => {
 			if (sec.kind === "regular") {
-				const { editor, activeStatus } = createEditor(
-					idx,
-					!!sec.jsonContent ? JSON.parse(sec.jsonContent) : undefined
-				);
-				sections.push({
-					header: sec.header,
-					kind: sec.kind,
-					editor: editor,
-					activeStatus: activeStatus,
-				});
+				const content = !!sec.jsonContent ? JSON.parse(sec.jsonContent) : undefined;
+				const { editor, activeStatus, contentEmpty } = createEditor(idx, content);
+				if (sent && contentEmpty) {
+					editor.destroy();
+					sections.push({
+						header: sec.header,
+						kind: sec.kind,
+					});
+				} else {
+					sections.push({
+						header: sec.header,
+						kind: sec.kind,
+						editor: editor,
+						activeStatus: activeStatus,
+					});
+				}
 			} else if (sec.kind == "annotations" || sec.kind == "incidents") {
 				sections.push({
 					header: sec.header,
@@ -87,7 +105,7 @@ const createHandoverState = () => {
 	const setSent = () => {
 		sent = true;
 		sections.forEach((s) => {
-			if (s.kind === "regular") s.editor.setEditable(false);
+			if (s.kind === "regular") s.editor?.setEditable(false);
 			activeEditor = undefined;
 		});
 	};
@@ -106,10 +124,10 @@ const createHandoverState = () => {
 			content,
 			editable: !sent,
 			extensions,
-			autofocus: idx === 0 ? "end" : false,
+			autofocus: (!sent && idx === 0) ? "end" : false,
 			editorProps: {
 				attributes: {
-					class: "m-3 max-w-none focus:outline-none prose prose-sm",
+					class: "max-w-none focus:outline-none list-disc",
 				},
 			},
 			onTransaction: ({ editor }) => {
@@ -127,7 +145,9 @@ const createHandoverState = () => {
 			},
 		});
 
-		return { editor, activeStatus };
+		const contentEmpty = editor.getText().trim() == "";
+
+		return { editor, activeStatus, contentEmpty };
 	};
 
 	const setEditorFocus = (i: number, focus: boolean) => {
@@ -139,7 +159,7 @@ const createHandoverState = () => {
 
 	const getSectionContent = (): OncallShiftHandoverSection[] => {
 		return sections.map((s) => {
-			const jsonContent = s.kind === "regular" ? JSON.stringify(s.editor.getJSON()) : undefined;
+			const jsonContent = s.kind === "regular" ? JSON.stringify(s.editor?.getJSON()) : undefined;
 			return { header: s.header, kind: s.kind, jsonContent };
 		});
 	};
@@ -151,8 +171,7 @@ const createHandoverState = () => {
 	};
 
 	return {
-		setupTemplate,
-		restoreExisting,
+		setup,
 		destroy,
 		setEditorFocus,
 		setSent,

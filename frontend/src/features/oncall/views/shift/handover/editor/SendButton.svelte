@@ -3,20 +3,17 @@
 	import {
 		getNextOncallShiftOptions,
 		getOncallShiftHandoverOptions,
-		getOncallShiftOptions,
 		sendOncallShiftHandoverMutation,
 	} from "$lib/api";
 	import { Button, Icon } from "svelte-ux";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { getToastState } from "$features/app/lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { handoverState } from "./handover.svelte";
+	import { handoverState } from "../handover.svelte";
 	import { page } from "$app/state";
 
-
-	const shiftId = $derived(page.params.id);
-	// const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
-	// const shift = $derived(query.data?.data);
+	type Props = { shiftId: string };
+	const { shiftId }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
@@ -54,11 +51,11 @@
 	on:click={submitHandover}
 	classes={{ root: "gap-2" }}
 >
-	<span class="flex items-center gap-3 text-lg">
+	<span class="flex items-center gap-2 text-lg">
 		{#if handoverState.sent}
 			Sent
 		{:else}
-			Send Handover to
+			Send to
 			<span class="font-bold flex gap-2 items-center">
 				{nextUser?.attributes.name ?? ""}
 				<Avatar kind="user" size={22} id={nextUser?.id ?? ""} />

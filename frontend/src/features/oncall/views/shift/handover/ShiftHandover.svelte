@@ -13,19 +13,12 @@
 	const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : undefined);
 	const handover = $derived(handoverQuery.data?.data);
 	const isError = $derived(handoverQuery.isError && handoverQueryError?.status !== 404);
-
-	const sentAt = $derived(handover && new Date(handover.attributes.sentAt));
-	const isSent = $derived(sentAt && sentAt.valueOf() > 0);
 </script>
 
 {#if handoverQuery.isPending}
 	<LoadingIndicator />
 {:else if isError}
 	<span>error: {JSON.stringify(handoverQueryError)}</span>
-{:else}
-	{#if isSent}
-		<span>handover already sent: {handover?.id}</span>
-	{:else if shift}
-		<ShiftHandoverEditor {shift} {handover} />
-	{/if}
+{:else if shift}
+	<ShiftHandoverEditor {shift} {handover} />
 {/if}
