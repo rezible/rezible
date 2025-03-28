@@ -9,15 +9,19 @@
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { getToastState } from "$features/app/lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { handoverState } from "../handover.svelte";
-	import { page } from "$app/state";
+	import { handoverState } from "./handoverState.svelte";
 
-	type Props = { shiftId: string };
+	type Props = { 
+		shiftId: string;
+	};
 	const { shiftId }: Props = $props();
 
-	const queryClient = useQueryClient();
 	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
 	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);
+
+
+	const queryClient = useQueryClient();
+	const canSend = $derived(!handoverState.sent && !handoverState.isEmpty);
 
 	const toasts = getToastState();
 
@@ -33,14 +37,11 @@
 
 	const submitHandover = () => {
 		const content = handoverState.getSectionContent();
-		console.log(content);
 		sendMutation.mutate({
 			path: { id: shiftId },
 			body: { attributes: { content } },
 		});
 	};
-
-	const canSend = $derived(!handoverState.sent && !handoverState.isEmpty);
 </script>
 
 <Button

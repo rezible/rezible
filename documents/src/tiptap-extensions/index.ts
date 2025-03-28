@@ -34,8 +34,10 @@ const configureTaskListExtensions = (nested = false) => {
 
 export const configureBaseExtensions = (history: boolean): Extensions => {
 	return [
-		StarterKit.configure({history: history ? undefined : false}),
-		BulletList.configure({HTMLAttributes: {"class": "list-disc ml-4"}}),
+		StarterKit.configure({
+			history: history ? undefined : false, 
+			bulletList: {HTMLAttributes: {"class": "list-disc ml-4"}},
+		}),
 		Link,
 		Image,
 	]

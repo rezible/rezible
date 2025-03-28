@@ -1,32 +1,34 @@
 <script lang="ts">
-	import { Button, Header, MenuItem } from "svelte-ux";
+	import { Button, Header } from "svelte-ux";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import { EditorContent } from "svelte-tiptap";
-	import { handoverState, type HandoverEditorSection } from "../handover.svelte";
-	import type { ChainedCommands } from "@tiptap/core";
+	import { handoverState, type HandoverEditorSection } from "./handoverState.svelte";
+	import type { ChainedCommands, Content } from "@tiptap/core";
 	import {
-	type Incident,
+	listOncallShiftAnnotationsOptions,
+		listOncallShiftIncidentsOptions,
+		type Incident,
 		type OncallShiftAnnotation,
 		type OncallShiftHandover,
 		type OncallShiftHandoverTemplate,
 	} from "$lib/api";
 	import { onMount } from "svelte";
+	import SendButton from "./SendButton.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {
-		template?: OncallShiftHandoverTemplate;
+		shiftId: string;
+		editable: boolean;
 		handover?: OncallShiftHandover;
-		incidents: Incident[];
-		pinnedAnnotations: OncallShiftAnnotation[];
+		template?: OncallShiftHandoverTemplate;
 	};
-	const { template, handover, incidents, pinnedAnnotations }: Props = $props();
+	const { shiftId, editable, handover, template }: Props = $props();
 
-	onMount(() => {
-		handoverState.setup(handover, template);
-		return () => handoverState.destroy();
-	});
+	const isSent = $derived(handover && new Date(handover.attributes.sentAt).valueOf() > 0);
 
 	let focusIdx = $state(-1);
 	const onSectionFocus = (e: FocusEvent, idx: number, focus: boolean) => {
+		if (!editable || isSent) return;
 		handoverState.setEditorFocus(idx, focus);
 		if (focus) focusIdx = idx;
 		if (!focus && focusIdx === idx) {
@@ -47,6 +49,25 @@
 			chain.run();
 		};
 	};
+
+	const annotationsQuery = createQuery(() => ({
+		...listOncallShiftAnnotationsOptions({ path: { id: shiftId } }),
+		enabled: !isSent,
+	}));
+	const annotations = $derived(annotationsQuery.data?.data ?? []);
+	const pinnedAnnotations = $derived(annotations.filter((ann) => ann.attributes.pinned));
+
+	const incidentsSectionPresent = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
+	const incidentsQuery = createQuery(() => ({
+		...listOncallShiftIncidentsOptions({ path: { id: shiftId } }),
+		enabled: (!isSent && incidentsSectionPresent),
+	}));
+	const incidents = $derived(incidentsQuery.data?.data ?? []);
+
+	onMount(() => {
+		handoverState.setup(handover, template);
+		return () => handoverState.destroy();
+	});
 </script>
 
 <div class="flex flex-col gap-2 shrink overflow-y-auto">
@@ -70,6 +91,12 @@
 		</div>
 	{/each}
 </div>
+
+{#if !handoverState.sent && editable}
+	<div class="w-full flex justify-end px-2">
+		<SendButton {shiftId} />
+	</div>
+{/if}
 
 {#snippet annotationsSection()}
 	{#if pinnedAnnotations.length === 0}

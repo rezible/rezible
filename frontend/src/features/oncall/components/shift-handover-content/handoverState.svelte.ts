@@ -1,12 +1,11 @@
-import type { Content, Editor, HTMLContent, JSONContent } from "@tiptap/core";
+import type { Content, Editor } from "@tiptap/core";
 import { Editor as SvelteEditor } from "svelte-tiptap";
 import { debounce } from "$lib/utils.svelte";
-import { configureBaseExtensions, getHandoverExtensions } from "@rezible/documents/tiptap-extensions";
+import { getHandoverExtensions } from "@rezible/documents/tiptap-extensions";
 import type {
 	OncallShiftHandover,
 	OncallShiftHandoverSection,
 	OncallShiftHandoverTemplate,
-	OncallShiftHandoverTemplateSection,
 } from "$lib/api";
 import { SvelteMap } from "svelte/reactivity";
 
@@ -45,6 +44,7 @@ const createHandoverState = () => {
 	const setup = async (handover?: OncallShiftHandover, template?: OncallShiftHandoverTemplate) => {
 		resetState();
 		if (handover) {
+			sent = new Date(handover.attributes.sentAt).valueOf() > 0;
 			restoreExisting(handover);
 		} else if (template) {
 			setupTemplate(template)
@@ -52,7 +52,6 @@ const createHandoverState = () => {
 	}
 
 	const setupTemplate = async (template: OncallShiftHandoverTemplate) => {
-		resetState();
 		template.attributes.sections.forEach((sec, idx) => {
 			if (sec.type === "regular") {
 				let content = sec.list ? "<ul><li></li></ul>" : "";
@@ -73,8 +72,6 @@ const createHandoverState = () => {
 	};
 
 	const restoreExisting = (handover: OncallShiftHandover) => {
-		resetState();
-		sent = new Date(handover.attributes.sentAt).valueOf() > 0;
 		handover.attributes.content.forEach((sec, idx) => {
 			if (sec.kind === "regular") {
 				const content = !!sec.jsonContent ? JSON.parse(sec.jsonContent) : undefined;
