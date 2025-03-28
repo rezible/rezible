@@ -10,7 +10,9 @@
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
 	import { eventKindIcons } from "$features/oncall/lib/handover-timeline";
+	import { settings } from "$lib/settings.svelte";
 	import ShiftAnnotationEditorDialog from "./ShiftAnnotationEditorDialog.svelte";
+	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {
 		shiftId: string;
@@ -107,7 +109,7 @@
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
-				{occurredAt.toLocaleString()}
+				{settings.format(occurredAt, PeriodType.DayTime)}
 			</span>
 		</div>
 
@@ -119,7 +121,7 @@
 		</div>
 
 		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
-			<div class="leading-none">{ann.attributes.title}</div>
+			<div class="leading-none">{ann.attributes.title || "todo: msg contents"}</div>
 			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
 				<Button
 					disabled={updateAnnotationMut.isPending}

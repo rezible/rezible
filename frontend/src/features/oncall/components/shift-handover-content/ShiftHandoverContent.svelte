@@ -110,7 +110,7 @@
 	{:else}
 		<ul class="list-disc pl-5">
 			{#each pinnedAnnotations as ann (ann.id)}
-				<li>{ann.attributes.title}</li>
+				<li>{ann.attributes.title || "title"}</li>
 				<ul class="pl-5">
 					<li>
 						<span class="italic">{ann.attributes.notes}</span>

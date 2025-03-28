@@ -105,11 +105,12 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 		SetTitle(anno.Title).
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).
-		SetMinutesOccupied(anno.MinutesOccupied).
-		OnConflictColumns(oncallusershiftannotation.FieldShiftID, oncallusershiftannotation.FieldEventID).
-		UpdateNewValues()
+		SetMinutesOccupied(anno.MinutesOccupied)
+	if upsertErr := upsertQuery.Exec(ctx); upsertErr != nil {
+		return fmt.Errorf("failed to upsert char annotation: %w", upsertErr)
+	}
 
-	return upsertQuery.Exec(ctx)
+	return nil
 }
 
 func (s *OncallService) setChatCreateAnnotationFunc() {

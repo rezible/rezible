@@ -289,13 +289,12 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		}
 	}
 
-	setFn := func(anno *ent.OncallUserShiftAnnotation) {
+	return p.createAnnotationFn(ctx, shiftId, meta.MsgId, func(anno *ent.OncallUserShiftAnnotation) {
 		if meta.AnnotationId != uuid.Nil {
 			anno.ID = meta.AnnotationId
 		}
 		anno.OccurredAt = meta.MsgTimestamp
 		anno.Notes = notes
-	}
-
-	return p.createAnnotationFn(ctx, shiftId, meta.MsgId, setFn)
+		anno.EventKind = oncallusershiftannotation.EventKindPing
+	})
 }

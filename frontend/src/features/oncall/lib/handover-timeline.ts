@@ -5,13 +5,13 @@ import type {
 	CreateOncallShiftAnnotationRequestAttributes,
 } from "$lib/api";
 import { getLocalTimeZone, parseAbsolute, parseAbsoluteToLocal, ZonedDateTime } from "@internationalized/date";
-import { mdiCircleMedium, mdiFire, mdiPhoneAlert } from "@mdi/js";
+import { mdiChat, mdiCircleMedium, mdiFire, mdiPhoneAlert, mdiSlack } from "@mdi/js";
 import { differenceInMinutes } from "date-fns";
 
 export const eventKindIcons: Record<ShiftEventKind, string> = {
 	["incident"]: mdiFire,
 	["alert"]: mdiPhoneAlert,
-	["ping"]: mdiCircleMedium,
+	["ping"]: mdiSlack,
 	["toil"]: mdiCircleMedium,
 };
 
