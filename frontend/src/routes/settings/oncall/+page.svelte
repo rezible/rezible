@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { Weekdays, type Weekday } from "$lib/scheduling";
-	import { isEqualDay } from "@internationalized/date";
-	import { addDays, isBefore, isEqual, isSameDay, subDays } from "date-fns";
+	import { isBefore, isSameDay } from "date-fns";
 	import { Button, Card, Field, Header, Month, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
-	import { SvelteSet } from "svelte/reactivity";
 
 	let repeats = $state<"weekly" | "monthly">("monthly");
 	let repetitionStep = $state(1);
