@@ -68,7 +68,7 @@
 	iconOnly={!$smScreen}
 	on:click={onSearchClicked}
 	class={cls(
-		"sm:bg-surface-100/80 sm:hover:bg-surface-100/50 text-surface-content rounded-full w-full max-w-xl mx-auto justify-start"
+		"sm:bg-surface-100/60 sm:hover:bg-surface-100/80 text-surface-content/80 hover:text-surface-content rounded h-10 w-full max-w-xl mx-auto justify-start"
 	)}
 >
 	<span class="flex-1 text-left max-sm:hidden">Search</span>

@@ -15,30 +15,18 @@
 </script>
 
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
-	{#if !session.user}
-		<div class="grid grid-rows-app-shell-layout flex-1">
-			<nav class="w-full h-16 border-b">
-				<HeaderLogo />
-			</nav>
-
-			<main class="w-full overflow-y-auto p-2">
-				{@render children()}
-			</main>
-		</div>
-	{:else}
+	{#if session.user}
 		<Sidebar />
 
-		<div class="grid grid-rows-app-shell-layout flex-1">
-			<nav class="w-full h-16">
-				<Header />
-			</nav>
-
-			<main class="w-full overflow-y-auto px-2 pb-2">
-				<PageContainer>
-					{@render children()}
-				</PageContainer>
-			</main>
-		</div>
+		<main class="w-full p-2">
+			<PageContainer>
+				{@render children()}
+			</PageContainer>
+		</main>
+	{:else}
+		<main class="w-full p-2">
+			{@render children()}
+		</main>
 	{/if}
 </div>
 

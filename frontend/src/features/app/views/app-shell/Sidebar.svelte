@@ -13,7 +13,10 @@
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import { Icon, Collapse } from "svelte-ux";
+	import OmniSearch from "$features/app/components/omni-search/OmniSearch.svelte";
+	import UserProfileMenu from "$features/app/components/user-profile-menu/UserProfileMenu.svelte";
 	import HeaderLogo from "./HeaderLogo.svelte";
+	import { session } from "$src/lib/auth.svelte";
 
 	type SidebarItem = {
 		path: string;
@@ -61,13 +64,13 @@
 
 <aside
 	class={cls(
-		"h-full group flex flex-col overflow-hidden bg-surface-300 pb-2",
+		"h-full group flex flex-col overflow-hidden bg-surface-300 pb-2 pl-2",
 		expandingHover ? "w-fit hover:w-60" : "w-60"
 	)}
 >
 	<HeaderLogo {expandingHover} />
 
-	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between pl-2">
+	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between">
 		<div class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
 			{#each routes as r (r.label)}
 				{#if "children" in r}
@@ -96,37 +99,20 @@
 			{/each}
 		</div>
 
-		<div class="">
-			{#if currentPath !== "/oncall"}
-				<!--a href="/oncall">
-					<div
-						class="border rounded-lg border-success-700 bg-success-600/20 {expandingHover
-							? 'group-hover:p-2'
-							: 'p-2'} m-2 flex justify-center"
-					>
-						<Header
-							title="Currently Oncall"
-							subheading="search-team"
-							class={expandingHover ? "hidden group-hover:flex" : "flex"}
-						>
-							<svelte:fragment slot="actions">
-								<Icon data={mdiCircleMedium} classes={{ root: "text-success" }} />
-							</svelte:fragment>
-						</Header>
-						<Icon
-							class={expandingHover ? "inline group-hover:hidden" : "hidden"}
-							data={mdiCircleMedium}
-							classes={{ root: "text-success" }}
-						/>
-					</div>
-				</a-->
-			{/if}
-
+		<!--div class="">
 			{@render navItem({
 				label: "Settings",
 				path: "/settings",
 				icon: mdiCogBox,
 			})}
-		</div>
+		</div-->
+	</div>
+
+	<div class="my-2">
+		<OmniSearch />
+	</div>
+
+	<div class="">
+		<UserProfileMenu />
 	</div>
 </aside>
