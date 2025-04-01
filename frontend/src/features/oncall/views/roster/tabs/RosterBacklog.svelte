@@ -15,62 +15,28 @@
 		// TODO: fill this with some items
 	];
 
-	const getRosterBacklogOptions = (options: {path: {id: string}}) => {
+	const listRosterBacklogItemsOptions = (options: {query: {rosterId: string}}) => {
 		return queryOptions({
 			queryFn: async ({ queryKey, signal }) => {
 				return {data: mockBacklogItems};
 			},
-			queryKey: ["getUserOncallDetailsOptions", options.path.id]
+			queryKey: ["getUserOncallDetailsOptions", options.query.rosterId]
 		});
 	};
-
-	const backlogQuery = createQuery(() => getRosterBacklogOptions({path: {id: rosterId}}));
+	const backlogQuery = createQuery(() => listRosterBacklogItemsOptions({query: {rosterId}}));
 
 	const today = now(getLocalTimeZone());
 
-	type TicketBurn = {
-		"date": Date,
-		"start": number,
-		"high": number,
-		"low": number,
-		"end": number,
+	type TicketBurn = { date: Date, start: number, high: number, low: number, end: number };
+	const mockBurndownDay = (weeks: number, start: number, high: number, low: number, end: number): TicketBurn => {
+		return {start, high, low, end, date: today.subtract({weeks}).toDate()}
 	}
 	const burndownData: TicketBurn[] = [
-		{
-			"date": today.subtract({weeks: 4}).toDate(),
-			"start": 3,
-			"high": 8,
-			"low": 3,
-			"end": 4,
-		},
-		{
-			"date": today.subtract({weeks: 3}).toDate(),
-			"start": 4,
-			"high": 6,
-			"low": 3,
-			"end": 3,
-		},
-		{
-			"date": today.subtract({weeks: 2}).toDate(),
-			"start": 3,
-			"high": 11,
-			"low": 3,
-			"end": 6,
-		},
-		{
-			"date": today.subtract({weeks: 1}).toDate(),
-			"start": 6,
-			"high": 14,
-			"low": 6,
-			"end": 10,
-		},
-		{
-			"date": today.toDate(),
-			"start": 10,
-			"high": 11,
-			"low": 6,
-			"end": 6,
-		},
+		mockBurndownDay(4, 3, 8, 3, 4),
+		mockBurndownDay(3, 4, 6, 3, 3),
+		mockBurndownDay(2, 3, 11, 3, 6),
+		mockBurndownDay(1, 6, 14, 6, 10),
+		mockBurndownDay(0, 10, 11, 6, 6),
 	]
 </script>
 
