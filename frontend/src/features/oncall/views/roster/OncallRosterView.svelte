@@ -29,12 +29,12 @@
 	const roster = $derived(query.data?.data);
 	const rosterName = $derived(roster?.attributes.name ?? "");
 
-	appShell.setPageActions(PageActions, true);
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall", href: "/oncall" },
 		{ label: "Rosters", href: "/oncall/rosters" },
 		{ label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId } },
 	]);
+	appShell.setPageActions(PageActions, true, () => ({roster}));
 
 	const tabs = $derived([
 		{ label: "Overview", path: "", component: RosterOverview },

@@ -1,8 +1,8 @@
 <script>
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import IncidentsSettingsView from "$features/settings/views/incidents/IncidentsSettingsView.svelte";
 
-	setPageBreadcrumbs(() => [
+	appShell.setPageBreadcrumbs(() => [
 		{ label: "Settings", href: "/settings" },
 		{ label: "Incidents" }
 	]);

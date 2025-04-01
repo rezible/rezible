@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getLocalTimeZone } from "@internationalized/date";
 	import { Header } from "svelte-ux";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import { getUserOptions, listIncidentsOptions, listOncallRostersOptions, listOncallShiftsOptions, listTeamsOptions } from "$lib/api";
 
 	import Avatar from "$components/avatar/Avatar.svelte";
@@ -17,7 +17,7 @@
 	const user = $derived(userQuery.data?.data);
 	const userName = $derived(user?.attributes.name ?? "");
 
-	setPageBreadcrumbs(() => [
+	appShell.setPageBreadcrumbs(() => [
 		{ label: "Users", href: "/users" },
 		{ label: userName, href: `/users/${userId}`, avatar: {kind: "user", id: userId}},
 	]);

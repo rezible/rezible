@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Wiki" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "Wiki" }]);
 </script>

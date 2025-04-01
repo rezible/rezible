@@ -3,10 +3,12 @@
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 
-	type Props = {
-		children: Snippet;
-	};
+	type Props = {children: Snippet};
 	const { children }: Props = $props();
+
+	const pageActions = $derived(appShell.pageActions);
+	const propsFn = $derived(pageActions?.propsFn ?? (() => ({})));
+	const pageActionsProps = $derived.by(() => (propsFn()));
 </script>
 
 <div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-2 pb-2 border rounded-md bg-surface-200 text-surface-content">
@@ -32,9 +34,9 @@
 			{/each}
 		</span>
 
-		{#if appShell.pageActionsComponent}
+		{#if pageActions}
 			<div class="flex items-center">
-				<appShell.pageActionsComponent />
+				<pageActions.component {...pageActionsProps} />
 			</div>
 		{/if}
 	</div>

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import MeetingsOverview from "$features/meetings/views/meetings-overview/MeetingsOverview.svelte";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Meetings" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "Meetings" }]);
 </script>
 
 <MeetingsOverview />

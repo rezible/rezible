@@ -1,6 +1,6 @@
 import { watch } from "runed";
 import type { AvatarProps } from "$components/avatar/Avatar.svelte";
-import type { Component } from "svelte";
+import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
 import { onNavigate } from "$app/navigation";
 
@@ -10,16 +10,16 @@ export type PageBreadcrumb = {
 	avatar?: AvatarProps;
 };
 
-export type PageActions = {
+export type PageActions<PComponent extends Component<any>> = {
 	component: Component;
+	propsFn?: () => ComponentProps<PComponent>;
 	allowChildren: boolean;
 	routeBase: string;
 }
 
 const createAppShellState = () => {
 	let breadcrumbs = $state<PageBreadcrumb[]>([]);
-	let pageActions = $state<PageActions>();
-	const pageActionsComponent = $derived(pageActions?.component);
+	let pageActions = $state<PageActions<any>>();
 
 	const checkPageActions = (newRouteId: string) => {
 		if (!pageActions) return;
@@ -31,12 +31,12 @@ const createAppShellState = () => {
 		onNavigate(nav => checkPageActions(nav.to?.route.id ?? ""));
 	}
 
-	const setPageActions = (component: Component, allowChildren: boolean) => {
-		pageActions = {component, allowChildren, routeBase: $state.snapshot(page.route.id) ?? ""};
+	const setPageActions = <PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) => {
+		pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
-	const setPageBreadcrumbs = (source: () => PageBreadcrumb[]) => {
-		watch(source, crumbs => {breadcrumbs = crumbs});
+	const setPageBreadcrumbs = (crumbsFn: () => PageBreadcrumb[]) => {
+		watch(crumbsFn, crumbs => {breadcrumbs = crumbs});
 	}
 
 	return {
@@ -45,11 +45,7 @@ const createAppShellState = () => {
 		set	breadcrumbs(value: PageBreadcrumb[]) { breadcrumbs = value },
 		setPageBreadcrumbs,
 		setPageActions,
-		get pageActionsComponent() { return pageActionsComponent },
+		get pageActions() { return pageActions },
 	};
 };
 export const appShell = createAppShellState();
-
-export const setPageBreadcrumbs = (source: () => PageBreadcrumb[]) => {
-	watch(source, crumbs => {appShell.breadcrumbs = crumbs});
-}

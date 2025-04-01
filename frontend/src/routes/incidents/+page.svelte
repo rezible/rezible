@@ -1,8 +1,8 @@
 <script lang="ts">
 	import IncidentsList from "$features/incidents/views/incidents-list/IncidentsList.svelte";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 </script>
 
 <IncidentsList />

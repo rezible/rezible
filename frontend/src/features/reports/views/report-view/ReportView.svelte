@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, ButtonGroup, Header, Icon } from "svelte-ux";
 	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import IncidentsGraph from "./IncidentsGraph.svelte";
 
 	type Props = {id: string;}
@@ -11,7 +11,7 @@
 
 	const report = {id: "foo", attributes: {title: "Test Report", author: "tex", slug: "test"}};
 
-	setPageBreadcrumbs(() => [
+	appShell.setPageBreadcrumbs(() => [
 		{ label: "Reports", href: "/reports" },
 		{ label: report.attributes.title },
 	]);

@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button } from "svelte-ux";
-	import { watch } from "runed";
 	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { getIncidentOptions, getRetrospectiveForIncidentOptions } from "$lib/api";
-	import { appShell, setPageBreadcrumbs, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
+	import { appShell, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
 	import IncidentOverview from "$features/incidents/components/incident-overview/IncidentOverview.svelte";
 	import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 	import PageActions from "./PageActions.svelte";
@@ -45,7 +44,7 @@
 	const pageCrumbs = $derived<PageBreadcrumb[]>(
 		isIncidentView ? [incidentBreadcrumb] : [incidentBreadcrumb, retroBreadcrumb]
 	);
-	setPageBreadcrumbs(() => [{ label: "Incidents", href: "/incidents" }, ...pageCrumbs]);
+	appShell.setPageBreadcrumbs(() => [{ label: "Incidents", href: "/incidents" }, ...pageCrumbs]);
 </script>
 
 <div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">

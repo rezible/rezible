@@ -1,8 +1,8 @@
 <script lang="ts">
 	import UserHomeView from "$features/home/views/user-home/UserHomeView.svelte";
-	import { setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	setPageBreadcrumbs(() => [{ label: "Home" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "Home" }]);
 </script>
 
 <UserHomeView />

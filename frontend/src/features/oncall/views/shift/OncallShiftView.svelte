@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OncallShiftViewRouteParam } from "$src/params/oncallShiftView";
-	import { appShell, setPageBreadcrumbs } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import { formatShiftDates } from "$features/oncall/lib/utils";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
