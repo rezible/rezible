@@ -4,8 +4,8 @@ import type {
 	OncallShiftAnnotation,
 	CreateOncallShiftAnnotationRequestAttributes,
 } from "$lib/api";
-import { getLocalTimeZone, parseAbsolute, parseAbsoluteToLocal, ZonedDateTime } from "@internationalized/date";
-import { mdiChat, mdiCircleMedium, mdiFire, mdiPhoneAlert, mdiSlack } from "@mdi/js";
+import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
+import { mdiCircleMedium, mdiFire, mdiPhoneAlert, mdiSlack } from "@mdi/js";
 import { differenceInMinutes } from "date-fns";
 
 export const eventKindIcons: Record<ShiftEventKind, string> = {

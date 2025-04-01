@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { Icon } from "svelte-ux";
-	import { formatDelta } from "$lib/format.svelte";
-	import { mdiCircleMedium } from "@mdi/js";
 	import type { Snippet } from "svelte";
 	import InlineStat, { type InlineStatProps } from "./InlineStat.svelte";
 
@@ -19,7 +16,7 @@
 		{@render chart()}
 	</div>
 
-	<div class="flex-1 border rounded-lg flex flex-col divide-y">
+	<div class="flex flex-col h-fit w-full place-self-start divide-y border rounded-lg">
 		{#each stats as props}
 			<InlineStat {...props} />
 		{/each}

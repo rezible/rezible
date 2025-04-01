@@ -1,28 +1,7 @@
 import type { OncallShift } from "$lib/api";
 import { settings } from "$lib/settings.svelte";
 import type { ZonedDateTime } from "@internationalized/date";
-import { DateToken, PeriodType } from "@layerstack/utils";
-import { differenceInMinutes, isFuture, isPast } from "date-fns";
-
-export type ShiftStatus = "active" | "upcoming" | "finished";
-export type ShiftTimeDetails = {
-	start: Date;
-	end: Date;
-	progress: number;
-	minutesLeft: number;
-
-	status: ShiftStatus;
-};
-
-export const buildShiftTimeDetails = (shift: OncallShift): ShiftTimeDetails => {
-	const attr = shift.attributes;
-	const start = new Date(attr.startAt);
-	const end = new Date(attr.endAt);
-	const progress = (Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf());
-	const minutesLeft = differenceInMinutes(end, Date.now());
-	const status: ShiftStatus = isPast(end) ? "finished" : isFuture(start) ? "upcoming" : "active";
-	return { start, end, progress, minutesLeft, status };
-};
+import { PeriodType } from "@layerstack/utils";
 
 export const formatShiftDates = (shift: OncallShift) => {
 	const startFmt = settings.format(new Date(shift.attributes.startAt), PeriodType.Day);
@@ -46,7 +25,7 @@ export type ShiftEvent = {
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
 
 export const isBusinessHours = (hour: number) => {
-	return hour >= 9 && hour < 17; // 9am to 5pm
+	return hour >= 9 && hour < 18; // 9am to 5pm
 };
 
 export const isNightHours = (hour: number) => {

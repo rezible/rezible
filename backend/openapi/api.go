@@ -20,6 +20,8 @@ type (
 type Handler interface {
 	// GetMiddleware() []Middleware
 
+	AnalyticsHandler
+
 	SystemComponentsHandler
 	SystemAnalysisHandler
 

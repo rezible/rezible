@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { Button, Icon } from "svelte-ux";
-	import { mdiArrowRight, mdiChevronLeft, mdiChevronRight } from "@mdi/js";
-	import { session } from "$lib/auth.svelte";
-	import { buildShiftTimeDetails } from "$src/features/oncall/lib/utils";
+	import { mdiChevronLeft, mdiChevronRight } from "@mdi/js";
 	import { page } from "$app/state";
-	import { getOncallShiftOptions } from "$lib/api";
-	import { createQuery } from "@tanstack/svelte-query";
 
 	const shiftId = $derived(page.params.id);
 	// const currentView = $derived(page.params.view);

@@ -1,17 +1,17 @@
 <script lang="ts">
 	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { Collapse } from "svelte-ux";
-	import { mdiBellAlert, mdiBellSleep, mdiFire } from "@mdi/js";
+	import { mdiBellAlert, mdiBellSleep, mdiFire, mdiHeadQuestion } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
+	import type { OncallShiftMetrics } from "$lib/api";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
-	import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/shift-metrics";
 	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
-	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import MetricCard from "$components/viz/MetricCard.svelte";
+	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 
 	type Props = {
-		metrics: ShiftMetrics;
-		comparison: ComparisonMetrics;
+		metrics: OncallShiftMetrics;
+		comparison: OncallShiftMetrics;
 		shiftEvents: ShiftEvent[];
 		eventsFilter: ShiftEventFilterKind | undefined;
 	};
@@ -72,19 +72,19 @@
 		title="Incidents"
 		icon={mdiFire}
 		metric={metrics.totalIncidents}
-		comparison={{value: comparison.incidentsComparison}}
+		comparison={{value: comparison.totalIncidents}}
 	/>
 	<MetricCard
 		title="Alerts"
 		icon={mdiBellAlert}
 		metric={metrics.totalAlerts}
-		comparison={{value: comparison.alertsComparison}}
+		comparison={{value: comparison.totalAlerts}}
 	/>
 	<MetricCard
 		title="Night Alerts"
 		icon={mdiBellSleep}
 		metric={metrics.nightAlerts}
-		comparison={{value: comparison.nightAlertsComparison}}
+		comparison={{value: comparison.nightAlerts}}
 	/>
 </div>
 

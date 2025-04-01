@@ -99,7 +99,7 @@
 		</Header>
 
 		<div class="flex gap-2 flex-wrap">
-			<MetricCard title="Oncall Burden Score" icon={mdiHeartPulse} metric={metrics.oncallBurden} comparison={{value: 1.20}} />
+			<MetricCard title="Oncall Burden Score" icon={mdiHeartPulse} metric={metrics.oncallBurden} comparison={{value: 44}} />
 			<MetricCard title="Incidents" icon={mdiFire} metric={metrics.incidents} />
 			<MetricCard title="Alerts" icon={mdiBellAlert} metric={metrics.alerts} />
 			<MetricCard title="Alert Actionability" icon={mdiBellBadge} metric="{metrics.alertActionability * 100}%" />

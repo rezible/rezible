@@ -2,15 +2,15 @@
 	import { Header } from "svelte-ux";
 	import { Tooltip, Chart, Arc, Text, Canvas } from "layerchart";
 	import { formatDuration } from "date-fns";
-	import { getHourLabel, isBusinessHours, type ShiftEvent } from "$features/oncall/lib/utils";
-	import type { ShiftMetrics } from "$features/oncall/lib/shift-metrics";
 	import { cls } from "@layerstack/tailwind";
+	import type { OncallShiftMetrics } from "$lib/api";
+	import { getHourLabel, isBusinessHours, type ShiftEvent } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 
 	type Props = {
 		shiftEvents: ShiftEvent[];
-		metrics: ShiftMetrics;
+		metrics: OncallShiftMetrics;
 	};
 
 	let { shiftEvents, metrics }: Props = $props();
@@ -90,15 +90,15 @@
 		{
 			title: "Off-Hours Activity",
 			subheading: `Time spent active outside of 8am-6pm`,
-			value: formatDuration({ minutes: metrics.offHoursTime }),
+			value: formatDuration({ minutes: metrics.offHoursActivityTime }),
 		},
 	]);
 
 	const alertStats = $derived<InlineStatProps[]>([
 		{ title: "Peak Alert Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
-		{ title: "Stat 2", subheading: `desc`, value: "" },
-		{ title: "Stat 3", subheading: `desc`, value: "" },
-		{ title: "Stat 4", subheading: `desc`, value: "" },
+		// { title: "Stat 2", subheading: `desc`, value: "" },
+		// { title: "Stat 3", subheading: `desc`, value: "" },
+		// { title: "Stat 4", subheading: `desc`, value: "" },
 	]);
 </script>
 

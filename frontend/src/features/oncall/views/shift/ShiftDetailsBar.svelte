@@ -6,12 +6,8 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 
 	const attr = $derived(shiftState.shift?.attributes);
-	const role = $derived(attr?.role);
 	const roster = $derived(attr?.roster);
 	const user = $derived(attr?.user);
-
-	const burdenScore = $derived(0.23);
-	const burdenRating = $derived("High");
 
 	const startDate = $derived(shiftState.shiftStart?.toDate());
 	const endDate = $derived(shiftState.shiftEnd?.toDate());

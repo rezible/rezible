@@ -871,6 +871,14 @@ export type GetNextOncallShiftResponseBody = {
     data: OncallShift;
 };
 
+export type GetOncallRosterMetricsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallRosterMetrics;
+};
+
 export type GetOncallRosterResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -893,6 +901,14 @@ export type GetOncallShiftHandoverTemplateResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandoverTemplate;
+};
+
+export type GetOncallShiftMetricsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallShiftMetrics;
 };
 
 export type GetOncallShiftResponseBody = {
@@ -1682,6 +1698,10 @@ export type OncallRosterAttributes = {
     slug: string;
 };
 
+export type OncallRosterMetrics = {
+    [key: string]: never;
+};
+
 export type OncallSchedule = {
     attributes: OncallScheduleAttributes;
     id: string;
@@ -1772,6 +1792,25 @@ export type OncallShiftHandoverTemplateSection = {
     header: string;
     list: boolean;
     type: 'regular' | 'annotations' | 'incidents';
+};
+
+export type OncallShiftIncidentResponseTime = {
+    incidentId: string;
+    minutes: number;
+};
+
+export type OncallShiftMetrics = {
+    alertIncidentRate: number;
+    burdenScore: number;
+    businessHoursAlerts: number;
+    incidentActivity: Array<OncallShiftIncidentResponseTime>;
+    nightAlerts: number;
+    offHoursActivityTime: number;
+    offHoursAlerts: number;
+    sleepDisruptionScore: number;
+    totalAlerts: number;
+    totalIncidents: number;
+    workloadScore: number;
 };
 
 export type RequestDocumentEditorSessionAttributes = {
@@ -2690,6 +2729,100 @@ export type VerifyDocumentEditorSessionResponseBody = {
     readonly $schema?: string;
     data: DocumentEditorSessionAuth;
 };
+
+export type GetOncallRosterMetricsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        rosterId?: string;
+    };
+    url: '/analytics/oncall_rosters';
+};
+
+export type GetOncallRosterMetricsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallRosterMetricsError = GetOncallRosterMetricsErrors[keyof GetOncallRosterMetricsErrors];
+
+export type GetOncallRosterMetricsResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallRosterMetricsResponseBody;
+};
+
+export type GetOncallRosterMetricsResponse = GetOncallRosterMetricsResponses[keyof GetOncallRosterMetricsResponses];
+
+export type GetOncallShiftMetricsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        shiftId?: string;
+    };
+    url: '/analytics/oncall_shifts';
+};
+
+export type GetOncallShiftMetricsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallShiftMetricsError = GetOncallShiftMetricsErrors[keyof GetOncallShiftMetricsErrors];
+
+export type GetOncallShiftMetricsResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftMetricsResponseBody;
+};
+
+export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
 export type ListDebriefQuestionsData = {
     body?: never;

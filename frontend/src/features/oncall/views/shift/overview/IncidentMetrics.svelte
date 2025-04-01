@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { ComparisonMetrics, ShiftMetrics } from "$features/oncall/lib/shift-metrics";
+	import { Header } from "svelte-ux";
 	import { formatDuration } from "date-fns";
 	import { PieChart, Text } from "layerchart";
-	import ChartWithStats from "$src/components/viz/ChartWithStats.svelte";
-	import { type InlineStatProps } from "$src/components/viz/InlineStat.svelte";
-	import { Header } from "svelte-ux";
+	import type { OncallShiftMetrics } from "$lib/api";
+	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
+	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 
 	type Props = {
-		metrics: ShiftMetrics;
-		comparison: ComparisonMetrics;
+		metrics: OncallShiftMetrics;
+		comparison: OncallShiftMetrics;
 	};
 
 	let { metrics, comparison }: Props = $props();
@@ -20,21 +20,17 @@
 		'oklch(var(--color-info))',
 	];
 
-	const incidentData = $derived([
-		{ key: "incident-foo", value: 65 },
-		{ key: "incident-bar", value: 15 },
-		{ key: "incident-baz", value: 10 },
-	]);
-	const totalTimeFormatted = $derived(formatDuration({minutes: metrics.totalIncidentTime}));
-	const colorSeries = $derived(incidentData.map((v, i) => ({key: v.key, color: colors[i % colors.length]})));
+	const incidentSeries = $derived(metrics.incidentActivity?.map((v, i) => ({key: v.incidentId, value: v.minutes, color: colors[i % colors.length]})));
+	const totalMinutes = $derived(metrics.incidentActivity?.reduce((prev, val) => (prev + val.minutes), 0));
+	const totalTimeFormatted = $derived(formatDuration({minutes: totalMinutes}, {zero: true}));
 	
 	const incidentStats = $derived<InlineStatProps[]>([
 		{title: "Alert to Incident Ratio", subheading: `Alerts that became incidents`, value: metrics.alertIncidentRate,
-			comparison: {value: comparison.escalationRateComparison, positive: true}
+			comparison: {value: comparison.alertIncidentRate, positive: true}
 		},
-		{title: "Stat 2", subheading: `desc`, value: ""},
-		{title: "Stat 3", subheading: `desc`, value: ""},
-		{title: "Stat 4", subheading: `desc`, value: ""},
+		// {title: "Stat 2", subheading: `desc`, value: 0},
+		// {title: "Stat 3", subheading: `desc`, value: 0},
+		// {title: "Stat 4", subheading: `desc`, value: 0},
 	])
 </script>
 
@@ -47,8 +43,8 @@
 {#snippet incidentTimeChart()}
 	<div class="h-[250px] w-[300px] overflow-auto">
 		<PieChart
-			data={incidentData}
-			series={colorSeries}
+			data={incidentSeries}
+			series={incidentSeries}
 			innerRadius={-20}
 			cornerRadius={5}
 			padAngle={0.02}

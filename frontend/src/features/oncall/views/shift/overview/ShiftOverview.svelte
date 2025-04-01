@@ -1,11 +1,5 @@
 <script lang="ts">
-	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import {
-		makeFakeComparisonMetrics,
-		makeFakeShiftMetrics,
-		type ComparisonMetrics,
-		type ShiftMetrics,
-	} from "$features/oncall/lib/shift-metrics";
+	import { createQuery } from "@tanstack/svelte-query";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
@@ -16,30 +10,15 @@
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
+	import { getOncallShiftMetricsOptions } from "$src/lib/api";
 
 	const shiftId = shiftIdCtx.get();
 
-	const shiftMetricsQuery = createQuery(() =>
-		queryOptions({
-			queryKey: ["shiftMetrics", shiftId],
-			queryFn: async (): Promise<{ data: ShiftMetrics }> => {
-				return { data: makeFakeShiftMetrics() };
-			},
-			staleTime: 5 * 60 * 1000, // 5 minutes
-		})
-	);
-	const metrics = $derived(shiftMetricsQuery.data?.data);
+	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
+	const metrics = $derived(metricsQuery.data?.data);
 
-	const shiftComparisonQuery = createQuery(() =>
-		queryOptions({
-			queryKey: ["shiftComparison", shiftId],
-			queryFn: async (): Promise<{ data: ComparisonMetrics }> => {
-				return { data: makeFakeComparisonMetrics() };
-			},
-			staleTime: 5 * 60 * 1000, // 5 minutes
-		})
-	);
-	const comparison = $derived(shiftComparisonQuery.data?.data);
+	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
+	const comparison = $derived(comparisonQuery.data?.data);
 
 	let eventsFilter = $state<ShiftEventFilterKind>();
 	const shiftEvents = $derived.by(() => {
