@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotationUpdate is the builder for updating OncallUserShiftAnnotation entities.
@@ -45,59 +46,9 @@ func (ousau *OncallUserShiftAnnotationUpdate) SetNillableShiftID(u *uuid.UUID) *
 	return ousau
 }
 
-// SetEventID sets the "event_id" field.
-func (ousau *OncallUserShiftAnnotationUpdate) SetEventID(s string) *OncallUserShiftAnnotationUpdate {
-	ousau.mutation.SetEventID(s)
-	return ousau
-}
-
-// SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (ousau *OncallUserShiftAnnotationUpdate) SetNillableEventID(s *string) *OncallUserShiftAnnotationUpdate {
-	if s != nil {
-		ousau.SetEventID(*s)
-	}
-	return ousau
-}
-
-// SetEventKind sets the "event_kind" field.
-func (ousau *OncallUserShiftAnnotationUpdate) SetEventKind(ok oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpdate {
-	ousau.mutation.SetEventKind(ok)
-	return ousau
-}
-
-// SetNillableEventKind sets the "event_kind" field if the given value is not nil.
-func (ousau *OncallUserShiftAnnotationUpdate) SetNillableEventKind(ok *oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpdate {
-	if ok != nil {
-		ousau.SetEventKind(*ok)
-	}
-	return ousau
-}
-
-// SetTitle sets the "title" field.
-func (ousau *OncallUserShiftAnnotationUpdate) SetTitle(s string) *OncallUserShiftAnnotationUpdate {
-	ousau.mutation.SetTitle(s)
-	return ousau
-}
-
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (ousau *OncallUserShiftAnnotationUpdate) SetNillableTitle(s *string) *OncallUserShiftAnnotationUpdate {
-	if s != nil {
-		ousau.SetTitle(*s)
-	}
-	return ousau
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (ousau *OncallUserShiftAnnotationUpdate) SetOccurredAt(t time.Time) *OncallUserShiftAnnotationUpdate {
-	ousau.mutation.SetOccurredAt(t)
-	return ousau
-}
-
-// SetNillableOccurredAt sets the "occurred_at" field if the given value is not nil.
-func (ousau *OncallUserShiftAnnotationUpdate) SetNillableOccurredAt(t *time.Time) *OncallUserShiftAnnotationUpdate {
-	if t != nil {
-		ousau.SetOccurredAt(*t)
-	}
+// SetEvent sets the "event" field.
+func (ousau *OncallUserShiftAnnotationUpdate) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationUpdate {
+	ousau.mutation.SetEvent(te)
 	return ousau
 }
 
@@ -150,6 +101,20 @@ func (ousau *OncallUserShiftAnnotationUpdate) SetNillablePinned(b *bool) *Oncall
 	return ousau
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (ousau *OncallUserShiftAnnotationUpdate) SetCreatedAt(t time.Time) *OncallUserShiftAnnotationUpdate {
+	ousau.mutation.SetCreatedAt(t)
+	return ousau
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ousau *OncallUserShiftAnnotationUpdate) SetNillableCreatedAt(t *time.Time) *OncallUserShiftAnnotationUpdate {
+	if t != nil {
+		ousau.SetCreatedAt(*t)
+	}
+	return ousau
+}
+
 // SetShift sets the "shift" edge to the OncallUserShift entity.
 func (ousau *OncallUserShiftAnnotationUpdate) SetShift(o *OncallUserShift) *OncallUserShiftAnnotationUpdate {
 	return ousau.SetShiftID(o.ID)
@@ -195,11 +160,6 @@ func (ousau *OncallUserShiftAnnotationUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousau *OncallUserShiftAnnotationUpdate) check() error {
-	if v, ok := ousau.mutation.EventKind(); ok {
-		if err := oncallusershiftannotation.EventKindValidator(v); err != nil {
-			return &ValidationError{Name: "event_kind", err: fmt.Errorf(`ent: validator failed for field "OncallUserShiftAnnotation.event_kind": %w`, err)}
-		}
-	}
 	if ousau.mutation.ShiftCleared() && len(ousau.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftAnnotation.shift"`)
 	}
@@ -224,17 +184,8 @@ func (ousau *OncallUserShiftAnnotationUpdate) sqlSave(ctx context.Context) (n in
 			}
 		}
 	}
-	if value, ok := ousau.mutation.EventID(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
-	}
-	if value, ok := ousau.mutation.EventKind(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventKind, field.TypeEnum, value)
-	}
-	if value, ok := ousau.mutation.Title(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := ousau.mutation.OccurredAt(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldOccurredAt, field.TypeTime, value)
+	if value, ok := ousau.mutation.Event(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ousau.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)
@@ -247,6 +198,9 @@ func (ousau *OncallUserShiftAnnotationUpdate) sqlSave(ctx context.Context) (n in
 	}
 	if value, ok := ousau.mutation.Pinned(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldPinned, field.TypeBool, value)
+	}
+	if value, ok := ousau.mutation.CreatedAt(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldCreatedAt, field.TypeTime, value)
 	}
 	if ousau.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,59 +267,9 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableShiftID(u *uuid.UUI
 	return ousauo
 }
 
-// SetEventID sets the "event_id" field.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetEventID(s string) *OncallUserShiftAnnotationUpdateOne {
-	ousauo.mutation.SetEventID(s)
-	return ousauo
-}
-
-// SetNillableEventID sets the "event_id" field if the given value is not nil.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableEventID(s *string) *OncallUserShiftAnnotationUpdateOne {
-	if s != nil {
-		ousauo.SetEventID(*s)
-	}
-	return ousauo
-}
-
-// SetEventKind sets the "event_kind" field.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetEventKind(ok oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpdateOne {
-	ousauo.mutation.SetEventKind(ok)
-	return ousauo
-}
-
-// SetNillableEventKind sets the "event_kind" field if the given value is not nil.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableEventKind(ok *oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpdateOne {
-	if ok != nil {
-		ousauo.SetEventKind(*ok)
-	}
-	return ousauo
-}
-
-// SetTitle sets the "title" field.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetTitle(s string) *OncallUserShiftAnnotationUpdateOne {
-	ousauo.mutation.SetTitle(s)
-	return ousauo
-}
-
-// SetNillableTitle sets the "title" field if the given value is not nil.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableTitle(s *string) *OncallUserShiftAnnotationUpdateOne {
-	if s != nil {
-		ousauo.SetTitle(*s)
-	}
-	return ousauo
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetOccurredAt(t time.Time) *OncallUserShiftAnnotationUpdateOne {
-	ousauo.mutation.SetOccurredAt(t)
-	return ousauo
-}
-
-// SetNillableOccurredAt sets the "occurred_at" field if the given value is not nil.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableOccurredAt(t *time.Time) *OncallUserShiftAnnotationUpdateOne {
-	if t != nil {
-		ousauo.SetOccurredAt(*t)
-	}
+// SetEvent sets the "event" field.
+func (ousauo *OncallUserShiftAnnotationUpdateOne) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationUpdateOne {
+	ousauo.mutation.SetEvent(te)
 	return ousauo
 }
 
@@ -414,6 +318,20 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) SetPinned(b bool) *OncallUserS
 func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillablePinned(b *bool) *OncallUserShiftAnnotationUpdateOne {
 	if b != nil {
 		ousauo.SetPinned(*b)
+	}
+	return ousauo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ousauo *OncallUserShiftAnnotationUpdateOne) SetCreatedAt(t time.Time) *OncallUserShiftAnnotationUpdateOne {
+	ousauo.mutation.SetCreatedAt(t)
+	return ousauo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableCreatedAt(t *time.Time) *OncallUserShiftAnnotationUpdateOne {
+	if t != nil {
+		ousauo.SetCreatedAt(*t)
 	}
 	return ousauo
 }
@@ -476,11 +394,6 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousauo *OncallUserShiftAnnotationUpdateOne) check() error {
-	if v, ok := ousauo.mutation.EventKind(); ok {
-		if err := oncallusershiftannotation.EventKindValidator(v); err != nil {
-			return &ValidationError{Name: "event_kind", err: fmt.Errorf(`ent: validator failed for field "OncallUserShiftAnnotation.event_kind": %w`, err)}
-		}
-	}
 	if ousauo.mutation.ShiftCleared() && len(ousauo.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftAnnotation.shift"`)
 	}
@@ -522,17 +435,8 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) sqlSave(ctx context.Context) (
 			}
 		}
 	}
-	if value, ok := ousauo.mutation.EventID(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
-	}
-	if value, ok := ousauo.mutation.EventKind(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventKind, field.TypeEnum, value)
-	}
-	if value, ok := ousauo.mutation.Title(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := ousauo.mutation.OccurredAt(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldOccurredAt, field.TypeTime, value)
+	if value, ok := ousauo.mutation.Event(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
 	}
 	if value, ok := ousauo.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)
@@ -545,6 +449,9 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) sqlSave(ctx context.Context) (
 	}
 	if value, ok := ousauo.mutation.Pinned(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldPinned, field.TypeBool, value)
+	}
+	if value, ok := ousauo.mutation.CreatedAt(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldCreatedAt, field.TypeTime, value)
 	}
 	if ousauo.mutation.ShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{

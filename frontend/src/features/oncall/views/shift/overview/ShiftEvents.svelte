@@ -3,16 +3,16 @@
 	import { Collapse } from "svelte-ux";
 	import { mdiBellAlert, mdiBellSleep, mdiFire, mdiHeadQuestion } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
-	import type { OncallShiftMetrics } from "$lib/api";
+	import type { OncallShiftMetrics, OncallEvent } from "$lib/api";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
-	import { shiftEventMatchesFilter, type ShiftEvent, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
+	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 
 	type Props = {
 		metrics: OncallShiftMetrics;
 		comparison: OncallShiftMetrics;
-		shiftEvents: ShiftEvent[];
+		shiftEvents: OncallEvent[];
 		eventsFilter: ShiftEventFilterKind | undefined;
 	};
 
@@ -36,9 +36,9 @@
 		const numEvents = new Map<string, number>();
 		shiftEvents.forEach((event) => {
 			if (!!eventsFilter && !shiftEventMatchesFilter(event, eventsFilter)) return;
-			const eventDate = event.timestamp.toDate();
+			const eventDate = new Date(event.timestamp);
 			const day = differenceInCalendarDays(eventDate, startDate);
-			const key = eventDayKey(day, event.timestamp.hour);
+			const key = eventDayKey(day, eventDate.getHours());
 			numEvents.set(key, (numEvents.get(key) || 0) + 1);
 		});
 

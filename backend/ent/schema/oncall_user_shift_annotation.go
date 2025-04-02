@@ -5,6 +5,8 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	schematypes "github.com/rezible/rezible/ent/schema/types"
+	"time"
 )
 
 // OncallUserShiftAnnotation holds the schema definition for the OncallUserShiftAnnotation entity.
@@ -17,13 +19,11 @@ func (OncallUserShiftAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
-		field.String("event_id"),
-		field.Enum("event_kind").Values("incident", "alert", "toil", "ping"),
-		field.String("title"),
-		field.Time("occurred_at"),
+		field.JSON("event", &schematypes.OncallEvent{}),
 		field.Int("minutes_occupied"),
 		field.Text("notes"),
 		field.Bool("pinned"),
+		field.Time("created_at").Default(time.Now),
 	}
 }
 

@@ -8,7 +8,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 )
 
 /*
@@ -128,11 +127,15 @@ func (b *handoverMessageBuilder) addAnnotations() {
 
 	for _, anno := range b.annotations {
 		var el slack.RichTextSectionElement
-		if anno.EventKind == oncallusershiftannotation.EventKindIncident {
-			link := fmt.Sprintf("http://localhost:5173/incidents/%s", anno.EventID)
-			el = slack.NewRichTextSectionLinkElement(link, anno.Title, nil)
+		if ev := anno.Event; ev != nil {
+			if ev.Kind == "incident" {
+				link := fmt.Sprintf("http://localhost:5173/incidents/%s", ev.ID)
+				el = slack.NewRichTextSectionLinkElement(link, ev.Title, nil)
+			} else {
+				el = slack.NewRichTextSectionTextElement(ev.Title, nil)
+			}
 		} else {
-			el = slack.NewRichTextSectionTextElement(anno.Title, nil)
+			el = slack.NewRichTextSectionTextElement("Unknown Event", nil)
 		}
 		els = append(els, el)
 		if anno.Notes != "" {

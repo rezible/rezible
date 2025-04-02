@@ -45,7 +45,9 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService,
 		incidents: incidents,
 	}
 
-	s.setChatCreateAnnotationFunc()
+	if chat != nil {
+		chat.SetCreateAnnotationFunc(s.createChatAnnotation)
+	}
 
 	if jobsErr := s.registerBackgroundJobs(); jobsErr != nil {
 		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
@@ -76,19 +78,21 @@ func (s *OncallService) registerBackgroundJobs() error {
 	)
 }
 
-func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error {
-	anno, queryErr := s.db.OncallUserShiftAnnotation.Query().
-		Where(oncallusershiftannotation.And(
-			oncallusershiftannotation.ShiftID(shiftId), oncallusershiftannotation.EventID(msgId))).
-		Only(ctx)
-	if queryErr != nil {
-		if ent.IsNotFound(queryErr) {
-			anno = &ent.OncallUserShiftAnnotation{
-				ShiftID: shiftId,
-				EventID: msgId,
-			}
-		} else {
-			return fmt.Errorf("failed to query: %w", queryErr)
+func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msg *ent.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error {
+	annos, annosErr := s.db.OncallUserShiftAnnotation.Query().
+		Where(oncallusershiftannotation.ShiftID(shiftId)).
+		All(ctx)
+	if annosErr != nil {
+		return fmt.Errorf("failed to query: %w", annosErr)
+	}
+	anno := &ent.OncallUserShiftAnnotation{
+		ShiftID: shiftId,
+		Event:   msg,
+	}
+	for _, an := range annos {
+		if an.Event != nil && an.Event.ID == msg.ID {
+			anno = an
+			break
 		}
 	}
 	prevId := anno.ID.String()
@@ -99,10 +103,7 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 
 	upsertQuery := s.db.OncallUserShiftAnnotation.Create().
 		SetShiftID(anno.ShiftID).
-		SetEventID(anno.EventID).
-		SetEventKind(anno.EventKind).
-		SetOccurredAt(anno.OccurredAt).
-		SetTitle(anno.Title).
+		SetEvent(anno.Event).
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).
 		SetMinutesOccupied(anno.MinutesOccupied)
@@ -111,12 +112,6 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 	}
 
 	return nil
-}
-
-func (s *OncallService) setChatCreateAnnotationFunc() {
-	if s.chat != nil {
-		s.chat.SetCreateAnnotationFunc(s.createChatAnnotation)
-	}
 }
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {
@@ -574,10 +569,7 @@ func (s *OncallService) CreateShiftAnnotation(ctx context.Context, anno *ent.Onc
 	query := s.db.OncallUserShiftAnnotation.Create().
 		SetID(uuid.New()).
 		SetShiftID(anno.ShiftID).
-		SetEventID(anno.EventID).
-		SetEventKind(anno.EventKind).
-		SetTitle(anno.Title).
-		SetOccurredAt(anno.OccurredAt).
+		SetEvent(anno.Event).
 		SetMinutesOccupied(anno.MinutesOccupied).
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).

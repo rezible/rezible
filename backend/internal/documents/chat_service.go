@@ -40,7 +40,7 @@ func (s *ChatService) createAnnotationLookup(ctx context.Context, id string) (uu
 	return usr.ID, shifts, nil
 }
 
-func (s *ChatService) SetCreateAnnotationFunc(fn rez.ChatInteractionFuncCreateAnnotation) {
+func (s *ChatService) SetCreateAnnotationFunc(fn rez.ChatCreateAnnotationFunc) {
 	if s.chat != nil {
 		s.chat.SetCreateAnnotationFunc(fn)
 	}

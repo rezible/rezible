@@ -368,13 +368,10 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallShiftAnnotationRequestAttributes = {
-    eventId: string;
-    eventKind: 'incident' | 'alert' | 'toil' | 'ping';
+    event: OncallEvent;
     minutesOccupied: number;
     notes: string;
-    occurredAt: string;
     pinned: boolean;
-    title: string;
 };
 
 export type CreateOncallShiftAnnotationRequestBody = {
@@ -1487,15 +1484,6 @@ export type ListOncallRostersResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallShiftAlertsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallAlert>;
-    pagination: ResponsePagination;
-};
-
 export type ListOncallShiftAnnotationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1505,12 +1493,12 @@ export type ListOncallShiftAnnotationsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallShiftIncidentsResponseBody = {
+export type ListOncallShiftEventsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Incident>;
+    data: Array<OncallEvent>;
     pagination: ResponsePagination;
 };
 
@@ -1676,14 +1664,13 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
-export type OncallAlert = {
-    attributes: OncallAlertAttributes;
+export type OncallEvent = {
+    description?: string;
     id: string;
-};
-
-export type OncallAlertAttributes = {
-    occurredAt: string;
-    title: string;
+    kind: string;
+    source?: string;
+    timestamp: string;
+    title?: string;
 };
 
 export type OncallRoster = {
@@ -1737,14 +1724,11 @@ export type OncallShiftAnnotation = {
 };
 
 export type OncallShiftAnnotationAttributes = {
-    eventId: string;
-    kind: 'incident' | 'alert' | 'toil' | 'ping';
+    event: OncallEvent;
     minutesOccupied: number;
     notes: string;
-    occurredAt: string;
     pinned: boolean;
     shiftId: string;
-    title: string;
 };
 
 export type OncallShiftAttributes = {
@@ -7008,58 +6992,6 @@ export type GetOncallShiftResponses = {
 
 export type GetOncallShiftResponse = GetOncallShiftResponses[keyof GetOncallShiftResponses];
 
-export type ListOncallShiftAlertsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/oncall/shifts/{id}/alerts';
-};
-
-export type ListOncallShiftAlertsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListOncallShiftAlertsError = ListOncallShiftAlertsErrors[keyof ListOncallShiftAlertsErrors];
-
-export type ListOncallShiftAlertsResponses = {
-    /**
-     * OK
-     */
-    200: ListOncallShiftAlertsResponseBody;
-};
-
-export type ListOncallShiftAlertsResponse = ListOncallShiftAlertsResponses[keyof ListOncallShiftAlertsResponses];
-
 export type ListOncallShiftAnnotationsData = {
     body?: never;
     path: {
@@ -7159,6 +7091,58 @@ export type CreateOncallShiftAnnotationResponses = {
 
 export type CreateOncallShiftAnnotationResponse = CreateOncallShiftAnnotationResponses[keyof CreateOncallShiftAnnotationResponses];
 
+export type ListOncallShiftEventsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/oncall/shifts/{id}/events';
+};
+
+export type ListOncallShiftEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListOncallShiftEventsError = ListOncallShiftEventsErrors[keyof ListOncallShiftEventsErrors];
+
+export type ListOncallShiftEventsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallShiftEventsResponseBody;
+};
+
+export type ListOncallShiftEventsResponse = ListOncallShiftEventsResponses[keyof ListOncallShiftEventsResponses];
+
 export type GetOncallShiftHandoverData = {
     body?: never;
     path: {
@@ -7252,58 +7236,6 @@ export type SendOncallShiftHandoverResponses = {
 };
 
 export type SendOncallShiftHandoverResponse = SendOncallShiftHandoverResponses[keyof SendOncallShiftHandoverResponses];
-
-export type ListOncallShiftIncidentsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/oncall/shifts/{id}/incidents';
-};
-
-export type ListOncallShiftIncidentsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListOncallShiftIncidentsError = ListOncallShiftIncidentsErrors[keyof ListOncallShiftIncidentsErrors];
-
-export type ListOncallShiftIncidentsResponses = {
-    /**
-     * OK
-     */
-    200: ListOncallShiftIncidentsResponseBody;
-};
-
-export type ListOncallShiftIncidentsResponse = ListOncallShiftIncidentsResponses[keyof ListOncallShiftIncidentsResponses];
 
 export type GetNextOncallShiftData = {
     body?: never;

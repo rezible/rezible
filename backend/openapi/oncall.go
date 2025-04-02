@@ -19,8 +19,7 @@ type OncallHandler interface {
 	GetUserOncallDetails(context.Context, *GetUserOncallDetailsRequest) (*GetUserOncallDetailsResponse, error)
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
 
-	ListOncallShiftIncidents(context.Context, *ListOncallShiftIncidentsRequest) (*ListOncallShiftIncidentsResponse, error)
-	ListOncallShiftAlerts(context.Context, *ListOncallShiftAlertsRequest) (*ListOncallShiftAlertsResponse, error)
+	ListOncallShiftEvents(context.Context, *ListOncallShiftEventsRequest) (*ListOncallShiftEventsResponse, error)
 
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
 	GetNextOncallShift(context.Context, *GetNextOncallShiftRequest) (*GetNextOncallShiftResponse, error)
@@ -59,8 +58,7 @@ func (o operations) RegisterOncall(api huma.API) {
 	huma.Register(api, GetOncallShiftHandover, o.GetOncallShiftHandover)
 	huma.Register(api, SendOncallShiftHandover, o.SendOncallShiftHandover)
 
-	huma.Register(api, ListOncallShiftIncidents, o.ListOncallShiftIncidents)
-	huma.Register(api, ListOncallShiftAlerts, o.ListOncallShiftAlerts)
+	huma.Register(api, ListOncallShiftEvents, o.ListOncallShiftEvents)
 
 	huma.Register(api, ListOncallShiftAnnotations, o.ListOncallShiftAnnotations)
 	huma.Register(api, CreateOncallShiftAnnotation, o.CreateOncallShiftAnnotation)
@@ -145,9 +143,9 @@ type (
 
 	OncallShiftHandoverAttributes struct {
 		ShiftId   uuid.UUID                    `json:"shiftId"`
-		Content   []OncallShiftHandoverSection `json:"content"`
 		CreatedAt time.Time                    `json:"createdAt"`
 		UpdatedAt time.Time                    `json:"updatedAt"`
+		Content   []OncallShiftHandoverSection `json:"content"`
 		SentAt    time.Time                    `json:"sentAt"`
 	}
 
@@ -163,24 +161,11 @@ type (
 	}
 
 	OncallShiftAnnotationAttributes struct {
-		ShiftId         uuid.UUID `json:"shiftId"`
-		Pinned          bool      `json:"pinned"`
-		Notes           string    `json:"notes"`
-		EventKind       string    `json:"kind" enum:"incident,alert,toil,ping"`
-		EventId         string    `json:"eventId"`
-		Title           string    `json:"title"`
-		OccurredAt      time.Time `json:"occurredAt"`
-		MinutesOccupied int       `json:"minutesOccupied"`
-	}
-
-	OncallAlert struct {
-		Id         uuid.UUID             `json:"id"`
-		Attributes OncallAlertAttributes `json:"attributes"`
-	}
-
-	OncallAlertAttributes struct {
-		OccurredAt time.Time `json:"occurredAt"`
-		Title      string    `json:"title"`
+		ShiftId         uuid.UUID        `json:"shiftId"`
+		Pinned          bool             `json:"pinned"`
+		Notes           string           `json:"notes"`
+		Event           *ent.OncallEvent `json:"event"`
+		MinutesOccupied int              `json:"minutesOccupied"`
 	}
 )
 
@@ -200,13 +185,6 @@ func OncallRosterFromEnt(roster *ent.OncallRoster) OncallRoster {
 	return OncallRoster{
 		Id:         roster.ID,
 		Attributes: attr,
-	}
-}
-
-func OncallAlertFromEnt(p *ent.OncallAlert) OncallAlert {
-	return OncallAlert{
-		Id:         p.ID,
-		Attributes: OncallAlertAttributes{},
 	}
 }
 
@@ -313,10 +291,6 @@ func OncallShiftAnnotationFromEnt(e *ent.OncallUserShiftAnnotation) OncallShiftA
 		ShiftId:         e.ShiftID,
 		Pinned:          e.Pinned,
 		Notes:           e.Notes,
-		EventKind:       e.EventKind.String(),
-		EventId:         e.EventID,
-		Title:           e.Title,
-		OccurredAt:      e.OccurredAt,
 		MinutesOccupied: e.MinutesOccupied,
 	}
 
@@ -515,29 +489,17 @@ type SendOncallShiftHandoverAttributes struct {
 type SendOncallShiftHandoverRequest CreateIdRequest[SendOncallShiftHandoverAttributes]
 type SendOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]
 
-var ListOncallShiftIncidents = huma.Operation{
-	OperationID: "list-oncall-shift-incidents",
+var ListOncallShiftEvents = huma.Operation{
+	OperationID: "list-oncall-shift-events",
 	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/incidents",
-	Summary:     "List Incidents For an Oncall Shift",
+	Path:        "/oncall/shifts/{id}/events",
+	Summary:     "List Events For an Oncall Shift",
 	Tags:        oncallTags,
 	Errors:      errorCodes(),
 }
 
-type ListOncallShiftIncidentsRequest ListIdRequest
-type ListOncallShiftIncidentsResponse PaginatedResponse[Incident]
-
-var ListOncallShiftAlerts = huma.Operation{
-	OperationID: "list-oncall-shift-alerts",
-	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/alerts",
-	Summary:     "List Alerts For an Oncall Shift",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ListOncallShiftAlertsRequest ListIdRequest
-type ListOncallShiftAlertsResponse PaginatedResponse[OncallAlert]
+type ListOncallShiftEventsRequest ListIdRequest
+type ListOncallShiftEventsResponse PaginatedResponse[ent.OncallEvent]
 
 var ListOncallShiftAnnotations = huma.Operation{
 	OperationID: "list-oncall-shift-annotations",
@@ -561,13 +523,10 @@ var CreateOncallShiftAnnotation = huma.Operation{
 }
 
 type CreateOncallShiftAnnotationRequestAttributes struct {
-	EventKind       string `json:"eventKind" enum:"incident,alert,toil,ping"`
-	EventId         string `json:"eventId"`
-	Title           string `json:"title"`
-	OccurredAt      string `json:"occurredAt" format:"date-time"`
-	MinutesOccupied int    `json:"minutesOccupied"`
-	Notes           string `json:"notes"`
-	Pinned          bool   `json:"pinned"`
+	Event           *ent.OncallEvent `json:"event"`
+	MinutesOccupied int              `json:"minutesOccupied"`
+	Notes           string           `json:"notes"`
+	Pinned          bool             `json:"pinned"`
 }
 type CreateOncallShiftAnnotationRequest CreateIdRequest[CreateOncallShiftAnnotationRequestAttributes]
 type CreateOncallShiftAnnotationResponse ItemResponse[OncallShiftAnnotation]

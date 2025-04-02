@@ -3,13 +3,13 @@ package rez
 import (
 	"context"
 	"errors"
-	"github.com/rezible/rezible/jobs"
 	"iter"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 	"github.com/texm/prosemirror-go"
 	"github.com/tmc/langchaingo/llms"
 )
@@ -57,7 +57,6 @@ type (
 		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
 	}
-	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
 
 	Providers struct {
 		AiModel     AiModelProvider
@@ -71,6 +70,9 @@ type (
 		TeamData             TeamDataProvider
 		UserData             UserDataProvider
 	}
+
+	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+	LookupProviderUserFunc              = func(context.Context, string) (*ent.User, error)
 )
 
 type (
@@ -192,16 +194,14 @@ type (
 		Annotations   []*ent.OncallUserShiftAnnotation
 	}
 
-	LookupProviderUserFunc              = func(context.Context, string) (*ent.User, error)
-	ChatInteractionFuncCreateAnnotation = func(ctx context.Context, shiftId uuid.UUID, msgId string, setFn func(*ent.OncallUserShiftAnnotation)) error
+	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *ent.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
 
-		// SetCreateAnnotationLookupUserFunc(ChatInteractionFuncLookupUser)
 		SetLookupUserFunc(LookupProviderUserFunc)
 
-		SetCreateAnnotationFunc(ChatInteractionFuncCreateAnnotation)
+		SetCreateAnnotationFunc(ChatCreateAnnotationFunc)
 
 		// TODO: just use a generic SendMessage(rez.ContentNode), and convert in chat client
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
@@ -213,7 +213,7 @@ type (
 	}
 
 	ChatService interface {
-		SetCreateAnnotationFunc(ChatInteractionFuncCreateAnnotation)
+		SetCreateAnnotationFunc(ChatCreateAnnotationFunc)
 
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
 

@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/texm/prosemirror-go"
+	"math/rand"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -180,52 +180,59 @@ func (h *oncallHandler) GetNextOncallShift(ctx context.Context, request *oapi.Ge
 	return &resp, nil
 }
 
-func (h *oncallHandler) ListOncallShiftIncidents(ctx context.Context, request *oapi.ListOncallShiftIncidentsRequest) (*oapi.ListOncallShiftIncidentsResponse, error) {
-	var resp oapi.ListOncallShiftIncidentsResponse
-
-	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.Id)
-	if shiftErr != nil {
-		return nil, detailError("failed to get shift", shiftErr)
+func makeFakeShiftEvent(date time.Time) ent.OncallEvent {
+	isAlert := rand.Float64() > 0.25
+	eventKind := "incident"
+	if isAlert {
+		eventKind = "alert"
 	}
 
-	incidents, incidentsErr := h.incidents.ListIncidents(ctx, rez.ListIncidentsParams{
-		ListParams: request.ListParams(),
-		//OpenedAfter:  shift.StartAt,
-		OpenedBefore: shift.EndAt,
-	})
-	if incidentsErr != nil {
-		return nil, detailError("failed to query incidents", incidentsErr)
-	}
+	hour := rand.Intn(24)
+	minute := rand.Intn(60)
 
-	resp.Body.Data = make([]oapi.Incident, len(incidents))
-	for i, inc := range incidents {
-		resp.Body.Data[i] = oapi.IncidentFromEnt(inc)
-	}
+	// Create timestamp with the same date but random hour and minute
+	timestamp := time.Date(
+		date.Year(), date.Month(), date.Day(),
+		hour, minute, 0, 0, date.Location(),
+	)
 
-	return &resp, nil
+	// Set description
+	description := "description"
+
+	// Create event
+	return ent.OncallEvent{
+		ID:          uuid.New().String(),
+		Timestamp:   timestamp,
+		Kind:        eventKind,
+		Description: &description,
+	}
 }
 
-func (h *oncallHandler) ListOncallShiftAlerts(ctx context.Context, request *oapi.ListOncallShiftAlertsRequest) (*oapi.ListOncallShiftAlertsResponse, error) {
-	var resp oapi.ListOncallShiftAlertsResponse
+func makeFakeOncallEvents(start time.Time) []ent.OncallEvent {
+	const NumDays = 7
+	events := make([]ent.OncallEvent, 0, NumDays*10)
+
+	for day := 0; day < NumDays; day++ {
+		dayDate := start.AddDate(0, 0, day)
+		numDayEvents := rand.Intn(10)
+
+		for i := 0; i < numDayEvents; i++ {
+			events = append(events, makeFakeShiftEvent(dayDate))
+		}
+	}
+
+	return events
+}
+
+func (h *oncallHandler) ListOncallShiftEvents(ctx context.Context, request *oapi.ListOncallShiftEventsRequest) (*oapi.ListOncallShiftEventsResponse, error) {
+	var resp oapi.ListOncallShiftEventsResponse
 
 	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.Id)
 	if shiftErr != nil {
-		return nil, detailError("failed to get shift", shiftErr)
+		return nil, detailError("failed to query shift", shiftErr)
 	}
 
-	alerts, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{
-		ListParams: request.ListParams(),
-		Start:      shift.StartAt,
-		End:        shift.EndAt,
-	})
-	if alertsErr != nil {
-		return nil, detailError("failed to query alerts", alertsErr)
-	}
-
-	resp.Body.Data = make([]oapi.OncallAlert, len(alerts))
-	for i, alert := range alerts {
-		resp.Body.Data[i] = oapi.OncallAlertFromEnt(alert)
-	}
+	resp.Body.Data = makeFakeOncallEvents(shift.StartAt)
 
 	return &resp, nil
 }
@@ -358,22 +365,10 @@ func (h *oncallHandler) CreateOncallShiftAnnotation(ctx context.Context, request
 	var resp oapi.CreateOncallShiftAnnotationResponse
 
 	attr := request.Body.Attributes
-	eventKind := oncallusershiftannotation.EventKind(attr.EventKind)
-	if kindErr := oncallusershiftannotation.EventKindValidator(eventKind); kindErr != nil {
-		return nil, detailError("invalid event kind", kindErr)
-	}
-
-	occurredAt, occErr := time.Parse(time.RFC3339, attr.OccurredAt)
-	if occErr != nil {
-		return nil, detailError("failed to parse occurred at datetime", occErr)
-	}
 
 	anno := &ent.OncallUserShiftAnnotation{
 		ShiftID:         request.Id,
-		EventID:         attr.EventId,
-		EventKind:       eventKind,
-		Title:           attr.Title,
-		OccurredAt:      occurredAt,
+		Event:           attr.Event,
 		MinutesOccupied: attr.MinutesOccupied,
 		Pinned:          attr.Pinned,
 		Notes:           attr.Notes,

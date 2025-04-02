@@ -1,76 +1,16 @@
-import type {
-	OncallAlert,
-	Incident,
-	OncallShiftAnnotation,
-	CreateOncallShiftAnnotationRequestAttributes,
-} from "$lib/api";
+import type { OncallEvent, OncallShiftAnnotation } from "$lib/api";
 import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
-import { mdiCircleMedium, mdiFire, mdiPhoneAlert, mdiSlack } from "@mdi/js";
-import { differenceInMinutes } from "date-fns";
 
-export const eventKindIcons: Record<ShiftEventKind, string> = {
-	["incident"]: mdiFire,
-	["alert"]: mdiPhoneAlert,
-	["ping"]: mdiSlack,
-	["toil"]: mdiCircleMedium,
-};
+import { differenceInMinutes } from "date-fns";
 
 export type ShiftTimelineNode = {
 	height: number;
-	event: ShiftTimelineEvent;
-};
-
-export type ShiftEventKind = CreateOncallShiftAnnotationRequestAttributes["eventKind"];
-
-export type ShiftTimelineEvent = {
-	eventId: string;
-	kind: ShiftEventKind;
-	title: string;
-	description?: string;
-	occurredAt: ZonedDateTime;
-	notes?: string;
-};
-
-type MergedEvent = {
 	timestamp: ZonedDateTime;
-	incident?: Incident;
-	alert?: OncallAlert;
-	annotation?: OncallShiftAnnotation;
+	event: OncallEvent;
 };
 
-const convertMergedEvent = (e: MergedEvent): ShiftTimelineEvent => {
-	if (e.incident) {
-		const attr = e.incident.attributes;
-		return {
-			eventId: e.incident.id,
-			kind: "incident",
-			title: attr.title,
-			description: attr.summary,
-			occurredAt: e.timestamp,
-		};
-	}
-	if (e.alert) {
-		return {
-			eventId: e.alert.id,
-			kind: "alert",
-			title: e.alert.attributes.title,
-			occurredAt: e.timestamp,
-		};
-	}
-	if (e.annotation) {
-		const attr = e.annotation.attributes;
-		return {
-			eventId: e.annotation.id,
-			kind: "toil",
-			title: "annotation title",
-			occurredAt: e.timestamp,
-		};
-	}
-	throw new Error("invalid event type");
-};
-
-const getIntervalHeight = (e1: MergedEvent, e2: MergedEvent) => {
-	const diff = differenceInMinutes(e1.timestamp.toDate(), e2.timestamp.toDate());
+const getIntervalHeight = (e1: Date, e2: Date) => {
+	const diff = differenceInMinutes(e1, e2);
 	if (diff < 60) return 80;
 	if (diff < 60 * 24) return 160;
 	return 240;
@@ -78,29 +18,18 @@ const getIntervalHeight = (e1: MergedEvent, e2: MergedEvent) => {
 
 export const createTimeline = (
 	currIds: Set<string>,
-	incidents?: Incident[],
-	alerts?: OncallAlert[]
+	events?: OncallEvent[],
 ): ShiftTimelineNode[] => {
-	if (!incidents || !alerts) return [];
+	if (!events) return [];
 
-	const timeline: ShiftTimelineNode[] = [];
+	let timeline: ShiftTimelineNode[] = [];
 
 	const tz = getLocalTimeZone();
 
-	const merged: MergedEvent[] = [];
-	incidents.forEach(incident => {
-		merged.push({ timestamp: parseAbsolute(incident.attributes.openedAt, tz), incident })
-	});
-	alerts.forEach(alert => {
-		merged.push({ timestamp: parseAbsolute(alert.attributes.occurredAt, tz), alert })
-	});
-	// annotations.forEach(annotation => merged.push({timestamp: Date.parse(annotation.attributes.occurredAt), annotation}));
-
-	const sorted = merged.toSorted((a, b) => (a.timestamp < b.timestamp ? 1 : -1));
-
-	for (let i = 0; i < sorted.length; i++) {
-		const event = convertMergedEvent(sorted[i]);
-		if (currIds.has(event.eventId)) continue;
+	let nextDate: ZonedDateTime | undefined = undefined;
+	for (let i = 0; i < events.length; i++) {
+		const event = events[i];
+		if (currIds.has(event.id)) continue;
 		// let node: TimelineNode = {
 		// 	event,
 		// 	height: 80
@@ -110,9 +39,13 @@ export const createTimeline = (
 		// 	node.height = getIntervalHeight(diff);
 		// }
 		// if (event.kind === "incident") href = `/incidents/${event.eventId}`;
+		const timestamp = nextDate || parseAbsolute(event.timestamp, tz);
 		let height = 80;
-		if (i < sorted.length - 1) height = getIntervalHeight(sorted[i], sorted[i + 1]);
-		timeline.push({ event, height });
+		if (i < events.length - 1) {
+			nextDate = parseAbsolute(events[i + 1].timestamp, tz);
+			height = getIntervalHeight(timestamp.toDate(), nextDate.toDate());
+		}
+		timeline.push({ event, height, timestamp });
 	}
 
 	return timeline;

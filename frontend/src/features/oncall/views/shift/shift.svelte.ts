@@ -1,32 +1,6 @@
-import { getLocalTimeZone, now, parseAbsolute, ZonedDateTime } from "@internationalized/date";
-import { createQuery, queryOptions, useQueryClient, type QueryClient } from "@tanstack/svelte-query";
-import { getOncallShiftOptions } from "$lib/api";
-import type { ShiftEvent } from "$features/oncall/lib/utils";
-import { v4 as uuidv4 } from "uuid";
-import { differenceInCalendarDays } from "date-fns";
-
-// TODO: Implement this properly
-const makeFakeShiftEvent = (date: ZonedDateTime): ShiftEvent => {
-	const isAlert = Math.random() > 0.25;
-	const eventType = isAlert ? "alert" : "incident";
-	const hour = Math.floor(Math.random() * 24);
-	const minute = Math.floor(Math.random() * 60);
-	const timestamp = date.copy().set({ hour, minute });
-	let annotation: string | undefined = undefined;
-	if (Math.random() > .8) annotation = "annotation";
-	return { id: uuidv4(), timestamp, eventType, description: "description", annotation };
-};
-
-const createFakeShiftEvents = (start: ZonedDateTime, days: number): ShiftEvent[] => {
-	let events: ShiftEvent[] = [];
-	for (let day = 0; day < days; day++) {
-		const dayDate = start.add({ days: day });
-		const numDayEvents = Math.floor(Math.random() * 10);
-		const dayEvents = Array.from({ length: numDayEvents }, () => makeFakeShiftEvent(dayDate));
-		events = events.concat(dayEvents);
-	}
-	return events;
-}
+import { getLocalTimeZone, now, parseAbsolute } from "@internationalized/date";
+import { createQuery, useQueryClient, type QueryClient } from "@tanstack/svelte-query";
+import { getOncallShiftOptions, listOncallShiftEventsOptions } from "$lib/api";
 
 const makeShiftState = () => {
 	let shiftId = $state<string>();
@@ -42,15 +16,6 @@ const makeShiftState = () => {
 	const shift = $derived(shiftQuery?.data?.data);
 	const shiftStart = $derived(shift ? parseAbsolute(shift.attributes.startAt, timezone) : now(timezone));
 	const shiftEnd = $derived(shift ? parseAbsolute(shift.attributes.endAt, timezone) : now(timezone));
-
-	// TODO: implement in backend
-	const listOncallShiftEventsOptions = (params: {path: {id: string}}) => queryOptions({
-		queryKey: ["shiftEvents", params.path.id],
-		queryFn: async () => {
-			const numDays = differenceInCalendarDays(shiftEnd.toDate(), shiftStart.toDate());
-			return { data: createFakeShiftEvents(shiftStart, numDays) };
-		}
-	});
 
 	const shiftEventsQueryOpts = $derived(listOncallShiftEventsOptions({ path: { id: (shiftId ?? "") } }))
 	const makeShiftEventsQuery = () => createQuery(() => ({...shiftEventsQueryOpts, enabled: !!shift}));

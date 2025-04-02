@@ -16,7 +16,7 @@ type ChatProvider struct {
 	signingSecret string
 
 	lookupUserFn       rez.LookupProviderUserFunc
-	createAnnotationFn rez.ChatInteractionFuncCreateAnnotation
+	createAnnotationFn rez.ChatCreateAnnotationFunc
 }
 
 type ChatProviderConfig struct {
@@ -32,7 +32,7 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 		lookupUserFn: func(ctx context.Context, s string) (*ent.User, error) {
 			return nil, fmt.Errorf("no user lookup func registered")
 		},
-		createAnnotationFn: func(ctx context.Context, shiftId uuid.UUID, msgId string, up func(*ent.OncallUserShiftAnnotation)) error {
+		createAnnotationFn: func(ctx context.Context, shiftId uuid.UUID, e *ent.OncallEvent, up func(*ent.OncallUserShiftAnnotation)) error {
 			return fmt.Errorf("no create func registered")
 		},
 	}
@@ -52,7 +52,7 @@ func (p *ChatProvider) SetLookupUserFunc(fn rez.LookupProviderUserFunc) {
 	p.lookupUserFn = fn
 }
 
-func (p *ChatProvider) SetCreateAnnotationFunc(fn rez.ChatInteractionFuncCreateAnnotation) {
+func (p *ChatProvider) SetCreateAnnotationFunc(fn rez.ChatCreateAnnotationFunc) {
 	p.createAnnotationFn = fn
 }
 

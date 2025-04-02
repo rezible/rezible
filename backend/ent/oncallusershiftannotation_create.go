@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotationCreate is the builder for creating a OncallUserShiftAnnotation entity.
@@ -31,27 +32,9 @@ func (ousac *OncallUserShiftAnnotationCreate) SetShiftID(u uuid.UUID) *OncallUse
 	return ousac
 }
 
-// SetEventID sets the "event_id" field.
-func (ousac *OncallUserShiftAnnotationCreate) SetEventID(s string) *OncallUserShiftAnnotationCreate {
-	ousac.mutation.SetEventID(s)
-	return ousac
-}
-
-// SetEventKind sets the "event_kind" field.
-func (ousac *OncallUserShiftAnnotationCreate) SetEventKind(ok oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationCreate {
-	ousac.mutation.SetEventKind(ok)
-	return ousac
-}
-
-// SetTitle sets the "title" field.
-func (ousac *OncallUserShiftAnnotationCreate) SetTitle(s string) *OncallUserShiftAnnotationCreate {
-	ousac.mutation.SetTitle(s)
-	return ousac
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (ousac *OncallUserShiftAnnotationCreate) SetOccurredAt(t time.Time) *OncallUserShiftAnnotationCreate {
-	ousac.mutation.SetOccurredAt(t)
+// SetEvent sets the "event" field.
+func (ousac *OncallUserShiftAnnotationCreate) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationCreate {
+	ousac.mutation.SetEvent(te)
 	return ousac
 }
 
@@ -70,6 +53,20 @@ func (ousac *OncallUserShiftAnnotationCreate) SetNotes(s string) *OncallUserShif
 // SetPinned sets the "pinned" field.
 func (ousac *OncallUserShiftAnnotationCreate) SetPinned(b bool) *OncallUserShiftAnnotationCreate {
 	ousac.mutation.SetPinned(b)
+	return ousac
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (ousac *OncallUserShiftAnnotationCreate) SetCreatedAt(t time.Time) *OncallUserShiftAnnotationCreate {
+	ousac.mutation.SetCreatedAt(t)
+	return ousac
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (ousac *OncallUserShiftAnnotationCreate) SetNillableCreatedAt(t *time.Time) *OncallUserShiftAnnotationCreate {
+	if t != nil {
+		ousac.SetCreatedAt(*t)
+	}
 	return ousac
 }
 
@@ -127,6 +124,10 @@ func (ousac *OncallUserShiftAnnotationCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ousac *OncallUserShiftAnnotationCreate) defaults() {
+	if _, ok := ousac.mutation.CreatedAt(); !ok {
+		v := oncallusershiftannotation.DefaultCreatedAt()
+		ousac.mutation.SetCreatedAt(v)
+	}
 	if _, ok := ousac.mutation.ID(); !ok {
 		v := oncallusershiftannotation.DefaultID()
 		ousac.mutation.SetID(v)
@@ -138,22 +139,8 @@ func (ousac *OncallUserShiftAnnotationCreate) check() error {
 	if _, ok := ousac.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.shift_id"`)}
 	}
-	if _, ok := ousac.mutation.EventID(); !ok {
-		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.event_id"`)}
-	}
-	if _, ok := ousac.mutation.EventKind(); !ok {
-		return &ValidationError{Name: "event_kind", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.event_kind"`)}
-	}
-	if v, ok := ousac.mutation.EventKind(); ok {
-		if err := oncallusershiftannotation.EventKindValidator(v); err != nil {
-			return &ValidationError{Name: "event_kind", err: fmt.Errorf(`ent: validator failed for field "OncallUserShiftAnnotation.event_kind": %w`, err)}
-		}
-	}
-	if _, ok := ousac.mutation.Title(); !ok {
-		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.title"`)}
-	}
-	if _, ok := ousac.mutation.OccurredAt(); !ok {
-		return &ValidationError{Name: "occurred_at", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.occurred_at"`)}
+	if _, ok := ousac.mutation.Event(); !ok {
+		return &ValidationError{Name: "event", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.event"`)}
 	}
 	if _, ok := ousac.mutation.MinutesOccupied(); !ok {
 		return &ValidationError{Name: "minutes_occupied", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.minutes_occupied"`)}
@@ -163,6 +150,9 @@ func (ousac *OncallUserShiftAnnotationCreate) check() error {
 	}
 	if _, ok := ousac.mutation.Pinned(); !ok {
 		return &ValidationError{Name: "pinned", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.pinned"`)}
+	}
+	if _, ok := ousac.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.created_at"`)}
 	}
 	if len(ousac.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallUserShiftAnnotation.shift"`)}
@@ -203,21 +193,9 @@ func (ousac *OncallUserShiftAnnotationCreate) createSpec() (*OncallUserShiftAnno
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ousac.mutation.EventID(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
-		_node.EventID = value
-	}
-	if value, ok := ousac.mutation.EventKind(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEventKind, field.TypeEnum, value)
-		_node.EventKind = value
-	}
-	if value, ok := ousac.mutation.Title(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldTitle, field.TypeString, value)
-		_node.Title = value
-	}
-	if value, ok := ousac.mutation.OccurredAt(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldOccurredAt, field.TypeTime, value)
-		_node.OccurredAt = value
+	if value, ok := ousac.mutation.Event(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
+		_node.Event = value
 	}
 	if value, ok := ousac.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)
@@ -230,6 +208,10 @@ func (ousac *OncallUserShiftAnnotationCreate) createSpec() (*OncallUserShiftAnno
 	if value, ok := ousac.mutation.Pinned(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldPinned, field.TypeBool, value)
 		_node.Pinned = value
+	}
+	if value, ok := ousac.mutation.CreatedAt(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if nodes := ousac.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -312,51 +294,15 @@ func (u *OncallUserShiftAnnotationUpsert) UpdateShiftID() *OncallUserShiftAnnota
 	return u
 }
 
-// SetEventID sets the "event_id" field.
-func (u *OncallUserShiftAnnotationUpsert) SetEventID(v string) *OncallUserShiftAnnotationUpsert {
-	u.Set(oncallusershiftannotation.FieldEventID, v)
+// SetEvent sets the "event" field.
+func (u *OncallUserShiftAnnotationUpsert) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsert {
+	u.Set(oncallusershiftannotation.FieldEvent, v)
 	return u
 }
 
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsert) UpdateEventID() *OncallUserShiftAnnotationUpsert {
-	u.SetExcluded(oncallusershiftannotation.FieldEventID)
-	return u
-}
-
-// SetEventKind sets the "event_kind" field.
-func (u *OncallUserShiftAnnotationUpsert) SetEventKind(v oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpsert {
-	u.Set(oncallusershiftannotation.FieldEventKind, v)
-	return u
-}
-
-// UpdateEventKind sets the "event_kind" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsert) UpdateEventKind() *OncallUserShiftAnnotationUpsert {
-	u.SetExcluded(oncallusershiftannotation.FieldEventKind)
-	return u
-}
-
-// SetTitle sets the "title" field.
-func (u *OncallUserShiftAnnotationUpsert) SetTitle(v string) *OncallUserShiftAnnotationUpsert {
-	u.Set(oncallusershiftannotation.FieldTitle, v)
-	return u
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsert) UpdateTitle() *OncallUserShiftAnnotationUpsert {
-	u.SetExcluded(oncallusershiftannotation.FieldTitle)
-	return u
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *OncallUserShiftAnnotationUpsert) SetOccurredAt(v time.Time) *OncallUserShiftAnnotationUpsert {
-	u.Set(oncallusershiftannotation.FieldOccurredAt, v)
-	return u
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsert) UpdateOccurredAt() *OncallUserShiftAnnotationUpsert {
-	u.SetExcluded(oncallusershiftannotation.FieldOccurredAt)
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsert) UpdateEvent() *OncallUserShiftAnnotationUpsert {
+	u.SetExcluded(oncallusershiftannotation.FieldEvent)
 	return u
 }
 
@@ -399,6 +345,18 @@ func (u *OncallUserShiftAnnotationUpsert) SetPinned(v bool) *OncallUserShiftAnno
 // UpdatePinned sets the "pinned" field to the value that was provided on create.
 func (u *OncallUserShiftAnnotationUpsert) UpdatePinned() *OncallUserShiftAnnotationUpsert {
 	u.SetExcluded(oncallusershiftannotation.FieldPinned)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OncallUserShiftAnnotationUpsert) SetCreatedAt(v time.Time) *OncallUserShiftAnnotationUpsert {
+	u.Set(oncallusershiftannotation.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsert) UpdateCreatedAt() *OncallUserShiftAnnotationUpsert {
+	u.SetExcluded(oncallusershiftannotation.FieldCreatedAt)
 	return u
 }
 
@@ -464,59 +422,17 @@ func (u *OncallUserShiftAnnotationUpsertOne) UpdateShiftID() *OncallUserShiftAnn
 	})
 }
 
-// SetEventID sets the "event_id" field.
-func (u *OncallUserShiftAnnotationUpsertOne) SetEventID(v string) *OncallUserShiftAnnotationUpsertOne {
+// SetEvent sets the "event" field.
+func (u *OncallUserShiftAnnotationUpsertOne) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsertOne {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEventID(v)
+		s.SetEvent(v)
 	})
 }
 
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertOne) UpdateEventID() *OncallUserShiftAnnotationUpsertOne {
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertOne) UpdateEvent() *OncallUserShiftAnnotationUpsertOne {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetEventKind sets the "event_kind" field.
-func (u *OncallUserShiftAnnotationUpsertOne) SetEventKind(v oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEventKind(v)
-	})
-}
-
-// UpdateEventKind sets the "event_kind" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertOne) UpdateEventKind() *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEventKind()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *OncallUserShiftAnnotationUpsertOne) SetTitle(v string) *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertOne) UpdateTitle() *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *OncallUserShiftAnnotationUpsertOne) SetOccurredAt(v time.Time) *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetOccurredAt(v)
-	})
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertOne) UpdateOccurredAt() *OncallUserShiftAnnotationUpsertOne {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateOccurredAt()
+		s.UpdateEvent()
 	})
 }
 
@@ -566,6 +482,20 @@ func (u *OncallUserShiftAnnotationUpsertOne) SetPinned(v bool) *OncallUserShiftA
 func (u *OncallUserShiftAnnotationUpsertOne) UpdatePinned() *OncallUserShiftAnnotationUpsertOne {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
 		s.UpdatePinned()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OncallUserShiftAnnotationUpsertOne) SetCreatedAt(v time.Time) *OncallUserShiftAnnotationUpsertOne {
+	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertOne) UpdateCreatedAt() *OncallUserShiftAnnotationUpsertOne {
+	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
+		s.UpdateCreatedAt()
 	})
 }
 
@@ -798,59 +728,17 @@ func (u *OncallUserShiftAnnotationUpsertBulk) UpdateShiftID() *OncallUserShiftAn
 	})
 }
 
-// SetEventID sets the "event_id" field.
-func (u *OncallUserShiftAnnotationUpsertBulk) SetEventID(v string) *OncallUserShiftAnnotationUpsertBulk {
+// SetEvent sets the "event" field.
+func (u *OncallUserShiftAnnotationUpsertBulk) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsertBulk {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEventID(v)
+		s.SetEvent(v)
 	})
 }
 
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertBulk) UpdateEventID() *OncallUserShiftAnnotationUpsertBulk {
+// UpdateEvent sets the "event" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertBulk) UpdateEvent() *OncallUserShiftAnnotationUpsertBulk {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEventID()
-	})
-}
-
-// SetEventKind sets the "event_kind" field.
-func (u *OncallUserShiftAnnotationUpsertBulk) SetEventKind(v oncallusershiftannotation.EventKind) *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEventKind(v)
-	})
-}
-
-// UpdateEventKind sets the "event_kind" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertBulk) UpdateEventKind() *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEventKind()
-	})
-}
-
-// SetTitle sets the "title" field.
-func (u *OncallUserShiftAnnotationUpsertBulk) SetTitle(v string) *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetTitle(v)
-	})
-}
-
-// UpdateTitle sets the "title" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertBulk) UpdateTitle() *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateTitle()
-	})
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (u *OncallUserShiftAnnotationUpsertBulk) SetOccurredAt(v time.Time) *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetOccurredAt(v)
-	})
-}
-
-// UpdateOccurredAt sets the "occurred_at" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertBulk) UpdateOccurredAt() *OncallUserShiftAnnotationUpsertBulk {
-	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateOccurredAt()
+		s.UpdateEvent()
 	})
 }
 
@@ -900,6 +788,20 @@ func (u *OncallUserShiftAnnotationUpsertBulk) SetPinned(v bool) *OncallUserShift
 func (u *OncallUserShiftAnnotationUpsertBulk) UpdatePinned() *OncallUserShiftAnnotationUpsertBulk {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
 		s.UpdatePinned()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *OncallUserShiftAnnotationUpsertBulk) SetCreatedAt(v time.Time) *OncallUserShiftAnnotationUpsertBulk {
+	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertBulk) UpdateCreatedAt() *OncallUserShiftAnnotationUpsertBulk {
+	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
+		s.UpdateCreatedAt()
 	})
 }
 

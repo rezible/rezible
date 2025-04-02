@@ -5,10 +5,8 @@
 	import { handoverState, type HandoverEditorSection } from "./handoverState.svelte";
 	import type { ChainedCommands, Content } from "@tiptap/core";
 	import {
-	listOncallShiftAnnotationsOptions,
-		listOncallShiftIncidentsOptions,
-		type Incident,
-		type OncallShiftAnnotation,
+		listIncidentsOptions,
+		listOncallShiftAnnotationsOptions,
 		type OncallShiftHandover,
 		type OncallShiftHandoverTemplate,
 	} from "$lib/api";
@@ -59,7 +57,7 @@
 
 	const incidentsSectionPresent = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
 	const incidentsQuery = createQuery(() => ({
-		...listOncallShiftIncidentsOptions({ path: { id: shiftId } }),
+		...listIncidentsOptions({ query: { /* TODO: filter by shift */ } }),
 		enabled: (!isSent && incidentsSectionPresent),
 	}));
 	const incidents = $derived(incidentsQuery.data?.data ?? []);
@@ -110,7 +108,7 @@
 	{:else}
 		<ul class="list-disc pl-5">
 			{#each pinnedAnnotations as ann (ann.id)}
-				<li>{ann.attributes.title || "title"}</li>
+				<li>{ann.attributes.event?.title || "title"}</li>
 				<ul class="pl-5">
 					<li>
 						<span class="italic">{ann.attributes.notes}</span>

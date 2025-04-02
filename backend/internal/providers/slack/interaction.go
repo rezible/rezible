@@ -7,7 +7,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"net/http"
@@ -179,9 +178,16 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 
 	roster := shift.Edges.Roster
 
-	curr, currErr := shift.QueryAnnotations().Where(oncallusershiftannotation.EventID(msgId)).Only(ctx)
-	if currErr != nil && !ent.IsNotFound(currErr) {
-		log.Error().Err(currErr).Msg("failed to query existing oncall shift annotation")
+	annos, annosErr := shift.QueryAnnotations().All(ctx)
+	if annosErr != nil {
+		return nil, fmt.Errorf("failed to get annotations: %w", annosErr)
+	}
+	var curr *ent.OncallUserShiftAnnotation
+	for _, anno := range annos {
+		if anno.Event != nil && anno.Event.ID == msgId {
+			curr = anno
+			break
+		}
 	}
 	if curr != nil {
 		metadata.AnnotationId = curr.ID
@@ -289,12 +295,17 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		}
 	}
 
-	return p.createAnnotationFn(ctx, shiftId, meta.MsgId, func(anno *ent.OncallUserShiftAnnotation) {
+	event := &ent.OncallEvent{
+		Kind:      "message",
+		ID:        meta.MsgId,
+		Timestamp: meta.MsgTimestamp,
+		// TODO: add more message details
+	}
+
+	return p.createAnnotationFn(ctx, shiftId, event, func(anno *ent.OncallUserShiftAnnotation) {
 		if meta.AnnotationId != uuid.Nil {
 			anno.ID = meta.AnnotationId
 		}
-		anno.OccurredAt = meta.MsgTimestamp
 		anno.Notes = notes
-		anno.EventKind = oncallusershiftannotation.EventKindPing
 	})
 }

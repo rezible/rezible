@@ -376,6 +376,10 @@ func init() {
 	oncallusershift.DefaultID = oncallusershiftDescID.Default.(func() uuid.UUID)
 	oncallusershiftannotationFields := schema.OncallUserShiftAnnotation{}.Fields()
 	_ = oncallusershiftannotationFields
+	// oncallusershiftannotationDescCreatedAt is the schema descriptor for created_at field.
+	oncallusershiftannotationDescCreatedAt := oncallusershiftannotationFields[6].Descriptor()
+	// oncallusershiftannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	oncallusershiftannotation.DefaultCreatedAt = oncallusershiftannotationDescCreatedAt.Default.(func() time.Time)
 	// oncallusershiftannotationDescID is the schema descriptor for id field.
 	oncallusershiftannotationDescID := oncallusershiftannotationFields[0].Descriptor()
 	// oncallusershiftannotation.DefaultID holds the default value on creation for the id field.

@@ -3,7 +3,7 @@
 package oncallusershiftannotation
 
 import (
-	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -17,20 +17,16 @@ const (
 	FieldID = "id"
 	// FieldShiftID holds the string denoting the shift_id field in the database.
 	FieldShiftID = "shift_id"
-	// FieldEventID holds the string denoting the event_id field in the database.
-	FieldEventID = "event_id"
-	// FieldEventKind holds the string denoting the event_kind field in the database.
-	FieldEventKind = "event_kind"
-	// FieldTitle holds the string denoting the title field in the database.
-	FieldTitle = "title"
-	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
-	FieldOccurredAt = "occurred_at"
+	// FieldEvent holds the string denoting the event field in the database.
+	FieldEvent = "event"
 	// FieldMinutesOccupied holds the string denoting the minutes_occupied field in the database.
 	FieldMinutesOccupied = "minutes_occupied"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
 	// FieldPinned holds the string denoting the pinned field in the database.
 	FieldPinned = "pinned"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeShift holds the string denoting the shift edge name in mutations.
 	EdgeShift = "shift"
 	// Table holds the table name of the oncallusershiftannotation in the database.
@@ -48,13 +44,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldShiftID,
-	FieldEventID,
-	FieldEventKind,
-	FieldTitle,
-	FieldOccurredAt,
+	FieldEvent,
 	FieldMinutesOccupied,
 	FieldNotes,
 	FieldPinned,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -68,34 +62,11 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// EventKind defines the type for the "event_kind" enum field.
-type EventKind string
-
-// EventKind values.
-const (
-	EventKindIncident EventKind = "incident"
-	EventKindAlert    EventKind = "alert"
-	EventKindToil     EventKind = "toil"
-	EventKindPing     EventKind = "ping"
-)
-
-func (ek EventKind) String() string {
-	return string(ek)
-}
-
-// EventKindValidator is a validator for the "event_kind" field enum values. It is called by the builders before save.
-func EventKindValidator(ek EventKind) error {
-	switch ek {
-	case EventKindIncident, EventKindAlert, EventKindToil, EventKindPing:
-		return nil
-	default:
-		return fmt.Errorf("oncallusershiftannotation: invalid enum value for event_kind field: %q", ek)
-	}
-}
 
 // OrderOption defines the ordering options for the OncallUserShiftAnnotation queries.
 type OrderOption func(*sql.Selector)
@@ -108,26 +79,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByShiftID orders the results by the shift_id field.
 func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShiftID, opts...).ToFunc()
-}
-
-// ByEventID orders the results by the event_id field.
-func ByEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEventID, opts...).ToFunc()
-}
-
-// ByEventKind orders the results by the event_kind field.
-func ByEventKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEventKind, opts...).ToFunc()
-}
-
-// ByTitle orders the results by the title field.
-func ByTitle(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle, opts...).ToFunc()
-}
-
-// ByOccurredAt orders the results by the occurred_at field.
-func ByOccurredAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldOccurredAt, opts...).ToFunc()
 }
 
 // ByMinutesOccupied orders the results by the minutes_occupied field.
@@ -143,6 +94,11 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 // ByPinned orders the results by the pinned field.
 func ByPinned(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPinned, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByShiftField orders the results by shift field.

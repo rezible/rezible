@@ -61,21 +61,6 @@ func ShiftID(v uuid.UUID) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldShiftID, v))
 }
 
-// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
-func EventID(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldEventID, v))
-}
-
-// Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
-func Title(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldTitle, v))
-}
-
-// OccurredAt applies equality check predicate on the "occurred_at" field. It's identical to OccurredAtEQ.
-func OccurredAt(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldOccurredAt, v))
-}
-
 // MinutesOccupied applies equality check predicate on the "minutes_occupied" field. It's identical to MinutesOccupiedEQ.
 func MinutesOccupied(v int) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldMinutesOccupied, v))
@@ -89,6 +74,11 @@ func Notes(v string) predicate.OncallUserShiftAnnotation {
 // Pinned applies equality check predicate on the "pinned" field. It's identical to PinnedEQ.
 func Pinned(v bool) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldPinned, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // ShiftIDEQ applies the EQ predicate on the "shift_id" field.
@@ -109,196 +99,6 @@ func ShiftIDIn(vs ...uuid.UUID) predicate.OncallUserShiftAnnotation {
 // ShiftIDNotIn applies the NotIn predicate on the "shift_id" field.
 func ShiftIDNotIn(vs ...uuid.UUID) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldShiftID, vs...))
-}
-
-// EventIDEQ applies the EQ predicate on the "event_id" field.
-func EventIDEQ(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldEventID, v))
-}
-
-// EventIDNEQ applies the NEQ predicate on the "event_id" field.
-func EventIDNEQ(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldEventID, v))
-}
-
-// EventIDIn applies the In predicate on the "event_id" field.
-func EventIDIn(vs ...string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldEventID, vs...))
-}
-
-// EventIDNotIn applies the NotIn predicate on the "event_id" field.
-func EventIDNotIn(vs ...string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldEventID, vs...))
-}
-
-// EventIDGT applies the GT predicate on the "event_id" field.
-func EventIDGT(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGT(FieldEventID, v))
-}
-
-// EventIDGTE applies the GTE predicate on the "event_id" field.
-func EventIDGTE(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGTE(FieldEventID, v))
-}
-
-// EventIDLT applies the LT predicate on the "event_id" field.
-func EventIDLT(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLT(FieldEventID, v))
-}
-
-// EventIDLTE applies the LTE predicate on the "event_id" field.
-func EventIDLTE(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLTE(FieldEventID, v))
-}
-
-// EventIDContains applies the Contains predicate on the "event_id" field.
-func EventIDContains(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldContains(FieldEventID, v))
-}
-
-// EventIDHasPrefix applies the HasPrefix predicate on the "event_id" field.
-func EventIDHasPrefix(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldHasPrefix(FieldEventID, v))
-}
-
-// EventIDHasSuffix applies the HasSuffix predicate on the "event_id" field.
-func EventIDHasSuffix(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldHasSuffix(FieldEventID, v))
-}
-
-// EventIDEqualFold applies the EqualFold predicate on the "event_id" field.
-func EventIDEqualFold(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEqualFold(FieldEventID, v))
-}
-
-// EventIDContainsFold applies the ContainsFold predicate on the "event_id" field.
-func EventIDContainsFold(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldContainsFold(FieldEventID, v))
-}
-
-// EventKindEQ applies the EQ predicate on the "event_kind" field.
-func EventKindEQ(v EventKind) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldEventKind, v))
-}
-
-// EventKindNEQ applies the NEQ predicate on the "event_kind" field.
-func EventKindNEQ(v EventKind) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldEventKind, v))
-}
-
-// EventKindIn applies the In predicate on the "event_kind" field.
-func EventKindIn(vs ...EventKind) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldEventKind, vs...))
-}
-
-// EventKindNotIn applies the NotIn predicate on the "event_kind" field.
-func EventKindNotIn(vs ...EventKind) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldEventKind, vs...))
-}
-
-// TitleEQ applies the EQ predicate on the "title" field.
-func TitleEQ(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldTitle, v))
-}
-
-// TitleNEQ applies the NEQ predicate on the "title" field.
-func TitleNEQ(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldTitle, v))
-}
-
-// TitleIn applies the In predicate on the "title" field.
-func TitleIn(vs ...string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldTitle, vs...))
-}
-
-// TitleNotIn applies the NotIn predicate on the "title" field.
-func TitleNotIn(vs ...string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldTitle, vs...))
-}
-
-// TitleGT applies the GT predicate on the "title" field.
-func TitleGT(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGT(FieldTitle, v))
-}
-
-// TitleGTE applies the GTE predicate on the "title" field.
-func TitleGTE(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGTE(FieldTitle, v))
-}
-
-// TitleLT applies the LT predicate on the "title" field.
-func TitleLT(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLT(FieldTitle, v))
-}
-
-// TitleLTE applies the LTE predicate on the "title" field.
-func TitleLTE(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLTE(FieldTitle, v))
-}
-
-// TitleContains applies the Contains predicate on the "title" field.
-func TitleContains(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldContains(FieldTitle, v))
-}
-
-// TitleHasPrefix applies the HasPrefix predicate on the "title" field.
-func TitleHasPrefix(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldHasPrefix(FieldTitle, v))
-}
-
-// TitleHasSuffix applies the HasSuffix predicate on the "title" field.
-func TitleHasSuffix(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldHasSuffix(FieldTitle, v))
-}
-
-// TitleEqualFold applies the EqualFold predicate on the "title" field.
-func TitleEqualFold(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEqualFold(FieldTitle, v))
-}
-
-// TitleContainsFold applies the ContainsFold predicate on the "title" field.
-func TitleContainsFold(v string) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldContainsFold(FieldTitle, v))
-}
-
-// OccurredAtEQ applies the EQ predicate on the "occurred_at" field.
-func OccurredAtEQ(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldOccurredAt, v))
-}
-
-// OccurredAtNEQ applies the NEQ predicate on the "occurred_at" field.
-func OccurredAtNEQ(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldOccurredAt, v))
-}
-
-// OccurredAtIn applies the In predicate on the "occurred_at" field.
-func OccurredAtIn(vs ...time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldOccurredAt, vs...))
-}
-
-// OccurredAtNotIn applies the NotIn predicate on the "occurred_at" field.
-func OccurredAtNotIn(vs ...time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldOccurredAt, vs...))
-}
-
-// OccurredAtGT applies the GT predicate on the "occurred_at" field.
-func OccurredAtGT(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGT(FieldOccurredAt, v))
-}
-
-// OccurredAtGTE applies the GTE predicate on the "occurred_at" field.
-func OccurredAtGTE(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldGTE(FieldOccurredAt, v))
-}
-
-// OccurredAtLT applies the LT predicate on the "occurred_at" field.
-func OccurredAtLT(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLT(FieldOccurredAt, v))
-}
-
-// OccurredAtLTE applies the LTE predicate on the "occurred_at" field.
-func OccurredAtLTE(v time.Time) predicate.OncallUserShiftAnnotation {
-	return predicate.OncallUserShiftAnnotation(sql.FieldLTE(FieldOccurredAt, v))
 }
 
 // MinutesOccupiedEQ applies the EQ predicate on the "minutes_occupied" field.
@@ -414,6 +214,46 @@ func PinnedEQ(v bool) predicate.OncallUserShiftAnnotation {
 // PinnedNEQ applies the NEQ predicate on the "pinned" field.
 func PinnedNEQ(v bool) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldPinned, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // HasShift applies the HasEdge predicate on the "shift" edge.

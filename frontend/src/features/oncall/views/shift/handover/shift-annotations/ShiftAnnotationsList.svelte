@@ -5,11 +5,10 @@
 		type OncallShiftAnnotation,
 		type UpdateOncallShiftAnnotationRequestBody,
 	} from "$lib/api";
-	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical } from "@mdi/js";
+	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
 	import { Icon, Button, Header, Toggle, Menu, MenuItem } from "svelte-ux";
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
-	import { eventKindIcons } from "$features/oncall/lib/handover-timeline";
 	import { settings } from "$lib/settings.svelte";
 	import ShiftAnnotationEditorDialog from "./ShiftAnnotationEditorDialog.svelte";
 	import { PeriodType } from "@layerstack/utils";
@@ -26,7 +25,7 @@
 	const invalidateAnnotationsQuery = () => queryClient.invalidateQueries(annotationQueryOpts);
 
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
-	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.eventId)));
+	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.event?.id)));
 	const pinnedAnnotations = $derived(annotations.filter((v) => v.attributes.pinned));
 	const unpinnedAnnotations = $derived(annotations.filter((v) => !v.attributes.pinned));
 
@@ -105,7 +104,8 @@
 </div>
 
 {#snippet annotationListItem(ann: OncallShiftAnnotation)}
-	{@const occurredAt = ann.attributes.occurredAt}
+	{@const event = ann.attributes.event}
+	{@const occurredAt = ann.attributes.event?.timestamp ?? ""}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
@@ -115,13 +115,13 @@
 
 		<div class="items-center static z-10">
 			<Icon
-				data={eventKindIcons[ann.attributes.kind]}
+				data={mdiCircleMedium}
 				classes={{ root: "bg-accent-900 rounded-full p-2 w-auto h-10" }}
 			/>
 		</div>
 
 		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
-			<div class="leading-none">{ann.attributes.title || "todo: msg contents"}</div>
+			<div class="leading-none">{event?.title || "todo: event title"}</div>
 			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
 				<Button
 					disabled={updateAnnotationMut.isPending}

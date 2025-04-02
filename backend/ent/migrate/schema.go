@@ -719,13 +719,11 @@ var (
 	// OncallUserShiftAnnotationsColumns holds the columns for the "oncall_user_shift_annotations" table.
 	OncallUserShiftAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString},
-		{Name: "event_kind", Type: field.TypeEnum, Enums: []string{"incident", "alert", "toil", "ping"}},
-		{Name: "title", Type: field.TypeString},
-		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "event", Type: field.TypeJSON},
 		{Name: "minutes_occupied", Type: field.TypeInt},
 		{Name: "notes", Type: field.TypeString, Size: 2147483647},
 		{Name: "pinned", Type: field.TypeBool},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "shift_id", Type: field.TypeUUID},
 	}
 	// OncallUserShiftAnnotationsTable holds the schema information for the "oncall_user_shift_annotations" table.
@@ -736,7 +734,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_user_shift_annotations_oncall_user_shifts_annotations",
-				Columns:    []*schema.Column{OncallUserShiftAnnotationsColumns[8]},
+				Columns:    []*schema.Column{OncallUserShiftAnnotationsColumns[6]},
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},

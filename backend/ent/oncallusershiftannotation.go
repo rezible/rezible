@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
+	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotation is the model entity for the OncallUserShiftAnnotation schema.
@@ -21,20 +23,16 @@ type OncallUserShiftAnnotation struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
-	// EventID holds the value of the "event_id" field.
-	EventID string `json:"event_id,omitempty"`
-	// EventKind holds the value of the "event_kind" field.
-	EventKind oncallusershiftannotation.EventKind `json:"event_kind,omitempty"`
-	// Title holds the value of the "title" field.
-	Title string `json:"title,omitempty"`
-	// OccurredAt holds the value of the "occurred_at" field.
-	OccurredAt time.Time `json:"occurred_at,omitempty"`
+	// Event holds the value of the "event" field.
+	Event *types.OncallEvent `json:"event,omitempty"`
 	// MinutesOccupied holds the value of the "minutes_occupied" field.
 	MinutesOccupied int `json:"minutes_occupied,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
 	// Pinned holds the value of the "pinned" field.
 	Pinned bool `json:"pinned,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallUserShiftAnnotationQuery when eager-loading is set.
 	Edges        OncallUserShiftAnnotationEdges `json:"edges"`
@@ -66,13 +64,15 @@ func (*OncallUserShiftAnnotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallusershiftannotation.FieldEvent:
+			values[i] = new([]byte)
 		case oncallusershiftannotation.FieldPinned:
 			values[i] = new(sql.NullBool)
 		case oncallusershiftannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
-		case oncallusershiftannotation.FieldEventID, oncallusershiftannotation.FieldEventKind, oncallusershiftannotation.FieldTitle, oncallusershiftannotation.FieldNotes:
+		case oncallusershiftannotation.FieldNotes:
 			values[i] = new(sql.NullString)
-		case oncallusershiftannotation.FieldOccurredAt:
+		case oncallusershiftannotation.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
 		case oncallusershiftannotation.FieldID, oncallusershiftannotation.FieldShiftID:
 			values[i] = new(uuid.UUID)
@@ -103,29 +103,13 @@ func (ousa *OncallUserShiftAnnotation) assignValues(columns []string, values []a
 			} else if value != nil {
 				ousa.ShiftID = *value
 			}
-		case oncallusershiftannotation.FieldEventID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field event_id", values[i])
-			} else if value.Valid {
-				ousa.EventID = value.String
-			}
-		case oncallusershiftannotation.FieldEventKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field event_kind", values[i])
-			} else if value.Valid {
-				ousa.EventKind = oncallusershiftannotation.EventKind(value.String)
-			}
-		case oncallusershiftannotation.FieldTitle:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title", values[i])
-			} else if value.Valid {
-				ousa.Title = value.String
-			}
-		case oncallusershiftannotation.FieldOccurredAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field occurred_at", values[i])
-			} else if value.Valid {
-				ousa.OccurredAt = value.Time
+		case oncallusershiftannotation.FieldEvent:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field event", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &ousa.Event); err != nil {
+					return fmt.Errorf("unmarshal field event: %w", err)
+				}
 			}
 		case oncallusershiftannotation.FieldMinutesOccupied:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -144,6 +128,12 @@ func (ousa *OncallUserShiftAnnotation) assignValues(columns []string, values []a
 				return fmt.Errorf("unexpected type %T for field pinned", values[i])
 			} else if value.Valid {
 				ousa.Pinned = value.Bool
+			}
+		case oncallusershiftannotation.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				ousa.CreatedAt = value.Time
 			}
 		default:
 			ousa.selectValues.Set(columns[i], values[i])
@@ -189,17 +179,8 @@ func (ousa *OncallUserShiftAnnotation) String() string {
 	builder.WriteString("shift_id=")
 	builder.WriteString(fmt.Sprintf("%v", ousa.ShiftID))
 	builder.WriteString(", ")
-	builder.WriteString("event_id=")
-	builder.WriteString(ousa.EventID)
-	builder.WriteString(", ")
-	builder.WriteString("event_kind=")
-	builder.WriteString(fmt.Sprintf("%v", ousa.EventKind))
-	builder.WriteString(", ")
-	builder.WriteString("title=")
-	builder.WriteString(ousa.Title)
-	builder.WriteString(", ")
-	builder.WriteString("occurred_at=")
-	builder.WriteString(ousa.OccurredAt.Format(time.ANSIC))
+	builder.WriteString("event=")
+	builder.WriteString(fmt.Sprintf("%v", ousa.Event))
 	builder.WriteString(", ")
 	builder.WriteString("minutes_occupied=")
 	builder.WriteString(fmt.Sprintf("%v", ousa.MinutesOccupied))
@@ -209,6 +190,9 @@ func (ousa *OncallUserShiftAnnotation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("pinned=")
 	builder.WriteString(fmt.Sprintf("%v", ousa.Pinned))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(ousa.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
