@@ -75,7 +75,7 @@
 		{
 			title: "High Severity Incidents",
 			subheading: "Incidents with a severity of 1 or 2",
-			value: metrics.totalIncidents,
+			value: metrics.incidents,
 		},
 		{
 			title: "Sleep Disruption",
@@ -90,7 +90,7 @@
 		{
 			title: "Off-Hours Activity",
 			subheading: `Time spent active outside of 8am-6pm`,
-			value: formatDuration({ minutes: metrics.offHoursActivityTime }),
+			value: formatDuration({ minutes: metrics.offHoursActivityTime }, {zero: true}),
 		},
 	]);
 

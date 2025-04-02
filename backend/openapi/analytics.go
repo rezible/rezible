@@ -20,25 +20,33 @@ func (o operations) RegisterAnalytics(api huma.API) {
 
 type (
 	OncallRosterMetrics struct {
+		Incidents          int     `json:"incidents"`
+		Alerts             int     `json:"alerts"`
+		NightAlerts        int     `json:"nightAlerts"`
+		OutOfHoursAlerts   int     `json:"outOfHoursAlerts"`
+		AlertActionability float32 `json:"alertActionability"`
+		HandoverCompletion float32 `json:"handoverCompletion"`
+		BurdenScore        float32 `json:"burdenScore"`
+		BacklogBurnRate    float32 `json:"backlogBurnRate"`
 	}
 
 	OncallShiftMetrics struct {
-		TotalAlerts          float64                           `json:"totalAlerts"`
-		TotalIncidents       float64                           `json:"totalIncidents"`
+		Incidents            int                               `json:"incidents"`
 		IncidentActivity     []OncallShiftIncidentResponseTime `json:"incidentActivity"`
-		NightAlerts          float64                           `json:"nightAlerts"`
-		AlertIncidentRate    float64                           `json:"alertIncidentRate"`
-		BusinessHoursAlerts  float64                           `json:"businessHoursAlerts"`
-		OffHoursAlerts       float64                           `json:"offHoursAlerts"`
-		OffHoursActivityTime float64                           `json:"offHoursActivityTime"`
-		SleepDisruptionScore float64                           `json:"sleepDisruptionScore"`
-		WorkloadScore        float64                           `json:"workloadScore"`
-		BurdenScore          float64                           `json:"burdenScore"`
+		Alerts               int                               `json:"alerts"`
+		NightAlerts          int                               `json:"nightAlerts"`
+		AlertActionability   float32                           `json:"alertActionability"`
+		AlertIncidentRate    float32                           `json:"alertIncidentRate"`
+		OffHoursAlerts       int                               `json:"offHoursAlerts"`
+		OffHoursActivityTime float32                           `json:"offHoursActivityTime"`
+		SleepDisruptionScore float32                           `json:"sleepDisruptionScore"`
+		WorkloadScore        float32                           `json:"workloadScore"`
+		BurdenScore          float32                           `json:"burdenScore"`
 	}
 
 	OncallShiftIncidentResponseTime struct {
 		IncidentId uuid.UUID `json:"incidentId"`
-		Minutes    float64   `json:"minutes"`
+		Minutes    float32   `json:"minutes"`
 	}
 )
 

@@ -1,18 +1,14 @@
 <script lang="ts">
-	import { mdiChevronRight, mdiAccount } from "@mdi/js";
 	import { Button, Card, Header, Icon } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import type { User } from "../types";
-	import { session } from "$lib/auth.svelte";
 	import TimezoneMap from "$components/viz/timezone-map/TimezoneMap.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
-	import { onMount, tick } from "svelte";
+	import { onMount } from "svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { listUsersOptions } from "$src/lib/api";
 
-	const makeFakeUsers = (): User[] => {
-		// todo
-		return session.user ? [session.user] : [];
-	}
-	const users: User[] = makeFakeUsers();
+	const usersQuery = createQuery(() => listUsersOptions());
+	const users = $derived(usersQuery.data?.data ?? []);
 
 	let showTimezone = $state(false);
 	onMount(() => {

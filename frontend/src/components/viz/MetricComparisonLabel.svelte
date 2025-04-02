@@ -41,10 +41,11 @@
 		if (delta === 1) return "Average";
 		return `${Math.round((delta * 100) - 100)}% ${deltaLabel}`
 	});
+	$inspect(metricValue, comparison.value, deltaText);
 </script>
 
 <div class="{comparisonClass(delta, !!comparison.positive)} flex flex-col items-end gap-2">
-	<span>{deltaText}</span>
+	<span>{deltaLabel}</span>
 
 	{#if comparison.hint}
 		<div class="text-warning">

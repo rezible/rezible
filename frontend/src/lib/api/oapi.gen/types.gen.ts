@@ -1699,7 +1699,14 @@ export type OncallRosterAttributes = {
 };
 
 export type OncallRosterMetrics = {
-    [key: string]: never;
+    alertActionability: number;
+    alerts: number;
+    backlogBurnRate: number;
+    burdenScore: number;
+    handoverCompletion: number;
+    incidents: number;
+    nightAlerts: number;
+    outOfHoursAlerts: number;
 };
 
 export type OncallSchedule = {
@@ -1800,16 +1807,16 @@ export type OncallShiftIncidentResponseTime = {
 };
 
 export type OncallShiftMetrics = {
+    alertActionability: number;
     alertIncidentRate: number;
+    alerts: number;
     burdenScore: number;
-    businessHoursAlerts: number;
     incidentActivity: Array<OncallShiftIncidentResponseTime>;
+    incidents: number;
     nightAlerts: number;
     offHoursActivityTime: number;
     offHoursAlerts: number;
     sleepDisruptionScore: number;
-    totalAlerts: number;
-    totalIncidents: number;
     workloadScore: number;
 };
 

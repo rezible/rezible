@@ -10,12 +10,12 @@
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import RosterDetailsBar from "./RosterDetailsBar.svelte";
 
-	import RosterOverview from "./tabs/RosterOverview.svelte";
-	import RosterMembers from "./tabs/RosterMembers.svelte";
-	import RosterSchedule from "./tabs/RosterSchedule.svelte";
-	import RosterBacklog from "./tabs/RosterBacklog.svelte";
-	import RosterMetrics from "./tabs/RosterMetrics.svelte";
-	import RosterResources from "./tabs/RosterResources.svelte";
+	import RosterOverview from "./overview/RosterOverview.svelte";
+	import RosterMembers from "./members/RosterMembers.svelte";
+	import RosterSchedule from "./schedule/RosterSchedule.svelte";
+	import RosterBacklog from "./backlog/RosterBacklog.svelte";
+	import RosterMetrics from "./metrics/RosterMetrics.svelte";
+	import RosterResources from "./resources/RosterResources.svelte";
 
 	type Props = {
 		rosterId: string;
@@ -35,15 +35,17 @@
 		{ label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId } },
 	]);
 	appShell.setPageActions(PageActions, true, () => ({roster}));
+</script>
 
-	const tabs = $derived([
+<TabbedViewContainer 
+	pathBase="/oncall/rosters/{rosterId}" 
+	infoBar={RosterDetailsBar}
+	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },
 		{ label: "Metrics", path: "metrics", component: RosterMetrics },
 		{ label: "Shifts", path: "schedule", component: RosterSchedule },
 		{ label: "Members", path: "members", component: RosterMembers },
 		{ label: "Backlog", path: "backlog", component: RosterBacklog },
 		{ label: "Resources", path: "resources", component: RosterResources },
-	]);
-</script>
-
-<TabbedViewContainer {tabs} pathBase="/oncall/rosters/{rosterId}" infoBar={RosterDetailsBar} />
+	]}
+/>

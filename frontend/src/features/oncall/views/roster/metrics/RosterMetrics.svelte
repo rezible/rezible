@@ -1,30 +1,16 @@
 <script lang="ts">
-	import { Button, Header, Icon, Menu, MenuItem, Toggle } from "svelte-ux";
-	import { mdiBellAlert, mdiCalendar, mdiChartBar, mdiFire } from "@mdi/js";
 	import { scaleOrdinal } from "d3-scale";
-	import MetricCard from "$src/components/viz/MetricCard.svelte";
-	import TimePeriodSelect from "$components/time-period-select/TimePeriodSelect.svelte";
+	import { getOncallRosterMetricsOptions } from "$lib/api";
+	import { rosterIdCtx } from "$features/oncall/views/roster/context";
+	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {};
 	const {}: Props = $props();
 
-	type RosterMetrics = {
-		alerts: number;
-		incidents: number;
-		handoverCompletion: number;
-		outOfHoursAlerts: number;
-		oncallBurden: number;
-		backlogBurnRate: number;
-	};
+	const rosterId = rosterIdCtx.get();
 
-	const metrics = $derived<RosterMetrics>({
-		alerts: 3,
-		incidents: 2,
-		handoverCompletion: 0.9,
-		outOfHoursAlerts: 8,
-		oncallBurden: 64,
-		backlogBurnRate: 1.1,
-	});
+	const metricsQuery = createQuery(() => getOncallRosterMetricsOptions({query: {rosterId}}));
+	const metrics = $derived(metricsQuery.data?.data);
 
 	const generateAlertsData = (days: number) => {
 		const data = [];

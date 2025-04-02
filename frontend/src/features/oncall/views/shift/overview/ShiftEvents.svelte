@@ -71,14 +71,14 @@
 	<MetricCard
 		title="Incidents"
 		icon={mdiFire}
-		metric={metrics.totalIncidents}
-		comparison={{value: comparison.totalIncidents}}
+		metric={metrics.incidents}
+		comparison={{value: comparison.incidents}}
 	/>
 	<MetricCard
 		title="Alerts"
 		icon={mdiBellAlert}
-		metric={metrics.totalAlerts}
-		comparison={{value: comparison.totalAlerts}}
+		metric={metrics.alerts}
+		comparison={{value: comparison.alerts}}
 	/>
 	<MetricCard
 		title="Night Alerts"

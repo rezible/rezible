@@ -1,14 +1,24 @@
 <script lang="ts">
-	import type { BacklogItem } from "../types";
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { rosterIdCtx } from "$features/oncall/views/roster/context";
 	import { Header } from "svelte-ux";
 	import { Axis, Bars, Chart, Points, Svg, Tooltip, Highlight } from "layerchart";
 	import { scaleBand, scaleOrdinal } from "d3-scale";
 	import { PeriodType, formatDate } from "@layerstack/utils";
 	import { getLocalTimeZone, now } from "@internationalized/date";
+	import { rosterIdCtx } from "$features/oncall/views/roster/context";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	
+	type BacklogItem = {
+		id: string;
+		attributes: BacklogItemAttributes;
+	};
+
+	type BacklogItemAttributes = {
+		title: string;
+		priority: number;
+		createdAt: Date;
+	};
+
 	const rosterId = rosterIdCtx.get();
 
 	const mockBacklogItems: BacklogItem[] = [

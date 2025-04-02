@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Header, Icon, Button, Month, Field, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
-	import { mdiChevronRight, mdiCalendarClock, mdiClockOutline } from "@mdi/js";
+	import { Header, Icon, Button, Month } from "svelte-ux";
+	import { mdiChevronRight } from "@mdi/js";
 	import { getUserOncallDetailsOptions, type OncallShift } from "$lib/api";
-	import { formatDate, formatDistanceToNow, isFuture, isPast } from "date-fns";
+	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
 
 	type Props = {};

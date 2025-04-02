@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import { Header } from "svelte-ux";
-	import ComparisonText from "./MetricComparisonLabel.svelte";
+	import MetricComparisonLabel from "./MetricComparisonLabel.svelte";
 
 	const { title, subheading, value, comparison }: InlineStatProps = $props();
 </script>
@@ -20,7 +20,7 @@
 	<div class="ml-4 flex flex-col" slot="actions">
 		<span class="text-2xl font-semibold self-end">{value}</span>
 		{#if comparison}
-			<ComparisonText {comparison} metricValue={value} />
+			<MetricComparisonLabel {comparison} metricValue={value} />
 		{/if}
 	</div>
 </Header>

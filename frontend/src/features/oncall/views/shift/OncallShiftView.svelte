@@ -5,7 +5,7 @@
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
@@ -30,11 +30,13 @@
 		...shiftBreadcrumb,
 		...handoverBreadcrumb,
 	]);
-
-	const tabs: Tab[] = $derived([
-		{label: "Overview", path: "", component: ShiftOverview},
-		{label: "Handover", path: "handover", component: ShiftHandover},
-	]);
 </script>
 
-<TabbedViewContainer {tabs} pathBase="/oncall/shifts/{shiftId}" infoBar={ShiftDetailsBar} />
+<TabbedViewContainer 
+	pathBase="/oncall/shifts/{shiftId}" 
+	infoBar={ShiftDetailsBar}
+	tabs={[
+		{label: "Overview", path: "", component: ShiftOverview},
+		{label: "Handover", path: "handover", component: ShiftHandover},
+	]}
+/>
