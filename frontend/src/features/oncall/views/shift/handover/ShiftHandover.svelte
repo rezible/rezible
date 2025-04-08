@@ -12,7 +12,7 @@
 	const shift = $derived(shiftState.shift);
 
 	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shiftId } }));
-	const handover = $derived(handoverQuery.data?.data);
+	const handover = $derived(handoverQuery.data?.data.handover);
 
 	const isSent = $derived(handover && new Date(handover.attributes.sentAt).valueOf() > 0);
 

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { Button, Card, Collapse, Header, Icon, ProgressCircle } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { fade } from "svelte/transition";
-	import { mdiCircleMedium, mdiAlarmLight, mdiSleepOff, mdiFire, mdiClose, mdiChevronUp, mdiChevronDown } from "@mdi/js";
+	import { mdiAlarmLight, mdiSleepOff, mdiFire, mdiClose, mdiChevronUp, mdiChevronDown } from "@mdi/js";
 	import { getOncallShiftHandoverOptions, getOncallShiftMetricsOptions, type OncallShift } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import ShiftHandoverContent from "$src/features/oncall/components/shift-handover-content/ShiftHandoverContent.svelte";
@@ -18,7 +17,7 @@
 	const metrics = $derived(metricsQuery.data?.data);
 
 	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shiftId } }));
-	const handover = $derived(handoverQuery.data?.data);
+	const handover = $derived(handoverQuery.data?.data.handover);
 </script>
 
 <div class="rounded-lg bg-success-900/10 p-2 pr-3 flex flex-col gap-2 min-h-0 w-full overflow-auto">

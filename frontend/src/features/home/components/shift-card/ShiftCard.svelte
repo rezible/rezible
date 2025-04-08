@@ -20,7 +20,7 @@
 	const firstDay = $derived(differenceInHours(Date.now(), start) <= 24);
 
 	const previousShiftQuery = createQuery(() => getPreviousOncallShiftOptions({path: {id: shift.id}}))
-	const previousShift = $derived(previousShiftQuery.data?.data);
+	const previousShift = $derived(previousShiftQuery.data?.data && false);
 </script>
 
 <Card
