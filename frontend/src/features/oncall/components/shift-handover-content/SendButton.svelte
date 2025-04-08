@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { Button, Icon } from "svelte-ux";
+	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import {
 		getNextOncallShiftOptions,
 		getOncallShiftHandoverOptions,
 		sendOncallShiftHandoverMutation,
 	} from "$lib/api";
-	import { Button, Icon } from "svelte-ux";
-	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { getToastState } from "$features/app/lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { handoverState } from "./handoverState.svelte";
+	import { handoverState } from "./state.svelte";
 
 	type Props = { 
 		shiftId: string;
@@ -18,7 +18,6 @@
 
 	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
 	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);
-
 
 	const queryClient = useQueryClient();
 	const canSend = $derived(!handoverState.sent && !handoverState.isEmpty);

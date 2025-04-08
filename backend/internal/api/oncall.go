@@ -173,7 +173,19 @@ func (h *oncallHandler) GetNextOncallShift(ctx context.Context, request *oapi.Ge
 
 	shift, shiftErr := h.oncall.GetNextShift(ctx, request.Id)
 	if shiftErr != nil {
-		return nil, detailError("failed to query shift", shiftErr)
+		return nil, detailError("failed to query next shift", shiftErr)
+	}
+	resp.Body.Data = oapi.OncallShiftFromEnt(shift)
+
+	return &resp, nil
+}
+
+func (h *oncallHandler) GetPreviousOncallShift(ctx context.Context, request *oapi.GetPreviousOncallShiftRequest) (*oapi.GetPreviousOncallShiftResponse, error) {
+	var resp oapi.GetPreviousOncallShiftResponse
+
+	shift, shiftErr := h.oncall.GetPreviousShift(ctx, request.Id)
+	if shiftErr != nil {
+		return nil, detailError("failed to query previous shift", shiftErr)
 	}
 	resp.Body.Data = oapi.OncallShiftFromEnt(shift)
 

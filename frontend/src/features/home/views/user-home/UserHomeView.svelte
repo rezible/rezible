@@ -5,7 +5,6 @@
 	import ShiftCard from "$features/home/components/shift-card/ShiftCard.svelte";
 	import UserItems from "$features/home/components/user-items/UserItems.svelte";
 	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
-	import TeamInfo from "$features/home/components/events-overview/TeamInfo.svelte";
 
 	const userShiftsQuery = createQuery(() => ({
 		...listOncallShiftsOptions({
@@ -22,9 +21,9 @@
 		<UserPinnedItems />
 	</div>
 
-	{#if currentShifts}
+	{#if currentShifts && currentShifts.length > 0}
 		<div class="max-h-full min-h-0 inline">
-			<ShiftCard shifts={currentShifts} />
+			<ShiftCard shift={currentShifts[0]} />
 		</div>
 	{/if}
 </div>

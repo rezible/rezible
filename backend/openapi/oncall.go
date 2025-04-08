@@ -22,6 +22,7 @@ type OncallHandler interface {
 	ListOncallShiftEvents(context.Context, *ListOncallShiftEventsRequest) (*ListOncallShiftEventsResponse, error)
 
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
+	GetPreviousOncallShift(context.Context, *GetPreviousOncallShiftRequest) (*GetPreviousOncallShiftResponse, error)
 	GetNextOncallShift(context.Context, *GetNextOncallShiftRequest) (*GetNextOncallShiftResponse, error)
 
 	CreateOncallShiftHandoverTemplate(context.Context, *CreateOncallShiftHandoverTemplateRequest) (*CreateOncallShiftHandoverTemplateResponse, error)
@@ -48,6 +49,7 @@ func (o operations) RegisterOncall(api huma.API) {
 	huma.Register(api, ListOncallShifts, o.ListOncallShifts)
 
 	huma.Register(api, GetOncallShift, o.GetOncallShift)
+	huma.Register(api, GetPreviousOncallShift, o.GetPreviousOncallShift)
 	huma.Register(api, GetNextOncallShift, o.GetNextOncallShift)
 
 	huma.Register(api, CreateOncallShiftHandoverTemplate, o.CreateOncallShiftHandoverTemplate)
@@ -385,13 +387,25 @@ var GetNextOncallShift = huma.Operation{
 	OperationID: "get-next-oncall-shift",
 	Method:      http.MethodGet,
 	Path:        "/oncall/shifts/{id}/next",
-	Summary:     "Get the following Oncall Shift",
+	Summary:     "Get the next Oncall Shift",
 	Tags:        oncallTags,
 	Errors:      errorCodes(),
 }
 
 type GetNextOncallShiftRequest GetIdRequest
 type GetNextOncallShiftResponse ItemResponse[OncallShift]
+
+var GetPreviousOncallShift = huma.Operation{
+	OperationID: "get-previous-oncall-shift",
+	Method:      http.MethodGet,
+	Path:        "/oncall/shifts/{id}/previous",
+	Summary:     "Get the previous Oncall Shift",
+	Tags:        oncallTags,
+	Errors:      errorCodes(),
+}
+
+type GetPreviousOncallShiftRequest GetIdRequest
+type GetPreviousOncallShiftResponse ItemResponse[OncallShift]
 
 var CreateOncallShiftHandoverTemplate = huma.Operation{
 	OperationID: "create-oncall-handover-template",

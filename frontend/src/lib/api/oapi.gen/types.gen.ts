@@ -916,6 +916,14 @@ export type GetOncallShiftResponseBody = {
     data: OncallShift;
 };
 
+export type GetPreviousOncallShiftResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallShift;
+};
+
 export type GetRetrospectiveDiscussionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -7283,6 +7291,53 @@ export type GetNextOncallShiftResponses = {
 };
 
 export type GetNextOncallShiftResponse = GetNextOncallShiftResponses[keyof GetNextOncallShiftResponses];
+
+export type GetPreviousOncallShiftData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/shifts/{id}/previous';
+};
+
+export type GetPreviousOncallShiftErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetPreviousOncallShiftError = GetPreviousOncallShiftErrors[keyof GetPreviousOncallShiftErrors];
+
+export type GetPreviousOncallShiftResponses = {
+    /**
+     * OK
+     */
+    200: GetPreviousOncallShiftResponseBody;
+};
+
+export type GetPreviousOncallShiftResponse = GetPreviousOncallShiftResponses[keyof GetPreviousOncallShiftResponses];
 
 export type GetUserOncallDetailsData = {
     body?: never;

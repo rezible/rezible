@@ -53,7 +53,7 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService,
 		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
 	}
 
-	go s.registerHandoverSchema()
+	//go s.registerHandoverSchema()
 
 	return s, nil
 }
@@ -76,6 +76,25 @@ func (s *OncallService) registerBackgroundJobs() error {
 		jobs.RegisterWorkerFunc(s.HandleScanForShiftsNeedingHandoverJob),
 		jobs.RegisterWorkerFunc(s.HandleEnsureShiftHandoverJob),
 	)
+}
+
+func (s *OncallService) registerHandoverSchema() {
+	if s.docs == nil {
+		log.Warn().Msg("no docs service for oncall service, not registering schema")
+		return
+	}
+	ctx := context.Background()
+	spec, specErr := s.docs.GetDocumentSchemaSpec(ctx, "handover")
+	if specErr != nil || spec == nil {
+		log.Error().Err(specErr).Msg("Failed to get handover schema spec")
+		return
+	}
+	schema, schemaErr := prosemirror.NewSchema(*spec)
+	if schemaErr != nil {
+		log.Error().Err(schemaErr).Msg("Failed to create handover schema")
+		return
+	}
+	prosemirror.RegisterSchema(schema)
 }
 
 func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msg *ent.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error {
@@ -199,13 +218,30 @@ func (s *OncallService) GetNextShift(ctx context.Context, id uuid.UUID) (*ent.On
 	if shiftErr != nil {
 		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
-	to := shift.EndAt.Add(time.Hour * 24 * 7)
-	withinWindow := oncallusershift.And(oncallusershift.StartAtGTE(shift.EndAt), oncallusershift.StartAtLTE(to))
 
 	return s.db.OncallUserShift.Query().
-		Where(oncallusershift.RosterID(shift.RosterID)).
-		Where(withinWindow).
+		Where(oncallusershift.And(
+			oncallusershift.RosterID(shift.RosterID),
+			oncallusershift.StartAtGTE(shift.EndAt),
+			oncallusershift.IDNEQ(id))).
 		Order(oncallusershift.ByStartAt(sql.OrderAsc())).
+		WithUser().
+		WithRoster().
+		First(ctx)
+}
+
+func (s *OncallService) GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error) {
+	shift, shiftErr := s.db.OncallUserShift.Get(ctx, id)
+	if shiftErr != nil {
+		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+	}
+
+	return s.db.OncallUserShift.Query().
+		Where(oncallusershift.And(
+			oncallusershift.RosterID(shift.RosterID),
+			oncallusershift.EndAtLTE(shift.StartAt),
+			oncallusershift.IDNEQ(id))).
+		Order(oncallusershift.ByStartAt(sql.OrderDesc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
@@ -351,25 +387,6 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 	}
 
 	return nil
-}
-
-func (s *OncallService) registerHandoverSchema() {
-	if s.docs == nil {
-		log.Warn().Msg("no docs service for oncall service, not registering schema")
-		return
-	}
-	ctx := context.Background()
-	spec, specErr := s.docs.GetDocumentSchemaSpec(ctx, "handover")
-	if specErr != nil || spec == nil {
-		log.Error().Err(specErr).Msg("Failed to get handover schema spec")
-		return
-	}
-	schema, schemaErr := prosemirror.NewSchema(*spec)
-	if schemaErr != nil {
-		log.Error().Err(schemaErr).Msg("Failed to create handover schema")
-		return
-	}
-	prosemirror.RegisterSchema(schema)
 }
 
 func (s *OncallService) getOrCreateShiftHandover(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShiftHandover, error) {

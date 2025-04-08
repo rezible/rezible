@@ -1,18 +1,18 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { Button, Header } from "svelte-ux";
-	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
+	import { createQuery } from "@tanstack/svelte-query";
 	import { EditorContent } from "svelte-tiptap";
-	import { handoverState, type HandoverEditorSection } from "./handoverState.svelte";
-	import type { ChainedCommands, Content } from "@tiptap/core";
+	import type { ChainedCommands } from "@tiptap/core";
+	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import {
 		listIncidentsOptions,
 		listOncallShiftAnnotationsOptions,
 		type OncallShiftHandover,
 		type OncallShiftHandoverTemplate,
 	} from "$lib/api";
-	import { onMount } from "svelte";
+	import { handoverState, type HandoverEditorSection } from "./state.svelte";
 	import SendButton from "./SendButton.svelte";
-	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {
 		shiftId: string;
@@ -22,7 +22,7 @@
 	};
 	const { shiftId, editable, handover, template }: Props = $props();
 
-	const isSent = $derived(handover && new Date(handover.attributes.sentAt).valueOf() > 0);
+	const isSent = $derived(new Date(handover?.attributes.sentAt ?? 0).valueOf() > 0);
 
 	let focusIdx = $state(-1);
 	const onSectionFocus = (e: FocusEvent, idx: number, focus: boolean) => {
@@ -57,8 +57,12 @@
 
 	const incidentsSectionPresent = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
 	const incidentsQuery = createQuery(() => ({
-		...listIncidentsOptions({ query: { /* TODO: filter by shift */ } }),
-		enabled: (!isSent && incidentsSectionPresent),
+		...listIncidentsOptions({
+			query: {
+				/* TODO: filter by shiftId */
+			},
+		}),
+		enabled: !isSent && incidentsSectionPresent,
 	}));
 	const incidents = $derived(incidentsQuery.data?.data ?? []);
 
@@ -140,15 +144,11 @@
 	{:else}
 		<div
 			class="h-fit"
-			class:cursor-text={!handoverState.sent}
-			onfocusin={(e) => {
-				onSectionFocus(e, idx, true);
-			}}
-			onfocusout={(e) => {
-				onSectionFocus(e, idx, false);
-			}}
 			tabindex="-1"
 			spellcheck="false"
+			class:cursor-text={!handoverState.sent}
+			onfocusin={(e) => onSectionFocus(e, idx, true)}
+			onfocusout={(e) => onSectionFocus(e, idx, false)}
 		>
 			<div
 				class="flex flex-row w-full items-center gap-2 h-fit"

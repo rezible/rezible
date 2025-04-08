@@ -3,15 +3,15 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import PreviousShiftOverview from "./PreviousShiftOverview.svelte";
 	import { mdiArrowRight, mdiPhone } from "@mdi/js";
-	import type { OncallShift } from "$src/lib/api";
+	import { getPreviousOncallShiftOptions, type OncallShift } from "$src/lib/api";
 	import { differenceInHours } from "date-fns";
+	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {
-		shifts: OncallShift[];
+		shift: OncallShift;
 	};
-	const { shifts }: Props = $props();
+	const { shift }: Props = $props();
 
-	const shift = $derived(shifts[0]);
 	const roster = $derived(shift.attributes.roster);
 
 	const start = $derived(new Date(shift.attributes.startAt));
@@ -19,7 +19,8 @@
 	const progress = $derived((100 * (Date.now() - start.valueOf())) / (end.valueOf() - start.valueOf()));
 	const firstDay = $derived(differenceInHours(Date.now(), start) <= 24);
 
-	let expanded = $state(false);
+	const previousShiftQuery = createQuery(() => getPreviousOncallShiftOptions({path: {id: shift.id}}))
+	const previousShift = $derived(previousShiftQuery.data?.data);
 </script>
 
 <Card
@@ -51,7 +52,9 @@
 	</Header>
 
 	<svelte:fragment slot="contents">
-		<PreviousShiftOverview bind:expanded />
+		{#if previousShift}
+			<PreviousShiftOverview shift={previousShift} />
+		{/if}
 	</svelte:fragment>
 
 	<div slot="actions" class="flex gap-2 px-2 py-0 justify-end">

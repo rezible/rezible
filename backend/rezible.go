@@ -366,6 +366,7 @@ type (
 		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallUserShift, error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 		GetNextShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
+		GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 
 		ListShiftAnnotations(ctx context.Context, params ListOncallShiftAnnotationsParams) ([]*ent.OncallUserShiftAnnotation, error)
 		GetShiftAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftAnnotation, error)

@@ -3,12 +3,22 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { fade } from "svelte/transition";
 	import { mdiCircleMedium, mdiAlarmLight, mdiSleepOff, mdiFire, mdiClose, mdiChevronUp, mdiChevronDown } from "@mdi/js";
-	import HandoverOverview from "./HandoverOverview.svelte";
+	import { getOncallShiftHandoverOptions, getOncallShiftMetricsOptions, type OncallShift } from "$lib/api";
+	import { createQuery } from "@tanstack/svelte-query";
+	import ShiftHandoverContent from "$src/features/oncall/components/shift-handover-content/ShiftHandoverContent.svelte";
 
 	type Props = {
-		expanded: boolean;
+		shift: OncallShift;
 	};
-	let { expanded = $bindable() }: Props = $props();
+	let { shift }: Props = $props();
+
+	const shiftId = $derived(shift.id);
+
+	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({ query: { shiftId }}));
+	const metrics = $derived(metricsQuery.data?.data);
+
+	const handoverQuery = createQuery(() => getOncallShiftHandoverOptions({ path: { id: shiftId } }));
+	const handover = $derived(handoverQuery.data?.data);
 </script>
 
 <div class="rounded-lg bg-success-900/10 p-2 pr-3 flex flex-col gap-2 min-h-0 w-full overflow-auto">
@@ -55,7 +65,11 @@
 				</div>
 			</div>
 
-			<HandoverOverview />
+			{#if handover}
+				<ShiftHandoverContent {shiftId} editable={false} {handover} />
+			{:else}
+				<span>no handover</span>
+			{/if}
 		</div>
 	</Collapse>
 </div>
