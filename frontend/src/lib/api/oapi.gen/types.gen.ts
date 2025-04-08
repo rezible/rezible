@@ -6630,7 +6630,7 @@ export type ListOncallEventsData = {
         search?: string;
         archived?: boolean;
         shiftId?: string;
-        rosterId?: Array<string>;
+        rosterIds?: Array<string>;
     };
     url: '/oncall/events';
 };

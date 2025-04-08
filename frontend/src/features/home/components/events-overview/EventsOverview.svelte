@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { listOncallEventsOptions, type OncallShift } from "$lib/api";
-	import { Button, Checkbox, Menu, MenuItem, Pagination, Toggle } from "svelte-ux";
+	import { Button, Checkbox, Header, Icon, Menu, MenuItem, Pagination, Toggle, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
 	import EventsFilters from "./EventsFilters.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { mdiDotsVertical } from "@mdi/js";
+	import { mdiChevronDown, mdiChevronUp, mdiCircle, mdiCircleBoxOutline, mdiCircleOutline, mdiDotsVertical, mdiFilter } from "@mdi/js";
 	import type { DateRange } from "@layerstack/utils/dateRange";
-	import { subDays } from "date-fns";
-	import { PeriodType } from "@layerstack/utils";
+	import EventRow from "./EventRow.svelte";
+	import { SvelteMap, SvelteSet } from "svelte/reactivity";
 
 	type Props = {
 		activeShift?: OncallShift;
@@ -19,60 +19,74 @@
 	const paginationStore = createPaginationStore({ perPage: defaultPerPage });
 	const pagination = fromStore(paginationStore);
 
-	type Filters = {rosters: string[], actionRequired: boolean, dateRange: DateRange};
+	type FilterOptions = {
+		rosterIds?: string[];
+		actionRequired?: boolean;
+		dateRange?: DateRange;
+	}
+	let showCustomFilters = $state(false);
+	let customFilters = $state<FilterOptions>({});
 
-	const today = new Date();
-	const filters = $state<Filters>({
-		rosters: [],
-		actionRequired: false,
-		dateRange: {from: subDays(today, 7), to: today, periodType: PeriodType.Day}
-	});
+	// TODO
+	const queryFilters = $derived(customFilters);
 
-	const eventsQueryOpts = $derived(listOncallEventsOptions({ query: { rosterId: filters.rosters } }));
-	const eventsQuery = createQuery(() => eventsQueryOpts);
+	const eventsQuery = createQuery(() => listOncallEventsOptions({ query: { 
+		rosterIds: customFilters.rosterIds,
+	}}));
 	const eventsData = $derived(eventsQuery.data?.data ?? []);
 
 	const totalEvents = $derived(eventsData.length);
 	$effect(() => paginationStore.setTotal(totalEvents));
 
 	const pageData = $derived(pagination.current.slice(eventsData));
+
+	const checked = $derived(new SvelteSet<string>());
+	const eventCheckToggle = (id: string) => {
+		if (checked.has(id)) checked.delete(id);
+		else checked.add(id);	
+	}
+	const anyChecked = $derived(checked.size > 0);
+	const onMasterCheckToggle = () => {
+		if (anyChecked) {
+			checked.clear();
+		} else {
+			pageData.forEach(e => checked.add(e.id));
+		}
+	}
 </script>
 
 <div class="w-full h-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
-	<div class="w-full flex items-center p-2">
-		<div class="flex-1 px-2">
-			<span class="text-2xl">Events</span>
+	<Header title="Events" classes={{root: "p-2", title: "text-xl"}}>
+		<div slot="actions" class="flex items-center gap-2">
+			<Button variant={"default"} on:click={() => (showCustomFilters = !showCustomFilters)}>
+				<Icon data={mdiFilter} />
+				Filter
+				<Icon data={showCustomFilters ? mdiChevronUp : mdiChevronDown} />
+			</Button>
 		</div>
-		<div class="">
-			<EventsFilters bind:rosters={filters.rosters} bind:actionRequired={filters.actionRequired} bind:dateRange={filters.dateRange} />
-		</div>
-	</div>
+	</Header>
 
-	<div class="min-h-0 flex flex-col overflow-y-auto">
-		<div class="grid grid-flow-row grid-cols-[64px_100px_minmax(100px,1fr)_64px] min-h-0 overflow-y-auto">
-			<div class="grid grid-cols-subgrid col-span-full sticky top-0 bg-surface-100 items-center py-2">
-				<div class="grid place-items-center"><Checkbox /></div>
-				<span>Kind</span>
-				<span>Title</span>
-				<span class="justify-self-end pr-2">Actions</span>
+	{#if showCustomFilters}
+		<div class="p-2 pt-0 w-full">
+			<EventsFilters 
+				bind:rosterIds={customFilters.rosterIds}
+				bind:actionRequired={customFilters.actionRequired}
+				bind:dateRange={customFilters.dateRange}
+			/>
+		</div>
+	{/if}
+
+	<div class="flex flex-col overflow-y-auto">
+		<div class="grid grid-flow-row grid-cols-[48px_64px_minmax(100px,1fr)_64px] min-h-0 overflow-y-auto">
+			<div class="grid grid-cols-subgrid col-span-full sticky top-0 bg-surface-100 items-center p-2">
+				<div class="grid place-self-center"><Checkbox checked={anyChecked} indeterminate on:change={onMasterCheckToggle} /></div>
+				<span class="grid place-self-center">Kind</span>
+				<span class="pl-2">Title</span>
+				<span class="">Actions</span>
 			</div>
 
-			{#each pageData ?? [] as row}
-				<div class="grid grid-cols-subgrid col-span-full hover:bg-surface-100/50 py-1">
-					<div class="grid place-items-center"><Checkbox /></div>
-					<div class="flex items-center"><span>{row.kind}</span></div>
-					<div><span>{row.title}</span></div>
-					<div class="grid place-items-center">
-						<Toggle let:on={open} let:toggle let:toggleOff>
-							<Button icon={mdiDotsVertical} iconOnly size="sm" on:click={toggle}>
-								<Menu {open} on:close={toggleOff} placement="bottom-end">
-									<MenuItem>Edit</MenuItem>
-									<MenuItem class="text-danger">Delete</MenuItem>
-								</Menu>
-							</Button>
-						</Toggle>
-					</div>
-				</div>
+			{#each pageData ?? [] as event}
+				<EventRow {event} checked={checked.has(event.id)} onToggleChecked={() => {eventCheckToggle(event.id)}} />
 			{/each}
 		</div>
 	</div>

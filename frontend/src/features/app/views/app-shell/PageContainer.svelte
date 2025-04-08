@@ -26,8 +26,8 @@
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-2 pb-2 border border-surface-content/10 rounded-md bg-surface-200 text-surface-content">
-	<div class="border-b flex justify-between items-bottom h-11">
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-1 pb-2 border border-surface-content/10 rounded-md bg-surface-200 text-surface-content">
+	<div class="flex justify-between items-bottom h-11">
 		<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end px-1">
 			{#each pageBreadcrumbs as c, i}
 				{#if i > 0}<span>/</span>{/if}
@@ -42,7 +42,7 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col flex-1 min-h-0 overflow-auto">
+	<div class="flex flex-col flex-1 min-h-0 overflow-auto px-1">
 		{@render children()}
 	</div>
 </div>

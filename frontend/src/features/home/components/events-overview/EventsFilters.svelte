@@ -13,13 +13,15 @@
 	} from "svelte-ux";
 	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { v4 as uuidv4 } from "uuid";
+	import { PeriodType } from "@layerstack/utils";
+	import { subDays } from "date-fns";
 
 	type Props = {
-		rosters?: string[];
-		actionRequired: boolean;
-		dateRange: DateRangeType;
+		rosterIds?: string[];
+		actionRequired?: boolean;
+		dateRange?: DateRangeType;
 	};
-	let { rosters = $bindable(), actionRequired = $bindable(), dateRange = $bindable() }: Props = $props();
+	let { rosterIds = $bindable(), actionRequired = $bindable(), dateRange = $bindable() }: Props = $props();
 
 	const rosterOptions: MenuOption<string>[] = [
 		{ label: "One", value: uuidv4() },
@@ -28,27 +30,19 @@
 		{ label: "Four", value: uuidv4() },
 	];
 	// let selectedRosters = $state<string[]>([rosterOptions[0].value]);
-	const selectedSet = $derived(new Set(rosters));
+	const selectedSet = $derived(new Set(rosterIds));
 	const selectedRosterOptions = $derived(rosterOptions.filter((o) => selectedSet.has(o.value)));
 
 	let rosterMenuOpen = $state(false);
 	const toggleRosterMenu = () => {
 		rosterMenuOpen = !rosterMenuOpen;
 	};
+
+	const today = new Date();
+	const defaultDateRange: DateRangeType = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
 </script>
 
-<div class="flex flex-row items-center gap-2">
-	<DateRangeField
-		label="Date Range"
-		labelPlacement="top"
-		dense
-		classes={{
-			field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
-		}}
-		icon={mdiCalendarRange}
-		bind:value={dateRange}
-	/>
-
+<div class="flex flex-row items-center justify-end gap-2">
 	<Field
 		label="Rosters"
 		labelPlacement="top"
@@ -70,14 +64,13 @@
 			<Icon data={mdiChevronDown} />
 			<MultiSelectMenu
 				options={rosterOptions}
-				value={rosters}
+				value={rosterIds}
 				open={rosterMenuOpen}
 				search
 				maintainOrder
 				placeholder="Filter to roster"
 				on:change={(e) => {
-					// @ts-expect-error
-					rosters = e.detail.value;
+					rosterIds = (e.detail.value as string[]);
 				}}
 				on:close={toggleRosterMenu}
 			>
@@ -112,4 +105,16 @@
 	>
 		<Checkbox {id} bind:checked={actionRequired} classes={{ label: "pl-2" }}>Feedback Requested</Checkbox>
 	</Field>
+
+	<DateRangeField
+		label="Date Range"
+		labelPlacement="top"
+		dense
+		classes={{
+			field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
+		}}
+		icon={mdiCalendarRange}
+		value={dateRange || defaultDateRange}
+		on:change={(e) => {dateRange = (e.detail as DateRangeType)}}
+	/>
 </div>
