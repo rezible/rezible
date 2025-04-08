@@ -2,7 +2,6 @@
 	import { mdiCalendar } from "@mdi/js";
 	import { Button, Icon, Menu, MenuItem, Toggle, type MenuOption } from "svelte-ux";
 
-
 	const defaultPeriods = [
 		{ value: 7, label: "Last 7 Days" },
 		{ value: 30, label: "Last 30 Days" },
