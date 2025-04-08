@@ -236,15 +236,19 @@ func makeFakeOncallEvents(start time.Time) []ent.OncallEvent {
 	return events
 }
 
-func (h *oncallHandler) ListOncallShiftEvents(ctx context.Context, request *oapi.ListOncallShiftEventsRequest) (*oapi.ListOncallShiftEventsResponse, error) {
-	var resp oapi.ListOncallShiftEventsResponse
+func (h *oncallHandler) ListOncallEvents(ctx context.Context, request *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
+	var resp oapi.ListOncallEventsResponse
 
-	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.Id)
-	if shiftErr != nil {
-		return nil, detailError("failed to query shift", shiftErr)
+	eventsStart := time.Now().Add(time.Hour * -24 * 7)
+	if request.ShiftId != uuid.Nil {
+		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
+		if shiftErr != nil {
+			return nil, detailError("failed to query shift", shiftErr)
+		}
+		eventsStart = shift.StartAt
 	}
 
-	resp.Body.Data = makeFakeOncallEvents(shift.StartAt)
+	resp.Body.Data = makeFakeOncallEvents(eventsStart)
 
 	return &resp, nil
 }

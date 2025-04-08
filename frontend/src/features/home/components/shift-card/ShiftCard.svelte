@@ -2,7 +2,7 @@
 	import { Button, Card, Header, Icon, ProgressCircle } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import PreviousShiftOverview from "./PreviousShiftOverview.svelte";
-	import { mdiArrowRight, mdiPhone } from "@mdi/js";
+	import { mdiArrowRight, mdiClockCheck, mdiClockEnd, mdiPhone } from "@mdi/js";
 	import { getPreviousOncallShiftOptions, type OncallShift } from "$src/lib/api";
 	import { differenceInHours } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
@@ -23,14 +23,8 @@
 	const previousShift = $derived(previousShiftQuery.data?.data && false);
 </script>
 
-<Card
-	class="w-full max-h-full border-success-900/50 bg-success-900/5 rounded-lg overflow-auto"
-	classes={{
-		content: "min-h-0 flex",
-		headerContainer: "pb-2",
-	}}
->
-	<Header title="You are Currently Oncall" slot="header" classes={{ title: "text-xl" }}>
+<div class="w-full p-2 border border-success-900/50 bg-success-900/5 rounded-lg overflow-auto">
+	<Header title="You are Currently Oncall" classes={{ title: "text-xl" }}>
 		<div slot="avatar">
 			<ProgressCircle
 				size={32}
@@ -49,18 +43,18 @@
 				</div>
 			</Button>
 		</span>
+
+		<div slot="actions" class="flex gap-2 px-2 py-0 justify-end">
+			<Button href="/oncall/shifts/{shift.id}" variant="fill-light" color="default">
+				<span class="flex items-end gap-2">
+					<span class="">View Previous</span>
+					<!-- <Icon data={mdiClockCheck} /> -->
+				</span>
+			</Button>
+			<Button href="/oncall/shifts/{shift.id}" variant="fill" color="success">
+				View Shift
+				<Icon data={mdiArrowRight} />
+			</Button>
+		</div>
 	</Header>
-
-	<svelte:fragment slot="contents">
-		{#if previousShift}
-			<PreviousShiftOverview shift={previousShift} />
-		{/if}
-	</svelte:fragment>
-
-	<div slot="actions" class="flex gap-2 px-2 py-0 justify-end">
-		<Button href="/oncall/shifts/{shift.id}" variant="fill" color="success">
-			View Shift
-			<Icon data={mdiArrowRight} />
-		</Button>
-	</div>
-</Card>
+</div>

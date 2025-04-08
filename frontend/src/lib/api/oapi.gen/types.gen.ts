@@ -1483,6 +1483,15 @@ export type ListNotificationsResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListOncallEventsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallEvent>;
+    pagination: ResponsePagination;
+};
+
 export type ListOncallRostersResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1498,15 +1507,6 @@ export type ListOncallShiftAnnotationsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<OncallShiftAnnotation>;
-    pagination: ResponsePagination;
-};
-
-export type ListOncallShiftEventsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<OncallEvent>;
     pagination: ResponsePagination;
 };
 
@@ -6621,6 +6621,58 @@ export type UpdateOncallShiftAnnotationResponses = {
 
 export type UpdateOncallShiftAnnotationResponse = UpdateOncallShiftAnnotationResponses[keyof UpdateOncallShiftAnnotationResponses];
 
+export type ListOncallEventsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        shiftId?: string;
+        rosterId?: Array<string>;
+    };
+    url: '/oncall/events';
+};
+
+export type ListOncallEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListOncallEventsError = ListOncallEventsErrors[keyof ListOncallEventsErrors];
+
+export type ListOncallEventsResponses = {
+    /**
+     * OK
+     */
+    200: ListOncallEventsResponseBody;
+};
+
+export type ListOncallEventsResponse = ListOncallEventsResponses[keyof ListOncallEventsResponses];
+
 export type CreateOncallHandoverTemplateData = {
     body: CreateOncallShiftHandoverTemplateRequestBody;
     path?: never;
@@ -7104,58 +7156,6 @@ export type CreateOncallShiftAnnotationResponses = {
 };
 
 export type CreateOncallShiftAnnotationResponse = CreateOncallShiftAnnotationResponses[keyof CreateOncallShiftAnnotationResponses];
-
-export type ListOncallShiftEventsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/oncall/shifts/{id}/events';
-};
-
-export type ListOncallShiftEventsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListOncallShiftEventsError = ListOncallShiftEventsErrors[keyof ListOncallShiftEventsErrors];
-
-export type ListOncallShiftEventsResponses = {
-    /**
-     * OK
-     */
-    200: ListOncallShiftEventsResponseBody;
-};
-
-export type ListOncallShiftEventsResponse = ListOncallShiftEventsResponses[keyof ListOncallShiftEventsResponses];
 
 export type GetOncallShiftHandoverData = {
     body?: never;

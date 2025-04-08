@@ -1,6 +1,6 @@
 import { getLocalTimeZone, now, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient, type QueryClient } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, listOncallShiftEventsOptions } from "$lib/api";
+import { getOncallShiftOptions, listOncallEventsOptions } from "$lib/api";
 
 const makeShiftState = () => {
 	let shiftId = $state<string>();
@@ -17,7 +17,7 @@ const makeShiftState = () => {
 	const shiftStart = $derived(shift ? parseAbsolute(shift.attributes.startAt, timezone) : now(timezone));
 	const shiftEnd = $derived(shift ? parseAbsolute(shift.attributes.endAt, timezone) : now(timezone));
 
-	const shiftEventsQueryOpts = $derived(listOncallShiftEventsOptions({ path: { id: (shiftId ?? "") } }))
+	const shiftEventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: (shiftId ?? "") } }));
 	const makeShiftEventsQuery = () => createQuery(() => ({...shiftEventsQueryOpts, enabled: !!shift}));
 	let eventsQuery = $state<ReturnType<typeof makeShiftEventsQuery>>();
 	const shiftEvents = $derived(eventsQuery?.data?.data ?? []);

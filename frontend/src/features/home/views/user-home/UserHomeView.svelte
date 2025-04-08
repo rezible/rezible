@@ -5,6 +5,7 @@
 	import ShiftCard from "$features/home/components/shift-card/ShiftCard.svelte";
 	import UserItems from "$features/home/components/user-items/UserItems.svelte";
 	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
+	import EventsOverview from "$features/home/components/events-overview/EventsOverview.svelte";
 
 	const userShiftsQuery = createQuery(() => ({
 		...listOncallShiftsOptions({
@@ -12,18 +13,24 @@
 		}),
 		enabled: !!session.userId,
 	}));
-	const currentShifts = $derived(userShiftsQuery.data?.data);
+	const activeShift = $derived(userShiftsQuery.data?.data.at(0));
+	// const currentlyOncall = $derived(!!activeShift)
 </script>
 
-<div class="h-full w-full grid grid-cols-2 gap-3 min-h-0 max-h-full gap-2">
-	<div class="grid auto-rows-min gap-2 min-h-0">
-		<UserItems />
-		<UserPinnedItems />
-	</div>
-
-	{#if currentShifts && currentShifts.length > 0}
-		<div class="max-h-full min-h-0 inline">
-			<ShiftCard shift={currentShifts[0]} />
+<div class="h-full w-full flex flex-col gap-2">
+	{#if activeShift}
+		<div class="w-full">
+			<ShiftCard shift={activeShift} />
 		</div>
 	{/if}
+
+	<div class="flex-1 flex min-h-0 gap-2">
+		<div class="flex-1">
+			<EventsOverview {activeShift} />
+		</div>
+		<div class="w-1/3 flex flex-col gap-2 min-h-0">
+			<UserItems />
+			<UserPinnedItems />
+		</div>
+	</div>
 </div>

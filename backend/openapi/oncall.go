@@ -19,7 +19,7 @@ type OncallHandler interface {
 	GetUserOncallDetails(context.Context, *GetUserOncallDetailsRequest) (*GetUserOncallDetailsResponse, error)
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
 
-	ListOncallShiftEvents(context.Context, *ListOncallShiftEventsRequest) (*ListOncallShiftEventsResponse, error)
+	ListOncallEvents(context.Context, *ListOncallEventsRequest) (*ListOncallEventsResponse, error)
 
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
 	GetPreviousOncallShift(context.Context, *GetPreviousOncallShiftRequest) (*GetPreviousOncallShiftResponse, error)
@@ -60,7 +60,7 @@ func (o operations) RegisterOncall(api huma.API) {
 	huma.Register(api, GetOncallShiftHandover, o.GetOncallShiftHandover)
 	huma.Register(api, SendOncallShiftHandover, o.SendOncallShiftHandover)
 
-	huma.Register(api, ListOncallShiftEvents, o.ListOncallShiftEvents)
+	huma.Register(api, ListOncallEvents, o.ListOncallEvents)
 
 	huma.Register(api, ListOncallShiftAnnotations, o.ListOncallShiftAnnotations)
 	huma.Register(api, CreateOncallShiftAnnotation, o.CreateOncallShiftAnnotation)
@@ -508,17 +508,21 @@ type SendOncallShiftHandoverAttributes struct {
 type SendOncallShiftHandoverRequest CreateIdRequest[SendOncallShiftHandoverAttributes]
 type SendOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]
 
-var ListOncallShiftEvents = huma.Operation{
-	OperationID: "list-oncall-shift-events",
+var ListOncallEvents = huma.Operation{
+	OperationID: "list-oncall-events",
 	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/events",
-	Summary:     "List Events For an Oncall Shift",
+	Path:        "/oncall/events",
+	Summary:     "List Oncall Events",
 	Tags:        oncallTags,
 	Errors:      errorCodes(),
 }
 
-type ListOncallShiftEventsRequest ListIdRequest
-type ListOncallShiftEventsResponse PaginatedResponse[ent.OncallEvent]
+type ListOncallEventsRequest struct {
+	ListRequest
+	ShiftId   uuid.UUID `query:"shiftId"`
+	RosterIds []string  `query:"rosterIds"`
+}
+type ListOncallEventsResponse PaginatedResponse[ent.OncallEvent]
 
 var ListOncallShiftAnnotations = huma.Operation{
 	OperationID: "list-oncall-shift-annotations",
