@@ -174,7 +174,7 @@
 				/>
 			</div>
 
-			<TiptapEditor editor={section.editor} class="p-2" />
+			<TiptapEditor bind:editor={section.editor} class="p-2" />
 		</div>
 	{/if}
 {/snippet}

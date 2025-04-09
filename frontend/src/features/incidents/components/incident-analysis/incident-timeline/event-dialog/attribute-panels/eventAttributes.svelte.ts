@@ -48,7 +48,6 @@ const createEventAttributesState = () => {
 
 	const mountDescriptionEditor = () => {
 		descriptionEditor = createMentionEditor(descriptionContent ?? "", "cursor-text focus:outline-none min-h-20");
-		// TODO: watch for update?
 		return () => {
 			descriptionEditor?.destroy();
 			descriptionEditor = null;
@@ -73,6 +72,7 @@ const createEventAttributesState = () => {
 		set title(t: string) { title = t; onUpdate(); },
 		mountDescriptionEditor,
 		get descriptionEditor() { return descriptionEditor },
+		set descriptionEditor(editor: DescriptionEditor) { descriptionEditor = editor },
 		get decisionContext() { return decisionContext },
 		set decisionContext(dc: IncidentEventDecisionContext) { decisionContext = dc; onUpdate(); },
 		get contributingFactors() { return contributingFactors },

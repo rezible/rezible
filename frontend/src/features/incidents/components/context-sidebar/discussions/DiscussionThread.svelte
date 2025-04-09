@@ -43,7 +43,7 @@
 
 	<div class="">
 		{#if editor}
-			<TiptapEditor {editor} />
+			<TiptapEditor bind:editor />
 		{/if}
 	</div>
 

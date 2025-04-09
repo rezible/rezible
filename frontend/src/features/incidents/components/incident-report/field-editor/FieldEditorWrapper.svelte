@@ -17,23 +17,24 @@
 	};
 	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
 
-	const editor = new SvelteEditor({
-		extensions: configureEditorExtensions(section.field, provider),
-		editable: true,
-		autofocus: false,
-		editorProps: {
-			attributes: {
-				class: "max-w-none focus:outline-none min-h-20",
-			},
-		},
-		onFocus({ editor }) {
-			setIsActive(editor, section.field);
-		},
-		onBlur() {
-			// setIsActive(undefined)
-		},
-	});
+	let editor = $state<SvelteEditor>();
 	onMount(() => {
+		editor = new SvelteEditor({
+			extensions: configureEditorExtensions(section.field, provider),
+			editable: true,
+			autofocus: false,
+			editorProps: {
+				attributes: {
+					class: "max-w-none focus:outline-none min-h-20",
+				},
+			},
+			onFocus({ editor }) {
+				setIsActive(editor, section.field);
+			},
+			onBlur() {
+				// setIsActive(undefined)
+			},
+		});
 		return () => {
 			if (!editor?.isDestroyed) editor?.destroy();
 		};
@@ -69,6 +70,6 @@
 			field={section.field}
 			onCreate={(t) => onCreateAnnotation(editor as Editor, t)}
 		/>
-		<TiptapEditor {editor} />
+		<TiptapEditor bind:editor />
 	{/if}
 </div>

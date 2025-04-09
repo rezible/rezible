@@ -15,7 +15,7 @@
 		children?: Snippet;
 	};
 
-	const { editor, children, class: className }: Props = $props();
+	const { editor = $bindable(), children, class: className }: Props = $props();
 
 	let ref: HTMLElement;
 
@@ -26,7 +26,6 @@
 
 		ref.append(...Array.from(editor.options.element.childNodes));
 		editor.setOptions({ element: ref });
-
 		editor.contentElement = ref;
 	};
 
@@ -39,7 +38,6 @@
 
 		const newRef = document.createElement("div");
 		newRef.append(...Array.from(editor.options.element.childNodes));
-
 		editor.setOptions({ element: newRef });
 	}
 

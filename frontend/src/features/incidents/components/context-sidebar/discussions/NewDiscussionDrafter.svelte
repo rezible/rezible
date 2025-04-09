@@ -58,7 +58,7 @@
 
 	<div class="border border-neutral-200 bg-surface-300 cursor-text p-1">
 		{#if draftEditor}
-			<TiptapEditor editor={draftEditor} />
+			<TiptapEditor bind:editor={draftEditor} />
 		{/if}
 	</div>
 

@@ -75,7 +75,7 @@
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if eventAttributes.descriptionEditor}
-			<TiptapEditor editor={eventAttributes.descriptionEditor} />
+			<TiptapEditor bind:editor={eventAttributes.descriptionEditor} />
 		{/if}
 	</Field>
 </div>
