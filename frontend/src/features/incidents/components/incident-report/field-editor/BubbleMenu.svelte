@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-	import { Editor } from "svelte-tiptap";
+	import { Editor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { Button } from "svelte-ux";
 	import { mdiComment, mdiMarker } from "@mdi/js";
 	import { PluginKey, type Selection } from "@tiptap/pm/state";

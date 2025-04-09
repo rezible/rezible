@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { EditorContent } from "svelte-tiptap";
+	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import {
 		Field,
 		ToggleGroup,
@@ -75,7 +75,7 @@
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if eventAttributes.descriptionEditor}
-			<EditorContent editor={eventAttributes.descriptionEditor} />
+			<TiptapEditor editor={eventAttributes.descriptionEditor} />
 		{/if}
 	</Field>
 </div>

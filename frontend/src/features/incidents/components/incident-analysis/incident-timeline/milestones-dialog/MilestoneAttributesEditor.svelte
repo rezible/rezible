@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Field, Icon, Tooltip, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { mdiShape } from "@mdi/js";
-	import { EditorContent } from "svelte-tiptap";
+	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
 	import {
@@ -149,7 +149,7 @@
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}
-			<EditorContent editor={descriptionEditor} />
+			<TiptapEditor editor={descriptionEditor} />
 		{/if}
 	</Field>
 

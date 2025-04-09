@@ -14,9 +14,13 @@ export default defineConfig({
 		{
 			name: "@hey-api/typescript",
 			enums: "javascript",
+			readOnlyWriteOnlyBehavior: "off",
 		},
 		{
 			name: "@tanstack/svelte-query",
 		},
 	],
+	logs: {
+		file: false,
+	},
 });

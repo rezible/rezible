@@ -1,5 +1,5 @@
 import type { Editor, Content } from "@tiptap/core";
-import { Editor as SvelteEditor } from "svelte-tiptap";
+import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 import Document from "@tiptap/extension-document";
 import Paragraph from "@tiptap/extension-paragraph";
 import Text from "@tiptap/extension-text";

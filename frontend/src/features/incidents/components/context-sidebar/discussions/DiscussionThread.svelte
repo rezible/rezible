@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { Button, Header, Tooltip } from "svelte-ux";
-	import { mdiCheck } from "@mdi/js";
-	import { activeDiscussion, createReplyEditor } from "$features/incidents/lib/discussions.svelte";
-	import { EditorContent, Editor as SvelteEditor } from "svelte-tiptap";
 	import { onMount } from "svelte";
 	import type { RetrospectiveDiscussion } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
+	import { mdiCheck } from "@mdi/js";
+	import { activeDiscussion, createReplyEditor } from "$features/incidents/lib/discussions.svelte";
+	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 
-	interface Props {
+	type Props = {
 		discussion: RetrospectiveDiscussion;
 	}
 	let { discussion }: Props = $props();
@@ -43,7 +43,7 @@
 
 	<div class="">
 		{#if editor}
-			<EditorContent {editor} />
+			<TiptapEditor {editor} />
 		{/if}
 	</div>
 

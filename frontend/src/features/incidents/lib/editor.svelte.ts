@@ -1,6 +1,6 @@
 import { isActive, type ChainedCommands, type Editor, type Extensions, type Content } from "@tiptap/core";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
-import { Editor as SvelteEditor } from "svelte-tiptap";
+import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 
 import { debounce } from "$lib/utils.svelte";
 import { session } from "$lib/auth.svelte";

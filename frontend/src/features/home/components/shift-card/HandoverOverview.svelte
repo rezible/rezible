@@ -1,8 +1,5 @@
 <script lang="ts">
 	import type { JSONContent, HTMLContent } from "@tiptap/core";
-	import { Editor as SvelteEditor, EditorContent } from "svelte-tiptap";
-	import { configureBaseExtensions } from "@rezible/documents/tiptap-extensions";
-	import { onMount } from "svelte";
 	import { Header } from "svelte-ux";
 
 	const content: HTMLContent = ``;

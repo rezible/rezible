@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { createMutation } from "@tanstack/svelte-query";
-	import { EditorContent, type Editor as SvelteEditor } from "svelte-tiptap";
+	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { Header } from "svelte-ux";
 	import { createReplyEditor, draft } from "$features/incidents/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
@@ -58,7 +58,7 @@
 
 	<div class="border border-neutral-200 bg-surface-300 cursor-text p-1">
 		{#if draftEditor}
-			<EditorContent editor={draftEditor} />
+			<TiptapEditor editor={draftEditor} />
 		{/if}
 	</div>
 

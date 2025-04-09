@@ -2,7 +2,7 @@
 	import { onMount } from "svelte";
 	import { Button, Header } from "svelte-ux";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { EditorContent } from "svelte-tiptap";
+	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import type { ChainedCommands } from "@tiptap/core";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import {
@@ -174,7 +174,7 @@
 				/>
 			</div>
 
-			<EditorContent editor={section.editor} class="p-2" />
+			<TiptapEditor editor={section.editor} class="p-2" />
 		</div>
 	{/if}
 {/snippet}
