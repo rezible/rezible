@@ -42,11 +42,8 @@
 		GeoCircle,
 		GeoPath,
 		Graticule,
-		Svg,
-		Tooltip,
 		antipode,
 	} from "layerchart";
-	import { timerStore } from "@layerstack/svelte-stores";
 
 	type Props = {
 		countriesData: CountriesTopology;

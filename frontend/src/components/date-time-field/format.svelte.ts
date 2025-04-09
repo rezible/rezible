@@ -1,6 +1,7 @@
-import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
+import { Time, ZonedDateTime } from "@internationalized/date";
 import { DateToken, PeriodType } from "@layerstack/utils";
 import { settings } from "$lib/settings.svelte";
+import { hour12 } from "$lib/format.svelte";
 
 export type Period = "AM" | "PM";
 type InternalValue = {
@@ -17,12 +18,6 @@ export const convertTime = (t: ZonedDateTime): InternalValue => {
 		period: d.hour >= 12 ? "PM" : "AM",
 		timezone: d.timeZone,
 	};
-};
-
-const hour12 = (hour: number) => {
-	if (hour > 12) return hour - 12;
-	if (hour == 0) return 12;
-	return hour;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");

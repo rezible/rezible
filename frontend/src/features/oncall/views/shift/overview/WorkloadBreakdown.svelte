@@ -1,75 +1,27 @@
 <script lang="ts">
-	import { Header } from "svelte-ux";
-	import { Tooltip, Chart, Arc, Text, Canvas } from "layerchart";
 	import { formatDuration } from "date-fns";
-	import { cls } from "@layerstack/tailwind";
-	import type { OncallShiftMetrics } from "$lib/api";
-	import { getHourLabel, isBusinessHours, type ShiftEvent } from "$features/oncall/lib/utils";
+	import type { OncallShiftMetrics, OncallEvent } from "$lib/api";
+	import { Header } from "svelte-ux";
+	import { hour12 } from "$lib/format.svelte";
+
+	import { getHourLabel, isBusinessHours } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 
+	import * as echarts from "echarts";
+	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
+
 	type Props = {
-		shiftEvents: ShiftEvent[];
+		shiftEvents: OncallEvent[];
 		metrics: OncallShiftMetrics;
 	};
-
 	let { shiftEvents, metrics }: Props = $props();
-
-	// const sleepDisruptionColor = $derived(getScoreColor(metrics.sleepDisruptionScore));
-	// const workloadColor = $derived(getScoreColor(metrics.workloadScore));
-	// const burdenColor = $derived(getScoreColor(metrics.burdenScore));
 
 	const getScoreLabel = (score: number) => {
 		if (score < 30) return "Low";
 		if (score < 70) return "Moderate";
 		return "High";
 	};
-
-	type HourEventDistribution = { hour: number; alerts: number; incidents: number };
-	const hourlyDistribution = $derived.by(() => {
-		const hours: HourEventDistribution[] = Array.from({ length: 24 }, (_, hour) => ({
-			hour,
-			alerts: 0,
-			incidents: 0,
-		}));
-		shiftEvents.forEach((ev) => {
-			if (ev.eventType === "alert") hours[ev.timestamp.hour].alerts++;
-			if (ev.eventType === "incident") hours[ev.timestamp.hour].incidents++;
-		});
-		return hours;
-	});
-	const hourAlertCounts = $derived.by<number[]>(() => {
-		const counts = new Array(24).fill(0);
-		hourlyDistribution.forEach((d) => (counts[d.hour] += d.alerts));
-		return counts;
-	});
-	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
-	const peakAlertHours = $derived(hourlyDistribution.filter((d) => d.alerts === maxAlertCount));
-	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => getHourLabel(v.hour)).join(", "));
-	const hourSegmentAngle = (2 * Math.PI) / 24;
-
-	const alertHourArcBackgroundColor = (hour: number) => {
-		if (isBusinessHours(hour)) return "fill-accent-900/10";
-		if (hour > 5 && hour < 22) return "fill-warning-900/10";
-		return "fill-danger-900/10";
-	};
-	const alertHourArcFillColor = (hour: number) => {
-		const numAlerts = hourAlertCounts[hour];
-		if (numAlerts === maxAlertCount) return "oklch(var(--color-danger))";
-		if (isBusinessHours(hour)) return "oklch(var(--color-accent))";
-		if (hour > 5 && hour < 22) return "oklch(var(--color-warning))"; // off-hours alert
-		return "oklch(var(--color-warning))"; // night alert
-	};
-
-	const BurdenArcSegments = 50;
-	const segmentAngle = (2 * Math.PI) / BurdenArcSegments;
-
-	const burdenArcSegmentColor = (score: number) => {
-		if (score > 0.7) return "fill-danger";
-		if (score > 0.35) return "fill-warning";
-		return "fill-success";
-	};
-	const burdenArcColor = $derived(burdenArcSegmentColor(metrics?.burdenScore ?? 0));
 
 	const burdenStats = $derived<InlineStatProps[]>([
 		{
@@ -90,9 +42,111 @@
 		{
 			title: "Off-Hours Activity",
 			subheading: `Time spent active outside of 8am-6pm`,
-			value: formatDuration({ minutes: metrics.offHoursActivityTime }, {zero: true}),
+			value: formatDuration({ minutes: metrics.offHoursActivityTime }, { zero: true }),
 		},
 	]);
+
+	const burdenGaugeData = [
+		{
+			value: 20,
+			name: "Metric 1",
+			title: {
+				offsetCenter: ["-75%", "85%"],
+			},
+			detail: {
+				offsetCenter: ["-75%", "105%"],
+			},
+		},
+		{
+			value: 40,
+			name: "Metric 2",
+			title: {
+				offsetCenter: ["0%", "85%"],
+			},
+			detail: {
+				offsetCenter: ["0%", "105%"],
+			},
+		},
+		{
+			value: 35,
+			name: "Metric 3",
+			title: {
+				offsetCenter: ["75%", "85%"],
+			},
+			detail: {
+				offsetCenter: ["75%", "105%"],
+			},
+		},
+	];
+
+	const burdenChartOptions = $derived<ChartProps["options"]>({
+		tooltip: {
+			formatter: "{b} : {c}%",
+		},
+		series: [
+			{
+				type: "gauge",
+				name: "Burden Score",
+				anchor: { show: false },
+				pointer: {
+					icon: "path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z",
+					width: 3,
+					length: "55%",
+				},
+				progress: { show: true, overlap: false, width: 6 },
+				axisLine: { show: false },
+				axisLabel: { color: "inherit" },
+				data: burdenGaugeData,
+				title: {
+					fontSize: 14,
+					color: "inherit",
+				},
+				detail: {
+					width: 30,
+					height: 10,
+					fontSize: 12,
+					backgroundColor: "inherit",
+					borderRadius: 3,
+					formatter: "{value}%",
+				},
+			},
+		],
+	});
+
+	type HourEventDistribution = { hour: number; alerts: number; incidents: number };
+	const hourlyDistribution = $derived.by(() => {
+		const hours: HourEventDistribution[] = Array.from({ length: 24 }, (_, hour) => ({
+			hour,
+			alerts: 0,
+			incidents: 0,
+		}));
+		shiftEvents.forEach((ev) => {
+			const hour = new Date(ev.timestamp).getHours();
+			if (ev.kind === "alert") hours[hour].alerts++;
+			if (ev.kind === "incident") hours[hour].incidents++;
+		});
+		return hours;
+	});
+	const hourAlertCounts = $derived.by<number[]>(() => {
+		const counts = new Array(24).fill(0);
+		hourlyDistribution.forEach((d) => (counts[d.hour] += d.alerts));
+		return counts;
+	});
+	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
+	const peakAlertHours = $derived(hourlyDistribution.filter((d) => d.alerts === maxAlertCount));
+	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => getHourLabel(v.hour)).join(", "));
+
+	const alertHourArcBackgroundColor = (hour: number) => {
+		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.2)";
+		if (hour > 5 && hour < 22) return "rgba(225, 230, 170, 0.2)";
+		return "rgba(70, 50, 120, 0.2)";
+	};
+	const alertHourArcFillColor = (hour: number) => {
+		if (hourAlertCounts[hour] === maxAlertCount) return "rgba(210, 110, 140, 1)";
+		if (isBusinessHours(hour)) return "rgba(100, 110, 120, 1)";
+		if (hour > 5 && hour < 22) return "rgba(210, 210, 130, 0.6)"; // off-hours alert
+		return "rgba(200, 190, 100, 0.8)"; // night alert
+	};
 
 	const alertStats = $derived<InlineStatProps[]>([
 		{ title: "Peak Alert Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
@@ -100,21 +154,87 @@
 		// { title: "Stat 3", subheading: `desc`, value: "" },
 		// { title: "Stat 4", subheading: `desc`, value: "" },
 	]);
+
+	const alertHoursChartOptions = $derived<ChartProps["options"]>({
+		series: [
+			{
+				name: "Background",
+				type: "pie",
+				radius: [10, 150],
+				center: ["50%", "50%"],
+				label: { show: false },
+				emphasis: { scale: false },
+				itemStyle: {
+					color: ({ dataIndex: hour }) => alertHourArcBackgroundColor(hour),
+					borderWidth: 1,
+					borderColor: "rgba(180, 180, 180, 0.1)",
+				},
+				data: Array.from({ length: 24 }).map((_, hour) => ({ value: 1 })),
+				z: 0,
+			},
+			{
+				name: "Alerts in Hour",
+				type: "pie",
+				radius: [10, 150],
+				center: ["50%", "50%"],
+				roseType: "area",
+				itemStyle: {
+					color: ({ dataIndex: hour }) => alertHourArcFillColor(hour),
+					borderRadius: 0,
+				},
+				label: { show: false },
+				emphasis: {
+					focus: "self",
+					scale: false,
+				},
+				data: Array.from({ length: 24 }).map((_, hour) => {
+					const alerts = hourAlertCounts[hour];
+					return {
+						value: alerts > 0 ? Math.round(30 + 70 * (alerts / maxAlertCount)) / 100 : 0,
+						name: `${hour12(hour)}${hour >= 12 ? "PM" : "AM"}`,
+					};
+				}),
+				z: 1,
+			},
+		],
+		tooltip: {
+			trigger: "item",
+			formatter: (params) => {
+				const hour = Array.isArray(params) ? params[0].dataIndex : params.dataIndex;
+				const numAlerts = hourAlertCounts[hour];
+				return `${getHourLabel(hour)} - ${numAlerts} alert${numAlerts !== 1 ? "s" : ""}`;
+			},
+			confine: true,
+			position: ["50%", "50%"],
+		},
+	});
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
+<div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
 	<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
-	<ChartWithStats chart={burdenScoreCircle} stats={burdenStats} />
+	<ChartWithStats stats={burdenStats}>
+		{#snippet chart()}
+			<div class="h-[300px] w-[300px] overflow-hidden grid place-self-center">
+				<EChart init={echarts.init} options={burdenChartOptions} />
+			</div>
+		{/snippet}
+	</ChartWithStats>
 </div>
 
-<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
+<div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
 	<Header title="Alerts" subheading="Alerts by time of day" class="" />
-	<ChartWithStats chart={alertHoursCircle} stats={alertStats} reverse />
+	<ChartWithStats stats={alertStats} reverse>
+		{#snippet chart()}
+			<div class="h-[300px] w-[300px] overflow-hidden grid place-self-center">
+				<EChart init={echarts.init} options={alertHoursChartOptions} />
+			</div>
+		{/snippet}
+	</ChartWithStats>
 </div>
 
 {#snippet burdenScoreCircle()}
 	<div class="h-[250px] w-[250px] overflow-hidden grid place-self-center">
-		<Chart>
+		<!--Chart>
 			<Canvas center>
 				{#each { length: BurdenArcSegments } as _, segment}
 					{@const pct = (segment / BurdenArcSegments) * 100}
@@ -138,50 +258,6 @@
 					class="text-6xl tabular-nums"
 				/>
 			</Canvas>
-		</Chart>
-	</div>
-{/snippet}
-
-{#snippet alertHoursCircle()}
-	<div class="h-[250px] w-[250px] overflow-hidden grid place-self-center">
-		<Chart let:tooltip>
-			<Canvas center>
-				{#each { length: hourAlertCounts.length } as _, hour}
-					{@const startAngle = hour * hourSegmentAngle}
-					{@const endAngle = (hour + 1) * hourSegmentAngle}
-					{@const numAlerts = hourAlertCounts[hour]}
-					{@const fill = alertHourArcFillColor(hour)}
-					{@const outerRadius = (30 + 70 * (numAlerts / maxAlertCount)) / 100}
-					{@const tooltipLabel = `${getHourLabel(hour)} - ${numAlerts} alert${numAlerts > 1 ? "s" : ""}`}
-
-					<Arc
-						{startAngle}
-						{endAngle}
-						track
-						outerRadius={1}
-						class="{alertHourArcBackgroundColor(hour)} stroke-surface-content/20"
-						onpointermove={(e) => tooltip?.show(e, tooltipLabel)}
-						onpointerleave={() => tooltip?.hide()}
-					/>
-
-					{#if numAlerts > 0}
-						<Arc
-							{startAngle}
-							{endAngle}
-							track
-							{fill}
-							{outerRadius}
-							class={cls(
-								numAlerts &&
-									"hover:scale-90 origin-center [transform-box:fill-box] transition-transform"
-							)}
-							onpointermove={(e) => tooltip?.show(e, tooltipLabel)}
-							onpointerleave={() => tooltip?.hide()}
-						/>
-					{/if}
-				{/each}
-			</Canvas>
-			<Tooltip.Root let:data>{data}</Tooltip.Root>
-		</Chart>
+		</Chart-->
 	</div>
 {/snippet}

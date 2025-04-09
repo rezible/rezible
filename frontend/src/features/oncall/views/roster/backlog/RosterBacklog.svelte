@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
-	import { Header } from "svelte-ux";
-	import { Axis, Bars, Chart, Points, Svg, Tooltip, Highlight } from "layerchart";
-	import { scaleBand, scaleOrdinal } from "d3-scale";
-	import { PeriodType, formatDate } from "@layerstack/utils";
 	import { getLocalTimeZone, now } from "@internationalized/date";
+	
+	import { Header } from "svelte-ux";
+
 	import { rosterIdCtx } from "$features/oncall/views/roster/context";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	
@@ -72,7 +71,7 @@
 		<Header title="Ticket Burndown" class="text-lg font-medium" />
 
 		<div class="h-[300px] p-4 border rounded">
-			<Chart
+			<!--Chart
 			  data={burndownData}
 			  x="date"
 			  xScale={scaleBand()}
@@ -100,9 +99,9 @@
 				  <Tooltip.Item label="Shift End" value={data.end} format="integer" />
 				</Tooltip.List>
 			  </Tooltip.Root>
-			</Chart>
-		  </div>
-		  
-<pre>Time spent on toil work (by category/label/service?)</pre>
+			</Chart-->
+		</div>
+		
+		<pre>Time spent on toil work (by category/label/service?)</pre>
 	</div>
 </div>

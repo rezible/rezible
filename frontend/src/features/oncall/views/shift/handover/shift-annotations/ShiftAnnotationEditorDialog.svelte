@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		listOncallShiftEventsOptions,
+		listOncallEventsOptions,
 		createOncallShiftAnnotationMutation,
 		type CreateOncallShiftAnnotationRequestBody,
 		type OncallEvent,
@@ -23,7 +23,7 @@
 	let { shiftId, annotatedEventIds, open = $bindable(), onCreated }: Props = $props();
 
 	const eventsQuery = createQuery(() => ({
-		...listOncallShiftEventsOptions({ path: { id: shiftId } }),
+		...listOncallEventsOptions({ query: { shiftId } }),
 		enabled: open,
 	}));
 	const events = $derived(eventsQuery.data?.data);

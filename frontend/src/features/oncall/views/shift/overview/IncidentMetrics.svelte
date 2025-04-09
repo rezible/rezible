@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { Header } from "svelte-ux";
 	import { formatDuration } from "date-fns";
-	import { PieChart, Text } from "layerchart";
 	import type { OncallShiftMetrics } from "$lib/api";
+	// import { PieChart, Text } from "layerchart";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 
@@ -34,38 +34,13 @@
 	])
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 border bg-surface-100/40 border-surface-content/10 rounded">
+<div class="flex flex-col gap-2 w-full p-2 rounded border border-surface-content/10">
 	<Header title="Incidents" subheading="" class="" />
 
-	<ChartWithStats chart={incidentTimeChart} stats={incidentStats} />
+	<ChartWithStats stats={incidentStats}>
+		{#snippet chart()}
+			<div class="h-[250px] w-[300px] overflow-auto">
+			</div>
+		{/snippet}
+	</ChartWithStats>
 </div>
-
-{#snippet incidentTimeChart()}
-	<div class="h-[250px] w-[300px] overflow-auto">
-		<PieChart
-			data={incidentSeries}
-			series={incidentSeries}
-			innerRadius={-20}
-			cornerRadius={5}
-			padAngle={0.02}
-			renderContext="canvas"
-		>
-			<svelte:fragment slot="aboveMarks">
-				<Text
-					value={totalTimeFormatted}
-					textAnchor="middle"
-					verticalAnchor="middle"
-					class="text-3xl"
-					dy={4}
-				/>
-				<Text
-					value="time spent in incidents"
-					textAnchor="middle"
-					verticalAnchor="middle"
-					class="text-sm fill-surface-content/50"
-					dy={26}
-				/>
-			</svelte:fragment>
-		</PieChart>
-	</div>
-{/snippet}

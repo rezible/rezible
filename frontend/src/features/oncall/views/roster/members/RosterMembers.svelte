@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { Button, Card, Header, Icon } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import TimezoneMap from "$components/viz/timezone-map/TimezoneMap.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
-	import { onMount } from "svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listUsersOptions } from "$src/lib/api";
 
 	const usersQuery = createQuery(() => listUsersOptions());
 	const users = $derived(usersQuery.data?.data ?? []);
-
-	let showTimezone = $state(false);
-	onMount(() => {
-		setTimeout(() => (showTimezone = true), 10);
-	});
 
 	let hoveringTimezone = $state<string>();
 </script>
@@ -54,9 +47,7 @@
 
 	<div class="col-span-2">
 		<div class="h-[420px] w-[862px] m-2">
-			{#if showTimezone}
-				<TimezoneMap highlightTz={hoveringTimezone} />
-			{/if}
+			timezone map
 		</div>
 	</div>
 </div>

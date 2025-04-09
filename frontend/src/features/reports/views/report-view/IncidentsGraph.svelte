@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { startOfMonth, endOfMonth } from "date-fns";
-	import { Calendar, Chart, Tooltip, Svg, BarChart, Axis, Bars, LinearGradient } from "layerchart";
-	import { format as lsFormat, PeriodType } from "@layerstack/utils";
 	import { Button, Header } from "svelte-ux";
 	import { mdiDotsVertical } from "@mdi/js";
-	import { scaleBand } from "d3-scale";
-	import { fakeDateSeries, createDateSeries } from "../../lib/genData";
+	import { createDateSeries } from "../../lib/genData";
 
 	const now = new Date();
 	const firstDayOfMonth = startOfMonth(now);
@@ -44,7 +41,7 @@
 				"oklch(var(--color-danger))",
 			]}
 		/-->
-		<BarChart data={fakeDateSeries} x="date" y="value" renderContext="canvas" debug={false} tooltip={false}>
+		<!--BarChart data={fakeDateSeries} x="date" y="value" renderContext="canvas" debug={false} tooltip={false}>
 			<svelte:fragment slot="marks" let:series let:getBarsProps>
 				{#each series as s, i (s.key)}
 					<LinearGradient
@@ -57,7 +54,7 @@
 					</LinearGradient>
 				{/each}
 			</svelte:fragment>
-		</BarChart>
+		</BarChart-->
 	</div>
 
 	<!--div class="h-64">

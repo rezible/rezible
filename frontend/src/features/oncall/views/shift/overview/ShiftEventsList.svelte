@@ -55,7 +55,7 @@
 	});
 </script>
 
-<div class="flex flex-col gap-2 h-full border bg-surface-100/40 border-surface-content/10 rounded">
+<div class="flex flex-col gap-2 h-full border border-surface-content/10 rounded">
 	<div class="h-fit p-2 pb-0">
 		<Header title="Events" subheading="Showing All">
 			<svelte:fragment slot="actions">

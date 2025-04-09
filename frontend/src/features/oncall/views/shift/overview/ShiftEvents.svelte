@@ -88,9 +88,9 @@
 	/>
 </div>
 
-<Collapse classes={{ root: "border rounded bg-surface-100/40 border-surface-content/10", icon: "mr-2" }}>
+<Collapse classes={{ root: "border rounded border-surface-content/10", icon: "mr-2" }}>
 	<div slot="trigger" class="flex-1 px-3 py-3">Events Heatmap</div>
-	<div class="border-t border-surface-content/10">
+	<div class="border-surface-content/10">
 		<ShiftEventsHeatmap
 			data={hourlyEventCount}
 			dayLabels={heatmapDayLabels}
@@ -98,36 +98,3 @@
 		/>
 	</div>
 </Collapse>
-
-<!--div class="flex gap-4">
-	<span class="text-lg font-bold">{metrics.totalAlerts}</span>
-	<div class="w-[124px] h-6">
-		<BarChart
-			data={alertHourData}
-			x="date"
-			y="value"
-			axis={false}
-			grid={true}
-			bandPadding={0.1}
-			props={{ bars: { radius: 0, strokeWidth: 0 } }}
-		>
-			<svelte:fragment slot="tooltip" let:width>
-				<Tooltip.Root
-					class="text-xs"
-					contained={false}
-					variant="none"
-					y={-10}
-					x={width + 8}
-					let:data
-				>
-					<div class="whitespace-nowrap">
-						{format(data.date, "eee, MMM do")}
-					</div>
-					<div class="font-semibold">
-						{data.value}
-					</div>
-				</Tooltip.Root>
-			</svelte:fragment>
-		</BarChart>
-	</div>
-</div-->

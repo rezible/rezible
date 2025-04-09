@@ -147,7 +147,7 @@
 </script>
 
 <div class="flex flex-col gap-4">
-	<div class="p-2 flex flex-col gap-2">
+	<div class="p-2 flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Key Metrics" subheading="Last 30 days" classes={{ root: "text-lg font-medium" }}>
 			<div slot="avatar">
 				<Icon data={mdiChartBar} size={38} class="text-primary-300" />
@@ -173,7 +173,7 @@
 		{/if}
 	</div>
 
-	<div class="p-2 flex flex-col gap-2">
+	<div class="flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Oncall Shifts" classes={{ root: "text-lg font-medium" }} />
 
 		{#snippet shiftCard(shift: OncallShift, status: "previous" | "active" | "next")}
@@ -228,7 +228,7 @@
 		</div>
 	</div>
 
-	<div class="p-2 flex flex-col gap-2">
+	<div class="flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Recent Activity" classes={{ root: "text-lg font-medium" }}>
 			<svelte:fragment slot="actions"></svelte:fragment>
 		</Header>
