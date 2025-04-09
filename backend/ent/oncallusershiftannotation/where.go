@@ -61,6 +61,11 @@ func ShiftID(v uuid.UUID) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldShiftID, v))
 }
 
+// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
+func EventID(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldEventID, v))
+}
+
 // MinutesOccupied applies equality check predicate on the "minutes_occupied" field. It's identical to MinutesOccupiedEQ.
 func MinutesOccupied(v int) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldMinutesOccupied, v))
@@ -99,6 +104,71 @@ func ShiftIDIn(vs ...uuid.UUID) predicate.OncallUserShiftAnnotation {
 // ShiftIDNotIn applies the NotIn predicate on the "shift_id" field.
 func ShiftIDNotIn(vs ...uuid.UUID) predicate.OncallUserShiftAnnotation {
 	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldShiftID, vs...))
+}
+
+// EventIDEQ applies the EQ predicate on the "event_id" field.
+func EventIDEQ(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldEQ(FieldEventID, v))
+}
+
+// EventIDNEQ applies the NEQ predicate on the "event_id" field.
+func EventIDNEQ(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldNEQ(FieldEventID, v))
+}
+
+// EventIDIn applies the In predicate on the "event_id" field.
+func EventIDIn(vs ...string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldIn(FieldEventID, vs...))
+}
+
+// EventIDNotIn applies the NotIn predicate on the "event_id" field.
+func EventIDNotIn(vs ...string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldNotIn(FieldEventID, vs...))
+}
+
+// EventIDGT applies the GT predicate on the "event_id" field.
+func EventIDGT(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldGT(FieldEventID, v))
+}
+
+// EventIDGTE applies the GTE predicate on the "event_id" field.
+func EventIDGTE(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldGTE(FieldEventID, v))
+}
+
+// EventIDLT applies the LT predicate on the "event_id" field.
+func EventIDLT(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldLT(FieldEventID, v))
+}
+
+// EventIDLTE applies the LTE predicate on the "event_id" field.
+func EventIDLTE(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldLTE(FieldEventID, v))
+}
+
+// EventIDContains applies the Contains predicate on the "event_id" field.
+func EventIDContains(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldContains(FieldEventID, v))
+}
+
+// EventIDHasPrefix applies the HasPrefix predicate on the "event_id" field.
+func EventIDHasPrefix(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldHasPrefix(FieldEventID, v))
+}
+
+// EventIDHasSuffix applies the HasSuffix predicate on the "event_id" field.
+func EventIDHasSuffix(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldHasSuffix(FieldEventID, v))
+}
+
+// EventIDEqualFold applies the EqualFold predicate on the "event_id" field.
+func EventIDEqualFold(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldEqualFold(FieldEventID, v))
+}
+
+// EventIDContainsFold applies the ContainsFold predicate on the "event_id" field.
+func EventIDContainsFold(v string) predicate.OncallUserShiftAnnotation {
+	return predicate.OncallUserShiftAnnotation(sql.FieldContainsFold(FieldEventID, v))
 }
 
 // MinutesOccupiedEQ applies the EQ predicate on the "minutes_occupied" field.

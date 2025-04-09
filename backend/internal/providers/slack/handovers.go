@@ -127,16 +127,20 @@ func (b *handoverMessageBuilder) addAnnotations() {
 
 	for _, anno := range b.annotations {
 		var el slack.RichTextSectionElement
-		if ev := anno.Event; ev != nil {
-			if ev.Kind == "incident" {
-				link := fmt.Sprintf("http://localhost:5173/incidents/%s", ev.ID)
-				el = slack.NewRichTextSectionLinkElement(link, ev.Title, nil)
+		// TODO: get annotation event
+		el = slack.NewRichTextSectionTextElement("Unknown Event", nil)
+		/*
+			if ev := anno.Event; ev != nil {
+				if ev.Kind == "incident" {
+					link := fmt.Sprintf("http://localhost:5173/incidents/%s", ev.ID)
+					el = slack.NewRichTextSectionLinkElement(link, ev.Title, nil)
+				} else {
+					el = slack.NewRichTextSectionTextElement(ev.Title, nil)
+				}
 			} else {
-				el = slack.NewRichTextSectionTextElement(ev.Title, nil)
+				el = slack.NewRichTextSectionTextElement("Unknown Event", nil)
 			}
-		} else {
-			el = slack.NewRichTextSectionTextElement("Unknown Event", nil)
-		}
+		*/
 		els = append(els, el)
 		if anno.Notes != "" {
 			flushList()

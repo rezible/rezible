@@ -368,7 +368,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallShiftAnnotationRequestAttributes = {
-    event: OncallEvent;
+    eventId: string;
     minutesOccupied: number;
     notes: string;
     pinned: boolean;

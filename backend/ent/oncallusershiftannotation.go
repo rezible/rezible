@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -13,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
-	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotation is the model entity for the OncallUserShiftAnnotation schema.
@@ -23,8 +21,8 @@ type OncallUserShiftAnnotation struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
-	// Event holds the value of the "event" field.
-	Event *types.OncallEvent `json:"event,omitempty"`
+	// EventID holds the value of the "event_id" field.
+	EventID string `json:"event_id,omitempty"`
 	// MinutesOccupied holds the value of the "minutes_occupied" field.
 	MinutesOccupied int `json:"minutes_occupied,omitempty"`
 	// Notes holds the value of the "notes" field.
@@ -64,13 +62,11 @@ func (*OncallUserShiftAnnotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershiftannotation.FieldEvent:
-			values[i] = new([]byte)
 		case oncallusershiftannotation.FieldPinned:
 			values[i] = new(sql.NullBool)
 		case oncallusershiftannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
-		case oncallusershiftannotation.FieldNotes:
+		case oncallusershiftannotation.FieldEventID, oncallusershiftannotation.FieldNotes:
 			values[i] = new(sql.NullString)
 		case oncallusershiftannotation.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -103,13 +99,11 @@ func (ousa *OncallUserShiftAnnotation) assignValues(columns []string, values []a
 			} else if value != nil {
 				ousa.ShiftID = *value
 			}
-		case oncallusershiftannotation.FieldEvent:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field event", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &ousa.Event); err != nil {
-					return fmt.Errorf("unmarshal field event: %w", err)
-				}
+		case oncallusershiftannotation.FieldEventID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field event_id", values[i])
+			} else if value.Valid {
+				ousa.EventID = value.String
 			}
 		case oncallusershiftannotation.FieldMinutesOccupied:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -179,8 +173,8 @@ func (ousa *OncallUserShiftAnnotation) String() string {
 	builder.WriteString("shift_id=")
 	builder.WriteString(fmt.Sprintf("%v", ousa.ShiftID))
 	builder.WriteString(", ")
-	builder.WriteString("event=")
-	builder.WriteString(fmt.Sprintf("%v", ousa.Event))
+	builder.WriteString("event_id=")
+	builder.WriteString(ousa.EventID)
 	builder.WriteString(", ")
 	builder.WriteString("minutes_occupied=")
 	builder.WriteString(fmt.Sprintf("%v", ousa.MinutesOccupied))

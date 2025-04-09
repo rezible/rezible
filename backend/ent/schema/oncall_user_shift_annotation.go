@@ -5,7 +5,6 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	schematypes "github.com/rezible/rezible/ent/schema/types"
 	"time"
 )
 
@@ -19,7 +18,7 @@ func (OncallUserShiftAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
-		field.JSON("event", &schematypes.OncallEvent{}),
+		field.String("event_id"),
 		field.Int("minutes_occupied"),
 		field.Text("notes"),
 		field.Bool("pinned"),

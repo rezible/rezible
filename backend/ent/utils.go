@@ -6,10 +6,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/rezible/rezible/ent/entpgx"
-	schematypes "github.com/rezible/rezible/ent/schema/types"
 )
-
-type OncallEvent = schematypes.OncallEvent
 
 type ListParams struct {
 	Search          string

@@ -53,7 +53,6 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
-	"github.com/rezible/rezible/ent/schema/types"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
@@ -22929,7 +22928,7 @@ type OncallUserShiftAnnotationMutation struct {
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
-	event               **types.OncallEvent
+	event_id            *string
 	minutes_occupied    *int
 	addminutes_occupied *int
 	notes               *string
@@ -23083,40 +23082,40 @@ func (m *OncallUserShiftAnnotationMutation) ResetShiftID() {
 	m.shift = nil
 }
 
-// SetEvent sets the "event" field.
-func (m *OncallUserShiftAnnotationMutation) SetEvent(te *types.OncallEvent) {
-	m.event = &te
+// SetEventID sets the "event_id" field.
+func (m *OncallUserShiftAnnotationMutation) SetEventID(s string) {
+	m.event_id = &s
 }
 
-// Event returns the value of the "event" field in the mutation.
-func (m *OncallUserShiftAnnotationMutation) Event() (r *types.OncallEvent, exists bool) {
-	v := m.event
+// EventID returns the value of the "event_id" field in the mutation.
+func (m *OncallUserShiftAnnotationMutation) EventID() (r string, exists bool) {
+	v := m.event_id
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEvent returns the old "event" field's value of the OncallUserShiftAnnotation entity.
+// OldEventID returns the old "event_id" field's value of the OncallUserShiftAnnotation entity.
 // If the OncallUserShiftAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftAnnotationMutation) OldEvent(ctx context.Context) (v *types.OncallEvent, err error) {
+func (m *OncallUserShiftAnnotationMutation) OldEventID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEvent is only allowed on UpdateOne operations")
+		return v, errors.New("OldEventID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEvent requires an ID field in the mutation")
+		return v, errors.New("OldEventID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEvent: %w", err)
+		return v, fmt.Errorf("querying old value for OldEventID: %w", err)
 	}
-	return oldValue.Event, nil
+	return oldValue.EventID, nil
 }
 
-// ResetEvent resets all changes to the "event" field.
-func (m *OncallUserShiftAnnotationMutation) ResetEvent() {
-	m.event = nil
+// ResetEventID resets all changes to the "event_id" field.
+func (m *OncallUserShiftAnnotationMutation) ResetEventID() {
+	m.event_id = nil
 }
 
 // SetMinutesOccupied sets the "minutes_occupied" field.
@@ -23348,8 +23347,8 @@ func (m *OncallUserShiftAnnotationMutation) Fields() []string {
 	if m.shift != nil {
 		fields = append(fields, oncallusershiftannotation.FieldShiftID)
 	}
-	if m.event != nil {
-		fields = append(fields, oncallusershiftannotation.FieldEvent)
+	if m.event_id != nil {
+		fields = append(fields, oncallusershiftannotation.FieldEventID)
 	}
 	if m.minutes_occupied != nil {
 		fields = append(fields, oncallusershiftannotation.FieldMinutesOccupied)
@@ -23373,8 +23372,8 @@ func (m *OncallUserShiftAnnotationMutation) Field(name string) (ent.Value, bool)
 	switch name {
 	case oncallusershiftannotation.FieldShiftID:
 		return m.ShiftID()
-	case oncallusershiftannotation.FieldEvent:
-		return m.Event()
+	case oncallusershiftannotation.FieldEventID:
+		return m.EventID()
 	case oncallusershiftannotation.FieldMinutesOccupied:
 		return m.MinutesOccupied()
 	case oncallusershiftannotation.FieldNotes:
@@ -23394,8 +23393,8 @@ func (m *OncallUserShiftAnnotationMutation) OldField(ctx context.Context, name s
 	switch name {
 	case oncallusershiftannotation.FieldShiftID:
 		return m.OldShiftID(ctx)
-	case oncallusershiftannotation.FieldEvent:
-		return m.OldEvent(ctx)
+	case oncallusershiftannotation.FieldEventID:
+		return m.OldEventID(ctx)
 	case oncallusershiftannotation.FieldMinutesOccupied:
 		return m.OldMinutesOccupied(ctx)
 	case oncallusershiftannotation.FieldNotes:
@@ -23420,12 +23419,12 @@ func (m *OncallUserShiftAnnotationMutation) SetField(name string, value ent.Valu
 		}
 		m.SetShiftID(v)
 		return nil
-	case oncallusershiftannotation.FieldEvent:
-		v, ok := value.(*types.OncallEvent)
+	case oncallusershiftannotation.FieldEventID:
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetEvent(v)
+		m.SetEventID(v)
 		return nil
 	case oncallusershiftannotation.FieldMinutesOccupied:
 		v, ok := value.(int)
@@ -23522,8 +23521,8 @@ func (m *OncallUserShiftAnnotationMutation) ResetField(name string) error {
 	case oncallusershiftannotation.FieldShiftID:
 		m.ResetShiftID()
 		return nil
-	case oncallusershiftannotation.FieldEvent:
-		m.ResetEvent()
+	case oncallusershiftannotation.FieldEventID:
+		m.ResetEventID()
 		return nil
 	case oncallusershiftannotation.FieldMinutesOccupied:
 		m.ResetMinutesOccupied()

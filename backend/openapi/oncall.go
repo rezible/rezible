@@ -3,13 +3,15 @@ package openapi
 import (
 	"context"
 	"encoding/json"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type OncallHandler interface {
@@ -166,7 +168,7 @@ type (
 		ShiftId         uuid.UUID        `json:"shiftId"`
 		Pinned          bool             `json:"pinned"`
 		Notes           string           `json:"notes"`
-		Event           *ent.OncallEvent `json:"event"`
+		Event           *rez.OncallEvent `json:"event"`
 		MinutesOccupied int              `json:"minutesOccupied"`
 	}
 )
@@ -261,6 +263,7 @@ type unmarshalOncallShiftContentSection struct {
 func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHandover {
 	var rawContents []unmarshalOncallShiftContentSection
 	if jsonErr := json.Unmarshal(p.Contents, &rawContents); jsonErr != nil {
+		// TODO: just return an error
 		log.Error().Err(jsonErr).Msg("Error unmarshalling OncallShiftHandover contents")
 	}
 	content := make([]OncallShiftHandoverSection, len(rawContents))
@@ -522,7 +525,7 @@ type ListOncallEventsRequest struct {
 	ShiftId   uuid.UUID `query:"shiftId"`
 	RosterIds []string  `query:"rosterIds"`
 }
-type ListOncallEventsResponse PaginatedResponse[ent.OncallEvent]
+type ListOncallEventsResponse PaginatedResponse[rez.OncallEvent]
 
 var ListOncallShiftAnnotations = huma.Operation{
 	OperationID: "list-oncall-shift-annotations",
@@ -546,10 +549,10 @@ var CreateOncallShiftAnnotation = huma.Operation{
 }
 
 type CreateOncallShiftAnnotationRequestAttributes struct {
-	Event           *ent.OncallEvent `json:"event"`
-	MinutesOccupied int              `json:"minutesOccupied"`
-	Notes           string           `json:"notes"`
-	Pinned          bool             `json:"pinned"`
+	EventID         string `json:"eventId"`
+	MinutesOccupied int    `json:"minutesOccupied"`
+	Notes           string `json:"notes"`
+	Pinned          bool   `json:"pinned"`
 }
 type CreateOncallShiftAnnotationRequest CreateIdRequest[CreateOncallShiftAnnotationRequestAttributes]
 type CreateOncallShiftAnnotationResponse ItemResponse[OncallShiftAnnotation]

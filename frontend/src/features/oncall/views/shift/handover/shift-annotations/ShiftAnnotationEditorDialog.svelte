@@ -62,7 +62,7 @@
 		const d = $state.snapshot(draftAnnotation);
 		const body: CreateOncallShiftAnnotationRequestBody = {
 			attributes: {
-				event: d.event,
+				eventId: d.event.id,
 				notes: d.notes,
 				pinned: d.pinned,
 				minutesOccupied: 0,

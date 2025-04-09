@@ -17,8 +17,8 @@ const (
 	FieldID = "id"
 	// FieldShiftID holds the string denoting the shift_id field in the database.
 	FieldShiftID = "shift_id"
-	// FieldEvent holds the string denoting the event field in the database.
-	FieldEvent = "event"
+	// FieldEventID holds the string denoting the event_id field in the database.
+	FieldEventID = "event_id"
 	// FieldMinutesOccupied holds the string denoting the minutes_occupied field in the database.
 	FieldMinutesOccupied = "minutes_occupied"
 	// FieldNotes holds the string denoting the notes field in the database.
@@ -44,7 +44,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldShiftID,
-	FieldEvent,
+	FieldEventID,
 	FieldMinutesOccupied,
 	FieldNotes,
 	FieldPinned,
@@ -79,6 +79,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByShiftID orders the results by the shift_id field.
 func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShiftID, opts...).ToFunc()
+}
+
+// ByEventID orders the results by the event_id field.
+func ByEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
 // ByMinutesOccupied orders the results by the minutes_occupied field.

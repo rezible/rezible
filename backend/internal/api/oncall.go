@@ -192,7 +192,7 @@ func (h *oncallHandler) GetPreviousOncallShift(ctx context.Context, request *oap
 	return &resp, nil
 }
 
-func makeFakeShiftEvent(date time.Time) ent.OncallEvent {
+func makeFakeShiftEvent(date time.Time) rez.OncallEvent {
 	isAlert := rand.Float64() > 0.25
 	eventKind := "incident"
 	if isAlert {
@@ -212,7 +212,7 @@ func makeFakeShiftEvent(date time.Time) ent.OncallEvent {
 	description := "description"
 
 	// Create event
-	return ent.OncallEvent{
+	return rez.OncallEvent{
 		ID:          uuid.New().String(),
 		Timestamp:   timestamp,
 		Kind:        eventKind,
@@ -220,9 +220,9 @@ func makeFakeShiftEvent(date time.Time) ent.OncallEvent {
 	}
 }
 
-func makeFakeOncallEvents(start time.Time) []ent.OncallEvent {
+func makeFakeOncallEvents(start time.Time) []rez.OncallEvent {
 	const NumDays = 7
-	events := make([]ent.OncallEvent, 0, NumDays*10)
+	events := make([]rez.OncallEvent, 0, NumDays*10)
 
 	for day := 0; day < NumDays; day++ {
 		dayDate := start.AddDate(0, 0, day)
@@ -395,7 +395,7 @@ func (h *oncallHandler) CreateOncallShiftAnnotation(ctx context.Context, request
 
 	anno := &ent.OncallUserShiftAnnotation{
 		ShiftID:         request.Id,
-		Event:           attr.Event,
+		EventID:         attr.EventID,
 		MinutesOccupied: attr.MinutesOccupied,
 		Pinned:          attr.Pinned,
 		Notes:           attr.Notes,

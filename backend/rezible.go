@@ -194,7 +194,7 @@ type (
 		Annotations   []*ent.OncallUserShiftAnnotation
 	}
 
-	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *ent.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error
+	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
@@ -311,6 +311,15 @@ type (
 )
 
 type (
+	OncallEvent struct {
+		ID          string    `json:"id"`
+		Timestamp   time.Time `json:"timestamp"`
+		Kind        string    `json:"kind"`
+		Title       string    `json:"title,omitempty"`
+		Description *string   `json:"description,omitempty"`
+		Source      *string   `json:"source,omitempty"`
+	}
+
 	OncallDataProvider interface {
 		GetWebhooks() Webhooks
 

@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotationUpdate is the builder for updating OncallUserShiftAnnotation entities.
@@ -46,9 +45,17 @@ func (ousau *OncallUserShiftAnnotationUpdate) SetNillableShiftID(u *uuid.UUID) *
 	return ousau
 }
 
-// SetEvent sets the "event" field.
-func (ousau *OncallUserShiftAnnotationUpdate) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationUpdate {
-	ousau.mutation.SetEvent(te)
+// SetEventID sets the "event_id" field.
+func (ousau *OncallUserShiftAnnotationUpdate) SetEventID(s string) *OncallUserShiftAnnotationUpdate {
+	ousau.mutation.SetEventID(s)
+	return ousau
+}
+
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (ousau *OncallUserShiftAnnotationUpdate) SetNillableEventID(s *string) *OncallUserShiftAnnotationUpdate {
+	if s != nil {
+		ousau.SetEventID(*s)
+	}
 	return ousau
 }
 
@@ -184,8 +191,8 @@ func (ousau *OncallUserShiftAnnotationUpdate) sqlSave(ctx context.Context) (n in
 			}
 		}
 	}
-	if value, ok := ousau.mutation.Event(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
+	if value, ok := ousau.mutation.EventID(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
 	}
 	if value, ok := ousau.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)
@@ -267,9 +274,17 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableShiftID(u *uuid.UUI
 	return ousauo
 }
 
-// SetEvent sets the "event" field.
-func (ousauo *OncallUserShiftAnnotationUpdateOne) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationUpdateOne {
-	ousauo.mutation.SetEvent(te)
+// SetEventID sets the "event_id" field.
+func (ousauo *OncallUserShiftAnnotationUpdateOne) SetEventID(s string) *OncallUserShiftAnnotationUpdateOne {
+	ousauo.mutation.SetEventID(s)
+	return ousauo
+}
+
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (ousauo *OncallUserShiftAnnotationUpdateOne) SetNillableEventID(s *string) *OncallUserShiftAnnotationUpdateOne {
+	if s != nil {
+		ousauo.SetEventID(*s)
+	}
 	return ousauo
 }
 
@@ -435,8 +450,8 @@ func (ousauo *OncallUserShiftAnnotationUpdateOne) sqlSave(ctx context.Context) (
 			}
 		}
 	}
-	if value, ok := ousauo.mutation.Event(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
+	if value, ok := ousauo.mutation.EventID(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
 	}
 	if value, ok := ousauo.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)

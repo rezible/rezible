@@ -97,7 +97,7 @@ func (s *OncallService) registerHandoverSchema() {
 	prosemirror.RegisterSchema(schema)
 }
 
-func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msg *ent.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error {
+func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msg *rez.OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error {
 	annos, annosErr := s.db.OncallUserShiftAnnotation.Query().
 		Where(oncallusershiftannotation.ShiftID(shiftId)).
 		All(ctx)
@@ -106,10 +106,10 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 	}
 	anno := &ent.OncallUserShiftAnnotation{
 		ShiftID: shiftId,
-		Event:   msg,
+		EventID: msg.ID,
 	}
 	for _, an := range annos {
-		if an.Event != nil && an.Event.ID == msg.ID {
+		if an.EventID != "" && an.EventID == msg.ID {
 			anno = an
 			break
 		}
@@ -122,7 +122,7 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 
 	upsertQuery := s.db.OncallUserShiftAnnotation.Create().
 		SetShiftID(anno.ShiftID).
-		SetEvent(anno.Event).
+		SetEventID(anno.EventID).
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).
 		SetMinutesOccupied(anno.MinutesOccupied)
@@ -586,7 +586,7 @@ func (s *OncallService) CreateShiftAnnotation(ctx context.Context, anno *ent.Onc
 	query := s.db.OncallUserShiftAnnotation.Create().
 		SetID(uuid.New()).
 		SetShiftID(anno.ShiftID).
-		SetEvent(anno.Event).
+		SetEventID(anno.EventID).
 		SetMinutesOccupied(anno.MinutesOccupied).
 		SetNotes(anno.Notes).
 		SetPinned(anno.Pinned).

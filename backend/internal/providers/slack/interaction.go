@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rs/zerolog/log"
@@ -184,7 +185,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	}
 	var curr *ent.OncallUserShiftAnnotation
 	for _, anno := range annos {
-		if anno.Event != nil && anno.Event.ID == msgId {
+		if anno.EventID == msgId {
 			curr = anno
 			break
 		}
@@ -295,9 +296,9 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		}
 	}
 
-	event := &ent.OncallEvent{
-		Kind:      "message",
+	event := &rez.OncallEvent{
 		ID:        meta.MsgId,
+		Kind:      "message",
 		Timestamp: meta.MsgTimestamp,
 		// TODO: add more message details
 	}

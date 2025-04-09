@@ -719,7 +719,7 @@ var (
 	// OncallUserShiftAnnotationsColumns holds the columns for the "oncall_user_shift_annotations" table.
 	OncallUserShiftAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "event", Type: field.TypeJSON},
+		{Name: "event_id", Type: field.TypeString},
 		{Name: "minutes_occupied", Type: field.TypeInt},
 		{Name: "notes", Type: field.TypeString, Size: 2147483647},
 		{Name: "pinned", Type: field.TypeBool},

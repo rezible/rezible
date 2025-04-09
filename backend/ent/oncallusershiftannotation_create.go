@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftannotation"
-	"github.com/rezible/rezible/ent/schema/types"
 )
 
 // OncallUserShiftAnnotationCreate is the builder for creating a OncallUserShiftAnnotation entity.
@@ -32,9 +31,9 @@ func (ousac *OncallUserShiftAnnotationCreate) SetShiftID(u uuid.UUID) *OncallUse
 	return ousac
 }
 
-// SetEvent sets the "event" field.
-func (ousac *OncallUserShiftAnnotationCreate) SetEvent(te *types.OncallEvent) *OncallUserShiftAnnotationCreate {
-	ousac.mutation.SetEvent(te)
+// SetEventID sets the "event_id" field.
+func (ousac *OncallUserShiftAnnotationCreate) SetEventID(s string) *OncallUserShiftAnnotationCreate {
+	ousac.mutation.SetEventID(s)
 	return ousac
 }
 
@@ -139,8 +138,8 @@ func (ousac *OncallUserShiftAnnotationCreate) check() error {
 	if _, ok := ousac.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.shift_id"`)}
 	}
-	if _, ok := ousac.mutation.Event(); !ok {
-		return &ValidationError{Name: "event", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.event"`)}
+	if _, ok := ousac.mutation.EventID(); !ok {
+		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.event_id"`)}
 	}
 	if _, ok := ousac.mutation.MinutesOccupied(); !ok {
 		return &ValidationError{Name: "minutes_occupied", err: errors.New(`ent: missing required field "OncallUserShiftAnnotation.minutes_occupied"`)}
@@ -193,9 +192,9 @@ func (ousac *OncallUserShiftAnnotationCreate) createSpec() (*OncallUserShiftAnno
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ousac.mutation.Event(); ok {
-		_spec.SetField(oncallusershiftannotation.FieldEvent, field.TypeJSON, value)
-		_node.Event = value
+	if value, ok := ousac.mutation.EventID(); ok {
+		_spec.SetField(oncallusershiftannotation.FieldEventID, field.TypeString, value)
+		_node.EventID = value
 	}
 	if value, ok := ousac.mutation.MinutesOccupied(); ok {
 		_spec.SetField(oncallusershiftannotation.FieldMinutesOccupied, field.TypeInt, value)
@@ -294,15 +293,15 @@ func (u *OncallUserShiftAnnotationUpsert) UpdateShiftID() *OncallUserShiftAnnota
 	return u
 }
 
-// SetEvent sets the "event" field.
-func (u *OncallUserShiftAnnotationUpsert) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsert {
-	u.Set(oncallusershiftannotation.FieldEvent, v)
+// SetEventID sets the "event_id" field.
+func (u *OncallUserShiftAnnotationUpsert) SetEventID(v string) *OncallUserShiftAnnotationUpsert {
+	u.Set(oncallusershiftannotation.FieldEventID, v)
 	return u
 }
 
-// UpdateEvent sets the "event" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsert) UpdateEvent() *OncallUserShiftAnnotationUpsert {
-	u.SetExcluded(oncallusershiftannotation.FieldEvent)
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsert) UpdateEventID() *OncallUserShiftAnnotationUpsert {
+	u.SetExcluded(oncallusershiftannotation.FieldEventID)
 	return u
 }
 
@@ -422,17 +421,17 @@ func (u *OncallUserShiftAnnotationUpsertOne) UpdateShiftID() *OncallUserShiftAnn
 	})
 }
 
-// SetEvent sets the "event" field.
-func (u *OncallUserShiftAnnotationUpsertOne) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsertOne {
+// SetEventID sets the "event_id" field.
+func (u *OncallUserShiftAnnotationUpsertOne) SetEventID(v string) *OncallUserShiftAnnotationUpsertOne {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEvent(v)
+		s.SetEventID(v)
 	})
 }
 
-// UpdateEvent sets the "event" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertOne) UpdateEvent() *OncallUserShiftAnnotationUpsertOne {
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertOne) UpdateEventID() *OncallUserShiftAnnotationUpsertOne {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEvent()
+		s.UpdateEventID()
 	})
 }
 
@@ -728,17 +727,17 @@ func (u *OncallUserShiftAnnotationUpsertBulk) UpdateShiftID() *OncallUserShiftAn
 	})
 }
 
-// SetEvent sets the "event" field.
-func (u *OncallUserShiftAnnotationUpsertBulk) SetEvent(v *types.OncallEvent) *OncallUserShiftAnnotationUpsertBulk {
+// SetEventID sets the "event_id" field.
+func (u *OncallUserShiftAnnotationUpsertBulk) SetEventID(v string) *OncallUserShiftAnnotationUpsertBulk {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.SetEvent(v)
+		s.SetEventID(v)
 	})
 }
 
-// UpdateEvent sets the "event" field to the value that was provided on create.
-func (u *OncallUserShiftAnnotationUpsertBulk) UpdateEvent() *OncallUserShiftAnnotationUpsertBulk {
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallUserShiftAnnotationUpsertBulk) UpdateEventID() *OncallUserShiftAnnotationUpsertBulk {
 	return u.Update(func(s *OncallUserShiftAnnotationUpsert) {
-		s.UpdateEvent()
+		s.UpdateEventID()
 	})
 }
 
