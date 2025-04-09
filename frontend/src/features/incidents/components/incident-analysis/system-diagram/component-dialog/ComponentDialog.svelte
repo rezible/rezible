@@ -28,10 +28,7 @@
 	loading={componentDialog.loading}
 	persistent
 	portal
-	classes={{
-		dialog: "flex flex-col max-h-full w-5/6 max-w-7xl my-2 min-h-0",
-		root: "p-2",
-	}}
+	classes={{ root: "p-8", dialog: "flex flex-col w-full max-w-7xl max-h-full h-fit" }}
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="{labels.action} System Component">
@@ -41,7 +38,7 @@
 		</Header>
 	</div>
 
-	<div slot="default" class="p-2 flex-1 min-h-0 max-h-full grid">
+	<div slot="default" class="p-2 flex-1 min-h-0 overflow-y-auto">
 		{#if componentDialog.open}
 			{#if componentDialog.view === "add"}
 				<ComponentSelector />
