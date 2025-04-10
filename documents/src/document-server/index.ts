@@ -22,15 +22,15 @@ const loadConfig = (): Config => {
 
 	let host = process.env.HOST ?? "localhost";
 	let port = Number.parseInt(process.env.PORT ?? "", 10);
-	if (port < 1024) port = 8881;
+	if (port < 1024) port = 8889;
 
 	const apiUrl = process.env.API_URL ?? "http://localhost:8888/api";
 
 	const apiWebhookSecret = process.env.API_WEBHOOK_SECRET ?? "foo-bar-baz";
 
-	const dbUrl = process.env.DATABASE_URL;
+	const dbUrl = process.env.DB_URL;
 	if (!dbUrl) {
-		throw new Error("env DATABASE_URL not supplied")
+		throw new Error("DB_URL env variable not supplied")
 	}
 
 	return { name, host, port, dbUrl, apiUrl, apiWebhookSecret };

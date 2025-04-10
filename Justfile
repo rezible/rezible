@@ -27,17 +27,16 @@ _default:
     bun update
 
 @run-backend *ARGS:
-    cd backend && \
-        SERVICE_DB_URL="$DB_URL" go run ./cmd/rezible {{ARGS}}
+    cd backend && SERVICE_DB_URL="$DB_URL" go run ./cmd/rezible {{ARGS}}
 
 # [group('Code Generation')]
 
-@codegen: codegen-ent && codegen-openapi
+@codegen: codegen-backend && codegen-frontend
 
-@codegen-ent:
-    cd backend && go generate ./ent/
+@codegen-backend:
+    cd backend && go generate ./...
 
-@codegen-openapi:
+@codegen-frontend:
     just run-backend openapi > /tmp/rezible-spec.yaml
     cd frontend && bun run codegen
 
@@ -57,10 +56,7 @@ _default:
     cd frontend && bun run dev
 
 @dev-document-server:
-    cd documents && \
-    PORT=8889 \
-    DATABASE_URL="$DB_URL" \
-      bun run --silent dev-server
+    cd documents && bun run dev
 
 # [group('Database')]
 @setup-db: stop-db
@@ -69,7 +65,6 @@ _default:
     just start-db
     createdb rezible
     just run-migrations
-    # just seed-db
     just run-backend load-configs
 
 @run-migrations:
