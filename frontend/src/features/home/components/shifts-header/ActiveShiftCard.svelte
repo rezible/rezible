@@ -1,11 +1,10 @@
 <script lang="ts">
+	import { createQuery } from "@tanstack/svelte-query";
+	import { differenceInHours } from "date-fns";
+	import { mdiArrowRight } from "@mdi/js";
+	import { getPreviousOncallShiftOptions, type OncallShift } from "$lib/api";
 	import { Button, Card, Header, Icon, ProgressCircle } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import PreviousShiftOverview from "./PreviousShiftOverview.svelte";
-	import { mdiArrowRight, mdiClockCheck, mdiClockEnd, mdiPhone } from "@mdi/js";
-	import { getPreviousOncallShiftOptions, type OncallShift } from "$src/lib/api";
-	import { differenceInHours } from "date-fns";
-	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {
 		shift: OncallShift;
@@ -19,12 +18,12 @@
 	const progress = $derived((100 * (Date.now() - start.valueOf())) / (end.valueOf() - start.valueOf()));
 	const firstDay = $derived(differenceInHours(Date.now(), start) <= 24);
 
-	const previousShiftQuery = createQuery(() => getPreviousOncallShiftOptions({path: {id: shift.id}}))
-	const previousShift = $derived(previousShiftQuery.data?.data && false);
+	// const previousShiftQuery = createQuery(() => getPreviousOncallShiftOptions({path: {id: shift.id}}))
+	// const previousShift = $derived(previousShiftQuery.data?.data && false);
 </script>
 
-<div class="w-full p-2 border border-success-900/50 bg-success-900/5 rounded-lg overflow-auto">
-	<Header title="You are Currently Oncall" classes={{ title: "text-xl" }}>
+<div class="max-w-lg p-2 border border-success-900/50 bg-success-900/5 rounded-lg overflow-auto">
+	<Header title="You are Currently Oncall" classes={{ title: "text-md" }}>
 		<div slot="avatar">
 			<ProgressCircle
 				size={32}
@@ -34,25 +33,19 @@
 			/>
 		</div>
 		<span slot="subheading" class="text-surface-content/70 inline-flex gap-1 items-center whitespace-pre">
-			<span class="font-semibold">{shift.attributes.role}</span>
-			<span class="ml-1">for</span>
+			<span class="font-semibold text-lg">{shift.attributes.role}</span>
+			<span class="ml-1 text-lg">for</span>
 			<Button size="sm" href="/oncall/rosters/{roster.attributes.slug}" classes={{ root: "p-1 py-0" }}>
-				<span class="font-bold text-base">{roster.attributes.name}</span>
+				<span class="font-bold text-base text-lg">{roster.attributes.name}</span>
 				<div class="self-center ml-1">
 					<Avatar id={"roster-id"} kind="roster" size={16} />
 				</div>
 			</Button>
 		</span>
 
-		<div slot="actions" class="flex gap-2 px-2 py-0 justify-end">
-			<Button href="/oncall/shifts/{shift.id}" variant="fill-light" color="default">
-				<span class="flex items-end gap-2">
-					<span class="">View Previous</span>
-					<!-- <Icon data={mdiClockCheck} /> -->
-				</span>
-			</Button>
+		<div slot="actions" class="flex flex-col gap-2 px-2 py-0 justify-end">
 			<Button href="/oncall/shifts/{shift.id}" variant="fill" color="success">
-				View Shift
+				View
 				<Icon data={mdiArrowRight} />
 			</Button>
 		</div>

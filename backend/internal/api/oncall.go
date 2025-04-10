@@ -202,18 +202,16 @@ func makeFakeShiftEvent(date time.Time) rez.OncallEvent {
 	hour := rand.Intn(24)
 	minute := rand.Intn(60)
 
-	// Create timestamp with the same date but random hour and minute
 	timestamp := time.Date(
 		date.Year(), date.Month(), date.Day(),
 		hour, minute, 0, 0, date.Location(),
 	)
 
-	// Set description
 	description := "description"
 
-	// Create event
 	return rez.OncallEvent{
 		ID:          uuid.New().String(),
+		Title:       "title",
 		Timestamp:   timestamp,
 		Kind:        eventKind,
 		Description: &description,

@@ -18,31 +18,55 @@
 
 	type Props = {
 		rosterIds?: string[];
-		actionRequired?: boolean;
+		annotated?: boolean;
 		dateRange?: DateRangeType;
 	};
-	let { rosterIds = $bindable(), actionRequired = $bindable(), dateRange = $bindable() }: Props = $props();
+	let { rosterIds = $bindable(), annotated = $bindable(), dateRange = $bindable() }: Props = $props();
 
 	const rosterOptions: MenuOption<string>[] = [
 		{ label: "One", value: uuidv4() },
-		{ label: "Two", value: uuidv4() },
-		{ label: "Three", value: uuidv4() },
-		{ label: "Four", value: uuidv4() },
 	];
-	// let selectedRosters = $state<string[]>([rosterOptions[0].value]);
-	const selectedSet = $derived(new Set(rosterIds));
-	const selectedRosterOptions = $derived(rosterOptions.filter((o) => selectedSet.has(o.value)));
-
+	const selectedRostersSet = $derived(new Set(rosterIds));
+	const selectedRosterOptions = $derived(rosterOptions.filter((o) => selectedRostersSet.has(o.value)));
 	let rosterMenuOpen = $state(false);
-	const toggleRosterMenu = () => {
-		rosterMenuOpen = !rosterMenuOpen;
-	};
+	const toggleRosterMenu = () => (rosterMenuOpen = !rosterMenuOpen);
+
+	let serviceIds = $state<string[]>();
+	const serviceOptions: MenuOption<string>[] = [
+		{ label: "Foo", value: uuidv4() },
+	];
+	const selectedServicesSet = $derived(new Set());
+	const selectedServiceOptions = $derived(serviceOptions.filter((o) => selectedServicesSet.has(o.value)));
+	let serviceMenuOpen = $state(false);
+	const toggleServiceMenu = () => (serviceMenuOpen = !serviceMenuOpen);
 
 	const today = new Date();
 	const defaultDateRange: DateRangeType = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
 </script>
 
-<div class="flex flex-row items-center justify-end gap-2">
+<div class="flex flex-row items-center gap-2">
+	<DateRangeField
+		label="Date Range"
+		labelPlacement="top"
+		dense
+		classes={{
+			field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
+		}}
+		icon={mdiCalendarRange}
+		value={dateRange || defaultDateRange}
+		on:change={(e) => {dateRange = (e.detail as DateRangeType)}}
+	/>
+
+	<Field
+		label="Action"
+		labelPlacement="top"
+		dense
+		classes={{ root: "gap-0", container: "h-8 flex items-center" }}
+		let:id
+	>
+		<Checkbox {id} bind:checked={annotated} classes={{ label: "pl-2" }}>Annotated</Checkbox>
+	</Field>
+
 	<Field
 		label="Rosters"
 		labelPlacement="top"
@@ -69,9 +93,7 @@
 				search
 				maintainOrder
 				placeholder="Filter to roster"
-				on:change={(e) => {
-					rosterIds = (e.detail.value as string[]);
-				}}
+				on:change={(e) => (rosterIds = (e.detail.value as string[]))}
 				on:close={toggleRosterMenu}
 			>
 				<MultiSelectOption
@@ -97,24 +119,53 @@
 	</Field>
 
 	<Field
-		label="Action"
+		label="Services"
 		labelPlacement="top"
 		dense
-		classes={{ root: "gap-0", container: "h-8 flex items-center" }}
+		classes={{ root: "gap-0", container: "px-0 h-8 flex items-center", input: "my-0" }}
 		let:id
 	>
-		<Checkbox {id} bind:checked={actionRequired} classes={{ label: "pl-2" }}>Feedback Requested</Checkbox>
+		<Button {id} on:click={toggleServiceMenu} classes={{ root: "h-8" }}>
+			<div class="flex gap-2">
+				{#each selectedServiceOptions as v, i (v.value)}
+					<span class="flex items-center gap-1">
+						<Avatar kind="service" id={v.value} size={14} />
+						{v.label + (i < selectedServiceOptions.length - 1 ? "," : "")}
+					</span>
+				{:else}
+					<span>Any</span>
+				{/each}
+			</div>
+			<Icon data={mdiChevronDown} />
+			<MultiSelectMenu
+				options={serviceOptions}
+				value={serviceIds}
+				open={serviceMenuOpen}
+				search
+				maintainOrder
+				placeholder="Filter to service"
+				on:change={(e) => (serviceIds = (e.detail.value as string[]))}
+				on:close={toggleServiceMenu}
+			>
+				<MultiSelectOption
+					slot="option"
+					let:option
+					let:label
+					let:checked
+					let:indeterminate
+					let:onChange
+					{checked}
+					{indeterminate}
+					on:change={onChange}
+					classes={{
+						checkbox: { label: "label flex-1 flex items-center pl-1 py-2" },
+						container: "inline-flex items-center gap-2",
+					}}
+				>
+					<Avatar kind="service" id={(option as MenuOption<string>).value} size={22} />
+					{label}
+				</MultiSelectOption>
+			</MultiSelectMenu>
+		</Button>
 	</Field>
-
-	<DateRangeField
-		label="Date Range"
-		labelPlacement="top"
-		dense
-		classes={{
-			field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
-		}}
-		icon={mdiCalendarRange}
-		value={dateRange || defaultDateRange}
-		on:change={(e) => {dateRange = (e.detail as DateRangeType)}}
-	/>
 </div>

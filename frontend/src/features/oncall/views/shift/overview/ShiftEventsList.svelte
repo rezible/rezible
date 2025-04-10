@@ -12,8 +12,6 @@
 	};
 	const { events, annotations }: Props = $props();
 
-	const format = $derived(settings.format);
-
 	const getEventKindIcon = (kind: string) => {
 		switch (kind) {
 		case "incident": return mdiFire;
@@ -22,26 +20,11 @@
 		return mdiChatQuestion;
 	};
 
-	const severityColors: Record<string, string> = {
-		critical: "bg-error-500 text-white",
-		high: "bg-error-300 text-black",
-		medium: "bg-warning-300 text-black",
-		low: "bg-info-300 text-black",
-		undefined: "bg-surface-300 text-black"
-	};
-
-	const statusIcons: Record<string, string> = {
-		active: mdiAlertCircle,
-		resolved: mdiCheckCircle,
-		acknowledged: mdiClockOutline,
-		undefined: mdiClockOutline
-	};
-
-	const getHumanReadableDate = (date: Date) => {
+	const humanReadableDate = (date: Date) => {
 		return formatDate(date, 'EEE, MMM d');
 	};
 
-	const getHumanReadableTime = (date: Date) => {
+	const humanReadableTime = (date: Date) => {
 		return formatDate(date, 'h:mm a');
 	};
 
@@ -72,8 +55,8 @@
 
 {#snippet eventListItem(ev: OncallEvent)}
 	{@const occurredAt = new Date(ev.timestamp)}
-	{@const humanDate = getHumanReadableDate(occurredAt)}
-	{@const humanTime = getHumanReadableTime(occurredAt)}
+	{@const humanDate = humanReadableDate(occurredAt)}
+	{@const humanTime = humanReadableTime(occurredAt)}
 	{@const isOutsideBusinessHours = !isBusinessHours(occurredAt.getHours())}
 	{@const isNightTime = isNightHours(occurredAt.getHours())}
 	{@const icon = getEventKindIcon(ev.kind)}

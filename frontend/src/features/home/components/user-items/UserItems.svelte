@@ -13,9 +13,10 @@
 </script>
 
 <div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
-	<Header title="Your Items" class="border-b" />
+	<Header title="Assigned to You" class="border-b" />
 
 	<div class="flex flex-col gap-2 overflow-y-auto">
+		<span class="flex items-center gap-2">Nothing! <Icon data={mdiGhostOutline} /></span>
 		<!--
 		{#each assignments as a, i (i)}
 			{#if a.itemType == "retrospective"}
