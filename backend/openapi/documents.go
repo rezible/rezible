@@ -59,6 +59,9 @@ var VerifyDocumentEditorSession = huma.Operation{
 	Summary:     "Verify a Document Editor Session",
 	Tags:        documentsTags,
 	Errors:      errorCodes(),
+	Security: []map[string][]string{
+		{"auth-session-token": {}},
+	},
 }
 
 type VerifyDocumentEditorSessionRequestAttributes struct {

@@ -66,9 +66,7 @@ var GetAuthSessionsConfig = huma.Operation{
 	Summary:     "Get the Auth Session config",
 	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
-	Security: []map[string][]string{
-		{"bearer": {}},
-	},
+	Security:    []map[string][]string{},
 }
 
 type GetAuthSessionsConfigRequest EmptyRequest

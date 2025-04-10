@@ -7,7 +7,6 @@ import (
 	"net"
 	"net/http"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rs/zerolog/log"
 
 	"github.com/go-chi/chi/v5"
@@ -31,15 +30,10 @@ func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handle
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
 
-	embeddedFeServer, feErr := makeEmbeddedFrontendServer()
-	if feErr != nil {
-		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feErr)
+	frontendHandler, frontendErr := makeFrontendHandler(auth)
+	if frontendErr != nil {
+		return nil, fmt.Errorf("failed to make frontend handler: %w", frontendErr)
 	}
-
-	frontendMiddleware := chi.Chain(
-		makeAuthMiddleware(auth, true, []string{"/favicon.ico"}),
-	)
-	frontendHandler := frontendMiddleware.Handler(embeddedFeServer)
 
 	/* /api/ - API Routing Group */
 	apiGroup := router.Group(func(r chi.Router) {
@@ -55,7 +49,7 @@ func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handle
 	mount(router, "/api", apiGroup)
 
 	/* /auth/ - Auth Service Routing */
-	router.Mount("/auth", auth.MakeAuthHandler())
+	router.Mount("/auth", auth.MakeUserAuthHandler())
 
 	/* Serve static files for any other route */
 	router.Handle("/*", frontendHandler)
@@ -68,17 +62,6 @@ func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handle
 	}
 
 	return &s, nil
-}
-
-func makeApiHandler(oapiHandler oapi.Handler, auth rez.AuthSessionService) http.Handler {
-	skipAuthPaths := append([]string{"/openapi.json"}, oapi.GetSkipAuthPaths()...)
-	api := oapi.MakeApi(oapiHandler)
-	// api.UseMiddleware()
-	apiMiddleware := chi.Chain(
-		middleware.Logger,
-		makeAuthMiddleware(auth, false, skipAuthPaths),
-	)
-	return apiMiddleware.Handler(api.Adapter())
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -105,17 +88,77 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func makeAuthMiddleware(s rez.AuthSessionService, redirect bool, skipPaths []string) func(http.Handler) http.Handler {
-	authMw := s.MakeRequireAuthMiddleware(redirect)
-	skip := mapset.NewSet(skipPaths...)
-	return func(next http.Handler) http.Handler {
-		withAuth := authMw(next)
+func makeFrontendHandler(s rez.AuthSessionService) (http.Handler, error) {
+	serveEmbeddedFiles, feErr := makeEmbeddedFrontendServer()
+	if feErr != nil {
+		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feErr)
+	}
+
+	requireAuth := s.MakeFrontendAuthMiddleware()
+	authMw := func(next http.Handler) http.Handler {
+		withAuth := requireAuth(next)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if skip.Contains(r.URL.Path) {
+			if r.URL.Path == "/favicon.ico" {
 				next.ServeHTTP(w, r)
-				return
+			} else {
+				withAuth.ServeHTTP(w, r)
 			}
-			withAuth.ServeHTTP(w, r)
 		})
 	}
+
+	return chi.Chain(authMw).Handler(serveEmbeddedFiles), nil
+}
+
+func makeApiHandler(oapiHandler oapi.Handler, auth rez.AuthSessionService) http.Handler {
+	authMw := makeApiAuthMiddleware(auth)
+	serveApi := oapi.MakeApi(oapiHandler, authMw).Adapter()
+	return chi.Chain(middleware.Logger).Handler(serveApi)
+}
+
+func makeApiAuthMiddleware(auth rez.AuthSessionService) func(oapi.Context, func(oapi.Context)) {
+	return func(c oapi.Context, next func(oapi.Context)) {
+		// var requireScopes []string
+		security := c.Operation().Security
+		explicitNoAuth := security != nil && len(security) == 0
+		if explicitNoAuth {
+			next(c)
+			return
+		}
+
+		var sess *rez.AuthSession
+
+		r, w := oapi.Unwrap(c)
+		// TODO: check allowed token transports
+		token, authErr := getRequestTokenValue(r)
+		if token != "" {
+			sess, authErr = auth.VerifySessionToken(token)
+		}
+		if authErr != nil {
+			if writeErrRespErr := oapi.WriteAuthError(w, authErr); writeErrRespErr != nil {
+				log.Error().Err(writeErrRespErr).Msg("failed to write auth error response")
+			}
+			return
+		}
+
+		authCtx := auth.CreateSessionContext(r.Context(), sess)
+		next(oapi.WithContext(c, authCtx))
+	}
+}
+
+func getRequestTokenValue(r *http.Request) (string, error) {
+	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
+	if cookieErr != nil {
+		return "", fmt.Errorf("error getting token from cookie: %w", cookieErr)
+	} else if cookieToken != "" {
+		return cookieToken, nil
+	}
+
+	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
+	if bearerErr != nil {
+		return "", fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
+	} else if bearerToken != "" {
+		return bearerToken, nil
+	}
+
+	return "", rez.ErrNoAuthSession
 }

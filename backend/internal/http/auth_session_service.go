@@ -2,7 +2,6 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -22,7 +21,6 @@ import (
 
 var (
 	authSessionContextKey = "auth_session"
-	authSessionCookieName = "rez_session"
 )
 
 const (
@@ -47,7 +45,7 @@ func (s *AuthSessionService) ProviderName() string {
 	return s.sessProvider.Name()
 }
 
-func (s *AuthSessionService) storeSession(ctx context.Context, sess *rez.AuthSession) context.Context {
+func (s *AuthSessionService) CreateSessionContext(ctx context.Context, sess *rez.AuthSession) context.Context {
 	return context.WithValue(ctx, authSessionContextKey, sess)
 }
 
@@ -63,53 +61,27 @@ func isRedirectableError(err error) bool {
 	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
 }
 
-func writeAuthError(w http.ResponseWriter, err error) error {
-	var resp oapi.StatusError
-	if errors.Is(err, rez.ErrNoAuthSession) {
-		resp = oapi.ErrorUnauthorized("no_session")
-	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
-		resp = oapi.ErrorUnauthorized("session_expired")
-	} else if errors.Is(err, rez.ErrAuthSessionUserMissing) {
-		resp = oapi.ErrorUnauthorized("missing_user")
-	} else {
-		resp = oapi.ErrorUnauthorized("unknown")
-	}
-	respBody, jsonErr := json.Marshal(resp)
-	if jsonErr != nil {
-		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
-		return jsonErr
-	}
-
-	w.WriteHeader(resp.GetStatus())
-	_, writeErr := w.Write(respBody)
-	return writeErr
-}
-
-func (s *AuthSessionService) MakeRequireAuthMiddleware(redirectStartFlow bool) func(http.Handler) http.Handler {
+func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sess, sessErr := s.getRequestAuthSession(r)
+			sess, sessErr := s.verifyRequestAuthSessionTokenCookie(r)
 			if sessErr == nil {
-				next.ServeHTTP(w, r.WithContext(s.storeSession(r.Context(), sess)))
+				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
 				return
 			}
 
-			if redirectStartFlow && isRedirectableError(sessErr) {
+			if isRedirectableError(sessErr) {
 				s.sessProvider.StartAuthFlow(w, r)
-				return
-			}
-
-			if writeErrRespErr := writeAuthError(w, sessErr); writeErrRespErr != nil {
-				log.Warn().Err(writeErrRespErr).Msg("failed to write auth error response")
+			} else {
+				http.Error(w, sessErr.Error(), http.StatusInternalServerError)
 			}
 		})
 	}
 }
 
-func (s *AuthSessionService) MakeAuthHandler() http.Handler {
+func (s *AuthSessionService) MakeUserAuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		providerHandled := s.providerAuthFlow(w, r)
-		if providerHandled {
+		if providerHandled := s.providerAuthFlow(w, r); providerHandled {
 			return
 		}
 
@@ -119,17 +91,13 @@ func (s *AuthSessionService) MakeAuthHandler() http.Handler {
 			return
 		}
 
-		if s.shouldRedirectRequest(r) {
+		_, sessErr := s.verifyRequestAuthSessionTokenCookie(r)
+		if sessErr != nil && isRedirectableError(sessErr) {
 			s.sessProvider.StartAuthFlow(w, r)
 		} else {
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 		}
 	})
-}
-
-func (s *AuthSessionService) shouldRedirectRequest(r *http.Request) bool {
-	_, sessErr := s.getRequestAuthSession(r)
-	return sessErr != nil && isRedirectableError(sessErr)
 }
 
 func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
@@ -160,7 +128,11 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	}
 
 	if createSessionErr != nil {
-		writeAuthError(w, createSessionErr)
+		log.Error().Err(createSessionErr).Msg("failed to create session")
+		http.Error(w, createSessionErr.Error(), http.StatusInternalServerError)
+		//if writeErr := writeAuthError(w, createSessionErr); writeErr != nil {
+		//	log.Warn().Err(writeErr).Msg("failed to write auth create session error response")
+		//}
 	} else if redirectUrl != "" {
 		http.Redirect(w, r, redirectUrl, http.StatusFound)
 	}
@@ -188,7 +160,7 @@ func (s *AuthSessionService) matchUserIdFromProvider(ctx context.Context, provUs
 
 func (s *AuthSessionService) makeSessionCookie(r *http.Request, value string, expires time.Time) *http.Cookie {
 	cookie := &http.Cookie{
-		Name:     authSessionCookieName,
+		Name:     oapi.SessionCookieName,
 		Value:    value,
 		Domain:   r.Host,
 		Path:     "/",
@@ -222,39 +194,42 @@ func (s *AuthSessionService) clearAuthSession(w http.ResponseWriter, r *http.Req
 	s.sessProvider.ClearSession(w, r)
 }
 
-func (s *AuthSessionService) getRequestAuthSession(r *http.Request) (*rez.AuthSession, error) {
-	tokenValue, tokenErr := s.getRequestAuthSessionToken(r)
-	if tokenErr != nil {
-		return nil, tokenErr
+func (s *AuthSessionService) verifyRequestAuthSessionTokenCookie(r *http.Request) (*rez.AuthSession, error) {
+	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
+	if cookieErr != nil {
+		return nil, fmt.Errorf("error getting token from cookie: %w", cookieErr)
+	} else if cookieToken == "" {
+		return nil, rez.ErrNoAuthSession
 	}
-
-	return s.VerifySessionToken(tokenValue)
+	return s.VerifySessionToken(cookieToken)
 }
 
-func (s *AuthSessionService) getRequestAuthSessionToken(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader != "" {
-		split := strings.Split(authHeader, " ")
-		if len(split) != 2 {
-			return "", rez.ErrNoAuthSession
-		}
-		authType := split[0]
-		token := split[1]
-		if authType != "Bearer" {
-			log.Debug().Str("authType", authType).Msg("invalid auth type")
-			return "", fmt.Errorf("invalid auth type %s", authType)
-		}
-		return token, nil
-	}
-
-	authCookie, cookieErr := r.Cookie(authSessionCookieName)
+func getRequestAuthSessionTokenCookie(r *http.Request) (string, error) {
+	authCookie, cookieErr := r.Cookie(oapi.SessionCookieName)
 	if cookieErr != nil {
 		if errors.Is(cookieErr, http.ErrNoCookie) {
-			return "", rez.ErrNoAuthSession
+			return "", nil
 		}
 		return "", cookieErr
 	}
 	return authCookie.Value, nil
+}
+
+func getRequestAuthorizationBearerToken(r *http.Request) (string, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		return "", nil
+	}
+	split := strings.Split(authHeader, " ")
+	if len(split) != 2 {
+		return "", nil
+	}
+	authType := split[0]
+	token := split[1]
+	if authType != "Bearer" {
+		return "", fmt.Errorf("invalid Authorization type %s", authType)
+	}
+	return token, nil
 }
 
 type authSessionTokenClaims struct {

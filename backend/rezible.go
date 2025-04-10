@@ -107,10 +107,12 @@ type (
 
 	AuthSessionService interface {
 		ProviderName() string
-		MakeAuthHandler() http.Handler
-		MakeRequireAuthMiddleware(redirectStartFlow bool) func(http.Handler) http.Handler
+		MakeUserAuthHandler() http.Handler
+		MakeFrontendAuthMiddleware() func(http.Handler) http.Handler
+		CreateSessionContext(context.Context, *AuthSession) context.Context
 		GetSession(context.Context) (*AuthSession, error)
 		IssueSessionToken(*AuthSession) (string, error)
+		VerifySessionToken(tokenStr string) (*AuthSession, error)
 	}
 )
 
