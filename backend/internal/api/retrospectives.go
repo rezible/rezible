@@ -9,14 +9,14 @@ import (
 )
 
 type retrospectivesHandler struct {
-	auth      rez.AuthService
+	auth      rez.AuthSessionService
 	users     rez.UserService
 	incidents rez.IncidentService
 	retros    rez.RetrospectiveService
 	documents rez.DocumentsService
 }
 
-func newRetrospectivesHandler(auth rez.AuthService, users rez.UserService, incidents rez.IncidentService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
+func newRetrospectivesHandler(auth rez.AuthSessionService, users rez.UserService, incidents rez.IncidentService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
 	return &retrospectivesHandler{auth, users, incidents, retros, documents}
 }
 

@@ -18,7 +18,7 @@ import (
 )
 
 func printSpecCmd(ctx context.Context, opts *Options) error {
-	spec, yamlErr := yaml.Marshal(openapi.MakeDefaultApi(&api.Handler{}).OpenAPI())
+	spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}).OpenAPI())
 	if yamlErr != nil {
 		return yamlErr
 	}

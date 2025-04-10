@@ -1,23 +1,22 @@
 <script lang="ts">
-	import { listUserAssignmentsOptions, type ListUserAssignmentsData } from "$lib/api";
-	import { createQuery } from "@tanstack/svelte-query";
 	import { Icon, Header, ListItem, Button } from "svelte-ux";
 	import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
-	import { addDays, addHours, formatDate, formatDistanceToNow } from "date-fns";
+	import { formatDistanceToNow } from "date-fns";
 
-	let params = $state<ListUserAssignmentsData["query"]>({});
-	const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
+	// let params = $state<ListUserAssignmentsData["query"]>({});
+	// const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
 
-	const assignments = $derived(query.data?.data ?? []);
-	const incidents = $derived(assignments.filter((a) => a.itemType === "incident"));
-	const shifts = $derived(assignments.filter((a) => a.itemType === "oncall_shift"));
-	const tasks = $derived(assignments.filter((a) => a.itemType === "tasks"));
+	// const assignments = $derived(query.data?.data ?? []);
+	// const incidents = $derived(assignments.filter((a) => a.itemType === "incident"));
+	// const shifts = $derived(assignments.filter((a) => a.itemType === "oncall_shift"));
+	// const tasks = $derived(assignments.filter((a) => a.itemType === "tasks"));
 </script>
 
 <div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
 	<Header title="Your Items" class="border-b" />
 
 	<div class="flex flex-col gap-2 overflow-y-auto">
+		<!--
 		{#each assignments as a, i (i)}
 			{#if a.itemType == "retrospective"}
 				<a href="/incidents/{a.itemId}/retrospective">
@@ -48,14 +47,13 @@
 			{:else}
 				{JSON.stringify(a)}
 			{/if}
-		{/each}
-
-		{#if assignments.length === 0}
+		{:else}
 			<div class="flex gap-2 items-center">
 				<span class="leading-none">No Assigned Items</span>
 				<Icon data={mdiGhostOutline} />
 			</div>
-		{/if}
+		{/each}
+		-->
 	</div>
 </div>
 

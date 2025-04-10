@@ -7,10 +7,11 @@ import (
 	"net"
 	"net/http"
 
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/rs/zerolog/log"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
@@ -24,7 +25,7 @@ func mount(r chi.Router, prefix string, h http.Handler) {
 	r.Mount(prefix, http.StripPrefix(prefix, h))
 }
 
-func NewServer(addr string, auth rez.AuthService, oapiAdapter oapi.Adapter, webhookHandler http.Handler) (*Server, error) {
+func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handler, webhookHandler http.Handler) (*Server, error) {
 	var s Server
 
 	router := chi.NewRouter()
@@ -40,16 +41,10 @@ func NewServer(addr string, auth rez.AuthService, oapiAdapter oapi.Adapter, webh
 	)
 	frontendHandler := frontendMiddleware.Handler(embeddedFeServer)
 
-	apiMiddleware := chi.Chain(
-		middleware.Logger,
-		makeAuthMiddleware(auth, false, []string{"/openapi.json"}),
-	)
-	apiHandler := apiMiddleware.Handler(oapiAdapter)
-
 	/* /api/ - API Routing Group */
 	apiGroup := router.Group(func(r chi.Router) {
 		/* /api/v1/ - OpenAPI Operations */
-		mount(r, "/v1", apiHandler)
+		mount(r, "/v1", makeApiHandler(oapiHandler, auth))
 
 		/* /api/webhooks/ - Webhook routes */
 		mount(r, "/webhooks", webhookHandler)
@@ -73,6 +68,17 @@ func NewServer(addr string, auth rez.AuthService, oapiAdapter oapi.Adapter, webh
 	}
 
 	return &s, nil
+}
+
+func makeApiHandler(oapiHandler oapi.Handler, auth rez.AuthSessionService) http.Handler {
+	skipAuthPaths := append([]string{"/openapi.json"}, oapi.GetSkipAuthPaths()...)
+	api := oapi.MakeApi(oapiHandler)
+	// api.UseMiddleware()
+	apiMiddleware := chi.Chain(
+		middleware.Logger,
+		makeAuthMiddleware(auth, false, skipAuthPaths),
+	)
+	return apiMiddleware.Handler(api.Adapter())
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -99,22 +105,13 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-//func makeWebhookHandler(providerHandler http.HandlerFunc) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		providerHandler.ServeHTTP(w, r)
-//	})
-//}
-
-func makeAuthMiddleware(s rez.AuthService, redirect bool, skipPaths []string) func(http.Handler) http.Handler {
+func makeAuthMiddleware(s rez.AuthSessionService, redirect bool, skipPaths []string) func(http.Handler) http.Handler {
 	authMw := s.MakeRequireAuthMiddleware(redirect)
-	skipMap := make(map[string]struct{}, len(skipPaths))
-	for _, path := range skipPaths {
-		skipMap[path] = struct{}{}
-	}
+	skip := mapset.NewSet(skipPaths...)
 	return func(next http.Handler) http.Handler {
 		withAuth := authMw(next)
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if _, skip := skipMap[r.URL.Path]; skip {
+			if skip.Contains(r.URL.Path) {
 				next.ServeHTTP(w, r)
 				return
 			}

@@ -14,6 +14,7 @@ type Handler struct {
 	*middlewareHandler
 
 	*analyticsHandler
+	*authSessionsHandler
 	*documentsHandler
 	*environmentsHandler
 	*functionalitiesHandler
@@ -33,7 +34,6 @@ type Handler struct {
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*systemComponentsHandler
-	*sessionsHandler
 	*subscriptionsHandler
 	*teamsHandler
 	*usersHandler
@@ -43,7 +43,7 @@ var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
 	db *ent.Client,
-	auth rez.AuthService,
+	auth rez.AuthSessionService,
 	users rez.UserService,
 	incidents rez.IncidentService,
 	debriefs rez.DebriefService,
@@ -57,6 +57,7 @@ func NewHandler(
 		middlewareHandler: newMiddlewareHandler(auth),
 
 		analyticsHandler:          newAnalyticsHandler(),
+		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
 		environmentsHandler:       newEnvironmentsHandler(db.Environment),
 		functionalitiesHandler:    newFunctionalitiesHandler(),
@@ -79,15 +80,10 @@ func NewHandler(
 		subscriptionsHandler:      newSubscriptionsHandler(),
 		teamsHandler:              newTeamsHandler(db.Team),
 		usersHandler:              newUsersHandler(users),
-		sessionsHandler:           newSessionsHandler(auth, users),
 	}
 }
 
-func (h *Handler) MakeAdapter() oapi.Adapter {
-	return oapi.MakeDefaultApi(h).Adapter()
-}
-
-func mustGetAuthSession(ctx context.Context, auth rez.AuthService) *rez.AuthSession {
+func mustGetAuthSession(ctx context.Context, auth rez.AuthSessionService) *rez.AuthSession {
 	sess, sessErr := auth.GetSession(ctx)
 	if sessErr != nil {
 		panic("mustGetAuthSession: " + sessErr.Error())

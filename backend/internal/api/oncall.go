@@ -14,14 +14,14 @@ import (
 )
 
 type oncallHandler struct {
-	auth      rez.AuthService
+	auth      rez.AuthSessionService
 	users     rez.UserService
 	incidents rez.IncidentService
 	oncall    rez.OncallService
 	alerts    rez.AlertsService
 }
 
-func newOncallHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService, alerts rez.AlertsService) *oncallHandler {
+func newOncallHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService, alerts rez.AlertsService) *oncallHandler {
 	return &oncallHandler{auth: auth, users: users, incidents: inc, oncall: oncall, alerts: alerts}
 }
 

@@ -150,7 +150,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.NewAlertsService: %w", alertsErr)
 	}
 
-	auth, authErr := http.NewAuthService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
+	auth, authErr := http.NewAuthSessionService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
 	if authErr != nil {
 		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
@@ -158,7 +158,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, alerts, docs, retros, componentsSvc)
 
-	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler.MakeAdapter(), pl.WebhookHandler())
+	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, pl.WebhookHandler())
 	if httpErr != nil {
 		return nil, fmt.Errorf("http.NewServer: %w", httpErr)
 	}

@@ -6,10 +6,10 @@ import (
 )
 
 type middlewareHandler struct {
-	auth rez.AuthService
+	auth rez.AuthSessionService
 }
 
-func newMiddlewareHandler(auth rez.AuthService) *middlewareHandler {
+func newMiddlewareHandler(auth rez.AuthSessionService) *middlewareHandler {
 	return &middlewareHandler{auth}
 }
 

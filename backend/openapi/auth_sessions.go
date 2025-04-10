@@ -2,29 +2,37 @@ package openapi
 
 import (
 	"context"
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 )
 
-type UserSessionsHandler interface {
-	GetUserSession(context.Context, *GetUserSessionRequest) (*GetUserSessionResponse, error)
+type AuthSessionsHandler interface {
+	GetAuthSessionsConfig(context.Context, *GetAuthSessionsConfigRequest) (*GetAuthSessionsConfigResponse, error)
+
+	GetCurrentUserAuthSession(context.Context, *GetCurrentUserAuthSessionRequest) (*GetCurrentUserAuthSessionResponse, error)
+
 	ListNotifications(context.Context, *ListNotificationsRequest) (*ListNotificationsResponse, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*DeleteNotificationResponse, error)
-	ListUserAssignments(context.Context, *ListUserAssignmentsRequest) (*ListUserAssignmentsResponse, error)
 }
 
-func (o operations) RegisterUserSessions(api huma.API) {
-	huma.Register(api, GetUserSession, o.GetUserSession)
+func (o operations) RegisterAuthSessions(api huma.API) {
+	huma.Register(api, GetAuthSessionsConfig, o.GetAuthSessionsConfig)
+
+	huma.Register(api, GetCurrentUserAuthSession, o.GetCurrentUserAuthSession)
+
 	huma.Register(api, ListNotifications, o.ListNotifications)
 	huma.Register(api, DeleteNotification, o.DeleteNotification)
-
-	huma.Register(api, ListUserAssignments, o.ListUserAssignments)
 }
 
 type (
-	UserSession struct {
+	AuthSessionsConfig struct {
+		ProviderName string `json:"providerName"`
+	}
+
+	UserAuthSession struct {
 		ExpiresAt time.Time `json:"expiresAt"`
 		User      User      `json:"user"`
 	}
@@ -49,26 +57,41 @@ type (
 
 // Operations
 
-var sessionTags = []string{"User Session"}
+var authSessionsTags = []string{"Auth Sessions"}
 
-var GetUserSession = huma.Operation{
-	OperationID: "get-current-user-session",
+var GetAuthSessionsConfig = huma.Operation{
+	OperationID: "get-auth-session-config",
 	Method:      http.MethodGet,
-	Path:        "/user_session",
+	Path:        "/auth_session/config",
+	Summary:     "Get the Auth Session config",
+	Tags:        authSessionsTags,
+	Errors:      errorCodes(),
+	Security: []map[string][]string{
+		{"bearer": {}},
+	},
+}
+
+type GetAuthSessionsConfigRequest EmptyRequest
+type GetAuthSessionsConfigResponse ItemResponse[AuthSessionsConfig]
+
+var GetCurrentUserAuthSession = huma.Operation{
+	OperationID: "get-current-user-auth-session",
+	Method:      http.MethodGet,
+	Path:        "/auth_session/user",
 	Summary:     "Get the Auth Session for the Current User",
-	Tags:        sessionTags,
+	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
 }
 
-type GetUserSessionRequest EmptyRequest
-type GetUserSessionResponse ItemResponse[UserSession]
+type GetCurrentUserAuthSessionRequest EmptyRequest
+type GetCurrentUserAuthSessionResponse ItemResponse[UserAuthSession]
 
 var ListNotifications = huma.Operation{
 	OperationID: "list-user-notifications",
 	Method:      http.MethodGet,
-	Path:        "/user_session/notifications",
+	Path:        "/auth_session/user/notifications",
 	Summary:     "List Notifications for the Current User",
-	Tags:        sessionTags,
+	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
 }
 
@@ -80,21 +103,9 @@ var DeleteNotification = huma.Operation{
 	Method:      http.MethodDelete,
 	Path:        "/user_session/notifications/{id}",
 	Summary:     "Delete a Notification for the Current User",
-	Tags:        sessionTags,
+	Tags:        authSessionsTags,
 	Errors:      errorCodes(),
 }
 
 type DeleteNotificationRequest DeleteIdRequest
 type DeleteNotificationResponse EmptyResponse
-
-var ListUserAssignments = huma.Operation{
-	OperationID: "list-user-assignments",
-	Method:      http.MethodGet,
-	Path:        "/user_session/assignments",
-	Summary:     "List Assignments for the Current User",
-	Tags:        sessionTags,
-	Errors:      errorCodes(),
-}
-
-type ListUserAssignmentsRequest ListRequest
-type ListUserAssignmentsResponse PaginatedResponse[UserAssignment]

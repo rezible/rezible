@@ -2,14 +2,12 @@ package slack
 
 import (
 	"fmt"
-	mapset "github.com/deckarep/golang-set/v2"
-	rez "github.com/rezible/rezible"
-	"github.com/slack-go/slack"
-)
 
-func plainText(text string) *slack.TextBlockObject {
-	return slack.NewTextBlockObject("plain_text", text, false, false)
-}
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/slack-go/slack"
+
+	rez "github.com/rezible/rezible"
+)
 
 type (
 	blockConverter struct {
@@ -28,6 +26,10 @@ type (
 		end      int
 	}
 )
+
+func plainText(text string) *slack.TextBlockObject {
+	return slack.NewTextBlockObject("plain_text", text, false, false)
+}
 
 func (c *blockConverter) convertDocument(doc *rez.ContentNode) []slack.Block {
 	if doc == nil {

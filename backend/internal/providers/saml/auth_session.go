@@ -36,18 +36,18 @@ type Config struct {
 	CertKeyFile    string `json:"cert_key_file"`
 }
 
-type SessionProvider struct {
+type AuthSessionProvider struct {
 	appUrl *url.URL
 	mw     *samlsp.Middleware
 }
 
-func NewAuthSessionProvider(ctx context.Context, cfg Config) (*SessionProvider, error) {
+func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvider, error) {
 	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
 	if appUrlErr != nil {
 		return nil, fmt.Errorf("bad app url: %w", appUrlErr)
 	}
 
-	p := &SessionProvider{
+	p := &AuthSessionProvider{
 		appUrl: appUrl,
 	}
 
@@ -56,12 +56,16 @@ func NewAuthSessionProvider(ctx context.Context, cfg Config) (*SessionProvider, 
 		return nil, fmt.Errorf("failed to create saml middleware: %w", mwErr)
 	}
 
-	return &SessionProvider{
+	return &AuthSessionProvider{
 		mw: mw,
 	}, nil
 }
 
-func (p *SessionProvider) createSamlMiddleware(ctx context.Context, cfg Config) (*samlsp.Middleware, error) {
+func (p *AuthSessionProvider) Name() string {
+	return "SAML"
+}
+
+func (p *AuthSessionProvider) createSamlMiddleware(ctx context.Context, cfg Config) (*samlsp.Middleware, error) {
 	cert, kpErr := loadCert(cfg.CertFile, cfg.CertKeyFile)
 	if kpErr != nil {
 		return nil, fmt.Errorf("cert error: %w", kpErr)
@@ -130,7 +134,7 @@ func loadCert(certFile, keyFile string) (*tls.Certificate, error) {
 	return &keyPair, nil
 }
 
-func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) bool {
+func (p *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) bool {
 	if r.URL.Path == p.mw.ServiceProvider.MetadataURL.Path {
 		p.mw.ServeMetadata(w, r)
 		return true
@@ -147,12 +151,12 @@ func (p *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 	return false
 }
 
-func (p *SessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
+func (p *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
 	// TODO: logout
 }
 
 // mostly taken from samlsp
-func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
+func (p *AuthSessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
 	if parseErr := r.ParseForm(); parseErr != nil {
 		return fmt.Errorf("parse form: %w", parseErr)
 	}
@@ -208,11 +212,11 @@ func (p *SessionProvider) handleServeACS(w http.ResponseWriter, r *http.Request,
 	return nil
 }
 
-func (p *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+func (p *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
 	p.mw.HandleStartAuthFlow(w, r)
 }
 
-func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*ent.User, time.Time, error) {
+func (p *AuthSessionProvider) createSessionFromAssertion(a *saml.Assertion) (*ent.User, time.Time, error) {
 	var expiresAt time.Time
 	sp, ok := p.mw.Session.(samlsp.CookieSessionProvider)
 	if !ok {
@@ -244,6 +248,6 @@ func (p *SessionProvider) createSessionFromAssertion(a *saml.Assertion) (*ent.Us
 	return user, expiresAt, nil
 }
 
-func (p *SessionProvider) GetUserMapping() *ent.User {
+func (p *AuthSessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }

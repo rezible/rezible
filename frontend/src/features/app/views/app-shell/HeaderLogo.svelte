@@ -8,6 +8,7 @@
     
     const preload = $derived(session.error ? "tap" : "hover");
 </script>
+
 <div class="h-16 flex items-center px-4">
     <a href="/" class="text-2xl flex items-center" 
         data-sveltekit-preload-data={preload} 

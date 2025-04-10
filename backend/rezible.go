@@ -98,13 +98,15 @@ type (
 	AuthSessionCreatedFn = func(*ent.User, time.Time, string)
 
 	AuthSessionProvider interface {
+		Name() string
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
 		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
 		ClearSession(w http.ResponseWriter, r *http.Request)
 	}
 
-	AuthService interface {
+	AuthSessionService interface {
+		ProviderName() string
 		MakeAuthHandler() http.Handler
 		MakeRequireAuthMiddleware(redirectStartFlow bool) func(http.Handler) http.Handler
 		GetSession(context.Context) (*AuthSession, error)

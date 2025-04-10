@@ -4,9 +4,7 @@
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import Toaster from "$features/app/components/toaster/Toaster.svelte";
 	import Sidebar from "./Sidebar.svelte";
-	import Header from "./Header.svelte";
 	import PageContainer from "./PageContainer.svelte";
-	import HeaderLogo from "./HeaderLogo.svelte";
 
 	const { children } = $props();
 

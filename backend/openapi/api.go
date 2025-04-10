@@ -10,6 +10,7 @@ import (
 )
 
 type (
+	API         = huma.API
 	Context     = huma.Context
 	ErrorModel  = huma.ErrorModel
 	StatusError = huma.StatusError
@@ -46,7 +47,7 @@ type Handler interface {
 	OncallHandler
 
 	UsersHandler
-	UserSessionsHandler
+	AuthSessionsHandler
 	TeamsHandler
 	SubscriptionsHandler
 
@@ -68,7 +69,7 @@ func RegisterRoutes(api huma.API, handler Handler) {
 	huma.AutoRegister(api, operations{handler})
 }
 
-func MakeDefaultApi(s Handler) huma.API {
+func MakeApi(s Handler) huma.API {
 	cfg := DefaultConfig()
 	/*
 		cfg.Transformers = append([]huma.Transformer{
@@ -81,5 +82,13 @@ func MakeDefaultApi(s Handler) huma.API {
 	api := huma.NewAPI(cfg, adapter)
 	RegisterRoutes(api, s)
 
+	//cfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{}
+	//cfg.Security = []map[string][]string{}
+
 	return api
+}
+
+func GetSkipAuthPaths() []string {
+	// TODO: remove this and use oapi security/security schemas with middleware
+	return []string{GetAuthSessionsConfig.Path}
 }

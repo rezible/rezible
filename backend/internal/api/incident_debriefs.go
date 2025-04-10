@@ -14,12 +14,12 @@ import (
 
 type incidentDebriefsHandler struct {
 	questions *ent.IncidentDebriefQuestionClient
-	auth      rez.AuthService
+	auth      rez.AuthSessionService
 	users     rez.UserService
 	debriefs  rez.DebriefService
 }
 
-func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, auth rez.AuthService, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
+func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, auth rez.AuthSessionService, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
 	return &incidentDebriefsHandler{questions, auth, users, debriefs}
 }
 

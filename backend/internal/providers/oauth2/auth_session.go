@@ -29,7 +29,7 @@ var (
 	}
 )
 
-type SessionProvider struct {
+type AuthSessionProvider struct {
 	provider goth.Provider
 	handler  *chi.Mux
 }
@@ -41,13 +41,13 @@ type Config struct {
 	DiscoveryUrl string `json:"oidc_discovery_url,omitempty"`
 }
 
-func NewAuthSessionProvider(cfg Config) (*SessionProvider, error) {
+func NewAuthSessionProvider(cfg Config) (*AuthSessionProvider, error) {
 	p, provErr := registerProvider(cfg)
 	if provErr != nil {
 		return nil, provErr
 	}
 
-	return &SessionProvider{
+	return &AuthSessionProvider{
 		provider: p,
 	}, nil
 }
@@ -66,11 +66,15 @@ func registerProvider(cfg Config) (goth.Provider, error) {
 	return provider, nil
 }
 
-func (s *SessionProvider) GetUserMapping() *ent.User {
+func (s *AuthSessionProvider) Name() string {
+	return s.provider.Name()
+}
+
+func (s *AuthSessionProvider) GetUserMapping() *ent.User {
 	return userMapping
 }
 
-func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
+func (s *AuthSessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, cs rez.AuthSessionCreatedFn) bool {
 	if r.URL.Path == "/auth/callback" {
 		cbErr := s.handleFlowCallback(w, r, cs)
 		if cbErr == nil {
@@ -83,7 +87,7 @@ func (s *SessionProvider) HandleAuthFlowRequest(w http.ResponseWriter, r *http.R
 	return false
 }
 
-func (s *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
+func (s *AuthSessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) {
 	redirectUrl, redirectErr := s.createProviderSessionRedirect(w, r)
 	if redirectErr != nil {
 		log.Error().Err(redirectErr).Msg("could not create provider session redirect")
@@ -93,7 +97,7 @@ func (s *SessionProvider) StartAuthFlow(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, redirectUrl, http.StatusTemporaryRedirect)
 }
 
-func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
+func (s *AuthSessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Request, onCreated rez.AuthSessionCreatedFn) error {
 	sess, sessErr := s.getProviderSession(r)
 	if sessErr != nil {
 		return fmt.Errorf("getting provider session: %w", sessErr)
@@ -120,7 +124,7 @@ func (s *SessionProvider) handleFlowCallback(w http.ResponseWriter, r *http.Requ
 	return nil
 }
 
-func (s *SessionProvider) createProviderSessionRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
+func (s *AuthSessionProvider) createProviderSessionRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
 	state := r.URL.Query().Get("state")
 	if state == "" {
 		nonceBytes := make([]byte, 64)
@@ -145,12 +149,12 @@ func (s *SessionProvider) createProviderSessionRedirect(w http.ResponseWriter, r
 	return authUrl, nil
 }
 
-func (s *SessionProvider) storeProviderSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
+func (s *AuthSessionProvider) storeProviderSession(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
 	// TODO: dont use gothic, manage session store internally
 	return gothic.StoreInSession(s.provider.Name(), sess.Marshal(), r, w)
 }
 
-func (s *SessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
+func (s *AuthSessionProvider) getProviderSession(r *http.Request) (goth.Session, error) {
 	// TODO: dont use gothic, manage session store internally
 	marshalledSess, getErr := gothic.GetFromSession(s.provider.Name(), r)
 	if getErr != nil {
@@ -192,7 +196,7 @@ func validateRequestSessionState(r *http.Request, sess goth.Session) error {
 	return nil
 }
 
-func (s *SessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Request, sess goth.Session) (*goth.User, error) {
+func (s *AuthSessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Request, sess goth.Session) (*goth.User, error) {
 	user, fetchErr := s.provider.FetchUser(sess)
 	if fetchErr == nil {
 		// user can be found with existing session data
@@ -210,7 +214,7 @@ func (s *SessionProvider) fetchSessionUser(w http.ResponseWriter, r *http.Reques
 	return &user, nil
 }
 
-func (s *SessionProvider) updateSessionAuth(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
+func (s *AuthSessionProvider) updateSessionAuth(w http.ResponseWriter, r *http.Request, sess goth.Session) error {
 	params := r.URL.Query()
 	if params.Encode() == "" && r.Method == http.MethodPost {
 		if parseErr := r.ParseForm(); parseErr != nil {
@@ -231,7 +235,7 @@ func (s *SessionProvider) updateSessionAuth(w http.ResponseWriter, r *http.Reque
 	return nil
 }
 
-func (s *SessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
+func (s *AuthSessionProvider) ClearSession(w http.ResponseWriter, r *http.Request) {
 	if logoutErr := gothic.Logout(w, r); logoutErr != nil {
 		log.Error().Err(logoutErr).Msg("logout failed")
 	}

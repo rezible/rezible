@@ -62,6 +62,10 @@ export type AddSystemAnalysisComponentResponseBody = {
     data: SystemAnalysisComponent;
 };
 
+export type AuthSessionsConfig = {
+    providerName: string;
+};
+
 export type CreateEnvironmentAttributes = {
     name: string;
 };
@@ -748,6 +752,22 @@ export type FunctionalityAttributes = {
     name: string;
 };
 
+export type GetAuthSessionsConfigResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AuthSessionsConfig;
+};
+
+export type GetCurrentUserAuthSessionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: UserAuthSession;
+};
+
 export type GetEnvironmentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1050,14 +1070,6 @@ export type GetUserResponseBody = {
      */
     readonly $schema?: string;
     data: User;
-};
-
-export type GetUserSessionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: UserSession;
 };
 
 export type Incident = {
@@ -1606,15 +1618,6 @@ export type ListTeamsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Team>;
-    pagination: ResponsePagination;
-};
-
-export type ListUserAssignmentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<UserAssignment>;
     pagination: ResponsePagination;
 };
 
@@ -2681,17 +2684,14 @@ export type User = {
     id: string;
 };
 
-export type UserAssignment = {
-    deadline: string;
-    itemId: string;
-    itemType: string;
-    role: string;
-    title: string;
-};
-
 export type UserAttributes = {
     email: string;
     name: string;
+};
+
+export type UserAuthSession = {
+    expiresAt: string;
+    user: User;
 };
 
 export type UserNotification = {
@@ -2708,11 +2708,6 @@ export type UserOncallDetails = {
     pastShifts: Array<OncallShift>;
     rosters: Array<OncallRoster>;
     upcomingShifts: Array<OncallShift>;
-};
-
-export type UserSession = {
-    expiresAt: string;
-    user: User;
 };
 
 export type VerifyDocumentEditorSessionRequestAttributes = {
@@ -2828,6 +2823,138 @@ export type GetOncallShiftMetricsResponses = {
 };
 
 export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
+
+export type GetAuthSessionConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/config';
+};
+
+export type GetAuthSessionConfigErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAuthSessionConfigError = GetAuthSessionConfigErrors[keyof GetAuthSessionConfigErrors];
+
+export type GetAuthSessionConfigResponses = {
+    /**
+     * OK
+     */
+    200: GetAuthSessionsConfigResponseBody;
+};
+
+export type GetAuthSessionConfigResponse = GetAuthSessionConfigResponses[keyof GetAuthSessionConfigResponses];
+
+export type GetCurrentUserAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/user';
+};
+
+export type GetCurrentUserAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetCurrentUserAuthSessionError = GetCurrentUserAuthSessionErrors[keyof GetCurrentUserAuthSessionErrors];
+
+export type GetCurrentUserAuthSessionResponses = {
+    /**
+     * OK
+     */
+    200: GetCurrentUserAuthSessionResponseBody;
+};
+
+export type GetCurrentUserAuthSessionResponse = GetCurrentUserAuthSessionResponses[keyof GetCurrentUserAuthSessionResponses];
+
+export type ListUserNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/auth_session/user/notifications';
+};
+
+export type ListUserNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListUserNotificationsError = ListUserNotificationsErrors[keyof ListUserNotificationsErrors];
+
+export type ListUserNotificationsResponses = {
+    /**
+     * OK
+     */
+    200: ListNotificationsResponseBody;
+};
+
+export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
 
 export type ListDebriefQuestionsData = {
     body?: never;
@@ -10236,147 +10363,6 @@ export type UpdateTeamsResponses = {
 };
 
 export type UpdateTeamsResponse = UpdateTeamsResponses[keyof UpdateTeamsResponses];
-
-export type GetCurrentUserSessionData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/user_session';
-};
-
-export type GetCurrentUserSessionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetCurrentUserSessionError = GetCurrentUserSessionErrors[keyof GetCurrentUserSessionErrors];
-
-export type GetCurrentUserSessionResponses = {
-    /**
-     * OK
-     */
-    200: GetUserSessionResponseBody;
-};
-
-export type GetCurrentUserSessionResponse = GetCurrentUserSessionResponses[keyof GetCurrentUserSessionResponses];
-
-export type ListUserAssignmentsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/user_session/assignments';
-};
-
-export type ListUserAssignmentsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListUserAssignmentsError = ListUserAssignmentsErrors[keyof ListUserAssignmentsErrors];
-
-export type ListUserAssignmentsResponses = {
-    /**
-     * OK
-     */
-    200: ListUserAssignmentsResponseBody;
-};
-
-export type ListUserAssignmentsResponse = ListUserAssignmentsResponses[keyof ListUserAssignmentsResponses];
-
-export type ListUserNotificationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/user_session/notifications';
-};
-
-export type ListUserNotificationsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListUserNotificationsError = ListUserNotificationsErrors[keyof ListUserNotificationsErrors];
-
-export type ListUserNotificationsResponses = {
-    /**
-     * OK
-     */
-    200: ListNotificationsResponseBody;
-};
-
-export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
 
 export type DeleteUserNotificationData = {
     body?: never;

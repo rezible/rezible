@@ -1,22 +1,17 @@
-import { dev } from "$app/environment";
 import {
 	client,
-	getCurrentUserSessionOptions,
 	type UserNotification,
-	type GetCurrentUserSessionResponse,
+	type GetCurrentUserAuthSessionResponse,
 	type User,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { getCurrentUserSession } from "./api/oapi.gen";
-import { QueryClient, QueryObserver, queryOptions } from "@tanstack/svelte-query";
-import { differenceInSeconds } from "date-fns/differenceInSeconds";
+import { getCurrentUserAuthSession } from "./api/oapi.gen";
+import { QueryClient } from "@tanstack/svelte-query";
 
-// TODO: load this
-export const AUTH_REDIRECT_URL = dev ? "http://localhost:8888/auth" : "/auth";
-const refreshWindowSecs = 60 * 3;
+export type SessionErrorCategory = "unknown" | "invalid" | "expired" | "no_session" | "no_user";
 
 type SessionError = {
-	category: "unknown" | "invalid" | "expired" | "no_session" | "no_user";
+	category: SessionErrorCategory;
 	code?: string;
 };
 
@@ -24,14 +19,15 @@ type AuthSession = {
 	expiresAt: Date;
 	user: User;
 };
-const parseUserSessionResponse = ({ data }: GetCurrentUserSessionResponse): AuthSession => {
+
+const parseUserSessionResponse = ({ data }: GetCurrentUserAuthSessionResponse): AuthSession => {
 	return {
 		user: data.user,
 		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
 	};
 };
 
-const createSession = () => {
+const createAuthSessionState = () => {
 	let session = $state<AuthSession>();
 	let loaded = $state(false);
 	let error = $state<SessionError>();
@@ -59,7 +55,7 @@ const createSession = () => {
 			data,
 			error: respError,
 			response,
-		} = await getCurrentUserSession({
+		} = await getCurrentUserAuthSession({
 			client,
 			fetch: _fetch,
 			throwOnError: false,
@@ -74,7 +70,7 @@ const createSession = () => {
 
 		clear();
 
-		let errCategory: SessionError["category"] = "unknown";
+		let errCategory: SessionErrorCategory = "unknown";
 		const status = response.status;
 		const errCode = respError.detail;
 		if (status === 401) {
@@ -122,12 +118,15 @@ const createSession = () => {
 		},
 	};
 };
-export const session = createSession();
+export const session = createAuthSessionState();
+
+/*
+const refreshWindowSecs = 60 * 3;
 
 const startRefetchQuery = (client: QueryClient) => {
 	const refetchInterval = 1000 * 60; // 1 minute
 	const opts = queryOptions({
-		...getCurrentUserSessionOptions(),
+		...getCurrentUserAuthSessionOptions(),
 		refetchInterval,
 	});
 	const observer = new QueryObserver(client, opts);
@@ -152,6 +151,7 @@ const startRefetchQuery = (client: QueryClient) => {
 		if (observer) observer.destroy();
 	};
 };
+*/
 
 const createNotifications = () => {
 	const notifications = $state<UserNotification[]>([]);
