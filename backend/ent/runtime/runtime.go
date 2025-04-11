@@ -318,7 +318,7 @@ func init() {
 	oncalleventannotationFields := schema.OncallEventAnnotation{}.Fields()
 	_ = oncalleventannotationFields
 	// oncalleventannotationDescCreatedAt is the schema descriptor for created_at field.
-	oncalleventannotationDescCreatedAt := oncalleventannotationFields[2].Descriptor()
+	oncalleventannotationDescCreatedAt := oncalleventannotationFields[4].Descriptor()
 	// oncalleventannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
 	oncalleventannotation.DefaultCreatedAt = oncalleventannotationDescCreatedAt.Default.(func() time.Time)
 	// oncalleventannotationDescID is the schema descriptor for id field.

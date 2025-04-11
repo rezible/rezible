@@ -97,16 +97,16 @@ func (s *OncallService) registerHandoverSchema() {
 	prosemirror.RegisterSchema(schema)
 }
 
-func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.UUID, msg *rez.OncallEvent, setFn func(*ent.OncallEventAnnotation)) error {
+func (s *OncallService) createChatAnnotation(ctx context.Context, rosterId uuid.UUID, msg *rez.OncallEvent, setFn func(*ent.OncallEventAnnotation)) error {
 	annos, annosErr := s.db.OncallEventAnnotation.Query().
-		//Where(oncalleventannotation.ShiftID(shiftId)).
+		Where(oncalleventannotation.RosterID(rosterId)).
 		All(ctx)
 	if annosErr != nil {
 		return fmt.Errorf("failed to query: %w", annosErr)
 	}
 	anno := &ent.OncallEventAnnotation{
-		//ShiftID: shiftId,
-		EventID: msg.ID,
+		RosterID: rosterId,
+		EventID:  msg.ID,
 	}
 	for _, an := range annos {
 		if an.EventID != "" && an.EventID == msg.ID {
@@ -121,10 +121,9 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, shiftId uuid.U
 	}
 
 	upsertQuery := s.db.OncallEventAnnotation.Create().
-		//SetShiftID(anno.ShiftID).
+		SetRosterID(anno.RosterID).
 		SetEventID(anno.EventID).
 		SetNotes(anno.Notes).
-		SetPinned(anno.Pinned).
 		SetMinutesOccupied(anno.MinutesOccupied)
 	if upsertErr := upsertQuery.Exec(ctx); upsertErr != nil {
 		return fmt.Errorf("failed to upsert char annotation: %w", upsertErr)
@@ -334,28 +333,30 @@ func (s *OncallService) HandleScanForShiftsNeedingHandoverJob(ctx context.Contex
 }
 
 func (s *OncallService) HandleEnsureShiftHandoverJob(ctx context.Context, args jobs.EnsureShiftHandover) error {
-	shiftId := args.ShiftId
+	/*
+		shiftId := args.ShiftId
 
-	shift, shiftErr := s.GetShiftByID(ctx, shiftId)
-	if shiftErr != nil {
-		return fmt.Errorf("failed to get shift: %w", shiftErr)
-	}
-
-	ho, hoErr := s.getOrCreateShiftHandover(ctx, shift)
-	if hoErr != nil {
-		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
-	}
-
-	// shift has already ended, within window
-	if shift.EndAt.Before(time.Now()) {
-		if sendErr := s.sendFallbackShiftHandover(ctx, shift, ho); sendErr != nil {
-			return fmt.Errorf("failed to send fallback handover: %w", sendErr)
+		shift, shiftErr := s.GetShiftByID(ctx, shiftId)
+		if shiftErr != nil {
+			return fmt.Errorf("failed to get shift: %w", shiftErr)
 		}
-	} else {
-		if reminderErr := s.sendShiftHandoverReminder(ctx, shift, ho); reminderErr != nil {
-			return fmt.Errorf("failed to send handover reminder: %w", reminderErr)
+
+		ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
+		if hoErr != nil {
+			return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
 		}
-	}
+
+		// shift has already ended, within window
+		if shift.EndAt.Before(time.Now()) {
+			if sendErr := s.sendFallbackShiftHandover(ctx, ho); sendErr != nil {
+				return fmt.Errorf("failed to send fallback handover: %w", sendErr)
+			}
+		} else {
+			if reminderErr := s.sendShiftHandoverReminder(ctx, shift, ho); reminderErr != nil {
+				return fmt.Errorf("failed to send handover reminder: %w", reminderErr)
+			}
+		}
+	*/
 
 	return nil
 }
@@ -389,25 +390,6 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 	return nil
 }
 
-func (s *OncallService) getOrCreateShiftHandover(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShiftHandover, error) {
-	ho, hoErr := s.db.OncallUserShiftHandover.Query().
-		Where(oncallusershifthandover.ShiftID(shift.ID)).Only(ctx)
-	if hoErr != nil && !ent.IsNotFound(hoErr) {
-		return nil, fmt.Errorf("failed to get handover: %w", hoErr)
-	}
-	if ho != nil {
-		return ho, nil
-	}
-	var contents []byte
-	tmpl, tmplErr := s.GetRosterHandoverTemplate(ctx, shift.RosterID)
-	if tmplErr != nil {
-		log.Warn().Err(tmplErr).Msg("failed to get roster handover template")
-	} else {
-		contents = tmpl.Contents
-	}
-	return s.createShiftHandover(ctx, shift.ID, contents)
-}
-
 func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error) {
 	roster, rosterErr := s.db.OncallRoster.Get(ctx, rosterId)
 	if rosterErr != nil {
@@ -422,10 +404,34 @@ func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId 
 		Only(ctx)
 }
 
-func (s *OncallService) GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	return s.db.OncallUserShiftHandover.Query().
+func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error) {
+	return s.db.OncallUserShiftHandover.Query().Where(oncallusershifthandover.ID(id)).WithPinnedAnnotations().Only(ctx)
+}
+
+func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error) {
+	handover, queryErr := s.db.OncallUserShiftHandover.Query().
 		Where(oncallusershifthandover.ShiftID(shiftId)).
 		Only(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return nil, fmt.Errorf("failed to query shift handover: %w", queryErr)
+	}
+	if handover != nil || !create {
+		return handover, queryErr
+	}
+	shift, shiftErr := s.db.OncallUserShift.Get(ctx, shiftId)
+	if shiftErr != nil {
+		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+	}
+	var contents []byte
+	tmpl, tmplErr := s.GetRosterHandoverTemplate(ctx, shift.RosterID)
+	if tmplErr != nil {
+		log.Warn().Err(tmplErr).Msg("failed to get roster handover template")
+		// TODO: use default template to create contents
+		contents = []byte("[]")
+	} else {
+		contents = tmpl.Contents
+	}
+	return s.createShiftHandover(ctx, shift.ID, contents)
 }
 
 func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UUID, contents []byte) (*ent.OncallUserShiftHandover, error) {
@@ -437,62 +443,62 @@ func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UU
 		Save(ctx)
 }
 
-func (s *OncallService) sendFallbackShiftHandover(ctx context.Context, shift *ent.OncallUserShift, ho *ent.OncallUserShiftHandover) error {
-	if !ho.SentAt.IsZero() { // already sent
-		return nil
-	}
-	contents := []rez.OncallShiftHandoverSection{
-		// TODO:
-		{Header: "Annotations", Kind: "annotations"},
-		{Header: "Incidents", Kind: "incidents"},
-	}
-	if sendErr := s.sendShiftHandoverMessage(ctx, shift, contents); sendErr != nil {
-		return fmt.Errorf("sending fallback handover: %w", sendErr)
-	}
+//
+//func (s *OncallService) sendFallbackShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
+//	if ho == nil || !ho.SentAt.IsZero() { // already sent
+//		return nil
+//	}
+//	if sendErr := s.sendShiftHandover(ctx, ho); sendErr != nil {
+//		return fmt.Errorf("sending fallback handover: %w", sendErr)
+//	}
+//
+//	updateErr := ho.Update().SetSentAt(time.Now()).Exec(ctx)
+//	if updateErr != nil {
+//		return fmt.Errorf("failed to update handover sent_at time: %w", updateErr)
+//	}
+//
+//	return nil
+//}
 
-	updateErr := ho.Update().SetSentAt(time.Now()).Exec(ctx)
-	if updateErr != nil {
-		return fmt.Errorf("failed to update handover sent_at time: %w", updateErr)
+func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error) {
+	curr, getErr := s.GetShiftHandover(ctx, update.ID)
+	if getErr != nil {
+		return nil, fmt.Errorf("failed to get handover: %w", getErr)
 	}
-
-	return nil
+	query := curr.Update()
+	if update.Contents != nil {
+		query.SetContents(update.Contents)
+	}
+	if update.Edges.PinnedAnnotations != nil {
+		currIds := mapset.NewSet[uuid.UUID]()
+		for _, a := range curr.Edges.PinnedAnnotations {
+			currIds.Add(a.ID)
+		}
+		updatedIds := mapset.NewSet[uuid.UUID]()
+		for _, a := range update.Edges.PinnedAnnotations {
+			updatedIds.Add(a.ID)
+		}
+		if addIds := updatedIds.Difference(currIds); addIds.Cardinality() > 0 {
+			query.AddPinnedAnnotationIDs(addIds.ToSlice()...)
+		}
+		if deleteIds := currIds.Difference(updatedIds); deleteIds.Cardinality() > 0 {
+			query.RemovePinnedAnnotationIDs(deleteIds.ToSlice()...)
+		}
+	}
+	return query.Save(ctx)
 }
 
-func (s *OncallService) SendShiftHandover(ctx context.Context, id uuid.UUID, contents []rez.OncallShiftHandoverSection) (*ent.OncallUserShiftHandover, error) {
-	shift, shiftErr := s.GetShiftByID(ctx, id)
-	if shiftErr != nil {
-		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallUserShiftHandover, error) {
+	handover, handoverErr := s.db.OncallUserShiftHandover.Get(ctx, handoverId)
+	if handover == nil || handoverErr != nil {
+		return nil, fmt.Errorf("failed to get handover: %w", handoverErr)
 	}
 
-	jsonContent, jsonErr := json.Marshal(contents)
-	if jsonErr != nil {
-		return nil, fmt.Errorf("failed to marshal contents: %w", jsonErr)
-	}
-
-	handover, handoverErr := s.GetShiftHandover(ctx, id)
-
-	// already sent
-	if handover != nil && !handover.SentAt.IsZero() {
+	if !handover.SentAt.IsZero() {
 		return handover, nil
 	}
 
-	var updateContentsErr error
-	if handoverErr != nil || handover == nil {
-		if !ent.IsNotFound(handoverErr) {
-			return nil, fmt.Errorf("failed to get handover: %w", handoverErr)
-		}
-		handover, updateContentsErr = s.createShiftHandover(ctx, id, jsonContent)
-	} else {
-		handover, updateContentsErr = handover.Update().
-			SetContents(jsonContent).
-			SetUpdatedAt(time.Now()).
-			Save(ctx)
-	}
-	if updateContentsErr != nil {
-		return nil, fmt.Errorf("failed to set handover contents: %w", updateContentsErr)
-	}
-
-	if sendErr := s.sendShiftHandoverMessage(ctx, shift, contents); sendErr != nil {
+	if sendErr := s.sendShiftHandover(ctx, handover); sendErr != nil {
 		return nil, fmt.Errorf("failed to send handover: %w", sendErr)
 	}
 
@@ -505,15 +511,25 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, id uuid.UUID, con
 	return handover, nil
 }
 
-func (s *OncallService) sendShiftHandoverMessage(ctx context.Context, shift *ent.OncallUserShift, content []rez.OncallShiftHandoverSection) error {
-	nextShift, nextShiftErr := s.GetNextShift(ctx, shift.ID)
+func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
+	shift, shiftErr := s.GetShiftByID(ctx, ho.ShiftID)
+	if shiftErr != nil {
+		return fmt.Errorf("failed to query shift: %w", shiftErr)
+	}
+
+	nextShift, nextShiftErr := s.GetNextShift(ctx, ho.ShiftID)
 	if nextShiftErr != nil {
 		return fmt.Errorf("failed to get next shift: %w", nextShiftErr)
 	}
 
+	var content []rez.OncallShiftHandoverSection
+	if jsonErr := json.Unmarshal(ho.Contents, &content); jsonErr != nil {
+		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
+	}
+
 	var includeAnnotations, includeIncidents bool
 	for _, sec := range content {
-		if sec.Kind != "annotations" {
+		if sec.Kind == "annotations" {
 			includeAnnotations = true
 		}
 		if sec.Kind == "incidents" {
@@ -524,10 +540,8 @@ func (s *OncallService) sendShiftHandoverMessage(ctx context.Context, shift *ent
 	var annotations []*ent.OncallEventAnnotation
 	if includeAnnotations {
 		var listErr error
-		annotations, listErr = s.ListEventAnnotations(ctx, rez.ListOncallEventAnnotationsParams{
-			ShiftID: shift.ID,
-			Pinned:  &includeAnnotations,
-		})
+		annotations, listErr = s.db.OncallEventAnnotation.Query().
+			Where(oncalleventannotation.HasHandoversWith(oncallusershifthandover.ID(ho.ID))).All(ctx)
 		if listErr != nil && !ent.IsNotFound(listErr) {
 			return fmt.Errorf("failed to query pinned annotations: %w", listErr)
 		}
@@ -565,12 +579,19 @@ func (s *OncallService) ListEventAnnotations(ctx context.Context, params rez.Lis
 		Limit(params.GetLimit()).
 		Offset(params.Offset)
 
+	rosterId := params.RosterID
 	if params.ShiftID != uuid.Nil {
-		query.Where(oncalleventannotation.HasShiftsWith(oncallusershift.ID(params.ShiftID)))
+		shift, shiftErr := s.GetShiftByID(ctx, params.ShiftID)
+		if shiftErr != nil {
+			return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+		}
+		rosterId = shift.RosterID
+		query.Where(oncalleventannotation.And(
+			oncalleventannotation.CreatedAtGT(shift.StartAt),
+			oncalleventannotation.CreatedAtLT(shift.EndAt)))
 	}
-
-	if params.Pinned != nil {
-		query.Where(oncalleventannotation.Pinned(*params.Pinned))
+	if rosterId != uuid.Nil {
+		query.Where(oncalleventannotation.HasRosterWith(oncallroster.ID(rosterId)))
 	}
 
 	annos, annosErr := query.All(params.GetQueryContext(ctx))
@@ -591,7 +612,7 @@ func (s *OncallService) CreateEventAnnotation(ctx context.Context, anno *ent.Onc
 		SetEventID(anno.EventID).
 		SetMinutesOccupied(anno.MinutesOccupied).
 		SetNotes(anno.Notes).
-		SetPinned(anno.Pinned).
+		SetRosterID(anno.RosterID).
 		OnConflictColumns(oncalleventannotation.FieldID).
 		UpdateNewValues()
 

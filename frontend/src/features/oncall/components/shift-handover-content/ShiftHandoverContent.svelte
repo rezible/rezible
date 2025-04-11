@@ -7,7 +7,6 @@
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import {
 		listIncidentsOptions,
-		listOncallShiftAnnotationsOptions,
 		type OncallShiftHandover,
 		type OncallShiftHandoverTemplate,
 	} from "$lib/api";
@@ -48,12 +47,7 @@
 		};
 	};
 
-	const annotationsQuery = createQuery(() => ({
-		...listOncallShiftAnnotationsOptions({ path: { id: shiftId } }),
-		enabled: !isSent,
-	}));
-	const annotations = $derived(annotationsQuery.data?.data ?? []);
-	const pinnedAnnotations = $derived(annotations.filter((ann) => ann.attributes.pinned));
+	const pinnedAnnotations = $derived(handover?.attributes.annotations ?? []);
 
 	const incidentsSectionPresent = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
 	const incidentsQuery = createQuery(() => ({

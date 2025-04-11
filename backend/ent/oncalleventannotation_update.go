@@ -13,8 +13,10 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallEventAnnotationUpdate is the builder for updating OncallEventAnnotation entities.
@@ -28,6 +30,34 @@ type OncallEventAnnotationUpdate struct {
 // Where appends a list predicates to the OncallEventAnnotationUpdate builder.
 func (oeau *OncallEventAnnotationUpdate) Where(ps ...predicate.OncallEventAnnotation) *OncallEventAnnotationUpdate {
 	oeau.mutation.Where(ps...)
+	return oeau
+}
+
+// SetRosterID sets the "roster_id" field.
+func (oeau *OncallEventAnnotationUpdate) SetRosterID(u uuid.UUID) *OncallEventAnnotationUpdate {
+	oeau.mutation.SetRosterID(u)
+	return oeau
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (oeau *OncallEventAnnotationUpdate) SetNillableRosterID(u *uuid.UUID) *OncallEventAnnotationUpdate {
+	if u != nil {
+		oeau.SetRosterID(*u)
+	}
+	return oeau
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (oeau *OncallEventAnnotationUpdate) SetCreatorID(u uuid.UUID) *OncallEventAnnotationUpdate {
+	oeau.mutation.SetCreatorID(u)
+	return oeau
+}
+
+// SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
+func (oeau *OncallEventAnnotationUpdate) SetNillableCreatorID(u *uuid.UUID) *OncallEventAnnotationUpdate {
+	if u != nil {
+		oeau.SetCreatorID(*u)
+	}
 	return oeau
 }
 
@@ -94,33 +124,29 @@ func (oeau *OncallEventAnnotationUpdate) SetNillableNotes(s *string) *OncallEven
 	return oeau
 }
 
-// SetPinned sets the "pinned" field.
-func (oeau *OncallEventAnnotationUpdate) SetPinned(b bool) *OncallEventAnnotationUpdate {
-	oeau.mutation.SetPinned(b)
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oeau *OncallEventAnnotationUpdate) SetRoster(o *OncallRoster) *OncallEventAnnotationUpdate {
+	return oeau.SetRosterID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the User entity.
+func (oeau *OncallEventAnnotationUpdate) SetCreator(u *User) *OncallEventAnnotationUpdate {
+	return oeau.SetCreatorID(u.ID)
+}
+
+// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+func (oeau *OncallEventAnnotationUpdate) AddHandoverIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdate {
+	oeau.mutation.AddHandoverIDs(ids...)
 	return oeau
 }
 
-// SetNillablePinned sets the "pinned" field if the given value is not nil.
-func (oeau *OncallEventAnnotationUpdate) SetNillablePinned(b *bool) *OncallEventAnnotationUpdate {
-	if b != nil {
-		oeau.SetPinned(*b)
-	}
-	return oeau
-}
-
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
-func (oeau *OncallEventAnnotationUpdate) AddShiftIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdate {
-	oeau.mutation.AddShiftIDs(ids...)
-	return oeau
-}
-
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (oeau *OncallEventAnnotationUpdate) AddShifts(o ...*OncallUserShift) *OncallEventAnnotationUpdate {
+// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
+func (oeau *OncallEventAnnotationUpdate) AddHandovers(o ...*OncallUserShiftHandover) *OncallEventAnnotationUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oeau.AddShiftIDs(ids...)
+	return oeau.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the OncallEventAnnotationMutation object of the builder.
@@ -128,25 +154,37 @@ func (oeau *OncallEventAnnotationUpdate) Mutation() *OncallEventAnnotationMutati
 	return oeau.mutation
 }
 
-// ClearShifts clears all "shifts" edges to the OncallUserShift entity.
-func (oeau *OncallEventAnnotationUpdate) ClearShifts() *OncallEventAnnotationUpdate {
-	oeau.mutation.ClearShifts()
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (oeau *OncallEventAnnotationUpdate) ClearRoster() *OncallEventAnnotationUpdate {
+	oeau.mutation.ClearRoster()
 	return oeau
 }
 
-// RemoveShiftIDs removes the "shifts" edge to OncallUserShift entities by IDs.
-func (oeau *OncallEventAnnotationUpdate) RemoveShiftIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdate {
-	oeau.mutation.RemoveShiftIDs(ids...)
+// ClearCreator clears the "creator" edge to the User entity.
+func (oeau *OncallEventAnnotationUpdate) ClearCreator() *OncallEventAnnotationUpdate {
+	oeau.mutation.ClearCreator()
 	return oeau
 }
 
-// RemoveShifts removes "shifts" edges to OncallUserShift entities.
-func (oeau *OncallEventAnnotationUpdate) RemoveShifts(o ...*OncallUserShift) *OncallEventAnnotationUpdate {
+// ClearHandovers clears all "handovers" edges to the OncallUserShiftHandover entity.
+func (oeau *OncallEventAnnotationUpdate) ClearHandovers() *OncallEventAnnotationUpdate {
+	oeau.mutation.ClearHandovers()
+	return oeau
+}
+
+// RemoveHandoverIDs removes the "handovers" edge to OncallUserShiftHandover entities by IDs.
+func (oeau *OncallEventAnnotationUpdate) RemoveHandoverIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdate {
+	oeau.mutation.RemoveHandoverIDs(ids...)
+	return oeau
+}
+
+// RemoveHandovers removes "handovers" edges to OncallUserShiftHandover entities.
+func (oeau *OncallEventAnnotationUpdate) RemoveHandovers(o ...*OncallUserShiftHandover) *OncallEventAnnotationUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oeau.RemoveShiftIDs(ids...)
+	return oeau.RemoveHandoverIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -176,6 +214,17 @@ func (oeau *OncallEventAnnotationUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oeau *OncallEventAnnotationUpdate) check() error {
+	if oeau.mutation.RosterCleared() && len(oeau.mutation.RosterIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEventAnnotation.roster"`)
+	}
+	if oeau.mutation.CreatorCleared() && len(oeau.mutation.CreatorIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEventAnnotation.creator"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oeau *OncallEventAnnotationUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallEventAnnotationUpdate {
 	oeau.modifiers = append(oeau.modifiers, modifiers...)
@@ -183,6 +232,9 @@ func (oeau *OncallEventAnnotationUpdate) Modify(modifiers ...func(u *sql.UpdateB
 }
 
 func (oeau *OncallEventAnnotationUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := oeau.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncalleventannotation.Table, oncalleventannotation.Columns, sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID))
 	if ps := oeau.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -206,31 +258,86 @@ func (oeau *OncallEventAnnotationUpdate) sqlSave(ctx context.Context) (n int, er
 	if value, ok := oeau.mutation.Notes(); ok {
 		_spec.SetField(oncalleventannotation.FieldNotes, field.TypeString, value)
 	}
-	if value, ok := oeau.mutation.Pinned(); ok {
-		_spec.SetField(oncalleventannotation.FieldPinned, field.TypeBool, value)
-	}
-	if oeau.mutation.ShiftsCleared() {
+	if oeau.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.RosterTable,
+			Columns: []string{oncalleventannotation.RosterColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oeau.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !oeau.mutation.ShiftsCleared() {
+	if nodes := oeau.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.RosterTable,
+			Columns: []string{oncalleventannotation.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeau.mutation.CreatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.CreatorTable,
+			Columns: []string{oncalleventannotation.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeau.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.CreatorTable,
+			Columns: []string{oncalleventannotation.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeau.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeau.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !oeau.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -238,15 +345,15 @@ func (oeau *OncallEventAnnotationUpdate) sqlSave(ctx context.Context) (n int, er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oeau.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := oeau.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -274,6 +381,34 @@ type OncallEventAnnotationUpdateOne struct {
 	hooks     []Hook
 	mutation  *OncallEventAnnotationMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetRosterID sets the "roster_id" field.
+func (oeauo *OncallEventAnnotationUpdateOne) SetRosterID(u uuid.UUID) *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.SetRosterID(u)
+	return oeauo
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (oeauo *OncallEventAnnotationUpdateOne) SetNillableRosterID(u *uuid.UUID) *OncallEventAnnotationUpdateOne {
+	if u != nil {
+		oeauo.SetRosterID(*u)
+	}
+	return oeauo
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (oeauo *OncallEventAnnotationUpdateOne) SetCreatorID(u uuid.UUID) *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.SetCreatorID(u)
+	return oeauo
+}
+
+// SetNillableCreatorID sets the "creator_id" field if the given value is not nil.
+func (oeauo *OncallEventAnnotationUpdateOne) SetNillableCreatorID(u *uuid.UUID) *OncallEventAnnotationUpdateOne {
+	if u != nil {
+		oeauo.SetCreatorID(*u)
+	}
+	return oeauo
 }
 
 // SetEventID sets the "event_id" field.
@@ -339,33 +474,29 @@ func (oeauo *OncallEventAnnotationUpdateOne) SetNillableNotes(s *string) *Oncall
 	return oeauo
 }
 
-// SetPinned sets the "pinned" field.
-func (oeauo *OncallEventAnnotationUpdateOne) SetPinned(b bool) *OncallEventAnnotationUpdateOne {
-	oeauo.mutation.SetPinned(b)
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oeauo *OncallEventAnnotationUpdateOne) SetRoster(o *OncallRoster) *OncallEventAnnotationUpdateOne {
+	return oeauo.SetRosterID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the User entity.
+func (oeauo *OncallEventAnnotationUpdateOne) SetCreator(u *User) *OncallEventAnnotationUpdateOne {
+	return oeauo.SetCreatorID(u.ID)
+}
+
+// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+func (oeauo *OncallEventAnnotationUpdateOne) AddHandoverIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.AddHandoverIDs(ids...)
 	return oeauo
 }
 
-// SetNillablePinned sets the "pinned" field if the given value is not nil.
-func (oeauo *OncallEventAnnotationUpdateOne) SetNillablePinned(b *bool) *OncallEventAnnotationUpdateOne {
-	if b != nil {
-		oeauo.SetPinned(*b)
-	}
-	return oeauo
-}
-
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
-func (oeauo *OncallEventAnnotationUpdateOne) AddShiftIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdateOne {
-	oeauo.mutation.AddShiftIDs(ids...)
-	return oeauo
-}
-
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (oeauo *OncallEventAnnotationUpdateOne) AddShifts(o ...*OncallUserShift) *OncallEventAnnotationUpdateOne {
+// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
+func (oeauo *OncallEventAnnotationUpdateOne) AddHandovers(o ...*OncallUserShiftHandover) *OncallEventAnnotationUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oeauo.AddShiftIDs(ids...)
+	return oeauo.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the OncallEventAnnotationMutation object of the builder.
@@ -373,25 +504,37 @@ func (oeauo *OncallEventAnnotationUpdateOne) Mutation() *OncallEventAnnotationMu
 	return oeauo.mutation
 }
 
-// ClearShifts clears all "shifts" edges to the OncallUserShift entity.
-func (oeauo *OncallEventAnnotationUpdateOne) ClearShifts() *OncallEventAnnotationUpdateOne {
-	oeauo.mutation.ClearShifts()
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (oeauo *OncallEventAnnotationUpdateOne) ClearRoster() *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.ClearRoster()
 	return oeauo
 }
 
-// RemoveShiftIDs removes the "shifts" edge to OncallUserShift entities by IDs.
-func (oeauo *OncallEventAnnotationUpdateOne) RemoveShiftIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdateOne {
-	oeauo.mutation.RemoveShiftIDs(ids...)
+// ClearCreator clears the "creator" edge to the User entity.
+func (oeauo *OncallEventAnnotationUpdateOne) ClearCreator() *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.ClearCreator()
 	return oeauo
 }
 
-// RemoveShifts removes "shifts" edges to OncallUserShift entities.
-func (oeauo *OncallEventAnnotationUpdateOne) RemoveShifts(o ...*OncallUserShift) *OncallEventAnnotationUpdateOne {
+// ClearHandovers clears all "handovers" edges to the OncallUserShiftHandover entity.
+func (oeauo *OncallEventAnnotationUpdateOne) ClearHandovers() *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.ClearHandovers()
+	return oeauo
+}
+
+// RemoveHandoverIDs removes the "handovers" edge to OncallUserShiftHandover entities by IDs.
+func (oeauo *OncallEventAnnotationUpdateOne) RemoveHandoverIDs(ids ...uuid.UUID) *OncallEventAnnotationUpdateOne {
+	oeauo.mutation.RemoveHandoverIDs(ids...)
+	return oeauo
+}
+
+// RemoveHandovers removes "handovers" edges to OncallUserShiftHandover entities.
+func (oeauo *OncallEventAnnotationUpdateOne) RemoveHandovers(o ...*OncallUserShiftHandover) *OncallEventAnnotationUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oeauo.RemoveShiftIDs(ids...)
+	return oeauo.RemoveHandoverIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallEventAnnotationUpdate builder.
@@ -434,6 +577,17 @@ func (oeauo *OncallEventAnnotationUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oeauo *OncallEventAnnotationUpdateOne) check() error {
+	if oeauo.mutation.RosterCleared() && len(oeauo.mutation.RosterIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEventAnnotation.roster"`)
+	}
+	if oeauo.mutation.CreatorCleared() && len(oeauo.mutation.CreatorIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEventAnnotation.creator"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oeauo *OncallEventAnnotationUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallEventAnnotationUpdateOne {
 	oeauo.modifiers = append(oeauo.modifiers, modifiers...)
@@ -441,6 +595,9 @@ func (oeauo *OncallEventAnnotationUpdateOne) Modify(modifiers ...func(u *sql.Upd
 }
 
 func (oeauo *OncallEventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *OncallEventAnnotation, err error) {
+	if err := oeauo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncalleventannotation.Table, oncalleventannotation.Columns, sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID))
 	id, ok := oeauo.mutation.ID()
 	if !ok {
@@ -481,31 +638,86 @@ func (oeauo *OncallEventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node
 	if value, ok := oeauo.mutation.Notes(); ok {
 		_spec.SetField(oncalleventannotation.FieldNotes, field.TypeString, value)
 	}
-	if value, ok := oeauo.mutation.Pinned(); ok {
-		_spec.SetField(oncalleventannotation.FieldPinned, field.TypeBool, value)
-	}
-	if oeauo.mutation.ShiftsCleared() {
+	if oeauo.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.RosterTable,
+			Columns: []string{oncalleventannotation.RosterColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oeauo.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !oeauo.mutation.ShiftsCleared() {
+	if nodes := oeauo.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.RosterTable,
+			Columns: []string{oncalleventannotation.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeauo.mutation.CreatorCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.CreatorTable,
+			Columns: []string{oncalleventannotation.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeauo.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.CreatorTable,
+			Columns: []string{oncalleventannotation.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeauo.mutation.HandoversCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeauo.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !oeauo.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -513,15 +725,15 @@ func (oeauo *OncallEventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oeauo.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := oeauo.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

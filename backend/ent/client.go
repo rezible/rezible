@@ -5125,15 +5125,47 @@ func (c *OncallEventAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *O
 	return obj
 }
 
-// QueryShifts queries the shifts edge of a OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) QueryShifts(oea *OncallEventAnnotation) *OncallUserShiftQuery {
-	query := (&OncallUserShiftClient{config: c.config}).Query()
+// QueryRoster queries the roster edge of a OncallEventAnnotation.
+func (c *OncallEventAnnotationClient) QueryRoster(oea *OncallEventAnnotation) *OncallRosterQuery {
+	query := (&OncallRosterClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := oea.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
-			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, oncalleventannotation.ShiftsTable, oncalleventannotation.ShiftsPrimaryKey...),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.RosterTable, oncalleventannotation.RosterColumn),
+		)
+		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryCreator queries the creator edge of a OncallEventAnnotation.
+func (c *OncallEventAnnotationClient) QueryCreator(oea *OncallEventAnnotation) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oea.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.CreatorTable, oncalleventannotation.CreatorColumn),
+		)
+		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHandovers queries the handovers edge of a OncallEventAnnotation.
+func (c *OncallEventAnnotationClient) QueryHandovers(oea *OncallEventAnnotation) *OncallUserShiftHandoverQuery {
+	query := (&OncallUserShiftHandoverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oea.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
+			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncalleventannotation.HandoversTable, oncalleventannotation.HandoversPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
 		return fromV, nil
@@ -5448,6 +5480,22 @@ func (c *OncallRosterClient) QueryHandoverTemplate(or *OncallRoster) *OncallHand
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEventAnnotations queries the event_annotations edge of a OncallRoster.
+func (c *OncallRosterClient) QueryEventAnnotations(or *OncallRoster) *OncallEventAnnotationQuery {
+	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.EventAnnotationsTable, oncallroster.EventAnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
 		return fromV, nil
@@ -6018,22 +6066,6 @@ func (c *OncallUserShiftClient) QueryCovers(ous *OncallUserShift) *OncallUserShi
 	return query
 }
 
-// QueryAnnotations queries the annotations edge of a OncallUserShift.
-func (c *OncallUserShiftClient) QueryAnnotations(ous *OncallUserShift) *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ous.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, id),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, oncallusershift.AnnotationsTable, oncallusershift.AnnotationsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(ous.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryHandover queries the handover edge of a OncallUserShift.
 func (c *OncallUserShiftClient) QueryHandover(ous *OncallUserShift) *OncallUserShiftHandoverQuery {
 	query := (&OncallUserShiftHandoverClient{config: c.config}).Query()
@@ -6357,6 +6389,22 @@ func (c *OncallUserShiftHandoverClient) QueryShift(oush *OncallUserShiftHandover
 			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
 			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallusershifthandover.ShiftTable, oncallusershifthandover.ShiftColumn),
+		)
+		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPinnedAnnotations queries the pinned_annotations edge of a OncallUserShiftHandover.
+func (c *OncallUserShiftHandoverClient) QueryPinnedAnnotations(oush *OncallUserShiftHandover) *OncallEventAnnotationQuery {
+	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oush.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
+			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, oncallusershifthandover.PinnedAnnotationsTable, oncallusershifthandover.PinnedAnnotationsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
 		return fromV, nil
@@ -9993,6 +10041,22 @@ func (c *UserClient) QueryOncallShiftCovers(u *User) *OncallUserShiftCoverQuery 
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftCoversTable, user.OncallShiftCoversColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOncallEventAnnotations queries the oncall_event_annotations edge of a User.
+func (c *UserClient) QueryOncallEventAnnotations(u *User) *OncallEventAnnotationQuery {
+	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallEventAnnotationsTable, user.OncallEventAnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { mdiPhoneAlert, mdiFire, mdiCheckCircle, mdiClockOutline, mdiAlertCircle, mdiCalendarClock, mdiSleepOff, mdiWeatherSunset, mdiFilter, mdiChatQuestion } from "@mdi/js";
-	import { Icon, Header, Badge, Tooltip, Button } from "svelte-ux";
-	import { settings } from "$lib/settings.svelte";
+	import { mdiPhoneAlert, mdiFire, mdiCalendarClock, mdiSleepOff, mdiWeatherSunset, mdiFilter, mdiChatQuestion } from "@mdi/js";
+	import { Icon, Header, Tooltip, Button } from "svelte-ux";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { format as formatDate } from "date-fns";
-	import type { OncallEvent, OncallShiftAnnotation } from "$lib/api";
+	import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
 
 	type Props = {
 		events: OncallEvent[];
-		annotations: OncallShiftAnnotation[];
+		annotations: OncallEventAnnotation[];
 	};
 	const { events, annotations }: Props = $props();
 
@@ -29,7 +28,7 @@
 	};
 
 	const annotationsMap = $derived.by(() => {
-		const m = new Map<string, OncallShiftAnnotation>();
+		const m = new Map<string, OncallEventAnnotation>();
 		annotations.forEach(a => {
 			if (!a.attributes.event) return;
 			m.set(a.attributes.event.id, a);

@@ -14,7 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallEventAnnotationCreate is the builder for creating a OncallEventAnnotation entity.
@@ -23,6 +25,18 @@ type OncallEventAnnotationCreate struct {
 	mutation *OncallEventAnnotationMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetRosterID sets the "roster_id" field.
+func (oeac *OncallEventAnnotationCreate) SetRosterID(u uuid.UUID) *OncallEventAnnotationCreate {
+	oeac.mutation.SetRosterID(u)
+	return oeac
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (oeac *OncallEventAnnotationCreate) SetCreatorID(u uuid.UUID) *OncallEventAnnotationCreate {
+	oeac.mutation.SetCreatorID(u)
+	return oeac
 }
 
 // SetEventID sets the "event_id" field.
@@ -57,12 +71,6 @@ func (oeac *OncallEventAnnotationCreate) SetNotes(s string) *OncallEventAnnotati
 	return oeac
 }
 
-// SetPinned sets the "pinned" field.
-func (oeac *OncallEventAnnotationCreate) SetPinned(b bool) *OncallEventAnnotationCreate {
-	oeac.mutation.SetPinned(b)
-	return oeac
-}
-
 // SetID sets the "id" field.
 func (oeac *OncallEventAnnotationCreate) SetID(u uuid.UUID) *OncallEventAnnotationCreate {
 	oeac.mutation.SetID(u)
@@ -77,19 +85,29 @@ func (oeac *OncallEventAnnotationCreate) SetNillableID(u *uuid.UUID) *OncallEven
 	return oeac
 }
 
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
-func (oeac *OncallEventAnnotationCreate) AddShiftIDs(ids ...uuid.UUID) *OncallEventAnnotationCreate {
-	oeac.mutation.AddShiftIDs(ids...)
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oeac *OncallEventAnnotationCreate) SetRoster(o *OncallRoster) *OncallEventAnnotationCreate {
+	return oeac.SetRosterID(o.ID)
+}
+
+// SetCreator sets the "creator" edge to the User entity.
+func (oeac *OncallEventAnnotationCreate) SetCreator(u *User) *OncallEventAnnotationCreate {
+	return oeac.SetCreatorID(u.ID)
+}
+
+// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+func (oeac *OncallEventAnnotationCreate) AddHandoverIDs(ids ...uuid.UUID) *OncallEventAnnotationCreate {
+	oeac.mutation.AddHandoverIDs(ids...)
 	return oeac
 }
 
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (oeac *OncallEventAnnotationCreate) AddShifts(o ...*OncallUserShift) *OncallEventAnnotationCreate {
+// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
+func (oeac *OncallEventAnnotationCreate) AddHandovers(o ...*OncallUserShiftHandover) *OncallEventAnnotationCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oeac.AddShiftIDs(ids...)
+	return oeac.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the OncallEventAnnotationMutation object of the builder.
@@ -139,6 +157,12 @@ func (oeac *OncallEventAnnotationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (oeac *OncallEventAnnotationCreate) check() error {
+	if _, ok := oeac.mutation.RosterID(); !ok {
+		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallEventAnnotation.roster_id"`)}
+	}
+	if _, ok := oeac.mutation.CreatorID(); !ok {
+		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "OncallEventAnnotation.creator_id"`)}
+	}
 	if _, ok := oeac.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallEventAnnotation.event_id"`)}
 	}
@@ -151,8 +175,11 @@ func (oeac *OncallEventAnnotationCreate) check() error {
 	if _, ok := oeac.mutation.Notes(); !ok {
 		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "OncallEventAnnotation.notes"`)}
 	}
-	if _, ok := oeac.mutation.Pinned(); !ok {
-		return &ValidationError{Name: "pinned", err: errors.New(`ent: missing required field "OncallEventAnnotation.pinned"`)}
+	if len(oeac.mutation.RosterIDs()) == 0 {
+		return &ValidationError{Name: "roster", err: errors.New(`ent: missing required edge "OncallEventAnnotation.roster"`)}
+	}
+	if len(oeac.mutation.CreatorIDs()) == 0 {
+		return &ValidationError{Name: "creator", err: errors.New(`ent: missing required edge "OncallEventAnnotation.creator"`)}
 	}
 	return nil
 }
@@ -206,19 +233,49 @@ func (oeac *OncallEventAnnotationCreate) createSpec() (*OncallEventAnnotation, *
 		_spec.SetField(oncalleventannotation.FieldNotes, field.TypeString, value)
 		_node.Notes = value
 	}
-	if value, ok := oeac.mutation.Pinned(); ok {
-		_spec.SetField(oncalleventannotation.FieldPinned, field.TypeBool, value)
-		_node.Pinned = value
+	if nodes := oeac.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.RosterTable,
+			Columns: []string{oncalleventannotation.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.RosterID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := oeac.mutation.ShiftsIDs(); len(nodes) > 0 {
+	if nodes := oeac.mutation.CreatorIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncalleventannotation.CreatorTable,
+			Columns: []string{oncalleventannotation.CreatorColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CreatorID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oeac.mutation.HandoversIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   oncalleventannotation.ShiftsTable,
-			Columns: oncalleventannotation.ShiftsPrimaryKey,
+			Table:   oncalleventannotation.HandoversTable,
+			Columns: oncalleventannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -233,7 +290,7 @@ func (oeac *OncallEventAnnotationCreate) createSpec() (*OncallEventAnnotation, *
 // of the `INSERT` statement. For example:
 //
 //	client.OncallEventAnnotation.Create().
-//		SetEventID(v).
+//		SetRosterID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -242,7 +299,7 @@ func (oeac *OncallEventAnnotationCreate) createSpec() (*OncallEventAnnotation, *
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallEventAnnotationUpsert) {
-//			SetEventID(v+v).
+//			SetRosterID(v+v).
 //		}).
 //		Exec(ctx)
 func (oeac *OncallEventAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *OncallEventAnnotationUpsertOne {
@@ -277,6 +334,30 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventAnnotationUpsert) SetRosterID(v uuid.UUID) *OncallEventAnnotationUpsert {
+	u.Set(oncalleventannotation.FieldRosterID, v)
+	return u
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsert) UpdateRosterID() *OncallEventAnnotationUpsert {
+	u.SetExcluded(oncalleventannotation.FieldRosterID)
+	return u
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (u *OncallEventAnnotationUpsert) SetCreatorID(v uuid.UUID) *OncallEventAnnotationUpsert {
+	u.Set(oncalleventannotation.FieldCreatorID, v)
+	return u
+}
+
+// UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsert) UpdateCreatorID() *OncallEventAnnotationUpsert {
+	u.SetExcluded(oncalleventannotation.FieldCreatorID)
+	return u
+}
 
 // SetEventID sets the "event_id" field.
 func (u *OncallEventAnnotationUpsert) SetEventID(v string) *OncallEventAnnotationUpsert {
@@ -332,18 +413,6 @@ func (u *OncallEventAnnotationUpsert) UpdateNotes() *OncallEventAnnotationUpsert
 	return u
 }
 
-// SetPinned sets the "pinned" field.
-func (u *OncallEventAnnotationUpsert) SetPinned(v bool) *OncallEventAnnotationUpsert {
-	u.Set(oncalleventannotation.FieldPinned, v)
-	return u
-}
-
-// UpdatePinned sets the "pinned" field to the value that was provided on create.
-func (u *OncallEventAnnotationUpsert) UpdatePinned() *OncallEventAnnotationUpsert {
-	u.SetExcluded(oncalleventannotation.FieldPinned)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -390,6 +459,34 @@ func (u *OncallEventAnnotationUpsertOne) Update(set func(*OncallEventAnnotationU
 		set(&OncallEventAnnotationUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventAnnotationUpsertOne) SetRosterID(v uuid.UUID) *OncallEventAnnotationUpsertOne {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsertOne) UpdateRosterID() *OncallEventAnnotationUpsertOne {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (u *OncallEventAnnotationUpsertOne) SetCreatorID(v uuid.UUID) *OncallEventAnnotationUpsertOne {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.SetCreatorID(v)
+	})
+}
+
+// UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsertOne) UpdateCreatorID() *OncallEventAnnotationUpsertOne {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.UpdateCreatorID()
+	})
 }
 
 // SetEventID sets the "event_id" field.
@@ -452,20 +549,6 @@ func (u *OncallEventAnnotationUpsertOne) SetNotes(v string) *OncallEventAnnotati
 func (u *OncallEventAnnotationUpsertOne) UpdateNotes() *OncallEventAnnotationUpsertOne {
 	return u.Update(func(s *OncallEventAnnotationUpsert) {
 		s.UpdateNotes()
-	})
-}
-
-// SetPinned sets the "pinned" field.
-func (u *OncallEventAnnotationUpsertOne) SetPinned(v bool) *OncallEventAnnotationUpsertOne {
-	return u.Update(func(s *OncallEventAnnotationUpsert) {
-		s.SetPinned(v)
-	})
-}
-
-// UpdatePinned sets the "pinned" field to the value that was provided on create.
-func (u *OncallEventAnnotationUpsertOne) UpdatePinned() *OncallEventAnnotationUpsertOne {
-	return u.Update(func(s *OncallEventAnnotationUpsert) {
-		s.UpdatePinned()
 	})
 }
 
@@ -605,7 +688,7 @@ func (oeacb *OncallEventAnnotationCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallEventAnnotationUpsert) {
-//			SetEventID(v+v).
+//			SetRosterID(v+v).
 //		}).
 //		Exec(ctx)
 func (oeacb *OncallEventAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallEventAnnotationUpsertBulk {
@@ -684,6 +767,34 @@ func (u *OncallEventAnnotationUpsertBulk) Update(set func(*OncallEventAnnotation
 	return u
 }
 
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventAnnotationUpsertBulk) SetRosterID(v uuid.UUID) *OncallEventAnnotationUpsertBulk {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsertBulk) UpdateRosterID() *OncallEventAnnotationUpsertBulk {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// SetCreatorID sets the "creator_id" field.
+func (u *OncallEventAnnotationUpsertBulk) SetCreatorID(v uuid.UUID) *OncallEventAnnotationUpsertBulk {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.SetCreatorID(v)
+	})
+}
+
+// UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
+func (u *OncallEventAnnotationUpsertBulk) UpdateCreatorID() *OncallEventAnnotationUpsertBulk {
+	return u.Update(func(s *OncallEventAnnotationUpsert) {
+		s.UpdateCreatorID()
+	})
+}
+
 // SetEventID sets the "event_id" field.
 func (u *OncallEventAnnotationUpsertBulk) SetEventID(v string) *OncallEventAnnotationUpsertBulk {
 	return u.Update(func(s *OncallEventAnnotationUpsert) {
@@ -744,20 +855,6 @@ func (u *OncallEventAnnotationUpsertBulk) SetNotes(v string) *OncallEventAnnotat
 func (u *OncallEventAnnotationUpsertBulk) UpdateNotes() *OncallEventAnnotationUpsertBulk {
 	return u.Update(func(s *OncallEventAnnotationUpsert) {
 		s.UpdateNotes()
-	})
-}
-
-// SetPinned sets the "pinned" field.
-func (u *OncallEventAnnotationUpsertBulk) SetPinned(v bool) *OncallEventAnnotationUpsertBulk {
-	return u.Update(func(s *OncallEventAnnotationUpsert) {
-		s.SetPinned(v)
-	})
-}
-
-// UpdatePinned sets the "pinned" field to the value that was provided on create.
-func (u *OncallEventAnnotationUpsertBulk) UpdatePinned() *OncallEventAnnotationUpsertBulk {
-	return u.Update(func(s *OncallEventAnnotationUpsert) {
-		s.UpdatePinned()
 	})
 }
 

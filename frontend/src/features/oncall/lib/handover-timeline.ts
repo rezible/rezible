@@ -1,4 +1,4 @@
-import type { OncallEvent, OncallShiftAnnotation } from "$lib/api";
+import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
 import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
 
 import { differenceInMinutes } from "date-fns";

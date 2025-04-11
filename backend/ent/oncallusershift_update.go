@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -136,21 +135,6 @@ func (ousu *OncallUserShiftUpdate) AddCovers(o ...*OncallUserShiftCover) *Oncall
 	return ousu.AddCoverIDs(ids...)
 }
 
-// AddAnnotationIDs adds the "annotations" edge to the OncallEventAnnotation entity by IDs.
-func (ousu *OncallUserShiftUpdate) AddAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftUpdate {
-	ousu.mutation.AddAnnotationIDs(ids...)
-	return ousu
-}
-
-// AddAnnotations adds the "annotations" edges to the OncallEventAnnotation entity.
-func (ousu *OncallUserShiftUpdate) AddAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousu.AddAnnotationIDs(ids...)
-}
-
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
 func (ousu *OncallUserShiftUpdate) SetHandoverID(id uuid.UUID) *OncallUserShiftUpdate {
 	ousu.mutation.SetHandoverID(id)
@@ -206,27 +190,6 @@ func (ousu *OncallUserShiftUpdate) RemoveCovers(o ...*OncallUserShiftCover) *Onc
 		ids[i] = o[i].ID
 	}
 	return ousu.RemoveCoverIDs(ids...)
-}
-
-// ClearAnnotations clears all "annotations" edges to the OncallEventAnnotation entity.
-func (ousu *OncallUserShiftUpdate) ClearAnnotations() *OncallUserShiftUpdate {
-	ousu.mutation.ClearAnnotations()
-	return ousu
-}
-
-// RemoveAnnotationIDs removes the "annotations" edge to OncallEventAnnotation entities by IDs.
-func (ousu *OncallUserShiftUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftUpdate {
-	ousu.mutation.RemoveAnnotationIDs(ids...)
-	return ousu
-}
-
-// RemoveAnnotations removes "annotations" edges to OncallEventAnnotation entities.
-func (ousu *OncallUserShiftUpdate) RemoveAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousu.RemoveAnnotationIDs(ids...)
 }
 
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
@@ -406,51 +369,6 @@ func (ousu *OncallUserShiftUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ousu.mutation.AnnotationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !ousu.mutation.AnnotationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousu.mutation.AnnotationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if ousu.mutation.HandoverCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -603,21 +521,6 @@ func (ousuo *OncallUserShiftUpdateOne) AddCovers(o ...*OncallUserShiftCover) *On
 	return ousuo.AddCoverIDs(ids...)
 }
 
-// AddAnnotationIDs adds the "annotations" edge to the OncallEventAnnotation entity by IDs.
-func (ousuo *OncallUserShiftUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftUpdateOne {
-	ousuo.mutation.AddAnnotationIDs(ids...)
-	return ousuo
-}
-
-// AddAnnotations adds the "annotations" edges to the OncallEventAnnotation entity.
-func (ousuo *OncallUserShiftUpdateOne) AddAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousuo.AddAnnotationIDs(ids...)
-}
-
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
 func (ousuo *OncallUserShiftUpdateOne) SetHandoverID(id uuid.UUID) *OncallUserShiftUpdateOne {
 	ousuo.mutation.SetHandoverID(id)
@@ -673,27 +576,6 @@ func (ousuo *OncallUserShiftUpdateOne) RemoveCovers(o ...*OncallUserShiftCover) 
 		ids[i] = o[i].ID
 	}
 	return ousuo.RemoveCoverIDs(ids...)
-}
-
-// ClearAnnotations clears all "annotations" edges to the OncallEventAnnotation entity.
-func (ousuo *OncallUserShiftUpdateOne) ClearAnnotations() *OncallUserShiftUpdateOne {
-	ousuo.mutation.ClearAnnotations()
-	return ousuo
-}
-
-// RemoveAnnotationIDs removes the "annotations" edge to OncallEventAnnotation entities by IDs.
-func (ousuo *OncallUserShiftUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftUpdateOne {
-	ousuo.mutation.RemoveAnnotationIDs(ids...)
-	return ousuo
-}
-
-// RemoveAnnotations removes "annotations" edges to OncallEventAnnotation entities.
-func (ousuo *OncallUserShiftUpdateOne) RemoveAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousuo.RemoveAnnotationIDs(ids...)
 }
 
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
@@ -896,51 +778,6 @@ func (ousuo *OncallUserShiftUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ousuo.mutation.AnnotationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !ousuo.mutation.AnnotationsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -446,6 +446,29 @@ func HasOncallShiftCoversWith(preds ...predicate.OncallUserShiftCover) predicate
 	})
 }
 
+// HasOncallEventAnnotations applies the HasEdge predicate on the "oncall_event_annotations" edge.
+func HasOncallEventAnnotations() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, OncallEventAnnotationsTable, OncallEventAnnotationsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOncallEventAnnotationsWith applies the HasEdge predicate on the "oncall_event_annotations" edge with a given conditions (other predicates).
+func HasOncallEventAnnotationsWith(preds ...predicate.OncallEventAnnotation) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newOncallEventAnnotationsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasIncidentRoleAssignments applies the HasEdge predicate on the "incident_role_assignments" edge.
 func HasIncidentRoleAssignments() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

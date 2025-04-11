@@ -14,7 +14,9 @@
 	let selected = $state<MenuOption<string> | undefined>();
 	let teamOptions: MenuOption[] = $state(teams);
 
-	const searchTeams = async () => {};
+	const searchTeams = async (val: string, options: MenuOption<string>[]): Promise<MenuOption<string>[]> => {
+		return options;
+	};
 </script>
 
 <div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">

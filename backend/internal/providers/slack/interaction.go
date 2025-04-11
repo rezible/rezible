@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"net/http"
@@ -119,40 +119,39 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
-func (p *ChatProvider) getUserActiveOncallShifts(ctx context.Context, id string) ([]*ent.OncallUserShift, error) {
+func (p *ChatProvider) getUserOncallRosters(ctx context.Context, id string) ([]*ent.OncallRoster, error) {
 	user, userErr := p.lookupUserFn(ctx, id)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to get user: %w", userErr)
 	}
 
-	shiftIsActive := oncallusershift.And(oncallusershift.EndAtGT(time.Now()), oncallusershift.StartAtLT(time.Now()))
-	shifts, shiftsErr := user.QueryOncallShifts().WithRoster().Where(shiftIsActive).All(ctx)
-	if shiftsErr != nil && !ent.IsNotFound(shiftsErr) {
-		return nil, fmt.Errorf("failed to get active oncall shifts: %w", shiftsErr)
+	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
+	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
+		return nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
 	}
 
-	return shifts, nil
+	return rosters, nil
 }
 
 type createAnnotationMetadata struct {
 	MsgId        string    `json:"mid"`
 	MsgTimestamp time.Time `json:"mts"`
-	ShiftId      uuid.UUID `json:"sid"`
+	RosterId     uuid.UUID `json:"rid"`
 	AnnotationId uuid.UUID `json:"aid"`
 }
 
 func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
-	shifts, shiftsErr := p.getUserActiveOncallShifts(ctx, ic.User.ID)
-	if shiftsErr != nil {
-		return nil, fmt.Errorf("failed to get oncall shifts: %w", shiftsErr)
+	rosters, rostersErr := p.getUserOncallRosters(ctx, ic.User.ID)
+	if rostersErr != nil {
+		return nil, fmt.Errorf("failed to get oncall rosters: %w", rostersErr)
 	}
 
-	if len(shifts) == 0 {
+	if len(rosters) == 0 {
 		return &slack.ModalViewRequest{
 			Type:  "modal",
-			Title: plainText("No Active Shift"),
+			Title: plainText("No Oncall Rosters"),
 			Blocks: slack.Blocks{BlockSet: []slack.Block{
-				slack.NewSectionBlock(plainText("You do not have a current oncall shift to annotate"), nil, nil),
+				slack.NewSectionBlock(plainText("You are not a member of any oncall rosters"), nil, nil),
 			}},
 			Close:      plainText("Close"),
 			CallbackID: createAnnotationConfirmCallbackID,
@@ -167,33 +166,15 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		MsgTimestamp: msgTime,
 	}
 
-	var shiftBlock slack.Block
+	var rosterBlock slack.Block
 
-	// TODO: allow selecting active shift
-	shift := shifts[0]
-	metadata.ShiftId = shift.ID
+	// TODO: allow selecting roster
+	roster := rosters[0]
 
-	roster := shift.Edges.Roster
-
-	annos, annosErr := shift.QueryAnnotations().All(ctx)
-	if annosErr != nil {
-		return nil, fmt.Errorf("failed to get annotations: %w", annosErr)
-	}
-	var curr *ent.OncallEventAnnotation
-	for _, anno := range annos {
-		if anno.EventID == msgId {
-			curr = anno
-			break
-		}
-	}
-	if curr != nil {
-		metadata.AnnotationId = curr.ID
-	}
-
-	shiftDetailsSection := slack.NewRichTextSection(
-		slack.NewRichTextSectionTextElement("Editing annotation for your active shift in ", nil),
+	rosterDetailsSection := slack.NewRichTextSection(
+		slack.NewRichTextSectionTextElement("Editing annotation for ", nil),
 		slack.NewRichTextSectionTextElement(roster.Name, &slack.RichTextSectionTextStyle{Bold: true}))
-	shiftBlock = slack.NewRichTextBlock("anno_shift", shiftDetailsSection)
+	rosterBlock = slack.NewRichTextBlock("anno_roster", rosterDetailsSection)
 	/*
 		if len(shifts) > 1 {
 			shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
@@ -214,6 +195,16 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		}
 	*/
 
+	metadata.RosterId = roster.ID
+
+	curr, annoErr := roster.QueryEventAnnotations().Where(oncalleventannotation.EventID(msgId)).Only(ctx)
+	if annoErr != nil && !ent.IsNotFound(annoErr) {
+		return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
+	}
+	if curr != nil {
+		metadata.AnnotationId = curr.ID
+	}
+
 	messageUserDetails := slack.NewRichTextSection(
 		slack.NewRichTextSectionUserElement(ic.Message.User, nil),
 		slack.NewRichTextSectionDateElement(msgTime.Unix(), " - {date_short_pretty} at {time}", nil, nil))
@@ -228,7 +219,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	}
 
 	blockSet := []slack.Block{
-		shiftBlock,
+		rosterBlock,
 		slack.NewDividerBlock(),
 		slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails),
 		slack.NewDividerBlock(),
@@ -259,7 +250,6 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 }
 
 func (p *ChatProvider) handleCreateAnnotationModalBlockAction(ctx context.Context, ic *slack.InteractionCallback) error {
-	// TODO: check selected active shift once selection from multiple is supported
 	return nil
 }
 
@@ -270,7 +260,7 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 	}
 
 	var notes string
-	shiftId := meta.ShiftId
+	rosterId := meta.RosterId
 
 	if state := ic.View.State; state != nil {
 		if notesInput, ok := state.Values["notes_input"]; ok {
@@ -279,14 +269,14 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 			}
 		}
 
-		if shiftId == uuid.Nil {
-			if optionsBlock, ok := state.Values["shift_select"]; ok {
-				if selectBlock, optOk := optionsBlock["shift_roster_select"]; optOk {
+		if rosterId == uuid.Nil {
+			if optionsBlock, ok := state.Values["roster_select"]; ok {
+				if selectBlock, optOk := optionsBlock["roster_select"]; optOk {
 					id, uuidErr := uuid.Parse(selectBlock.SelectedOption.Value)
 					if uuidErr != nil {
-						return fmt.Errorf("invalid shift id selected: %w", uuidErr)
+						return fmt.Errorf("invalid roster id selected: %w", uuidErr)
 					}
-					shiftId = id
+					rosterId = id
 				}
 			}
 		}
@@ -299,7 +289,7 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		// TODO: add more message details
 	}
 
-	return p.createAnnotationFn(ctx, shiftId, event, func(anno *ent.OncallEventAnnotation) {
+	return p.createAnnotationFn(ctx, rosterId, event, func(anno *ent.OncallEventAnnotation) {
 		if meta.AnnotationId != uuid.Nil {
 			anno.ID = meta.AnnotationId
 		}

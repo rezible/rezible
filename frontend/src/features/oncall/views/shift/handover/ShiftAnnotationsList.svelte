@@ -1,9 +1,10 @@
 <script lang="ts">
 	import {
-		listOncallShiftAnnotationsOptions,
-		updateOncallShiftAnnotationMutation,
-		type OncallShiftAnnotation,
-		type UpdateOncallShiftAnnotationRequestBody,
+		listOncallEventAnnotationsOptions,
+		updateOncallEventAnnotationMutation,
+		type OncallEventAnnotation,
+		type OncallShift,
+		type UpdateOncallEventAnnotationRequestBody,
 	} from "$lib/api";
 	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
 	import { Icon, Button, Header, Toggle, Menu, MenuItem } from "svelte-ux";
@@ -14,20 +15,22 @@
 	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {
-		shiftId: string;
+		shift: OncallShift;
 		editable: boolean;
+		pinnedAnnotations: OncallEventAnnotation[];
 	};
-	const { shiftId, editable }: Props = $props();
+	const { shift, editable, pinnedAnnotations }: Props = $props();
 
 	const queryClient = useQueryClient();
-	const annotationQueryOpts = $derived(listOncallShiftAnnotationsOptions({ path: { id: shiftId } }));
+	const annotationQueryOpts = $derived(listOncallEventAnnotationsOptions({ query: { shiftId: shift.id } }));
 	const annotationsQuery = createQuery(() => annotationQueryOpts);
 	const invalidateAnnotationsQuery = () => queryClient.invalidateQueries(annotationQueryOpts);
 
 	const annotations = $derived(annotationsQuery.data?.data ?? []);
 	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.event?.id)));
-	const pinnedAnnotations = $derived(annotations.filter((v) => v.attributes.pinned));
-	const unpinnedAnnotations = $derived(annotations.filter((v) => !v.attributes.pinned));
+	const pinnedAnnotationIds = $derived(new SvelteSet(pinnedAnnotations.map(a => a.id)));
+	const unpinnedAnnotations = $derived(annotations.filter(a => (!pinnedAnnotationIds.has(a.id))));
+	const unpinnedAnnotationIds = $derived(new SvelteSet(unpinnedAnnotations.map(a => a.id)));
 
 	let showEditorDialog = $state(false);
 
@@ -37,16 +40,16 @@
 	};
 
 	const updateAnnotationMut = createMutation(() => ({
-		...updateOncallShiftAnnotationMutation(),
+		...updateOncallEventAnnotationMutation(),
 		onSuccess: invalidateAnnotationsQuery,
 	}));
-	const togglePinned = (ann: OncallShiftAnnotation) => {
-		const body: UpdateOncallShiftAnnotationRequestBody = {
-			attributes: {
-				pinned: !ann.attributes.pinned,
-			},
-		};
-		updateAnnotationMut.mutate({ path: { id: ann.id }, body });
+	const togglePinned = (ann: OncallEventAnnotation) => {
+		// const body: UpdateOncallEventAnnotationRequestBody = {
+		// 	attributes: {
+		// 		pinned: !ann.attributes.pinned,
+		// 	},
+		// };
+		// updateAnnotationMut.mutate({ path: { id: ann.id }, body });
 	};
 </script>
 
@@ -68,7 +71,7 @@
 
 {#if editable}
 	<ShiftAnnotationEditorDialog
-		{shiftId}
+		{shift}
 		{annotatedEventIds}
 		bind:open={showEditorDialog}
 		onCreated={onAnnotationCreated}
@@ -103,9 +106,10 @@
 	{/if}
 </div>
 
-{#snippet annotationListItem(ann: OncallShiftAnnotation)}
+{#snippet annotationListItem(ann: OncallEventAnnotation)}
 	{@const event = ann.attributes.event}
 	{@const occurredAt = ann.attributes.event?.timestamp ?? ""}
+	{@const pinned = pinnedAnnotationIds.has(ann.id)}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
@@ -127,8 +131,8 @@
 					disabled={updateAnnotationMut.isPending}
 					loading={updateAnnotationMut.isPending &&
 						updateAnnotationMut.variables?.path.id === ann.id}
-					icon={ann.attributes.pinned ? mdiPin : mdiPinOutline}
-					color={ann.attributes.pinned ? "accent" : "default"}
+					icon={pinned ? mdiPin : mdiPinOutline}
+					color={pinned ? "accent" : "default"}
 					iconOnly
 					on:click={() => {
 						togglePinned(ann);

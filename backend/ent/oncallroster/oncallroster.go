@@ -34,6 +34,8 @@ const (
 	EdgeSchedules = "schedules"
 	// EdgeHandoverTemplate holds the string denoting the handover_template edge name in mutations.
 	EdgeHandoverTemplate = "handover_template"
+	// EdgeEventAnnotations holds the string denoting the event_annotations edge name in mutations.
+	EdgeEventAnnotations = "event_annotations"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
 	// EdgeShifts holds the string denoting the shifts edge name in mutations.
@@ -56,6 +58,13 @@ const (
 	HandoverTemplateInverseTable = "oncall_handover_templates"
 	// HandoverTemplateColumn is the table column denoting the handover_template relation/edge.
 	HandoverTemplateColumn = "handover_template_id"
+	// EventAnnotationsTable is the table that holds the event_annotations relation/edge.
+	EventAnnotationsTable = "oncall_event_annotations"
+	// EventAnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
+	EventAnnotationsInverseTable = "oncall_event_annotations"
+	// EventAnnotationsColumn is the table column denoting the event_annotations relation/edge.
+	EventAnnotationsColumn = "roster_id"
 	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
 	TeamsTable = "team_oncall_rosters"
 	// TeamsInverseTable is the table name for the Team entity.
@@ -187,6 +196,20 @@ func ByHandoverTemplateField(field string, opts ...sql.OrderTermOption) OrderOpt
 	}
 }
 
+// ByEventAnnotationsCount orders the results by event_annotations count.
+func ByEventAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventAnnotationsStep(), opts...)
+	}
+}
+
+// ByEventAnnotations orders the results by event_annotations terms.
+func ByEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByTeamsCount orders the results by teams count.
 func ByTeamsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -240,6 +263,13 @@ func newHandoverTemplateStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HandoverTemplateInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, HandoverTemplateTable, HandoverTemplateColumn),
+	)
+}
+func newEventAnnotationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventAnnotationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EventAnnotationsTable, EventAnnotationsColumn),
 	)
 }
 func newTeamsStep() *sqlgraph.Step {

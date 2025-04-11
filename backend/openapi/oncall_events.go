@@ -36,20 +36,17 @@ type (
 	}
 
 	OncallEventAnnotationAttributes struct {
-		ShiftId         uuid.UUID        `json:"shiftId"`
-		Pinned          bool             `json:"pinned"`
-		Notes           string           `json:"notes"`
+		RosterId        uuid.UUID        `json:"rosterId"`
+		Creator         *User            `json:"creator"`
 		Event           *rez.OncallEvent `json:"event"`
+		Notes           string           `json:"notes"`
 		MinutesOccupied int              `json:"minutesOccupied"`
 	}
 )
 
 func OncallEventAnnotationFromEnt(e *ent.OncallEventAnnotation) OncallEventAnnotation {
-	attr := OncallEventAnnotationAttributes{
-		Pinned:          e.Pinned,
-		Notes:           e.Notes,
-		MinutesOccupied: e.MinutesOccupied,
-	}
+	// TODO
+	attr := OncallEventAnnotationAttributes{}
 
 	return OncallEventAnnotation{
 		Id:         e.ID,
@@ -86,7 +83,11 @@ var ListOncallEventAnnotations = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListOncallEventAnnotationsRequest ListIdRequest
+type ListOncallEventAnnotationsRequest struct {
+	ListRequest
+	RosterId uuid.UUID `query:"rosterId"`
+	ShiftId  uuid.UUID `query:"shiftId"`
+}
 type ListOncallEventAnnotationsResponse PaginatedResponse[OncallEventAnnotation]
 
 var CreateOncallEventAnnotation = huma.Operation{
@@ -99,10 +100,11 @@ var CreateOncallEventAnnotation = huma.Operation{
 }
 
 type CreateOncallEventAnnotationRequestAttributes struct {
-	EventID         string `json:"eventId"`
-	MinutesOccupied int    `json:"minutesOccupied"`
-	Notes           string `json:"notes"`
-	Pinned          bool   `json:"pinned"`
+	EventId         string    `json:"eventId"`
+	RosterId        uuid.UUID `json:"rosterId"`
+	MinutesOccupied int       `json:"minutesOccupied"`
+	Notes           string    `json:"notes"`
+	Pinned          bool      `json:"pinned"`
 }
 type CreateOncallEventAnnotationRequest CreateIdRequest[CreateOncallEventAnnotationRequestAttributes]
 type CreateOncallEventAnnotationResponse ItemResponse[OncallEventAnnotation]

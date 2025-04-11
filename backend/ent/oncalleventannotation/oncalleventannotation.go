@@ -15,6 +15,10 @@ const (
 	Label = "oncall_event_annotation"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldRosterID holds the string denoting the roster_id field in the database.
+	FieldRosterID = "roster_id"
+	// FieldCreatorID holds the string denoting the creator_id field in the database.
+	FieldCreatorID = "creator_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -23,33 +27,50 @@ const (
 	FieldMinutesOccupied = "minutes_occupied"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
-	// FieldPinned holds the string denoting the pinned field in the database.
-	FieldPinned = "pinned"
-	// EdgeShifts holds the string denoting the shifts edge name in mutations.
-	EdgeShifts = "shifts"
+	// EdgeRoster holds the string denoting the roster edge name in mutations.
+	EdgeRoster = "roster"
+	// EdgeCreator holds the string denoting the creator edge name in mutations.
+	EdgeCreator = "creator"
+	// EdgeHandovers holds the string denoting the handovers edge name in mutations.
+	EdgeHandovers = "handovers"
 	// Table holds the table name of the oncalleventannotation in the database.
 	Table = "oncall_event_annotations"
-	// ShiftsTable is the table that holds the shifts relation/edge. The primary key declared below.
-	ShiftsTable = "oncall_user_shift_annotations"
-	// ShiftsInverseTable is the table name for the OncallUserShift entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershift" package.
-	ShiftsInverseTable = "oncall_user_shifts"
+	// RosterTable is the table that holds the roster relation/edge.
+	RosterTable = "oncall_event_annotations"
+	// RosterInverseTable is the table name for the OncallRoster entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
+	RosterInverseTable = "oncall_rosters"
+	// RosterColumn is the table column denoting the roster relation/edge.
+	RosterColumn = "roster_id"
+	// CreatorTable is the table that holds the creator relation/edge.
+	CreatorTable = "oncall_event_annotations"
+	// CreatorInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	CreatorInverseTable = "users"
+	// CreatorColumn is the table column denoting the creator relation/edge.
+	CreatorColumn = "creator_id"
+	// HandoversTable is the table that holds the handovers relation/edge. The primary key declared below.
+	HandoversTable = "oncall_user_shift_handover_pinned_annotations"
+	// HandoversInverseTable is the table name for the OncallUserShiftHandover entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallusershifthandover" package.
+	HandoversInverseTable = "oncall_user_shift_handovers"
 )
 
 // Columns holds all SQL columns for oncalleventannotation fields.
 var Columns = []string{
 	FieldID,
+	FieldRosterID,
+	FieldCreatorID,
 	FieldEventID,
 	FieldCreatedAt,
 	FieldMinutesOccupied,
 	FieldNotes,
-	FieldPinned,
 }
 
 var (
-	// ShiftsPrimaryKey and ShiftsColumn2 are the table columns denoting the
-	// primary key for the shifts relation (M2M).
-	ShiftsPrimaryKey = []string{"oncall_user_shift_id", "oncall_event_annotation_id"}
+	// HandoversPrimaryKey and HandoversColumn2 are the table columns denoting the
+	// primary key for the handovers relation (M2M).
+	HandoversPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_event_annotation_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -77,6 +98,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByRosterID orders the results by the roster_id field.
+func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
+}
+
+// ByCreatorID orders the results by the creator_id field.
+func ByCreatorID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatorID, opts...).ToFunc()
+}
+
 // ByEventID orders the results by the event_id field.
 func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
@@ -97,28 +128,51 @@ func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotes, opts...).ToFunc()
 }
 
-// ByPinned orders the results by the pinned field.
-func ByPinned(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPinned, opts...).ToFunc()
-}
-
-// ByShiftsCount orders the results by shifts count.
-func ByShiftsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByRosterField orders the results by roster field.
+func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newShiftsStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByShifts orders the results by shifts terms.
-func ByShifts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByCreatorField orders the results by creator field.
+func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newShiftsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newShiftsStep() *sqlgraph.Step {
+
+// ByHandoversCount orders the results by handovers count.
+func ByHandoversCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newHandoversStep(), opts...)
+	}
+}
+
+// ByHandovers orders the results by handovers terms.
+func ByHandovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHandoversStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ShiftsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, ShiftsTable, ShiftsPrimaryKey...),
+		sqlgraph.To(RosterInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
+	)
+}
+func newCreatorStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CreatorInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+	)
+}
+func newHandoversStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HandoversInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, HandoversTable, HandoversPrimaryKey...),
 	)
 }

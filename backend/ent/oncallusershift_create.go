@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -104,21 +103,6 @@ func (ousc *OncallUserShiftCreate) AddCovers(o ...*OncallUserShiftCover) *Oncall
 		ids[i] = o[i].ID
 	}
 	return ousc.AddCoverIDs(ids...)
-}
-
-// AddAnnotationIDs adds the "annotations" edge to the OncallEventAnnotation entity by IDs.
-func (ousc *OncallUserShiftCreate) AddAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftCreate {
-	ousc.mutation.AddAnnotationIDs(ids...)
-	return ousc
-}
-
-// AddAnnotations adds the "annotations" edges to the OncallEventAnnotation entity.
-func (ousc *OncallUserShiftCreate) AddAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousc.AddAnnotationIDs(ids...)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
@@ -292,22 +276,6 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ousc.mutation.AnnotationsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   oncallusershift.AnnotationsTable,
-			Columns: oncallusershift.AnnotationsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

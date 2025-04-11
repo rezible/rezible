@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -143,6 +144,21 @@ func (uc *UserCreate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserCrea
 		ids[i] = o[i].ID
 	}
 	return uc.AddOncallShiftCoverIDs(ids...)
+}
+
+// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
+func (uc *UserCreate) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddOncallEventAnnotationIDs(ids...)
+	return uc
+}
+
+// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
+func (uc *UserCreate) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uc.AddOncallEventAnnotationIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -393,6 +409,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

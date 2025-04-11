@@ -14,19 +14,23 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallEventAnnotationQuery is the builder for querying OncallEventAnnotation entities.
 type OncallEventAnnotationQuery struct {
 	config
-	ctx        *QueryContext
-	order      []oncalleventannotation.OrderOption
-	inters     []Interceptor
-	predicates []predicate.OncallEventAnnotation
-	withShifts *OncallUserShiftQuery
-	modifiers  []func(*sql.Selector)
+	ctx           *QueryContext
+	order         []oncalleventannotation.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.OncallEventAnnotation
+	withRoster    *OncallRosterQuery
+	withCreator   *UserQuery
+	withHandovers *OncallUserShiftHandoverQuery
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,9 +67,9 @@ func (oeaq *OncallEventAnnotationQuery) Order(o ...oncalleventannotation.OrderOp
 	return oeaq
 }
 
-// QueryShifts chains the current query on the "shifts" edge.
-func (oeaq *OncallEventAnnotationQuery) QueryShifts() *OncallUserShiftQuery {
-	query := (&OncallUserShiftClient{config: oeaq.config}).Query()
+// QueryRoster chains the current query on the "roster" edge.
+func (oeaq *OncallEventAnnotationQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: oeaq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oeaq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -76,8 +80,52 @@ func (oeaq *OncallEventAnnotationQuery) QueryShifts() *OncallUserShiftQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, selector),
-			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, oncalleventannotation.ShiftsTable, oncalleventannotation.ShiftsPrimaryKey...),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.RosterTable, oncalleventannotation.RosterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCreator chains the current query on the "creator" edge.
+func (oeaq *OncallEventAnnotationQuery) QueryCreator() *UserQuery {
+	query := (&UserClient{config: oeaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.CreatorTable, oncalleventannotation.CreatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHandovers chains the current query on the "handovers" edge.
+func (oeaq *OncallEventAnnotationQuery) QueryHandovers() *OncallUserShiftHandoverQuery {
+	query := (&OncallUserShiftHandoverClient{config: oeaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, selector),
+			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncalleventannotation.HandoversTable, oncalleventannotation.HandoversPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oeaq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,12 +320,14 @@ func (oeaq *OncallEventAnnotationQuery) Clone() *OncallEventAnnotationQuery {
 		return nil
 	}
 	return &OncallEventAnnotationQuery{
-		config:     oeaq.config,
-		ctx:        oeaq.ctx.Clone(),
-		order:      append([]oncalleventannotation.OrderOption{}, oeaq.order...),
-		inters:     append([]Interceptor{}, oeaq.inters...),
-		predicates: append([]predicate.OncallEventAnnotation{}, oeaq.predicates...),
-		withShifts: oeaq.withShifts.Clone(),
+		config:        oeaq.config,
+		ctx:           oeaq.ctx.Clone(),
+		order:         append([]oncalleventannotation.OrderOption{}, oeaq.order...),
+		inters:        append([]Interceptor{}, oeaq.inters...),
+		predicates:    append([]predicate.OncallEventAnnotation{}, oeaq.predicates...),
+		withRoster:    oeaq.withRoster.Clone(),
+		withCreator:   oeaq.withCreator.Clone(),
+		withHandovers: oeaq.withHandovers.Clone(),
 		// clone intermediate query.
 		sql:       oeaq.sql.Clone(),
 		path:      oeaq.path,
@@ -285,14 +335,36 @@ func (oeaq *OncallEventAnnotationQuery) Clone() *OncallEventAnnotationQuery {
 	}
 }
 
-// WithShifts tells the query-builder to eager-load the nodes that are connected to
-// the "shifts" edge. The optional arguments are used to configure the query builder of the edge.
-func (oeaq *OncallEventAnnotationQuery) WithShifts(opts ...func(*OncallUserShiftQuery)) *OncallEventAnnotationQuery {
-	query := (&OncallUserShiftClient{config: oeaq.config}).Query()
+// WithRoster tells the query-builder to eager-load the nodes that are connected to
+// the "roster" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeaq *OncallEventAnnotationQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallEventAnnotationQuery {
+	query := (&OncallRosterClient{config: oeaq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	oeaq.withShifts = query
+	oeaq.withRoster = query
+	return oeaq
+}
+
+// WithCreator tells the query-builder to eager-load the nodes that are connected to
+// the "creator" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeaq *OncallEventAnnotationQuery) WithCreator(opts ...func(*UserQuery)) *OncallEventAnnotationQuery {
+	query := (&UserClient{config: oeaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeaq.withCreator = query
+	return oeaq
+}
+
+// WithHandovers tells the query-builder to eager-load the nodes that are connected to
+// the "handovers" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeaq *OncallEventAnnotationQuery) WithHandovers(opts ...func(*OncallUserShiftHandoverQuery)) *OncallEventAnnotationQuery {
+	query := (&OncallUserShiftHandoverClient{config: oeaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeaq.withHandovers = query
 	return oeaq
 }
 
@@ -302,12 +374,12 @@ func (oeaq *OncallEventAnnotationQuery) WithShifts(opts ...func(*OncallUserShift
 // Example:
 //
 //	var v []struct {
-//		EventID string `json:"event_id,omitempty"`
+//		RosterID uuid.UUID `json:"roster_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallEventAnnotation.Query().
-//		GroupBy(oncalleventannotation.FieldEventID).
+//		GroupBy(oncalleventannotation.FieldRosterID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oeaq *OncallEventAnnotationQuery) GroupBy(field string, fields ...string) *OncallEventAnnotationGroupBy {
@@ -325,11 +397,11 @@ func (oeaq *OncallEventAnnotationQuery) GroupBy(field string, fields ...string) 
 // Example:
 //
 //	var v []struct {
-//		EventID string `json:"event_id,omitempty"`
+//		RosterID uuid.UUID `json:"roster_id,omitempty"`
 //	}
 //
 //	client.OncallEventAnnotation.Query().
-//		Select(oncalleventannotation.FieldEventID).
+//		Select(oncalleventannotation.FieldRosterID).
 //		Scan(ctx, &v)
 func (oeaq *OncallEventAnnotationQuery) Select(fields ...string) *OncallEventAnnotationSelect {
 	oeaq.ctx.Fields = append(oeaq.ctx.Fields, fields...)
@@ -374,8 +446,10 @@ func (oeaq *OncallEventAnnotationQuery) sqlAll(ctx context.Context, hooks ...que
 	var (
 		nodes       = []*OncallEventAnnotation{}
 		_spec       = oeaq.querySpec()
-		loadedTypes = [1]bool{
-			oeaq.withShifts != nil,
+		loadedTypes = [3]bool{
+			oeaq.withRoster != nil,
+			oeaq.withCreator != nil,
+			oeaq.withHandovers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -399,17 +473,89 @@ func (oeaq *OncallEventAnnotationQuery) sqlAll(ctx context.Context, hooks ...que
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := oeaq.withShifts; query != nil {
-		if err := oeaq.loadShifts(ctx, query, nodes,
-			func(n *OncallEventAnnotation) { n.Edges.Shifts = []*OncallUserShift{} },
-			func(n *OncallEventAnnotation, e *OncallUserShift) { n.Edges.Shifts = append(n.Edges.Shifts, e) }); err != nil {
+	if query := oeaq.withRoster; query != nil {
+		if err := oeaq.loadRoster(ctx, query, nodes, nil,
+			func(n *OncallEventAnnotation, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oeaq.withCreator; query != nil {
+		if err := oeaq.loadCreator(ctx, query, nodes, nil,
+			func(n *OncallEventAnnotation, e *User) { n.Edges.Creator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oeaq.withHandovers; query != nil {
+		if err := oeaq.loadHandovers(ctx, query, nodes,
+			func(n *OncallEventAnnotation) { n.Edges.Handovers = []*OncallUserShiftHandover{} },
+			func(n *OncallEventAnnotation, e *OncallUserShiftHandover) {
+				n.Edges.Handovers = append(n.Edges.Handovers, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (oeaq *OncallEventAnnotationQuery) loadShifts(ctx context.Context, query *OncallUserShiftQuery, nodes []*OncallEventAnnotation, init func(*OncallEventAnnotation), assign func(*OncallEventAnnotation, *OncallUserShift)) error {
+func (oeaq *OncallEventAnnotationQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallEventAnnotation, init func(*OncallEventAnnotation), assign func(*OncallEventAnnotation, *OncallRoster)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallEventAnnotation)
+	for i := range nodes {
+		fk := nodes[i].RosterID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(oncallroster.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "roster_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (oeaq *OncallEventAnnotationQuery) loadCreator(ctx context.Context, query *UserQuery, nodes []*OncallEventAnnotation, init func(*OncallEventAnnotation), assign func(*OncallEventAnnotation, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallEventAnnotation)
+	for i := range nodes {
+		fk := nodes[i].CreatorID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "creator_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (oeaq *OncallEventAnnotationQuery) loadHandovers(ctx context.Context, query *OncallUserShiftHandoverQuery, nodes []*OncallEventAnnotation, init func(*OncallEventAnnotation), assign func(*OncallEventAnnotation, *OncallUserShiftHandover)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*OncallEventAnnotation)
 	nids := make(map[uuid.UUID]map[*OncallEventAnnotation]struct{})
@@ -421,11 +567,11 @@ func (oeaq *OncallEventAnnotationQuery) loadShifts(ctx context.Context, query *O
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(oncalleventannotation.ShiftsTable)
-		s.Join(joinT).On(s.C(oncallusershift.FieldID), joinT.C(oncalleventannotation.ShiftsPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(oncalleventannotation.ShiftsPrimaryKey[1]), edgeIDs...))
+		joinT := sql.Table(oncalleventannotation.HandoversTable)
+		s.Join(joinT).On(s.C(oncallusershifthandover.FieldID), joinT.C(oncalleventannotation.HandoversPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(oncalleventannotation.HandoversPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(oncalleventannotation.ShiftsPrimaryKey[1]))
+		s.Select(joinT.C(oncalleventannotation.HandoversPrimaryKey[1]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -455,14 +601,14 @@ func (oeaq *OncallEventAnnotationQuery) loadShifts(ctx context.Context, query *O
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*OncallUserShift](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*OncallUserShiftHandover](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "shifts" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "handovers" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)
@@ -498,6 +644,12 @@ func (oeaq *OncallEventAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncalleventannotation.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oeaq.withRoster != nil {
+			_spec.Node.AddColumnOnce(oncalleventannotation.FieldRosterID)
+		}
+		if oeaq.withCreator != nil {
+			_spec.Node.AddColumnOnce(oncalleventannotation.FieldCreatorID)
 		}
 	}
 	if ps := oeaq.predicates; len(ps) > 0 {

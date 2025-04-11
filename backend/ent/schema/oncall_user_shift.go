@@ -33,7 +33,6 @@ func (OncallUserShift) Edges() []ent.Edge {
 			Unique().Required().Field("roster_id"),
 
 		edge.To("covers", OncallUserShiftCover.Type),
-		edge.To("annotations", OncallEventAnnotation.Type),
 		edge.To("handover", OncallUserShiftHandover.Type).Unique(),
 	}
 }

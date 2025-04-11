@@ -1,9 +1,10 @@
 <script lang="ts">
 	import {
 		listOncallEventsOptions,
-		createOncallShiftAnnotationMutation,
-		type CreateOncallShiftAnnotationRequestBody,
+		createOncallEventAnnotationMutation,
+		type CreateOncallEventAnnotationRequestBody,
 		type OncallEvent,
+		type OncallShift,
 	} from "$lib/api";
 	import { mdiFilter, mdiClose, mdiChatPlus, mdiHeadQuestion } from "@mdi/js";
 	import { Icon, Button, TextField, Header, Dialog } from "svelte-ux";
@@ -15,15 +16,15 @@
 	} from "$features/oncall/lib/handover-timeline";
 
 	type Props = {
-		shiftId: string;
+		shift: OncallShift;
 		annotatedEventIds: Set<string>;
 		open: boolean;
 		onCreated: VoidFunction;
 	};
-	let { shiftId, annotatedEventIds, open = $bindable(), onCreated }: Props = $props();
+	let { shift, annotatedEventIds, open = $bindable(), onCreated }: Props = $props();
 
 	const eventsQuery = createQuery(() => ({
-		...listOncallEventsOptions({ query: { shiftId } }),
+		...listOncallEventsOptions({ query: { shiftId: shift.id } }),
 		enabled: open,
 	}));
 	const events = $derived(eventsQuery.data?.data);
@@ -50,7 +51,7 @@
 	};
 
 	const createAnnotationMutation = createMutation(() => ({
-		...createOncallShiftAnnotationMutation(),
+		...createOncallEventAnnotationMutation(),
 		onSuccess: () => {
 			onCreated();
 			clearAnnotation();
@@ -60,15 +61,16 @@
 	const saveAnnotation = () => {
 		if (!draftAnnotation) return;
 		const d = $state.snapshot(draftAnnotation);
-		const body: CreateOncallShiftAnnotationRequestBody = {
+		const body: CreateOncallEventAnnotationRequestBody = {
 			attributes: {
 				eventId: d.event.id,
+				rosterId: shift.attributes.roster.id,
 				notes: d.notes,
 				pinned: d.pinned,
 				minutesOccupied: 0,
 			},
 		};
-		createAnnotationMutation.mutate({ path: { id: shiftId }, body });
+		// createAnnotationMutation.mutate({ path: { id: shiftId }, body });
 	};
 </script>
 

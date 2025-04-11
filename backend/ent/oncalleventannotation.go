@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallEventAnnotation is the model entity for the OncallEventAnnotation schema.
@@ -18,6 +20,10 @@ type OncallEventAnnotation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// RosterID holds the value of the "roster_id" field.
+	RosterID uuid.UUID `json:"roster_id,omitempty"`
+	// CreatorID holds the value of the "creator_id" field.
+	CreatorID uuid.UUID `json:"creator_id,omitempty"`
 	// EventID holds the value of the "event_id" field.
 	EventID string `json:"event_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -26,8 +32,6 @@ type OncallEventAnnotation struct {
 	MinutesOccupied int `json:"minutes_occupied,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
-	// Pinned holds the value of the "pinned" field.
-	Pinned bool `json:"pinned,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallEventAnnotationQuery when eager-loading is set.
 	Edges        OncallEventAnnotationEdges `json:"edges"`
@@ -36,20 +40,46 @@ type OncallEventAnnotation struct {
 
 // OncallEventAnnotationEdges holds the relations/edges for other nodes in the graph.
 type OncallEventAnnotationEdges struct {
-	// Shifts holds the value of the shifts edge.
-	Shifts []*OncallUserShift `json:"shifts,omitempty"`
+	// Roster holds the value of the roster edge.
+	Roster *OncallRoster `json:"roster,omitempty"`
+	// Creator holds the value of the creator edge.
+	Creator *User `json:"creator,omitempty"`
+	// Handovers holds the value of the handovers edge.
+	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
 }
 
-// ShiftsOrErr returns the Shifts value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallEventAnnotationEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
-	if e.loadedTypes[0] {
-		return e.Shifts, nil
+// RosterOrErr returns the Roster value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallEventAnnotationEdges) RosterOrErr() (*OncallRoster, error) {
+	if e.Roster != nil {
+		return e.Roster, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: oncallroster.Label}
 	}
-	return nil, &NotLoadedError{edge: "shifts"}
+	return nil, &NotLoadedError{edge: "roster"}
+}
+
+// CreatorOrErr returns the Creator value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallEventAnnotationEdges) CreatorOrErr() (*User, error) {
+	if e.Creator != nil {
+		return e.Creator, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "creator"}
+}
+
+// HandoversOrErr returns the Handovers value or an error if the edge
+// was not loaded in eager-loading.
+func (e OncallEventAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
+	if e.loadedTypes[2] {
+		return e.Handovers, nil
+	}
+	return nil, &NotLoadedError{edge: "handovers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -57,15 +87,13 @@ func (*OncallEventAnnotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncalleventannotation.FieldPinned:
-			values[i] = new(sql.NullBool)
 		case oncalleventannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
 		case oncalleventannotation.FieldEventID, oncalleventannotation.FieldNotes:
 			values[i] = new(sql.NullString)
 		case oncalleventannotation.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case oncalleventannotation.FieldID:
+		case oncalleventannotation.FieldID, oncalleventannotation.FieldRosterID, oncalleventannotation.FieldCreatorID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -87,6 +115,18 @@ func (oea *OncallEventAnnotation) assignValues(columns []string, values []any) e
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				oea.ID = *value
+			}
+		case oncalleventannotation.FieldRosterID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
+			} else if value != nil {
+				oea.RosterID = *value
+			}
+		case oncalleventannotation.FieldCreatorID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
+			} else if value != nil {
+				oea.CreatorID = *value
 			}
 		case oncalleventannotation.FieldEventID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -112,12 +152,6 @@ func (oea *OncallEventAnnotation) assignValues(columns []string, values []any) e
 			} else if value.Valid {
 				oea.Notes = value.String
 			}
-		case oncalleventannotation.FieldPinned:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field pinned", values[i])
-			} else if value.Valid {
-				oea.Pinned = value.Bool
-			}
 		default:
 			oea.selectValues.Set(columns[i], values[i])
 		}
@@ -131,9 +165,19 @@ func (oea *OncallEventAnnotation) Value(name string) (ent.Value, error) {
 	return oea.selectValues.Get(name)
 }
 
-// QueryShifts queries the "shifts" edge of the OncallEventAnnotation entity.
-func (oea *OncallEventAnnotation) QueryShifts() *OncallUserShiftQuery {
-	return NewOncallEventAnnotationClient(oea.config).QueryShifts(oea)
+// QueryRoster queries the "roster" edge of the OncallEventAnnotation entity.
+func (oea *OncallEventAnnotation) QueryRoster() *OncallRosterQuery {
+	return NewOncallEventAnnotationClient(oea.config).QueryRoster(oea)
+}
+
+// QueryCreator queries the "creator" edge of the OncallEventAnnotation entity.
+func (oea *OncallEventAnnotation) QueryCreator() *UserQuery {
+	return NewOncallEventAnnotationClient(oea.config).QueryCreator(oea)
+}
+
+// QueryHandovers queries the "handovers" edge of the OncallEventAnnotation entity.
+func (oea *OncallEventAnnotation) QueryHandovers() *OncallUserShiftHandoverQuery {
+	return NewOncallEventAnnotationClient(oea.config).QueryHandovers(oea)
 }
 
 // Update returns a builder for updating this OncallEventAnnotation.
@@ -159,6 +203,12 @@ func (oea *OncallEventAnnotation) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallEventAnnotation(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", oea.ID))
+	builder.WriteString("roster_id=")
+	builder.WriteString(fmt.Sprintf("%v", oea.RosterID))
+	builder.WriteString(", ")
+	builder.WriteString("creator_id=")
+	builder.WriteString(fmt.Sprintf("%v", oea.CreatorID))
+	builder.WriteString(", ")
 	builder.WriteString("event_id=")
 	builder.WriteString(oea.EventID)
 	builder.WriteString(", ")
@@ -170,9 +220,6 @@ func (oea *OncallEventAnnotation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(oea.Notes)
-	builder.WriteString(", ")
-	builder.WriteString("pinned=")
-	builder.WriteString(fmt.Sprintf("%v", oea.Pinned))
 	builder.WriteByte(')')
 	return builder.String()
 }

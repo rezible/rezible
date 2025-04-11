@@ -56,6 +56,16 @@ func IDLTE(id uuid.UUID) predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(sql.FieldLTE(FieldID, id))
 }
 
+// RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
+func RosterID(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldRosterID, v))
+}
+
+// CreatorID applies equality check predicate on the "creator_id" field. It's identical to CreatorIDEQ.
+func CreatorID(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldCreatorID, v))
+}
+
 // EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
 func EventID(v string) predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldEventID, v))
@@ -76,9 +86,44 @@ func Notes(v string) predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldNotes, v))
 }
 
-// Pinned applies equality check predicate on the "pinned" field. It's identical to PinnedEQ.
-func Pinned(v bool) predicate.OncallEventAnnotation {
-	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldPinned, v))
+// RosterIDEQ applies the EQ predicate on the "roster_id" field.
+func RosterIDEQ(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldRosterID, v))
+}
+
+// RosterIDNEQ applies the NEQ predicate on the "roster_id" field.
+func RosterIDNEQ(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldNEQ(FieldRosterID, v))
+}
+
+// RosterIDIn applies the In predicate on the "roster_id" field.
+func RosterIDIn(vs ...uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldIn(FieldRosterID, vs...))
+}
+
+// RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
+func RosterIDNotIn(vs ...uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldNotIn(FieldRosterID, vs...))
+}
+
+// CreatorIDEQ applies the EQ predicate on the "creator_id" field.
+func CreatorIDEQ(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldCreatorID, v))
+}
+
+// CreatorIDNEQ applies the NEQ predicate on the "creator_id" field.
+func CreatorIDNEQ(v uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldNEQ(FieldCreatorID, v))
+}
+
+// CreatorIDIn applies the In predicate on the "creator_id" field.
+func CreatorIDIn(vs ...uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldIn(FieldCreatorID, vs...))
+}
+
+// CreatorIDNotIn applies the NotIn predicate on the "creator_id" field.
+func CreatorIDNotIn(vs ...uuid.UUID) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(sql.FieldNotIn(FieldCreatorID, vs...))
 }
 
 // EventIDEQ applies the EQ predicate on the "event_id" field.
@@ -291,31 +336,67 @@ func NotesContainsFold(v string) predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(sql.FieldContainsFold(FieldNotes, v))
 }
 
-// PinnedEQ applies the EQ predicate on the "pinned" field.
-func PinnedEQ(v bool) predicate.OncallEventAnnotation {
-	return predicate.OncallEventAnnotation(sql.FieldEQ(FieldPinned, v))
-}
-
-// PinnedNEQ applies the NEQ predicate on the "pinned" field.
-func PinnedNEQ(v bool) predicate.OncallEventAnnotation {
-	return predicate.OncallEventAnnotation(sql.FieldNEQ(FieldPinned, v))
-}
-
-// HasShifts applies the HasEdge predicate on the "shifts" edge.
-func HasShifts() predicate.OncallEventAnnotation {
+// HasRoster applies the HasEdge predicate on the "roster" edge.
+func HasRoster() predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ShiftsTable, ShiftsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasShiftsWith applies the HasEdge predicate on the "shifts" edge with a given conditions (other predicates).
-func HasShiftsWith(preds ...predicate.OncallUserShift) predicate.OncallEventAnnotation {
+// HasRosterWith applies the HasEdge predicate on the "roster" edge with a given conditions (other predicates).
+func HasRosterWith(preds ...predicate.OncallRoster) predicate.OncallEventAnnotation {
 	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
-		step := newShiftsStep()
+		step := newRosterStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCreator applies the HasEdge predicate on the "creator" edge.
+func HasCreator() predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCreatorWith applies the HasEdge predicate on the "creator" edge with a given conditions (other predicates).
+func HasCreatorWith(preds ...predicate.User) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
+		step := newCreatorStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasHandovers applies the HasEdge predicate on the "handovers" edge.
+func HasHandovers() predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HandoversTable, HandoversPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHandoversWith applies the HasEdge predicate on the "handovers" edge with a given conditions (other predicates).
+func HasHandoversWith(preds ...predicate.OncallUserShiftHandover) predicate.OncallEventAnnotation {
+	return predicate.OncallEventAnnotation(func(s *sql.Selector) {
+		step := newHandoversStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

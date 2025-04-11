@@ -29,8 +29,6 @@ const (
 	EdgeRoster = "roster"
 	// EdgeCovers holds the string denoting the covers edge name in mutations.
 	EdgeCovers = "covers"
-	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
-	EdgeAnnotations = "annotations"
 	// EdgeHandover holds the string denoting the handover edge name in mutations.
 	EdgeHandover = "handover"
 	// Table holds the table name of the oncallusershift in the database.
@@ -56,11 +54,6 @@ const (
 	CoversInverseTable = "oncall_user_shift_covers"
 	// CoversColumn is the table column denoting the covers relation/edge.
 	CoversColumn = "shift_id"
-	// AnnotationsTable is the table that holds the annotations relation/edge. The primary key declared below.
-	AnnotationsTable = "oncall_user_shift_annotations"
-	// AnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
-	AnnotationsInverseTable = "oncall_event_annotations"
 	// HandoverTable is the table that holds the handover relation/edge.
 	HandoverTable = "oncall_user_shift_handovers"
 	// HandoverInverseTable is the table name for the OncallUserShiftHandover entity.
@@ -79,12 +72,6 @@ var Columns = []string{
 	FieldEndAt,
 	FieldProviderID,
 }
-
-var (
-	// AnnotationsPrimaryKey and AnnotationsColumn2 are the table columns denoting the
-	// primary key for the annotations relation (M2M).
-	AnnotationsPrimaryKey = []string{"oncall_user_shift_id", "oncall_event_annotation_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -162,20 +149,6 @@ func ByCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByAnnotationsCount orders the results by annotations count.
-func ByAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAnnotationsStep(), opts...)
-	}
-}
-
-// ByAnnotations orders the results by annotations terms.
-func ByAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByHandoverField orders the results by handover field.
 func ByHandoverField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -201,13 +174,6 @@ func newCoversStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CoversInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, CoversTable, CoversColumn),
-	)
-}
-func newAnnotationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnnotationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, AnnotationsTable, AnnotationsPrimaryKey...),
 	)
 }
 func newHandoverStep() *sqlgraph.Step {

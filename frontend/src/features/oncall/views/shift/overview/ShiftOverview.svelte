@@ -10,17 +10,17 @@
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import { getOncallShiftMetricsOptions, listOncallShiftAnnotationsOptions } from "$src/lib/api";
+	import { getOncallShiftMetricsOptions, listOncallEventAnnotationsOptions } from "$src/lib/api";
 
 	const shiftId = shiftIdCtx.get();
 
+	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
+	const comparison = $derived(comparisonQuery.data?.data);
+	
 	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
 	const metrics = $derived(metricsQuery.data?.data);
 
-	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
-	const comparison = $derived(comparisonQuery.data?.data);
-
-	const annotationsQuery = createQuery(() => listOncallShiftAnnotationsOptions({path: {id: shiftId}}));
+	const annotationsQuery = createQuery(() => listOncallEventAnnotationsOptions({query: {shiftId}}));
 	const annotations = $derived(annotationsQuery.data?.data);
 
 	let eventsFilter = $state<ShiftEventFilterKind>();

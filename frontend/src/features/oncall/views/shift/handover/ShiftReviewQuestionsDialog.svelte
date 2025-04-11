@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { createOncallShiftAnnotationMutation } from "$lib/api";
-	import { Icon, Button, TextField, Header, Dialog } from "svelte-ux";
-	import { createMutation, createQuery } from "@tanstack/svelte-query";
+	import { createOncallEventAnnotationMutation } from "$lib/api";
+	import { Header, Dialog } from "svelte-ux";
+	import { createMutation } from "@tanstack/svelte-query";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
 
@@ -11,7 +11,8 @@
 	let { shiftId }: Props = $props();
 
 	const reviewShiftMutation = createMutation(() => ({
-		...createOncallShiftAnnotationMutation(),
+		// TODO: use correct query
+		...createOncallEventAnnotationMutation(),
 		onSuccess: () => {
 			goto("/oncall/shifts/" + shiftId);
 		},

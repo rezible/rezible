@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -163,6 +164,21 @@ func (uu *UserUpdate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpda
 		ids[i] = o[i].ID
 	}
 	return uu.AddOncallShiftCoverIDs(ids...)
+}
+
+// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
+func (uu *UserUpdate) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddOncallEventAnnotationIDs(ids...)
+	return uu
+}
+
+// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
+func (uu *UserUpdate) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uu.AddOncallEventAnnotationIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -342,6 +358,27 @@ func (uu *UserUpdate) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *UserU
 		ids[i] = o[i].ID
 	}
 	return uu.RemoveOncallShiftCoverIDs(ids...)
+}
+
+// ClearOncallEventAnnotations clears all "oncall_event_annotations" edges to the OncallEventAnnotation entity.
+func (uu *UserUpdate) ClearOncallEventAnnotations() *UserUpdate {
+	uu.mutation.ClearOncallEventAnnotations()
+	return uu
+}
+
+// RemoveOncallEventAnnotationIDs removes the "oncall_event_annotations" edge to OncallEventAnnotation entities by IDs.
+func (uu *UserUpdate) RemoveOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveOncallEventAnnotationIDs(ids...)
+	return uu
+}
+
+// RemoveOncallEventAnnotations removes "oncall_event_annotations" edges to OncallEventAnnotation entities.
+func (uu *UserUpdate) RemoveOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uu.RemoveOncallEventAnnotationIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -703,6 +740,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.OncallEventAnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedOncallEventAnnotationsIDs(); len(nodes) > 0 && !uu.mutation.OncallEventAnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1130,6 +1212,21 @@ func (uuo *UserUpdateOne) AddOncallShiftCovers(o ...*OncallUserShiftCover) *User
 	return uuo.AddOncallShiftCoverIDs(ids...)
 }
 
+// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
+func (uuo *UserUpdateOne) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddOncallEventAnnotationIDs(ids...)
+	return uuo
+}
+
+// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
+func (uuo *UserUpdateOne) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uuo.AddOncallEventAnnotationIDs(ids...)
+}
+
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (uuo *UserUpdateOne) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddIncidentRoleAssignmentIDs(ids...)
@@ -1307,6 +1404,27 @@ func (uuo *UserUpdateOne) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *U
 		ids[i] = o[i].ID
 	}
 	return uuo.RemoveOncallShiftCoverIDs(ids...)
+}
+
+// ClearOncallEventAnnotations clears all "oncall_event_annotations" edges to the OncallEventAnnotation entity.
+func (uuo *UserUpdateOne) ClearOncallEventAnnotations() *UserUpdateOne {
+	uuo.mutation.ClearOncallEventAnnotations()
+	return uuo
+}
+
+// RemoveOncallEventAnnotationIDs removes the "oncall_event_annotations" edge to OncallEventAnnotation entities by IDs.
+func (uuo *UserUpdateOne) RemoveOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveOncallEventAnnotationIDs(ids...)
+	return uuo
+}
+
+// RemoveOncallEventAnnotations removes "oncall_event_annotations" edges to OncallEventAnnotation entities.
+func (uuo *UserUpdateOne) RemoveOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uuo.RemoveOncallEventAnnotationIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -1698,6 +1816,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.OncallEventAnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedOncallEventAnnotationsIDs(); len(nodes) > 0 && !uuo.mutation.OncallEventAnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.OncallEventAnnotationsTable,
+			Columns: []string{user.OncallEventAnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

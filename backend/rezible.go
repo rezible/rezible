@@ -198,7 +198,7 @@ type (
 		Annotations   []*ent.OncallEventAnnotation
 	}
 
-	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallEventAnnotation)) error
+	ChatCreateAnnotationFunc = func(ctx context.Context, rosterId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallEventAnnotation)) error
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
@@ -335,10 +335,6 @@ type (
 		FetchOncallersForRoster(ctx context.Context, rosterId string) ([]*ent.User, error)
 	}
 
-	listForShiftIdParams struct {
-		ListParams
-		ShiftID uuid.UUID
-	}
 	ListUserOncallParams = struct {
 		ListParams
 		UserID uuid.UUID
@@ -352,11 +348,10 @@ type (
 		Anchor time.Time
 		Window time.Duration
 	}
-	ListOncallShiftEventsParams      = listForShiftIdParams
 	ListOncallEventAnnotationsParams struct {
 		ListParams
-		ShiftID uuid.UUID
-		Pinned  *bool
+		RosterID uuid.UUID
+		ShiftID  uuid.UUID
 	}
 
 	OncallShiftHandoverSection struct {
@@ -386,9 +381,10 @@ type (
 		CreateEventAnnotation(ctx context.Context, anno *ent.OncallEventAnnotation) (*ent.OncallEventAnnotation, error)
 		DeleteEventAnnotation(ctx context.Context, id uuid.UUID) error
 
-		GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error)
-		GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error)
-		SendShiftHandover(ctx context.Context, id uuid.UUID, contents []OncallShiftHandoverSection) (*ent.OncallUserShiftHandover, error)
+		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error)
+		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
+		UpdateShiftHandover(ctx context.Context, handover *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error)
+		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
 	}
 )
 

@@ -45,13 +45,11 @@ type OncallUserShiftEdges struct {
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// Covers holds the value of the covers edge.
 	Covers []*OncallUserShiftCover `json:"covers,omitempty"`
-	// Annotations holds the value of the annotations edge.
-	Annotations []*OncallEventAnnotation `json:"annotations,omitempty"`
 	// Handover holds the value of the handover edge.
 	Handover *OncallUserShiftHandover `json:"handover,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -85,21 +83,12 @@ func (e OncallUserShiftEdges) CoversOrErr() ([]*OncallUserShiftCover, error) {
 	return nil, &NotLoadedError{edge: "covers"}
 }
 
-// AnnotationsOrErr returns the Annotations value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallUserShiftEdges) AnnotationsOrErr() ([]*OncallEventAnnotation, error) {
-	if e.loadedTypes[3] {
-		return e.Annotations, nil
-	}
-	return nil, &NotLoadedError{edge: "annotations"}
-}
-
 // HandoverOrErr returns the Handover value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e OncallUserShiftEdges) HandoverOrErr() (*OncallUserShiftHandover, error) {
 	if e.Handover != nil {
 		return e.Handover, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: oncallusershifthandover.Label}
 	}
 	return nil, &NotLoadedError{edge: "handover"}
@@ -193,11 +182,6 @@ func (ous *OncallUserShift) QueryRoster() *OncallRosterQuery {
 // QueryCovers queries the "covers" edge of the OncallUserShift entity.
 func (ous *OncallUserShift) QueryCovers() *OncallUserShiftCoverQuery {
 	return NewOncallUserShiftClient(ous.config).QueryCovers(ous)
-}
-
-// QueryAnnotations queries the "annotations" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryAnnotations() *OncallEventAnnotationQuery {
-	return NewOncallUserShiftClient(ous.config).QueryAnnotations(ous)
 }
 
 // QueryHandover queries the "handover" edge of the OncallUserShift entity.

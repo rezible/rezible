@@ -29,6 +29,8 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeOncallShiftCovers holds the string denoting the oncall_shift_covers edge name in mutations.
 	EdgeOncallShiftCovers = "oncall_shift_covers"
+	// EdgeOncallEventAnnotations holds the string denoting the oncall_event_annotations edge name in mutations.
+	EdgeOncallEventAnnotations = "oncall_event_annotations"
 	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
 	EdgeIncidentRoleAssignments = "incident_role_assignments"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
@@ -69,6 +71,13 @@ const (
 	OncallShiftCoversInverseTable = "oncall_user_shift_covers"
 	// OncallShiftCoversColumn is the table column denoting the oncall_shift_covers relation/edge.
 	OncallShiftCoversColumn = "user_id"
+	// OncallEventAnnotationsTable is the table that holds the oncall_event_annotations relation/edge.
+	OncallEventAnnotationsTable = "oncall_event_annotations"
+	// OncallEventAnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
+	OncallEventAnnotationsInverseTable = "oncall_event_annotations"
+	// OncallEventAnnotationsColumn is the table column denoting the oncall_event_annotations relation/edge.
+	OncallEventAnnotationsColumn = "creator_id"
 	// IncidentRoleAssignmentsTable is the table that holds the incident_role_assignments relation/edge.
 	IncidentRoleAssignmentsTable = "incident_role_assignments"
 	// IncidentRoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -227,6 +236,20 @@ func ByOncallShiftCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
+// ByOncallEventAnnotationsCount orders the results by oncall_event_annotations count.
+func ByOncallEventAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOncallEventAnnotationsStep(), opts...)
+	}
+}
+
+// ByOncallEventAnnotations orders the results by oncall_event_annotations terms.
+func ByOncallEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOncallEventAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByIncidentRoleAssignmentsCount orders the results by incident_role_assignments count.
 func ByIncidentRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -336,6 +359,13 @@ func newOncallShiftCoversStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OncallShiftCoversInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftCoversTable, OncallShiftCoversColumn),
+	)
+}
+func newOncallEventAnnotationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OncallEventAnnotationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OncallEventAnnotationsTable, OncallEventAnnotationsColumn),
 	)
 }
 func newIncidentRoleAssignmentsStep() *sqlgraph.Step {

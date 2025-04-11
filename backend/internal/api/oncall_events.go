@@ -69,13 +69,13 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 	var resp oapi.ListOncallEventsResponse
 
 	eventsStart := time.Now().Add(time.Hour * -24 * 7)
-	if request.ShiftId != uuid.Nil {
-		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
-		if shiftErr != nil {
-			return nil, detailError("failed to query shift", shiftErr)
-		}
-		eventsStart = shift.StartAt
-	}
+	//if request.RosterId != uuid.Nil {
+	//	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
+	//	if shiftErr != nil {
+	//		return nil, detailError("failed to query shift", shiftErr)
+	//	}
+	//	eventsStart = shift.StartAt
+	//}
 
 	resp.Body.Data = makeFakeOncallEvents(eventsStart)
 
@@ -87,7 +87,8 @@ func (h *oncallEventsHandler) ListOncallEventAnnotations(ctx context.Context, re
 
 	annos, annosErr := h.oncall.ListEventAnnotations(ctx, rez.ListOncallEventAnnotationsParams{
 		ListParams: request.ListParams(),
-		ShiftID:    request.Id,
+		RosterID:   request.RosterId,
+		ShiftID:    request.ShiftId,
 	})
 	if annosErr != nil {
 		return nil, detailError("query shift annotations", annosErr)
@@ -107,9 +108,9 @@ func (h *oncallEventsHandler) CreateOncallEventAnnotation(ctx context.Context, r
 	attr := request.Body.Attributes
 
 	anno := &ent.OncallEventAnnotation{
-		EventID:         attr.EventID,
+		EventID:         attr.EventId,
+		RosterID:        attr.RosterId,
 		MinutesOccupied: attr.MinutesOccupied,
-		Pinned:          attr.Pinned,
 		Notes:           attr.Notes,
 	}
 
@@ -134,8 +135,7 @@ func (h *oncallEventsHandler) UpdateOncallEventAnnotation(ctx context.Context, r
 	attr := request.Body.Attributes
 	update := anno.Update().
 		SetNillableNotes(attr.Notes).
-		SetNillableMinutesOccupied(attr.MinutesOccupied).
-		SetNillablePinned(attr.Pinned)
+		SetNillableMinutesOccupied(attr.MinutesOccupied)
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {

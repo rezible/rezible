@@ -17,17 +17,21 @@ type OncallEventAnnotation struct {
 func (OncallEventAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("roster_id", uuid.UUID{}),
+		field.UUID("creator_id", uuid.UUID{}),
 		field.String("event_id"),
 		field.Time("created_at").Default(time.Now),
 		field.Int("minutes_occupied"),
 		field.Text("notes"),
-		field.Bool("pinned"),
 	}
 }
 
 // Edges of the OncallEventAnnotation.
 func (OncallEventAnnotation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("shifts", OncallUserShift.Type).Ref("annotations"),
+		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),
+		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),
+
+		edge.From("handovers", OncallUserShiftHandover.Type).Ref("pinned_annotations"),
 	}
 }
