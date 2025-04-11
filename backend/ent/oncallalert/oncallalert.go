@@ -19,19 +19,10 @@ const (
 	FieldName = "name"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
-	// EdgeInstances holds the string denoting the instances edge name in mutations.
-	EdgeInstances = "instances"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
 	// Table holds the table name of the oncallalert in the database.
 	Table = "oncall_alerts"
-	// InstancesTable is the table that holds the instances relation/edge.
-	InstancesTable = "oncall_alert_instances"
-	// InstancesInverseTable is the table name for the OncallAlertInstance entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallalertinstance" package.
-	InstancesInverseTable = "oncall_alert_instances"
-	// InstancesColumn is the table column denoting the instances relation/edge.
-	InstancesColumn = "alert_id"
 	// RosterTable is the table that holds the roster relation/edge.
 	RosterTable = "oncall_alerts"
 	// RosterInverseTable is the table name for the OncallRoster entity.
@@ -87,32 +78,11 @@ func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimestamp, opts...).ToFunc()
 }
 
-// ByInstancesCount orders the results by instances count.
-func ByInstancesCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newInstancesStep(), opts...)
-	}
-}
-
-// ByInstances orders the results by instances terms.
-func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByRosterField orders the results by roster field.
 func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
 	}
-}
-func newInstancesStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(InstancesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
-	)
 }
 func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

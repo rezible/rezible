@@ -33,8 +33,6 @@ func (User) Edges() []ent.Edge {
 		edge.From("oncall_shifts", OncallUserShift.Type).Ref("user"),
 		edge.From("oncall_shift_covers", OncallUserShiftCover.Type).Ref("user"),
 
-		edge.From("alerts_received", OncallAlertInstance.Type).Ref("receiver"),
-
 		edge.From("incident_role_assignments", IncidentRoleAssignment.Type).Ref("user"),
 		edge.To("incident_debriefs", IncidentDebrief.Type),
 

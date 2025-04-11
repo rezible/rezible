@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -14,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -22,13 +20,12 @@ import (
 // OncallAlertQuery is the builder for querying OncallAlert entities.
 type OncallAlertQuery struct {
 	config
-	ctx           *QueryContext
-	order         []oncallalert.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.OncallAlert
-	withInstances *OncallAlertInstanceQuery
-	withRoster    *OncallRosterQuery
-	modifiers     []func(*sql.Selector)
+	ctx        *QueryContext
+	order      []oncallalert.OrderOption
+	inters     []Interceptor
+	predicates []predicate.OncallAlert
+	withRoster *OncallRosterQuery
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,28 +60,6 @@ func (oaq *OncallAlertQuery) Unique(unique bool) *OncallAlertQuery {
 func (oaq *OncallAlertQuery) Order(o ...oncallalert.OrderOption) *OncallAlertQuery {
 	oaq.order = append(oaq.order, o...)
 	return oaq
-}
-
-// QueryInstances chains the current query on the "instances" edge.
-func (oaq *OncallAlertQuery) QueryInstances() *OncallAlertInstanceQuery {
-	query := (&OncallAlertInstanceClient{config: oaq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oaq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := oaq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallalert.Table, oncallalert.FieldID, selector),
-			sqlgraph.To(oncallalertinstance.Table, oncallalertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, oncallalert.InstancesTable, oncallalert.InstancesColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
@@ -296,29 +271,17 @@ func (oaq *OncallAlertQuery) Clone() *OncallAlertQuery {
 		return nil
 	}
 	return &OncallAlertQuery{
-		config:        oaq.config,
-		ctx:           oaq.ctx.Clone(),
-		order:         append([]oncallalert.OrderOption{}, oaq.order...),
-		inters:        append([]Interceptor{}, oaq.inters...),
-		predicates:    append([]predicate.OncallAlert{}, oaq.predicates...),
-		withInstances: oaq.withInstances.Clone(),
-		withRoster:    oaq.withRoster.Clone(),
+		config:     oaq.config,
+		ctx:        oaq.ctx.Clone(),
+		order:      append([]oncallalert.OrderOption{}, oaq.order...),
+		inters:     append([]Interceptor{}, oaq.inters...),
+		predicates: append([]predicate.OncallAlert{}, oaq.predicates...),
+		withRoster: oaq.withRoster.Clone(),
 		// clone intermediate query.
 		sql:       oaq.sql.Clone(),
 		path:      oaq.path,
 		modifiers: append([]func(*sql.Selector){}, oaq.modifiers...),
 	}
-}
-
-// WithInstances tells the query-builder to eager-load the nodes that are connected to
-// the "instances" edge. The optional arguments are used to configure the query builder of the edge.
-func (oaq *OncallAlertQuery) WithInstances(opts ...func(*OncallAlertInstanceQuery)) *OncallAlertQuery {
-	query := (&OncallAlertInstanceClient{config: oaq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	oaq.withInstances = query
-	return oaq
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
@@ -410,8 +373,7 @@ func (oaq *OncallAlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*OncallAlert{}
 		_spec       = oaq.querySpec()
-		loadedTypes = [2]bool{
-			oaq.withInstances != nil,
+		loadedTypes = [1]bool{
 			oaq.withRoster != nil,
 		}
 	)
@@ -436,13 +398,6 @@ func (oaq *OncallAlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := oaq.withInstances; query != nil {
-		if err := oaq.loadInstances(ctx, query, nodes,
-			func(n *OncallAlert) { n.Edges.Instances = []*OncallAlertInstance{} },
-			func(n *OncallAlert, e *OncallAlertInstance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
-			return nil, err
-		}
-	}
 	if query := oaq.withRoster; query != nil {
 		if err := oaq.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallAlert, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
@@ -452,36 +407,6 @@ func (oaq *OncallAlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
-func (oaq *OncallAlertQuery) loadInstances(ctx context.Context, query *OncallAlertInstanceQuery, nodes []*OncallAlert, init func(*OncallAlert), assign func(*OncallAlert, *OncallAlertInstance)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*OncallAlert)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallalertinstance.FieldAlertID)
-	}
-	query.Where(predicate.OncallAlertInstance(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(oncallalert.InstancesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AlertID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "alert_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (oaq *OncallAlertQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallAlert, init func(*OncallAlert), assign func(*OncallAlert, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallAlert)

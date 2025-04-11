@@ -569,33 +569,20 @@ var (
 			},
 		},
 	}
-	// OncallAlertInstancesColumns holds the columns for the "oncall_alert_instances" table.
-	OncallAlertInstancesColumns = []*schema.Column{
+	// OncallEventAnnotationsColumns holds the columns for the "oncall_event_annotations" table.
+	OncallEventAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "event_id", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
-		{Name: "acked_at", Type: field.TypeTime},
-		{Name: "alert_id", Type: field.TypeUUID},
-		{Name: "receiver_user_id", Type: field.TypeUUID},
+		{Name: "minutes_occupied", Type: field.TypeInt},
+		{Name: "notes", Type: field.TypeString, Size: 2147483647},
+		{Name: "pinned", Type: field.TypeBool},
 	}
-	// OncallAlertInstancesTable holds the schema information for the "oncall_alert_instances" table.
-	OncallAlertInstancesTable = &schema.Table{
-		Name:       "oncall_alert_instances",
-		Columns:    OncallAlertInstancesColumns,
-		PrimaryKey: []*schema.Column{OncallAlertInstancesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "oncall_alert_instances_oncall_alerts_instances",
-				Columns:    []*schema.Column{OncallAlertInstancesColumns[3]},
-				RefColumns: []*schema.Column{OncallAlertsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "oncall_alert_instances_users_receiver",
-				Columns:    []*schema.Column{OncallAlertInstancesColumns[4]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
+	// OncallEventAnnotationsTable holds the schema information for the "oncall_event_annotations" table.
+	OncallEventAnnotationsTable = &schema.Table{
+		Name:       "oncall_event_annotations",
+		Columns:    OncallEventAnnotationsColumns,
+		PrimaryKey: []*schema.Column{OncallEventAnnotationsColumns[0]},
 	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
@@ -712,30 +699,6 @@ var (
 				Symbol:     "oncall_user_shifts_oncall_rosters_roster",
 				Columns:    []*schema.Column{OncallUserShiftsColumns[5]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
-	// OncallUserShiftAnnotationsColumns holds the columns for the "oncall_user_shift_annotations" table.
-	OncallUserShiftAnnotationsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString},
-		{Name: "minutes_occupied", Type: field.TypeInt},
-		{Name: "notes", Type: field.TypeString, Size: 2147483647},
-		{Name: "pinned", Type: field.TypeBool},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "shift_id", Type: field.TypeUUID},
-	}
-	// OncallUserShiftAnnotationsTable holds the schema information for the "oncall_user_shift_annotations" table.
-	OncallUserShiftAnnotationsTable = &schema.Table{
-		Name:       "oncall_user_shift_annotations",
-		Columns:    OncallUserShiftAnnotationsColumns,
-		PrimaryKey: []*schema.Column{OncallUserShiftAnnotationsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "oncall_user_shift_annotations_oncall_user_shifts_annotations",
-				Columns:    []*schema.Column{OncallUserShiftAnnotationsColumns[6]},
-				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -1551,6 +1514,31 @@ var (
 			},
 		},
 	}
+	// OncallUserShiftAnnotationsColumns holds the columns for the "oncall_user_shift_annotations" table.
+	OncallUserShiftAnnotationsColumns = []*schema.Column{
+		{Name: "oncall_user_shift_id", Type: field.TypeUUID},
+		{Name: "oncall_event_annotation_id", Type: field.TypeUUID},
+	}
+	// OncallUserShiftAnnotationsTable holds the schema information for the "oncall_user_shift_annotations" table.
+	OncallUserShiftAnnotationsTable = &schema.Table{
+		Name:       "oncall_user_shift_annotations",
+		Columns:    OncallUserShiftAnnotationsColumns,
+		PrimaryKey: []*schema.Column{OncallUserShiftAnnotationsColumns[0], OncallUserShiftAnnotationsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_user_shift_annotations_oncall_user_shift_id",
+				Columns:    []*schema.Column{OncallUserShiftAnnotationsColumns[0]},
+				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "oncall_user_shift_annotations_oncall_event_annotation_id",
+				Columns:    []*schema.Column{OncallUserShiftAnnotationsColumns[1]},
+				RefColumns: []*schema.Column{OncallEventAnnotationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TeamUsersColumns holds the columns for the "team_users" table.
 	TeamUsersColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeUUID},
@@ -1628,13 +1616,12 @@ var (
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		OncallAlertsTable,
-		OncallAlertInstancesTable,
+		OncallEventAnnotationsTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallSchedulesTable,
 		OncallScheduleParticipantsTable,
 		OncallUserShiftsTable,
-		OncallUserShiftAnnotationsTable,
 		OncallUserShiftCoversTable,
 		OncallUserShiftHandoversTable,
 		ProviderConfigsTable,
@@ -1667,6 +1654,7 @@ var (
 		IncidentDebriefQuestionIncidentTagsTable,
 		IncidentDebriefQuestionIncidentTypesTable,
 		MeetingScheduleOwningTeamTable,
+		OncallUserShiftAnnotationsTable,
 		TeamUsersTable,
 		TeamOncallRostersTable,
 	}
@@ -1697,15 +1685,12 @@ func init() {
 	IncidentTeamAssignmentsTable.ForeignKeys[1].RefTable = TeamsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
 	OncallAlertsTable.ForeignKeys[0].RefTable = OncallRostersTable
-	OncallAlertInstancesTable.ForeignKeys[0].RefTable = OncallAlertsTable
-	OncallAlertInstancesTable.ForeignKeys[1].RefTable = UsersTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable
 	OncallScheduleParticipantsTable.ForeignKeys[1].RefTable = UsersTable
 	OncallUserShiftsTable.ForeignKeys[0].RefTable = UsersTable
 	OncallUserShiftsTable.ForeignKeys[1].RefTable = OncallRostersTable
-	OncallUserShiftAnnotationsTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	OncallUserShiftCoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	OncallUserShiftCoversTable.ForeignKeys[1].RefTable = UsersTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
@@ -1755,6 +1740,8 @@ func init() {
 	IncidentDebriefQuestionIncidentTypesTable.ForeignKeys[1].RefTable = IncidentTypesTable
 	MeetingScheduleOwningTeamTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
 	MeetingScheduleOwningTeamTable.ForeignKeys[1].RefTable = TeamsTable
+	OncallUserShiftAnnotationsTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
+	OncallUserShiftAnnotationsTable.ForeignKeys[1].RefTable = OncallEventAnnotationsTable
 	TeamUsersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

@@ -37,13 +37,12 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/providerconfig"
@@ -151,13 +150,12 @@ func checkColumn(table, column string) error {
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			oncallalert.Table:                      oncallalert.ValidColumn,
-			oncallalertinstance.Table:              oncallalertinstance.ValidColumn,
+			oncalleventannotation.Table:            oncalleventannotation.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                     oncallroster.ValidColumn,
 			oncallschedule.Table:                   oncallschedule.ValidColumn,
 			oncallscheduleparticipant.Table:        oncallscheduleparticipant.ValidColumn,
 			oncallusershift.Table:                  oncallusershift.ValidColumn,
-			oncallusershiftannotation.Table:        oncallusershiftannotation.ValidColumn,
 			oncallusershiftcover.Table:             oncallusershiftcover.ValidColumn,
 			oncallusershifthandover.Table:          oncallusershifthandover.ValidColumn,
 			providerconfig.Table:                   providerconfig.ValidColumn,

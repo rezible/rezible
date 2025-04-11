@@ -309,16 +309,16 @@ func (f OncallAlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAlertMutation", m)
 }
 
-// The OncallAlertInstanceFunc type is an adapter to allow the use of ordinary
-// function as OncallAlertInstance mutator.
-type OncallAlertInstanceFunc func(context.Context, *ent.OncallAlertInstanceMutation) (ent.Value, error)
+// The OncallEventAnnotationFunc type is an adapter to allow the use of ordinary
+// function as OncallEventAnnotation mutator.
+type OncallEventAnnotationFunc func(context.Context, *ent.OncallEventAnnotationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f OncallAlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallAlertInstanceMutation); ok {
+func (f OncallEventAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallEventAnnotationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAlertInstanceMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallEventAnnotationMutation", m)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary
@@ -379,18 +379,6 @@ func (f OncallUserShiftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMutation", m)
-}
-
-// The OncallUserShiftAnnotationFunc type is an adapter to allow the use of ordinary
-// function as OncallUserShiftAnnotation mutator.
-type OncallUserShiftAnnotationFunc func(context.Context, *ent.OncallUserShiftAnnotationMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallUserShiftAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallUserShiftAnnotationMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftAnnotationMutation", m)
 }
 
 // The OncallUserShiftCoverFunc type is an adapter to allow the use of ordinary

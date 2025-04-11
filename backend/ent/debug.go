@@ -204,12 +204,12 @@ func (c *OncallAlertClient) Debug() *OncallAlertClient {
 	return &OncallAlertClient{config: cfg}
 }
 
-func (c *OncallAlertInstanceClient) Debug() *OncallAlertInstanceClient {
+func (c *OncallEventAnnotationClient) Debug() *OncallEventAnnotationClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallAlertInstanceClient{config: cfg}
+	return &OncallEventAnnotationClient{config: cfg}
 }
 
 func (c *OncallHandoverTemplateClient) Debug() *OncallHandoverTemplateClient {
@@ -250,14 +250,6 @@ func (c *OncallUserShiftClient) Debug() *OncallUserShiftClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &OncallUserShiftClient{config: cfg}
-}
-
-func (c *OncallUserShiftAnnotationClient) Debug() *OncallUserShiftAnnotationClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallUserShiftAnnotationClient{config: cfg}
 }
 
 func (c *OncallUserShiftCoverClient) Debug() *OncallUserShiftCoverClient {

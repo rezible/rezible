@@ -446,29 +446,6 @@ func HasOncallShiftCoversWith(preds ...predicate.OncallUserShiftCover) predicate
 	})
 }
 
-// HasAlertsReceived applies the HasEdge predicate on the "alerts_received" edge.
-func HasAlertsReceived() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AlertsReceivedTable, AlertsReceivedColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertsReceivedWith applies the HasEdge predicate on the "alerts_received" edge with a given conditions (other predicates).
-func HasAlertsReceivedWith(preds ...predicate.OncallAlertInstance) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newAlertsReceivedStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasIncidentRoleAssignments applies the HasEdge predicate on the "incident_role_assignments" edge.
 func HasIncidentRoleAssignments() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

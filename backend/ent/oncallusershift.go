@@ -46,7 +46,7 @@ type OncallUserShiftEdges struct {
 	// Covers holds the value of the covers edge.
 	Covers []*OncallUserShiftCover `json:"covers,omitempty"`
 	// Annotations holds the value of the annotations edge.
-	Annotations []*OncallUserShiftAnnotation `json:"annotations,omitempty"`
+	Annotations []*OncallEventAnnotation `json:"annotations,omitempty"`
 	// Handover holds the value of the handover edge.
 	Handover *OncallUserShiftHandover `json:"handover,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -87,7 +87,7 @@ func (e OncallUserShiftEdges) CoversOrErr() ([]*OncallUserShiftCover, error) {
 
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallUserShiftEdges) AnnotationsOrErr() ([]*OncallUserShiftAnnotation, error) {
+func (e OncallUserShiftEdges) AnnotationsOrErr() ([]*OncallEventAnnotation, error) {
 	if e.loadedTypes[3] {
 		return e.Annotations, nil
 	}
@@ -196,7 +196,7 @@ func (ous *OncallUserShift) QueryCovers() *OncallUserShiftCoverQuery {
 }
 
 // QueryAnnotations queries the "annotations" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryAnnotations() *OncallUserShiftAnnotationQuery {
+func (ous *OncallUserShift) QueryAnnotations() *OncallEventAnnotationQuery {
 	return NewOncallUserShiftClient(ous.config).QueryAnnotations(ous)
 }
 

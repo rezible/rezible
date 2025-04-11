@@ -33,6 +33,9 @@ _default:
 
 @codegen: codegen-backend && codegen-frontend
 
+@codegen-ent:
+    cd backend && go generate ./ent
+
 @codegen-backend:
     cd backend && go generate ./...
 

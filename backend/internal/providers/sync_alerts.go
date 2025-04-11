@@ -2,13 +2,9 @@ package providers
 
 import (
 	"context"
-	"fmt"
-	"time"
-
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 )
 
 type alertsDataSyncer struct {
@@ -24,17 +20,19 @@ func newAlertsDataSyncer(db *ent.Client, users rez.UserService, provider rez.Ale
 }
 
 func (as *alertsDataSyncer) SyncProviderData(ctx context.Context) error {
-	start := time.Now().Add(-time.Hour * 24)
-	end := time.Now()
 
 	log.Debug().Msg("syncing alerts data")
-	for instance, pullErr := range as.provider.PullAlertInstancesBetweenDates(ctx, start, end) {
-		if pullErr != nil {
-			return fmt.Errorf("pull: %w", pullErr)
-		}
+	/*
+		start := time.Now().Add(-time.Hour * 24)
+		for instance, pullErr := range as.provider.PullAlertInstancesBetweenDates(ctx, start, end) {
+			if pullErr != nil {
+				return fmt.Errorf("pull: %w", pullErr)
+			}
 
-		fmt.Printf("\tinstance:%+v\n", instance)
-	}
+			fmt.Printf("\tinstance:%+v\n", instance)
+		}
+		end := time.Now()
+	*/
 
 	return nil
 }

@@ -1,16 +1,10 @@
 package grafana
 
 import (
-	"context"
 	"errors"
-	"fmt"
-	"iter"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -65,6 +59,7 @@ func (p *AlertsDataProvider) SetOnAlertInstanceUpdatedCallback(cb rez.DataProvid
 	p.webhookCallback = cb
 }
 
+/*
 func (p *AlertsDataProvider) PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallAlertInstance, error] {
 	params := &url.Values{}
 	params.Set("started_at", fmt.Sprintf("%s_%s", formatOncallTime(start), formatOncallTime(end)))
@@ -97,3 +92,4 @@ func (p *AlertsDataProvider) PullAlertInstancesBetweenDates(ctx context.Context,
 		}
 	}
 }
+*/

@@ -56,13 +56,11 @@ const (
 	CoversInverseTable = "oncall_user_shift_covers"
 	// CoversColumn is the table column denoting the covers relation/edge.
 	CoversColumn = "shift_id"
-	// AnnotationsTable is the table that holds the annotations relation/edge.
+	// AnnotationsTable is the table that holds the annotations relation/edge. The primary key declared below.
 	AnnotationsTable = "oncall_user_shift_annotations"
-	// AnnotationsInverseTable is the table name for the OncallUserShiftAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershiftannotation" package.
-	AnnotationsInverseTable = "oncall_user_shift_annotations"
-	// AnnotationsColumn is the table column denoting the annotations relation/edge.
-	AnnotationsColumn = "shift_id"
+	// AnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
+	AnnotationsInverseTable = "oncall_event_annotations"
 	// HandoverTable is the table that holds the handover relation/edge.
 	HandoverTable = "oncall_user_shift_handovers"
 	// HandoverInverseTable is the table name for the OncallUserShiftHandover entity.
@@ -81,6 +79,12 @@ var Columns = []string{
 	FieldEndAt,
 	FieldProviderID,
 }
+
+var (
+	// AnnotationsPrimaryKey and AnnotationsColumn2 are the table columns denoting the
+	// primary key for the annotations relation (M2M).
+	AnnotationsPrimaryKey = []string{"oncall_user_shift_id", "oncall_event_annotation_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -203,7 +207,7 @@ func newAnnotationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AnnotationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AnnotationsTable, AnnotationsColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, AnnotationsTable, AnnotationsPrimaryKey...),
 	)
 }
 func newHandoverStep() *sqlgraph.Step {

@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/user"
@@ -106,14 +106,14 @@ func (ousc *OncallUserShiftCreate) AddCovers(o ...*OncallUserShiftCover) *Oncall
 	return ousc.AddCoverIDs(ids...)
 }
 
-// AddAnnotationIDs adds the "annotations" edge to the OncallUserShiftAnnotation entity by IDs.
+// AddAnnotationIDs adds the "annotations" edge to the OncallEventAnnotation entity by IDs.
 func (ousc *OncallUserShiftCreate) AddAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftCreate {
 	ousc.mutation.AddAnnotationIDs(ids...)
 	return ousc
 }
 
-// AddAnnotations adds the "annotations" edges to the OncallUserShiftAnnotation entity.
-func (ousc *OncallUserShiftCreate) AddAnnotations(o ...*OncallUserShiftAnnotation) *OncallUserShiftCreate {
+// AddAnnotations adds the "annotations" edges to the OncallEventAnnotation entity.
+func (ousc *OncallUserShiftCreate) AddAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -301,13 +301,13 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 	}
 	if nodes := ousc.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   oncallusershift.AnnotationsTable,
-			Columns: []string{oncallusershift.AnnotationsColumn},
+			Columns: oncallusershift.AnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

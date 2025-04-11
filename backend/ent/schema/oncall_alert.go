@@ -25,7 +25,6 @@ func (OncallAlert) Fields() []ent.Field {
 // Edges of the OncallAlert.
 func (OncallAlert) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("instances", OncallAlertInstance.Type),
 		edge.To("roster", OncallRoster.Type).
 			Unique().Required().Field("roster_id"),
 	}

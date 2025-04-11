@@ -29,8 +29,6 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeOncallShiftCovers holds the string denoting the oncall_shift_covers edge name in mutations.
 	EdgeOncallShiftCovers = "oncall_shift_covers"
-	// EdgeAlertsReceived holds the string denoting the alerts_received edge name in mutations.
-	EdgeAlertsReceived = "alerts_received"
 	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
 	EdgeIncidentRoleAssignments = "incident_role_assignments"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
@@ -71,13 +69,6 @@ const (
 	OncallShiftCoversInverseTable = "oncall_user_shift_covers"
 	// OncallShiftCoversColumn is the table column denoting the oncall_shift_covers relation/edge.
 	OncallShiftCoversColumn = "user_id"
-	// AlertsReceivedTable is the table that holds the alerts_received relation/edge.
-	AlertsReceivedTable = "oncall_alert_instances"
-	// AlertsReceivedInverseTable is the table name for the OncallAlertInstance entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallalertinstance" package.
-	AlertsReceivedInverseTable = "oncall_alert_instances"
-	// AlertsReceivedColumn is the table column denoting the alerts_received relation/edge.
-	AlertsReceivedColumn = "receiver_user_id"
 	// IncidentRoleAssignmentsTable is the table that holds the incident_role_assignments relation/edge.
 	IncidentRoleAssignmentsTable = "incident_role_assignments"
 	// IncidentRoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -236,20 +227,6 @@ func ByOncallShiftCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
-// ByAlertsReceivedCount orders the results by alerts_received count.
-func ByAlertsReceivedCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAlertsReceivedStep(), opts...)
-	}
-}
-
-// ByAlertsReceived orders the results by alerts_received terms.
-func ByAlertsReceived(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertsReceivedStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByIncidentRoleAssignmentsCount orders the results by incident_role_assignments count.
 func ByIncidentRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -359,13 +336,6 @@ func newOncallShiftCoversStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OncallShiftCoversInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftCoversTable, OncallShiftCoversColumn),
-	)
-}
-func newAlertsReceivedStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertsReceivedInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AlertsReceivedTable, AlertsReceivedColumn),
 	)
 }
 func newIncidentRoleAssignmentsStep() *sqlgraph.Step {

@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -144,21 +143,6 @@ func (uc *UserCreate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserCrea
 		ids[i] = o[i].ID
 	}
 	return uc.AddOncallShiftCoverIDs(ids...)
-}
-
-// AddAlertsReceivedIDs adds the "alerts_received" edge to the OncallAlertInstance entity by IDs.
-func (uc *UserCreate) AddAlertsReceivedIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddAlertsReceivedIDs(ids...)
-	return uc
-}
-
-// AddAlertsReceived adds the "alerts_received" edges to the OncallAlertInstance entity.
-func (uc *UserCreate) AddAlertsReceived(o ...*OncallAlertInstance) *UserCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uc.AddAlertsReceivedIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -409,22 +393,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.AlertsReceivedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

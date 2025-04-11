@@ -196,29 +196,6 @@ func TimestampLTE(v time.Time) predicate.OncallAlert {
 	return predicate.OncallAlert(sql.FieldLTE(FieldTimestamp, v))
 }
 
-// HasInstances applies the HasEdge predicate on the "instances" edge.
-func HasInstances() predicate.OncallAlert {
-	return predicate.OncallAlert(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasInstancesWith applies the HasEdge predicate on the "instances" edge with a given conditions (other predicates).
-func HasInstancesWith(preds ...predicate.OncallAlertInstance) predicate.OncallAlert {
-	return predicate.OncallAlert(func(s *sql.Selector) {
-		step := newInstancesStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasRoster applies the HasEdge predicate on the "roster" edge.
 func HasRoster() predicate.OncallAlert {
 	return predicate.OncallAlert(func(s *sql.Selector) {

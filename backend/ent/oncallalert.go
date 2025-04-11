@@ -33,22 +33,11 @@ type OncallAlert struct {
 
 // OncallAlertEdges holds the relations/edges for other nodes in the graph.
 type OncallAlertEdges struct {
-	// Instances holds the value of the instances edge.
-	Instances []*OncallAlertInstance `json:"instances,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// InstancesOrErr returns the Instances value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallAlertEdges) InstancesOrErr() ([]*OncallAlertInstance, error) {
-	if e.loadedTypes[0] {
-		return e.Instances, nil
-	}
-	return nil, &NotLoadedError{edge: "instances"}
+	loadedTypes [1]bool
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -56,7 +45,7 @@ func (e OncallAlertEdges) InstancesOrErr() ([]*OncallAlertInstance, error) {
 func (e OncallAlertEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[0] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -123,11 +112,6 @@ func (oa *OncallAlert) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (oa *OncallAlert) Value(name string) (ent.Value, error) {
 	return oa.selectValues.Get(name)
-}
-
-// QueryInstances queries the "instances" edge of the OncallAlert entity.
-func (oa *OncallAlert) QueryInstances() *OncallAlertInstanceQuery {
-	return NewOncallAlertClient(oa.config).QueryInstances(oa)
 }
 
 // QueryRoster queries the "roster" edge of the OncallAlert entity.

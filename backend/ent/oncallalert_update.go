@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -74,21 +73,6 @@ func (oau *OncallAlertUpdate) SetNillableTimestamp(t *time.Time) *OncallAlertUpd
 	return oau
 }
 
-// AddInstanceIDs adds the "instances" edge to the OncallAlertInstance entity by IDs.
-func (oau *OncallAlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *OncallAlertUpdate {
-	oau.mutation.AddInstanceIDs(ids...)
-	return oau
-}
-
-// AddInstances adds the "instances" edges to the OncallAlertInstance entity.
-func (oau *OncallAlertUpdate) AddInstances(o ...*OncallAlertInstance) *OncallAlertUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oau.AddInstanceIDs(ids...)
-}
-
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oau *OncallAlertUpdate) SetRoster(o *OncallRoster) *OncallAlertUpdate {
 	return oau.SetRosterID(o.ID)
@@ -97,27 +81,6 @@ func (oau *OncallAlertUpdate) SetRoster(o *OncallRoster) *OncallAlertUpdate {
 // Mutation returns the OncallAlertMutation object of the builder.
 func (oau *OncallAlertUpdate) Mutation() *OncallAlertMutation {
 	return oau.mutation
-}
-
-// ClearInstances clears all "instances" edges to the OncallAlertInstance entity.
-func (oau *OncallAlertUpdate) ClearInstances() *OncallAlertUpdate {
-	oau.mutation.ClearInstances()
-	return oau
-}
-
-// RemoveInstanceIDs removes the "instances" edge to OncallAlertInstance entities by IDs.
-func (oau *OncallAlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *OncallAlertUpdate {
-	oau.mutation.RemoveInstanceIDs(ids...)
-	return oau
-}
-
-// RemoveInstances removes "instances" edges to OncallAlertInstance entities.
-func (oau *OncallAlertUpdate) RemoveInstances(o ...*OncallAlertInstance) *OncallAlertUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oau.RemoveInstanceIDs(ids...)
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
@@ -184,51 +147,6 @@ func (oau *OncallAlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := oau.mutation.Timestamp(); ok {
 		_spec.SetField(oncallalert.FieldTimestamp, field.TypeTime, value)
-	}
-	if oau.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oau.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !oau.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oau.mutation.InstancesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if oau.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -323,21 +241,6 @@ func (oauo *OncallAlertUpdateOne) SetNillableTimestamp(t *time.Time) *OncallAler
 	return oauo
 }
 
-// AddInstanceIDs adds the "instances" edge to the OncallAlertInstance entity by IDs.
-func (oauo *OncallAlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *OncallAlertUpdateOne {
-	oauo.mutation.AddInstanceIDs(ids...)
-	return oauo
-}
-
-// AddInstances adds the "instances" edges to the OncallAlertInstance entity.
-func (oauo *OncallAlertUpdateOne) AddInstances(o ...*OncallAlertInstance) *OncallAlertUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oauo.AddInstanceIDs(ids...)
-}
-
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oauo *OncallAlertUpdateOne) SetRoster(o *OncallRoster) *OncallAlertUpdateOne {
 	return oauo.SetRosterID(o.ID)
@@ -346,27 +249,6 @@ func (oauo *OncallAlertUpdateOne) SetRoster(o *OncallRoster) *OncallAlertUpdateO
 // Mutation returns the OncallAlertMutation object of the builder.
 func (oauo *OncallAlertUpdateOne) Mutation() *OncallAlertMutation {
 	return oauo.mutation
-}
-
-// ClearInstances clears all "instances" edges to the OncallAlertInstance entity.
-func (oauo *OncallAlertUpdateOne) ClearInstances() *OncallAlertUpdateOne {
-	oauo.mutation.ClearInstances()
-	return oauo
-}
-
-// RemoveInstanceIDs removes the "instances" edge to OncallAlertInstance entities by IDs.
-func (oauo *OncallAlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *OncallAlertUpdateOne {
-	oauo.mutation.RemoveInstanceIDs(ids...)
-	return oauo
-}
-
-// RemoveInstances removes "instances" edges to OncallAlertInstance entities.
-func (oauo *OncallAlertUpdateOne) RemoveInstances(o ...*OncallAlertInstance) *OncallAlertUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oauo.RemoveInstanceIDs(ids...)
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
@@ -463,51 +345,6 @@ func (oauo *OncallAlertUpdateOne) sqlSave(ctx context.Context) (_node *OncallAle
 	}
 	if value, ok := oauo.mutation.Timestamp(); ok {
 		_spec.SetField(oncallalert.FieldTimestamp, field.TypeTime, value)
-	}
-	if oauo.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oauo.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !oauo.mutation.InstancesCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oauo.mutation.InstancesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if oauo.mutation.RosterCleared() {
 		edge := &sqlgraph.EdgeSpec{

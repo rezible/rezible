@@ -31,6 +31,7 @@ type Handler struct {
 	*integrationsHandler
 	*meetingsHandler
 	*oncallHandler
+	*oncallEventsHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*systemComponentsHandler
@@ -74,6 +75,7 @@ func NewHandler(
 		integrationsHandler:       newIntegrationsHandler(),
 		meetingsHandler:           newMeetingsHandler(),
 		oncallHandler:             newOncallHandler(auth, users, incidents, oncall, alerts),
+		oncallEventsHandler:       newOncallEventsHandler(auth, users, incidents, oncall, alerts),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, cmp),
 		systemComponentsHandler:   newSystemComponentsHandler(db, cmp),

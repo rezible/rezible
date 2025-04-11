@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -164,21 +163,6 @@ func (uu *UserUpdate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpda
 		ids[i] = o[i].ID
 	}
 	return uu.AddOncallShiftCoverIDs(ids...)
-}
-
-// AddAlertsReceivedIDs adds the "alerts_received" edge to the OncallAlertInstance entity by IDs.
-func (uu *UserUpdate) AddAlertsReceivedIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddAlertsReceivedIDs(ids...)
-	return uu
-}
-
-// AddAlertsReceived adds the "alerts_received" edges to the OncallAlertInstance entity.
-func (uu *UserUpdate) AddAlertsReceived(o ...*OncallAlertInstance) *UserUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.AddAlertsReceivedIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -358,27 +342,6 @@ func (uu *UserUpdate) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *UserU
 		ids[i] = o[i].ID
 	}
 	return uu.RemoveOncallShiftCoverIDs(ids...)
-}
-
-// ClearAlertsReceived clears all "alerts_received" edges to the OncallAlertInstance entity.
-func (uu *UserUpdate) ClearAlertsReceived() *UserUpdate {
-	uu.mutation.ClearAlertsReceived()
-	return uu
-}
-
-// RemoveAlertsReceivedIDs removes the "alerts_received" edge to OncallAlertInstance entities by IDs.
-func (uu *UserUpdate) RemoveAlertsReceivedIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveAlertsReceivedIDs(ids...)
-	return uu
-}
-
-// RemoveAlertsReceived removes "alerts_received" edges to OncallAlertInstance entities.
-func (uu *UserUpdate) RemoveAlertsReceived(o ...*OncallAlertInstance) *UserUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.RemoveAlertsReceivedIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -740,51 +703,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.AlertsReceivedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedAlertsReceivedIDs(); len(nodes) > 0 && !uu.mutation.AlertsReceivedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.AlertsReceivedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1212,21 +1130,6 @@ func (uuo *UserUpdateOne) AddOncallShiftCovers(o ...*OncallUserShiftCover) *User
 	return uuo.AddOncallShiftCoverIDs(ids...)
 }
 
-// AddAlertsReceivedIDs adds the "alerts_received" edge to the OncallAlertInstance entity by IDs.
-func (uuo *UserUpdateOne) AddAlertsReceivedIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddAlertsReceivedIDs(ids...)
-	return uuo
-}
-
-// AddAlertsReceived adds the "alerts_received" edges to the OncallAlertInstance entity.
-func (uuo *UserUpdateOne) AddAlertsReceived(o ...*OncallAlertInstance) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.AddAlertsReceivedIDs(ids...)
-}
-
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
 func (uuo *UserUpdateOne) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddIncidentRoleAssignmentIDs(ids...)
@@ -1404,27 +1307,6 @@ func (uuo *UserUpdateOne) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *U
 		ids[i] = o[i].ID
 	}
 	return uuo.RemoveOncallShiftCoverIDs(ids...)
-}
-
-// ClearAlertsReceived clears all "alerts_received" edges to the OncallAlertInstance entity.
-func (uuo *UserUpdateOne) ClearAlertsReceived() *UserUpdateOne {
-	uuo.mutation.ClearAlertsReceived()
-	return uuo
-}
-
-// RemoveAlertsReceivedIDs removes the "alerts_received" edge to OncallAlertInstance entities by IDs.
-func (uuo *UserUpdateOne) RemoveAlertsReceivedIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveAlertsReceivedIDs(ids...)
-	return uuo
-}
-
-// RemoveAlertsReceived removes "alerts_received" edges to OncallAlertInstance entities.
-func (uuo *UserUpdateOne) RemoveAlertsReceived(o ...*OncallAlertInstance) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.RemoveAlertsReceivedIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -1816,51 +1698,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.AlertsReceivedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedAlertsReceivedIDs(); len(nodes) > 0 && !uuo.mutation.AlertsReceivedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.AlertsReceivedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.AlertsReceivedTable,
-			Columns: []string{user.AlertsReceivedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

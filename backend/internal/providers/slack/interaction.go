@@ -89,10 +89,6 @@ func (p *ChatProvider) handleViewSubmission(ctx context.Context, ic *slack.Inter
 	return nil
 }
 
-func getSlackMessageId(msg slack.Message) string {
-	return fmt.Sprintf("%s_%s", msg.Channel, msg.Timestamp)
-}
-
 func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *slack.InteractionCallback) error {
 	view, viewErr := p.createAnnotationModalView(ctx, ic)
 	if viewErr != nil || view == nil {
@@ -183,7 +179,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	if annosErr != nil {
 		return nil, fmt.Errorf("failed to get annotations: %w", annosErr)
 	}
-	var curr *ent.OncallUserShiftAnnotation
+	var curr *ent.OncallEventAnnotation
 	for _, anno := range annos {
 		if anno.EventID == msgId {
 			curr = anno
@@ -303,7 +299,7 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		// TODO: add more message details
 	}
 
-	return p.createAnnotationFn(ctx, shiftId, event, func(anno *ent.OncallUserShiftAnnotation) {
+	return p.createAnnotationFn(ctx, shiftId, event, func(anno *ent.OncallEventAnnotation) {
 		if meta.AnnotationId != uuid.Nil {
 			anno.ID = meta.AnnotationId
 		}

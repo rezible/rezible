@@ -195,10 +195,10 @@ type (
 		EndingShift   *ent.OncallUserShift
 		StartingShift *ent.OncallUserShift
 		Incidents     []*ent.Incident
-		Annotations   []*ent.OncallUserShiftAnnotation
+		Annotations   []*ent.OncallEventAnnotation
 	}
 
-	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallUserShiftAnnotation)) error
+	ChatCreateAnnotationFunc = func(ctx context.Context, shiftId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallEventAnnotation)) error
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
@@ -353,7 +353,7 @@ type (
 		Window time.Duration
 	}
 	ListOncallShiftEventsParams      = listForShiftIdParams
-	ListOncallShiftAnnotationsParams struct {
+	ListOncallEventAnnotationsParams struct {
 		ListParams
 		ShiftID uuid.UUID
 		Pinned  *bool
@@ -381,10 +381,10 @@ type (
 		GetNextShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 		GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 
-		ListShiftAnnotations(ctx context.Context, params ListOncallShiftAnnotationsParams) ([]*ent.OncallUserShiftAnnotation, error)
-		GetShiftAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftAnnotation, error)
-		CreateShiftAnnotation(ctx context.Context, anno *ent.OncallUserShiftAnnotation) (*ent.OncallUserShiftAnnotation, error)
-		ArchiveShiftAnnotation(ctx context.Context, id uuid.UUID) error
+		ListEventAnnotations(ctx context.Context, params ListOncallEventAnnotationsParams) ([]*ent.OncallEventAnnotation, error)
+		GetEventAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallEventAnnotation, error)
+		CreateEventAnnotation(ctx context.Context, anno *ent.OncallEventAnnotation) (*ent.OncallEventAnnotation, error)
+		DeleteEventAnnotation(ctx context.Context, id uuid.UUID) error
 
 		GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error)
 		GetShiftHandover(ctx context.Context, shiftId uuid.UUID) (*ent.OncallUserShiftHandover, error)
@@ -397,7 +397,7 @@ type (
 		GetWebhooks() Webhooks
 
 		SetOnAlertInstanceUpdatedCallback(DataProviderResourceUpdatedCallback)
-		PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallAlertInstance, error]
+		//PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallAlertInstance, error]
 	}
 
 	ListAlertsParams struct {

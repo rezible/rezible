@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -37,7 +36,6 @@ type UserQuery struct {
 	withOncallSchedules              *OncallScheduleParticipantQuery
 	withOncallShifts                 *OncallUserShiftQuery
 	withOncallShiftCovers            *OncallUserShiftCoverQuery
-	withAlertsReceived               *OncallAlertInstanceQuery
 	withIncidentRoleAssignments      *IncidentRoleAssignmentQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
 	withAssignedTasks                *TaskQuery
@@ -162,28 +160,6 @@ func (uq *UserQuery) QueryOncallShiftCovers() *OncallUserShiftCoverQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftCoversTable, user.OncallShiftCoversColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAlertsReceived chains the current query on the "alerts_received" edge.
-func (uq *UserQuery) QueryAlertsReceived() *OncallAlertInstanceQuery {
-	query := (&OncallAlertInstanceClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(oncallalertinstance.Table, oncallalertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.AlertsReceivedTable, user.AlertsReceivedColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -519,7 +495,6 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withOncallSchedules:              uq.withOncallSchedules.Clone(),
 		withOncallShifts:                 uq.withOncallShifts.Clone(),
 		withOncallShiftCovers:            uq.withOncallShiftCovers.Clone(),
-		withAlertsReceived:               uq.withAlertsReceived.Clone(),
 		withIncidentRoleAssignments:      uq.withIncidentRoleAssignments.Clone(),
 		withIncidentDebriefs:             uq.withIncidentDebriefs.Clone(),
 		withAssignedTasks:                uq.withAssignedTasks.Clone(),
@@ -574,17 +549,6 @@ func (uq *UserQuery) WithOncallShiftCovers(opts ...func(*OncallUserShiftCoverQue
 		opt(query)
 	}
 	uq.withOncallShiftCovers = query
-	return uq
-}
-
-// WithAlertsReceived tells the query-builder to eager-load the nodes that are connected to
-// the "alerts_received" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithAlertsReceived(opts ...func(*OncallAlertInstanceQuery)) *UserQuery {
-	query := (&OncallAlertInstanceClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withAlertsReceived = query
 	return uq
 }
 
@@ -732,12 +696,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [10]bool{
 			uq.withTeams != nil,
 			uq.withOncallSchedules != nil,
 			uq.withOncallShifts != nil,
 			uq.withOncallShiftCovers != nil,
-			uq.withAlertsReceived != nil,
 			uq.withIncidentRoleAssignments != nil,
 			uq.withIncidentDebriefs != nil,
 			uq.withAssignedTasks != nil,
@@ -796,13 +759,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			func(n *User, e *OncallUserShiftCover) {
 				n.Edges.OncallShiftCovers = append(n.Edges.OncallShiftCovers, e)
 			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withAlertsReceived; query != nil {
-		if err := uq.loadAlertsReceived(ctx, query, nodes,
-			func(n *User) { n.Edges.AlertsReceived = []*OncallAlertInstance{} },
-			func(n *User, e *OncallAlertInstance) { n.Edges.AlertsReceived = append(n.Edges.AlertsReceived, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1003,36 +959,6 @@ func (uq *UserQuery) loadOncallShiftCovers(ctx context.Context, query *OncallUse
 		node, ok := nodeids[fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadAlertsReceived(ctx context.Context, query *OncallAlertInstanceQuery, nodes []*User, init func(*User), assign func(*User, *OncallAlertInstance)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallalertinstance.FieldReceiverUserID)
-	}
-	query.Where(predicate.OncallAlertInstance(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.AlertsReceivedColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.ReceiverUserID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "receiver_user_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

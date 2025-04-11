@@ -81,8 +81,8 @@ type MeetingSession func(*sql.Selector)
 // OncallAlert is the predicate function for oncallalert builders.
 type OncallAlert func(*sql.Selector)
 
-// OncallAlertInstance is the predicate function for oncallalertinstance builders.
-type OncallAlertInstance func(*sql.Selector)
+// OncallEventAnnotation is the predicate function for oncalleventannotation builders.
+type OncallEventAnnotation func(*sql.Selector)
 
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)
@@ -98,9 +98,6 @@ type OncallScheduleParticipant func(*sql.Selector)
 
 // OncallUserShift is the predicate function for oncallusershift builders.
 type OncallUserShift func(*sql.Selector)
-
-// OncallUserShiftAnnotation is the predicate function for oncallusershiftannotation builders.
-type OncallUserShiftAnnotation func(*sql.Selector)
 
 // OncallUserShiftCover is the predicate function for oncallusershiftcover builders.
 type OncallUserShiftCover func(*sql.Selector)

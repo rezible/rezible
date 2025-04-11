@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -20,8 +19,6 @@ type OncallHandler interface {
 
 	GetUserOncallDetails(context.Context, *GetUserOncallDetailsRequest) (*GetUserOncallDetailsResponse, error)
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
-
-	ListOncallEvents(context.Context, *ListOncallEventsRequest) (*ListOncallEventsResponse, error)
 
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
 	GetPreviousOncallShift(context.Context, *GetPreviousOncallShiftRequest) (*GetPreviousOncallShiftResponse, error)
@@ -35,11 +32,6 @@ type OncallHandler interface {
 	GetOncallShiftHandover(context.Context, *GetOncallShiftHandoverRequest) (*GetOncallShiftHandoverResponse, error)
 	UpdateOncallShiftHandover(context.Context, *UpdateOncallShiftHandoverRequest) (*UpdateOncallShiftHandoverResponse, error)
 	SendOncallShiftHandover(context.Context, *SendOncallShiftHandoverRequest) (*SendOncallShiftHandoverResponse, error)
-
-	ListOncallShiftAnnotations(context.Context, *ListOncallShiftAnnotationsRequest) (*ListOncallShiftAnnotationsResponse, error)
-	CreateOncallShiftAnnotation(context.Context, *CreateOncallShiftAnnotationRequest) (*CreateOncallShiftAnnotationResponse, error)
-	UpdateOncallShiftAnnotation(context.Context, *UpdateOncallShiftAnnotationRequest) (*UpdateOncallShiftAnnotationResponse, error)
-	ArchiveOncallShiftAnnotation(context.Context, *ArchiveOncallShiftAnnotationRequest) (*ArchiveOncallShiftAnnotationResponse, error)
 }
 
 func (o operations) RegisterOncall(api huma.API) {
@@ -61,13 +53,6 @@ func (o operations) RegisterOncall(api huma.API) {
 
 	huma.Register(api, GetOncallShiftHandover, o.GetOncallShiftHandover)
 	huma.Register(api, SendOncallShiftHandover, o.SendOncallShiftHandover)
-
-	huma.Register(api, ListOncallEvents, o.ListOncallEvents)
-
-	huma.Register(api, ListOncallShiftAnnotations, o.ListOncallShiftAnnotations)
-	huma.Register(api, CreateOncallShiftAnnotation, o.CreateOncallShiftAnnotation)
-	huma.Register(api, UpdateOncallShiftAnnotation, o.UpdateOncallShiftAnnotation)
-	huma.Register(api, ArchiveOncallShiftAnnotation, o.ArchiveOncallShiftAnnotation)
 }
 
 type (
@@ -157,19 +142,6 @@ type (
 		Header      string  `json:"header"`
 		Kind        string  `json:"kind" enum:"regular,annotations,incidents"`
 		JsonContent *string `json:"jsonContent,omitempty"`
-	}
-
-	OncallShiftAnnotation struct {
-		Id         uuid.UUID                       `json:"id"`
-		Attributes OncallShiftAnnotationAttributes `json:"attributes"`
-	}
-
-	OncallShiftAnnotationAttributes struct {
-		ShiftId         uuid.UUID        `json:"shiftId"`
-		Pinned          bool             `json:"pinned"`
-		Notes           string           `json:"notes"`
-		Event           *rez.OncallEvent `json:"event"`
-		MinutesOccupied int              `json:"minutesOccupied"`
 	}
 )
 
@@ -287,20 +259,6 @@ func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHando
 
 	return OncallShiftHandover{
 		Id:         p.ID,
-		Attributes: attr,
-	}
-}
-
-func OncallShiftAnnotationFromEnt(e *ent.OncallUserShiftAnnotation) OncallShiftAnnotation {
-	attr := OncallShiftAnnotationAttributes{
-		ShiftId:         e.ShiftID,
-		Pinned:          e.Pinned,
-		Notes:           e.Notes,
-		MinutesOccupied: e.MinutesOccupied,
-	}
-
-	return OncallShiftAnnotation{
-		Id:         e.ID,
 		Attributes: attr,
 	}
 }
@@ -510,78 +468,3 @@ type SendOncallShiftHandoverAttributes struct {
 }
 type SendOncallShiftHandoverRequest CreateIdRequest[SendOncallShiftHandoverAttributes]
 type SendOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]
-
-var ListOncallEvents = huma.Operation{
-	OperationID: "list-oncall-events",
-	Method:      http.MethodGet,
-	Path:        "/oncall/events",
-	Summary:     "List Oncall Events",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ListOncallEventsRequest struct {
-	ListRequest
-	ShiftId   uuid.UUID `query:"shiftId"`
-	RosterIds []string  `query:"rosterIds"`
-}
-type ListOncallEventsResponse PaginatedResponse[rez.OncallEvent]
-
-var ListOncallShiftAnnotations = huma.Operation{
-	OperationID: "list-oncall-shift-annotations",
-	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/annotations",
-	Summary:     "List Annotations For an Oncall Shift",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ListOncallShiftAnnotationsRequest ListIdRequest
-type ListOncallShiftAnnotationsResponse PaginatedResponse[OncallShiftAnnotation]
-
-var CreateOncallShiftAnnotation = huma.Operation{
-	OperationID: "create-oncall-shift-annotation",
-	Method:      http.MethodPost,
-	Path:        "/oncall/shifts/{id}/annotations",
-	Summary:     "Create an Oncall Shift Annotation",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type CreateOncallShiftAnnotationRequestAttributes struct {
-	EventID         string `json:"eventId"`
-	MinutesOccupied int    `json:"minutesOccupied"`
-	Notes           string `json:"notes"`
-	Pinned          bool   `json:"pinned"`
-}
-type CreateOncallShiftAnnotationRequest CreateIdRequest[CreateOncallShiftAnnotationRequestAttributes]
-type CreateOncallShiftAnnotationResponse ItemResponse[OncallShiftAnnotation]
-
-var UpdateOncallShiftAnnotation = huma.Operation{
-	OperationID: "update-oncall-shift-annotation",
-	Method:      http.MethodPatch,
-	Path:        "/oncall/annotations/{id}",
-	Summary:     "Update an Oncall Shift Annotation",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type UpdateOncallShiftAnnotationRequestAttributes struct {
-	Pinned          *bool   `json:"pinned,omitempty"`
-	Notes           *string `json:"notes,omitempty"`
-	MinutesOccupied *int    `json:"minutesOccupied,omitempty"`
-}
-type UpdateOncallShiftAnnotationRequest UpdateIdRequest[UpdateOncallShiftAnnotationRequestAttributes]
-type UpdateOncallShiftAnnotationResponse ItemResponse[OncallShiftAnnotation]
-
-var ArchiveOncallShiftAnnotation = huma.Operation{
-	OperationID: "archive-oncall-shift-annotation",
-	Method:      http.MethodDelete,
-	Path:        "/oncall/annotations/{id}",
-	Summary:     "Archive an Oncall Shift Annotation",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ArchiveOncallShiftAnnotationRequest ArchiveIdRequest
-type ArchiveOncallShiftAnnotationResponse EmptyResponse

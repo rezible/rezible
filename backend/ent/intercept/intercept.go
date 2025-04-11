@@ -33,13 +33,12 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
+	"github.com/rezible/rezible/ent/oncalleventannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftannotation"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -796,31 +795,31 @@ func (f TraverseOncallAlert) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAlertQuery", q)
 }
 
-// The OncallAlertInstanceFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallAlertInstanceFunc func(context.Context, *ent.OncallAlertInstanceQuery) (ent.Value, error)
+// The OncallEventAnnotationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallEventAnnotationFunc func(context.Context, *ent.OncallEventAnnotationQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f OncallAlertInstanceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallAlertInstanceQuery); ok {
+func (f OncallEventAnnotationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallEventAnnotationQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallAlertInstanceQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallEventAnnotationQuery", q)
 }
 
-// The TraverseOncallAlertInstance type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallAlertInstance func(context.Context, *ent.OncallAlertInstanceQuery) error
+// The TraverseOncallEventAnnotation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallEventAnnotation func(context.Context, *ent.OncallEventAnnotationQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallAlertInstance) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOncallEventAnnotation) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseOncallAlertInstance) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallAlertInstanceQuery); ok {
+func (f TraverseOncallEventAnnotation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallEventAnnotationQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAlertInstanceQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallEventAnnotationQuery", q)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -956,33 +955,6 @@ func (f TraverseOncallUserShift) Traverse(ctx context.Context, q ent.Query) erro
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftQuery", q)
-}
-
-// The OncallUserShiftAnnotationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallUserShiftAnnotationFunc func(context.Context, *ent.OncallUserShiftAnnotationQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f OncallUserShiftAnnotationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallUserShiftAnnotationQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftAnnotationQuery", q)
-}
-
-// The TraverseOncallUserShiftAnnotation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallUserShiftAnnotation func(context.Context, *ent.OncallUserShiftAnnotationQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallUserShiftAnnotation) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseOncallUserShiftAnnotation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftAnnotationQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftAnnotationQuery", q)
 }
 
 // The OncallUserShiftCoverFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1632,8 +1604,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.MeetingSessionQuery, predicate.MeetingSession, meetingsession.OrderOption]{typ: ent.TypeMeetingSession, tq: q}, nil
 	case *ent.OncallAlertQuery:
 		return &query[*ent.OncallAlertQuery, predicate.OncallAlert, oncallalert.OrderOption]{typ: ent.TypeOncallAlert, tq: q}, nil
-	case *ent.OncallAlertInstanceQuery:
-		return &query[*ent.OncallAlertInstanceQuery, predicate.OncallAlertInstance, oncallalertinstance.OrderOption]{typ: ent.TypeOncallAlertInstance, tq: q}, nil
+	case *ent.OncallEventAnnotationQuery:
+		return &query[*ent.OncallEventAnnotationQuery, predicate.OncallEventAnnotation, oncalleventannotation.OrderOption]{typ: ent.TypeOncallEventAnnotation, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:
@@ -1644,8 +1616,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallScheduleParticipantQuery, predicate.OncallScheduleParticipant, oncallscheduleparticipant.OrderOption]{typ: ent.TypeOncallScheduleParticipant, tq: q}, nil
 	case *ent.OncallUserShiftQuery:
 		return &query[*ent.OncallUserShiftQuery, predicate.OncallUserShift, oncallusershift.OrderOption]{typ: ent.TypeOncallUserShift, tq: q}, nil
-	case *ent.OncallUserShiftAnnotationQuery:
-		return &query[*ent.OncallUserShiftAnnotationQuery, predicate.OncallUserShiftAnnotation, oncallusershiftannotation.OrderOption]{typ: ent.TypeOncallUserShiftAnnotation, tq: q}, nil
 	case *ent.OncallUserShiftCoverQuery:
 		return &query[*ent.OncallUserShiftCoverQuery, predicate.OncallUserShiftCover, oncallusershiftcover.OrderOption]{typ: ent.TypeOncallUserShiftCover, tq: q}, nil
 	case *ent.OncallUserShiftHandoverQuery:

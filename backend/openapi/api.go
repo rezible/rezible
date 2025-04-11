@@ -48,6 +48,7 @@ type Handler interface {
 	MeetingsHandler
 
 	OncallHandler
+	OncallEventsHandler
 
 	UsersHandler
 	AuthSessionsHandler

@@ -62,8 +62,8 @@ type Tx struct {
 	MeetingSession *MeetingSessionClient
 	// OncallAlert is the client for interacting with the OncallAlert builders.
 	OncallAlert *OncallAlertClient
-	// OncallAlertInstance is the client for interacting with the OncallAlertInstance builders.
-	OncallAlertInstance *OncallAlertInstanceClient
+	// OncallEventAnnotation is the client for interacting with the OncallEventAnnotation builders.
+	OncallEventAnnotation *OncallEventAnnotationClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -74,8 +74,6 @@ type Tx struct {
 	OncallScheduleParticipant *OncallScheduleParticipantClient
 	// OncallUserShift is the client for interacting with the OncallUserShift builders.
 	OncallUserShift *OncallUserShiftClient
-	// OncallUserShiftAnnotation is the client for interacting with the OncallUserShiftAnnotation builders.
-	OncallUserShiftAnnotation *OncallUserShiftAnnotationClient
 	// OncallUserShiftCover is the client for interacting with the OncallUserShiftCover builders.
 	OncallUserShiftCover *OncallUserShiftCoverClient
 	// OncallUserShiftHandover is the client for interacting with the OncallUserShiftHandover builders.
@@ -276,13 +274,12 @@ func (tx *Tx) init() {
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.OncallAlert = NewOncallAlertClient(tx.config)
-	tx.OncallAlertInstance = NewOncallAlertInstanceClient(tx.config)
+	tx.OncallEventAnnotation = NewOncallEventAnnotationClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallSchedule = NewOncallScheduleClient(tx.config)
 	tx.OncallScheduleParticipant = NewOncallScheduleParticipantClient(tx.config)
 	tx.OncallUserShift = NewOncallUserShiftClient(tx.config)
-	tx.OncallUserShiftAnnotation = NewOncallUserShiftAnnotationClient(tx.config)
 	tx.OncallUserShiftCover = NewOncallUserShiftCoverClient(tx.config)
 	tx.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(tx.config)
 	tx.ProviderConfig = NewProviderConfigClient(tx.config)

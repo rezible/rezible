@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncallalertinstance"
 	"github.com/rezible/rezible/ent/oncallroster"
 )
 
@@ -56,21 +55,6 @@ func (oac *OncallAlertCreate) SetNillableID(u *uuid.UUID) *OncallAlertCreate {
 		oac.SetID(*u)
 	}
 	return oac
-}
-
-// AddInstanceIDs adds the "instances" edge to the OncallAlertInstance entity by IDs.
-func (oac *OncallAlertCreate) AddInstanceIDs(ids ...uuid.UUID) *OncallAlertCreate {
-	oac.mutation.AddInstanceIDs(ids...)
-	return oac
-}
-
-// AddInstances adds the "instances" edges to the OncallAlertInstance entity.
-func (oac *OncallAlertCreate) AddInstances(o ...*OncallAlertInstance) *OncallAlertCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oac.AddInstanceIDs(ids...)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
@@ -176,22 +160,6 @@ func (oac *OncallAlertCreate) createSpec() (*OncallAlert, *sqlgraph.CreateSpec) 
 	if value, ok := oac.mutation.Timestamp(); ok {
 		_spec.SetField(oncallalert.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
-	}
-	if nodes := oac.mutation.InstancesIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallalert.InstancesTable,
-			Columns: []string{oncallalert.InstancesColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalertinstance.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oac.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

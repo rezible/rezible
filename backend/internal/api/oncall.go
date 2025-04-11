@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/texm/prosemirror-go"
-	"math/rand"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -192,65 +191,6 @@ func (h *oncallHandler) GetPreviousOncallShift(ctx context.Context, request *oap
 	return &resp, nil
 }
 
-func makeFakeShiftEvent(date time.Time) rez.OncallEvent {
-	isAlert := rand.Float64() > 0.25
-	eventKind := "incident"
-	if isAlert {
-		eventKind = "alert"
-	}
-
-	hour := rand.Intn(24)
-	minute := rand.Intn(60)
-
-	timestamp := time.Date(
-		date.Year(), date.Month(), date.Day(),
-		hour, minute, 0, 0, date.Location(),
-	)
-
-	description := "description"
-
-	return rez.OncallEvent{
-		ID:          uuid.New().String(),
-		Title:       "title",
-		Timestamp:   timestamp,
-		Kind:        eventKind,
-		Description: &description,
-	}
-}
-
-func makeFakeOncallEvents(start time.Time) []rez.OncallEvent {
-	const NumDays = 7
-	events := make([]rez.OncallEvent, 0, NumDays*10)
-
-	for day := 0; day < NumDays; day++ {
-		dayDate := start.AddDate(0, 0, day)
-		numDayEvents := rand.Intn(10)
-
-		for i := 0; i < numDayEvents; i++ {
-			events = append(events, makeFakeShiftEvent(dayDate))
-		}
-	}
-
-	return events
-}
-
-func (h *oncallHandler) ListOncallEvents(ctx context.Context, request *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
-	var resp oapi.ListOncallEventsResponse
-
-	eventsStart := time.Now().Add(time.Hour * -24 * 7)
-	if request.ShiftId != uuid.Nil {
-		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
-		if shiftErr != nil {
-			return nil, detailError("failed to query shift", shiftErr)
-		}
-		eventsStart = shift.StartAt
-	}
-
-	resp.Body.Data = makeFakeOncallEvents(eventsStart)
-
-	return &resp, nil
-}
-
 func (h *oncallHandler) CreateOncallShiftHandoverTemplate(ctx context.Context, request *oapi.CreateOncallShiftHandoverTemplateRequest) (*oapi.CreateOncallShiftHandoverTemplateResponse, error) {
 	var resp oapi.CreateOncallShiftHandoverTemplateResponse
 
@@ -363,81 +303,6 @@ func (h *oncallHandler) SendOncallShiftHandover(ctx context.Context, request *oa
 		return nil, detailError("failed to send handover", sendErr)
 	}
 	resp.Body.Data = oapi.OncallShiftHandoverFromEnt(handover)
-
-	return &resp, nil
-}
-
-func (h *oncallHandler) ListOncallShiftAnnotations(ctx context.Context, request *oapi.ListOncallShiftAnnotationsRequest) (*oapi.ListOncallShiftAnnotationsResponse, error) {
-	var resp oapi.ListOncallShiftAnnotationsResponse
-
-	annos, annosErr := h.oncall.ListShiftAnnotations(ctx, rez.ListOncallShiftAnnotationsParams{
-		ListParams: request.ListParams(),
-		ShiftID:    request.Id,
-	})
-	if annosErr != nil {
-		return nil, detailError("query shift annotations", annosErr)
-	}
-
-	resp.Body.Data = make([]oapi.OncallShiftAnnotation, len(annos))
-	for i, anno := range annos {
-		resp.Body.Data[i] = oapi.OncallShiftAnnotationFromEnt(anno)
-	}
-
-	return &resp, nil
-}
-
-func (h *oncallHandler) CreateOncallShiftAnnotation(ctx context.Context, request *oapi.CreateOncallShiftAnnotationRequest) (*oapi.CreateOncallShiftAnnotationResponse, error) {
-	var resp oapi.CreateOncallShiftAnnotationResponse
-
-	attr := request.Body.Attributes
-
-	anno := &ent.OncallUserShiftAnnotation{
-		ShiftID:         request.Id,
-		EventID:         attr.EventID,
-		MinutesOccupied: attr.MinutesOccupied,
-		Pinned:          attr.Pinned,
-		Notes:           attr.Notes,
-	}
-
-	var createErr error
-	anno, createErr = h.oncall.CreateShiftAnnotation(ctx, anno)
-	if createErr != nil {
-		return nil, detailError("failed to create annotation", createErr)
-	}
-	resp.Body.Data = oapi.OncallShiftAnnotationFromEnt(anno)
-
-	return &resp, nil
-}
-
-func (h *oncallHandler) UpdateOncallShiftAnnotation(ctx context.Context, request *oapi.UpdateOncallShiftAnnotationRequest) (*oapi.UpdateOncallShiftAnnotationResponse, error) {
-	var resp oapi.UpdateOncallShiftAnnotationResponse
-
-	anno, annoErr := h.oncall.GetShiftAnnotation(ctx, request.Id)
-	if annoErr != nil {
-		return nil, detailError("failed to get annotation", annoErr)
-	}
-
-	attr := request.Body.Attributes
-	update := anno.Update().
-		SetNillableNotes(attr.Notes).
-		SetNillableMinutesOccupied(attr.MinutesOccupied).
-		SetNillablePinned(attr.Pinned)
-
-	updated, updateErr := update.Save(ctx)
-	if updateErr != nil {
-		return nil, detailError("failed to update annotation", updateErr)
-	}
-	resp.Body.Data = oapi.OncallShiftAnnotationFromEnt(updated)
-
-	return &resp, nil
-}
-
-func (h *oncallHandler) ArchiveOncallShiftAnnotation(ctx context.Context, request *oapi.ArchiveOncallShiftAnnotationRequest) (*oapi.ArchiveOncallShiftAnnotationResponse, error) {
-	var resp oapi.ArchiveOncallShiftAnnotationResponse
-
-	if err := h.oncall.ArchiveShiftAnnotation(ctx, request.Id); err != nil {
-		return nil, detailError("failed to archive annotation", err)
-	}
 
 	return &resp, nil
 }

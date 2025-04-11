@@ -1,8 +1,6 @@
 package fakeprovider
 
 import (
-	"context"
-	"iter"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -35,8 +33,10 @@ func (p *AlertsDataProvider) SetOnAlertInstanceUpdatedCallback(cb rez.DataProvid
 	p.webhookCallback = cb
 }
 
+/*
 func (p *AlertsDataProvider) PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallAlertInstance, error] {
 	return func(yield func(*ent.OncallAlertInstance, error) bool) {
 
 	}
 }
+*/
