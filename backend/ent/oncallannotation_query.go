@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -21,13 +23,14 @@ import (
 // OncallAnnotationQuery is the builder for querying OncallAnnotation entities.
 type OncallAnnotationQuery struct {
 	config
-	ctx         *QueryContext
-	order       []oncallannotation.OrderOption
-	inters      []Interceptor
-	predicates  []predicate.OncallAnnotation
-	withRoster  *OncallRosterQuery
-	withCreator *UserQuery
-	modifiers   []func(*sql.Selector)
+	ctx           *QueryContext
+	order         []oncallannotation.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.OncallAnnotation
+	withRoster    *OncallRosterQuery
+	withCreator   *UserQuery
+	withHandovers *OncallUserShiftHandoverQuery
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -101,6 +104,28 @@ func (oaq *OncallAnnotationQuery) QueryCreator() *UserQuery {
 			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.CreatorTable, oncallannotation.CreatorColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHandovers chains the current query on the "handovers" edge.
+func (oaq *OncallAnnotationQuery) QueryHandovers() *OncallUserShiftHandoverQuery {
+	query := (&OncallUserShiftHandoverClient{config: oaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
+			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncallannotation.HandoversTable, oncallannotation.HandoversPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
 		return fromU, nil
@@ -295,13 +320,14 @@ func (oaq *OncallAnnotationQuery) Clone() *OncallAnnotationQuery {
 		return nil
 	}
 	return &OncallAnnotationQuery{
-		config:      oaq.config,
-		ctx:         oaq.ctx.Clone(),
-		order:       append([]oncallannotation.OrderOption{}, oaq.order...),
-		inters:      append([]Interceptor{}, oaq.inters...),
-		predicates:  append([]predicate.OncallAnnotation{}, oaq.predicates...),
-		withRoster:  oaq.withRoster.Clone(),
-		withCreator: oaq.withCreator.Clone(),
+		config:        oaq.config,
+		ctx:           oaq.ctx.Clone(),
+		order:         append([]oncallannotation.OrderOption{}, oaq.order...),
+		inters:        append([]Interceptor{}, oaq.inters...),
+		predicates:    append([]predicate.OncallAnnotation{}, oaq.predicates...),
+		withRoster:    oaq.withRoster.Clone(),
+		withCreator:   oaq.withCreator.Clone(),
+		withHandovers: oaq.withHandovers.Clone(),
 		// clone intermediate query.
 		sql:       oaq.sql.Clone(),
 		path:      oaq.path,
@@ -328,6 +354,17 @@ func (oaq *OncallAnnotationQuery) WithCreator(opts ...func(*UserQuery)) *OncallA
 		opt(query)
 	}
 	oaq.withCreator = query
+	return oaq
+}
+
+// WithHandovers tells the query-builder to eager-load the nodes that are connected to
+// the "handovers" edge. The optional arguments are used to configure the query builder of the edge.
+func (oaq *OncallAnnotationQuery) WithHandovers(opts ...func(*OncallUserShiftHandoverQuery)) *OncallAnnotationQuery {
+	query := (&OncallUserShiftHandoverClient{config: oaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oaq.withHandovers = query
 	return oaq
 }
 
@@ -409,9 +446,10 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*OncallAnnotation{}
 		_spec       = oaq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			oaq.withRoster != nil,
 			oaq.withCreator != nil,
+			oaq.withHandovers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -444,6 +482,15 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if query := oaq.withCreator; query != nil {
 		if err := oaq.loadCreator(ctx, query, nodes, nil,
 			func(n *OncallAnnotation, e *User) { n.Edges.Creator = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oaq.withHandovers; query != nil {
+		if err := oaq.loadHandovers(ctx, query, nodes,
+			func(n *OncallAnnotation) { n.Edges.Handovers = []*OncallUserShiftHandover{} },
+			func(n *OncallAnnotation, e *OncallUserShiftHandover) {
+				n.Edges.Handovers = append(n.Edges.Handovers, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -504,6 +551,67 @@ func (oaq *OncallAnnotationQuery) loadCreator(ctx context.Context, query *UserQu
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (oaq *OncallAnnotationQuery) loadHandovers(ctx context.Context, query *OncallUserShiftHandoverQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallUserShiftHandover)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*OncallAnnotation)
+	nids := make(map[uuid.UUID]map[*OncallAnnotation]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(oncallannotation.HandoversTable)
+		s.Join(joinT).On(s.C(oncallusershifthandover.FieldID), joinT.C(oncallannotation.HandoversPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(oncallannotation.HandoversPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(oncallannotation.HandoversPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*OncallAnnotation]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*OncallUserShiftHandover](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "handovers" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil

@@ -1698,6 +1698,7 @@ export type OncallAnnotation = {
 
 export type OncallAnnotationAttributes = {
     creator: User;
+    eventId: string;
     minutesOccupied: number;
     notes: string;
     rosterId: string;
@@ -1708,8 +1709,12 @@ export type OncallEvent = {
     id: string;
 };
 
-export type OncallEventAttributes = {
+export type OncallEventAnnotation = {
     annotation: OncallAnnotation;
+    event: OncallEvent;
+};
+
+export type OncallEventAttributes = {
     kind: string;
     timestamp: string;
     title: string;
@@ -1788,7 +1793,7 @@ export type OncallShiftHandover = {
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
     createdAt: string;
-    pinnedEvents: Array<OncallEvent>;
+    pinnedAnnotations: Array<OncallEventAnnotation>;
     sentAt: string;
     shiftId: string;
     updatedAt: string;
@@ -2432,7 +2437,7 @@ export type UpdateOncallAnnotationResponseBody = {
 
 export type UpdateOncallShiftHandoverAttributes = {
     content?: Array<OncallShiftHandoverSection>;
-    pinnedEventIds?: Array<string>;
+    pinnedAnnotationIds?: Array<string>;
 };
 
 export type UpdateOncallShiftHandoverRequestBody = {

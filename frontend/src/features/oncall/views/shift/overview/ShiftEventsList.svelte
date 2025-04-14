@@ -3,12 +3,14 @@
 	import { Icon, Header, Tooltip, Button } from "svelte-ux";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { format as formatDate } from "date-fns";
-	import type { OncallEvent } from "$lib/api";
+	import type { OncallEvent, OncallAnnotation } from "$lib/api";
+	import { SvelteMap } from "svelte/reactivity";
 
 	type Props = {
 		events: OncallEvent[];
+		annotations: OncallAnnotation[];
 	};
-	const { events }: Props = $props();
+	const { events, annotations }: Props = $props();
 
 	const getEventKindIcon = (kind: string) => {
 		switch (kind) {
@@ -25,6 +27,8 @@
 	const humanReadableTime = (date: Date) => {
 		return formatDate(date, 'h:mm a');
 	};
+
+	const eventAnnos = $derived(new SvelteMap(annotations.map(a => ([a.attributes.eventId, a]))));
 </script>
 
 <div class="flex flex-col gap-2 h-full border border-surface-content/10 rounded">
@@ -50,7 +54,7 @@
 	{@const isOutsideBusinessHours = !isBusinessHours(occurredAt.getHours())}
 	{@const isNightTime = isNightHours(occurredAt.getHours())}
 	{@const icon = getEventKindIcon(attrs.kind)}
-	{@const annotation = attrs.annotation}
+	{@const annotation = eventAnnos.get(ev.id)}
 	
 	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border p-3 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 		<div class="items-center static z-10">

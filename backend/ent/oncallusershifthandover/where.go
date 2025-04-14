@@ -309,6 +309,29 @@ func HasShiftWith(preds ...predicate.OncallUserShift) predicate.OncallUserShiftH
 	})
 }
 
+// HasPinnedAnnotations applies the HasEdge predicate on the "pinned_annotations" edge.
+func HasPinnedAnnotations() predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, PinnedAnnotationsTable, PinnedAnnotationsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPinnedAnnotationsWith applies the HasEdge predicate on the "pinned_annotations" edge with a given conditions (other predicates).
+func HasPinnedAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(func(s *sql.Selector) {
+		step := newPinnedAnnotationsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.OncallUserShiftHandover) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.AndPredicates(predicates...))

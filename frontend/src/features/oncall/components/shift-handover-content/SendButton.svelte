@@ -35,10 +35,9 @@
 	}));
 
 	const submitHandover = () => {
-		const content = handoverState.getSectionContent();
 		sendMutation.mutate({
 			path: { id: shiftId },
-			body: { attributes: { content } },
+			body: { attributes: {  } },
 		});
 	};
 </script>

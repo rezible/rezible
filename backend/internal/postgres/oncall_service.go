@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	oapi "github.com/rezible/rezible/openapi"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -16,7 +17,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -390,18 +390,38 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 	return nil
 }
 
-func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId uuid.UUID) (*ent.OncallHandoverTemplate, error) {
+var defaultHandoverContents = []oapi.OncallShiftHandoverSection{
+	{
+		Kind:   "regular",
+		Header: "Overview",
+	},
+	{
+		Kind:   "regular",
+		Header: "Handoff Tasks",
+	},
+	{
+		Kind:   "regular",
+		Header: "Things to Monitor",
+	},
+	{
+		Kind:   "annotations",
+		Header: "Pinned Annotations",
+	},
+}
+
+func (s *OncallService) GetRosterHandoverTemplateContents(ctx context.Context, rosterId uuid.UUID) ([]byte, error) {
 	roster, rosterErr := s.db.OncallRoster.Get(ctx, rosterId)
 	if rosterErr != nil {
 		return nil, fmt.Errorf("failed to get roster: %w", rosterErr)
 	}
-	if roster.HandoverTemplateID != uuid.Nil {
-		return roster.QueryHandoverTemplate().Only(ctx)
+	if roster.HandoverTemplateID == uuid.Nil {
+		return json.Marshal(defaultHandoverContents)
 	}
-	return s.db.OncallHandoverTemplate.Query().
-		Where(oncallhandovertemplate.Not(oncallhandovertemplate.HasRoster())).
-		Where(oncallhandovertemplate.IsDefault(true)).
-		Only(ctx)
+	tmpl, tmplErr := roster.QueryHandoverTemplate().Only(ctx)
+	if tmplErr != nil {
+		return nil, fmt.Errorf("failed to get roster handover template: %w", tmplErr)
+	}
+	return tmpl.Contents, nil
 }
 
 func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error) {
@@ -422,14 +442,9 @@ func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UU
 	if shiftErr != nil {
 		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
-	var contents []byte
-	tmpl, tmplErr := s.GetRosterHandoverTemplate(ctx, shift.RosterID)
-	if tmplErr != nil {
-		log.Warn().Err(tmplErr).Msg("failed to get roster handover template")
-		// TODO: use default template to create contents
-		contents = []byte("[]")
-	} else {
-		contents = tmpl.Contents
+	contents, contentsErr := s.GetRosterHandoverTemplateContents(ctx, shift.RosterID)
+	if contentsErr != nil {
+		return nil, fmt.Errorf("failed to get roster handover template contents: %w", contentsErr)
 	}
 	return s.createShiftHandover(ctx, shift.ID, contents)
 }
@@ -469,8 +484,21 @@ func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.Onc
 	if update.Contents != nil {
 		query.SetContents(update.Contents)
 	}
-	if update.PinnedEventIds != nil {
-		query.SetPinnedEventIds(update.PinnedEventIds)
+	if update.Edges.PinnedAnnotations != nil {
+		currIds := mapset.NewSet[uuid.UUID]()
+		for _, a := range curr.Edges.PinnedAnnotations {
+			currIds.Add(a.ID)
+		}
+		updatedIds := mapset.NewSet[uuid.UUID]()
+		for _, a := range update.Edges.PinnedAnnotations {
+			updatedIds.Add(a.ID)
+		}
+		if addIds := updatedIds.Difference(currIds); addIds.Cardinality() > 0 {
+			query.AddPinnedAnnotationIDs(addIds.ToSlice()...)
+		}
+		if deleteIds := currIds.Difference(updatedIds); deleteIds.Cardinality() > 0 {
+			query.RemovePinnedAnnotationIDs(deleteIds.ToSlice()...)
+		}
 	}
 	return query.Save(ctx)
 }
@@ -519,11 +547,14 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
 	}
 
-	pinnedEvents, pinnedEventsErr := s.getEvents(ctx, ho.PinnedEventIds)
-	if pinnedEventsErr != nil {
-		return fmt.Errorf("failed to get pinned events: %w", pinnedEventsErr)
+	pinnedEventAnnos := make([]rez.OncallEventAnnotation, len(ho.Edges.PinnedAnnotations))
+	for i, a := range ho.Edges.PinnedAnnotations {
+		anno := a
+		pinnedEventAnnos[i] = rez.OncallEventAnnotation{
+			//Event: event,
+			Annotation: anno,
+		}
 	}
-
 	//var incidents []*ent.Incident
 	//if includeIncidents {
 	//	var listErr error
@@ -542,7 +573,7 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		EndingShift:   shift,
 		StartingShift: nextShift,
 		//Incidents:     incidents,
-		PinnedEvents: pinnedEvents,
+		PinnedEventAnnotations: pinnedEventAnnos,
 	}
 	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
 		return fmt.Errorf("failed to send: %w", sendErr)

@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -133,6 +134,21 @@ func (oau *OncallAnnotationUpdate) SetCreator(u *User) *OncallAnnotationUpdate {
 	return oau.SetCreatorID(u.ID)
 }
 
+// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+func (oau *OncallAnnotationUpdate) AddHandoverIDs(ids ...uuid.UUID) *OncallAnnotationUpdate {
+	oau.mutation.AddHandoverIDs(ids...)
+	return oau
+}
+
+// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
+func (oau *OncallAnnotationUpdate) AddHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oau.AddHandoverIDs(ids...)
+}
+
 // Mutation returns the OncallAnnotationMutation object of the builder.
 func (oau *OncallAnnotationUpdate) Mutation() *OncallAnnotationMutation {
 	return oau.mutation
@@ -148,6 +164,27 @@ func (oau *OncallAnnotationUpdate) ClearRoster() *OncallAnnotationUpdate {
 func (oau *OncallAnnotationUpdate) ClearCreator() *OncallAnnotationUpdate {
 	oau.mutation.ClearCreator()
 	return oau
+}
+
+// ClearHandovers clears all "handovers" edges to the OncallUserShiftHandover entity.
+func (oau *OncallAnnotationUpdate) ClearHandovers() *OncallAnnotationUpdate {
+	oau.mutation.ClearHandovers()
+	return oau
+}
+
+// RemoveHandoverIDs removes the "handovers" edge to OncallUserShiftHandover entities by IDs.
+func (oau *OncallAnnotationUpdate) RemoveHandoverIDs(ids ...uuid.UUID) *OncallAnnotationUpdate {
+	oau.mutation.RemoveHandoverIDs(ids...)
+	return oau
+}
+
+// RemoveHandovers removes "handovers" edges to OncallUserShiftHandover entities.
+func (oau *OncallAnnotationUpdate) RemoveHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oau.RemoveHandoverIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -279,6 +316,51 @@ func (oau *OncallAnnotationUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if oau.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oau.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !oau.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oau.mutation.HandoversIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(oau.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, oau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -402,6 +484,21 @@ func (oauo *OncallAnnotationUpdateOne) SetCreator(u *User) *OncallAnnotationUpda
 	return oauo.SetCreatorID(u.ID)
 }
 
+// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+func (oauo *OncallAnnotationUpdateOne) AddHandoverIDs(ids ...uuid.UUID) *OncallAnnotationUpdateOne {
+	oauo.mutation.AddHandoverIDs(ids...)
+	return oauo
+}
+
+// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
+func (oauo *OncallAnnotationUpdateOne) AddHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oauo.AddHandoverIDs(ids...)
+}
+
 // Mutation returns the OncallAnnotationMutation object of the builder.
 func (oauo *OncallAnnotationUpdateOne) Mutation() *OncallAnnotationMutation {
 	return oauo.mutation
@@ -417,6 +514,27 @@ func (oauo *OncallAnnotationUpdateOne) ClearRoster() *OncallAnnotationUpdateOne 
 func (oauo *OncallAnnotationUpdateOne) ClearCreator() *OncallAnnotationUpdateOne {
 	oauo.mutation.ClearCreator()
 	return oauo
+}
+
+// ClearHandovers clears all "handovers" edges to the OncallUserShiftHandover entity.
+func (oauo *OncallAnnotationUpdateOne) ClearHandovers() *OncallAnnotationUpdateOne {
+	oauo.mutation.ClearHandovers()
+	return oauo
+}
+
+// RemoveHandoverIDs removes the "handovers" edge to OncallUserShiftHandover entities by IDs.
+func (oauo *OncallAnnotationUpdateOne) RemoveHandoverIDs(ids ...uuid.UUID) *OncallAnnotationUpdateOne {
+	oauo.mutation.RemoveHandoverIDs(ids...)
+	return oauo
+}
+
+// RemoveHandovers removes "handovers" edges to OncallUserShiftHandover entities.
+func (oauo *OncallAnnotationUpdateOne) RemoveHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oauo.RemoveHandoverIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallAnnotationUpdate builder.
@@ -571,6 +689,51 @@ func (oauo *OncallAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oauo.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oauo.mutation.RemovedHandoversIDs(); len(nodes) > 0 && !oauo.mutation.HandoversCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oauo.mutation.HandoversIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallannotation.HandoversTable,
+			Columns: oncallannotation.HandoversPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

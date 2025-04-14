@@ -195,7 +195,7 @@ type (
 		EndingShift   *ent.OncallUserShift
 		StartingShift *ent.OncallUserShift
 		//Incidents     []*ent.Incident
-		PinnedEvents []*OncallEvent
+		PinnedEventAnnotations []OncallEventAnnotation
 	}
 
 	ChatCreateAnnotationFunc = func(ctx context.Context, rosterId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallAnnotation)) error
@@ -316,13 +316,17 @@ type (
 
 type (
 	OncallEvent struct {
-		ID          string                `json:"id"`
-		Timestamp   time.Time             `json:"timestamp"`
-		Kind        string                `json:"kind"`
-		Title       string                `json:"title,omitempty"`
-		Description *string               `json:"description,omitempty"`
-		Source      *string               `json:"source,omitempty"`
-		Annotation  *ent.OncallAnnotation `json:"annotation,omitempty"`
+		ID          string    `json:"id"`
+		Timestamp   time.Time `json:"timestamp"`
+		Kind        string    `json:"kind"`
+		Title       string    `json:"title,omitempty"`
+		Description *string   `json:"description,omitempty"`
+		Source      *string   `json:"source,omitempty"`
+	}
+
+	OncallEventAnnotation struct {
+		Event      *OncallEvent          `json:"event"`
+		Annotation *ent.OncallAnnotation `json:"annotation"`
 	}
 
 	OncallDataProvider interface {

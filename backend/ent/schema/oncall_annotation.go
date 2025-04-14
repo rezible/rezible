@@ -31,5 +31,7 @@ func (OncallAnnotation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),
 		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),
+
+		edge.From("handovers", OncallUserShiftHandover.Type).Ref("pinned_annotations"),
 	}
 }

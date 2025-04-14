@@ -23,7 +23,6 @@ func (OncallUserShiftHandover) Fields() []ent.Field {
 		field.Time("updated_at").Default(time.Now),
 		field.Time("sent_at").Optional(),
 		field.Bytes("contents"),
-		field.JSON("pinned_event_ids", []string{}),
 	}
 }
 
@@ -32,5 +31,6 @@ func (OncallUserShiftHandover) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("shift", OncallUserShift.Type).
 			Ref("handover").Unique().Required().Field("shift_id"),
+		edge.To("pinned_annotations", OncallAnnotation.Type),
 	}
 }

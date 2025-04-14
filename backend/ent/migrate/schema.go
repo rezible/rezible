@@ -755,7 +755,6 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
 		{Name: "contents", Type: field.TypeBytes},
-		{Name: "pinned_event_ids", Type: field.TypeJSON},
 		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
 	}
 	// OncallUserShiftHandoversTable holds the schema information for the "oncall_user_shift_handovers" table.
@@ -766,7 +765,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_user_shift_handovers_oncall_user_shifts_handover",
-				Columns:    []*schema.Column{OncallUserShiftHandoversColumns[7]},
+				Columns:    []*schema.Column{OncallUserShiftHandoversColumns[6]},
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1530,6 +1529,31 @@ var (
 			},
 		},
 	}
+	// OncallUserShiftHandoverPinnedAnnotationsColumns holds the columns for the "oncall_user_shift_handover_pinned_annotations" table.
+	OncallUserShiftHandoverPinnedAnnotationsColumns = []*schema.Column{
+		{Name: "oncall_user_shift_handover_id", Type: field.TypeUUID},
+		{Name: "oncall_annotation_id", Type: field.TypeUUID},
+	}
+	// OncallUserShiftHandoverPinnedAnnotationsTable holds the schema information for the "oncall_user_shift_handover_pinned_annotations" table.
+	OncallUserShiftHandoverPinnedAnnotationsTable = &schema.Table{
+		Name:       "oncall_user_shift_handover_pinned_annotations",
+		Columns:    OncallUserShiftHandoverPinnedAnnotationsColumns,
+		PrimaryKey: []*schema.Column{OncallUserShiftHandoverPinnedAnnotationsColumns[0], OncallUserShiftHandoverPinnedAnnotationsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_user_shift_handover_pinned_annotations_oncall_user_shift_handover_id",
+				Columns:    []*schema.Column{OncallUserShiftHandoverPinnedAnnotationsColumns[0]},
+				RefColumns: []*schema.Column{OncallUserShiftHandoversColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "oncall_user_shift_handover_pinned_annotations_oncall_annotation_id",
+				Columns:    []*schema.Column{OncallUserShiftHandoverPinnedAnnotationsColumns[1]},
+				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TeamUsersColumns holds the columns for the "team_users" table.
 	TeamUsersColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeUUID},
@@ -1670,6 +1694,7 @@ var (
 		IncidentDebriefQuestionIncidentTagsTable,
 		IncidentDebriefQuestionIncidentTypesTable,
 		MeetingScheduleOwningTeamTable,
+		OncallUserShiftHandoverPinnedAnnotationsTable,
 		TeamUsersTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -1758,6 +1783,8 @@ func init() {
 	IncidentDebriefQuestionIncidentTypesTable.ForeignKeys[1].RefTable = IncidentTypesTable
 	MeetingScheduleOwningTeamTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
 	MeetingScheduleOwningTeamTable.ForeignKeys[1].RefTable = TeamsTable
+	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[0].RefTable = OncallUserShiftHandoversTable
+	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = OncallAnnotationsTable
 	TeamUsersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

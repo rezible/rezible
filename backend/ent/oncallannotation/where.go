@@ -382,6 +382,29 @@ func HasCreatorWith(preds ...predicate.User) predicate.OncallAnnotation {
 	})
 }
 
+// HasHandovers applies the HasEdge predicate on the "handovers" edge.
+func HasHandovers() predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HandoversTable, HandoversPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHandoversWith applies the HasEdge predicate on the "handovers" edge with a given conditions (other predicates).
+func HasHandoversWith(preds ...predicate.OncallUserShiftHandover) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := newHandoversStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.OncallAnnotation) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.AndPredicates(predicates...))

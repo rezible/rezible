@@ -5157,6 +5157,22 @@ func (c *OncallAnnotationClient) QueryCreator(oa *OncallAnnotation) *UserQuery {
 	return query
 }
 
+// QueryHandovers queries the handovers edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryHandovers(oa *OncallAnnotation) *OncallUserShiftHandoverQuery {
+	query := (&OncallUserShiftHandoverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
+			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncallannotation.HandoversTable, oncallannotation.HandoversPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *OncallAnnotationClient) Hooks() []Hook {
 	return c.hooks.OncallAnnotation
@@ -6389,6 +6405,22 @@ func (c *OncallUserShiftHandoverClient) QueryShift(oush *OncallUserShiftHandover
 			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
 			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallusershifthandover.ShiftTable, oncallusershifthandover.ShiftColumn),
+		)
+		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPinnedAnnotations queries the pinned_annotations edge of a OncallUserShiftHandover.
+func (c *OncallUserShiftHandoverClient) QueryPinnedAnnotations(oush *OncallUserShiftHandover) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oush.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, oncallusershifthandover.PinnedAnnotationsTable, oncallusershifthandover.PinnedAnnotationsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
 		return fromV, nil

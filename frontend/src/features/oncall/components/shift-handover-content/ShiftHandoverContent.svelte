@@ -1,14 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { Button, Header } from "svelte-ux";
-	import { createQuery } from "@tanstack/svelte-query";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import type { ChainedCommands } from "@tiptap/core";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import {
-		listIncidentsOptions,
 		type OncallShiftHandover,
-		type OncallShiftHandoverTemplate,
 	} from "$lib/api";
 	import { handoverState, type HandoverEditorSection } from "./state.svelte";
 	import SendButton from "./SendButton.svelte";
@@ -16,12 +13,11 @@
 	type Props = {
 		shiftId: string;
 		editable: boolean;
-		handover?: OncallShiftHandover;
-		template?: OncallShiftHandoverTemplate;
+		handover: OncallShiftHandover;
 	};
-	const { shiftId, editable, handover, template }: Props = $props();
+	const { shiftId, editable, handover }: Props = $props();
 
-	const isSent = $derived(new Date(handover?.attributes.sentAt ?? 0).valueOf() > 0);
+	const isSent = $derived(new Date(handover.attributes.sentAt ?? 0).valueOf() > 0);
 
 	let focusIdx = $state(-1);
 	const onSectionFocus = (e: FocusEvent, idx: number, focus: boolean) => {
@@ -47,21 +43,10 @@
 		};
 	};
 
-	const pinnedAnnotations = $derived(handover?.attributes.annotations ?? []);
-
-	const incidentsSectionPresent = $derived(handoverState.sections.some((s) => s.kind === "incidents"));
-	const incidentsQuery = createQuery(() => ({
-		...listIncidentsOptions({
-			query: {
-				/* TODO: filter by shiftId */
-			},
-		}),
-		enabled: !isSent && incidentsSectionPresent,
-	}));
-	const incidents = $derived(incidentsQuery.data?.data ?? []);
+	const pinnedAnnotations = $derived(handover.attributes.pinnedAnnotations ?? []);
 
 	onMount(() => {
-		handoverState.setup(handover, template);
+		handoverState.setup(handover);
 		return () => handoverState.destroy();
 	});
 </script>
@@ -80,8 +65,6 @@
 					{@render regularSection(i, section)}
 				{:else if section.kind === "annotations"}
 					{@render annotationsSection()}
-				{:else if section.kind === "incidents"}
-					{@render incidentsSection()}
 				{/if}
 			</div>
 		</div>
@@ -105,27 +88,13 @@
 		</div>
 	{:else}
 		<ul class="list-disc pl-5">
-			{#each pinnedAnnotations as ann (ann.id)}
-				<li>{ann.attributes.event?.title || "title"}</li>
+			{#each pinnedAnnotations as p}
+				<li>{p.event.attributes.title || "title"}</li>
 				<ul class="pl-5">
 					<li>
-						<span class="italic">{ann.attributes.notes}</span>
+						<span class="italic">{p.annotation.attributes.notes}</span>
 					</li>
 				</ul>
-			{/each}
-		</ul>
-	{/if}
-{/snippet}
-
-{#snippet incidentsSection()}
-	{#if incidents.length === 0}
-		<span>No Incidents</span>
-	{:else}
-		<ul class="list-disc pl-5">
-			{#each incidents as inc (inc.id)}
-				<li>
-					<a class="link" href="/incidents/{inc.id}" target="_blank">{inc.attributes.title}</a>
-				</li>
 			{/each}
 		</ul>
 	{/if}

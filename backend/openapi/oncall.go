@@ -141,17 +141,17 @@ type (
 	}
 
 	OncallShiftHandoverAttributes struct {
-		ShiftId      uuid.UUID                    `json:"shiftId"`
-		CreatedAt    time.Time                    `json:"createdAt"`
-		UpdatedAt    time.Time                    `json:"updatedAt"`
-		Content      []OncallShiftHandoverSection `json:"content"`
-		SentAt       time.Time                    `json:"sentAt"`
-		PinnedEvents []OncallEvent                `json:"pinnedEvents"`
+		ShiftId                uuid.UUID                    `json:"shiftId"`
+		CreatedAt              time.Time                    `json:"createdAt"`
+		UpdatedAt              time.Time                    `json:"updatedAt"`
+		Content                []OncallShiftHandoverSection `json:"content"`
+		SentAt                 time.Time                    `json:"sentAt"`
+		PinnedEventAnnotations []OncallEventAnnotation      `json:"pinnedAnnotations"`
 	}
 
 	OncallShiftHandoverSection struct {
 		Header      string  `json:"header"`
-		Kind        string  `json:"kind" enum:"regular,annotations,incidents"`
+		Kind        string  `json:"kind" enum:"regular,annotations"`
 		JsonContent *string `json:"jsonContent,omitempty"`
 	}
 )
@@ -495,8 +495,8 @@ var UpdateOncallShiftHandover = huma.Operation{
 }
 
 type UpdateOncallShiftHandoverAttributes struct {
-	Content        *[]OncallShiftHandoverSection `json:"content,omitempty"`
-	PinnedEventIds *[]string                     `json:"pinnedEventIds,omitempty"`
+	Content             *[]OncallShiftHandoverSection `json:"content,omitempty"`
+	PinnedAnnotationIds *[]uuid.UUID                  `json:"pinnedAnnotationIds,omitempty"`
 }
 type UpdateOncallShiftHandoverRequest UpdateIdRequest[UpdateOncallShiftHandoverAttributes]
 type UpdateOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]

@@ -5,6 +5,7 @@
 		updateOncallAnnotationMutation,
 		type OncallAnnotation,
 		type OncallEvent,
+		type OncallEventAnnotation,
 		type OncallShift,
 	} from "$lib/api";
 	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
@@ -12,15 +13,14 @@
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
 	import { settings } from "$lib/settings.svelte";
-	import ShiftAnnotationEditorDialog from "./ShiftAnnotationEditorDialog.svelte";
 	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {
 		shift: OncallShift;
 		editable: boolean;
-		pinnedEvents: OncallEvent[];
+		pinnedEventAnnotations: OncallEventAnnotation[];
 	};
-	const { shift, editable, pinnedEvents }: Props = $props();
+	const { shift, editable, pinnedEventAnnotations }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const eventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: shift.id } }));
@@ -29,7 +29,7 @@
 
 	const events = $derived(eventsQuery.data?.data ?? []);
 
-	const pinnedEventIds = $derived(new SvelteSet(pinnedEvents.map(e => e.id)));
+	const pinnedEventIds = $derived(new SvelteSet(pinnedEventAnnotations.map(p => p.event.id)));
 	const unpinnedEvents = $derived(events.filter(a => (!pinnedEventIds.has(a.id))));
 
 	let showEditorDialog = $state(false);
@@ -69,8 +69,8 @@
 			<Header title="Pinned" subheading="Included in the handover notes" />
 		{/if}
 
-		{#each pinnedEvents as ev, i}
-			{@render eventListItem(ev, true)}
+		{#each pinnedEventAnnotations as ev, i}
+			{@render eventListItem(ev.event, ev.annotation, true)}
 		{:else}
 			<span>Nothing Pinned</span>
 		{/each}
@@ -79,7 +79,7 @@
 			<div class="w-full border-b"></div>
 
 			{#each unpinnedEvents as ev, i}
-				{@render eventListItem(ev, false)}
+				{@render eventListItem(ev, null, false)}
 			{/each}
 		{/if}
 	{:else}
@@ -87,8 +87,7 @@
 	{/if}
 </div>
 
-{#snippet eventListItem(event: OncallEvent, pinned: boolean)}
-	{@const anno = event.attributes.annotation}
+{#snippet eventListItem(event: OncallEvent, anno: OncallAnnotation | null, pinned: boolean)}
 	{@const occurredAt = event.attributes.timestamp ?? ""}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
@@ -109,8 +108,6 @@
 			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
 				<Button
 					disabled={updateAnnotationMut.isPending}
-					loading={updateAnnotationMut.isPending &&
-						updateAnnotationMut.variables?.path.id === anno.id}
 					icon={pinned ? mdiPin : mdiPinOutline}
 					color={pinned ? "accent" : "default"}
 					iconOnly
@@ -128,11 +125,13 @@
 			</div>
 		</div>
 
+		{#if anno}
 		<div
 			class="row-start-3 col-start-3 overflow-y-auto max-h-20 overflow-y-auto border rounded p-2 w-full"
 		>
 			{anno.attributes.notes}
 		</div>
+		{/if}
 	</div>
 {/snippet}
 

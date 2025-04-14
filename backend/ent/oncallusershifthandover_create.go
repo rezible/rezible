@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 )
@@ -85,12 +86,6 @@ func (oushc *OncallUserShiftHandoverCreate) SetContents(b []byte) *OncallUserShi
 	return oushc
 }
 
-// SetPinnedEventIds sets the "pinned_event_ids" field.
-func (oushc *OncallUserShiftHandoverCreate) SetPinnedEventIds(s []string) *OncallUserShiftHandoverCreate {
-	oushc.mutation.SetPinnedEventIds(s)
-	return oushc
-}
-
 // SetID sets the "id" field.
 func (oushc *OncallUserShiftHandoverCreate) SetID(u uuid.UUID) *OncallUserShiftHandoverCreate {
 	oushc.mutation.SetID(u)
@@ -108,6 +103,21 @@ func (oushc *OncallUserShiftHandoverCreate) SetNillableID(u *uuid.UUID) *OncallU
 // SetShift sets the "shift" edge to the OncallUserShift entity.
 func (oushc *OncallUserShiftHandoverCreate) SetShift(o *OncallUserShift) *OncallUserShiftHandoverCreate {
 	return oushc.SetShiftID(o.ID)
+}
+
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
+func (oushc *OncallUserShiftHandoverCreate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftHandoverCreate {
+	oushc.mutation.AddPinnedAnnotationIDs(ids...)
+	return oushc
+}
+
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
+func (oushc *OncallUserShiftHandoverCreate) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallUserShiftHandoverCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oushc.AddPinnedAnnotationIDs(ids...)
 }
 
 // Mutation returns the OncallUserShiftHandoverMutation object of the builder.
@@ -176,9 +186,6 @@ func (oushc *OncallUserShiftHandoverCreate) check() error {
 	if _, ok := oushc.mutation.Contents(); !ok {
 		return &ValidationError{Name: "contents", err: errors.New(`ent: missing required field "OncallUserShiftHandover.contents"`)}
 	}
-	if _, ok := oushc.mutation.PinnedEventIds(); !ok {
-		return &ValidationError{Name: "pinned_event_ids", err: errors.New(`ent: missing required field "OncallUserShiftHandover.pinned_event_ids"`)}
-	}
 	if len(oushc.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallUserShiftHandover.shift"`)}
 	}
@@ -238,10 +245,6 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 		_spec.SetField(oncallusershifthandover.FieldContents, field.TypeBytes, value)
 		_node.Contents = value
 	}
-	if value, ok := oushc.mutation.PinnedEventIds(); ok {
-		_spec.SetField(oncallusershifthandover.FieldPinnedEventIds, field.TypeJSON, value)
-		_node.PinnedEventIds = value
-	}
 	if nodes := oushc.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -257,6 +260,22 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ShiftID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oushc.mutation.PinnedAnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   oncallusershifthandover.PinnedAnnotationsTable,
+			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -386,18 +405,6 @@ func (u *OncallUserShiftHandoverUpsert) SetContents(v []byte) *OncallUserShiftHa
 // UpdateContents sets the "contents" field to the value that was provided on create.
 func (u *OncallUserShiftHandoverUpsert) UpdateContents() *OncallUserShiftHandoverUpsert {
 	u.SetExcluded(oncallusershifthandover.FieldContents)
-	return u
-}
-
-// SetPinnedEventIds sets the "pinned_event_ids" field.
-func (u *OncallUserShiftHandoverUpsert) SetPinnedEventIds(v []string) *OncallUserShiftHandoverUpsert {
-	u.Set(oncallusershifthandover.FieldPinnedEventIds, v)
-	return u
-}
-
-// UpdatePinnedEventIds sets the "pinned_event_ids" field to the value that was provided on create.
-func (u *OncallUserShiftHandoverUpsert) UpdatePinnedEventIds() *OncallUserShiftHandoverUpsert {
-	u.SetExcluded(oncallusershifthandover.FieldPinnedEventIds)
 	return u
 }
 
@@ -537,20 +544,6 @@ func (u *OncallUserShiftHandoverUpsertOne) SetContents(v []byte) *OncallUserShif
 func (u *OncallUserShiftHandoverUpsertOne) UpdateContents() *OncallUserShiftHandoverUpsertOne {
 	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
 		s.UpdateContents()
-	})
-}
-
-// SetPinnedEventIds sets the "pinned_event_ids" field.
-func (u *OncallUserShiftHandoverUpsertOne) SetPinnedEventIds(v []string) *OncallUserShiftHandoverUpsertOne {
-	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
-		s.SetPinnedEventIds(v)
-	})
-}
-
-// UpdatePinnedEventIds sets the "pinned_event_ids" field to the value that was provided on create.
-func (u *OncallUserShiftHandoverUpsertOne) UpdatePinnedEventIds() *OncallUserShiftHandoverUpsertOne {
-	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
-		s.UpdatePinnedEventIds()
 	})
 }
 
@@ -857,20 +850,6 @@ func (u *OncallUserShiftHandoverUpsertBulk) SetContents(v []byte) *OncallUserShi
 func (u *OncallUserShiftHandoverUpsertBulk) UpdateContents() *OncallUserShiftHandoverUpsertBulk {
 	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
 		s.UpdateContents()
-	})
-}
-
-// SetPinnedEventIds sets the "pinned_event_ids" field.
-func (u *OncallUserShiftHandoverUpsertBulk) SetPinnedEventIds(v []string) *OncallUserShiftHandoverUpsertBulk {
-	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
-		s.SetPinnedEventIds(v)
-	})
-}
-
-// UpdatePinnedEventIds sets the "pinned_event_ids" field to the value that was provided on create.
-func (u *OncallUserShiftHandoverUpsertBulk) UpdatePinnedEventIds() *OncallUserShiftHandoverUpsertBulk {
-	return u.Update(func(s *OncallUserShiftHandoverUpsert) {
-		s.UpdatePinnedEventIds()
 	})
 }
 

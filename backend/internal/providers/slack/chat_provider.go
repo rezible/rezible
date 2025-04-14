@@ -128,13 +128,12 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 	}
 
 	builder := handoverMessageBuilder{
-		roster:        roster,
-		senderId:      sender.ChatID,
-		receiverId:    receiver.ChatID,
-		endingShift:   params.EndingShift,
-		startingShift: params.StartingShift,
-		//incidents:     params.Incidents,
-		pinnedEvents: params.PinnedEvents,
+		roster:                 roster,
+		senderId:               sender.ChatID,
+		receiverId:             receiver.ChatID,
+		endingShift:            params.EndingShift,
+		startingShift:          params.StartingShift,
+		pinnedEventAnnotations: params.PinnedEventAnnotations,
 	}
 
 	if buildErr := builder.build(params.Content); buildErr != nil {

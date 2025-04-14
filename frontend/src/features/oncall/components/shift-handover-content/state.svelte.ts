@@ -41,14 +41,10 @@ const createHandoverState = () => {
 		sections = [];
 	};
 
-	const setup = async (handover?: OncallShiftHandover, template?: OncallShiftHandoverTemplate) => {
+	const setup = async (handover: OncallShiftHandover) => {
 		resetState();
-		if (handover) {
-			sent = new Date(handover.attributes.sentAt).valueOf() > 0;
-			restoreExisting(handover);
-		} else if (template) {
-			setupTemplate(template)
-		}
+		sent = new Date(handover.attributes.sentAt).valueOf() > 0;
+		restoreExisting(handover);
 	}
 
 	const setupTemplate = async (template: OncallShiftHandoverTemplate) => {
