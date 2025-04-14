@@ -33,7 +33,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -795,31 +795,31 @@ func (f TraverseOncallAlert) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAlertQuery", q)
 }
 
-// The OncallEventAnnotationFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallEventAnnotationFunc func(context.Context, *ent.OncallEventAnnotationQuery) (ent.Value, error)
+// The OncallAnnotationFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallAnnotationFunc func(context.Context, *ent.OncallAnnotationQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f OncallEventAnnotationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallEventAnnotationQuery); ok {
+func (f OncallAnnotationFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallAnnotationQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallEventAnnotationQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationQuery", q)
 }
 
-// The TraverseOncallEventAnnotation type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallEventAnnotation func(context.Context, *ent.OncallEventAnnotationQuery) error
+// The TraverseOncallAnnotation type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallAnnotation func(context.Context, *ent.OncallAnnotationQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallEventAnnotation) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOncallAnnotation) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseOncallEventAnnotation) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallEventAnnotationQuery); ok {
+func (f TraverseOncallAnnotation) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallAnnotationQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallEventAnnotationQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationQuery", q)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1604,8 +1604,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.MeetingSessionQuery, predicate.MeetingSession, meetingsession.OrderOption]{typ: ent.TypeMeetingSession, tq: q}, nil
 	case *ent.OncallAlertQuery:
 		return &query[*ent.OncallAlertQuery, predicate.OncallAlert, oncallalert.OrderOption]{typ: ent.TypeOncallAlert, tq: q}, nil
-	case *ent.OncallEventAnnotationQuery:
-		return &query[*ent.OncallEventAnnotationQuery, predicate.OncallEventAnnotation, oncalleventannotation.OrderOption]{typ: ent.TypeOncallEventAnnotation, tq: q}, nil
+	case *ent.OncallAnnotationQuery:
+		return &query[*ent.OncallAnnotationQuery, predicate.OncallAnnotation, oncallannotation.OrderOption]{typ: ent.TypeOncallAnnotation, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:

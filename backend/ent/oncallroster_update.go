@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -199,19 +199,19 @@ func (oru *OncallRosterUpdate) SetHandoverTemplate(o *OncallHandoverTemplate) *O
 	return oru.SetHandoverTemplateID(o.ID)
 }
 
-// AddEventAnnotationIDs adds the "event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (oru *OncallRosterUpdate) AddEventAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddEventAnnotationIDs(ids...)
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (oru *OncallRosterUpdate) AddAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.AddAnnotationIDs(ids...)
 	return oru
 }
 
-// AddEventAnnotations adds the "event_annotations" edges to the OncallEventAnnotation entity.
-func (oru *OncallRosterUpdate) AddEventAnnotations(o ...*OncallEventAnnotation) *OncallRosterUpdate {
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (oru *OncallRosterUpdate) AddAnnotations(o ...*OncallAnnotation) *OncallRosterUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oru.AddEventAnnotationIDs(ids...)
+	return oru.AddAnnotationIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -306,25 +306,25 @@ func (oru *OncallRosterUpdate) ClearHandoverTemplate() *OncallRosterUpdate {
 	return oru
 }
 
-// ClearEventAnnotations clears all "event_annotations" edges to the OncallEventAnnotation entity.
-func (oru *OncallRosterUpdate) ClearEventAnnotations() *OncallRosterUpdate {
-	oru.mutation.ClearEventAnnotations()
+// ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
+func (oru *OncallRosterUpdate) ClearAnnotations() *OncallRosterUpdate {
+	oru.mutation.ClearAnnotations()
 	return oru
 }
 
-// RemoveEventAnnotationIDs removes the "event_annotations" edge to OncallEventAnnotation entities by IDs.
-func (oru *OncallRosterUpdate) RemoveEventAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveEventAnnotationIDs(ids...)
+// RemoveAnnotationIDs removes the "annotations" edge to OncallAnnotation entities by IDs.
+func (oru *OncallRosterUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.RemoveAnnotationIDs(ids...)
 	return oru
 }
 
-// RemoveEventAnnotations removes "event_annotations" edges to OncallEventAnnotation entities.
-func (oru *OncallRosterUpdate) RemoveEventAnnotations(o ...*OncallEventAnnotation) *OncallRosterUpdate {
+// RemoveAnnotations removes "annotations" edges to OncallAnnotation entities.
+func (oru *OncallRosterUpdate) RemoveAnnotations(o ...*OncallAnnotation) *OncallRosterUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oru.RemoveEventAnnotationIDs(ids...)
+	return oru.RemoveAnnotationIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -560,28 +560,28 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.EventAnnotationsCleared() {
+	if oru.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.RemovedEventAnnotationsIDs(); len(nodes) > 0 && !oru.mutation.EventAnnotationsCleared() {
+	if nodes := oru.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !oru.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -589,15 +589,15 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oru.mutation.EventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := oru.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -969,19 +969,19 @@ func (oruo *OncallRosterUpdateOne) SetHandoverTemplate(o *OncallHandoverTemplate
 	return oruo.SetHandoverTemplateID(o.ID)
 }
 
-// AddEventAnnotationIDs adds the "event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddEventAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddEventAnnotationIDs(ids...)
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (oruo *OncallRosterUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.AddAnnotationIDs(ids...)
 	return oruo
 }
 
-// AddEventAnnotations adds the "event_annotations" edges to the OncallEventAnnotation entity.
-func (oruo *OncallRosterUpdateOne) AddEventAnnotations(o ...*OncallEventAnnotation) *OncallRosterUpdateOne {
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (oruo *OncallRosterUpdateOne) AddAnnotations(o ...*OncallAnnotation) *OncallRosterUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oruo.AddEventAnnotationIDs(ids...)
+	return oruo.AddAnnotationIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -1076,25 +1076,25 @@ func (oruo *OncallRosterUpdateOne) ClearHandoverTemplate() *OncallRosterUpdateOn
 	return oruo
 }
 
-// ClearEventAnnotations clears all "event_annotations" edges to the OncallEventAnnotation entity.
-func (oruo *OncallRosterUpdateOne) ClearEventAnnotations() *OncallRosterUpdateOne {
-	oruo.mutation.ClearEventAnnotations()
+// ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
+func (oruo *OncallRosterUpdateOne) ClearAnnotations() *OncallRosterUpdateOne {
+	oruo.mutation.ClearAnnotations()
 	return oruo
 }
 
-// RemoveEventAnnotationIDs removes the "event_annotations" edge to OncallEventAnnotation entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveEventAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveEventAnnotationIDs(ids...)
+// RemoveAnnotationIDs removes the "annotations" edge to OncallAnnotation entities by IDs.
+func (oruo *OncallRosterUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.RemoveAnnotationIDs(ids...)
 	return oruo
 }
 
-// RemoveEventAnnotations removes "event_annotations" edges to OncallEventAnnotation entities.
-func (oruo *OncallRosterUpdateOne) RemoveEventAnnotations(o ...*OncallEventAnnotation) *OncallRosterUpdateOne {
+// RemoveAnnotations removes "annotations" edges to OncallAnnotation entities.
+func (oruo *OncallRosterUpdateOne) RemoveAnnotations(o ...*OncallAnnotation) *OncallRosterUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return oruo.RemoveEventAnnotationIDs(ids...)
+	return oruo.RemoveAnnotationIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -1360,28 +1360,28 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oruo.mutation.EventAnnotationsCleared() {
+	if oruo.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.RemovedEventAnnotationsIDs(); len(nodes) > 0 && !oruo.mutation.EventAnnotationsCleared() {
+	if nodes := oruo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !oruo.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1389,15 +1389,15 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := oruo.mutation.EventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := oruo.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

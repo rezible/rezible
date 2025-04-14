@@ -42,7 +42,7 @@ type OncallUserShiftHandoverEdges struct {
 	// Shift holds the value of the shift edge.
 	Shift *OncallUserShift `json:"shift,omitempty"`
 	// PinnedAnnotations holds the value of the pinned_annotations edge.
-	PinnedAnnotations []*OncallEventAnnotation `json:"pinned_annotations,omitempty"`
+	PinnedAnnotations []*OncallAnnotation `json:"pinned_annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -61,7 +61,7 @@ func (e OncallUserShiftHandoverEdges) ShiftOrErr() (*OncallUserShift, error) {
 
 // PinnedAnnotationsOrErr returns the PinnedAnnotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallEventAnnotation, error) {
+func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotation, error) {
 	if e.loadedTypes[1] {
 		return e.PinnedAnnotations, nil
 	}
@@ -157,7 +157,7 @@ func (oush *OncallUserShiftHandover) QueryShift() *OncallUserShiftQuery {
 }
 
 // QueryPinnedAnnotations queries the "pinned_annotations" edge of the OncallUserShiftHandover entity.
-func (oush *OncallUserShiftHandover) QueryPinnedAnnotations() *OncallEventAnnotationQuery {
+func (oush *OncallUserShiftHandover) QueryPinnedAnnotations() *OncallAnnotationQuery {
 	return NewOncallUserShiftHandoverClient(oush.config).QueryPinnedAnnotations(oush)
 }
 

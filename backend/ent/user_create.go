@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -162,19 +162,19 @@ func (uc *UserCreate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserCrea
 	return uc.AddOncallShiftCoverIDs(ids...)
 }
 
-// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (uc *UserCreate) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddOncallEventAnnotationIDs(ids...)
+// AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
+func (uc *UserCreate) AddOncallAnnotationIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddOncallAnnotationIDs(ids...)
 	return uc
 }
 
-// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
-func (uc *UserCreate) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserCreate {
+// AddOncallAnnotations adds the "oncall_annotations" edges to the OncallAnnotation entity.
+func (uc *UserCreate) AddOncallAnnotations(o ...*OncallAnnotation) *UserCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return uc.AddOncallEventAnnotationIDs(ids...)
+	return uc.AddOncallAnnotationIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -448,15 +448,15 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.OncallAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

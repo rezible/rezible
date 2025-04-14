@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-// OncallEventAnnotation holds the schema definition for the OncallEventAnnotation entity.
-type OncallEventAnnotation struct {
+// OncallAnnotation holds the schema definition for the OncallAnnotation entity.
+type OncallAnnotation struct {
 	ent.Schema
 }
 
-// Fields of the OncallEventAnnotation.
-func (OncallEventAnnotation) Fields() []ent.Field {
+// Fields of the OncallAnnotation.
+func (OncallAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("roster_id", uuid.UUID{}),
@@ -26,8 +26,8 @@ func (OncallEventAnnotation) Fields() []ent.Field {
 	}
 }
 
-// Edges of the OncallEventAnnotation.
-func (OncallEventAnnotation) Edges() []ent.Edge {
+// Edges of the OncallAnnotation.
+func (OncallAnnotation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),
 		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),

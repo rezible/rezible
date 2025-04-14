@@ -5,7 +5,6 @@ import (
 	"fmt"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/slack-go/slack"
 	"github.com/texm/prosemirror-go"
 	"testing"
 )
@@ -74,7 +73,7 @@ func TestConvertContent(t *testing.T) {
 		t.FailNow()
 	}
 
-	var annos []*ent.OncallUserShiftAnnotation
+	var annos []*ent.OncallAnnotation
 	if err := json.Unmarshal([]byte(testAnnotations), &annos); err != nil {
 		t.Errorf("failed to unmarshal: %s", err)
 		t.FailNow()
@@ -84,8 +83,8 @@ func TestConvertContent(t *testing.T) {
 		roster: &ent.OncallRoster{
 			Name: "roster name",
 		},
-		sender:      &slack.User{ID: "foo"},
-		receiver:    &slack.User{ID: "foo"},
+		senderId:    "foo",
+		receiverId:  "foo",
 		endingShift: &ent.OncallUserShift{},
 		annotations: annos,
 	}

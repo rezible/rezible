@@ -41,7 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -126,8 +126,8 @@ type Client struct {
 	MeetingSession *MeetingSessionClient
 	// OncallAlert is the client for interacting with the OncallAlert builders.
 	OncallAlert *OncallAlertClient
-	// OncallEventAnnotation is the client for interacting with the OncallEventAnnotation builders.
-	OncallEventAnnotation *OncallEventAnnotationClient
+	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
+	OncallAnnotation *OncallAnnotationClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -218,7 +218,7 @@ func (c *Client) init() {
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallAlert = NewOncallAlertClient(c.config)
-	c.OncallEventAnnotation = NewOncallEventAnnotationClient(c.config)
+	c.OncallAnnotation = NewOncallAnnotationClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallSchedule = NewOncallScheduleClient(c.config)
@@ -363,7 +363,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAlert:                      NewOncallAlertClient(cfg),
-		OncallEventAnnotation:            NewOncallEventAnnotationClient(cfg),
+		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -435,7 +435,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAlert:                      NewOncallAlertClient(cfg),
-		OncallEventAnnotation:            NewOncallEventAnnotationClient(cfg),
+		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -499,7 +499,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallEventAnnotation,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftCover,
 		c.OncallUserShiftHandover, c.ProviderConfig, c.ProviderSyncHistory,
@@ -525,7 +525,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallEventAnnotation,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftCover,
 		c.OncallUserShiftHandover, c.ProviderConfig, c.ProviderSyncHistory,
@@ -593,8 +593,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSession.mutate(ctx, m)
 	case *OncallAlertMutation:
 		return c.OncallAlert.mutate(ctx, m)
-	case *OncallEventAnnotationMutation:
-		return c.OncallEventAnnotation.mutate(ctx, m)
+	case *OncallAnnotationMutation:
+		return c.OncallAnnotation.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -5017,107 +5017,107 @@ func (c *OncallAlertClient) mutate(ctx context.Context, m *OncallAlertMutation) 
 	}
 }
 
-// OncallEventAnnotationClient is a client for the OncallEventAnnotation schema.
-type OncallEventAnnotationClient struct {
+// OncallAnnotationClient is a client for the OncallAnnotation schema.
+type OncallAnnotationClient struct {
 	config
 }
 
-// NewOncallEventAnnotationClient returns a client for the OncallEventAnnotation from the given config.
-func NewOncallEventAnnotationClient(c config) *OncallEventAnnotationClient {
-	return &OncallEventAnnotationClient{config: c}
+// NewOncallAnnotationClient returns a client for the OncallAnnotation from the given config.
+func NewOncallAnnotationClient(c config) *OncallAnnotationClient {
+	return &OncallAnnotationClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `oncalleventannotation.Hooks(f(g(h())))`.
-func (c *OncallEventAnnotationClient) Use(hooks ...Hook) {
-	c.hooks.OncallEventAnnotation = append(c.hooks.OncallEventAnnotation, hooks...)
+// A call to `Use(f, g, h)` equals to `oncallannotation.Hooks(f(g(h())))`.
+func (c *OncallAnnotationClient) Use(hooks ...Hook) {
+	c.hooks.OncallAnnotation = append(c.hooks.OncallAnnotation, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `oncalleventannotation.Intercept(f(g(h())))`.
-func (c *OncallEventAnnotationClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OncallEventAnnotation = append(c.inters.OncallEventAnnotation, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `oncallannotation.Intercept(f(g(h())))`.
+func (c *OncallAnnotationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OncallAnnotation = append(c.inters.OncallAnnotation, interceptors...)
 }
 
-// Create returns a builder for creating a OncallEventAnnotation entity.
-func (c *OncallEventAnnotationClient) Create() *OncallEventAnnotationCreate {
-	mutation := newOncallEventAnnotationMutation(c.config, OpCreate)
-	return &OncallEventAnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a OncallAnnotation entity.
+func (c *OncallAnnotationClient) Create() *OncallAnnotationCreate {
+	mutation := newOncallAnnotationMutation(c.config, OpCreate)
+	return &OncallAnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of OncallEventAnnotation entities.
-func (c *OncallEventAnnotationClient) CreateBulk(builders ...*OncallEventAnnotationCreate) *OncallEventAnnotationCreateBulk {
-	return &OncallEventAnnotationCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of OncallAnnotation entities.
+func (c *OncallAnnotationClient) CreateBulk(builders ...*OncallAnnotationCreate) *OncallAnnotationCreateBulk {
+	return &OncallAnnotationCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *OncallEventAnnotationClient) MapCreateBulk(slice any, setFunc func(*OncallEventAnnotationCreate, int)) *OncallEventAnnotationCreateBulk {
+func (c *OncallAnnotationClient) MapCreateBulk(slice any, setFunc func(*OncallAnnotationCreate, int)) *OncallAnnotationCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &OncallEventAnnotationCreateBulk{err: fmt.Errorf("calling to OncallEventAnnotationClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &OncallAnnotationCreateBulk{err: fmt.Errorf("calling to OncallAnnotationClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*OncallEventAnnotationCreate, rv.Len())
+	builders := make([]*OncallAnnotationCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &OncallEventAnnotationCreateBulk{config: c.config, builders: builders}
+	return &OncallAnnotationCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) Update() *OncallEventAnnotationUpdate {
-	mutation := newOncallEventAnnotationMutation(c.config, OpUpdate)
-	return &OncallEventAnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for OncallAnnotation.
+func (c *OncallAnnotationClient) Update() *OncallAnnotationUpdate {
+	mutation := newOncallAnnotationMutation(c.config, OpUpdate)
+	return &OncallAnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *OncallEventAnnotationClient) UpdateOne(oea *OncallEventAnnotation) *OncallEventAnnotationUpdateOne {
-	mutation := newOncallEventAnnotationMutation(c.config, OpUpdateOne, withOncallEventAnnotation(oea))
-	return &OncallEventAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *OncallAnnotationClient) UpdateOne(oa *OncallAnnotation) *OncallAnnotationUpdateOne {
+	mutation := newOncallAnnotationMutation(c.config, OpUpdateOne, withOncallAnnotation(oa))
+	return &OncallAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *OncallEventAnnotationClient) UpdateOneID(id uuid.UUID) *OncallEventAnnotationUpdateOne {
-	mutation := newOncallEventAnnotationMutation(c.config, OpUpdateOne, withOncallEventAnnotationID(id))
-	return &OncallEventAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *OncallAnnotationClient) UpdateOneID(id uuid.UUID) *OncallAnnotationUpdateOne {
+	mutation := newOncallAnnotationMutation(c.config, OpUpdateOne, withOncallAnnotationID(id))
+	return &OncallAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) Delete() *OncallEventAnnotationDelete {
-	mutation := newOncallEventAnnotationMutation(c.config, OpDelete)
-	return &OncallEventAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for OncallAnnotation.
+func (c *OncallAnnotationClient) Delete() *OncallAnnotationDelete {
+	mutation := newOncallAnnotationMutation(c.config, OpDelete)
+	return &OncallAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *OncallEventAnnotationClient) DeleteOne(oea *OncallEventAnnotation) *OncallEventAnnotationDeleteOne {
-	return c.DeleteOneID(oea.ID)
+func (c *OncallAnnotationClient) DeleteOne(oa *OncallAnnotation) *OncallAnnotationDeleteOne {
+	return c.DeleteOneID(oa.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OncallEventAnnotationClient) DeleteOneID(id uuid.UUID) *OncallEventAnnotationDeleteOne {
-	builder := c.Delete().Where(oncalleventannotation.ID(id))
+func (c *OncallAnnotationClient) DeleteOneID(id uuid.UUID) *OncallAnnotationDeleteOne {
+	builder := c.Delete().Where(oncallannotation.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &OncallEventAnnotationDeleteOne{builder}
+	return &OncallAnnotationDeleteOne{builder}
 }
 
-// Query returns a query builder for OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) Query() *OncallEventAnnotationQuery {
-	return &OncallEventAnnotationQuery{
+// Query returns a query builder for OncallAnnotation.
+func (c *OncallAnnotationClient) Query() *OncallAnnotationQuery {
+	return &OncallAnnotationQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeOncallEventAnnotation},
+		ctx:    &QueryContext{Type: TypeOncallAnnotation},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a OncallEventAnnotation entity by its id.
-func (c *OncallEventAnnotationClient) Get(ctx context.Context, id uuid.UUID) (*OncallEventAnnotation, error) {
-	return c.Query().Where(oncalleventannotation.ID(id)).Only(ctx)
+// Get returns a OncallAnnotation entity by its id.
+func (c *OncallAnnotationClient) Get(ctx context.Context, id uuid.UUID) (*OncallAnnotation, error) {
+	return c.Query().Where(oncallannotation.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *OncallEventAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *OncallEventAnnotation {
+func (c *OncallAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *OncallAnnotation {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -5125,76 +5125,76 @@ func (c *OncallEventAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *O
 	return obj
 }
 
-// QueryRoster queries the roster edge of a OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) QueryRoster(oea *OncallEventAnnotation) *OncallRosterQuery {
+// QueryRoster queries the roster edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryRoster(oa *OncallAnnotation) *OncallRosterQuery {
 	query := (&OncallRosterClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := oea.ID
+		id := oa.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.RosterTable, oncalleventannotation.RosterColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.RosterTable, oncallannotation.RosterColumn),
 		)
-		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryCreator queries the creator edge of a OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) QueryCreator(oea *OncallEventAnnotation) *UserQuery {
+// QueryCreator queries the creator edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryCreator(oa *OncallAnnotation) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := oea.ID
+		id := oa.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, oncalleventannotation.CreatorTable, oncalleventannotation.CreatorColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.CreatorTable, oncallannotation.CreatorColumn),
 		)
-		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryHandovers queries the handovers edge of a OncallEventAnnotation.
-func (c *OncallEventAnnotationClient) QueryHandovers(oea *OncallEventAnnotation) *OncallUserShiftHandoverQuery {
+// QueryHandovers queries the handovers edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryHandovers(oa *OncallAnnotation) *OncallUserShiftHandoverQuery {
 	query := (&OncallUserShiftHandoverClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := oea.ID
+		id := oa.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(oncalleventannotation.Table, oncalleventannotation.FieldID, id),
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
 			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, oncalleventannotation.HandoversTable, oncalleventannotation.HandoversPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncallannotation.HandoversTable, oncallannotation.HandoversPrimaryKey...),
 		)
-		fromV = sqlgraph.Neighbors(oea.driver.Dialect(), step)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
 // Hooks returns the client hooks.
-func (c *OncallEventAnnotationClient) Hooks() []Hook {
-	return c.hooks.OncallEventAnnotation
+func (c *OncallAnnotationClient) Hooks() []Hook {
+	return c.hooks.OncallAnnotation
 }
 
 // Interceptors returns the client interceptors.
-func (c *OncallEventAnnotationClient) Interceptors() []Interceptor {
-	return c.inters.OncallEventAnnotation
+func (c *OncallAnnotationClient) Interceptors() []Interceptor {
+	return c.inters.OncallAnnotation
 }
 
-func (c *OncallEventAnnotationClient) mutate(ctx context.Context, m *OncallEventAnnotationMutation) (Value, error) {
+func (c *OncallAnnotationClient) mutate(ctx context.Context, m *OncallAnnotationMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&OncallEventAnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OncallAnnotationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&OncallEventAnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OncallAnnotationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&OncallEventAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&OncallAnnotationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&OncallEventAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&OncallAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown OncallEventAnnotation mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown OncallAnnotation mutation op: %q", m.Op())
 	}
 }
 
@@ -5487,15 +5487,15 @@ func (c *OncallRosterClient) QueryHandoverTemplate(or *OncallRoster) *OncallHand
 	return query
 }
 
-// QueryEventAnnotations queries the event_annotations edge of a OncallRoster.
-func (c *OncallRosterClient) QueryEventAnnotations(or *OncallRoster) *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+// QueryAnnotations queries the annotations edge of a OncallRoster.
+func (c *OncallRosterClient) QueryAnnotations(or *OncallRoster) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := or.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.EventAnnotationsTable, oncallroster.EventAnnotationsColumn),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.AnnotationsTable, oncallroster.AnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
 		return fromV, nil
@@ -6413,13 +6413,13 @@ func (c *OncallUserShiftHandoverClient) QueryShift(oush *OncallUserShiftHandover
 }
 
 // QueryPinnedAnnotations queries the pinned_annotations edge of a OncallUserShiftHandover.
-func (c *OncallUserShiftHandoverClient) QueryPinnedAnnotations(oush *OncallUserShiftHandover) *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+func (c *OncallUserShiftHandoverClient) QueryPinnedAnnotations(oush *OncallUserShiftHandover) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := oush.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, oncallusershifthandover.PinnedAnnotationsTable, oncallusershifthandover.PinnedAnnotationsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
@@ -10080,15 +10080,15 @@ func (c *UserClient) QueryOncallShiftCovers(u *User) *OncallUserShiftCoverQuery 
 	return query
 }
 
-// QueryOncallEventAnnotations queries the oncall_event_annotations edge of a User.
-func (c *UserClient) QueryOncallEventAnnotations(u *User) *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: c.config}).Query()
+// QueryOncallAnnotations queries the oncall_annotations edge of a User.
+func (c *UserClient) QueryOncallAnnotations(u *User) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallEventAnnotationsTable, user.OncallEventAnnotationsColumn),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallAnnotationsTable, user.OncallAnnotationsColumn),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -10226,7 +10226,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallEventAnnotation, OncallHandoverTemplate,
+		MeetingSession, OncallAlert, OncallAnnotation, OncallHandoverTemplate,
 		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
 		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
 		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
@@ -10244,7 +10244,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallEventAnnotation, OncallHandoverTemplate,
+		MeetingSession, OncallAlert, OncallAnnotation, OncallHandoverTemplate,
 		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
 		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
 		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,

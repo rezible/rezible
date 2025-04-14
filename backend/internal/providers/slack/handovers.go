@@ -25,7 +25,7 @@ type handoverMessageBuilder struct {
 	endingShift   *ent.OncallUserShift
 	startingShift *ent.OncallUserShift
 	incidents     []*ent.Incident
-	annotations   []*ent.OncallEventAnnotation
+	annotations   []*ent.OncallAnnotation
 }
 
 func (b *handoverMessageBuilder) addBlocks(blocks ...slack.Block) {

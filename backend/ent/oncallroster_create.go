@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -153,19 +153,19 @@ func (orc *OncallRosterCreate) SetHandoverTemplate(o *OncallHandoverTemplate) *O
 	return orc.SetHandoverTemplateID(o.ID)
 }
 
-// AddEventAnnotationIDs adds the "event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (orc *OncallRosterCreate) AddEventAnnotationIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddEventAnnotationIDs(ids...)
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (orc *OncallRosterCreate) AddAnnotationIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	orc.mutation.AddAnnotationIDs(ids...)
 	return orc
 }
 
-// AddEventAnnotations adds the "event_annotations" edges to the OncallEventAnnotation entity.
-func (orc *OncallRosterCreate) AddEventAnnotations(o ...*OncallEventAnnotation) *OncallRosterCreate {
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (orc *OncallRosterCreate) AddAnnotations(o ...*OncallAnnotation) *OncallRosterCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return orc.AddEventAnnotationIDs(ids...)
+	return orc.AddAnnotationIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -383,15 +383,15 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 		_node.HandoverTemplateID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := orc.mutation.EventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := orc.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   oncallroster.EventAnnotationsTable,
-			Columns: []string{oncallroster.EventAnnotationsColumn},
+			Table:   oncallroster.AnnotationsTable,
+			Columns: []string{oncallroster.AnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

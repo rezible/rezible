@@ -13,7 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -182,19 +182,19 @@ func (uu *UserUpdate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpda
 	return uu.AddOncallShiftCoverIDs(ids...)
 }
 
-// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (uu *UserUpdate) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddOncallEventAnnotationIDs(ids...)
+// AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
+func (uu *UserUpdate) AddOncallAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddOncallAnnotationIDs(ids...)
 	return uu
 }
 
-// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
-func (uu *UserUpdate) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdate {
+// AddOncallAnnotations adds the "oncall_annotations" edges to the OncallAnnotation entity.
+func (uu *UserUpdate) AddOncallAnnotations(o ...*OncallAnnotation) *UserUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return uu.AddOncallEventAnnotationIDs(ids...)
+	return uu.AddOncallAnnotationIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -397,25 +397,25 @@ func (uu *UserUpdate) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *UserU
 	return uu.RemoveOncallShiftCoverIDs(ids...)
 }
 
-// ClearOncallEventAnnotations clears all "oncall_event_annotations" edges to the OncallEventAnnotation entity.
-func (uu *UserUpdate) ClearOncallEventAnnotations() *UserUpdate {
-	uu.mutation.ClearOncallEventAnnotations()
+// ClearOncallAnnotations clears all "oncall_annotations" edges to the OncallAnnotation entity.
+func (uu *UserUpdate) ClearOncallAnnotations() *UserUpdate {
+	uu.mutation.ClearOncallAnnotations()
 	return uu
 }
 
-// RemoveOncallEventAnnotationIDs removes the "oncall_event_annotations" edge to OncallEventAnnotation entities by IDs.
-func (uu *UserUpdate) RemoveOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveOncallEventAnnotationIDs(ids...)
+// RemoveOncallAnnotationIDs removes the "oncall_annotations" edge to OncallAnnotation entities by IDs.
+func (uu *UserUpdate) RemoveOncallAnnotationIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveOncallAnnotationIDs(ids...)
 	return uu
 }
 
-// RemoveOncallEventAnnotations removes "oncall_event_annotations" edges to OncallEventAnnotation entities.
-func (uu *UserUpdate) RemoveOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdate {
+// RemoveOncallAnnotations removes "oncall_annotations" edges to OncallAnnotation entities.
+func (uu *UserUpdate) RemoveOncallAnnotations(o ...*OncallAnnotation) *UserUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return uu.RemoveOncallEventAnnotationIDs(ids...)
+	return uu.RemoveOncallAnnotationIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -829,28 +829,28 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.OncallEventAnnotationsCleared() {
+	if uu.mutation.OncallAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedOncallEventAnnotationsIDs(); len(nodes) > 0 && !uu.mutation.OncallEventAnnotationsCleared() {
+	if nodes := uu.mutation.RemovedOncallAnnotationsIDs(); len(nodes) > 0 && !uu.mutation.OncallAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -858,15 +858,15 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.OncallAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1309,19 +1309,19 @@ func (uuo *UserUpdateOne) AddOncallShiftCovers(o ...*OncallUserShiftCover) *User
 	return uuo.AddOncallShiftCoverIDs(ids...)
 }
 
-// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (uuo *UserUpdateOne) AddOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddOncallEventAnnotationIDs(ids...)
+// AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
+func (uuo *UserUpdateOne) AddOncallAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddOncallAnnotationIDs(ids...)
 	return uuo
 }
 
-// AddOncallEventAnnotations adds the "oncall_event_annotations" edges to the OncallEventAnnotation entity.
-func (uuo *UserUpdateOne) AddOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdateOne {
+// AddOncallAnnotations adds the "oncall_annotations" edges to the OncallAnnotation entity.
+func (uuo *UserUpdateOne) AddOncallAnnotations(o ...*OncallAnnotation) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return uuo.AddOncallEventAnnotationIDs(ids...)
+	return uuo.AddOncallAnnotationIDs(ids...)
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -1524,25 +1524,25 @@ func (uuo *UserUpdateOne) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *U
 	return uuo.RemoveOncallShiftCoverIDs(ids...)
 }
 
-// ClearOncallEventAnnotations clears all "oncall_event_annotations" edges to the OncallEventAnnotation entity.
-func (uuo *UserUpdateOne) ClearOncallEventAnnotations() *UserUpdateOne {
-	uuo.mutation.ClearOncallEventAnnotations()
+// ClearOncallAnnotations clears all "oncall_annotations" edges to the OncallAnnotation entity.
+func (uuo *UserUpdateOne) ClearOncallAnnotations() *UserUpdateOne {
+	uuo.mutation.ClearOncallAnnotations()
 	return uuo
 }
 
-// RemoveOncallEventAnnotationIDs removes the "oncall_event_annotations" edge to OncallEventAnnotation entities by IDs.
-func (uuo *UserUpdateOne) RemoveOncallEventAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveOncallEventAnnotationIDs(ids...)
+// RemoveOncallAnnotationIDs removes the "oncall_annotations" edge to OncallAnnotation entities by IDs.
+func (uuo *UserUpdateOne) RemoveOncallAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveOncallAnnotationIDs(ids...)
 	return uuo
 }
 
-// RemoveOncallEventAnnotations removes "oncall_event_annotations" edges to OncallEventAnnotation entities.
-func (uuo *UserUpdateOne) RemoveOncallEventAnnotations(o ...*OncallEventAnnotation) *UserUpdateOne {
+// RemoveOncallAnnotations removes "oncall_annotations" edges to OncallAnnotation entities.
+func (uuo *UserUpdateOne) RemoveOncallAnnotations(o ...*OncallAnnotation) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return uuo.RemoveOncallEventAnnotationIDs(ids...)
+	return uuo.RemoveOncallAnnotationIDs(ids...)
 }
 
 // ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
@@ -1986,28 +1986,28 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.OncallEventAnnotationsCleared() {
+	if uuo.mutation.OncallAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedOncallEventAnnotationsIDs(); len(nodes) > 0 && !uuo.mutation.OncallEventAnnotationsCleared() {
+	if nodes := uuo.mutation.RemovedOncallAnnotationsIDs(); len(nodes) > 0 && !uuo.mutation.OncallAnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -2015,15 +2015,15 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.OncallEventAnnotationsIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.OncallAnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   user.OncallEventAnnotationsTable,
-			Columns: []string{user.OncallEventAnnotationsColumn},
+			Table:   user.OncallAnnotationsTable,
+			Columns: []string{user.OncallAnnotationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

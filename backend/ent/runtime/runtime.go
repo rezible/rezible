@@ -29,7 +29,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -315,16 +315,16 @@ func init() {
 	oncallalertDescID := oncallalertFields[0].Descriptor()
 	// oncallalert.DefaultID holds the default value on creation for the id field.
 	oncallalert.DefaultID = oncallalertDescID.Default.(func() uuid.UUID)
-	oncalleventannotationFields := schema.OncallEventAnnotation{}.Fields()
-	_ = oncalleventannotationFields
-	// oncalleventannotationDescCreatedAt is the schema descriptor for created_at field.
-	oncalleventannotationDescCreatedAt := oncalleventannotationFields[4].Descriptor()
-	// oncalleventannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
-	oncalleventannotation.DefaultCreatedAt = oncalleventannotationDescCreatedAt.Default.(func() time.Time)
-	// oncalleventannotationDescID is the schema descriptor for id field.
-	oncalleventannotationDescID := oncalleventannotationFields[0].Descriptor()
-	// oncalleventannotation.DefaultID holds the default value on creation for the id field.
-	oncalleventannotation.DefaultID = oncalleventannotationDescID.Default.(func() uuid.UUID)
+	oncallannotationFields := schema.OncallAnnotation{}.Fields()
+	_ = oncallannotationFields
+	// oncallannotationDescCreatedAt is the schema descriptor for created_at field.
+	oncallannotationDescCreatedAt := oncallannotationFields[4].Descriptor()
+	// oncallannotation.DefaultCreatedAt holds the default value on creation for the created_at field.
+	oncallannotation.DefaultCreatedAt = oncallannotationDescCreatedAt.Default.(func() time.Time)
+	// oncallannotationDescID is the schema descriptor for id field.
+	oncallannotationDescID := oncallannotationFields[0].Descriptor()
+	// oncallannotation.DefaultID holds the default value on creation for the id field.
+	oncallannotation.DefaultID = oncallannotationDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateFields := schema.OncallHandoverTemplate{}.Fields()
 	_ = oncallhandovertemplateFields
 	// oncallhandovertemplateDescCreatedAt is the schema descriptor for created_at field.

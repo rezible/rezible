@@ -62,8 +62,8 @@ type Tx struct {
 	MeetingSession *MeetingSessionClient
 	// OncallAlert is the client for interacting with the OncallAlert builders.
 	OncallAlert *OncallAlertClient
-	// OncallEventAnnotation is the client for interacting with the OncallEventAnnotation builders.
-	OncallEventAnnotation *OncallEventAnnotationClient
+	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
+	OncallAnnotation *OncallAnnotationClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -274,7 +274,7 @@ func (tx *Tx) init() {
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.OncallAlert = NewOncallAlertClient(tx.config)
-	tx.OncallEventAnnotation = NewOncallEventAnnotationClient(tx.config)
+	tx.OncallAnnotation = NewOncallAnnotationClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallSchedule = NewOncallScheduleClient(tx.config)

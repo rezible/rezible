@@ -1,32 +1,54 @@
+<script lang="ts" module>
+	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
+
+	export type FilterOptions = {
+		rosterIds?: string[];
+		annotated?: boolean;
+		dateRange?: DateRangeType;
+	};
+</script>
+
 <script lang="ts">
 	import Avatar from "$src/components/avatar/Avatar.svelte";
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import {
 		Button,
-		Checkbox,
 		DateRangeField,
 		Field,
 		Icon,
 		MultiSelectMenu,
 		MultiSelectOption,
+		SelectField,
 		type MenuOption,
 	} from "svelte-ux";
-	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { v4 as uuidv4 } from "uuid";
 	import { PeriodType } from "@layerstack/utils";
 	import { subDays } from "date-fns";
 
 	type Props = {
-		rosterIds?: string[];
-		annotated?: boolean;
-		dateRange?: DateRangeType;
+		filters: FilterOptions;
 	};
-	let { rosterIds = $bindable(), annotated = $bindable(), dateRange = $bindable() }: Props = $props();
+	let { filters = $bindable() }: Props = $props();
+
+	type AnnotationOption = "no" | "any" | "has";
+	const annoOptions: MenuOption<AnnotationOption>[] = [
+		{value: "any", label: "Any"},
+		{value: "has", label: "Yes"},
+		{value: "no", label: "No"},
+	];
+	const annoValue = $derived(filters.annotated === undefined ? "any" : (filters.annotated ? "yes" : "no"));
+	const setAnnotated = (v: string | null | undefined) => {
+		if (v === "any") {
+			filters.annotated = undefined;
+		} else {
+			filters.annotated = v === "has";
+		}
+	}
 
 	const rosterOptions: MenuOption<string>[] = [
 		{ label: "One", value: uuidv4() },
 	];
-	const selectedRostersSet = $derived(new Set(rosterIds));
+	const selectedRostersSet = $derived(new Set(filters.rosterIds));
 	const selectedRosterOptions = $derived(rosterOptions.filter((o) => selectedRostersSet.has(o.value)));
 	let rosterMenuOpen = $state(false);
 	const toggleRosterMenu = () => (rosterMenuOpen = !rosterMenuOpen);
@@ -53,11 +75,23 @@
 			field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
 		}}
 		icon={mdiCalendarRange}
-		value={dateRange || defaultDateRange}
-		on:change={(e) => {dateRange = (e.detail as DateRangeType)}}
+		value={filters.dateRange || defaultDateRange}
+		on:change={(e) => {filters.dateRange = (e.detail as DateRangeType)}}
 	/>
 
-	<Field
+	<SelectField 
+		label="Annotation"
+		labelPlacement="top"
+		resize
+		dense
+		classes={{ root: "gap-0 w-32", field: { root: "gap-0", container: "h-8 flex items-center", input: "my-0" } }}
+		options={annoOptions}
+		clearable={false}
+		value={annoValue}
+		on:change={e => setAnnotated(e.detail.value)}
+	/>
+
+	<!-- <Field
 		label="Action"
 		labelPlacement="top"
 		dense
@@ -65,7 +99,7 @@
 		let:id
 	>
 		<Checkbox {id} bind:checked={annotated} classes={{ label: "pl-2" }}>Annotated</Checkbox>
-	</Field>
+	</Field> -->
 
 	<Field
 		label="Rosters"
@@ -88,12 +122,12 @@
 			<Icon data={mdiChevronDown} />
 			<MultiSelectMenu
 				options={rosterOptions}
-				value={rosterIds}
+				value={filters.rosterIds}
 				open={rosterMenuOpen}
 				search
 				maintainOrder
 				placeholder="Filter to roster"
-				on:change={(e) => (rosterIds = (e.detail.value as string[]))}
+				on:change={(e) => (filters.rosterIds = (e.detail.value as string[]))}
 				on:close={toggleRosterMenu}
 			>
 				<MultiSelectOption

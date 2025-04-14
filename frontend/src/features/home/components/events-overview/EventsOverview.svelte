@@ -1,14 +1,12 @@
 <script lang="ts">
-	import { listOncallEventsOptions, type OncallEvent, type OncallShift } from "$lib/api";
-	import { Button, Checkbox, Header, Icon, Menu, MenuItem, Pagination, Toggle, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { listOncallEventsOptions, type OncallEvent } from "$lib/api";
+	import { Checkbox, Header, Pagination } from "svelte-ux";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
-	import EventsFilters from "./EventsFilters.svelte";
+	import EventsFilters, { type FilterOptions } from "./EventsFilters.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { mdiChevronDown, mdiChevronUp, mdiCircle, mdiCircleBoxOutline, mdiCircleOutline, mdiDotsVertical, mdiFilter } from "@mdi/js";
-	import type { DateRange } from "@layerstack/utils/dateRange";
 	import EventRow from "./EventRow.svelte";
-	import { SvelteMap, SvelteSet } from "svelte/reactivity";
+	import { SvelteSet } from "svelte/reactivity";
 	import AnnotationDialog from "./AnnotationDialog.svelte";
 
 	type Props = {
@@ -19,14 +17,7 @@
 	const paginationStore = createPaginationStore({ perPage: defaultPerPage });
 	const pagination = fromStore(paginationStore);
 
-	type FilterOptions = {
-		rosterIds?: string[];
-		annotated?: boolean;
-		dateRange?: DateRange;
-	}
 	let filters = $state<FilterOptions>({});
-
-	// TODO
 
 	const rosterIds = $derived((filters.rosterIds && filters.rosterIds.length > 0) ? filters.rosterIds : undefined);
 	const eventsQuery = createQuery(() => listOncallEventsOptions({ query: { 
@@ -63,9 +54,7 @@
 	<Header title="Events" subheading="subheading text" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		<div slot="actions" class="p-2 pt-0">
 			<EventsFilters 
-				bind:rosterIds={filters.rosterIds}
-				bind:annotated={filters.annotated}
-				bind:dateRange={filters.dateRange}
+				bind:filters
 			/>
 		</div>
 	</Header>

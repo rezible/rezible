@@ -43,8 +43,8 @@ type UserEdges struct {
 	OncallShifts []*OncallUserShift `json:"oncall_shifts,omitempty"`
 	// OncallShiftCovers holds the value of the oncall_shift_covers edge.
 	OncallShiftCovers []*OncallUserShiftCover `json:"oncall_shift_covers,omitempty"`
-	// OncallEventAnnotations holds the value of the oncall_event_annotations edge.
-	OncallEventAnnotations []*OncallEventAnnotation `json:"oncall_event_annotations,omitempty"`
+	// OncallAnnotations holds the value of the oncall_annotations edge.
+	OncallAnnotations []*OncallAnnotation `json:"oncall_annotations,omitempty"`
 	// IncidentRoleAssignments holds the value of the incident_role_assignments edge.
 	IncidentRoleAssignments []*IncidentRoleAssignment `json:"incident_role_assignments,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
@@ -107,13 +107,13 @@ func (e UserEdges) OncallShiftCoversOrErr() ([]*OncallUserShiftCover, error) {
 	return nil, &NotLoadedError{edge: "oncall_shift_covers"}
 }
 
-// OncallEventAnnotationsOrErr returns the OncallEventAnnotations value or an error if the edge
+// OncallAnnotationsOrErr returns the OncallAnnotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) OncallEventAnnotationsOrErr() ([]*OncallEventAnnotation, error) {
+func (e UserEdges) OncallAnnotationsOrErr() ([]*OncallAnnotation, error) {
 	if e.loadedTypes[5] {
-		return e.OncallEventAnnotations, nil
+		return e.OncallAnnotations, nil
 	}
-	return nil, &NotLoadedError{edge: "oncall_event_annotations"}
+	return nil, &NotLoadedError{edge: "oncall_annotations"}
 }
 
 // IncidentRoleAssignmentsOrErr returns the IncidentRoleAssignments value or an error if the edge
@@ -262,9 +262,9 @@ func (u *User) QueryOncallShiftCovers() *OncallUserShiftCoverQuery {
 	return NewUserClient(u.config).QueryOncallShiftCovers(u)
 }
 
-// QueryOncallEventAnnotations queries the "oncall_event_annotations" edge of the User entity.
-func (u *User) QueryOncallEventAnnotations() *OncallEventAnnotationQuery {
-	return NewUserClient(u.config).QueryOncallEventAnnotations(u)
+// QueryOncallAnnotations queries the "oncall_annotations" edge of the User entity.
+func (u *User) QueryOncallAnnotations() *OncallAnnotationQuery {
+	return NewUserClient(u.config).QueryOncallAnnotations(u)
 }
 
 // QueryIncidentRoleAssignments queries the "incident_role_assignments" edge of the User entity.

@@ -4,16 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
-	"github.com/rs/zerolog/log"
-	"github.com/slack-go/slack"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+	"github.com/slack-go/slack"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallannotation"
 )
 
 var (
@@ -197,7 +199,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 
 	metadata.RosterId = roster.ID
 
-	curr, annoErr := roster.QueryEventAnnotations().Where(oncalleventannotation.EventID(msgId)).Only(ctx)
+	curr, annoErr := roster.QueryAnnotations().Where(oncallannotation.EventID(msgId)).Only(ctx)
 	if annoErr != nil && !ent.IsNotFound(annoErr) {
 		return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
 	}
@@ -289,7 +291,7 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		// TODO: add more message details
 	}
 
-	return p.createAnnotationFn(ctx, rosterId, event, func(anno *ent.OncallEventAnnotation) {
+	return p.createAnnotationFn(ctx, rosterId, event, func(anno *ent.OncallAnnotation) {
 		if meta.AnnotationId != uuid.Nil {
 			anno.ID = meta.AnnotationId
 		}

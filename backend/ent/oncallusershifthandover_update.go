@@ -12,7 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -119,14 +119,14 @@ func (oushu *OncallUserShiftHandoverUpdate) SetShift(o *OncallUserShift) *Oncall
 	return oushu.SetShiftID(o.ID)
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallEventAnnotation entity by IDs.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
 func (oushu *OncallUserShiftHandoverUpdate) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftHandoverUpdate {
 	oushu.mutation.AddPinnedAnnotationIDs(ids...)
 	return oushu
 }
 
-// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallEventAnnotation entity.
-func (oushu *OncallUserShiftHandoverUpdate) AddPinnedAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftHandoverUpdate {
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
+func (oushu *OncallUserShiftHandoverUpdate) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallUserShiftHandoverUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -145,20 +145,20 @@ func (oushu *OncallUserShiftHandoverUpdate) ClearShift() *OncallUserShiftHandove
 	return oushu
 }
 
-// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallEventAnnotation entity.
+// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallAnnotation entity.
 func (oushu *OncallUserShiftHandoverUpdate) ClearPinnedAnnotations() *OncallUserShiftHandoverUpdate {
 	oushu.mutation.ClearPinnedAnnotations()
 	return oushu
 }
 
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallEventAnnotation entities by IDs.
+// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallAnnotation entities by IDs.
 func (oushu *OncallUserShiftHandoverUpdate) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftHandoverUpdate {
 	oushu.mutation.RemovePinnedAnnotationIDs(ids...)
 	return oushu
 }
 
-// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallEventAnnotation entities.
-func (oushu *OncallUserShiftHandoverUpdate) RemovePinnedAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftHandoverUpdate {
+// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallAnnotation entities.
+func (oushu *OncallUserShiftHandoverUpdate) RemovePinnedAnnotations(o ...*OncallAnnotation) *OncallUserShiftHandoverUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -274,7 +274,7 @@ func (oushu *OncallUserShiftHandoverUpdate) sqlSave(ctx context.Context) (n int,
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -287,7 +287,7 @@ func (oushu *OncallUserShiftHandoverUpdate) sqlSave(ctx context.Context) (n int,
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -303,7 +303,7 @@ func (oushu *OncallUserShiftHandoverUpdate) sqlSave(ctx context.Context) (n int,
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -420,14 +420,14 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) SetShift(o *OncallUserShift) *On
 	return oushuo.SetShiftID(o.ID)
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallEventAnnotation entity by IDs.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
 func (oushuo *OncallUserShiftHandoverUpdateOne) AddPinnedAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftHandoverUpdateOne {
 	oushuo.mutation.AddPinnedAnnotationIDs(ids...)
 	return oushuo
 }
 
-// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallEventAnnotation entity.
-func (oushuo *OncallUserShiftHandoverUpdateOne) AddPinnedAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftHandoverUpdateOne {
+// AddPinnedAnnotations adds the "pinned_annotations" edges to the OncallAnnotation entity.
+func (oushuo *OncallUserShiftHandoverUpdateOne) AddPinnedAnnotations(o ...*OncallAnnotation) *OncallUserShiftHandoverUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -446,20 +446,20 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) ClearShift() *OncallUserShiftHan
 	return oushuo
 }
 
-// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallEventAnnotation entity.
+// ClearPinnedAnnotations clears all "pinned_annotations" edges to the OncallAnnotation entity.
 func (oushuo *OncallUserShiftHandoverUpdateOne) ClearPinnedAnnotations() *OncallUserShiftHandoverUpdateOne {
 	oushuo.mutation.ClearPinnedAnnotations()
 	return oushuo
 }
 
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallEventAnnotation entities by IDs.
+// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to OncallAnnotation entities by IDs.
 func (oushuo *OncallUserShiftHandoverUpdateOne) RemovePinnedAnnotationIDs(ids ...uuid.UUID) *OncallUserShiftHandoverUpdateOne {
 	oushuo.mutation.RemovePinnedAnnotationIDs(ids...)
 	return oushuo
 }
 
-// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallEventAnnotation entities.
-func (oushuo *OncallUserShiftHandoverUpdateOne) RemovePinnedAnnotations(o ...*OncallEventAnnotation) *OncallUserShiftHandoverUpdateOne {
+// RemovePinnedAnnotations removes "pinned_annotations" edges to OncallAnnotation entities.
+func (oushuo *OncallUserShiftHandoverUpdateOne) RemovePinnedAnnotations(o ...*OncallAnnotation) *OncallUserShiftHandoverUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -605,7 +605,7 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_n
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -618,7 +618,7 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_n
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -634,7 +634,7 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_n
 			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncalleventannotation.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

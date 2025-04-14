@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -33,7 +33,7 @@ type OncallRosterQuery struct {
 	predicates           []predicate.OncallRoster
 	withSchedules        *OncallScheduleQuery
 	withHandoverTemplate *OncallHandoverTemplateQuery
-	withEventAnnotations *OncallEventAnnotationQuery
+	withAnnotations      *OncallAnnotationQuery
 	withTeams            *TeamQuery
 	withShifts           *OncallUserShiftQuery
 	withAlerts           *OncallAlertQuery
@@ -119,9 +119,9 @@ func (orq *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQue
 	return query
 }
 
-// QueryEventAnnotations chains the current query on the "event_annotations" edge.
-func (orq *OncallRosterQuery) QueryEventAnnotations() *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: orq.config}).Query()
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (orq *OncallRosterQuery) QueryAnnotations() *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: orq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := orq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -132,8 +132,8 @@ func (orq *OncallRosterQuery) QueryEventAnnotations() *OncallEventAnnotationQuer
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.EventAnnotationsTable, oncallroster.EventAnnotationsColumn),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.AnnotationsTable, oncallroster.AnnotationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -423,7 +423,7 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		predicates:           append([]predicate.OncallRoster{}, orq.predicates...),
 		withSchedules:        orq.withSchedules.Clone(),
 		withHandoverTemplate: orq.withHandoverTemplate.Clone(),
-		withEventAnnotations: orq.withEventAnnotations.Clone(),
+		withAnnotations:      orq.withAnnotations.Clone(),
 		withTeams:            orq.withTeams.Clone(),
 		withShifts:           orq.withShifts.Clone(),
 		withAlerts:           orq.withAlerts.Clone(),
@@ -457,14 +457,14 @@ func (orq *OncallRosterQuery) WithHandoverTemplate(opts ...func(*OncallHandoverT
 	return orq
 }
 
-// WithEventAnnotations tells the query-builder to eager-load the nodes that are connected to
-// the "event_annotations" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithEventAnnotations(opts ...func(*OncallEventAnnotationQuery)) *OncallRosterQuery {
-	query := (&OncallEventAnnotationClient{config: orq.config}).Query()
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OncallRosterQuery) WithAnnotations(opts ...func(*OncallAnnotationQuery)) *OncallRosterQuery {
+	query := (&OncallAnnotationClient{config: orq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	orq.withEventAnnotations = query
+	orq.withAnnotations = query
 	return orq
 }
 
@@ -593,7 +593,7 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		loadedTypes = [7]bool{
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
-			orq.withEventAnnotations != nil,
+			orq.withAnnotations != nil,
 			orq.withTeams != nil,
 			orq.withShifts != nil,
 			orq.withAlerts != nil,
@@ -634,12 +634,10 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := orq.withEventAnnotations; query != nil {
-		if err := orq.loadEventAnnotations(ctx, query, nodes,
-			func(n *OncallRoster) { n.Edges.EventAnnotations = []*OncallEventAnnotation{} },
-			func(n *OncallRoster, e *OncallEventAnnotation) {
-				n.Edges.EventAnnotations = append(n.Edges.EventAnnotations, e)
-			}); err != nil {
+	if query := orq.withAnnotations; query != nil {
+		if err := orq.loadAnnotations(ctx, query, nodes,
+			func(n *OncallRoster) { n.Edges.Annotations = []*OncallAnnotation{} },
+			func(n *OncallRoster, e *OncallAnnotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -733,7 +731,7 @@ func (orq *OncallRosterQuery) loadHandoverTemplate(ctx context.Context, query *O
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadEventAnnotations(ctx context.Context, query *OncallEventAnnotationQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallEventAnnotation)) error {
+func (orq *OncallRosterQuery) loadAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallAnnotation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -744,10 +742,10 @@ func (orq *OncallRosterQuery) loadEventAnnotations(ctx context.Context, query *O
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncalleventannotation.FieldRosterID)
+		query.ctx.AppendFieldOnce(oncallannotation.FieldRosterID)
 	}
-	query.Where(predicate.OncallEventAnnotation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(oncallroster.EventAnnotationsColumn), fks...))
+	query.Where(predicate.OncallAnnotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(oncallroster.AnnotationsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

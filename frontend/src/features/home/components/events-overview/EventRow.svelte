@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OncallEvent } from "$lib/api";
+	import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
 	import { format as formatDate } from "date-fns";
 	import { mdiAlert, mdiCalendarClock, mdiCircleMedium, mdiClock, mdiFire, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Button, Checkbox, Icon, Tooltip } from "svelte-ux";

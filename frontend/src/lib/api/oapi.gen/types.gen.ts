@@ -379,7 +379,7 @@ export type CreateMeetingSessionResponseBody = {
     data: MeetingSession;
 };
 
-export type CreateOncallEventAnnotationRequestAttributes = {
+export type CreateOncallAnnotationRequestAttributes = {
     eventId: string;
     minutesOccupied: number;
     notes: string;
@@ -387,20 +387,20 @@ export type CreateOncallEventAnnotationRequestAttributes = {
     rosterId: string;
 };
 
-export type CreateOncallEventAnnotationRequestBody = {
+export type CreateOncallAnnotationRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateOncallEventAnnotationRequestAttributes;
+    attributes: CreateOncallAnnotationRequestAttributes;
 };
 
-export type CreateOncallEventAnnotationResponseBody = {
+export type CreateOncallAnnotationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: OncallEventAnnotation;
+    data: OncallAnnotation;
 };
 
 export type CreateOncallShiftHandoverTemplateRequestAttributes = {
@@ -1504,12 +1504,12 @@ export type ListNotificationsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallEventAnnotationsResponseBody = {
+export type ListOncallAnnotationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallEventAnnotation>;
+    data: Array<OncallAnnotation>;
     pagination: ResponsePagination;
 };
 
@@ -1692,26 +1692,28 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
-export type OncallEvent = {
-    description?: string;
-    id: string;
-    kind: string;
-    source?: string;
-    timestamp: string;
-    title?: string;
-};
-
-export type OncallEventAnnotation = {
-    attributes: OncallEventAnnotationAttributes;
+export type OncallAnnotation = {
+    attributes: OncallAnnotationAttributes;
     id: string;
 };
 
-export type OncallEventAnnotationAttributes = {
+export type OncallAnnotationAttributes = {
     creator: User;
-    event: OncallEvent;
     minutesOccupied: number;
     notes: string;
     rosterId: string;
+};
+
+export type OncallEvent = {
+    attributes: OncallEventAttributes;
+    id: string;
+};
+
+export type OncallEventAttributes = {
+    annotation: OncallAnnotation;
+    kind: string;
+    timestamp: string;
+    title: string;
 };
 
 export type OncallRoster = {
@@ -1785,7 +1787,7 @@ export type OncallShiftHandover = {
 };
 
 export type OncallShiftHandoverAttributes = {
-    annotations: Array<OncallEventAnnotation>;
+    annotations: Array<OncallAnnotation>;
     content: Array<OncallShiftHandoverSection>;
     createdAt: string;
     sentAt: string;
@@ -2408,26 +2410,26 @@ export type UpdateMeetingSessionResponseBody = {
     data: MeetingSession;
 };
 
-export type UpdateOncallEventAnnotationRequestAttributes = {
+export type UpdateOncallAnnotationRequestAttributes = {
     minutesOccupied?: number;
     notes?: string;
     pinned?: boolean;
 };
 
-export type UpdateOncallEventAnnotationRequestBody = {
+export type UpdateOncallAnnotationRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateOncallEventAnnotationRequestAttributes;
+    attributes: UpdateOncallAnnotationRequestAttributes;
 };
 
-export type UpdateOncallEventAnnotationResponseBody = {
+export type UpdateOncallAnnotationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: OncallEventAnnotation;
+    data: OncallAnnotation;
 };
 
 export type UpdateOncallShiftHandoverAttributes = {
@@ -6696,7 +6698,7 @@ export type UpdateMeetingSessionResponses = {
 
 export type UpdateMeetingSessionResponse = UpdateMeetingSessionResponses[keyof UpdateMeetingSessionResponses];
 
-export type ListOncallEventAnnotationsData = {
+export type ListOncallAnnotationsData = {
     body?: never;
     path?: never;
     query?: {
@@ -6707,10 +6709,10 @@ export type ListOncallEventAnnotationsData = {
         rosterId?: string;
         shiftId?: string;
     };
-    url: '/oncall/event_annotations';
+    url: '/oncall/annotations';
 };
 
-export type ListOncallEventAnnotationsErrors = {
+export type ListOncallAnnotationsErrors = {
     /**
      * Bad Request
      */
@@ -6737,27 +6739,27 @@ export type ListOncallEventAnnotationsErrors = {
     500: ErrorModel;
 };
 
-export type ListOncallEventAnnotationsError = ListOncallEventAnnotationsErrors[keyof ListOncallEventAnnotationsErrors];
+export type ListOncallAnnotationsError = ListOncallAnnotationsErrors[keyof ListOncallAnnotationsErrors];
 
-export type ListOncallEventAnnotationsResponses = {
+export type ListOncallAnnotationsResponses = {
     /**
      * OK
      */
-    200: ListOncallEventAnnotationsResponseBody;
+    200: ListOncallAnnotationsResponseBody;
 };
 
-export type ListOncallEventAnnotationsResponse = ListOncallEventAnnotationsResponses[keyof ListOncallEventAnnotationsResponses];
+export type ListOncallAnnotationsResponse = ListOncallAnnotationsResponses[keyof ListOncallAnnotationsResponses];
 
-export type CreateOncallEventAnnotationData = {
-    body: CreateOncallEventAnnotationRequestBody;
+export type CreateOncallAnnotationData = {
+    body: CreateOncallAnnotationRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/oncall/event_annotations';
+    url: '/oncall/annotations';
 };
 
-export type CreateOncallEventAnnotationErrors = {
+export type CreateOncallAnnotationErrors = {
     /**
      * Bad Request
      */
@@ -6784,27 +6786,27 @@ export type CreateOncallEventAnnotationErrors = {
     500: ErrorModel;
 };
 
-export type CreateOncallEventAnnotationError = CreateOncallEventAnnotationErrors[keyof CreateOncallEventAnnotationErrors];
+export type CreateOncallAnnotationError = CreateOncallAnnotationErrors[keyof CreateOncallAnnotationErrors];
 
-export type CreateOncallEventAnnotationResponses = {
+export type CreateOncallAnnotationResponses = {
     /**
      * OK
      */
-    200: CreateOncallEventAnnotationResponseBody;
+    200: CreateOncallAnnotationResponseBody;
 };
 
-export type CreateOncallEventAnnotationResponse = CreateOncallEventAnnotationResponses[keyof CreateOncallEventAnnotationResponses];
+export type CreateOncallAnnotationResponse = CreateOncallAnnotationResponses[keyof CreateOncallAnnotationResponses];
 
-export type DeleteOncallEventAnnotationData = {
+export type DeleteOncallAnnotationData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/oncall/event_annotations/{id}';
+    url: '/oncall/annotations/{id}';
 };
 
-export type DeleteOncallEventAnnotationErrors = {
+export type DeleteOncallAnnotationErrors = {
     /**
      * Bad Request
      */
@@ -6831,27 +6833,27 @@ export type DeleteOncallEventAnnotationErrors = {
     500: ErrorModel;
 };
 
-export type DeleteOncallEventAnnotationError = DeleteOncallEventAnnotationErrors[keyof DeleteOncallEventAnnotationErrors];
+export type DeleteOncallAnnotationError = DeleteOncallAnnotationErrors[keyof DeleteOncallAnnotationErrors];
 
-export type DeleteOncallEventAnnotationResponses = {
+export type DeleteOncallAnnotationResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteOncallEventAnnotationResponse = DeleteOncallEventAnnotationResponses[keyof DeleteOncallEventAnnotationResponses];
+export type DeleteOncallAnnotationResponse = DeleteOncallAnnotationResponses[keyof DeleteOncallAnnotationResponses];
 
-export type UpdateOncallEventAnnotationData = {
-    body: UpdateOncallEventAnnotationRequestBody;
+export type UpdateOncallAnnotationData = {
+    body: UpdateOncallAnnotationRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/oncall/event_annotations/{id}';
+    url: '/oncall/annotations/{id}';
 };
 
-export type UpdateOncallEventAnnotationErrors = {
+export type UpdateOncallAnnotationErrors = {
     /**
      * Bad Request
      */
@@ -6878,16 +6880,16 @@ export type UpdateOncallEventAnnotationErrors = {
     500: ErrorModel;
 };
 
-export type UpdateOncallEventAnnotationError = UpdateOncallEventAnnotationErrors[keyof UpdateOncallEventAnnotationErrors];
+export type UpdateOncallAnnotationError = UpdateOncallAnnotationErrors[keyof UpdateOncallAnnotationErrors];
 
-export type UpdateOncallEventAnnotationResponses = {
+export type UpdateOncallAnnotationResponses = {
     /**
      * OK
      */
-    200: UpdateOncallEventAnnotationResponseBody;
+    200: UpdateOncallAnnotationResponseBody;
 };
 
-export type UpdateOncallEventAnnotationResponse = UpdateOncallEventAnnotationResponses[keyof UpdateOncallEventAnnotationResponses];
+export type UpdateOncallAnnotationResponse = UpdateOncallAnnotationResponses[keyof UpdateOncallAnnotationResponses];
 
 export type ListOncallEventsData = {
     body?: never;

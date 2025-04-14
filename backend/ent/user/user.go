@@ -31,8 +31,8 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeOncallShiftCovers holds the string denoting the oncall_shift_covers edge name in mutations.
 	EdgeOncallShiftCovers = "oncall_shift_covers"
-	// EdgeOncallEventAnnotations holds the string denoting the oncall_event_annotations edge name in mutations.
-	EdgeOncallEventAnnotations = "oncall_event_annotations"
+	// EdgeOncallAnnotations holds the string denoting the oncall_annotations edge name in mutations.
+	EdgeOncallAnnotations = "oncall_annotations"
 	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
 	EdgeIncidentRoleAssignments = "incident_role_assignments"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
@@ -78,13 +78,13 @@ const (
 	OncallShiftCoversInverseTable = "oncall_user_shift_covers"
 	// OncallShiftCoversColumn is the table column denoting the oncall_shift_covers relation/edge.
 	OncallShiftCoversColumn = "user_id"
-	// OncallEventAnnotationsTable is the table that holds the oncall_event_annotations relation/edge.
-	OncallEventAnnotationsTable = "oncall_event_annotations"
-	// OncallEventAnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
-	OncallEventAnnotationsInverseTable = "oncall_event_annotations"
-	// OncallEventAnnotationsColumn is the table column denoting the oncall_event_annotations relation/edge.
-	OncallEventAnnotationsColumn = "creator_id"
+	// OncallAnnotationsTable is the table that holds the oncall_annotations relation/edge.
+	OncallAnnotationsTable = "oncall_annotations"
+	// OncallAnnotationsInverseTable is the table name for the OncallAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
+	OncallAnnotationsInverseTable = "oncall_annotations"
+	// OncallAnnotationsColumn is the table column denoting the oncall_annotations relation/edge.
+	OncallAnnotationsColumn = "creator_id"
 	// IncidentRoleAssignmentsTable is the table that holds the incident_role_assignments relation/edge.
 	IncidentRoleAssignmentsTable = "incident_role_assignments"
 	// IncidentRoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
@@ -260,17 +260,17 @@ func ByOncallShiftCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
-// ByOncallEventAnnotationsCount orders the results by oncall_event_annotations count.
-func ByOncallEventAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByOncallAnnotationsCount orders the results by oncall_annotations count.
+func ByOncallAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOncallEventAnnotationsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newOncallAnnotationsStep(), opts...)
 	}
 }
 
-// ByOncallEventAnnotations orders the results by oncall_event_annotations terms.
-func ByOncallEventAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByOncallAnnotations orders the results by oncall_annotations terms.
+func ByOncallAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOncallEventAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newOncallAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -392,11 +392,11 @@ func newOncallShiftCoversStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftCoversTable, OncallShiftCoversColumn),
 	)
 }
-func newOncallEventAnnotationsStep() *sqlgraph.Step {
+func newOncallAnnotationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OncallEventAnnotationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, OncallEventAnnotationsTable, OncallEventAnnotationsColumn),
+		sqlgraph.To(OncallAnnotationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, OncallAnnotationsTable, OncallAnnotationsColumn),
 	)
 }
 func newIncidentRoleAssignmentsStep() *sqlgraph.Step {

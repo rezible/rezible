@@ -204,12 +204,12 @@ func (c *OncallAlertClient) Debug() *OncallAlertClient {
 	return &OncallAlertClient{config: cfg}
 }
 
-func (c *OncallEventAnnotationClient) Debug() *OncallEventAnnotationClient {
+func (c *OncallAnnotationClient) Debug() *OncallAnnotationClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallEventAnnotationClient{config: cfg}
+	return &OncallAnnotationClient{config: cfg}
 }
 
 func (c *OncallHandoverTemplateClient) Debug() *OncallHandoverTemplateClient {

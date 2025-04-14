@@ -47,8 +47,8 @@ type OncallRosterEdges struct {
 	Schedules []*OncallSchedule `json:"schedules,omitempty"`
 	// HandoverTemplate holds the value of the handover_template edge.
 	HandoverTemplate *OncallHandoverTemplate `json:"handover_template,omitempty"`
-	// EventAnnotations holds the value of the event_annotations edge.
-	EventAnnotations []*OncallEventAnnotation `json:"event_annotations,omitempty"`
+	// Annotations holds the value of the annotations edge.
+	Annotations []*OncallAnnotation `json:"annotations,omitempty"`
 	// Teams holds the value of the teams edge.
 	Teams []*Team `json:"teams,omitempty"`
 	// Shifts holds the value of the shifts edge.
@@ -82,13 +82,13 @@ func (e OncallRosterEdges) HandoverTemplateOrErr() (*OncallHandoverTemplate, err
 	return nil, &NotLoadedError{edge: "handover_template"}
 }
 
-// EventAnnotationsOrErr returns the EventAnnotations value or an error if the edge
+// AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallRosterEdges) EventAnnotationsOrErr() ([]*OncallEventAnnotation, error) {
+func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
 	if e.loadedTypes[2] {
-		return e.EventAnnotations, nil
+		return e.Annotations, nil
 	}
-	return nil, &NotLoadedError{edge: "event_annotations"}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // TeamsOrErr returns the Teams value or an error if the edge
@@ -230,9 +230,9 @@ func (or *OncallRoster) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
 	return NewOncallRosterClient(or.config).QueryHandoverTemplate(or)
 }
 
-// QueryEventAnnotations queries the "event_annotations" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryEventAnnotations() *OncallEventAnnotationQuery {
-	return NewOncallRosterClient(or.config).QueryEventAnnotations(or)
+// QueryAnnotations queries the "annotations" edge of the OncallRoster entity.
+func (or *OncallRoster) QueryAnnotations() *OncallAnnotationQuery {
+	return NewOncallRosterClient(or.config).QueryAnnotations(or)
 }
 
 // QueryTeams queries the "teams" edge of the OncallRoster entity.

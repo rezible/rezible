@@ -146,7 +146,7 @@ type (
 		UpdatedAt   time.Time                    `json:"updatedAt"`
 		Content     []OncallShiftHandoverSection `json:"content"`
 		SentAt      time.Time                    `json:"sentAt"`
-		Annotations []OncallEventAnnotation      `json:"annotations"`
+		Annotations []OncallAnnotation           `json:"annotations"`
 	}
 
 	OncallShiftHandoverSection struct {

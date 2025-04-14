@@ -37,7 +37,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -150,7 +150,7 @@ func checkColumn(table, column string) error {
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			oncallalert.Table:                      oncallalert.ValidColumn,
-			oncalleventannotation.Table:            oncalleventannotation.ValidColumn,
+			oncallannotation.Table:                 oncallannotation.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                     oncallroster.ValidColumn,
 			oncallschedule.Table:                   oncallschedule.ValidColumn,

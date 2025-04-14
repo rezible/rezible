@@ -32,7 +32,7 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 		lookupUserFn: func(ctx context.Context, s string) (*ent.User, error) {
 			return nil, fmt.Errorf("no user lookup func registered")
 		},
-		createAnnotationFn: func(ctx context.Context, rosterId uuid.UUID, e *rez.OncallEvent, up func(*ent.OncallEventAnnotation)) error {
+		createAnnotationFn: func(ctx context.Context, rosterId uuid.UUID, e *rez.OncallEvent, up func(*ent.OncallAnnotation)) error {
 			return fmt.Errorf("no create func registered")
 		},
 	}

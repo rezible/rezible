@@ -37,7 +37,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -102,7 +102,7 @@ const (
 	TypeMeetingSchedule                  = "MeetingSchedule"
 	TypeMeetingSession                   = "MeetingSession"
 	TypeOncallAlert                      = "OncallAlert"
-	TypeOncallEventAnnotation            = "OncallEventAnnotation"
+	TypeOncallAnnotation                 = "OncallAnnotation"
 	TypeOncallHandoverTemplate           = "OncallHandoverTemplate"
 	TypeOncallRoster                     = "OncallRoster"
 	TypeOncallSchedule                   = "OncallSchedule"
@@ -18244,8 +18244,8 @@ func (m *OncallAlertMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown OncallAlert edge %s", name)
 }
 
-// OncallEventAnnotationMutation represents an operation that mutates the OncallEventAnnotation nodes in the graph.
-type OncallEventAnnotationMutation struct {
+// OncallAnnotationMutation represents an operation that mutates the OncallAnnotation nodes in the graph.
+type OncallAnnotationMutation struct {
 	config
 	op                  Op
 	typ                 string
@@ -18264,21 +18264,21 @@ type OncallEventAnnotationMutation struct {
 	removedhandovers    map[uuid.UUID]struct{}
 	clearedhandovers    bool
 	done                bool
-	oldValue            func(context.Context) (*OncallEventAnnotation, error)
-	predicates          []predicate.OncallEventAnnotation
+	oldValue            func(context.Context) (*OncallAnnotation, error)
+	predicates          []predicate.OncallAnnotation
 }
 
-var _ ent.Mutation = (*OncallEventAnnotationMutation)(nil)
+var _ ent.Mutation = (*OncallAnnotationMutation)(nil)
 
-// oncalleventannotationOption allows management of the mutation configuration using functional options.
-type oncalleventannotationOption func(*OncallEventAnnotationMutation)
+// oncallannotationOption allows management of the mutation configuration using functional options.
+type oncallannotationOption func(*OncallAnnotationMutation)
 
-// newOncallEventAnnotationMutation creates new mutation for the OncallEventAnnotation entity.
-func newOncallEventAnnotationMutation(c config, op Op, opts ...oncalleventannotationOption) *OncallEventAnnotationMutation {
-	m := &OncallEventAnnotationMutation{
+// newOncallAnnotationMutation creates new mutation for the OncallAnnotation entity.
+func newOncallAnnotationMutation(c config, op Op, opts ...oncallannotationOption) *OncallAnnotationMutation {
+	m := &OncallAnnotationMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeOncallEventAnnotation,
+		typ:           TypeOncallAnnotation,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -18287,20 +18287,20 @@ func newOncallEventAnnotationMutation(c config, op Op, opts ...oncalleventannota
 	return m
 }
 
-// withOncallEventAnnotationID sets the ID field of the mutation.
-func withOncallEventAnnotationID(id uuid.UUID) oncalleventannotationOption {
-	return func(m *OncallEventAnnotationMutation) {
+// withOncallAnnotationID sets the ID field of the mutation.
+func withOncallAnnotationID(id uuid.UUID) oncallannotationOption {
+	return func(m *OncallAnnotationMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *OncallEventAnnotation
+			value *OncallAnnotation
 		)
-		m.oldValue = func(ctx context.Context) (*OncallEventAnnotation, error) {
+		m.oldValue = func(ctx context.Context) (*OncallAnnotation, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().OncallEventAnnotation.Get(ctx, id)
+					value, err = m.Client().OncallAnnotation.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -18309,10 +18309,10 @@ func withOncallEventAnnotationID(id uuid.UUID) oncalleventannotationOption {
 	}
 }
 
-// withOncallEventAnnotation sets the old OncallEventAnnotation of the mutation.
-func withOncallEventAnnotation(node *OncallEventAnnotation) oncalleventannotationOption {
-	return func(m *OncallEventAnnotationMutation) {
-		m.oldValue = func(context.Context) (*OncallEventAnnotation, error) {
+// withOncallAnnotation sets the old OncallAnnotation of the mutation.
+func withOncallAnnotation(node *OncallAnnotation) oncallannotationOption {
+	return func(m *OncallAnnotationMutation) {
+		m.oldValue = func(context.Context) (*OncallAnnotation, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -18321,7 +18321,7 @@ func withOncallEventAnnotation(node *OncallEventAnnotation) oncalleventannotatio
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OncallEventAnnotationMutation) Client() *Client {
+func (m OncallAnnotationMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -18329,7 +18329,7 @@ func (m OncallEventAnnotationMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m OncallEventAnnotationMutation) Tx() (*Tx, error) {
+func (m OncallAnnotationMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -18339,14 +18339,14 @@ func (m OncallEventAnnotationMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of OncallEventAnnotation entities.
-func (m *OncallEventAnnotationMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of OncallAnnotation entities.
+func (m *OncallAnnotationMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *OncallEventAnnotationMutation) ID() (id uuid.UUID, exists bool) {
+func (m *OncallAnnotationMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -18357,7 +18357,7 @@ func (m *OncallEventAnnotationMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *OncallEventAnnotationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *OncallAnnotationMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -18366,19 +18366,19 @@ func (m *OncallEventAnnotationMutation) IDs(ctx context.Context) ([]uuid.UUID, e
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OncallEventAnnotation.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().OncallAnnotation.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetRosterID sets the "roster_id" field.
-func (m *OncallEventAnnotationMutation) SetRosterID(u uuid.UUID) {
+func (m *OncallAnnotationMutation) SetRosterID(u uuid.UUID) {
 	m.roster = &u
 }
 
 // RosterID returns the value of the "roster_id" field in the mutation.
-func (m *OncallEventAnnotationMutation) RosterID() (r uuid.UUID, exists bool) {
+func (m *OncallAnnotationMutation) RosterID() (r uuid.UUID, exists bool) {
 	v := m.roster
 	if v == nil {
 		return
@@ -18386,10 +18386,10 @@ func (m *OncallEventAnnotationMutation) RosterID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldRosterID returns the old "roster_id" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldRosterID returns the old "roster_id" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallAnnotationMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRosterID is only allowed on UpdateOne operations")
 	}
@@ -18404,17 +18404,17 @@ func (m *OncallEventAnnotationMutation) OldRosterID(ctx context.Context) (v uuid
 }
 
 // ResetRosterID resets all changes to the "roster_id" field.
-func (m *OncallEventAnnotationMutation) ResetRosterID() {
+func (m *OncallAnnotationMutation) ResetRosterID() {
 	m.roster = nil
 }
 
 // SetCreatorID sets the "creator_id" field.
-func (m *OncallEventAnnotationMutation) SetCreatorID(u uuid.UUID) {
+func (m *OncallAnnotationMutation) SetCreatorID(u uuid.UUID) {
 	m.creator = &u
 }
 
 // CreatorID returns the value of the "creator_id" field in the mutation.
-func (m *OncallEventAnnotationMutation) CreatorID() (r uuid.UUID, exists bool) {
+func (m *OncallAnnotationMutation) CreatorID() (r uuid.UUID, exists bool) {
 	v := m.creator
 	if v == nil {
 		return
@@ -18422,10 +18422,10 @@ func (m *OncallEventAnnotationMutation) CreatorID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldCreatorID returns the old "creator_id" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatorID returns the old "creator_id" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldCreatorID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallAnnotationMutation) OldCreatorID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatorID is only allowed on UpdateOne operations")
 	}
@@ -18440,17 +18440,17 @@ func (m *OncallEventAnnotationMutation) OldCreatorID(ctx context.Context) (v uui
 }
 
 // ResetCreatorID resets all changes to the "creator_id" field.
-func (m *OncallEventAnnotationMutation) ResetCreatorID() {
+func (m *OncallAnnotationMutation) ResetCreatorID() {
 	m.creator = nil
 }
 
 // SetEventID sets the "event_id" field.
-func (m *OncallEventAnnotationMutation) SetEventID(s string) {
+func (m *OncallAnnotationMutation) SetEventID(s string) {
 	m.event_id = &s
 }
 
 // EventID returns the value of the "event_id" field in the mutation.
-func (m *OncallEventAnnotationMutation) EventID() (r string, exists bool) {
+func (m *OncallAnnotationMutation) EventID() (r string, exists bool) {
 	v := m.event_id
 	if v == nil {
 		return
@@ -18458,10 +18458,10 @@ func (m *OncallEventAnnotationMutation) EventID() (r string, exists bool) {
 	return *v, true
 }
 
-// OldEventID returns the old "event_id" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldEventID returns the old "event_id" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldEventID(ctx context.Context) (v string, err error) {
+func (m *OncallAnnotationMutation) OldEventID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEventID is only allowed on UpdateOne operations")
 	}
@@ -18476,17 +18476,17 @@ func (m *OncallEventAnnotationMutation) OldEventID(ctx context.Context) (v strin
 }
 
 // ResetEventID resets all changes to the "event_id" field.
-func (m *OncallEventAnnotationMutation) ResetEventID() {
+func (m *OncallAnnotationMutation) ResetEventID() {
 	m.event_id = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *OncallEventAnnotationMutation) SetCreatedAt(t time.Time) {
+func (m *OncallAnnotationMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *OncallEventAnnotationMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *OncallAnnotationMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -18494,10 +18494,10 @@ func (m *OncallEventAnnotationMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallAnnotationMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -18512,18 +18512,18 @@ func (m *OncallEventAnnotationMutation) OldCreatedAt(ctx context.Context) (v tim
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *OncallEventAnnotationMutation) ResetCreatedAt() {
+func (m *OncallAnnotationMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetMinutesOccupied sets the "minutes_occupied" field.
-func (m *OncallEventAnnotationMutation) SetMinutesOccupied(i int) {
+func (m *OncallAnnotationMutation) SetMinutesOccupied(i int) {
 	m.minutes_occupied = &i
 	m.addminutes_occupied = nil
 }
 
 // MinutesOccupied returns the value of the "minutes_occupied" field in the mutation.
-func (m *OncallEventAnnotationMutation) MinutesOccupied() (r int, exists bool) {
+func (m *OncallAnnotationMutation) MinutesOccupied() (r int, exists bool) {
 	v := m.minutes_occupied
 	if v == nil {
 		return
@@ -18531,10 +18531,10 @@ func (m *OncallEventAnnotationMutation) MinutesOccupied() (r int, exists bool) {
 	return *v, true
 }
 
-// OldMinutesOccupied returns the old "minutes_occupied" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldMinutesOccupied returns the old "minutes_occupied" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldMinutesOccupied(ctx context.Context) (v int, err error) {
+func (m *OncallAnnotationMutation) OldMinutesOccupied(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldMinutesOccupied is only allowed on UpdateOne operations")
 	}
@@ -18549,7 +18549,7 @@ func (m *OncallEventAnnotationMutation) OldMinutesOccupied(ctx context.Context) 
 }
 
 // AddMinutesOccupied adds i to the "minutes_occupied" field.
-func (m *OncallEventAnnotationMutation) AddMinutesOccupied(i int) {
+func (m *OncallAnnotationMutation) AddMinutesOccupied(i int) {
 	if m.addminutes_occupied != nil {
 		*m.addminutes_occupied += i
 	} else {
@@ -18558,7 +18558,7 @@ func (m *OncallEventAnnotationMutation) AddMinutesOccupied(i int) {
 }
 
 // AddedMinutesOccupied returns the value that was added to the "minutes_occupied" field in this mutation.
-func (m *OncallEventAnnotationMutation) AddedMinutesOccupied() (r int, exists bool) {
+func (m *OncallAnnotationMutation) AddedMinutesOccupied() (r int, exists bool) {
 	v := m.addminutes_occupied
 	if v == nil {
 		return
@@ -18567,18 +18567,18 @@ func (m *OncallEventAnnotationMutation) AddedMinutesOccupied() (r int, exists bo
 }
 
 // ResetMinutesOccupied resets all changes to the "minutes_occupied" field.
-func (m *OncallEventAnnotationMutation) ResetMinutesOccupied() {
+func (m *OncallAnnotationMutation) ResetMinutesOccupied() {
 	m.minutes_occupied = nil
 	m.addminutes_occupied = nil
 }
 
 // SetNotes sets the "notes" field.
-func (m *OncallEventAnnotationMutation) SetNotes(s string) {
+func (m *OncallAnnotationMutation) SetNotes(s string) {
 	m.notes = &s
 }
 
 // Notes returns the value of the "notes" field in the mutation.
-func (m *OncallEventAnnotationMutation) Notes() (r string, exists bool) {
+func (m *OncallAnnotationMutation) Notes() (r string, exists bool) {
 	v := m.notes
 	if v == nil {
 		return
@@ -18586,10 +18586,10 @@ func (m *OncallEventAnnotationMutation) Notes() (r string, exists bool) {
 	return *v, true
 }
 
-// OldNotes returns the old "notes" field's value of the OncallEventAnnotation entity.
-// If the OncallEventAnnotation object wasn't provided to the builder, the object is fetched from the database.
+// OldNotes returns the old "notes" field's value of the OncallAnnotation entity.
+// If the OncallAnnotation object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventAnnotationMutation) OldNotes(ctx context.Context) (v string, err error) {
+func (m *OncallAnnotationMutation) OldNotes(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNotes is only allowed on UpdateOne operations")
 	}
@@ -18604,25 +18604,25 @@ func (m *OncallEventAnnotationMutation) OldNotes(ctx context.Context) (v string,
 }
 
 // ResetNotes resets all changes to the "notes" field.
-func (m *OncallEventAnnotationMutation) ResetNotes() {
+func (m *OncallAnnotationMutation) ResetNotes() {
 	m.notes = nil
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (m *OncallEventAnnotationMutation) ClearRoster() {
+func (m *OncallAnnotationMutation) ClearRoster() {
 	m.clearedroster = true
-	m.clearedFields[oncalleventannotation.FieldRosterID] = struct{}{}
+	m.clearedFields[oncallannotation.FieldRosterID] = struct{}{}
 }
 
 // RosterCleared reports if the "roster" edge to the OncallRoster entity was cleared.
-func (m *OncallEventAnnotationMutation) RosterCleared() bool {
+func (m *OncallAnnotationMutation) RosterCleared() bool {
 	return m.clearedroster
 }
 
 // RosterIDs returns the "roster" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // RosterID instead. It exists only for internal usage by the builders.
-func (m *OncallEventAnnotationMutation) RosterIDs() (ids []uuid.UUID) {
+func (m *OncallAnnotationMutation) RosterIDs() (ids []uuid.UUID) {
 	if id := m.roster; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18630,26 +18630,26 @@ func (m *OncallEventAnnotationMutation) RosterIDs() (ids []uuid.UUID) {
 }
 
 // ResetRoster resets all changes to the "roster" edge.
-func (m *OncallEventAnnotationMutation) ResetRoster() {
+func (m *OncallAnnotationMutation) ResetRoster() {
 	m.roster = nil
 	m.clearedroster = false
 }
 
 // ClearCreator clears the "creator" edge to the User entity.
-func (m *OncallEventAnnotationMutation) ClearCreator() {
+func (m *OncallAnnotationMutation) ClearCreator() {
 	m.clearedcreator = true
-	m.clearedFields[oncalleventannotation.FieldCreatorID] = struct{}{}
+	m.clearedFields[oncallannotation.FieldCreatorID] = struct{}{}
 }
 
 // CreatorCleared reports if the "creator" edge to the User entity was cleared.
-func (m *OncallEventAnnotationMutation) CreatorCleared() bool {
+func (m *OncallAnnotationMutation) CreatorCleared() bool {
 	return m.clearedcreator
 }
 
 // CreatorIDs returns the "creator" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // CreatorID instead. It exists only for internal usage by the builders.
-func (m *OncallEventAnnotationMutation) CreatorIDs() (ids []uuid.UUID) {
+func (m *OncallAnnotationMutation) CreatorIDs() (ids []uuid.UUID) {
 	if id := m.creator; id != nil {
 		ids = append(ids, *id)
 	}
@@ -18657,13 +18657,13 @@ func (m *OncallEventAnnotationMutation) CreatorIDs() (ids []uuid.UUID) {
 }
 
 // ResetCreator resets all changes to the "creator" edge.
-func (m *OncallEventAnnotationMutation) ResetCreator() {
+func (m *OncallAnnotationMutation) ResetCreator() {
 	m.creator = nil
 	m.clearedcreator = false
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by ids.
-func (m *OncallEventAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
+func (m *OncallAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
 	if m.handovers == nil {
 		m.handovers = make(map[uuid.UUID]struct{})
 	}
@@ -18673,17 +18673,17 @@ func (m *OncallEventAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
 }
 
 // ClearHandovers clears the "handovers" edge to the OncallUserShiftHandover entity.
-func (m *OncallEventAnnotationMutation) ClearHandovers() {
+func (m *OncallAnnotationMutation) ClearHandovers() {
 	m.clearedhandovers = true
 }
 
 // HandoversCleared reports if the "handovers" edge to the OncallUserShiftHandover entity was cleared.
-func (m *OncallEventAnnotationMutation) HandoversCleared() bool {
+func (m *OncallAnnotationMutation) HandoversCleared() bool {
 	return m.clearedhandovers
 }
 
 // RemoveHandoverIDs removes the "handovers" edge to the OncallUserShiftHandover entity by IDs.
-func (m *OncallEventAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
+func (m *OncallAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
 	if m.removedhandovers == nil {
 		m.removedhandovers = make(map[uuid.UUID]struct{})
 	}
@@ -18694,7 +18694,7 @@ func (m *OncallEventAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
 }
 
 // RemovedHandovers returns the removed IDs of the "handovers" edge to the OncallUserShiftHandover entity.
-func (m *OncallEventAnnotationMutation) RemovedHandoversIDs() (ids []uuid.UUID) {
+func (m *OncallAnnotationMutation) RemovedHandoversIDs() (ids []uuid.UUID) {
 	for id := range m.removedhandovers {
 		ids = append(ids, id)
 	}
@@ -18702,7 +18702,7 @@ func (m *OncallEventAnnotationMutation) RemovedHandoversIDs() (ids []uuid.UUID) 
 }
 
 // HandoversIDs returns the "handovers" edge IDs in the mutation.
-func (m *OncallEventAnnotationMutation) HandoversIDs() (ids []uuid.UUID) {
+func (m *OncallAnnotationMutation) HandoversIDs() (ids []uuid.UUID) {
 	for id := range m.handovers {
 		ids = append(ids, id)
 	}
@@ -18710,21 +18710,21 @@ func (m *OncallEventAnnotationMutation) HandoversIDs() (ids []uuid.UUID) {
 }
 
 // ResetHandovers resets all changes to the "handovers" edge.
-func (m *OncallEventAnnotationMutation) ResetHandovers() {
+func (m *OncallAnnotationMutation) ResetHandovers() {
 	m.handovers = nil
 	m.clearedhandovers = false
 	m.removedhandovers = nil
 }
 
-// Where appends a list predicates to the OncallEventAnnotationMutation builder.
-func (m *OncallEventAnnotationMutation) Where(ps ...predicate.OncallEventAnnotation) {
+// Where appends a list predicates to the OncallAnnotationMutation builder.
+func (m *OncallAnnotationMutation) Where(ps ...predicate.OncallAnnotation) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the OncallEventAnnotationMutation builder. Using this method,
+// WhereP appends storage-level predicates to the OncallAnnotationMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OncallEventAnnotationMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OncallEventAnnotation, len(ps))
+func (m *OncallAnnotationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallAnnotation, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -18732,42 +18732,42 @@ func (m *OncallEventAnnotationMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *OncallEventAnnotationMutation) Op() Op {
+func (m *OncallAnnotationMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *OncallEventAnnotationMutation) SetOp(op Op) {
+func (m *OncallAnnotationMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (OncallEventAnnotation).
-func (m *OncallEventAnnotationMutation) Type() string {
+// Type returns the node type of this mutation (OncallAnnotation).
+func (m *OncallAnnotationMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *OncallEventAnnotationMutation) Fields() []string {
+func (m *OncallAnnotationMutation) Fields() []string {
 	fields := make([]string, 0, 6)
 	if m.roster != nil {
-		fields = append(fields, oncalleventannotation.FieldRosterID)
+		fields = append(fields, oncallannotation.FieldRosterID)
 	}
 	if m.creator != nil {
-		fields = append(fields, oncalleventannotation.FieldCreatorID)
+		fields = append(fields, oncallannotation.FieldCreatorID)
 	}
 	if m.event_id != nil {
-		fields = append(fields, oncalleventannotation.FieldEventID)
+		fields = append(fields, oncallannotation.FieldEventID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, oncalleventannotation.FieldCreatedAt)
+		fields = append(fields, oncallannotation.FieldCreatedAt)
 	}
 	if m.minutes_occupied != nil {
-		fields = append(fields, oncalleventannotation.FieldMinutesOccupied)
+		fields = append(fields, oncallannotation.FieldMinutesOccupied)
 	}
 	if m.notes != nil {
-		fields = append(fields, oncalleventannotation.FieldNotes)
+		fields = append(fields, oncallannotation.FieldNotes)
 	}
 	return fields
 }
@@ -18775,19 +18775,19 @@ func (m *OncallEventAnnotationMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *OncallEventAnnotationMutation) Field(name string) (ent.Value, bool) {
+func (m *OncallAnnotationMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oncalleventannotation.FieldRosterID:
+	case oncallannotation.FieldRosterID:
 		return m.RosterID()
-	case oncalleventannotation.FieldCreatorID:
+	case oncallannotation.FieldCreatorID:
 		return m.CreatorID()
-	case oncalleventannotation.FieldEventID:
+	case oncallannotation.FieldEventID:
 		return m.EventID()
-	case oncalleventannotation.FieldCreatedAt:
+	case oncallannotation.FieldCreatedAt:
 		return m.CreatedAt()
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		return m.MinutesOccupied()
-	case oncalleventannotation.FieldNotes:
+	case oncallannotation.FieldNotes:
 		return m.Notes()
 	}
 	return nil, false
@@ -18796,65 +18796,65 @@ func (m *OncallEventAnnotationMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *OncallEventAnnotationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *OncallAnnotationMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oncalleventannotation.FieldRosterID:
+	case oncallannotation.FieldRosterID:
 		return m.OldRosterID(ctx)
-	case oncalleventannotation.FieldCreatorID:
+	case oncallannotation.FieldCreatorID:
 		return m.OldCreatorID(ctx)
-	case oncalleventannotation.FieldEventID:
+	case oncallannotation.FieldEventID:
 		return m.OldEventID(ctx)
-	case oncalleventannotation.FieldCreatedAt:
+	case oncallannotation.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		return m.OldMinutesOccupied(ctx)
-	case oncalleventannotation.FieldNotes:
+	case oncallannotation.FieldNotes:
 		return m.OldNotes(ctx)
 	}
-	return nil, fmt.Errorf("unknown OncallEventAnnotation field %s", name)
+	return nil, fmt.Errorf("unknown OncallAnnotation field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallEventAnnotationMutation) SetField(name string, value ent.Value) error {
+func (m *OncallAnnotationMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oncalleventannotation.FieldRosterID:
+	case oncallannotation.FieldRosterID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRosterID(v)
 		return nil
-	case oncalleventannotation.FieldCreatorID:
+	case oncallannotation.FieldCreatorID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatorID(v)
 		return nil
-	case oncalleventannotation.FieldEventID:
+	case oncallannotation.FieldEventID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEventID(v)
 		return nil
-	case oncalleventannotation.FieldCreatedAt:
+	case oncallannotation.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetMinutesOccupied(v)
 		return nil
-	case oncalleventannotation.FieldNotes:
+	case oncallannotation.FieldNotes:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -18862,15 +18862,15 @@ func (m *OncallEventAnnotationMutation) SetField(name string, value ent.Value) e
 		m.SetNotes(v)
 		return nil
 	}
-	return fmt.Errorf("unknown OncallEventAnnotation field %s", name)
+	return fmt.Errorf("unknown OncallAnnotation field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *OncallEventAnnotationMutation) AddedFields() []string {
+func (m *OncallAnnotationMutation) AddedFields() []string {
 	var fields []string
 	if m.addminutes_occupied != nil {
-		fields = append(fields, oncalleventannotation.FieldMinutesOccupied)
+		fields = append(fields, oncallannotation.FieldMinutesOccupied)
 	}
 	return fields
 }
@@ -18878,9 +18878,9 @@ func (m *OncallEventAnnotationMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *OncallEventAnnotationMutation) AddedField(name string) (ent.Value, bool) {
+func (m *OncallAnnotationMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		return m.AddedMinutesOccupied()
 	}
 	return nil, false
@@ -18889,9 +18889,9 @@ func (m *OncallEventAnnotationMutation) AddedField(name string) (ent.Value, bool
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallEventAnnotationMutation) AddField(name string, value ent.Value) error {
+func (m *OncallAnnotationMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -18899,82 +18899,82 @@ func (m *OncallEventAnnotationMutation) AddField(name string, value ent.Value) e
 		m.AddMinutesOccupied(v)
 		return nil
 	}
-	return fmt.Errorf("unknown OncallEventAnnotation numeric field %s", name)
+	return fmt.Errorf("unknown OncallAnnotation numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *OncallEventAnnotationMutation) ClearedFields() []string {
+func (m *OncallAnnotationMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *OncallEventAnnotationMutation) FieldCleared(name string) bool {
+func (m *OncallAnnotationMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *OncallEventAnnotationMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown OncallEventAnnotation nullable field %s", name)
+func (m *OncallAnnotationMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown OncallAnnotation nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *OncallEventAnnotationMutation) ResetField(name string) error {
+func (m *OncallAnnotationMutation) ResetField(name string) error {
 	switch name {
-	case oncalleventannotation.FieldRosterID:
+	case oncallannotation.FieldRosterID:
 		m.ResetRosterID()
 		return nil
-	case oncalleventannotation.FieldCreatorID:
+	case oncallannotation.FieldCreatorID:
 		m.ResetCreatorID()
 		return nil
-	case oncalleventannotation.FieldEventID:
+	case oncallannotation.FieldEventID:
 		m.ResetEventID()
 		return nil
-	case oncalleventannotation.FieldCreatedAt:
+	case oncallannotation.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case oncalleventannotation.FieldMinutesOccupied:
+	case oncallannotation.FieldMinutesOccupied:
 		m.ResetMinutesOccupied()
 		return nil
-	case oncalleventannotation.FieldNotes:
+	case oncallannotation.FieldNotes:
 		m.ResetNotes()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallEventAnnotation field %s", name)
+	return fmt.Errorf("unknown OncallAnnotation field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OncallEventAnnotationMutation) AddedEdges() []string {
+func (m *OncallAnnotationMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.roster != nil {
-		edges = append(edges, oncalleventannotation.EdgeRoster)
+		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.creator != nil {
-		edges = append(edges, oncalleventannotation.EdgeCreator)
+		edges = append(edges, oncallannotation.EdgeCreator)
 	}
 	if m.handovers != nil {
-		edges = append(edges, oncalleventannotation.EdgeHandovers)
+		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *OncallEventAnnotationMutation) AddedIDs(name string) []ent.Value {
+func (m *OncallAnnotationMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case oncalleventannotation.EdgeRoster:
+	case oncallannotation.EdgeRoster:
 		if id := m.roster; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncalleventannotation.EdgeCreator:
+	case oncallannotation.EdgeCreator:
 		if id := m.creator; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncalleventannotation.EdgeHandovers:
+	case oncallannotation.EdgeHandovers:
 		ids := make([]ent.Value, 0, len(m.handovers))
 		for id := range m.handovers {
 			ids = append(ids, id)
@@ -18985,19 +18985,19 @@ func (m *OncallEventAnnotationMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OncallEventAnnotationMutation) RemovedEdges() []string {
+func (m *OncallAnnotationMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removedhandovers != nil {
-		edges = append(edges, oncalleventannotation.EdgeHandovers)
+		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *OncallEventAnnotationMutation) RemovedIDs(name string) []ent.Value {
+func (m *OncallAnnotationMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case oncalleventannotation.EdgeHandovers:
+	case oncallannotation.EdgeHandovers:
 		ids := make([]ent.Value, 0, len(m.removedhandovers))
 		for id := range m.removedhandovers {
 			ids = append(ids, id)
@@ -19008,29 +19008,29 @@ func (m *OncallEventAnnotationMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OncallEventAnnotationMutation) ClearedEdges() []string {
+func (m *OncallAnnotationMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.clearedroster {
-		edges = append(edges, oncalleventannotation.EdgeRoster)
+		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.clearedcreator {
-		edges = append(edges, oncalleventannotation.EdgeCreator)
+		edges = append(edges, oncallannotation.EdgeCreator)
 	}
 	if m.clearedhandovers {
-		edges = append(edges, oncalleventannotation.EdgeHandovers)
+		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *OncallEventAnnotationMutation) EdgeCleared(name string) bool {
+func (m *OncallAnnotationMutation) EdgeCleared(name string) bool {
 	switch name {
-	case oncalleventannotation.EdgeRoster:
+	case oncallannotation.EdgeRoster:
 		return m.clearedroster
-	case oncalleventannotation.EdgeCreator:
+	case oncallannotation.EdgeCreator:
 		return m.clearedcreator
-	case oncalleventannotation.EdgeHandovers:
+	case oncallannotation.EdgeHandovers:
 		return m.clearedhandovers
 	}
 	return false
@@ -19038,33 +19038,33 @@ func (m *OncallEventAnnotationMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *OncallEventAnnotationMutation) ClearEdge(name string) error {
+func (m *OncallAnnotationMutation) ClearEdge(name string) error {
 	switch name {
-	case oncalleventannotation.EdgeRoster:
+	case oncallannotation.EdgeRoster:
 		m.ClearRoster()
 		return nil
-	case oncalleventannotation.EdgeCreator:
+	case oncallannotation.EdgeCreator:
 		m.ClearCreator()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallEventAnnotation unique edge %s", name)
+	return fmt.Errorf("unknown OncallAnnotation unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *OncallEventAnnotationMutation) ResetEdge(name string) error {
+func (m *OncallAnnotationMutation) ResetEdge(name string) error {
 	switch name {
-	case oncalleventannotation.EdgeRoster:
+	case oncallannotation.EdgeRoster:
 		m.ResetRoster()
 		return nil
-	case oncalleventannotation.EdgeCreator:
+	case oncallannotation.EdgeCreator:
 		m.ResetCreator()
 		return nil
-	case oncalleventannotation.EdgeHandovers:
+	case oncallannotation.EdgeHandovers:
 		m.ResetHandovers()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallEventAnnotation edge %s", name)
+	return fmt.Errorf("unknown OncallAnnotation edge %s", name)
 }
 
 // OncallHandoverTemplateMutation represents an operation that mutates the OncallHandoverTemplate nodes in the graph.
@@ -19673,9 +19673,9 @@ type OncallRosterMutation struct {
 	clearedschedules         bool
 	handover_template        *uuid.UUID
 	clearedhandover_template bool
-	event_annotations        map[uuid.UUID]struct{}
-	removedevent_annotations map[uuid.UUID]struct{}
-	clearedevent_annotations bool
+	annotations              map[uuid.UUID]struct{}
+	removedannotations       map[uuid.UUID]struct{}
+	clearedannotations       bool
 	teams                    map[uuid.UUID]struct{}
 	removedteams             map[uuid.UUID]struct{}
 	clearedteams             bool
@@ -20231,58 +20231,58 @@ func (m *OncallRosterMutation) ResetHandoverTemplate() {
 	m.clearedhandover_template = false
 }
 
-// AddEventAnnotationIDs adds the "event_annotations" edge to the OncallEventAnnotation entity by ids.
-func (m *OncallRosterMutation) AddEventAnnotationIDs(ids ...uuid.UUID) {
-	if m.event_annotations == nil {
-		m.event_annotations = make(map[uuid.UUID]struct{})
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by ids.
+func (m *OncallRosterMutation) AddAnnotationIDs(ids ...uuid.UUID) {
+	if m.annotations == nil {
+		m.annotations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.event_annotations[ids[i]] = struct{}{}
+		m.annotations[ids[i]] = struct{}{}
 	}
 }
 
-// ClearEventAnnotations clears the "event_annotations" edge to the OncallEventAnnotation entity.
-func (m *OncallRosterMutation) ClearEventAnnotations() {
-	m.clearedevent_annotations = true
+// ClearAnnotations clears the "annotations" edge to the OncallAnnotation entity.
+func (m *OncallRosterMutation) ClearAnnotations() {
+	m.clearedannotations = true
 }
 
-// EventAnnotationsCleared reports if the "event_annotations" edge to the OncallEventAnnotation entity was cleared.
-func (m *OncallRosterMutation) EventAnnotationsCleared() bool {
-	return m.clearedevent_annotations
+// AnnotationsCleared reports if the "annotations" edge to the OncallAnnotation entity was cleared.
+func (m *OncallRosterMutation) AnnotationsCleared() bool {
+	return m.clearedannotations
 }
 
-// RemoveEventAnnotationIDs removes the "event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (m *OncallRosterMutation) RemoveEventAnnotationIDs(ids ...uuid.UUID) {
-	if m.removedevent_annotations == nil {
-		m.removedevent_annotations = make(map[uuid.UUID]struct{})
+// RemoveAnnotationIDs removes the "annotations" edge to the OncallAnnotation entity by IDs.
+func (m *OncallRosterMutation) RemoveAnnotationIDs(ids ...uuid.UUID) {
+	if m.removedannotations == nil {
+		m.removedannotations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.event_annotations, ids[i])
-		m.removedevent_annotations[ids[i]] = struct{}{}
+		delete(m.annotations, ids[i])
+		m.removedannotations[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedEventAnnotations returns the removed IDs of the "event_annotations" edge to the OncallEventAnnotation entity.
-func (m *OncallRosterMutation) RemovedEventAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedevent_annotations {
+// RemovedAnnotations returns the removed IDs of the "annotations" edge to the OncallAnnotation entity.
+func (m *OncallRosterMutation) RemovedAnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedannotations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// EventAnnotationsIDs returns the "event_annotations" edge IDs in the mutation.
-func (m *OncallRosterMutation) EventAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.event_annotations {
+// AnnotationsIDs returns the "annotations" edge IDs in the mutation.
+func (m *OncallRosterMutation) AnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.annotations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetEventAnnotations resets all changes to the "event_annotations" edge.
-func (m *OncallRosterMutation) ResetEventAnnotations() {
-	m.event_annotations = nil
-	m.clearedevent_annotations = false
-	m.removedevent_annotations = nil
+// ResetAnnotations resets all changes to the "annotations" edge.
+func (m *OncallRosterMutation) ResetAnnotations() {
+	m.annotations = nil
+	m.clearedannotations = false
+	m.removedannotations = nil
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by ids.
@@ -20793,8 +20793,8 @@ func (m *OncallRosterMutation) AddedEdges() []string {
 	if m.handover_template != nil {
 		edges = append(edges, oncallroster.EdgeHandoverTemplate)
 	}
-	if m.event_annotations != nil {
-		edges = append(edges, oncallroster.EdgeEventAnnotations)
+	if m.annotations != nil {
+		edges = append(edges, oncallroster.EdgeAnnotations)
 	}
 	if m.teams != nil {
 		edges = append(edges, oncallroster.EdgeTeams)
@@ -20825,9 +20825,9 @@ func (m *OncallRosterMutation) AddedIDs(name string) []ent.Value {
 		if id := m.handover_template; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallroster.EdgeEventAnnotations:
-		ids := make([]ent.Value, 0, len(m.event_annotations))
-		for id := range m.event_annotations {
+	case oncallroster.EdgeAnnotations:
+		ids := make([]ent.Value, 0, len(m.annotations))
+		for id := range m.annotations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -20865,8 +20865,8 @@ func (m *OncallRosterMutation) RemovedEdges() []string {
 	if m.removedschedules != nil {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
-	if m.removedevent_annotations != nil {
-		edges = append(edges, oncallroster.EdgeEventAnnotations)
+	if m.removedannotations != nil {
+		edges = append(edges, oncallroster.EdgeAnnotations)
 	}
 	if m.removedteams != nil {
 		edges = append(edges, oncallroster.EdgeTeams)
@@ -20893,9 +20893,9 @@ func (m *OncallRosterMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case oncallroster.EdgeEventAnnotations:
-		ids := make([]ent.Value, 0, len(m.removedevent_annotations))
-		for id := range m.removedevent_annotations {
+	case oncallroster.EdgeAnnotations:
+		ids := make([]ent.Value, 0, len(m.removedannotations))
+		for id := range m.removedannotations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -20936,8 +20936,8 @@ func (m *OncallRosterMutation) ClearedEdges() []string {
 	if m.clearedhandover_template {
 		edges = append(edges, oncallroster.EdgeHandoverTemplate)
 	}
-	if m.clearedevent_annotations {
-		edges = append(edges, oncallroster.EdgeEventAnnotations)
+	if m.clearedannotations {
+		edges = append(edges, oncallroster.EdgeAnnotations)
 	}
 	if m.clearedteams {
 		edges = append(edges, oncallroster.EdgeTeams)
@@ -20962,8 +20962,8 @@ func (m *OncallRosterMutation) EdgeCleared(name string) bool {
 		return m.clearedschedules
 	case oncallroster.EdgeHandoverTemplate:
 		return m.clearedhandover_template
-	case oncallroster.EdgeEventAnnotations:
-		return m.clearedevent_annotations
+	case oncallroster.EdgeAnnotations:
+		return m.clearedannotations
 	case oncallroster.EdgeTeams:
 		return m.clearedteams
 	case oncallroster.EdgeShifts:
@@ -20997,8 +20997,8 @@ func (m *OncallRosterMutation) ResetEdge(name string) error {
 	case oncallroster.EdgeHandoverTemplate:
 		m.ResetHandoverTemplate()
 		return nil
-	case oncallroster.EdgeEventAnnotations:
-		m.ResetEventAnnotations()
+	case oncallroster.EdgeAnnotations:
+		m.ResetAnnotations()
 		return nil
 	case oncallroster.EdgeTeams:
 		m.ResetTeams()
@@ -24186,7 +24186,7 @@ func (m *OncallUserShiftHandoverMutation) ResetShift() {
 	m.clearedshift = false
 }
 
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallEventAnnotation entity by ids.
+// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by ids.
 func (m *OncallUserShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUID) {
 	if m.pinned_annotations == nil {
 		m.pinned_annotations = make(map[uuid.UUID]struct{})
@@ -24196,17 +24196,17 @@ func (m *OncallUserShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUI
 	}
 }
 
-// ClearPinnedAnnotations clears the "pinned_annotations" edge to the OncallEventAnnotation entity.
+// ClearPinnedAnnotations clears the "pinned_annotations" edge to the OncallAnnotation entity.
 func (m *OncallUserShiftHandoverMutation) ClearPinnedAnnotations() {
 	m.clearedpinned_annotations = true
 }
 
-// PinnedAnnotationsCleared reports if the "pinned_annotations" edge to the OncallEventAnnotation entity was cleared.
+// PinnedAnnotationsCleared reports if the "pinned_annotations" edge to the OncallAnnotation entity was cleared.
 func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsCleared() bool {
 	return m.clearedpinned_annotations
 }
 
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to the OncallEventAnnotation entity by IDs.
+// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
 func (m *OncallUserShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.UUID) {
 	if m.removedpinned_annotations == nil {
 		m.removedpinned_annotations = make(map[uuid.UUID]struct{})
@@ -24217,7 +24217,7 @@ func (m *OncallUserShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.
 	}
 }
 
-// RemovedPinnedAnnotations returns the removed IDs of the "pinned_annotations" edge to the OncallEventAnnotation entity.
+// RemovedPinnedAnnotations returns the removed IDs of the "pinned_annotations" edge to the OncallAnnotation entity.
 func (m *OncallUserShiftHandoverMutation) RemovedPinnedAnnotationsIDs() (ids []uuid.UUID) {
 	for id := range m.removedpinned_annotations {
 		ids = append(ids, id)
@@ -38839,9 +38839,9 @@ type UserMutation struct {
 	oncall_shift_covers                   map[uuid.UUID]struct{}
 	removedoncall_shift_covers            map[uuid.UUID]struct{}
 	clearedoncall_shift_covers            bool
-	oncall_event_annotations              map[uuid.UUID]struct{}
-	removedoncall_event_annotations       map[uuid.UUID]struct{}
-	clearedoncall_event_annotations       bool
+	oncall_annotations                    map[uuid.UUID]struct{}
+	removedoncall_annotations             map[uuid.UUID]struct{}
+	clearedoncall_annotations             bool
 	incident_role_assignments             map[uuid.UUID]struct{}
 	removedincident_role_assignments      map[uuid.UUID]struct{}
 	clearedincident_role_assignments      bool
@@ -39409,58 +39409,58 @@ func (m *UserMutation) ResetOncallShiftCovers() {
 	m.removedoncall_shift_covers = nil
 }
 
-// AddOncallEventAnnotationIDs adds the "oncall_event_annotations" edge to the OncallEventAnnotation entity by ids.
-func (m *UserMutation) AddOncallEventAnnotationIDs(ids ...uuid.UUID) {
-	if m.oncall_event_annotations == nil {
-		m.oncall_event_annotations = make(map[uuid.UUID]struct{})
+// AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by ids.
+func (m *UserMutation) AddOncallAnnotationIDs(ids ...uuid.UUID) {
+	if m.oncall_annotations == nil {
+		m.oncall_annotations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.oncall_event_annotations[ids[i]] = struct{}{}
+		m.oncall_annotations[ids[i]] = struct{}{}
 	}
 }
 
-// ClearOncallEventAnnotations clears the "oncall_event_annotations" edge to the OncallEventAnnotation entity.
-func (m *UserMutation) ClearOncallEventAnnotations() {
-	m.clearedoncall_event_annotations = true
+// ClearOncallAnnotations clears the "oncall_annotations" edge to the OncallAnnotation entity.
+func (m *UserMutation) ClearOncallAnnotations() {
+	m.clearedoncall_annotations = true
 }
 
-// OncallEventAnnotationsCleared reports if the "oncall_event_annotations" edge to the OncallEventAnnotation entity was cleared.
-func (m *UserMutation) OncallEventAnnotationsCleared() bool {
-	return m.clearedoncall_event_annotations
+// OncallAnnotationsCleared reports if the "oncall_annotations" edge to the OncallAnnotation entity was cleared.
+func (m *UserMutation) OncallAnnotationsCleared() bool {
+	return m.clearedoncall_annotations
 }
 
-// RemoveOncallEventAnnotationIDs removes the "oncall_event_annotations" edge to the OncallEventAnnotation entity by IDs.
-func (m *UserMutation) RemoveOncallEventAnnotationIDs(ids ...uuid.UUID) {
-	if m.removedoncall_event_annotations == nil {
-		m.removedoncall_event_annotations = make(map[uuid.UUID]struct{})
+// RemoveOncallAnnotationIDs removes the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
+func (m *UserMutation) RemoveOncallAnnotationIDs(ids ...uuid.UUID) {
+	if m.removedoncall_annotations == nil {
+		m.removedoncall_annotations = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.oncall_event_annotations, ids[i])
-		m.removedoncall_event_annotations[ids[i]] = struct{}{}
+		delete(m.oncall_annotations, ids[i])
+		m.removedoncall_annotations[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedOncallEventAnnotations returns the removed IDs of the "oncall_event_annotations" edge to the OncallEventAnnotation entity.
-func (m *UserMutation) RemovedOncallEventAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedoncall_event_annotations {
+// RemovedOncallAnnotations returns the removed IDs of the "oncall_annotations" edge to the OncallAnnotation entity.
+func (m *UserMutation) RemovedOncallAnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.removedoncall_annotations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// OncallEventAnnotationsIDs returns the "oncall_event_annotations" edge IDs in the mutation.
-func (m *UserMutation) OncallEventAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.oncall_event_annotations {
+// OncallAnnotationsIDs returns the "oncall_annotations" edge IDs in the mutation.
+func (m *UserMutation) OncallAnnotationsIDs() (ids []uuid.UUID) {
+	for id := range m.oncall_annotations {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetOncallEventAnnotations resets all changes to the "oncall_event_annotations" edge.
-func (m *UserMutation) ResetOncallEventAnnotations() {
-	m.oncall_event_annotations = nil
-	m.clearedoncall_event_annotations = false
-	m.removedoncall_event_annotations = nil
+// ResetOncallAnnotations resets all changes to the "oncall_annotations" edge.
+func (m *UserMutation) ResetOncallAnnotations() {
+	m.oncall_annotations = nil
+	m.clearedoncall_annotations = false
+	m.removedoncall_annotations = nil
 }
 
 // AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by ids.
@@ -40002,8 +40002,8 @@ func (m *UserMutation) AddedEdges() []string {
 	if m.oncall_shift_covers != nil {
 		edges = append(edges, user.EdgeOncallShiftCovers)
 	}
-	if m.oncall_event_annotations != nil {
-		edges = append(edges, user.EdgeOncallEventAnnotations)
+	if m.oncall_annotations != nil {
+		edges = append(edges, user.EdgeOncallAnnotations)
 	}
 	if m.incident_role_assignments != nil {
 		edges = append(edges, user.EdgeIncidentRoleAssignments)
@@ -40060,9 +40060,9 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeOncallEventAnnotations:
-		ids := make([]ent.Value, 0, len(m.oncall_event_annotations))
-		for id := range m.oncall_event_annotations {
+	case user.EdgeOncallAnnotations:
+		ids := make([]ent.Value, 0, len(m.oncall_annotations))
+		for id := range m.oncall_annotations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -40124,8 +40124,8 @@ func (m *UserMutation) RemovedEdges() []string {
 	if m.removedoncall_shift_covers != nil {
 		edges = append(edges, user.EdgeOncallShiftCovers)
 	}
-	if m.removedoncall_event_annotations != nil {
-		edges = append(edges, user.EdgeOncallEventAnnotations)
+	if m.removedoncall_annotations != nil {
+		edges = append(edges, user.EdgeOncallAnnotations)
 	}
 	if m.removedincident_role_assignments != nil {
 		edges = append(edges, user.EdgeIncidentRoleAssignments)
@@ -40182,9 +40182,9 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case user.EdgeOncallEventAnnotations:
-		ids := make([]ent.Value, 0, len(m.removedoncall_event_annotations))
-		for id := range m.removedoncall_event_annotations {
+	case user.EdgeOncallAnnotations:
+		ids := make([]ent.Value, 0, len(m.removedoncall_annotations))
+		for id := range m.removedoncall_annotations {
 			ids = append(ids, id)
 		}
 		return ids
@@ -40246,8 +40246,8 @@ func (m *UserMutation) ClearedEdges() []string {
 	if m.clearedoncall_shift_covers {
 		edges = append(edges, user.EdgeOncallShiftCovers)
 	}
-	if m.clearedoncall_event_annotations {
-		edges = append(edges, user.EdgeOncallEventAnnotations)
+	if m.clearedoncall_annotations {
+		edges = append(edges, user.EdgeOncallAnnotations)
 	}
 	if m.clearedincident_role_assignments {
 		edges = append(edges, user.EdgeIncidentRoleAssignments)
@@ -40284,8 +40284,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 		return m.clearedoncall_shifts
 	case user.EdgeOncallShiftCovers:
 		return m.clearedoncall_shift_covers
-	case user.EdgeOncallEventAnnotations:
-		return m.clearedoncall_event_annotations
+	case user.EdgeOncallAnnotations:
+		return m.clearedoncall_annotations
 	case user.EdgeIncidentRoleAssignments:
 		return m.clearedincident_role_assignments
 	case user.EdgeIncidentDebriefs:
@@ -40329,8 +40329,8 @@ func (m *UserMutation) ResetEdge(name string) error {
 	case user.EdgeOncallShiftCovers:
 		m.ResetOncallShiftCovers()
 		return nil
-	case user.EdgeOncallEventAnnotations:
-		m.ResetOncallEventAnnotations()
+	case user.EdgeOncallAnnotations:
+		m.ResetOncallAnnotations()
 		return nil
 	case user.EdgeIncidentRoleAssignments:
 		m.ResetIncidentRoleAssignments()

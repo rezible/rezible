@@ -357,9 +357,9 @@ func (h *oncallHandler) UpdateOncallShiftHandover(ctx context.Context, request *
 		ho.Contents = contentJson
 	}
 	if attr.PinnedAnnotationIds != nil {
-		annos := make([]*ent.OncallEventAnnotation, len(*attr.PinnedAnnotationIds))
+		annos := make([]*ent.OncallAnnotation, len(*attr.PinnedAnnotationIds))
 		for i, id := range *attr.PinnedAnnotationIds {
-			annos[i] = &ent.OncallEventAnnotation{ID: id}
+			annos[i] = &ent.OncallAnnotation{ID: id}
 		}
 		ho.Edges.PinnedAnnotations = annos
 	}

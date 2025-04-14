@@ -23,7 +23,7 @@ func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, 
 	return &oncallEventsHandler{auth: auth, users: users, incidents: inc, oncall: oncall, alerts: alerts}
 }
 
-func makeFakeShiftEvent(date time.Time) rez.OncallEvent {
+func makeFakeShiftEvent(date time.Time) oapi.OncallEvent {
 	isAlert := rand.Float64() > 0.25
 	eventKind := "incident"
 	if isAlert {
@@ -38,20 +38,19 @@ func makeFakeShiftEvent(date time.Time) rez.OncallEvent {
 		hour, minute, 0, 0, date.Location(),
 	)
 
-	description := "description"
-
-	return rez.OncallEvent{
-		ID:          uuid.New().String(),
-		Title:       "title",
-		Timestamp:   timestamp,
-		Kind:        eventKind,
-		Description: &description,
+	return oapi.OncallEvent{
+		Id: uuid.New().String(),
+		Attributes: oapi.OncallEventAttributes{
+			Title:     "title",
+			Timestamp: timestamp,
+			Kind:      eventKind,
+		},
 	}
 }
 
-func makeFakeOncallEvents(start time.Time) []rez.OncallEvent {
+func makeFakeOncallEvents(start time.Time) []oapi.OncallEvent {
 	const NumDays = 7
-	events := make([]rez.OncallEvent, 0, NumDays*10)
+	events := make([]oapi.OncallEvent, 0, NumDays*10)
 
 	for day := 0; day < NumDays; day++ {
 		dayDate := start.AddDate(0, 0, day)
@@ -82,10 +81,10 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) ListOncallEventAnnotations(ctx context.Context, request *oapi.ListOncallEventAnnotationsRequest) (*oapi.ListOncallEventAnnotationsResponse, error) {
-	var resp oapi.ListOncallEventAnnotationsResponse
+func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request *oapi.ListOncallAnnotationsRequest) (*oapi.ListOncallAnnotationsResponse, error) {
+	var resp oapi.ListOncallAnnotationsResponse
 
-	annos, annosErr := h.oncall.ListEventAnnotations(ctx, rez.ListOncallEventAnnotationsParams{
+	annos, annosErr := h.oncall.ListAnnotations(ctx, rez.ListOncallAnnotationsParams{
 		ListParams: request.ListParams(),
 		RosterID:   request.RosterId,
 		ShiftID:    request.ShiftId,
@@ -94,20 +93,20 @@ func (h *oncallEventsHandler) ListOncallEventAnnotations(ctx context.Context, re
 		return nil, detailError("query shift annotations", annosErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallEventAnnotation, len(annos))
+	resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
 	for i, anno := range annos {
-		resp.Body.Data[i] = oapi.OncallEventAnnotationFromEnt(anno)
+		resp.Body.Data[i] = oapi.OncallAnnotationFromEnt(anno)
 	}
 
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) CreateOncallEventAnnotation(ctx context.Context, request *oapi.CreateOncallEventAnnotationRequest) (*oapi.CreateOncallEventAnnotationResponse, error) {
-	var resp oapi.CreateOncallEventAnnotationResponse
+func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
+	var resp oapi.CreateOncallAnnotationResponse
 
 	attr := request.Body.Attributes
 
-	anno := &ent.OncallEventAnnotation{
+	anno := &ent.OncallAnnotation{
 		EventID:         attr.EventId,
 		RosterID:        attr.RosterId,
 		MinutesOccupied: attr.MinutesOccupied,
@@ -115,19 +114,19 @@ func (h *oncallEventsHandler) CreateOncallEventAnnotation(ctx context.Context, r
 	}
 
 	var createErr error
-	anno, createErr = h.oncall.CreateEventAnnotation(ctx, anno)
+	anno, createErr = h.oncall.CreateAnnotation(ctx, anno)
 	if createErr != nil {
 		return nil, detailError("failed to create annotation", createErr)
 	}
-	resp.Body.Data = oapi.OncallEventAnnotationFromEnt(anno)
+	resp.Body.Data = oapi.OncallAnnotationFromEnt(anno)
 
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) UpdateOncallEventAnnotation(ctx context.Context, request *oapi.UpdateOncallEventAnnotationRequest) (*oapi.UpdateOncallEventAnnotationResponse, error) {
-	var resp oapi.UpdateOncallEventAnnotationResponse
+func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, request *oapi.UpdateOncallAnnotationRequest) (*oapi.UpdateOncallAnnotationResponse, error) {
+	var resp oapi.UpdateOncallAnnotationResponse
 
-	anno, annoErr := h.oncall.GetEventAnnotation(ctx, request.Id)
+	anno, annoErr := h.oncall.GetAnnotation(ctx, request.Id)
 	if annoErr != nil {
 		return nil, detailError("failed to get annotation", annoErr)
 	}
@@ -141,15 +140,15 @@ func (h *oncallEventsHandler) UpdateOncallEventAnnotation(ctx context.Context, r
 	if updateErr != nil {
 		return nil, detailError("failed to update annotation", updateErr)
 	}
-	resp.Body.Data = oapi.OncallEventAnnotationFromEnt(updated)
+	resp.Body.Data = oapi.OncallAnnotationFromEnt(updated)
 
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) DeleteOncallEventAnnotation(ctx context.Context, request *oapi.DeleteOncallEventAnnotationRequest) (*oapi.DeleteOncallEventAnnotationResponse, error) {
-	var resp oapi.DeleteOncallEventAnnotationResponse
+func (h *oncallEventsHandler) DeleteOncallAnnotation(ctx context.Context, request *oapi.DeleteOncallAnnotationRequest) (*oapi.DeleteOncallAnnotationResponse, error) {
+	var resp oapi.DeleteOncallAnnotationResponse
 
-	if err := h.oncall.DeleteEventAnnotation(ctx, request.Id); err != nil {
+	if err := h.oncall.DeleteAnnotation(ctx, request.Id); err != nil {
 		return nil, detailError("failed to archive annotation", err)
 	}
 

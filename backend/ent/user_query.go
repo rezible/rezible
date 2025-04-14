@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -39,7 +39,7 @@ type UserQuery struct {
 	withOncallSchedules              *OncallScheduleParticipantQuery
 	withOncallShifts                 *OncallUserShiftQuery
 	withOncallShiftCovers            *OncallUserShiftCoverQuery
-	withOncallEventAnnotations       *OncallEventAnnotationQuery
+	withOncallAnnotations            *OncallAnnotationQuery
 	withIncidentRoleAssignments      *IncidentRoleAssignmentQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
 	withAssignedTasks                *TaskQuery
@@ -193,9 +193,9 @@ func (uq *UserQuery) QueryOncallShiftCovers() *OncallUserShiftCoverQuery {
 	return query
 }
 
-// QueryOncallEventAnnotations chains the current query on the "oncall_event_annotations" edge.
-func (uq *UserQuery) QueryOncallEventAnnotations() *OncallEventAnnotationQuery {
-	query := (&OncallEventAnnotationClient{config: uq.config}).Query()
+// QueryOncallAnnotations chains the current query on the "oncall_annotations" edge.
+func (uq *UserQuery) QueryOncallAnnotations() *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -206,8 +206,8 @@ func (uq *UserQuery) QueryOncallEventAnnotations() *OncallEventAnnotationQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(oncalleventannotation.Table, oncalleventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallEventAnnotationsTable, user.OncallEventAnnotationsColumn),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallAnnotationsTable, user.OncallAnnotationsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -544,7 +544,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withOncallSchedules:              uq.withOncallSchedules.Clone(),
 		withOncallShifts:                 uq.withOncallShifts.Clone(),
 		withOncallShiftCovers:            uq.withOncallShiftCovers.Clone(),
-		withOncallEventAnnotations:       uq.withOncallEventAnnotations.Clone(),
+		withOncallAnnotations:            uq.withOncallAnnotations.Clone(),
 		withIncidentRoleAssignments:      uq.withIncidentRoleAssignments.Clone(),
 		withIncidentDebriefs:             uq.withIncidentDebriefs.Clone(),
 		withAssignedTasks:                uq.withAssignedTasks.Clone(),
@@ -613,14 +613,14 @@ func (uq *UserQuery) WithOncallShiftCovers(opts ...func(*OncallUserShiftCoverQue
 	return uq
 }
 
-// WithOncallEventAnnotations tells the query-builder to eager-load the nodes that are connected to
-// the "oncall_event_annotations" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithOncallEventAnnotations(opts ...func(*OncallEventAnnotationQuery)) *UserQuery {
-	query := (&OncallEventAnnotationClient{config: uq.config}).Query()
+// WithOncallAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "oncall_annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithOncallAnnotations(opts ...func(*OncallAnnotationQuery)) *UserQuery {
+	query := (&OncallAnnotationClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	uq.withOncallEventAnnotations = query
+	uq.withOncallAnnotations = query
 	return uq
 }
 
@@ -774,7 +774,7 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			uq.withOncallSchedules != nil,
 			uq.withOncallShifts != nil,
 			uq.withOncallShiftCovers != nil,
-			uq.withOncallEventAnnotations != nil,
+			uq.withOncallAnnotations != nil,
 			uq.withIncidentRoleAssignments != nil,
 			uq.withIncidentDebriefs != nil,
 			uq.withAssignedTasks != nil,
@@ -843,12 +843,10 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 			return nil, err
 		}
 	}
-	if query := uq.withOncallEventAnnotations; query != nil {
-		if err := uq.loadOncallEventAnnotations(ctx, query, nodes,
-			func(n *User) { n.Edges.OncallEventAnnotations = []*OncallEventAnnotation{} },
-			func(n *User, e *OncallEventAnnotation) {
-				n.Edges.OncallEventAnnotations = append(n.Edges.OncallEventAnnotations, e)
-			}); err != nil {
+	if query := uq.withOncallAnnotations; query != nil {
+		if err := uq.loadOncallAnnotations(ctx, query, nodes,
+			func(n *User) { n.Edges.OncallAnnotations = []*OncallAnnotation{} },
+			func(n *User, e *OncallAnnotation) { n.Edges.OncallAnnotations = append(n.Edges.OncallAnnotations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1115,7 +1113,7 @@ func (uq *UserQuery) loadOncallShiftCovers(ctx context.Context, query *OncallUse
 	}
 	return nil
 }
-func (uq *UserQuery) loadOncallEventAnnotations(ctx context.Context, query *OncallEventAnnotationQuery, nodes []*User, init func(*User), assign func(*User, *OncallEventAnnotation)) error {
+func (uq *UserQuery) loadOncallAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*User, init func(*User), assign func(*User, *OncallAnnotation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -1126,10 +1124,10 @@ func (uq *UserQuery) loadOncallEventAnnotations(ctx context.Context, query *Onca
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncalleventannotation.FieldCreatorID)
+		query.ctx.AppendFieldOnce(oncallannotation.FieldCreatorID)
 	}
-	query.Where(predicate.OncallEventAnnotation(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.OncallEventAnnotationsColumn), fks...))
+	query.Where(predicate.OncallAnnotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OncallAnnotationsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

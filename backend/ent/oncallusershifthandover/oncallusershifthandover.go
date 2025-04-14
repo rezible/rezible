@@ -42,9 +42,9 @@ const (
 	ShiftColumn = "shift_id"
 	// PinnedAnnotationsTable is the table that holds the pinned_annotations relation/edge. The primary key declared below.
 	PinnedAnnotationsTable = "oncall_user_shift_handover_pinned_annotations"
-	// PinnedAnnotationsInverseTable is the table name for the OncallEventAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncalleventannotation" package.
-	PinnedAnnotationsInverseTable = "oncall_event_annotations"
+	// PinnedAnnotationsInverseTable is the table name for the OncallAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
+	PinnedAnnotationsInverseTable = "oncall_annotations"
 )
 
 // Columns holds all SQL columns for oncallusershifthandover fields.
@@ -61,7 +61,7 @@ var Columns = []string{
 var (
 	// PinnedAnnotationsPrimaryKey and PinnedAnnotationsColumn2 are the table columns denoting the
 	// primary key for the pinned_annotations relation (M2M).
-	PinnedAnnotationsPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_event_annotation_id"}
+	PinnedAnnotationsPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_annotation_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

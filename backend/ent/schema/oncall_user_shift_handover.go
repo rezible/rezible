@@ -31,6 +31,6 @@ func (OncallUserShiftHandover) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("shift", OncallUserShift.Type).
 			Ref("handover").Unique().Required().Field("shift_id"),
-		edge.To("pinned_annotations", OncallEventAnnotation.Type),
+		edge.To("pinned_annotations", OncallAnnotation.Type),
 	}
 }
