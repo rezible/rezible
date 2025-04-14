@@ -29,7 +29,7 @@
 			queryFn: async ({ queryKey, signal }) => {
 				return {data: mockBacklogItems};
 			},
-			queryKey: ["getUserOncallDetailsOptions", options.query.rosterId]
+			queryKey: ["getUserOncallInformationOptions", options.query.rosterId]
 		});
 	};
 	const backlogQuery = createQuery(() => listRosterBacklogItemsOptions({query: {rosterId}}));

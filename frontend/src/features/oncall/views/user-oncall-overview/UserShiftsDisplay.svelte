@@ -2,22 +2,22 @@
 	import { Button, Header, ListItem, Icon, Month, MonthList } from "svelte-ux";
 	import type { DateRange } from "@layerstack/utils/dateRange";
 	import { startOfWeek, endOfWeek } from "date-fns";
-	import type { OncallShift, UserOncallDetails } from "$lib/api";
+	import type { OncallShift, UserOncallInformation } from "$lib/api";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 
 	type Props = {
-		details: UserOncallDetails;
+		info: UserOncallInformation;
 		// activeShifts: OncallShift[];
 		// upcomingShifts: OncallShift[];
 		// pastShifts: OncallShift[];
 	}
 	// let { activeShifts, upcomingShifts, pastShifts }: Props = $props();
-	const { details }: Props = $props();
+	const { info }: Props = $props();
 
-	const { activeShifts, upcomingShifts, pastShifts } = $derived(details);
+	const { activeShifts, upcomingShifts, pastShifts } = $derived(info);
 	// const activeShifts = $derived(details.activeShifts);
 	const numActive = $derived(activeShifts.length);
 	const activeShiftsSubheading = $derived(

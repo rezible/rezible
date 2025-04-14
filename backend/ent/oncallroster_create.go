@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallRosterCreate is the builder for creating a OncallRoster entity.
@@ -210,6 +211,21 @@ func (orc *OncallRosterCreate) AddAlerts(o ...*OncallAlert) *OncallRosterCreate 
 		ids[i] = o[i].ID
 	}
 	return orc.AddAlertIDs(ids...)
+}
+
+// AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
+func (orc *OncallRosterCreate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	orc.mutation.AddUserWatcherIDs(ids...)
+	return orc
+}
+
+// AddUserWatchers adds the "user_watchers" edges to the User entity.
+func (orc *OncallRosterCreate) AddUserWatchers(u ...*User) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return orc.AddUserWatcherIDs(ids...)
 }
 
 // Mutation returns the OncallRosterMutation object of the builder.
@@ -424,6 +440,22 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := orc.mutation.UserWatchersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

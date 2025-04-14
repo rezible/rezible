@@ -734,6 +734,29 @@ func HasAlertsWith(preds ...predicate.OncallAlert) predicate.OncallRoster {
 	})
 }
 
+// HasUserWatchers applies the HasEdge predicate on the "user_watchers" edge.
+func HasUserWatchers() predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, UserWatchersTable, UserWatchersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWatchersWith applies the HasEdge predicate on the "user_watchers" edge with a given conditions (other predicates).
+func HasUserWatchersWith(preds ...predicate.User) predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := newUserWatchersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.OncallRoster) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.AndPredicates(predicates...))

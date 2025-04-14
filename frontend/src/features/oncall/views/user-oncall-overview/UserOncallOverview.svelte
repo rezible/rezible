@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getUserOncallDetailsOptions, type UserOncallDetails } from "$lib/api";
+	import { getUserOncallInformationOptions, type UserOncallInformation } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { Button, Header, Icon } from "svelte-ux";
@@ -7,7 +7,7 @@
 	import UserRostersList from "./UserRostersList.svelte";
 	import SplitPage from "$components/split-page/SplitPage.svelte";
 
-	const userOncallQuery = createQuery(() => getUserOncallDetailsOptions());
+	const userOncallQuery = createQuery(() => getUserOncallInformationOptions());
 </script>
 
 <SplitPage>
@@ -21,7 +21,7 @@
 		</Header>
 
 		<LoadingQueryWrapper query={userOncallQuery}>
-			{#snippet view(details: UserOncallDetails)}
+			{#snippet view(details: UserOncallInformation)}
 				<UserRostersList rosters={details.rosters} />
 			{/snippet}
 		</LoadingQueryWrapper>
@@ -36,8 +36,8 @@
 	</Header>
 
 	<LoadingQueryWrapper query={userOncallQuery}>
-		{#snippet view(details: UserOncallDetails)}
-			<UserShiftsDisplay {details} />
+		{#snippet view(info: UserOncallInformation)}
+			<UserShiftsDisplay {info} />
 		{/snippet}
 	</LoadingQueryWrapper>
 </SplitPage>

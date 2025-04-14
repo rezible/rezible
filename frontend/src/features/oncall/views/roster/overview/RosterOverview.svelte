@@ -18,7 +18,7 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import {
 		getOncallRosterMetricsOptions,
-		getUserOncallDetailsOptions,
+		getUserOncallInformationOptions,
 		type OncallShift,
 		type User,
 	} from "$lib/api";
@@ -96,7 +96,7 @@
 	const metrics = $derived(metricsQuery.data?.data);
 
 	// TODO: use correct query
-	const shiftsQuery = createQuery(() => getUserOncallDetailsOptions({ query: {} }));
+	const shiftsQuery = createQuery(() => getUserOncallInformationOptions({ query: {} }));
 	const shifts = $derived(shiftsQuery.data?.data);
 	const prevShift = $derived(shifts?.pastShifts.at(0));
 	const activeShift = $derived(shifts?.activeShifts.at(0));

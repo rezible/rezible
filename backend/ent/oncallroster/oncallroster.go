@@ -42,6 +42,8 @@ const (
 	EdgeShifts = "shifts"
 	// EdgeAlerts holds the string denoting the alerts edge name in mutations.
 	EdgeAlerts = "alerts"
+	// EdgeUserWatchers holds the string denoting the user_watchers edge name in mutations.
+	EdgeUserWatchers = "user_watchers"
 	// Table holds the table name of the oncallroster in the database.
 	Table = "oncall_rosters"
 	// SchedulesTable is the table that holds the schedules relation/edge.
@@ -84,6 +86,11 @@ const (
 	AlertsInverseTable = "oncall_alerts"
 	// AlertsColumn is the table column denoting the alerts relation/edge.
 	AlertsColumn = "roster_id"
+	// UserWatchersTable is the table that holds the user_watchers relation/edge. The primary key declared below.
+	UserWatchersTable = "user_watched_oncall_rosters"
+	// UserWatchersInverseTable is the table name for the User entity.
+	// It exists in this package in order to avoid circular dependency with the "user" package.
+	UserWatchersInverseTable = "users"
 )
 
 // Columns holds all SQL columns for oncallroster fields.
@@ -103,6 +110,9 @@ var (
 	// TeamsPrimaryKey and TeamsColumn2 are the table columns denoting the
 	// primary key for the teams relation (M2M).
 	TeamsPrimaryKey = []string{"team_id", "oncall_roster_id"}
+	// UserWatchersPrimaryKey and UserWatchersColumn2 are the table columns denoting the
+	// primary key for the user_watchers relation (M2M).
+	UserWatchersPrimaryKey = []string{"user_id", "oncall_roster_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -251,6 +261,20 @@ func ByAlerts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAlertsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByUserWatchersCount orders the results by user_watchers count.
+func ByUserWatchersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newUserWatchersStep(), opts...)
+	}
+}
+
+// ByUserWatchers orders the results by user_watchers terms.
+func ByUserWatchers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newUserWatchersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSchedulesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -291,5 +315,12 @@ func newAlertsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AlertsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AlertsTable, AlertsColumn),
+	)
+}
+func newUserWatchersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(UserWatchersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, UserWatchersTable, UserWatchersPrimaryKey...),
 	)
 }

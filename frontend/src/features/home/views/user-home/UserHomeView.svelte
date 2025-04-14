@@ -1,8 +1,8 @@
 <script lang="ts">
+	import ShiftsHeader from "$features/home/components/shifts-header/ShiftsHeader.svelte";
 	import UserItems from "$features/home/components/user-items/UserItems.svelte";
 	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
 	import EventsOverview from "$features/home/components/events-overview/EventsOverview.svelte";
-	import ShiftsHeader from "$features/home/components/shifts-header/ShiftsHeader.svelte";
 </script>
 
 <div class="h-full w-full flex flex-col gap-2">

@@ -53,7 +53,7 @@ func (OncallRoster) Edges() []ent.Edge {
 		edge.From("teams", Team.Type).Ref("oncall_rosters"),
 		edge.From("shifts", OncallUserShift.Type).Ref("roster"),
 		edge.From("alerts", OncallAlert.Type).Ref("roster"),
-		//edge.To("parent_roster", OncallRoster.Type).Unique().Field("parent_id"),
-		//edge.From("children", OncallRoster.Type).Ref("parent_roster"),
+
+		edge.From("user_watchers", User.Type).Ref("watched_oncall_rosters"),
 	}
 }

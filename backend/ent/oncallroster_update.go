@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallRosterUpdate is the builder for updating OncallRoster entities.
@@ -258,6 +259,21 @@ func (oru *OncallRosterUpdate) AddAlerts(o ...*OncallAlert) *OncallRosterUpdate 
 	return oru.AddAlertIDs(ids...)
 }
 
+// AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
+func (oru *OncallRosterUpdate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.AddUserWatcherIDs(ids...)
+	return oru
+}
+
+// AddUserWatchers adds the "user_watchers" edges to the User entity.
+func (oru *OncallRosterUpdate) AddUserWatchers(u ...*User) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return oru.AddUserWatcherIDs(ids...)
+}
+
 // Mutation returns the OncallRosterMutation object of the builder.
 func (oru *OncallRosterUpdate) Mutation() *OncallRosterMutation {
 	return oru.mutation
@@ -372,6 +388,27 @@ func (oru *OncallRosterUpdate) RemoveAlerts(o ...*OncallAlert) *OncallRosterUpda
 		ids[i] = o[i].ID
 	}
 	return oru.RemoveAlertIDs(ids...)
+}
+
+// ClearUserWatchers clears all "user_watchers" edges to the User entity.
+func (oru *OncallRosterUpdate) ClearUserWatchers() *OncallRosterUpdate {
+	oru.mutation.ClearUserWatchers()
+	return oru
+}
+
+// RemoveUserWatcherIDs removes the "user_watchers" edge to User entities by IDs.
+func (oru *OncallRosterUpdate) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.RemoveUserWatcherIDs(ids...)
+	return oru
+}
+
+// RemoveUserWatchers removes "user_watchers" edges to User entities.
+func (oru *OncallRosterUpdate) RemoveUserWatchers(u ...*User) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return oru.RemoveUserWatcherIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -703,6 +740,51 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if oru.mutation.UserWatchersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oru.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !oru.mutation.UserWatchersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oru.mutation.UserWatchersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(oru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, oru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -947,6 +1029,21 @@ func (oruo *OncallRosterUpdateOne) AddAlerts(o ...*OncallAlert) *OncallRosterUpd
 	return oruo.AddAlertIDs(ids...)
 }
 
+// AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
+func (oruo *OncallRosterUpdateOne) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.AddUserWatcherIDs(ids...)
+	return oruo
+}
+
+// AddUserWatchers adds the "user_watchers" edges to the User entity.
+func (oruo *OncallRosterUpdateOne) AddUserWatchers(u ...*User) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return oruo.AddUserWatcherIDs(ids...)
+}
+
 // Mutation returns the OncallRosterMutation object of the builder.
 func (oruo *OncallRosterUpdateOne) Mutation() *OncallRosterMutation {
 	return oruo.mutation
@@ -1061,6 +1158,27 @@ func (oruo *OncallRosterUpdateOne) RemoveAlerts(o ...*OncallAlert) *OncallRoster
 		ids[i] = o[i].ID
 	}
 	return oruo.RemoveAlertIDs(ids...)
+}
+
+// ClearUserWatchers clears all "user_watchers" edges to the User entity.
+func (oruo *OncallRosterUpdateOne) ClearUserWatchers() *OncallRosterUpdateOne {
+	oruo.mutation.ClearUserWatchers()
+	return oruo
+}
+
+// RemoveUserWatcherIDs removes the "user_watchers" edge to User entities by IDs.
+func (oruo *OncallRosterUpdateOne) RemoveUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.RemoveUserWatcherIDs(ids...)
+	return oruo
+}
+
+// RemoveUserWatchers removes "user_watchers" edges to User entities.
+func (oruo *OncallRosterUpdateOne) RemoveUserWatchers(u ...*User) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return oruo.RemoveUserWatcherIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallRosterUpdate builder.
@@ -1415,6 +1533,51 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oruo.mutation.UserWatchersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oruo.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !oruo.mutation.UserWatchersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oruo.mutation.UserWatchersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   oncallroster.UserWatchersTable,
+			Columns: oncallroster.UserWatchersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

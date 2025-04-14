@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // OncallRosterQuery is the builder for querying OncallRoster entities.
@@ -36,6 +37,7 @@ type OncallRosterQuery struct {
 	withTeams            *TeamQuery
 	withShifts           *OncallUserShiftQuery
 	withAlerts           *OncallAlertQuery
+	withUserWatchers     *UserQuery
 	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -198,6 +200,28 @@ func (orq *OncallRosterQuery) QueryAlerts() *OncallAlertQuery {
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
 			sqlgraph.To(oncallalert.Table, oncallalert.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.AlertsTable, oncallroster.AlertsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserWatchers chains the current query on the "user_watchers" edge.
+func (orq *OncallRosterQuery) QueryUserWatchers() *UserQuery {
+	query := (&UserClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.UserWatchersTable, oncallroster.UserWatchersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -403,6 +427,7 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		withTeams:            orq.withTeams.Clone(),
 		withShifts:           orq.withShifts.Clone(),
 		withAlerts:           orq.withAlerts.Clone(),
+		withUserWatchers:     orq.withUserWatchers.Clone(),
 		// clone intermediate query.
 		sql:       orq.sql.Clone(),
 		path:      orq.path,
@@ -473,6 +498,17 @@ func (orq *OncallRosterQuery) WithAlerts(opts ...func(*OncallAlertQuery)) *Oncal
 		opt(query)
 	}
 	orq.withAlerts = query
+	return orq
+}
+
+// WithUserWatchers tells the query-builder to eager-load the nodes that are connected to
+// the "user_watchers" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OncallRosterQuery) WithUserWatchers(opts ...func(*UserQuery)) *OncallRosterQuery {
+	query := (&UserClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withUserWatchers = query
 	return orq
 }
 
@@ -554,13 +590,14 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*OncallRoster{}
 		_spec       = orq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
 			orq.withEventAnnotations != nil,
 			orq.withTeams != nil,
 			orq.withShifts != nil,
 			orq.withAlerts != nil,
+			orq.withUserWatchers != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -624,6 +661,13 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := orq.loadAlerts(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.Alerts = []*OncallAlert{} },
 			func(n *OncallRoster, e *OncallAlert) { n.Edges.Alerts = append(n.Edges.Alerts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withUserWatchers; query != nil {
+		if err := orq.loadUserWatchers(ctx, query, nodes,
+			func(n *OncallRoster) { n.Edges.UserWatchers = []*User{} },
+			func(n *OncallRoster, e *User) { n.Edges.UserWatchers = append(n.Edges.UserWatchers, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -837,6 +881,67 @@ func (orq *OncallRosterQuery) loadAlerts(ctx context.Context, query *OncallAlert
 			return fmt.Errorf(`unexpected referenced foreign-key "roster_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (orq *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*OncallRoster)
+	nids := make(map[uuid.UUID]map[*OncallRoster]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(oncallroster.UserWatchersTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(oncallroster.UserWatchersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(oncallroster.UserWatchersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(oncallroster.UserWatchersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*OncallRoster]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "user_watchers" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

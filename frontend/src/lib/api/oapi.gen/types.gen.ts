@@ -62,6 +62,14 @@ export type AddSystemAnalysisComponentResponseBody = {
     data: SystemAnalysisComponent;
 };
 
+export type AddWatchedOncallRosterResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallRoster>;
+};
+
 export type AuthSessionsConfig = {
     providerName: string;
 };
@@ -1057,12 +1065,12 @@ export type GetTeamResponseBody = {
     data: Team;
 };
 
-export type GetUserOncallDetailsResponseBody = {
+export type GetUserOncallInformationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: UserOncallDetails;
+    data: UserOncallInformation;
 };
 
 export type GetUserResponseBody = {
@@ -1631,6 +1639,14 @@ export type ListUsersResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type ListWatchedOncallRostersResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallRoster>;
+};
+
 export type MeetingAttendees = {
     private: boolean;
     teams: Array<string>;
@@ -1815,6 +1831,14 @@ export type OncallShiftMetrics = {
     offHoursAlerts: number;
     sleepDisruptionScore: number;
     workloadScore: number;
+};
+
+export type RemoveWatchedOncallRosterResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<OncallRoster>;
 };
 
 export type RequestDocumentEditorSessionAttributes = {
@@ -2407,8 +2431,8 @@ export type UpdateOncallEventAnnotationResponseBody = {
 };
 
 export type UpdateOncallShiftHandoverAttributes = {
-    annotations?: Array<string>;
     content?: Array<OncallShiftHandoverSection>;
+    pinnedAnnotationIds?: Array<string>;
 };
 
 export type UpdateOncallShiftHandoverRequestBody = {
@@ -2720,11 +2744,12 @@ export type UserNotificationAttributes = {
     text: string;
 };
 
-export type UserOncallDetails = {
+export type UserOncallInformation = {
     activeShifts: Array<OncallShift>;
     pastShifts: Array<OncallShift>;
     rosters: Array<OncallRoster>;
     upcomingShifts: Array<OncallShift>;
+    watchingRosters: Array<OncallRoster>;
 };
 
 export type VerifyDocumentEditorSessionRequestAttributes = {
@@ -7536,16 +7561,19 @@ export type GetPreviousOncallShiftResponses = {
 
 export type GetPreviousOncallShiftResponse = GetPreviousOncallShiftResponses[keyof GetPreviousOncallShiftResponses];
 
-export type GetUserOncallDetailsData = {
+export type GetUserOncallInformationData = {
     body?: never;
     path?: never;
     query?: {
         userId?: string;
+        activeShifts?: boolean;
+        upcomingShifts?: number;
+        pastShifts?: number;
     };
     url: '/oncall/user';
 };
 
-export type GetUserOncallDetailsErrors = {
+export type GetUserOncallInformationErrors = {
     /**
      * Bad Request
      */
@@ -7572,16 +7600,151 @@ export type GetUserOncallDetailsErrors = {
     500: ErrorModel;
 };
 
-export type GetUserOncallDetailsError = GetUserOncallDetailsErrors[keyof GetUserOncallDetailsErrors];
+export type GetUserOncallInformationError = GetUserOncallInformationErrors[keyof GetUserOncallInformationErrors];
 
-export type GetUserOncallDetailsResponses = {
+export type GetUserOncallInformationResponses = {
     /**
      * OK
      */
-    200: GetUserOncallDetailsResponseBody;
+    200: GetUserOncallInformationResponseBody;
 };
 
-export type GetUserOncallDetailsResponse = GetUserOncallDetailsResponses[keyof GetUserOncallDetailsResponses];
+export type GetUserOncallInformationResponse = GetUserOncallInformationResponses[keyof GetUserOncallInformationResponses];
+
+export type ListWatchedOncallRostersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/oncall/watched_rosters';
+};
+
+export type ListWatchedOncallRostersErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListWatchedOncallRostersError = ListWatchedOncallRostersErrors[keyof ListWatchedOncallRostersErrors];
+
+export type ListWatchedOncallRostersResponses = {
+    /**
+     * OK
+     */
+    200: ListWatchedOncallRostersResponseBody;
+};
+
+export type ListWatchedOncallRostersResponse = ListWatchedOncallRostersResponses[keyof ListWatchedOncallRostersResponses];
+
+export type RemoveWatchedOncallRosterData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/watched_rosters/{id}';
+};
+
+export type RemoveWatchedOncallRosterErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RemoveWatchedOncallRosterError = RemoveWatchedOncallRosterErrors[keyof RemoveWatchedOncallRosterErrors];
+
+export type RemoveWatchedOncallRosterResponses = {
+    /**
+     * OK
+     */
+    200: RemoveWatchedOncallRosterResponseBody;
+};
+
+export type RemoveWatchedOncallRosterResponse = RemoveWatchedOncallRosterResponses[keyof RemoveWatchedOncallRosterResponses];
+
+export type AddWatchedOncallRosterData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/watched_rosters/{id}';
+};
+
+export type AddWatchedOncallRosterErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type AddWatchedOncallRosterError = AddWatchedOncallRosterErrors[keyof AddWatchedOncallRosterErrors];
+
+export type AddWatchedOncallRosterResponses = {
+    /**
+     * OK
+     */
+    200: AddWatchedOncallRosterResponseBody;
+};
+
+export type AddWatchedOncallRosterResponse = AddWatchedOncallRosterResponses[keyof AddWatchedOncallRosterResponses];
 
 export type ArchiveRetrospectiveReviewData = {
     body?: never;

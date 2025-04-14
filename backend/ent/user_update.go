@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -119,6 +120,21 @@ func (uu *UserUpdate) AddTeams(t ...*Team) *UserUpdate {
 		ids[i] = t[i].ID
 	}
 	return uu.AddTeamIDs(ids...)
+}
+
+// AddWatchedOncallRosterIDs adds the "watched_oncall_rosters" edge to the OncallRoster entity by IDs.
+func (uu *UserUpdate) AddWatchedOncallRosterIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddWatchedOncallRosterIDs(ids...)
+	return uu
+}
+
+// AddWatchedOncallRosters adds the "watched_oncall_rosters" edges to the OncallRoster entity.
+func (uu *UserUpdate) AddWatchedOncallRosters(o ...*OncallRoster) *UserUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uu.AddWatchedOncallRosterIDs(ids...)
 }
 
 // AddOncallScheduleIDs adds the "oncall_schedules" edge to the OncallScheduleParticipant entity by IDs.
@@ -295,6 +311,27 @@ func (uu *UserUpdate) RemoveTeams(t ...*Team) *UserUpdate {
 		ids[i] = t[i].ID
 	}
 	return uu.RemoveTeamIDs(ids...)
+}
+
+// ClearWatchedOncallRosters clears all "watched_oncall_rosters" edges to the OncallRoster entity.
+func (uu *UserUpdate) ClearWatchedOncallRosters() *UserUpdate {
+	uu.mutation.ClearWatchedOncallRosters()
+	return uu
+}
+
+// RemoveWatchedOncallRosterIDs removes the "watched_oncall_rosters" edge to OncallRoster entities by IDs.
+func (uu *UserUpdate) RemoveWatchedOncallRosterIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveWatchedOncallRosterIDs(ids...)
+	return uu
+}
+
+// RemoveWatchedOncallRosters removes "watched_oncall_rosters" edges to OncallRoster entities.
+func (uu *UserUpdate) RemoveWatchedOncallRosters(o ...*OncallRoster) *UserUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uu.RemoveWatchedOncallRosterIDs(ids...)
 }
 
 // ClearOncallSchedules clears all "oncall_schedules" edges to the OncallScheduleParticipant entity.
@@ -605,6 +642,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uu.mutation.WatchedOncallRostersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedWatchedOncallRostersIDs(); len(nodes) > 0 && !uu.mutation.WatchedOncallRostersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.WatchedOncallRostersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1167,6 +1249,21 @@ func (uuo *UserUpdateOne) AddTeams(t ...*Team) *UserUpdateOne {
 	return uuo.AddTeamIDs(ids...)
 }
 
+// AddWatchedOncallRosterIDs adds the "watched_oncall_rosters" edge to the OncallRoster entity by IDs.
+func (uuo *UserUpdateOne) AddWatchedOncallRosterIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddWatchedOncallRosterIDs(ids...)
+	return uuo
+}
+
+// AddWatchedOncallRosters adds the "watched_oncall_rosters" edges to the OncallRoster entity.
+func (uuo *UserUpdateOne) AddWatchedOncallRosters(o ...*OncallRoster) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uuo.AddWatchedOncallRosterIDs(ids...)
+}
+
 // AddOncallScheduleIDs adds the "oncall_schedules" edge to the OncallScheduleParticipant entity by IDs.
 func (uuo *UserUpdateOne) AddOncallScheduleIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddOncallScheduleIDs(ids...)
@@ -1341,6 +1438,27 @@ func (uuo *UserUpdateOne) RemoveTeams(t ...*Team) *UserUpdateOne {
 		ids[i] = t[i].ID
 	}
 	return uuo.RemoveTeamIDs(ids...)
+}
+
+// ClearWatchedOncallRosters clears all "watched_oncall_rosters" edges to the OncallRoster entity.
+func (uuo *UserUpdateOne) ClearWatchedOncallRosters() *UserUpdateOne {
+	uuo.mutation.ClearWatchedOncallRosters()
+	return uuo
+}
+
+// RemoveWatchedOncallRosterIDs removes the "watched_oncall_rosters" edge to OncallRoster entities by IDs.
+func (uuo *UserUpdateOne) RemoveWatchedOncallRosterIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveWatchedOncallRosterIDs(ids...)
+	return uuo
+}
+
+// RemoveWatchedOncallRosters removes "watched_oncall_rosters" edges to OncallRoster entities.
+func (uuo *UserUpdateOne) RemoveWatchedOncallRosters(o ...*OncallRoster) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uuo.RemoveWatchedOncallRosterIDs(ids...)
 }
 
 // ClearOncallSchedules clears all "oncall_schedules" edges to the OncallScheduleParticipant entity.
@@ -1681,6 +1799,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.WatchedOncallRostersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedWatchedOncallRostersIDs(); len(nodes) > 0 && !uuo.mutation.WatchedOncallRostersCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.WatchedOncallRostersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

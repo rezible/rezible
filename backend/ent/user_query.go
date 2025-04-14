@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -34,6 +35,7 @@ type UserQuery struct {
 	inters                           []Interceptor
 	predicates                       []predicate.User
 	withTeams                        *TeamQuery
+	withWatchedOncallRosters         *OncallRosterQuery
 	withOncallSchedules              *OncallScheduleParticipantQuery
 	withOncallShifts                 *OncallUserShiftQuery
 	withOncallShiftCovers            *OncallUserShiftCoverQuery
@@ -96,6 +98,28 @@ func (uq *UserQuery) QueryTeams() *TeamQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.TeamsTable, user.TeamsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWatchedOncallRosters chains the current query on the "watched_oncall_rosters" edge.
+func (uq *UserQuery) QueryWatchedOncallRosters() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.WatchedOncallRostersTable, user.WatchedOncallRostersPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -516,6 +540,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		inters:                           append([]Interceptor{}, uq.inters...),
 		predicates:                       append([]predicate.User{}, uq.predicates...),
 		withTeams:                        uq.withTeams.Clone(),
+		withWatchedOncallRosters:         uq.withWatchedOncallRosters.Clone(),
 		withOncallSchedules:              uq.withOncallSchedules.Clone(),
 		withOncallShifts:                 uq.withOncallShifts.Clone(),
 		withOncallShiftCovers:            uq.withOncallShiftCovers.Clone(),
@@ -541,6 +566,17 @@ func (uq *UserQuery) WithTeams(opts ...func(*TeamQuery)) *UserQuery {
 		opt(query)
 	}
 	uq.withTeams = query
+	return uq
+}
+
+// WithWatchedOncallRosters tells the query-builder to eager-load the nodes that are connected to
+// the "watched_oncall_rosters" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithWatchedOncallRosters(opts ...func(*OncallRosterQuery)) *UserQuery {
+	query := (&OncallRosterClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withWatchedOncallRosters = query
 	return uq
 }
 
@@ -732,8 +768,9 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [12]bool{
 			uq.withTeams != nil,
+			uq.withWatchedOncallRosters != nil,
 			uq.withOncallSchedules != nil,
 			uq.withOncallShifts != nil,
 			uq.withOncallShiftCovers != nil,
@@ -771,6 +808,13 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadTeams(ctx, query, nodes,
 			func(n *User) { n.Edges.Teams = []*Team{} },
 			func(n *User, e *Team) { n.Edges.Teams = append(n.Edges.Teams, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := uq.withWatchedOncallRosters; query != nil {
+		if err := uq.loadWatchedOncallRosters(ctx, query, nodes,
+			func(n *User) { n.Edges.WatchedOncallRosters = []*OncallRoster{} },
+			func(n *User, e *OncallRoster) { n.Edges.WatchedOncallRosters = append(n.Edges.WatchedOncallRosters, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -913,6 +957,67 @@ func (uq *UserQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*U
 		nodes, ok := nids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected "teams" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (uq *UserQuery) loadWatchedOncallRosters(ctx context.Context, query *OncallRosterQuery, nodes []*User, init func(*User), assign func(*User, *OncallRoster)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*User)
+	nids := make(map[uuid.UUID]map[*User]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(user.WatchedOncallRostersTable)
+		s.Join(joinT).On(s.C(oncallroster.FieldID), joinT.C(user.WatchedOncallRostersPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(user.WatchedOncallRostersPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(user.WatchedOncallRostersPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*User]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*OncallRoster](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "watched_oncall_rosters" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

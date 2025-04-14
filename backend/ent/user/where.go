@@ -377,6 +377,29 @@ func HasTeamsWith(preds ...predicate.Team) predicate.User {
 	})
 }
 
+// HasWatchedOncallRosters applies the HasEdge predicate on the "watched_oncall_rosters" edge.
+func HasWatchedOncallRosters() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, WatchedOncallRostersTable, WatchedOncallRostersPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWatchedOncallRostersWith applies the HasEdge predicate on the "watched_oncall_rosters" edge with a given conditions (other predicates).
+func HasWatchedOncallRostersWith(preds ...predicate.OncallRoster) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newWatchedOncallRostersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasOncallSchedules applies the HasEdge predicate on the "oncall_schedules" edge.
 func HasOncallSchedules() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

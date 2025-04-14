@@ -5551,6 +5551,22 @@ func (c *OncallRosterClient) QueryAlerts(or *OncallRoster) *OncallAlertQuery {
 	return query
 }
 
+// QueryUserWatchers queries the user_watchers edge of a OncallRoster.
+func (c *OncallRosterClient) QueryUserWatchers(or *OncallRoster) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.UserWatchersTable, oncallroster.UserWatchersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *OncallRosterClient) Hooks() []Hook {
 	hooks := c.hooks.OncallRoster
@@ -9993,6 +10009,22 @@ func (c *UserClient) QueryTeams(u *User) *TeamQuery {
 			sqlgraph.From(user.Table, user.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, user.TeamsTable, user.TeamsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWatchedOncallRosters queries the watched_oncall_rosters edge of a User.
+func (c *UserClient) QueryWatchedOncallRosters(u *User) *OncallRosterQuery {
+	query := (&OncallRosterClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.WatchedOncallRostersTable, user.WatchedOncallRostersPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil

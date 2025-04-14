@@ -17,7 +17,12 @@ type OncallHandler interface {
 	ListOncallRosters(context.Context, *ListOncallRostersRequest) (*ListOncallRostersResponse, error)
 	GetOncallRoster(context.Context, *GetOncallRosterRequest) (*GetOncallRosterResponse, error)
 
-	GetUserOncallDetails(context.Context, *GetUserOncallDetailsRequest) (*GetUserOncallDetailsResponse, error)
+	AddWatchedOncallRoster(context.Context, *AddWatchedOncallRosterRequest) (*AddWatchedOncallRosterResponse, error)
+	ListWatchedOncallRosters(context.Context, *ListWatchedOncallRostersRequest) (*ListWatchedOncallRostersResponse, error)
+	RemoveWatchedOncallRoster(context.Context, *RemoveWatchedOncallRosterRequest) (*RemoveWatchedOncallRosterResponse, error)
+
+	GetUserOncallInformation(context.Context, *GetUserOncallInformationRequest) (*GetUserOncallInformationResponse, error)
+
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
 
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
@@ -38,7 +43,11 @@ func (o operations) RegisterOncall(api huma.API) {
 	huma.Register(api, ListOncallRosters, o.ListOncallRosters)
 	huma.Register(api, GetOncallRoster, o.GetOncallRoster)
 
-	huma.Register(api, GetUserOncallDetails, o.GetUserOncallDetails)
+	huma.Register(api, AddWatchedOncallRoster, o.AddWatchedOncallRoster)
+	huma.Register(api, ListWatchedOncallRosters, o.ListWatchedOncallRosters)
+	huma.Register(api, RemoveWatchedOncallRoster, o.RemoveWatchedOncallRoster)
+
+	huma.Register(api, GetUserOncallInformation, o.GetUserOncallInformation)
 
 	huma.Register(api, ListOncallShifts, o.ListOncallShifts)
 
@@ -298,25 +307,65 @@ var GetOncallRoster = huma.Operation{
 type GetOncallRosterRequest = GetFlexibleIdRequest
 type GetOncallRosterResponse ItemResponse[OncallRoster]
 
-var GetUserOncallDetails = huma.Operation{
-	OperationID: "get-user-oncall-details",
-	Method:      http.MethodGet,
-	Path:        "/oncall/user",
-	Summary:     "Get user oncall details",
+var AddWatchedOncallRoster = huma.Operation{
+	OperationID: "add-watched-oncall-roster",
+	Method:      http.MethodPost,
+	Path:        "/oncall/watched_rosters/{id}",
+	Summary:     "Add a watched oncall roster",
 	Tags:        oncallTags,
 	Errors:      errorCodes(),
 }
 
-type GetUserOncallDetailsRequest struct {
-	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
+type AddWatchedOncallRosterRequest PostIdRequest
+type AddWatchedOncallRosterResponse ListResponse[OncallRoster]
+
+var ListWatchedOncallRosters = huma.Operation{
+	OperationID: "list-watched-oncall-rosters",
+	Method:      http.MethodGet,
+	Path:        "/oncall/watched_rosters",
+	Summary:     "List watched oncall rosters",
+	Tags:        oncallTags,
+	Errors:      errorCodes(),
 }
-type UserOncallDetails struct {
-	Rosters        []OncallRoster `json:"rosters"`
-	ActiveShifts   []OncallShift  `json:"activeShifts"`
-	UpcomingShifts []OncallShift  `json:"upcomingShifts"`
-	PastShifts     []OncallShift  `json:"pastShifts"`
+
+type ListWatchedOncallRostersRequest EmptyRequest
+type ListWatchedOncallRostersResponse ListResponse[OncallRoster]
+
+var RemoveWatchedOncallRoster = huma.Operation{
+	OperationID: "remove-watched-oncall-roster",
+	Method:      http.MethodDelete,
+	Path:        "/oncall/watched_rosters/{id}",
+	Summary:     "Remove a watched oncall roster",
+	Tags:        oncallTags,
+	Errors:      errorCodes(),
 }
-type GetUserOncallDetailsResponse ItemResponse[UserOncallDetails]
+
+type RemoveWatchedOncallRosterRequest DeleteIdRequest
+type RemoveWatchedOncallRosterResponse ListResponse[OncallRoster]
+
+var GetUserOncallInformation = huma.Operation{
+	OperationID: "get-user-oncall-information",
+	Method:      http.MethodGet,
+	Path:        "/oncall/user",
+	Summary:     "Get current user oncall information",
+	Tags:        oncallTags,
+	Errors:      errorCodes(),
+}
+
+type GetUserOncallInformationRequest struct {
+	UserId         uuid.UUID `query:"userId" required:"false" nullable:"false"`
+	ActiveShifts   bool      `query:"activeShifts" required:"false" default:"true"`
+	UpcomingShifts int       `query:"upcomingShifts" required:"false" default:"1"`
+	PastShifts     int       `query:"pastShifts" required:"false" default:"1"`
+}
+type UserOncallInformation struct {
+	MemberRosters   []OncallRoster `json:"rosters"`
+	WatchingRosters []OncallRoster `json:"watchingRosters"`
+	ActiveShifts    []OncallShift  `json:"activeShifts"`
+	UpcomingShifts  []OncallShift  `json:"upcomingShifts"`
+	PastShifts      []OncallShift  `json:"pastShifts"`
+}
+type GetUserOncallInformationResponse ItemResponse[UserOncallInformation]
 
 var ListOncallShifts = huma.Operation{
 	OperationID: "list-oncall-shifts",

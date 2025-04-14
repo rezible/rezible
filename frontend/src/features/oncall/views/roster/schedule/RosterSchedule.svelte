@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Header, Icon, Button, Month } from "svelte-ux";
 	import { mdiChevronRight } from "@mdi/js";
-	import { getUserOncallDetailsOptions, type OncallShift } from "$lib/api";
+	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
 
@@ -10,7 +10,7 @@
 	const {}: Props = $props();
 
 	// TODO: use correct query
-	const shiftsQuery = createQuery(() => getUserOncallDetailsOptions());
+	const shiftsQuery = createQuery(() => getUserOncallInformationOptions());
 
 	const currentShifts = $derived<OncallShift[]>(shiftsQuery.data?.data.activeShifts ?? []);
 	const pastShifts = $derived<OncallShift[]>(shiftsQuery.data?.data.pastShifts ?? []);

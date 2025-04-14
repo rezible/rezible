@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { getUserOncallDetailsOptions } from "$src/lib/api";
+	import { getUserOncallInformationOptions } from "$lib/api";
 	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";
 
 	const teamId = "test-team-2";
 
-	const shiftsQuery = createQuery(() => getUserOncallDetailsOptions());
+	const shiftsQuery = createQuery(() => getUserOncallInformationOptions());
 	const shifts = $derived(shiftsQuery.data?.data);
 
 	const activeShift = $derived(shifts?.activeShifts.at(0));

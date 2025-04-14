@@ -29,6 +29,8 @@ func (User) Edges() []ent.Edge {
 		edge.From("teams", Team.Type).Ref("users"),
 		//edge.From("ladders", Ladder.Type).Ref("users"),
 
+		edge.To("watched_oncall_rosters", OncallRoster.Type),
+
 		edge.From("oncall_schedules", OncallScheduleParticipant.Type).Ref("user"),
 		edge.From("oncall_shifts", OncallUserShift.Type).Ref("user"),
 		edge.From("oncall_shift_covers", OncallUserShiftCover.Type).Ref("user"),

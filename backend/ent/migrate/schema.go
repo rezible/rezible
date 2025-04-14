@@ -1604,6 +1604,31 @@ var (
 			},
 		},
 	}
+	// UserWatchedOncallRostersColumns holds the columns for the "user_watched_oncall_rosters" table.
+	UserWatchedOncallRostersColumns = []*schema.Column{
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "oncall_roster_id", Type: field.TypeUUID},
+	}
+	// UserWatchedOncallRostersTable holds the schema information for the "user_watched_oncall_rosters" table.
+	UserWatchedOncallRostersTable = &schema.Table{
+		Name:       "user_watched_oncall_rosters",
+		Columns:    UserWatchedOncallRostersColumns,
+		PrimaryKey: []*schema.Column{UserWatchedOncallRostersColumns[0], UserWatchedOncallRostersColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_watched_oncall_rosters_user_id",
+				Columns:    []*schema.Column{UserWatchedOncallRostersColumns[0]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "user_watched_oncall_rosters_oncall_roster_id",
+				Columns:    []*schema.Column{UserWatchedOncallRostersColumns[1]},
+				RefColumns: []*schema.Column{OncallRostersColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		EnvironmentsTable,
@@ -1672,6 +1697,7 @@ var (
 		OncallUserShiftHandoverPinnedAnnotationsTable,
 		TeamUsersTable,
 		TeamOncallRostersTable,
+		UserWatchedOncallRostersTable,
 	}
 )
 
@@ -1763,4 +1789,6 @@ func init() {
 	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamOncallRostersTable.ForeignKeys[1].RefTable = OncallRostersTable
+	UserWatchedOncallRostersTable.ForeignKeys[0].RefTable = UsersTable
+	UserWatchedOncallRostersTable.ForeignKeys[1].RefTable = OncallRostersTable
 }

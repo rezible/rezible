@@ -19685,6 +19685,9 @@ type OncallRosterMutation struct {
 	alerts                   map[uuid.UUID]struct{}
 	removedalerts            map[uuid.UUID]struct{}
 	clearedalerts            bool
+	user_watchers            map[uuid.UUID]struct{}
+	removeduser_watchers     map[uuid.UUID]struct{}
+	cleareduser_watchers     bool
 	done                     bool
 	oldValue                 func(context.Context) (*OncallRoster, error)
 	predicates               []predicate.OncallRoster
@@ -20444,6 +20447,60 @@ func (m *OncallRosterMutation) ResetAlerts() {
 	m.removedalerts = nil
 }
 
+// AddUserWatcherIDs adds the "user_watchers" edge to the User entity by ids.
+func (m *OncallRosterMutation) AddUserWatcherIDs(ids ...uuid.UUID) {
+	if m.user_watchers == nil {
+		m.user_watchers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.user_watchers[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUserWatchers clears the "user_watchers" edge to the User entity.
+func (m *OncallRosterMutation) ClearUserWatchers() {
+	m.cleareduser_watchers = true
+}
+
+// UserWatchersCleared reports if the "user_watchers" edge to the User entity was cleared.
+func (m *OncallRosterMutation) UserWatchersCleared() bool {
+	return m.cleareduser_watchers
+}
+
+// RemoveUserWatcherIDs removes the "user_watchers" edge to the User entity by IDs.
+func (m *OncallRosterMutation) RemoveUserWatcherIDs(ids ...uuid.UUID) {
+	if m.removeduser_watchers == nil {
+		m.removeduser_watchers = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.user_watchers, ids[i])
+		m.removeduser_watchers[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUserWatchers returns the removed IDs of the "user_watchers" edge to the User entity.
+func (m *OncallRosterMutation) RemovedUserWatchersIDs() (ids []uuid.UUID) {
+	for id := range m.removeduser_watchers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UserWatchersIDs returns the "user_watchers" edge IDs in the mutation.
+func (m *OncallRosterMutation) UserWatchersIDs() (ids []uuid.UUID) {
+	for id := range m.user_watchers {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUserWatchers resets all changes to the "user_watchers" edge.
+func (m *OncallRosterMutation) ResetUserWatchers() {
+	m.user_watchers = nil
+	m.cleareduser_watchers = false
+	m.removeduser_watchers = nil
+}
+
 // Where appends a list predicates to the OncallRosterMutation builder.
 func (m *OncallRosterMutation) Where(ps ...predicate.OncallRoster) {
 	m.predicates = append(m.predicates, ps...)
@@ -20729,7 +20786,7 @@ func (m *OncallRosterMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallRosterMutation) AddedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.schedules != nil {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -20747,6 +20804,9 @@ func (m *OncallRosterMutation) AddedEdges() []string {
 	}
 	if m.alerts != nil {
 		edges = append(edges, oncallroster.EdgeAlerts)
+	}
+	if m.user_watchers != nil {
+		edges = append(edges, oncallroster.EdgeUserWatchers)
 	}
 	return edges
 }
@@ -20789,13 +20849,19 @@ func (m *OncallRosterMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case oncallroster.EdgeUserWatchers:
+		ids := make([]ent.Value, 0, len(m.user_watchers))
+		for id := range m.user_watchers {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallRosterMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.removedschedules != nil {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -20810,6 +20876,9 @@ func (m *OncallRosterMutation) RemovedEdges() []string {
 	}
 	if m.removedalerts != nil {
 		edges = append(edges, oncallroster.EdgeAlerts)
+	}
+	if m.removeduser_watchers != nil {
+		edges = append(edges, oncallroster.EdgeUserWatchers)
 	}
 	return edges
 }
@@ -20848,13 +20917,19 @@ func (m *OncallRosterMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case oncallroster.EdgeUserWatchers:
+		ids := make([]ent.Value, 0, len(m.removeduser_watchers))
+		for id := range m.removeduser_watchers {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallRosterMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 6)
+	edges := make([]string, 0, 7)
 	if m.clearedschedules {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -20872,6 +20947,9 @@ func (m *OncallRosterMutation) ClearedEdges() []string {
 	}
 	if m.clearedalerts {
 		edges = append(edges, oncallroster.EdgeAlerts)
+	}
+	if m.cleareduser_watchers {
+		edges = append(edges, oncallroster.EdgeUserWatchers)
 	}
 	return edges
 }
@@ -20892,6 +20970,8 @@ func (m *OncallRosterMutation) EdgeCleared(name string) bool {
 		return m.clearedshifts
 	case oncallroster.EdgeAlerts:
 		return m.clearedalerts
+	case oncallroster.EdgeUserWatchers:
+		return m.cleareduser_watchers
 	}
 	return false
 }
@@ -20928,6 +21008,9 @@ func (m *OncallRosterMutation) ResetEdge(name string) error {
 		return nil
 	case oncallroster.EdgeAlerts:
 		m.ResetAlerts()
+		return nil
+	case oncallroster.EdgeUserWatchers:
+		m.ResetUserWatchers()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallRoster edge %s", name)
@@ -38744,6 +38827,9 @@ type UserMutation struct {
 	teams                                 map[uuid.UUID]struct{}
 	removedteams                          map[uuid.UUID]struct{}
 	clearedteams                          bool
+	watched_oncall_rosters                map[uuid.UUID]struct{}
+	removedwatched_oncall_rosters         map[uuid.UUID]struct{}
+	clearedwatched_oncall_rosters         bool
 	oncall_schedules                      map[uuid.UUID]struct{}
 	removedoncall_schedules               map[uuid.UUID]struct{}
 	clearedoncall_schedules               bool
@@ -39105,6 +39191,60 @@ func (m *UserMutation) ResetTeams() {
 	m.teams = nil
 	m.clearedteams = false
 	m.removedteams = nil
+}
+
+// AddWatchedOncallRosterIDs adds the "watched_oncall_rosters" edge to the OncallRoster entity by ids.
+func (m *UserMutation) AddWatchedOncallRosterIDs(ids ...uuid.UUID) {
+	if m.watched_oncall_rosters == nil {
+		m.watched_oncall_rosters = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.watched_oncall_rosters[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWatchedOncallRosters clears the "watched_oncall_rosters" edge to the OncallRoster entity.
+func (m *UserMutation) ClearWatchedOncallRosters() {
+	m.clearedwatched_oncall_rosters = true
+}
+
+// WatchedOncallRostersCleared reports if the "watched_oncall_rosters" edge to the OncallRoster entity was cleared.
+func (m *UserMutation) WatchedOncallRostersCleared() bool {
+	return m.clearedwatched_oncall_rosters
+}
+
+// RemoveWatchedOncallRosterIDs removes the "watched_oncall_rosters" edge to the OncallRoster entity by IDs.
+func (m *UserMutation) RemoveWatchedOncallRosterIDs(ids ...uuid.UUID) {
+	if m.removedwatched_oncall_rosters == nil {
+		m.removedwatched_oncall_rosters = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.watched_oncall_rosters, ids[i])
+		m.removedwatched_oncall_rosters[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWatchedOncallRosters returns the removed IDs of the "watched_oncall_rosters" edge to the OncallRoster entity.
+func (m *UserMutation) RemovedWatchedOncallRostersIDs() (ids []uuid.UUID) {
+	for id := range m.removedwatched_oncall_rosters {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WatchedOncallRostersIDs returns the "watched_oncall_rosters" edge IDs in the mutation.
+func (m *UserMutation) WatchedOncallRostersIDs() (ids []uuid.UUID) {
+	for id := range m.watched_oncall_rosters {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWatchedOncallRosters resets all changes to the "watched_oncall_rosters" edge.
+func (m *UserMutation) ResetWatchedOncallRosters() {
+	m.watched_oncall_rosters = nil
+	m.clearedwatched_oncall_rosters = false
+	m.removedwatched_oncall_rosters = nil
 }
 
 // AddOncallScheduleIDs adds the "oncall_schedules" edge to the OncallScheduleParticipant entity by ids.
@@ -39846,9 +39986,12 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.teams != nil {
 		edges = append(edges, user.EdgeTeams)
+	}
+	if m.watched_oncall_rosters != nil {
+		edges = append(edges, user.EdgeWatchedOncallRosters)
 	}
 	if m.oncall_schedules != nil {
 		edges = append(edges, user.EdgeOncallSchedules)
@@ -39890,6 +40033,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	case user.EdgeTeams:
 		ids := make([]ent.Value, 0, len(m.teams))
 		for id := range m.teams {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeWatchedOncallRosters:
+		ids := make([]ent.Value, 0, len(m.watched_oncall_rosters))
+		for id := range m.watched_oncall_rosters {
 			ids = append(ids, id)
 		}
 		return ids
@@ -39959,9 +40108,12 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
+	}
+	if m.removedwatched_oncall_rosters != nil {
+		edges = append(edges, user.EdgeWatchedOncallRosters)
 	}
 	if m.removedoncall_schedules != nil {
 		edges = append(edges, user.EdgeOncallSchedules)
@@ -40003,6 +40155,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 	case user.EdgeTeams:
 		ids := make([]ent.Value, 0, len(m.removedteams))
 		for id := range m.removedteams {
+			ids = append(ids, id)
+		}
+		return ids
+	case user.EdgeWatchedOncallRosters:
+		ids := make([]ent.Value, 0, len(m.removedwatched_oncall_rosters))
+		for id := range m.removedwatched_oncall_rosters {
 			ids = append(ids, id)
 		}
 		return ids
@@ -40072,9 +40230,12 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.clearedteams {
 		edges = append(edges, user.EdgeTeams)
+	}
+	if m.clearedwatched_oncall_rosters {
+		edges = append(edges, user.EdgeWatchedOncallRosters)
 	}
 	if m.clearedoncall_schedules {
 		edges = append(edges, user.EdgeOncallSchedules)
@@ -40115,6 +40276,8 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
 	case user.EdgeTeams:
 		return m.clearedteams
+	case user.EdgeWatchedOncallRosters:
+		return m.clearedwatched_oncall_rosters
 	case user.EdgeOncallSchedules:
 		return m.clearedoncall_schedules
 	case user.EdgeOncallShifts:
@@ -40153,6 +40316,9 @@ func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
 	case user.EdgeTeams:
 		m.ResetTeams()
+		return nil
+	case user.EdgeWatchedOncallRosters:
+		m.ResetWatchedOncallRosters()
 		return nil
 	case user.EdgeOncallSchedules:
 		m.ResetOncallSchedules()

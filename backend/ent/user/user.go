@@ -23,6 +23,8 @@ const (
 	FieldTimezone = "timezone"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
+	// EdgeWatchedOncallRosters holds the string denoting the watched_oncall_rosters edge name in mutations.
+	EdgeWatchedOncallRosters = "watched_oncall_rosters"
 	// EdgeOncallSchedules holds the string denoting the oncall_schedules edge name in mutations.
 	EdgeOncallSchedules = "oncall_schedules"
 	// EdgeOncallShifts holds the string denoting the oncall_shifts edge name in mutations.
@@ -50,6 +52,11 @@ const (
 	// TeamsInverseTable is the table name for the Team entity.
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamsInverseTable = "teams"
+	// WatchedOncallRostersTable is the table that holds the watched_oncall_rosters relation/edge. The primary key declared below.
+	WatchedOncallRostersTable = "user_watched_oncall_rosters"
+	// WatchedOncallRostersInverseTable is the table name for the OncallRoster entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
+	WatchedOncallRostersInverseTable = "oncall_rosters"
 	// OncallSchedulesTable is the table that holds the oncall_schedules relation/edge.
 	OncallSchedulesTable = "oncall_schedule_participants"
 	// OncallSchedulesInverseTable is the table name for the OncallScheduleParticipant entity.
@@ -135,6 +142,9 @@ var (
 	// TeamsPrimaryKey and TeamsColumn2 are the table columns denoting the
 	// primary key for the teams relation (M2M).
 	TeamsPrimaryKey = []string{"team_id", "user_id"}
+	// WatchedOncallRostersPrimaryKey and WatchedOncallRostersColumn2 are the table columns denoting the
+	// primary key for the watched_oncall_rosters relation (M2M).
+	WatchedOncallRostersPrimaryKey = []string{"user_id", "oncall_roster_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -191,6 +201,20 @@ func ByTeamsCount(opts ...sql.OrderTermOption) OrderOption {
 func ByTeams(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTeamsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByWatchedOncallRostersCount orders the results by watched_oncall_rosters count.
+func ByWatchedOncallRostersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWatchedOncallRostersStep(), opts...)
+	}
+}
+
+// ByWatchedOncallRosters orders the results by watched_oncall_rosters terms.
+func ByWatchedOncallRosters(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWatchedOncallRostersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -338,6 +362,13 @@ func newTeamsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TeamsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, TeamsTable, TeamsPrimaryKey...),
+	)
+}
+func newWatchedOncallRostersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WatchedOncallRostersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, WatchedOncallRostersTable, WatchedOncallRostersPrimaryKey...),
 	)
 }
 func newOncallSchedulesStep() *sqlgraph.Step {

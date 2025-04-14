@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncalleventannotation"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftcover"
@@ -99,6 +100,21 @@ func (uc *UserCreate) AddTeams(t ...*Team) *UserCreate {
 		ids[i] = t[i].ID
 	}
 	return uc.AddTeamIDs(ids...)
+}
+
+// AddWatchedOncallRosterIDs adds the "watched_oncall_rosters" edge to the OncallRoster entity by IDs.
+func (uc *UserCreate) AddWatchedOncallRosterIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddWatchedOncallRosterIDs(ids...)
+	return uc
+}
+
+// AddWatchedOncallRosters adds the "watched_oncall_rosters" edges to the OncallRoster entity.
+func (uc *UserCreate) AddWatchedOncallRosters(o ...*OncallRoster) *UserCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return uc.AddWatchedOncallRosterIDs(ids...)
 }
 
 // AddOncallScheduleIDs adds the "oncall_schedules" edge to the OncallScheduleParticipant entity by IDs.
@@ -361,6 +377,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.WatchedOncallRostersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.WatchedOncallRostersTable,
+			Columns: user.WatchedOncallRostersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
