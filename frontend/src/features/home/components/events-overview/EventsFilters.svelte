@@ -9,7 +9,7 @@
 </script>
 
 <script lang="ts">
-	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import {
 		Button,

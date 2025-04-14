@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -31,6 +32,8 @@ type OncallUserShiftHandover struct {
 	SentAt time.Time `json:"sent_at,omitempty"`
 	// Contents holds the value of the "contents" field.
 	Contents []byte `json:"contents,omitempty"`
+	// PinnedEventIds holds the value of the "pinned_event_ids" field.
+	PinnedEventIds []string `json:"pinned_event_ids,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallUserShiftHandoverQuery when eager-loading is set.
 	Edges        OncallUserShiftHandoverEdges `json:"edges"`
@@ -41,11 +44,9 @@ type OncallUserShiftHandover struct {
 type OncallUserShiftHandoverEdges struct {
 	// Shift holds the value of the shift edge.
 	Shift *OncallUserShift `json:"shift,omitempty"`
-	// PinnedAnnotations holds the value of the pinned_annotations edge.
-	PinnedAnnotations []*OncallAnnotation `json:"pinned_annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // ShiftOrErr returns the Shift value or an error if the edge
@@ -59,21 +60,12 @@ func (e OncallUserShiftHandoverEdges) ShiftOrErr() (*OncallUserShift, error) {
 	return nil, &NotLoadedError{edge: "shift"}
 }
 
-// PinnedAnnotationsOrErr returns the PinnedAnnotations value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[1] {
-		return e.PinnedAnnotations, nil
-	}
-	return nil, &NotLoadedError{edge: "pinned_annotations"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*OncallUserShiftHandover) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershifthandover.FieldContents:
+		case oncallusershifthandover.FieldContents, oncallusershifthandover.FieldPinnedEventIds:
 			values[i] = new([]byte)
 		case oncallusershifthandover.FieldReminderSent:
 			values[i] = new(sql.NullBool)
@@ -138,6 +130,14 @@ func (oush *OncallUserShiftHandover) assignValues(columns []string, values []any
 			} else if value != nil {
 				oush.Contents = *value
 			}
+		case oncallusershifthandover.FieldPinnedEventIds:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field pinned_event_ids", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &oush.PinnedEventIds); err != nil {
+					return fmt.Errorf("unmarshal field pinned_event_ids: %w", err)
+				}
+			}
 		default:
 			oush.selectValues.Set(columns[i], values[i])
 		}
@@ -154,11 +154,6 @@ func (oush *OncallUserShiftHandover) Value(name string) (ent.Value, error) {
 // QueryShift queries the "shift" edge of the OncallUserShiftHandover entity.
 func (oush *OncallUserShiftHandover) QueryShift() *OncallUserShiftQuery {
 	return NewOncallUserShiftHandoverClient(oush.config).QueryShift(oush)
-}
-
-// QueryPinnedAnnotations queries the "pinned_annotations" edge of the OncallUserShiftHandover entity.
-func (oush *OncallUserShiftHandover) QueryPinnedAnnotations() *OncallAnnotationQuery {
-	return NewOncallUserShiftHandoverClient(oush.config).QueryPinnedAnnotations(oush)
 }
 
 // Update returns a builder for updating this OncallUserShiftHandover.
@@ -201,6 +196,9 @@ func (oush *OncallUserShiftHandover) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("contents=")
 	builder.WriteString(fmt.Sprintf("%v", oush.Contents))
+	builder.WriteString(", ")
+	builder.WriteString("pinned_event_ids=")
+	builder.WriteString(fmt.Sprintf("%v", oush.PinnedEventIds))
 	builder.WriteByte(')')
 	return builder.String()
 }

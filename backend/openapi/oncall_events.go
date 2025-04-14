@@ -115,7 +115,6 @@ type CreateOncallAnnotationRequestAttributes struct {
 	RosterId        uuid.UUID `json:"rosterId"`
 	MinutesOccupied int       `json:"minutesOccupied"`
 	Notes           string    `json:"notes"`
-	Pinned          bool      `json:"pinned"`
 }
 type CreateOncallAnnotationRequest CreateIdRequest[CreateOncallAnnotationRequestAttributes]
 type CreateOncallAnnotationResponse ItemResponse[OncallAnnotation]
@@ -130,7 +129,6 @@ var UpdateOncallAnnotation = huma.Operation{
 }
 
 type UpdateOncallAnnotationRequestAttributes struct {
-	Pinned          *bool   `json:"pinned,omitempty"`
 	Notes           *string `json:"notes,omitempty"`
 	MinutesOccupied *int    `json:"minutesOccupied,omitempty"`
 }

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import {
 		listOncallEventsOptions,
-		createOncallEventAnnotationMutation,
-		type CreateOncallEventAnnotationRequestBody,
+		createOncallAnnotationMutation,
+		type CreateOncallAnnotationRequestBody,
 		type OncallEvent,
 		type OncallShift,
 	} from "$lib/api";
@@ -50,8 +50,8 @@
 		draftAnnotation = undefined;
 	};
 
-	const createAnnotationMutation = createMutation(() => ({
-		...createOncallEventAnnotationMutation(),
+	const createMut = createMutation(() => ({
+		...createOncallAnnotationMutation(),
 		onSuccess: () => {
 			onCreated();
 			clearAnnotation();
@@ -61,12 +61,11 @@
 	const saveAnnotation = () => {
 		if (!draftAnnotation) return;
 		const d = $state.snapshot(draftAnnotation);
-		const body: CreateOncallEventAnnotationRequestBody = {
+		const body: CreateOncallAnnotationRequestBody = {
 			attributes: {
 				eventId: d.event.id,
 				rosterId: shift.attributes.roster.id,
 				notes: d.notes,
-				pinned: d.pinned,
 				minutesOccupied: 0,
 			},
 		};
@@ -76,7 +75,7 @@
 
 <Dialog
 	bind:open
-	loading={createAnnotationMutation.isPending}
+	loading={createMut.isPending}
 	persistent
 	portal
 	classes={{
@@ -101,9 +100,10 @@
 
 {#snippet dialogBody()}
 	{#if draftAnnotation}
+		{@const attrs = draftAnnotation.event.attributes}
 		<Header
-			title={draftAnnotation.event.title}
-			subheading={draftAnnotation.event.timestamp}
+			title={attrs.title}
+			subheading={attrs.timestamp}
 		/>
 		<div class="w-full border-t pt-2">
 			<TextField
@@ -156,7 +156,7 @@
 		</div>
 
 		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
-			<div class="leading-none">{event.title}</div>
+			<div class="leading-none">{event.attributes.title}</div>
 			<div class="place-self-end">
 				<Button
 					icon={mdiChatPlus}

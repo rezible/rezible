@@ -18260,9 +18260,6 @@ type OncallAnnotationMutation struct {
 	clearedroster       bool
 	creator             *uuid.UUID
 	clearedcreator      bool
-	handovers           map[uuid.UUID]struct{}
-	removedhandovers    map[uuid.UUID]struct{}
-	clearedhandovers    bool
 	done                bool
 	oldValue            func(context.Context) (*OncallAnnotation, error)
 	predicates          []predicate.OncallAnnotation
@@ -18662,60 +18659,6 @@ func (m *OncallAnnotationMutation) ResetCreator() {
 	m.clearedcreator = false
 }
 
-// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by ids.
-func (m *OncallAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
-	if m.handovers == nil {
-		m.handovers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.handovers[ids[i]] = struct{}{}
-	}
-}
-
-// ClearHandovers clears the "handovers" edge to the OncallUserShiftHandover entity.
-func (m *OncallAnnotationMutation) ClearHandovers() {
-	m.clearedhandovers = true
-}
-
-// HandoversCleared reports if the "handovers" edge to the OncallUserShiftHandover entity was cleared.
-func (m *OncallAnnotationMutation) HandoversCleared() bool {
-	return m.clearedhandovers
-}
-
-// RemoveHandoverIDs removes the "handovers" edge to the OncallUserShiftHandover entity by IDs.
-func (m *OncallAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
-	if m.removedhandovers == nil {
-		m.removedhandovers = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.handovers, ids[i])
-		m.removedhandovers[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedHandovers returns the removed IDs of the "handovers" edge to the OncallUserShiftHandover entity.
-func (m *OncallAnnotationMutation) RemovedHandoversIDs() (ids []uuid.UUID) {
-	for id := range m.removedhandovers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// HandoversIDs returns the "handovers" edge IDs in the mutation.
-func (m *OncallAnnotationMutation) HandoversIDs() (ids []uuid.UUID) {
-	for id := range m.handovers {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetHandovers resets all changes to the "handovers" edge.
-func (m *OncallAnnotationMutation) ResetHandovers() {
-	m.handovers = nil
-	m.clearedhandovers = false
-	m.removedhandovers = nil
-}
-
 // Where appends a list predicates to the OncallAnnotationMutation builder.
 func (m *OncallAnnotationMutation) Where(ps ...predicate.OncallAnnotation) {
 	m.predicates = append(m.predicates, ps...)
@@ -18949,15 +18892,12 @@ func (m *OncallAnnotationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallAnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.roster != nil {
 		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.creator != nil {
 		edges = append(edges, oncallannotation.EdgeCreator)
-	}
-	if m.handovers != nil {
-		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
 	return edges
 }
@@ -18974,50 +18914,30 @@ func (m *OncallAnnotationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.creator; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallannotation.EdgeHandovers:
-		ids := make([]ent.Value, 0, len(m.handovers))
-		for id := range m.handovers {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallAnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedhandovers != nil {
-		edges = append(edges, oncallannotation.EdgeHandovers)
-	}
+	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *OncallAnnotationMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case oncallannotation.EdgeHandovers:
-		ids := make([]ent.Value, 0, len(m.removedhandovers))
-		for id := range m.removedhandovers {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallAnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedroster {
 		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.clearedcreator {
 		edges = append(edges, oncallannotation.EdgeCreator)
-	}
-	if m.clearedhandovers {
-		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
 	return edges
 }
@@ -19030,8 +18950,6 @@ func (m *OncallAnnotationMutation) EdgeCleared(name string) bool {
 		return m.clearedroster
 	case oncallannotation.EdgeCreator:
 		return m.clearedcreator
-	case oncallannotation.EdgeHandovers:
-		return m.clearedhandovers
 	}
 	return false
 }
@@ -19059,9 +18977,6 @@ func (m *OncallAnnotationMutation) ResetEdge(name string) error {
 		return nil
 	case oncallannotation.EdgeCreator:
 		m.ResetCreator()
-		return nil
-	case oncallannotation.EdgeHandovers:
-		m.ResetHandovers()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallAnnotation edge %s", name)
@@ -23807,23 +23722,22 @@ func (m *OncallUserShiftCoverMutation) ResetEdge(name string) error {
 // OncallUserShiftHandoverMutation represents an operation that mutates the OncallUserShiftHandover nodes in the graph.
 type OncallUserShiftHandoverMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *uuid.UUID
-	created_at                *time.Time
-	reminder_sent             *bool
-	updated_at                *time.Time
-	sent_at                   *time.Time
-	contents                  *[]byte
-	clearedFields             map[string]struct{}
-	shift                     *uuid.UUID
-	clearedshift              bool
-	pinned_annotations        map[uuid.UUID]struct{}
-	removedpinned_annotations map[uuid.UUID]struct{}
-	clearedpinned_annotations bool
-	done                      bool
-	oldValue                  func(context.Context) (*OncallUserShiftHandover, error)
-	predicates                []predicate.OncallUserShiftHandover
+	op                     Op
+	typ                    string
+	id                     *uuid.UUID
+	created_at             *time.Time
+	reminder_sent          *bool
+	updated_at             *time.Time
+	sent_at                *time.Time
+	contents               *[]byte
+	pinned_event_ids       *[]string
+	appendpinned_event_ids []string
+	clearedFields          map[string]struct{}
+	shift                  *uuid.UUID
+	clearedshift           bool
+	done                   bool
+	oldValue               func(context.Context) (*OncallUserShiftHandover, error)
+	predicates             []predicate.OncallUserShiftHandover
 }
 
 var _ ent.Mutation = (*OncallUserShiftHandoverMutation)(nil)
@@ -24159,6 +24073,57 @@ func (m *OncallUserShiftHandoverMutation) ResetContents() {
 	m.contents = nil
 }
 
+// SetPinnedEventIds sets the "pinned_event_ids" field.
+func (m *OncallUserShiftHandoverMutation) SetPinnedEventIds(s []string) {
+	m.pinned_event_ids = &s
+	m.appendpinned_event_ids = nil
+}
+
+// PinnedEventIds returns the value of the "pinned_event_ids" field in the mutation.
+func (m *OncallUserShiftHandoverMutation) PinnedEventIds() (r []string, exists bool) {
+	v := m.pinned_event_ids
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPinnedEventIds returns the old "pinned_event_ids" field's value of the OncallUserShiftHandover entity.
+// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallUserShiftHandoverMutation) OldPinnedEventIds(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPinnedEventIds is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPinnedEventIds requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPinnedEventIds: %w", err)
+	}
+	return oldValue.PinnedEventIds, nil
+}
+
+// AppendPinnedEventIds adds s to the "pinned_event_ids" field.
+func (m *OncallUserShiftHandoverMutation) AppendPinnedEventIds(s []string) {
+	m.appendpinned_event_ids = append(m.appendpinned_event_ids, s...)
+}
+
+// AppendedPinnedEventIds returns the list of values that were appended to the "pinned_event_ids" field in this mutation.
+func (m *OncallUserShiftHandoverMutation) AppendedPinnedEventIds() ([]string, bool) {
+	if len(m.appendpinned_event_ids) == 0 {
+		return nil, false
+	}
+	return m.appendpinned_event_ids, true
+}
+
+// ResetPinnedEventIds resets all changes to the "pinned_event_ids" field.
+func (m *OncallUserShiftHandoverMutation) ResetPinnedEventIds() {
+	m.pinned_event_ids = nil
+	m.appendpinned_event_ids = nil
+}
+
 // ClearShift clears the "shift" edge to the OncallUserShift entity.
 func (m *OncallUserShiftHandoverMutation) ClearShift() {
 	m.clearedshift = true
@@ -24184,60 +24149,6 @@ func (m *OncallUserShiftHandoverMutation) ShiftIDs() (ids []uuid.UUID) {
 func (m *OncallUserShiftHandoverMutation) ResetShift() {
 	m.shift = nil
 	m.clearedshift = false
-}
-
-// AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by ids.
-func (m *OncallUserShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUID) {
-	if m.pinned_annotations == nil {
-		m.pinned_annotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.pinned_annotations[ids[i]] = struct{}{}
-	}
-}
-
-// ClearPinnedAnnotations clears the "pinned_annotations" edge to the OncallAnnotation entity.
-func (m *OncallUserShiftHandoverMutation) ClearPinnedAnnotations() {
-	m.clearedpinned_annotations = true
-}
-
-// PinnedAnnotationsCleared reports if the "pinned_annotations" edge to the OncallAnnotation entity was cleared.
-func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsCleared() bool {
-	return m.clearedpinned_annotations
-}
-
-// RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
-func (m *OncallUserShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.UUID) {
-	if m.removedpinned_annotations == nil {
-		m.removedpinned_annotations = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.pinned_annotations, ids[i])
-		m.removedpinned_annotations[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPinnedAnnotations returns the removed IDs of the "pinned_annotations" edge to the OncallAnnotation entity.
-func (m *OncallUserShiftHandoverMutation) RemovedPinnedAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.removedpinned_annotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PinnedAnnotationsIDs returns the "pinned_annotations" edge IDs in the mutation.
-func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsIDs() (ids []uuid.UUID) {
-	for id := range m.pinned_annotations {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetPinnedAnnotations resets all changes to the "pinned_annotations" edge.
-func (m *OncallUserShiftHandoverMutation) ResetPinnedAnnotations() {
-	m.pinned_annotations = nil
-	m.clearedpinned_annotations = false
-	m.removedpinned_annotations = nil
 }
 
 // Where appends a list predicates to the OncallUserShiftHandoverMutation builder.
@@ -24274,7 +24185,7 @@ func (m *OncallUserShiftHandoverMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OncallUserShiftHandoverMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.shift != nil {
 		fields = append(fields, oncallusershifthandover.FieldShiftID)
 	}
@@ -24292,6 +24203,9 @@ func (m *OncallUserShiftHandoverMutation) Fields() []string {
 	}
 	if m.contents != nil {
 		fields = append(fields, oncallusershifthandover.FieldContents)
+	}
+	if m.pinned_event_ids != nil {
+		fields = append(fields, oncallusershifthandover.FieldPinnedEventIds)
 	}
 	return fields
 }
@@ -24313,6 +24227,8 @@ func (m *OncallUserShiftHandoverMutation) Field(name string) (ent.Value, bool) {
 		return m.SentAt()
 	case oncallusershifthandover.FieldContents:
 		return m.Contents()
+	case oncallusershifthandover.FieldPinnedEventIds:
+		return m.PinnedEventIds()
 	}
 	return nil, false
 }
@@ -24334,6 +24250,8 @@ func (m *OncallUserShiftHandoverMutation) OldField(ctx context.Context, name str
 		return m.OldSentAt(ctx)
 	case oncallusershifthandover.FieldContents:
 		return m.OldContents(ctx)
+	case oncallusershifthandover.FieldPinnedEventIds:
+		return m.OldPinnedEventIds(ctx)
 	}
 	return nil, fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
 }
@@ -24384,6 +24302,13 @@ func (m *OncallUserShiftHandoverMutation) SetField(name string, value ent.Value)
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContents(v)
+		return nil
+	case oncallusershifthandover.FieldPinnedEventIds:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPinnedEventIds(v)
 		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
@@ -24461,18 +24386,18 @@ func (m *OncallUserShiftHandoverMutation) ResetField(name string) error {
 	case oncallusershifthandover.FieldContents:
 		m.ResetContents()
 		return nil
+	case oncallusershifthandover.FieldPinnedEventIds:
+		m.ResetPinnedEventIds()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallUserShiftHandoverMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.shift != nil {
 		edges = append(edges, oncallusershifthandover.EdgeShift)
-	}
-	if m.pinned_annotations != nil {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
 	}
 	return edges
 }
@@ -24485,47 +24410,27 @@ func (m *OncallUserShiftHandoverMutation) AddedIDs(name string) []ent.Value {
 		if id := m.shift; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershifthandover.EdgePinnedAnnotations:
-		ids := make([]ent.Value, 0, len(m.pinned_annotations))
-		for id := range m.pinned_annotations {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallUserShiftHandoverMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedpinned_annotations != nil {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
-	}
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *OncallUserShiftHandoverMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case oncallusershifthandover.EdgePinnedAnnotations:
-		ids := make([]ent.Value, 0, len(m.removedpinned_annotations))
-		for id := range m.removedpinned_annotations {
-			ids = append(ids, id)
-		}
-		return ids
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallUserShiftHandoverMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 1)
 	if m.clearedshift {
 		edges = append(edges, oncallusershifthandover.EdgeShift)
-	}
-	if m.clearedpinned_annotations {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
 	}
 	return edges
 }
@@ -24536,8 +24441,6 @@ func (m *OncallUserShiftHandoverMutation) EdgeCleared(name string) bool {
 	switch name {
 	case oncallusershifthandover.EdgeShift:
 		return m.clearedshift
-	case oncallusershifthandover.EdgePinnedAnnotations:
-		return m.clearedpinned_annotations
 	}
 	return false
 }
@@ -24559,9 +24462,6 @@ func (m *OncallUserShiftHandoverMutation) ResetEdge(name string) error {
 	switch name {
 	case oncallusershifthandover.EdgeShift:
 		m.ResetShift()
-		return nil
-	case oncallusershifthandover.EdgePinnedAnnotations:
-		m.ResetPinnedAnnotations()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShiftHandover edge %s", name)

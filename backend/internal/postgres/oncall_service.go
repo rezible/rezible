@@ -405,7 +405,7 @@ func (s *OncallService) GetRosterHandoverTemplate(ctx context.Context, rosterId 
 }
 
 func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	return s.db.OncallUserShiftHandover.Query().Where(oncallusershifthandover.ID(id)).WithPinnedAnnotations().Only(ctx)
+	return s.db.OncallUserShiftHandover.Query().Where(oncallusershifthandover.ID(id)).Only(ctx)
 }
 
 func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error) {
@@ -469,21 +469,8 @@ func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.Onc
 	if update.Contents != nil {
 		query.SetContents(update.Contents)
 	}
-	if update.Edges.PinnedAnnotations != nil {
-		currIds := mapset.NewSet[uuid.UUID]()
-		for _, a := range curr.Edges.PinnedAnnotations {
-			currIds.Add(a.ID)
-		}
-		updatedIds := mapset.NewSet[uuid.UUID]()
-		for _, a := range update.Edges.PinnedAnnotations {
-			updatedIds.Add(a.ID)
-		}
-		if addIds := updatedIds.Difference(currIds); addIds.Cardinality() > 0 {
-			query.AddPinnedAnnotationIDs(addIds.ToSlice()...)
-		}
-		if deleteIds := currIds.Difference(updatedIds); deleteIds.Cardinality() > 0 {
-			query.RemovePinnedAnnotationIDs(deleteIds.ToSlice()...)
-		}
+	if update.PinnedEventIds != nil {
+		query.SetPinnedEventIds(update.PinnedEventIds)
 	}
 	return query.Save(ctx)
 }
@@ -511,6 +498,11 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.U
 	return handover, nil
 }
 
+func (s *OncallService) getEvents(ctx context.Context, ids []string) ([]*rez.OncallEvent, error) {
+	evs := make([]*rez.OncallEvent, len(ids))
+	return evs, nil
+}
+
 func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
 	shift, shiftErr := s.GetShiftByID(ctx, ho.ShiftID)
 	if shiftErr != nil {
@@ -527,45 +519,30 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
 	}
 
-	var includeAnnotations, includeIncidents bool
-	for _, sec := range content {
-		if sec.Kind == "annotations" {
-			includeAnnotations = true
-		}
-		if sec.Kind == "incidents" {
-			includeIncidents = true
-		}
+	pinnedEvents, pinnedEventsErr := s.getEvents(ctx, ho.PinnedEventIds)
+	if pinnedEventsErr != nil {
+		return fmt.Errorf("failed to get pinned events: %w", pinnedEventsErr)
 	}
 
-	var annotations []*ent.OncallAnnotation
-	if includeAnnotations {
-		var listErr error
-		annotations, listErr = s.db.OncallAnnotation.Query().
-			Where(oncallannotation.HasHandoversWith(oncallusershifthandover.ID(ho.ID))).All(ctx)
-		if listErr != nil && !ent.IsNotFound(listErr) {
-			return fmt.Errorf("failed to query pinned annotations: %w", listErr)
-		}
-	}
-
-	var incidents []*ent.Incident
-	if includeIncidents {
-		var listErr error
-		incidents, listErr = s.incidents.ListIncidents(ctx, rez.ListIncidentsParams{
-			UserId: shift.UserID,
-			// OpenedAfter:  shift.StartAt,
-			OpenedBefore: shift.EndAt,
-		})
-		if listErr != nil && !ent.IsNotFound(listErr) {
-			return fmt.Errorf("failed to query incidents: %w", listErr)
-		}
-	}
+	//var incidents []*ent.Incident
+	//if includeIncidents {
+	//	var listErr error
+	//	incidents, listErr = s.incidents.ListIncidents(ctx, rez.ListIncidentsParams{
+	//		UserId: shift.UserID,
+	//		// OpenedAfter:  shift.StartAt,
+	//		OpenedBefore: shift.EndAt,
+	//	})
+	//	if listErr != nil && !ent.IsNotFound(listErr) {
+	//		return fmt.Errorf("failed to query incidents: %w", listErr)
+	//	}
+	//}
 
 	params := rez.SendOncallHandoverParams{
 		Content:       content,
 		EndingShift:   shift,
 		StartingShift: nextShift,
-		Incidents:     incidents,
-		Annotations:   annotations,
+		//Incidents:     incidents,
+		PinnedEvents: pinnedEvents,
 	}
 	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
 		return fmt.Errorf("failed to send: %w", sendErr)

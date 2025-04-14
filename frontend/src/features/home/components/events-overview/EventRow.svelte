@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
+	import type { OncallEvent } from "$lib/api";
 	import { format as formatDate } from "date-fns";
 	import { mdiAlert, mdiCalendarClock, mdiCircleMedium, mdiClock, mdiFire, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Button, Checkbox, Icon, Tooltip } from "svelte-ux";
@@ -13,8 +13,10 @@
 	}
 	let { event, checked, onToggleChecked, onOpenAnnotateDialog }: Props = $props();
 
+	const attrs = $derived(event.attributes);
+
 	const eventIcon = $derived.by(() => {
-		switch (event.kind) {
+		switch (attrs.kind) {
 			case "incident": return mdiFire;
 			case "alert": return mdiAlert;
 		}
@@ -22,7 +24,7 @@
 	});
 
 
-	const date = $derived(new Date(event.timestamp));
+	const date = $derived(new Date(attrs.timestamp));
 	const humanDate = $derived(formatDate(date, 'EEE, MMM d'))
 	const humanTime = $derived(formatDate(date, 'h:mm a'));
 	const isOutsideBusinessHours = $derived(!isBusinessHours(date.getHours()));
@@ -66,7 +68,7 @@
 		</div>
 	</div>
 	<div class="flex items-center">
-		<span>{event.title}</span>
+		<span>{attrs.title}</span>
 	</div>
 	<div class="flex items-center">
 		<span></span>

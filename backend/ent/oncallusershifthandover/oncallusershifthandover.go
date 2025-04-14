@@ -27,10 +27,10 @@ const (
 	FieldSentAt = "sent_at"
 	// FieldContents holds the string denoting the contents field in the database.
 	FieldContents = "contents"
+	// FieldPinnedEventIds holds the string denoting the pinned_event_ids field in the database.
+	FieldPinnedEventIds = "pinned_event_ids"
 	// EdgeShift holds the string denoting the shift edge name in mutations.
 	EdgeShift = "shift"
-	// EdgePinnedAnnotations holds the string denoting the pinned_annotations edge name in mutations.
-	EdgePinnedAnnotations = "pinned_annotations"
 	// Table holds the table name of the oncallusershifthandover in the database.
 	Table = "oncall_user_shift_handovers"
 	// ShiftTable is the table that holds the shift relation/edge.
@@ -40,11 +40,6 @@ const (
 	ShiftInverseTable = "oncall_user_shifts"
 	// ShiftColumn is the table column denoting the shift relation/edge.
 	ShiftColumn = "shift_id"
-	// PinnedAnnotationsTable is the table that holds the pinned_annotations relation/edge. The primary key declared below.
-	PinnedAnnotationsTable = "oncall_user_shift_handover_pinned_annotations"
-	// PinnedAnnotationsInverseTable is the table name for the OncallAnnotation entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
-	PinnedAnnotationsInverseTable = "oncall_annotations"
 )
 
 // Columns holds all SQL columns for oncallusershifthandover fields.
@@ -56,13 +51,8 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldSentAt,
 	FieldContents,
+	FieldPinnedEventIds,
 }
-
-var (
-	// PinnedAnnotationsPrimaryKey and PinnedAnnotationsColumn2 are the table columns denoting the
-	// primary key for the pinned_annotations relation (M2M).
-	PinnedAnnotationsPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_annotation_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -122,31 +112,10 @@ func ByShiftField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newShiftStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByPinnedAnnotationsCount orders the results by pinned_annotations count.
-func ByPinnedAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPinnedAnnotationsStep(), opts...)
-	}
-}
-
-// ByPinnedAnnotations orders the results by pinned_annotations terms.
-func ByPinnedAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPinnedAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newShiftStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShiftInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, true, ShiftTable, ShiftColumn),
-	)
-}
-func newPinnedAnnotationsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PinnedAnnotationsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, PinnedAnnotationsTable, PinnedAnnotationsPrimaryKey...),
 	)
 }

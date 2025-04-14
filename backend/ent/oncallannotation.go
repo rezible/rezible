@@ -44,11 +44,9 @@ type OncallAnnotationEdges struct {
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
-	// Handovers holds the value of the handovers edge.
-	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [2]bool
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -71,15 +69,6 @@ func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
-}
-
-// HandoversOrErr returns the Handovers value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
-	if e.loadedTypes[2] {
-		return e.Handovers, nil
-	}
-	return nil, &NotLoadedError{edge: "handovers"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -173,11 +162,6 @@ func (oa *OncallAnnotation) QueryRoster() *OncallRosterQuery {
 // QueryCreator queries the "creator" edge of the OncallAnnotation entity.
 func (oa *OncallAnnotation) QueryCreator() *UserQuery {
 	return NewOncallAnnotationClient(oa.config).QueryCreator(oa)
-}
-
-// QueryHandovers queries the "handovers" edge of the OncallAnnotation entity.
-func (oa *OncallAnnotation) QueryHandovers() *OncallUserShiftHandoverQuery {
-	return NewOncallAnnotationClient(oa.config).QueryHandovers(oa)
 }
 
 // Update returns a builder for updating this OncallAnnotation.

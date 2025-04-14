@@ -20,9 +20,7 @@
 	let filters = $state<FilterOptions>({});
 
 	const rosterIds = $derived((filters.rosterIds && filters.rosterIds.length > 0) ? filters.rosterIds : undefined);
-	const eventsQuery = createQuery(() => listOncallEventsOptions({ query: { 
-		rosterIds,
-	}}));
+	const eventsQuery = createQuery(() => listOncallEventsOptions({ query: { rosterIds }}));
 	const eventsData = $derived(eventsQuery.data?.data ?? []);
 
 	const totalEvents = $derived(eventsData.length);

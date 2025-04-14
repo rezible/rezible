@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -93,21 +92,6 @@ func (oac *OncallAnnotationCreate) SetRoster(o *OncallRoster) *OncallAnnotationC
 // SetCreator sets the "creator" edge to the User entity.
 func (oac *OncallAnnotationCreate) SetCreator(u *User) *OncallAnnotationCreate {
 	return oac.SetCreatorID(u.ID)
-}
-
-// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
-func (oac *OncallAnnotationCreate) AddHandoverIDs(ids ...uuid.UUID) *OncallAnnotationCreate {
-	oac.mutation.AddHandoverIDs(ids...)
-	return oac
-}
-
-// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
-func (oac *OncallAnnotationCreate) AddHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oac.AddHandoverIDs(ids...)
 }
 
 // Mutation returns the OncallAnnotationMutation object of the builder.
@@ -265,22 +249,6 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatorID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := oac.mutation.HandoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   oncallannotation.HandoversTable,
-			Columns: oncallannotation.HandoversPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -3,13 +3,12 @@
 	import { Icon, Header, Tooltip, Button } from "svelte-ux";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { format as formatDate } from "date-fns";
-	import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
+	import type { OncallEvent } from "$lib/api";
 
 	type Props = {
 		events: OncallEvent[];
-		annotations: OncallEventAnnotation[];
 	};
-	const { events, annotations }: Props = $props();
+	const { events }: Props = $props();
 
 	const getEventKindIcon = (kind: string) => {
 		switch (kind) {
@@ -26,15 +25,6 @@
 	const humanReadableTime = (date: Date) => {
 		return formatDate(date, 'h:mm a');
 	};
-
-	const annotationsMap = $derived.by(() => {
-		const m = new Map<string, OncallEventAnnotation>();
-		annotations.forEach(a => {
-			if (!a.attributes.event) return;
-			m.set(a.attributes.event.id, a);
-		})
-		return m;
-	});
 </script>
 
 <div class="flex flex-col gap-2 h-full border border-surface-content/10 rounded">
@@ -53,37 +43,28 @@
 </div>
 
 {#snippet eventListItem(ev: OncallEvent)}
-	{@const occurredAt = new Date(ev.timestamp)}
+	{@const attrs = ev.attributes}
+	{@const occurredAt = new Date(attrs.timestamp)}
 	{@const humanDate = humanReadableDate(occurredAt)}
 	{@const humanTime = humanReadableTime(occurredAt)}
 	{@const isOutsideBusinessHours = !isBusinessHours(occurredAt.getHours())}
 	{@const isNightTime = isNightHours(occurredAt.getHours())}
-	{@const icon = getEventKindIcon(ev.kind)}
-	{@const annotation = annotationsMap.get(ev.id)}
+	{@const icon = getEventKindIcon(attrs.kind)}
+	{@const annotation = attrs.annotation}
 	
 	<div class="grid grid-cols-[auto_minmax(0,1fr)_120px] gap-2 place-items-center border p-3 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 		<div class="items-center static z-10">
 			<Icon
 				data={icon}
-				classes={{ root: `${ev.kind === 'incident' ? 'bg-danger-900/50' : 'bg-warning-700/50'} rounded-full p-2 w-auto h-10 text-white` }}
+				classes={{ root: `${attrs.kind === 'incident' ? 'bg-danger-900/50' : 'bg-warning-700/50'} rounded-full p-2 w-auto h-10 text-white` }}
 			/>
 		</div>
 
 		<div class="w-full justify-self-start grid grid-cols-[1fr_auto] items-start gap-2 px-2">
 			<div class="flex flex-col">
 				<div class="font-medium">
-					{ev.title || `${ev.kind.charAt(0).toUpperCase() + ev.kind.slice(1)} ${ev.id.substring(0, 8)}`}
+					{attrs.title || `${attrs.kind.charAt(0).toUpperCase() + attrs.kind.slice(1)} ${ev.id.substring(0, 8)}`}
 				</div>
-				{#if ev.source}
-					<div class="text-xs text-surface-600">
-						Source: {ev.source}
-					</div>
-				{/if}
-				{#if ev.description}
-					<div class="text-xs text-surface-600">
-						{ev.description}
-					</div>
-				{/if}
 			</div>
 		</div>
 

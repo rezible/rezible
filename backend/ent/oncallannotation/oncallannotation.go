@@ -31,8 +31,6 @@ const (
 	EdgeRoster = "roster"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
-	// EdgeHandovers holds the string denoting the handovers edge name in mutations.
-	EdgeHandovers = "handovers"
 	// Table holds the table name of the oncallannotation in the database.
 	Table = "oncall_annotations"
 	// RosterTable is the table that holds the roster relation/edge.
@@ -49,11 +47,6 @@ const (
 	CreatorInverseTable = "users"
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "creator_id"
-	// HandoversTable is the table that holds the handovers relation/edge. The primary key declared below.
-	HandoversTable = "oncall_user_shift_handover_pinned_annotations"
-	// HandoversInverseTable is the table name for the OncallUserShiftHandover entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershifthandover" package.
-	HandoversInverseTable = "oncall_user_shift_handovers"
 )
 
 // Columns holds all SQL columns for oncallannotation fields.
@@ -66,12 +59,6 @@ var Columns = []string{
 	FieldMinutesOccupied,
 	FieldNotes,
 }
-
-var (
-	// HandoversPrimaryKey and HandoversColumn2 are the table columns denoting the
-	// primary key for the handovers relation (M2M).
-	HandoversPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_annotation_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -141,20 +128,6 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByHandoversCount orders the results by handovers count.
-func ByHandoversCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newHandoversStep(), opts...)
-	}
-}
-
-// ByHandovers orders the results by handovers terms.
-func ByHandovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHandoversStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -167,12 +140,5 @@ func newCreatorStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatorInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
-	)
-}
-func newHandoversStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HandoversInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, HandoversTable, HandoversPrimaryKey...),
 	)
 }

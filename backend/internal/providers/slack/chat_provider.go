@@ -133,8 +133,8 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 		receiverId:    receiver.ChatID,
 		endingShift:   params.EndingShift,
 		startingShift: params.StartingShift,
-		incidents:     params.Incidents,
-		annotations:   params.Annotations,
+		//incidents:     params.Incidents,
+		pinnedEvents: params.PinnedEvents,
 	}
 
 	if buildErr := builder.build(params.Content); buildErr != nil {

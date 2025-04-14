@@ -1,4 +1,4 @@
-import type { OncallEvent, OncallEventAnnotation } from "$lib/api";
+import type { OncallEvent, OncallAnnotation } from "$lib/api";
 import { getLocalTimeZone, parseAbsolute, ZonedDateTime } from "@internationalized/date";
 
 import { differenceInMinutes } from "date-fns";
@@ -39,10 +39,10 @@ export const createTimeline = (
 		// 	node.height = getIntervalHeight(diff);
 		// }
 		// if (event.kind === "incident") href = `/incidents/${event.eventId}`;
-		const timestamp = nextDate || parseAbsolute(event.timestamp, tz);
+		const timestamp = nextDate || parseAbsolute(event.attributes.timestamp, tz);
 		let height = 80;
 		if (i < events.length - 1) {
-			nextDate = parseAbsolute(events[i + 1].timestamp, tz);
+			nextDate = parseAbsolute(events[i + 1].attributes.timestamp, tz);
 			height = getIntervalHeight(timestamp.toDate(), nextDate.toDate());
 		}
 		timeline.push({ event, height, timestamp });

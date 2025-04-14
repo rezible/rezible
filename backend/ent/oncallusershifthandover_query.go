@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -22,13 +20,12 @@ import (
 // OncallUserShiftHandoverQuery is the builder for querying OncallUserShiftHandover entities.
 type OncallUserShiftHandoverQuery struct {
 	config
-	ctx                   *QueryContext
-	order                 []oncallusershifthandover.OrderOption
-	inters                []Interceptor
-	predicates            []predicate.OncallUserShiftHandover
-	withShift             *OncallUserShiftQuery
-	withPinnedAnnotations *OncallAnnotationQuery
-	modifiers             []func(*sql.Selector)
+	ctx        *QueryContext
+	order      []oncallusershifthandover.OrderOption
+	inters     []Interceptor
+	predicates []predicate.OncallUserShiftHandover
+	withShift  *OncallUserShiftQuery
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -80,28 +77,6 @@ func (oushq *OncallUserShiftHandoverQuery) QueryShift() *OncallUserShiftQuery {
 			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, selector),
 			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallusershifthandover.ShiftTable, oncallusershifthandover.ShiftColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(oushq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryPinnedAnnotations chains the current query on the "pinned_annotations" edge.
-func (oushq *OncallUserShiftHandoverQuery) QueryPinnedAnnotations() *OncallAnnotationQuery {
-	query := (&OncallAnnotationClient{config: oushq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := oushq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := oushq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, selector),
-			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, oncallusershifthandover.PinnedAnnotationsTable, oncallusershifthandover.PinnedAnnotationsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oushq.driver.Dialect(), step)
 		return fromU, nil
@@ -296,13 +271,12 @@ func (oushq *OncallUserShiftHandoverQuery) Clone() *OncallUserShiftHandoverQuery
 		return nil
 	}
 	return &OncallUserShiftHandoverQuery{
-		config:                oushq.config,
-		ctx:                   oushq.ctx.Clone(),
-		order:                 append([]oncallusershifthandover.OrderOption{}, oushq.order...),
-		inters:                append([]Interceptor{}, oushq.inters...),
-		predicates:            append([]predicate.OncallUserShiftHandover{}, oushq.predicates...),
-		withShift:             oushq.withShift.Clone(),
-		withPinnedAnnotations: oushq.withPinnedAnnotations.Clone(),
+		config:     oushq.config,
+		ctx:        oushq.ctx.Clone(),
+		order:      append([]oncallusershifthandover.OrderOption{}, oushq.order...),
+		inters:     append([]Interceptor{}, oushq.inters...),
+		predicates: append([]predicate.OncallUserShiftHandover{}, oushq.predicates...),
+		withShift:  oushq.withShift.Clone(),
 		// clone intermediate query.
 		sql:       oushq.sql.Clone(),
 		path:      oushq.path,
@@ -318,17 +292,6 @@ func (oushq *OncallUserShiftHandoverQuery) WithShift(opts ...func(*OncallUserShi
 		opt(query)
 	}
 	oushq.withShift = query
-	return oushq
-}
-
-// WithPinnedAnnotations tells the query-builder to eager-load the nodes that are connected to
-// the "pinned_annotations" edge. The optional arguments are used to configure the query builder of the edge.
-func (oushq *OncallUserShiftHandoverQuery) WithPinnedAnnotations(opts ...func(*OncallAnnotationQuery)) *OncallUserShiftHandoverQuery {
-	query := (&OncallAnnotationClient{config: oushq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	oushq.withPinnedAnnotations = query
 	return oushq
 }
 
@@ -410,9 +373,8 @@ func (oushq *OncallUserShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*OncallUserShiftHandover{}
 		_spec       = oushq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			oushq.withShift != nil,
-			oushq.withPinnedAnnotations != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -439,15 +401,6 @@ func (oushq *OncallUserShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...
 	if query := oushq.withShift; query != nil {
 		if err := oushq.loadShift(ctx, query, nodes, nil,
 			func(n *OncallUserShiftHandover, e *OncallUserShift) { n.Edges.Shift = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := oushq.withPinnedAnnotations; query != nil {
-		if err := oushq.loadPinnedAnnotations(ctx, query, nodes,
-			func(n *OncallUserShiftHandover) { n.Edges.PinnedAnnotations = []*OncallAnnotation{} },
-			func(n *OncallUserShiftHandover, e *OncallAnnotation) {
-				n.Edges.PinnedAnnotations = append(n.Edges.PinnedAnnotations, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -479,67 +432,6 @@ func (oushq *OncallUserShiftHandoverQuery) loadShift(ctx context.Context, query 
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (oushq *OncallUserShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*OncallUserShiftHandover, init func(*OncallUserShiftHandover), assign func(*OncallUserShiftHandover, *OncallAnnotation)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*OncallUserShiftHandover)
-	nids := make(map[uuid.UUID]map[*OncallUserShiftHandover]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(oncallusershifthandover.PinnedAnnotationsTable)
-		s.Join(joinT).On(s.C(oncallannotation.FieldID), joinT.C(oncallusershifthandover.PinnedAnnotationsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(oncallusershifthandover.PinnedAnnotationsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(oncallusershifthandover.PinnedAnnotationsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*OncallUserShiftHandover]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*OncallAnnotation](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "pinned_annotations" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
 		}
 	}
 	return nil

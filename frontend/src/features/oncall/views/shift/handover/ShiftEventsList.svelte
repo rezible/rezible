@@ -1,10 +1,11 @@
 <script lang="ts">
 	import {
-		listOncallEventAnnotationsOptions,
-		updateOncallEventAnnotationMutation,
-		type OncallEventAnnotation,
+		listOncallAnnotationsOptions,
+		listOncallEventsOptions,
+		updateOncallAnnotationMutation,
+		type OncallAnnotation,
+		type OncallEvent,
 		type OncallShift,
-		type UpdateOncallEventAnnotationRequestBody,
 	} from "$lib/api";
 	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
 	import { Icon, Button, Header, Toggle, Menu, MenuItem } from "svelte-ux";
@@ -17,34 +18,33 @@
 	type Props = {
 		shift: OncallShift;
 		editable: boolean;
-		pinnedAnnotations: OncallEventAnnotation[];
+		pinnedEvents: OncallEvent[];
 	};
-	const { shift, editable, pinnedAnnotations }: Props = $props();
+	const { shift, editable, pinnedEvents }: Props = $props();
 
 	const queryClient = useQueryClient();
-	const annotationQueryOpts = $derived(listOncallEventAnnotationsOptions({ query: { shiftId: shift.id } }));
-	const annotationsQuery = createQuery(() => annotationQueryOpts);
-	const invalidateAnnotationsQuery = () => queryClient.invalidateQueries(annotationQueryOpts);
+	const eventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: shift.id } }));
+	const eventsQuery = createQuery(() => eventsQueryOpts);
+	const invalidateEventsQuery = () => queryClient.invalidateQueries(eventsQueryOpts);
 
-	const annotations = $derived(annotationsQuery.data?.data ?? []);
-	const annotatedEventIds = $derived(new SvelteSet(annotations.map((a) => a.attributes.event?.id)));
-	const pinnedAnnotationIds = $derived(new SvelteSet(pinnedAnnotations.map(a => a.id)));
-	const unpinnedAnnotations = $derived(annotations.filter(a => (!pinnedAnnotationIds.has(a.id))));
-	const unpinnedAnnotationIds = $derived(new SvelteSet(unpinnedAnnotations.map(a => a.id)));
+	const events = $derived(eventsQuery.data?.data ?? []);
+
+	const pinnedEventIds = $derived(new SvelteSet(pinnedEvents.map(e => e.id)));
+	const unpinnedEvents = $derived(events.filter(a => (!pinnedEventIds.has(a.id))));
 
 	let showEditorDialog = $state(false);
 
 	const onAnnotationCreated = () => {
-		invalidateAnnotationsQuery();
+		invalidateEventsQuery();
 		showEditorDialog = false;
 	};
 
 	const updateAnnotationMut = createMutation(() => ({
-		...updateOncallEventAnnotationMutation(),
-		onSuccess: invalidateAnnotationsQuery,
+		...updateOncallAnnotationMutation(),
+		onSuccess: invalidateEventsQuery,
 	}));
-	const togglePinned = (ann: OncallEventAnnotation) => {
-		// const body: UpdateOncallEventAnnotationRequestBody = {
+	const togglePinned = (event: OncallEvent) => {
+		// const body: UpdateOncallAnnotationRequestBody = {
 		// 	attributes: {
 		// 		pinned: !ann.attributes.pinned,
 		// 	},
@@ -54,51 +54,32 @@
 </script>
 
 <div class="h-10 flex w-full gap-4 items-center px-2">
-	<Header title="Shift Event Annotations" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
+	<Header title="Shift Events" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
 		<div slot="actions" class:hidden={!editable}>
-			<Button
-				color="secondary"
-				variant="fill-light"
-				on:click={() => {
-					showEditorDialog = true;
-				}}
-			>
-				Annotate New Event <Icon data={mdiPlus} />
-			</Button>
+			
 		</div>
 	</Header>
 </div>
 
-{#if editable}
-	<ShiftAnnotationEditorDialog
-		{shift}
-		{annotatedEventIds}
-		bind:open={showEditorDialog}
-		onCreated={onAnnotationCreated}
-	/>
-{/if}
-
 <div class="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
-	{#if annotationsQuery.isLoading}
+	{#if eventsQuery.isLoading}
 		<span>loading</span>
-	{:else if annotations.length > 0}
+	{:else if events.length > 0}
 		{#if editable}
 			<Header title="Pinned" subheading="Included in the handover notes" />
 		{/if}
 
-		{#each pinnedAnnotations as ann, i}
-			{@render annotationListItem(ann)}
+		{#each pinnedEvents as ev, i}
+			{@render eventListItem(ev, true)}
+		{:else}
+			<span>Nothing Pinned</span>
 		{/each}
 
-		{#if pinnedAnnotations.length === 0}
-			<span>Nothing Pinned</span>
-		{/if}
-
-		{#if unpinnedAnnotations.length > 0}
+		{#if unpinnedEvents.length > 0}
 			<div class="w-full border-b"></div>
 
-			{#each unpinnedAnnotations as ann, i}
-				{@render annotationListItem(ann)}
+			{#each unpinnedEvents as ev, i}
+				{@render eventListItem(ev, false)}
 			{/each}
 		{/if}
 	{:else}
@@ -106,10 +87,9 @@
 	{/if}
 </div>
 
-{#snippet annotationListItem(ann: OncallEventAnnotation)}
-	{@const event = ann.attributes.event}
-	{@const occurredAt = ann.attributes.event?.timestamp ?? ""}
-	{@const pinned = pinnedAnnotationIds.has(ann.id)}
+{#snippet eventListItem(event: OncallEvent, pinned: boolean)}
+	{@const anno = event.attributes.annotation}
+	{@const occurredAt = event.attributes.timestamp ?? ""}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
 			<span class="flex items-center">
@@ -125,18 +105,16 @@
 		</div>
 
 		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
-			<div class="leading-none">{event?.title || "todo: event title"}</div>
+			<div class="leading-none">{event.attributes.title || "todo: event title"}</div>
 			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
 				<Button
 					disabled={updateAnnotationMut.isPending}
 					loading={updateAnnotationMut.isPending &&
-						updateAnnotationMut.variables?.path.id === ann.id}
+						updateAnnotationMut.variables?.path.id === anno.id}
 					icon={pinned ? mdiPin : mdiPinOutline}
 					color={pinned ? "accent" : "default"}
 					iconOnly
-					on:click={() => {
-						togglePinned(ann);
-					}}
+					on:click={() => togglePinned(event)}
 				/>
 
 				<Toggle let:on={open} let:toggle let:toggleOff>
@@ -153,7 +131,7 @@
 		<div
 			class="row-start-3 col-start-3 overflow-y-auto max-h-20 overflow-y-auto border rounded p-2 w-full"
 		>
-			{ann.attributes.notes}
+			{anno.attributes.notes}
 		</div>
 	</div>
 {/snippet}

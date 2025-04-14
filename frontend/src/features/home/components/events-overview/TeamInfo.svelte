@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Header } from "svelte-ux";
-	import Avatar from "$src/components/avatar/Avatar.svelte";
-	import { mdiAccountGroup, mdiGroup, mdiMagnify } from "@mdi/js";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import { mdiAccountGroup } from "@mdi/js";
 	import { Icon, SelectField, type MenuOption } from "svelte-ux";
 
 	const teams: MenuOption<string>[] = [

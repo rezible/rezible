@@ -5,7 +5,7 @@
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 	import ShiftHandoverContent from "$features/oncall/components/shift-handover-content/ShiftHandoverContent.svelte";
-	import ShiftAnnotationsList from "./ShiftAnnotationsList.svelte";
+	import ShiftEventsList from "./ShiftEventsList.svelte";
 	import ShiftReviewQuestionsDialog from "./ShiftReviewQuestionsDialog.svelte";
 
 	const shiftId = shiftIdCtx.get();
@@ -24,6 +24,7 @@
 	}));
 	const template = $derived(templateQuery.data?.data);
 
+	const pinnedEvents = $derived(handover?.attributes.pinnedEvents ?? []);
 	// const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : undefined);
 	// const isError = $derived(handoverQuery.isError && handoverQueryError?.status !== 404);
 
@@ -35,7 +36,7 @@
 <div class="flex-1 flex gap-2 max-h-full h-full min-h-0 overflow-y-auto">
 	{#if shift && (!loading && !isSent)}
 		<div class="w-1/3 flex flex-col gap-2 min-h-0 border rounded-lg p-2 h-full max-h-full overflow-hidden">
-			<ShiftAnnotationsList {shift} editable={true} pinnedAnnotations={handover?.attributes.annotations ?? []} />
+			<ShiftEventsList {shift} editable={true} {pinnedEvents} />
 		</div>
 	{/if}
 
