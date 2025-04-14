@@ -1,8 +1,11 @@
 <script lang="ts" module>
 	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 
+	type EventKind = OncallEventAttributes["kind"];
+
 	export type FilterOptions = {
 		rosterIds?: string[];
+		eventKinds?: EventKind[];
 		annotated?: boolean;
 		dateRange?: DateRangeType;
 	};
@@ -24,6 +27,7 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { PeriodType } from "@layerstack/utils";
 	import { subDays } from "date-fns";
+	import type { OncallEvent, OncallEventAttributes } from "$src/lib/api";
 
 	type Props = {
 		filters: FilterOptions;
@@ -64,6 +68,12 @@
 
 	const today = new Date();
 	const defaultDateRange: DateRangeType = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
+
+	let kindMenuOpen = $state(false);
+	const toggleKindMenu = () => (kindMenuOpen = !kindMenuOpen);
+	const eventKindOptions: MenuOption<EventKind>[] = [
+		{value: "alert", label: "Alerts"}
+	]
 </script>
 
 <div class="flex flex-row items-center gap-2">
@@ -90,16 +100,6 @@
 		value={annoValue}
 		on:change={e => setAnnotated(e.detail.value)}
 	/>
-
-	<!-- <Field
-		label="Action"
-		labelPlacement="top"
-		dense
-		classes={{ root: "gap-0", container: "h-8 flex items-center" }}
-		let:id
-	>
-		<Checkbox {id} bind:checked={annotated} classes={{ label: "pl-2" }}>Annotated</Checkbox>
-	</Field> -->
 
 	<Field
 		label="Rosters"
@@ -200,6 +200,36 @@
 					{label}
 				</MultiSelectOption>
 			</MultiSelectMenu>
+		</Button>
+	</Field>
+
+	<Field
+		label="Event Kinds"
+		labelPlacement="top"
+		dense
+		classes={{ root: "gap-0", container: "px-0 h-8 flex items-center", input: "my-0" }}
+		let:id
+	>
+		<Button {id} on:click={toggleKindMenu} classes={{ root: "h-8" }}>
+			<div class="flex gap-2">
+				{#each (filters.eventKinds ?? []) as v}
+					<span class="flex items-center gap-1">
+						{v}
+					</span>
+				{:else}
+					<span>Any</span>
+				{/each}
+			</div>
+			<Icon data={mdiChevronDown} />
+			<MultiSelectMenu
+				options={eventKindOptions}
+				bind:value={filters.eventKinds}
+				open={kindMenuOpen}
+				maintainOrder
+				placeholder="Event Kinds"
+				on:change={(e) => (filters.eventKinds = (e.detail.value as string[]))}
+				on:close={toggleKindMenu}
+			/>
 		</Button>
 	</Field>
 </div>
