@@ -150,11 +150,21 @@ func (h *oncallHandler) GetUserOncallInformation(ctx context.Context, request *o
 		userId = request.UserId
 	}
 
-	rosters, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
+	user, userErr := h.users.GetById(ctx, userId)
+	if userErr != nil {
+		return nil, detailError("failed to get user", userErr)
+	}
+
+	memberRosters, rostersErr := h.oncall.ListRosters(ctx, rez.ListOncallRostersParams{
 		UserID: userId,
 	})
 	if rostersErr != nil {
 		return nil, detailError("failed to list rosters", rostersErr)
+	}
+
+	watchedRosters, watchedErr := user.QueryWatchedOncallRosters().All(ctx)
+	if watchedErr != nil {
+		return nil, detailError("failed to query watched oncall rosters", watchedErr)
 	}
 
 	oneWeek := time.Hour * 24 * 7
@@ -171,14 +181,19 @@ func (h *oncallHandler) GetUserOncallInformation(ctx context.Context, request *o
 	}
 
 	details := oapi.UserOncallInformation{
-		ActiveShifts:   make([]oapi.OncallShift, 0),
-		UpcomingShifts: make([]oapi.OncallShift, 0),
-		PastShifts:     make([]oapi.OncallShift, 0),
+		ActiveShifts:    make([]oapi.OncallShift, 0),
+		UpcomingShifts:  make([]oapi.OncallShift, 0),
+		PastShifts:      make([]oapi.OncallShift, 0),
+		MemberRosters:   make([]oapi.OncallRoster, len(memberRosters)),
+		WatchingRosters: make([]oapi.OncallRoster, len(watchedRosters)),
 	}
 
-	details.MemberRosters = make([]oapi.OncallRoster, len(rosters))
-	for i, r := range rosters {
+	for i, r := range memberRosters {
 		details.MemberRosters[i] = oapi.OncallRosterFromEnt(r)
+	}
+
+	for i, r := range watchedRosters {
+		details.WatchingRosters[i] = oapi.OncallRosterFromEnt(r)
 	}
 
 	for _, s := range userShifts {

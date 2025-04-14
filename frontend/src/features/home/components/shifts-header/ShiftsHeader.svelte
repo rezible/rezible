@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
 	import { Button } from "svelte-ux";
-	import { getUserOncallInformationOptions } from "$lib/api";
+	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
@@ -14,9 +14,27 @@
 		}),
 	}));
 	const oncallInfo = $derived(oncallInfoQuery.data?.data);
-	const rosterIds = $derived(oncallInfo?.rosters.map(r => r.id) ?? []);
-	const shifts = $derived(oncallInfoQuery.data?.data.activeShifts);
-	const userActiveShift = $derived(shifts?.find(s => (s.attributes.user.id === userId)));
+
+	const watchedRosterIds = $derived(oncallInfo?.watchingRosters.map(r => r.id) ?? []);
+	const userRosterIds = $derived(oncallInfo?.rosters.map(r => r.id) ?? []);
+	const rosterIds = $derived([...userRosterIds, ...watchedRosterIds]);
+
+	const shifts = $derived(oncallInfoQuery.data?.data.activeShifts ?? []);
+	const [userShifts, rosterShifts] = $derived.by(() => {
+		let userShifts: OncallShift[] = [];
+		let rosterShifts: OncallShift[] = [];
+
+		// const watchedRosterIdsSet = $derived(new Set(watchedRosterIds));
+		shifts.forEach(s => {
+			if (s.attributes.user.id === userId) {
+				userShifts.push(s);
+			} else {
+				rosterShifts.push(s);
+			}
+		});
+
+		return [userShifts, rosterShifts];
+	});
 
 	let rosterDialogOpen = $state(false);
 	const onWatchedRostersUpdated = () => {oncallInfoQuery.refetch()};
@@ -24,9 +42,12 @@
 
 <div class="w-full flex gap-2">
 	<div class="flex flex-row gap-2 flex-wrap">
-		{#if userActiveShift}
-			<ActiveShiftCard shift={userActiveShift} />
-		{/if}
+		{#each userShifts as shift, i}
+			<ActiveShiftCard {shift} isUser />
+		{/each}
+		{#each rosterShifts as shift, i}
+			<ActiveShiftCard {shift}  />
+		{/each}
 	</div>
 	<div class="grid place-items-center">
 		<Button icon={mdiPlus} rounded classes={{root: "h-20 opacity-70 hover:opacity-100"}} on:click={() => (rosterDialogOpen = true)}>
