@@ -1,11 +1,8 @@
 <script lang="ts">
 	import {
-		listOncallAnnotationsOptions,
 		listOncallEventsOptions,
 		updateOncallAnnotationMutation,
-		type OncallAnnotation,
 		type OncallEvent,
-		type OncallEventAnnotation,
 		type OncallShift,
 	} from "$lib/api";
 	import { mdiPlus, mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
@@ -18,9 +15,9 @@
 	type Props = {
 		shift: OncallShift;
 		editable: boolean;
-		pinnedEventAnnotations: OncallEventAnnotation[];
+		pinnedEvents: OncallEvent[];
 	};
-	const { shift, editable, pinnedEventAnnotations }: Props = $props();
+	const { shift, editable, pinnedEvents }: Props = $props();
 
 	const queryClient = useQueryClient();
 	const eventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: shift.id } }));
@@ -29,7 +26,7 @@
 
 	const events = $derived(eventsQuery.data?.data ?? []);
 
-	const pinnedEventIds = $derived(new SvelteSet(pinnedEventAnnotations.map(p => p.event.id)));
+	const pinnedEventIds = $derived(new SvelteSet(pinnedEvents.map(p => p.id)));
 	const unpinnedEvents = $derived(events.filter(a => (!pinnedEventIds.has(a.id))));
 
 	let showEditorDialog = $state(false);
@@ -69,8 +66,8 @@
 			<Header title="Pinned" subheading="Included in the handover notes" />
 		{/if}
 
-		{#each pinnedEventAnnotations as ev, i}
-			{@render eventListItem(ev.event, ev.annotation, true)}
+		{#each pinnedEvents as ev, i}
+			{@render eventListItem(ev, true)}
 		{:else}
 			<span>Nothing Pinned</span>
 		{/each}
@@ -79,7 +76,7 @@
 			<div class="w-full border-b"></div>
 
 			{#each unpinnedEvents as ev, i}
-				{@render eventListItem(ev, null, false)}
+				{@render eventListItem(ev, false)}
 			{/each}
 		{/if}
 	{:else}
@@ -87,7 +84,7 @@
 	{/if}
 </div>
 
-{#snippet eventListItem(event: OncallEvent, anno: OncallAnnotation | null, pinned: boolean)}
+{#snippet eventListItem(event: OncallEvent, pinned: boolean)}
 	{@const occurredAt = event.attributes.timestamp ?? ""}
 	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
 		<div class="justify-self-start">
@@ -125,13 +122,11 @@
 			</div>
 		</div>
 
-		{#if anno}
-		<div
-			class="row-start-3 col-start-3 overflow-y-auto max-h-20 overflow-y-auto border rounded p-2 w-full"
-		>
-			{anno.attributes.notes}
-		</div>
-		{/if}
+		{#each event.attributes.annotations as anno}
+			<div class="row-start-3 col-start-3 overflow-y-auto max-h-20 overflow-y-auto border rounded p-2 w-full">
+				{anno.attributes.notes}
+			</div>
+		{/each}
 	</div>
 {/snippet}
 

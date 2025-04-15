@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
+	import { getOncallShiftMetricsOptions } from "$lib/api";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
+	import EventsList from "$features/oncall/components/events-list/EventsList.svelte";
 	import ShiftEvents from "./ShiftEvents.svelte";
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
-	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import { getOncallShiftMetricsOptions, listOncallAnnotationsOptions } from "$src/lib/api";
 
 	const shiftId = shiftIdCtx.get();
 
@@ -19,9 +19,6 @@
 	
 	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
 	const metrics = $derived(metricsQuery.data?.data);
-
-	const annotationsQuery = createQuery(() => listOncallAnnotationsOptions({query: {shiftId}}));
-	const annotations = $derived(annotationsQuery.data?.data);
 
 	let eventsFilter = $state<ShiftEventFilterKind>();
 	const shiftEvents = $derived.by(() => {
@@ -46,10 +43,6 @@
 	</div>
 
 	<div class="h-full flex flex-col overflow-y-auto">
-		{#if !annotations}
-			<LoadingIndicator />
-		{:else}
-			<ShiftEventsList events={shiftEvents} {annotations} />
-		{/if}
+		<EventsList events={shiftEvents} />
 	</div>
 </div>

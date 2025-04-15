@@ -41,9 +41,10 @@ func makeFakeShiftEvent(date time.Time) oapi.OncallEvent {
 	return oapi.OncallEvent{
 		Id: uuid.New().String(),
 		Attributes: oapi.OncallEventAttributes{
-			Title:     "title",
-			Timestamp: timestamp,
-			Kind:      eventKind,
+			Title:       "title",
+			Timestamp:   timestamp,
+			Kind:        eventKind,
+			Annotations: make([]oapi.OncallAnnotation, 0),
 		},
 	}
 }

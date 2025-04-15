@@ -141,12 +141,10 @@ type (
 	}
 
 	OncallShiftHandoverAttributes struct {
-		ShiftId                uuid.UUID                    `json:"shiftId"`
-		CreatedAt              time.Time                    `json:"createdAt"`
-		UpdatedAt              time.Time                    `json:"updatedAt"`
-		Content                []OncallShiftHandoverSection `json:"content"`
-		SentAt                 time.Time                    `json:"sentAt"`
-		PinnedEventAnnotations []OncallEventAnnotation      `json:"pinnedAnnotations"`
+		ShiftId      uuid.UUID                    `json:"shiftId"`
+		SentAt       time.Time                    `json:"sentAt"`
+		Content      []OncallShiftHandoverSection `json:"content"`
+		PinnedEvents []OncallEvent                `json:"pinnedEvents"`
 	}
 
 	OncallShiftHandoverSection struct {
@@ -261,11 +259,9 @@ func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHando
 		}
 	}
 	attr := OncallShiftHandoverAttributes{
-		ShiftId:   p.ShiftID,
-		Content:   content,
-		CreatedAt: p.CreatedAt,
-		UpdatedAt: p.UpdatedAt,
-		SentAt:    p.SentAt,
+		ShiftId: p.ShiftID,
+		Content: content,
+		SentAt:  p.SentAt,
 	}
 
 	return OncallShiftHandover{

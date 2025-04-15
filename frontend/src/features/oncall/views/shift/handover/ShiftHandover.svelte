@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { getOncallShiftHandoverOptions, getOncallShiftHandoverTemplateOptions } from "$lib/api";
+	import { getOncallShiftHandoverOptions } from "$lib/api";
 	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
 	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
@@ -16,7 +16,7 @@
 
 	const isSent = $derived(handover && new Date(handover.attributes.sentAt).valueOf() > 0);
 
-	const pinnedEventAnnotations = $derived(handover?.attributes.pinnedAnnotations ?? []);
+	const pinnedEvents = $derived(handover?.attributes.pinnedEvents ?? []);
 	// const handoverQueryError = $derived(handoverQuery.error ? tryUnwrapApiError(handoverQuery.error) : undefined);
 	// const isError = $derived(handoverQuery.isError && handoverQueryError?.status !== 404);
 
@@ -28,7 +28,7 @@
 <div class="flex-1 flex gap-2 max-h-full h-full min-h-0 overflow-y-auto">
 	{#if shift && (!loading && !isSent)}
 		<div class="w-1/3 flex flex-col gap-2 min-h-0 border rounded-lg p-2 h-full max-h-full overflow-hidden">
-			<ShiftEventsList {shift} editable={true} {pinnedEventAnnotations} />
+			<ShiftEventsList {shift} editable={true} {pinnedEvents} />
 		</div>
 	{/if}
 

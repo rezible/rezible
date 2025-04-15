@@ -30,20 +30,16 @@ func (o operations) RegisterOncallEvents(api huma.API) {
 }
 
 type (
-	OncallEventAnnotation struct {
-		Event      OncallEvent      `json:"event"`
-		Annotation OncallAnnotation `json:"annotation"`
-	}
-
 	OncallEvent struct {
 		Id         string                `json:"id"`
 		Attributes OncallEventAttributes `json:"attributes"`
 	}
 
 	OncallEventAttributes struct {
-		Timestamp time.Time `json:"timestamp"`
-		Kind      string    `json:"kind"`
-		Title     string    `json:"title"`
+		Timestamp   time.Time          `json:"timestamp"`
+		Kind        string             `json:"kind"`
+		Title       string             `json:"title"`
+		Annotations []OncallAnnotation `json:"annotations"`
 	}
 
 	OncallAnnotation struct {

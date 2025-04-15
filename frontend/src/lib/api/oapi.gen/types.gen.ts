@@ -1709,12 +1709,8 @@ export type OncallEvent = {
     id: string;
 };
 
-export type OncallEventAnnotation = {
-    annotation: OncallAnnotation;
-    event: OncallEvent;
-};
-
 export type OncallEventAttributes = {
+    annotations: Array<OncallAnnotation>;
     kind: string;
     timestamp: string;
     title: string;
@@ -1792,17 +1788,15 @@ export type OncallShiftHandover = {
 
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
-    createdAt: string;
-    pinnedAnnotations: Array<OncallEventAnnotation>;
+    pinnedEvents: Array<OncallEvent>;
     sentAt: string;
     shiftId: string;
-    updatedAt: string;
 };
 
 export type OncallShiftHandoverSection = {
     header: string;
     jsonContent?: string;
-    kind: 'regular' | 'annotations' | 'incidents';
+    kind: 'regular' | 'annotations';
 };
 
 export type OncallShiftHandoverTemplate = {

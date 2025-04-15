@@ -2,16 +2,28 @@
 	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import type { OncallEvent } from "$src/lib/api";
+	import { createOncallAnnotationMutation, type CreateOncallAnnotationRequestBody, type OncallAnnotation, type OncallEvent } from "$src/lib/api";
+	import EventAnnotationForm from "./EventAnnotationForm.svelte";
+	import { createMutation } from "@tanstack/svelte-query";
 	
 	type Props = {
 		event?: OncallEvent;
+		current?: OncallAnnotation;
 		onClose: () => void;
 	}
-	const { event, onClose }: Props = $props();
+	const { event, current, onClose }: Props = $props();
+
+	const createMut = createMutation(() => ({
+		...createOncallAnnotationMutation(),
+		onSuccess: () => {
+			onClose();
+		}
+	}));
+
+	let mutationData = $state<CreateOncallAnnotationRequestBody>()
 
 	const onConfirm = () => {
-		onClose();
+		createMut.mutate
 	}
 </script>
 
@@ -35,7 +47,7 @@
 
 	<div slot="default" class="p-2 flex-1 min-h-0 max-h-full grid">
 		{#if !!event}
-			<span>event {event.id}</span>
+			<EventAnnotationForm {event} />
 		{/if}
 	</div>
 
