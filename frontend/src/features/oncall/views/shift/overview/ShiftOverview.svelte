@@ -7,10 +7,10 @@
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
-	import EventsList from "$features/oncall/components/events-list/EventsList.svelte";
 	import ShiftEvents from "./ShiftEvents.svelte";
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
+	import ShiftEventsList from "$src/features/oncall/components/shift-events-list/ShiftEventsList.svelte";
 
 	const shiftId = shiftIdCtx.get();
 
@@ -43,6 +43,8 @@
 	</div>
 
 	<div class="h-full flex flex-col overflow-y-auto">
-		<EventsList events={shiftEvents} />
+		{#if shiftState.shift}
+			<ShiftEventsList shift={shiftState.shift} events={shiftEvents} />
+		{/if}
 	</div>
 </div>

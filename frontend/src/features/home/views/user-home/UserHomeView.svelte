@@ -6,7 +6,7 @@
 	import ShiftsHeader from "$features/home/components/shifts-header/ShiftsHeader.svelte";
 	import UserItems from "$features/home/components/user-items/UserItems.svelte";
 	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
-	import OncallEventsTable from "$features/home/components/oncall-events-table/OncallEventsTable.svelte";
+	import OncallEventsTable from "$components/oncall-events-table/OncallEventsTable.svelte";
 
 	const userId = $derived(session.userId);
 	const oncallInfoQuery = createQuery(() => getUserOncallInformationOptions({query: { userId }}));

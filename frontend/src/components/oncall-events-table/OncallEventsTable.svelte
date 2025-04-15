@@ -11,11 +11,12 @@
 	import EventRow from "./EventRow.svelte";
 
 	type Props = {
-		defaultFilters: FilterOptions;
+		shift?: OncallShift;
+		defaultFilters?: FilterOptions;
 		allowRosterActions?: string[];
 		disableFilters?: true | DisabledFilters;
 	};
-	const { defaultFilters, allowRosterActions = [], disableFilters = {} }: Props = $props();
+	const { shift, defaultFilters = {}, allowRosterActions = [], disableFilters = {} }: Props = $props();
 
 	const defaultPerPage = 25;
 	const paginationStore = createPaginationStore({ perPage: defaultPerPage });

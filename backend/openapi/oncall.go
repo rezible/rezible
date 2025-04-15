@@ -144,7 +144,7 @@ type (
 		ShiftId      uuid.UUID                    `json:"shiftId"`
 		SentAt       time.Time                    `json:"sentAt"`
 		Content      []OncallShiftHandoverSection `json:"content"`
-		PinnedEvents []OncallEvent                `json:"pinnedEvents"`
+		PinnedEvents []OncallEventAnnotation      `json:"pinnedEvents"`
 	}
 
 	OncallShiftHandoverSection struct {

@@ -82,8 +82,8 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 	return &resp, nil
 }
 
-func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request *oapi.ListOncallAnnotationsRequest) (*oapi.ListOncallAnnotationsResponse, error) {
-	var resp oapi.ListOncallAnnotationsResponse
+func (h *oncallEventsHandler) ListOncallEventAnnotations(ctx context.Context, request *oapi.ListOncallEventAnnotationsRequest) (*oapi.ListOncallEventAnnotationsResponse, error) {
+	var resp oapi.ListOncallEventAnnotationsResponse
 
 	annos, annosErr := h.oncall.ListAnnotations(ctx, rez.ListOncallAnnotationsParams{
 		ListParams: request.ListParams(),
@@ -94,9 +94,12 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 		return nil, detailError("query shift annotations", annosErr)
 	}
 
-	resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
+	resp.Body.Data = make([]oapi.OncallEventAnnotation, len(annos))
 	for i, anno := range annos {
-		resp.Body.Data[i] = oapi.OncallAnnotationFromEnt(anno)
+		resp.Body.Data[i] = oapi.OncallEventAnnotation{
+			Event:      makeFakeShiftEvent(time.Now()),
+			Annotation: oapi.OncallAnnotationFromEnt(anno),
+		}
 	}
 
 	return &resp, nil

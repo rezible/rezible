@@ -1503,12 +1503,12 @@ export type ListNotificationsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallAnnotationsResponseBody = {
+export type ListOncallEventAnnotationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallAnnotation>;
+    data: Array<OncallEventAnnotation>;
     pagination: ResponsePagination;
 };
 
@@ -1709,6 +1709,11 @@ export type OncallEvent = {
     id: string;
 };
 
+export type OncallEventAnnotation = {
+    annotation: OncallAnnotation;
+    event: OncallEvent;
+};
+
 export type OncallEventAttributes = {
     annotations: Array<OncallAnnotation>;
     kind: string;
@@ -1788,7 +1793,7 @@ export type OncallShiftHandover = {
 
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
-    pinnedEvents: Array<OncallEvent>;
+    pinnedEvents: Array<OncallEventAnnotation>;
     sentAt: string;
     shiftId: string;
 };
@@ -6695,7 +6700,7 @@ export type UpdateMeetingSessionResponses = {
 
 export type UpdateMeetingSessionResponse = UpdateMeetingSessionResponses[keyof UpdateMeetingSessionResponses];
 
-export type ListOncallAnnotationsData = {
+export type ListOncallEventAnnotationsData = {
     body?: never;
     path?: never;
     query?: {
@@ -6709,7 +6714,7 @@ export type ListOncallAnnotationsData = {
     url: '/oncall/annotations';
 };
 
-export type ListOncallAnnotationsErrors = {
+export type ListOncallEventAnnotationsErrors = {
     /**
      * Bad Request
      */
@@ -6736,16 +6741,16 @@ export type ListOncallAnnotationsErrors = {
     500: ErrorModel;
 };
 
-export type ListOncallAnnotationsError = ListOncallAnnotationsErrors[keyof ListOncallAnnotationsErrors];
+export type ListOncallEventAnnotationsError = ListOncallEventAnnotationsErrors[keyof ListOncallEventAnnotationsErrors];
 
-export type ListOncallAnnotationsResponses = {
+export type ListOncallEventAnnotationsResponses = {
     /**
      * OK
      */
-    200: ListOncallAnnotationsResponseBody;
+    200: ListOncallEventAnnotationsResponseBody;
 };
 
-export type ListOncallAnnotationsResponse = ListOncallAnnotationsResponses[keyof ListOncallAnnotationsResponses];
+export type ListOncallEventAnnotationsResponse = ListOncallEventAnnotationsResponses[keyof ListOncallEventAnnotationsResponses];
 
 export type CreateOncallAnnotationData = {
     body: CreateOncallAnnotationRequestBody;

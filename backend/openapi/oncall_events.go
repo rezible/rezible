@@ -14,7 +14,7 @@ import (
 type OncallEventsHandler interface {
 	ListOncallEvents(context.Context, *ListOncallEventsRequest) (*ListOncallEventsResponse, error)
 
-	ListOncallAnnotations(context.Context, *ListOncallAnnotationsRequest) (*ListOncallAnnotationsResponse, error)
+	ListOncallEventAnnotations(context.Context, *ListOncallEventAnnotationsRequest) (*ListOncallEventAnnotationsResponse, error)
 	CreateOncallAnnotation(context.Context, *CreateOncallAnnotationRequest) (*CreateOncallAnnotationResponse, error)
 	UpdateOncallAnnotation(context.Context, *UpdateOncallAnnotationRequest) (*UpdateOncallAnnotationResponse, error)
 	DeleteOncallAnnotation(context.Context, *DeleteOncallAnnotationRequest) (*DeleteOncallAnnotationResponse, error)
@@ -23,7 +23,7 @@ type OncallEventsHandler interface {
 func (o operations) RegisterOncallEvents(api huma.API) {
 	huma.Register(api, ListOncallEvents, o.ListOncallEvents)
 
-	huma.Register(api, ListOncallAnnotations, o.ListOncallAnnotations)
+	huma.Register(api, ListOncallEventAnnotations, o.ListOncallEventAnnotations)
 	huma.Register(api, CreateOncallAnnotation, o.CreateOncallAnnotation)
 	huma.Register(api, UpdateOncallAnnotation, o.UpdateOncallAnnotation)
 	huma.Register(api, DeleteOncallAnnotation, o.DeleteOncallAnnotation)
@@ -53,6 +53,11 @@ type (
 		Creator         *User     `json:"creator"`
 		Notes           string    `json:"notes"`
 		MinutesOccupied int       `json:"minutesOccupied"`
+	}
+
+	OncallEventAnnotation struct {
+		Event      OncallEvent      `json:"event"`
+		Annotation OncallAnnotation `json:"annotation"`
 	}
 )
 
@@ -86,8 +91,8 @@ type ListOncallEventsRequest struct {
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 
-var ListOncallAnnotations = huma.Operation{
-	OperationID: "list-oncall-annotations",
+var ListOncallEventAnnotations = huma.Operation{
+	OperationID: "list-oncall-event-annotations",
 	Method:      http.MethodGet,
 	Path:        "/oncall/annotations",
 	Summary:     "List Oncall Annotations",
@@ -95,12 +100,12 @@ var ListOncallAnnotations = huma.Operation{
 	Errors:      errorCodes(),
 }
 
-type ListOncallAnnotationsRequest struct {
+type ListOncallEventAnnotationsRequest struct {
 	ListRequest
 	RosterId uuid.UUID `query:"rosterId"`
 	ShiftId  uuid.UUID `query:"shiftId"`
 }
-type ListOncallAnnotationsResponse PaginatedResponse[OncallAnnotation]
+type ListOncallEventAnnotationsResponse PaginatedResponse[OncallEventAnnotation]
 
 var CreateOncallAnnotation = huma.Operation{
 	OperationID: "create-oncall-annotation",
