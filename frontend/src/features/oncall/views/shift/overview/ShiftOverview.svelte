@@ -10,7 +10,7 @@
 	import ShiftEvents from "./ShiftEvents.svelte";
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
-	import ShiftEventsList from "$src/features/oncall/components/shift-events-list/ShiftEventsList.svelte";
+	import ShiftEventsList from "$features/oncall/components/shift-events-list/ShiftEventsList.svelte";
 
 	const shiftId = shiftIdCtx.get();
 

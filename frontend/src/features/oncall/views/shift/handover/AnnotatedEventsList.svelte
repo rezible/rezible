@@ -1,112 +1,74 @@
 <script lang="ts">
 	import {
-		listOncallEventAnnotationsOptions,
-		updateOncallAnnotationMutation,
-		type OncallEvent,
-		type OncallEventAnnotation,
+		listOncallEventsOptions,
+		updateOncallShiftHandoverMutation,
+		type OncallAnnotation,
 		type OncallShift,
+		type OncallShiftHandover,
+		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
-	import { mdiPin, mdiPinOutline, mdiDotsVertical, mdiCircleMedium } from "@mdi/js";
-	import { Icon, Button, Header, Toggle, Menu, MenuItem } from "svelte-ux";
-	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
-	import { settings } from "$lib/settings.svelte";
-	import { PeriodType } from "@layerstack/utils";
+	import { Header } from "svelte-ux";
+	import EventListItem from "$features/oncall/components/shift-events-list/EventListItem.svelte";
 
 	type Props = {
 		shift: OncallShift;
-		editable: boolean;
-		pinnedAnnotations: OncallEventAnnotation[];
+		handover: OncallShiftHandover;
+		onUpdated: () => void;
 	};
-	const { shift, editable, pinnedAnnotations }: Props = $props();
+	const { shift, handover, onUpdated }: Props = $props();
 
-	const annoEventsQuery = createQuery(() => listOncallEventAnnotationsOptions({ query: { shiftId: shift.id } }));
+	const annoEventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: shift.id, annotated: true } }));
+	const events = $derived(annoEventsQuery.data?.data ?? []);
 
-	const annoEvents = $derived(annoEventsQuery.data?.data ?? []);
+	let pinnedAnnos = $derived(handover.attributes.pinnedEvents ?? []);
+	const pinnedEventIds = $derived(new SvelteSet(pinnedAnnos.map(p => p.event.id)));
 
-	const pinnedEventIds = $derived(new SvelteSet(pinnedAnnotations.map(p => p.event.id)));
-	const unpinnedAnnos = $derived(annoEvents.filter(a => (!pinnedEventIds.has(a.event.id))));
-
-	const updateAnnotationMut = createMutation(() => ({
-		...updateOncallAnnotationMutation(),
+	let loadingId = $state<string>();
+	const updateHandoverMut = createMutation(() => ({
+		...updateOncallShiftHandoverMutation(),
+		onSuccess: () => {
+			// pinnedAnnos = data.data.attributes.pinnedEvents;
+			onUpdated();
+		},
+		onSettled: () => {
+			loadingId = undefined;
+		}
 	}));
-	const togglePinned = (event: OncallEvent) => {
-		// const body: UpdateOncallAnnotationRequestBody = {
-		// 	attributes: {
-		// 		pinned: !ann.attributes.pinned,
-		// 	},
-		// };
-		// updateAnnotationMut.mutate({ path: { id: ann.id }, body });
+	const togglePinned = (eventId: string, annoId: string) => {
+		loadingId = $state.snapshot(eventId);
+		const ids = [...pinnedAnnos.map(a => a.annotation.id), annoId];
+		const body: UpdateOncallShiftHandoverRequestBody = {
+			attributes: {pinnedAnnotationIds: ids},
+		};
+		updateHandoverMut.mutate({ path: { id: handover.id }, body });
 	};
+
+	const blankAnnotation: OncallAnnotation = {id: "foo", attributes: {
+		creator: {id: "", attributes: {email: "", name: ""}},
+		eventId: "",
+		minutesOccupied: 0,
+		notes: "bleh",
+		rosterId: ""
+	}}
 </script>
 
-<div class="h-10 flex w-full gap-4 items-center px-2">
-	<Header title="Annotated Shift Events" subheading="All events with annotations for this shift" classes={{ root: "w-full", title: "text-xl", container: "flex-1" }}>
-		<div slot="actions" class:hidden={!editable}>
-			
-		</div>
-	</Header>
-</div>
+<div class="flex flex-col h-full border border-surface-content/10 rounded">
+	<div class="h-fit p-2 flex flex-col gap-2">
+		<Header title="Annotated Shift Events" subheading="" />
+	</div>
 
-<div class="flex-1 min-h-0 flex flex-col gap-4 overflow-y-auto bg-surface-200 p-3">
-	{#if annoEventsQuery.isLoading}
-		<span>loading</span>
-	{:else if annoEvents.length > 0}
-		{#each pinnedAnnotations as ev, i}
-			{@render eventListItem(ev, true)}
+	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
+		{#each pinnedAnnos as {event, annotation}}
+			<EventListItem {event} {annotation} pinned {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
 		{/each}
 
-		{#each unpinnedAnnos as ev, i}
-			{@render eventListItem(ev, false)}
-		{/each}
-	{:else}
-		<span>No Annotations</span>
-	{/if}
-</div>
-
-{#snippet eventListItem(eventAnno: OncallEventAnnotation, pinned: boolean)}
-	{@const event = eventAnno.event}
-	{@const occurredAt = event.attributes.timestamp ?? ""}
-	<div class="grid grid-cols-[100px_auto_minmax(0,1fr)] place-items-center border p-2">
-		<div class="justify-self-start">
-			<span class="flex items-center">
-				{settings.format(occurredAt, PeriodType.DayTime)}
-			</span>
-		</div>
-
-		<div class="items-center static z-10">
-			<Icon
-				data={mdiCircleMedium}
-				classes={{ root: "bg-accent-900 rounded-full p-2 w-auto h-10" }}
-			/>
-		</div>
-
-		<div class="w-full justify-self-start grid grid-cols-[auto_40px] items-center px-2">
-			<div class="leading-none">{event.attributes.title || "todo: event title"}</div>
-			<div class="place-self-end flex flex-row gap-2" class:hidden={!editable}>
-				<Button
-					disabled={updateAnnotationMut.isPending}
-					icon={pinned ? mdiPin : mdiPinOutline}
-					color={pinned ? "accent" : "default"}
-					iconOnly
-					on:click={() => togglePinned(event)}
-				/>
-
-				<Toggle let:on={open} let:toggle let:toggleOff>
-					<Button on:click={toggle} icon={mdiDotsVertical} iconOnly>
-						<Menu {open} on:close={toggleOff}>
-							<MenuItem>Edit</MenuItem>
-							<MenuItem>Delete</MenuItem>
-						</Menu>
-					</Button>
-				</Toggle>
-			</div>
-		</div>
-
-		{#each event.attributes.annotations as anno}
-			<div class="row-start-3 col-start-3 overflow-y-auto max-h-20 overflow-y-auto border rounded p-2 w-full">
-				{anno.attributes.notes}
-			</div>
+		{#each events as event}
+			{@const annotation = event.attributes.annotations?.at(0) ?? blankAnnotation}
+			{#if !pinnedEventIds.has(event.id)}
+				<EventListItem {event} {annotation} {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
+			{/if}
 		{/each}
 	</div>
-{/snippet}
+</div>

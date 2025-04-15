@@ -43,7 +43,7 @@
 		};
 	};
 
-	const pinnedAnnotations = $derived(handover.attributes.pinnedAnnotations ?? []);
+	const pinnedAnnotations = $derived(handover.attributes.pinnedEvents ?? []);
 
 	onMount(() => {
 		handoverState.setup(handover);

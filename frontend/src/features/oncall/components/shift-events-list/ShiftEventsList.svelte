@@ -2,8 +2,8 @@
 	import { mdiFilter } from "@mdi/js";
 	import { Header, Button } from "svelte-ux";
 	import type { OncallEvent, OncallShift } from "$lib/api";
-	import EventListItem from "./EventListItem.svelte";
-	import EventAnnotationDialog from "$src/components/event-annotation-dialog/EventAnnotationDialog.svelte";
+	import EventAnnotationDialog from "$components/event-annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRowItem from "$components/oncall-events-table/EventRowItem.svelte";
 
 	type Props = {
 		shift: OncallShift;
@@ -12,6 +12,8 @@
 	const { shift, events }: Props = $props();
 
 	let showFilters = $state(false);
+
+	const rosterIds = $derived([shift.attributes.roster.id]);
 
 	let annotationEvent = $state<OncallEvent>();
 	const currentAnnotation = $derived(annotationEvent?.attributes.annotations.find(a => a.attributes.rosterId === shift.attributes.roster.id));
@@ -31,7 +33,12 @@
 	</div>
 	<div class="flex-1 flex flex-col gap-1 px-0 overflow-y-auto">
 		{#each events as event}
-			<EventListItem {event} onEditAnnotation={() => (annotationEvent = event)} />
+			<EventRowItem 
+				{event}
+				annotationRosterIds={rosterIds}
+				annotation={event.attributes.annotations?.at(0)}
+				editAnnotation={() => (annotationEvent = event)}
+			/>
 		{/each}
 	</div>
 </div>

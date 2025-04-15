@@ -36,7 +36,7 @@
 		const numEvents = new Map<string, number>();
 		shiftEvents.forEach((event) => {
 			if (!!eventsFilter && !shiftEventMatchesFilter(event, eventsFilter)) return;
-			const eventDate = new Date(event.timestamp);
+			const eventDate = new Date(event.attributes.timestamp);
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, eventDate.getHours());
 			numEvents.set(key, (numEvents.get(key) || 0) + 1);

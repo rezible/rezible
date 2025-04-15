@@ -1503,12 +1503,12 @@ export type ListNotificationsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListOncallEventAnnotationsResponseBody = {
+export type ListOncallAnnotationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallEventAnnotation>;
+    data: Array<OncallAnnotation>;
     pagination: ResponsePagination;
 };
 
@@ -6700,7 +6700,7 @@ export type UpdateMeetingSessionResponses = {
 
 export type UpdateMeetingSessionResponse = UpdateMeetingSessionResponses[keyof UpdateMeetingSessionResponses];
 
-export type ListOncallEventAnnotationsData = {
+export type ListOncallAnnotationsData = {
     body?: never;
     path?: never;
     query?: {
@@ -6714,7 +6714,7 @@ export type ListOncallEventAnnotationsData = {
     url: '/oncall/annotations';
 };
 
-export type ListOncallEventAnnotationsErrors = {
+export type ListOncallAnnotationsErrors = {
     /**
      * Bad Request
      */
@@ -6741,16 +6741,16 @@ export type ListOncallEventAnnotationsErrors = {
     500: ErrorModel;
 };
 
-export type ListOncallEventAnnotationsError = ListOncallEventAnnotationsErrors[keyof ListOncallEventAnnotationsErrors];
+export type ListOncallAnnotationsError = ListOncallAnnotationsErrors[keyof ListOncallAnnotationsErrors];
 
-export type ListOncallEventAnnotationsResponses = {
+export type ListOncallAnnotationsResponses = {
     /**
      * OK
      */
-    200: ListOncallEventAnnotationsResponseBody;
+    200: ListOncallAnnotationsResponseBody;
 };
 
-export type ListOncallEventAnnotationsResponse = ListOncallEventAnnotationsResponses[keyof ListOncallEventAnnotationsResponses];
+export type ListOncallAnnotationsResponse = ListOncallAnnotationsResponses[keyof ListOncallAnnotationsResponses];
 
 export type CreateOncallAnnotationData = {
     body: CreateOncallAnnotationRequestBody;
@@ -6902,6 +6902,7 @@ export type ListOncallEventsData = {
         search?: string;
         archived?: boolean;
         shiftId?: string;
+        annotated?: boolean;
         rosterIds?: Array<string>;
     };
     url: '/oncall/events';

@@ -1,28 +1,25 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, Header, Icon, Pagination } from "svelte-ux";
+	import { Header, Pagination } from "svelte-ux";
 	import { watch } from "runed";
-	import { mdiFilter } from "@mdi/js";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
 	import { listOncallEventsOptions, type OncallAnnotation, type OncallEvent, type OncallShift } from "$lib/api";
 	import EventAnnotationDialog from "$components/event-annotation-dialog/EventAnnotationDialog.svelte";
 	import EventsFilters, { type DisabledFilters, type FilterOptions } from "./EventsFilters.svelte";
-	import EventRow from "./EventRow.svelte";
+	import EventRowItem from "./EventRowItem.svelte";
 
 	type Props = {
 		shift?: OncallShift;
-		defaultFilters?: FilterOptions;
 		allowRosterActions?: string[];
+		defaultFilters?: FilterOptions;
 		disableFilters?: true | DisabledFilters;
 	};
-	const { shift, defaultFilters = {}, allowRosterActions = [], disableFilters = {} }: Props = $props();
+	const { shift, allowRosterActions, defaultFilters = {}, disableFilters = {} }: Props = $props();
 
 	const defaultPerPage = 25;
 	const paginationStore = createPaginationStore({ perPage: defaultPerPage });
 	const pagination = fromStore(paginationStore);
-
-	let showFilters = $state(false);
 
 	let filters = $state<FilterOptions>(defaultFilters);
 	watch(() => defaultFilters, (f) => {filters = f});
@@ -48,36 +45,21 @@
 	<Header title="Events" subheading="subheading text" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		<svelte:fragment slot="actions">
 			{#if disableFilters !== true}
-				<Button color={showFilters ? "accent" : "default"} variant={showFilters ? "fill-light" : "default"} on:click={() => (showFilters = !showFilters)}>
-					<span class="flex gap-2 items-center">Filters <Icon data={mdiFilter} /></span>
-				</Button>
+				<div class="justify-end">
+					<EventsFilters bind:filters disabled={disableFilters} />
+				</div>
 			{/if}
 		</svelte:fragment>
 	</Header>
 
-	{#if disableFilters !== true}
-		<div class="p-2 border-t justify-end" class:hidden={!showFilters}>
-			<EventsFilters bind:filters disabled={disableFilters} />
-		</div>
-	{/if}
-
 	<div class="flex flex-col flex-1 overflow-y-auto">
-		<div class="grid grid-flow-row grid-cols-[64px_128px_minmax(150px,auto)_minmax(100px,1fr)] gap-x-2 min-h-0 overflow-y-auto">
-			<div class="grid grid-cols-subgrid col-span-full sticky top-0 bg-surface-100 items-center p-2">
-				<span class="grid place-items-center">Kind</span>
-				<span class="flex items-center">Time</span>
-				<span class="flex items-center">Title</span>
-				<span class="flex items-center justify-end">Annotations</span>
-			</div>
-
-			{#each pageData ?? [] as event}
-				<EventRow 
-					{event}
-					allowAnnotationRosters={allowRosterActions}
-					onOpenAnnotateDialog={(anno?: OncallAnnotation) => {setAnnotationDialog(event, anno)}}
-				/>
-			{/each}
-		</div>
+		{#each pageData ?? [] as event}
+			<EventRowItem 
+				{event}
+				annotationRosterIds={allowRosterActions}
+				editAnnotation={(anno?: OncallAnnotation) => {setAnnotationDialog(event, anno)}}
+			/>
+		{/each}
 	</div>
 
 	<Pagination
