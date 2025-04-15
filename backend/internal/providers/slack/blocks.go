@@ -78,21 +78,30 @@ func (c *blockConverter) crawlNode(node *rez.ContentNode, marks mapset.Set[strin
 
 func (c *blockConverter) convertNode(node *rez.ContentNode, marks mapset.Set[string]) {
 	// TODO: support links etc, not just plain text
-	// linkEl := slack.NewRichTextSectionLinkElement()
+	style := &slack.RichTextSectionTextStyle{
+		Bold:   marks.Contains("bold"),
+		Italic: marks.Contains("italic"),
+	}
+
+	if node.Type.Name == "user" {
+		c.sectionEls = append(c.sectionEls, slack.NewRichTextSectionUserElement(node.Text, style))
+	}
 
 	if node.IsText() {
-		style := &slack.RichTextSectionTextStyle{
-			Bold:   marks.Contains("bold"),
-			Italic: marks.Contains("italic"),
+		if href, isLink := node.Attrs["href"]; isLink {
+			if hrefStr := href.(string); hrefStr != "" {
+				c.sectionEls = append(c.sectionEls, slack.NewRichTextSectionLinkElement(hrefStr, node.Text, style))
+				return
+			}
 		}
-		textEl := slack.NewRichTextSectionTextElement(node.Text, style)
-		c.sectionEls = append(c.sectionEls, textEl)
+
+		c.sectionEls = append(c.sectionEls, slack.NewRichTextSectionTextElement(node.Text, style))
 	}
 }
 
 func (c *blockConverter) crawlChildren(node *rez.ContentNode, marks mapset.Set[string], depth int) {
-	nodeType := string(node.Type.Name)
-	isList := nodeType == "bulletList" || nodeType == "orderedList" // todo: check if 'container'
+	nodeTypeName := string(node.Type.Name)
+	isList := nodeTypeName == "bulletList" || nodeTypeName == "orderedList" // todo: check if 'container'
 	var listIdx int
 	if isList {
 		listIdx = len(c.listMarkers)
@@ -102,7 +111,7 @@ func (c *blockConverter) crawlChildren(node *rez.ContentNode, marks mapset.Set[s
 			end:      -1,
 			listType: slack.RTEListOrdered,
 		}
-		if nodeType == "bulletList" {
+		if nodeTypeName == "bulletList" {
 			marker.listType = slack.RTEListBullet
 		}
 		c.listMarkers = append(c.listMarkers, marker)

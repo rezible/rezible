@@ -185,18 +185,12 @@ type (
 		GetWebsocketAddress() string
 		CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (readOnly bool, err error)
 		GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
+
+		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []OncallEventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) (*ContentNode, error)
 	}
 )
 
 type (
-	SendOncallHandoverParams struct {
-		Content []OncallShiftHandoverSection
-
-		EndingShift            *ent.OncallUserShift
-		StartingShift          *ent.OncallUserShift
-		PinnedEventAnnotations []OncallEventAnnotation
-	}
-
 	ChatMessageAnnotationSupporter interface {
 		CreateEventAnnotation(ctx context.Context, evAnno OncallEventAnnotation) error
 		QueryChatMessageAnnotationDetails(ctx context.Context, userId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error)
@@ -209,7 +203,16 @@ type (
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendTextMessage(ctx context.Context, id string, text string) error
 
-		SendOncallHandover(context.Context, SendOncallHandoverParams) error
+		// TODO: this should just be converted to *ContentNode by DocumentsService
+		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
+	}
+
+	SendOncallHandoverParams struct {
+		Content []OncallShiftHandoverSection
+
+		EndingShift            *ent.OncallUserShift
+		StartingShift          *ent.OncallUserShift
+		PinnedEventAnnotations []OncallEventAnnotation
 	}
 )
 

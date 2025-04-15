@@ -94,16 +94,15 @@ func (p *ChatProvider) SendUserLinkMessage(ctx context.Context, id string, msgTe
 }
 
 func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
-	roster, rosterErr := params.EndingShift.QueryRoster().Only(ctx)
+	roster, rosterErr := params.EndingShift.Edges.RosterOrErr()
 	if rosterErr != nil {
 		return fmt.Errorf("get shift roster: %w", rosterErr)
 	}
-
 	if roster.ChatChannelID == "" {
 		return fmt.Errorf("no chat channel found for roster: %s", roster.ID)
 	}
 
-	sender, senderUserErr := params.EndingShift.QueryUser().Only(ctx)
+	sender, senderUserErr := params.EndingShift.Edges.UserOrErr()
 	if senderUserErr != nil {
 		return fmt.Errorf("get EndingShift user: %w", senderUserErr)
 	}
@@ -111,7 +110,7 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 		return fmt.Errorf("no chat id for handover sender %s", sender.ID)
 	}
 
-	receiver, receiverUserErr := params.StartingShift.QueryUser().Only(ctx)
+	receiver, receiverUserErr := params.StartingShift.Edges.UserOrErr()
 	if receiverUserErr != nil {
 		return fmt.Errorf("get StartingShift user: %w", receiverUserErr)
 	}

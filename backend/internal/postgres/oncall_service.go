@@ -560,9 +560,14 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.U
 }
 
 func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
+	var sections []rez.OncallShiftHandoverSection
+	if jsonErr := json.Unmarshal(ho.Contents, &sections); jsonErr != nil {
+		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
+	}
+
 	shift, shiftErr := s.GetShiftByID(ctx, ho.ShiftID)
 	if shiftErr != nil {
-		return fmt.Errorf("failed to query shift: %w", shiftErr)
+		return fmt.Errorf("failed to get handover shift: %w", shiftErr)
 	}
 
 	nextShift, nextShiftErr := s.GetNextShift(ctx, ho.ShiftID)
@@ -570,31 +575,32 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		return fmt.Errorf("failed to get next shift: %w", nextShiftErr)
 	}
 
-	var content []rez.OncallShiftHandoverSection
-	if jsonErr := json.Unmarshal(ho.Contents, &content); jsonErr != nil {
-		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
+	roster, rosterErr := nextShift.QueryRoster().Only(ctx)
+	if rosterErr != nil {
+		return fmt.Errorf("failed to get roster: %w", rosterErr)
+	}
+	if roster.ChatChannelID == "" {
+		return fmt.Errorf("no roster chat channel found")
 	}
 
-	pinnedEventAnnos := make([]rez.OncallEventAnnotation, len(ho.Edges.PinnedAnnotations))
-	for i, a := range ho.Edges.PinnedAnnotations {
-		anno := a
-		pinnedEventAnnos[i] = rez.OncallEventAnnotation{
-			//Event: event,
-			Annotation: anno,
+	annos := make([]rez.OncallEventAnnotation, 0)
+	// TODO: get event annotations
+
+	/*
+		msgContent, contentErr := s.docs.CreateOncallShiftHandoverMessage(sections, annos, roster, shift, nextShift)
+		if contentErr != nil {
+			return fmt.Errorf("failed to create oncall shift handover message: %w", contentErr)
 		}
-	}
 
-	params := rez.SendOncallHandoverParams{
-		Content:                content,
+		return s.chat.SendMessage(ctx, roster.ChatChannelID, msgContent)
+	*/
+
+	return s.chat.SendOncallHandover(ctx, rez.SendOncallHandoverParams{
+		Content:                sections,
 		EndingShift:            shift,
 		StartingShift:          nextShift,
-		PinnedEventAnnotations: pinnedEventAnnos,
-	}
-	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
-		return fmt.Errorf("failed to send: %w", sendErr)
-	}
-
-	return nil
+		PinnedEventAnnotations: annos,
+	})
 }
 
 func (s *OncallService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
