@@ -192,39 +192,24 @@ type (
 	SendOncallHandoverParams struct {
 		Content []OncallShiftHandoverSection
 
-		EndingShift   *ent.OncallUserShift
-		StartingShift *ent.OncallUserShift
-		//Incidents     []*ent.Incident
+		EndingShift            *ent.OncallUserShift
+		StartingShift          *ent.OncallUserShift
 		PinnedEventAnnotations []OncallEventAnnotation
 	}
 
-	ChatCreateAnnotationFunc = func(ctx context.Context, rosterId uuid.UUID, msgEvent *OncallEvent, setFn func(*ent.OncallAnnotation)) error
+	ChatMessageAnnotationSupporter interface {
+		CreateEventAnnotation(ctx context.Context, evAnno OncallEventAnnotation) error
+		QueryChatMessageAnnotationDetails(ctx context.Context, userId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error)
+	}
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
+		SetAnnotationSupporter(ChatMessageAnnotationSupporter)
 
-		SetLookupUserFunc(LookupProviderUserFunc)
-
-		SetCreateAnnotationFunc(ChatCreateAnnotationFunc)
-
-		// TODO: just use a generic SendMessage(rez.ContentNode), and convert in chat client
-		SendOncallHandover(context.Context, SendOncallHandoverParams) error
-
-		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error
-
-		SendUserMessage(ctx context.Context, id string, msgText string) error
-		SendUserLinkMessage(ctx context.Context, id string, msgText string, linkUrl string, linkText string) error
-	}
-
-	ChatService interface {
-		SetCreateAnnotationFunc(ChatCreateAnnotationFunc)
+		SendMessage(ctx context.Context, id string, msg *ContentNode) error
+		SendTextMessage(ctx context.Context, id string, text string) error
 
 		SendOncallHandover(context.Context, SendOncallHandoverParams) error
-
-		// SendUserMessage(ctx context.Context, user *ent.User, msg *ContentNode) error
-
-		SendUserMessage(ctx context.Context, user *ent.User, msgText string) error
-		SendUserLinkMessage(ctx context.Context, user *ent.User, msgText string, linkUrl string, linkText string) error
 	}
 )
 
@@ -366,6 +351,8 @@ type (
 	}
 
 	OncallService interface {
+		ChatMessageAnnotationSupporter
+
 		HandleScanForShiftsNeedingHandoverJob(context.Context, jobs.ScanOncallHandovers) error
 		HandleEnsureShiftHandoverJob(context.Context, jobs.EnsureShiftHandover) error
 

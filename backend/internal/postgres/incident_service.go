@@ -17,11 +17,11 @@ import (
 type IncidentService struct {
 	db    *ent.Client
 	jobs  rez.JobsService
-	chat  rez.ChatService
 	users rez.UserService
+	chat  rez.ChatProvider
 }
 
-func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
+func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatProvider, users rez.UserService) (*IncidentService, error) {
 	svc := &IncidentService{
 		db:    db,
 		jobs:  jobs,

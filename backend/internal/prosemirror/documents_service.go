@@ -1,27 +1,28 @@
-package documents
+package prosemirror
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"io"
 	"net/http"
 
-	rez "github.com/rezible/rezible"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+
+	rez "github.com/rezible/rezible"
 )
 
-type Service struct {
+type DocumentsService struct {
 	serverAddress string
 	users         rez.UserService
 
 	httpClient *http.Client
 }
 
-func NewService(serverAddress string, users rez.UserService) (*Service, error) {
-	svc := &Service{
+func NewDocumentsService(serverAddress string, users rez.UserService) (*DocumentsService, error) {
+	svc := &DocumentsService{
 		serverAddress: serverAddress,
 		users:         users,
 		httpClient:    &http.Client{},
@@ -30,13 +31,13 @@ func NewService(serverAddress string, users rez.UserService) (*Service, error) {
 	return svc, nil
 }
 
-//func (s *Service) GetWebhooks() rez.Webhooks {
+//func (s *DocumentsService) GetWebhooks() rez.Webhooks {
 //	return rez.Webhooks{
 //		"documents": http.HandlerFunc(s.webhookHandler),
 //	}
 //}
 //
-//func (s *Service) webhookHandler(w http.ResponseWriter, r *http.Request) {
+//func (s *DocumentsService) webhookHandler(w http.ResponseWriter, r *http.Request) {
 //	body, readErr := io.ReadAll(r.Body)
 //	if readErr != nil {
 //		log.Error().Err(readErr).Msg("failed to read document webhook body")
@@ -47,11 +48,11 @@ func NewService(serverAddress string, users rez.UserService) (*Service, error) {
 //	w.WriteHeader(http.StatusOK)
 //}
 
-func (s *Service) GetWebsocketAddress() string {
+func (s *DocumentsService) GetWebsocketAddress() string {
 	return fmt.Sprintf("ws://%s", s.serverAddress)
 }
 
-func (s *Service) CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (bool, error) {
+func (s *DocumentsService) CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (bool, error) {
 	readOnly := false
 	if false {
 		return false, rez.ErrUnauthorized
@@ -72,7 +73,7 @@ type pmContent struct {
 	Text       string         `json:"text"`
 }
 
-func (s *Service) parseDocument(raw []byte) (*pmContent, error) {
+func (s *DocumentsService) parseDocument(raw []byte) (*pmContent, error) {
 	var content pmContent
 	if jsonErr := json.Unmarshal(raw, &content); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal json: %w", jsonErr)
@@ -89,7 +90,7 @@ type apiTransformResponse struct {
 	Content string `json:"content"`
 }
 
-func (s *Service) ConvertToHTML(ctx context.Context, rawDoc string) (string, error) {
+func (s *DocumentsService) ConvertToHTML(ctx context.Context, rawDoc string) (string, error) {
 	reqBody, bodyErr := json.Marshal(apiTransformRequest{Format: "html", Content: rawDoc})
 	if bodyErr != nil {
 		return "", fmt.Errorf("marshal request: %w", bodyErr)
@@ -113,7 +114,7 @@ type apiSchemaSpecResponse struct {
 	Spec *rez.DocumentSchemaSpec `json:"spec"`
 }
 
-func (s *Service) GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*rez.DocumentSchemaSpec, error) {
+func (s *DocumentsService) GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*rez.DocumentSchemaSpec, error) {
 	reqBody, bodyErr := json.Marshal(apiSchemaSpecRequest{Name: schemaName})
 	if bodyErr != nil {
 		return nil, fmt.Errorf("marshal request: %w", bodyErr)
@@ -129,7 +130,7 @@ func (s *Service) GetDocumentSchemaSpec(ctx context.Context, schemaName string) 
 	return response.Spec, nil
 }
 
-func (s *Service) apiRequest(ctx context.Context, endpoint string, method string, body []byte) ([]byte, error) {
+func (s *DocumentsService) apiRequest(ctx context.Context, endpoint string, method string, body []byte) ([]byte, error) {
 	url := fmt.Sprintf("http://%s/api/%s", s.serverAddress, endpoint)
 	req, reqErr := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	if reqErr != nil {

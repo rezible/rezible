@@ -13,10 +13,10 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/api"
-	"github.com/rezible/rezible/internal/documents"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/langchain"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
 )
@@ -95,6 +95,8 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
+	chat := provs.Chat
+
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
@@ -105,17 +107,12 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
 	}
 
-	chat, chatErr := documents.NewChatService(ctx, provs.Chat, users)
-	if chatErr != nil {
-		return nil, fmt.Errorf("failed to create chat service: %w", chatErr)
-	}
-
 	ai, aiErr := langchain.NewAiService(ctx, provs.AiModel)
 	if aiErr != nil {
 		return nil, fmt.Errorf("failed to create AI service: %w", aiErr)
 	}
 
-	docs, docsErr := documents.NewService(s.opts.DocumentServerAddress, users)
+	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
 	if docsErr != nil {
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
@@ -129,6 +126,8 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if handoverErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
 	}
+
+	provs.Chat.SetAnnotationSupporter(oncall)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, ai, chat)
 	if debriefsErr != nil {

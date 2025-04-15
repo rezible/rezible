@@ -20,10 +20,10 @@ type DebriefService struct {
 	db   *ent.Client
 	jobs rez.JobsService
 	ai   rez.AiService
-	chat rez.ChatService
+	chat rez.ChatProvider
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatService) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatProvider) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
 		jobs: jobs,
@@ -201,19 +201,21 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 		log.Error().Err(createErr).Msg("Failed to create incident debrief")
 	}
 
-	incFmt := inc.Slug
-	if inc.ChatChannelID != "" {
-		incFmt = fmt.Sprintf("<#%s>", inc.ChatChannelID)
-	}
+	// TODO: convert this to content node
+	/*
+		incFmt := inc.Slug
+		if inc.ChatChannelID != "" {
+			incFmt = fmt.Sprintf("<#%s>", inc.ChatChannelID)
+		}
 
-	msgText := fmt.Sprintf(
-		"Thank you for your role in %s!\nPlease complete your incident debrief as soon as possible",
-		incFmt)
-	msgLinkUrl := fmt.Sprintf("%s/incidents/%s/retrospective", rez.FrontendUrl, inc.ID.String())
-	msgLinkText := "Open Incident Debrief"
-	if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, msgLinkText); msgErr != nil {
-		log.Error().Err(msgErr).Msg("Failed to send incident debrief message")
-	}
+		msgText := fmt.Sprintf(
+			"Thank you for your role in %s!\nPlease complete your incident debrief as soon as possible", incFmt)
+		msgLinkUrl := fmt.Sprintf("%s/incidents/%s/retrospective", rez.FrontendUrl, inc.ID.String())
+		msgLinkText := "Open Incident Debrief"
+		if msgErr := s.msg.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, msgLinkText); msgErr != nil {
+			log.Error().Err(msgErr).Msg("Failed to send incident debrief message")
+		}
+	*/
 }
 
 func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uuid.UUID, content string) (*ent.IncidentDebriefMessage, error) {

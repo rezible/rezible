@@ -3,9 +3,7 @@ package slack
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/slack-go/slack"
 	"net/http"
@@ -14,9 +12,7 @@ import (
 type ChatProvider struct {
 	client        *slack.Client
 	signingSecret string
-
-	lookupUserFn       rez.LookupProviderUserFunc
-	createAnnotationFn rez.ChatCreateAnnotationFunc
+	annos         rez.ChatMessageAnnotationSupporter
 }
 
 type ChatProviderConfig struct {
@@ -29,12 +25,6 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 	p := &ChatProvider{
 		client:        client,
 		signingSecret: cfg.SigningSecret,
-		lookupUserFn: func(ctx context.Context, s string) (*ent.User, error) {
-			return nil, fmt.Errorf("no user lookup func registered")
-		},
-		createAnnotationFn: func(ctx context.Context, rosterId uuid.UUID, e *rez.OncallEvent, up func(*ent.OncallAnnotation)) error {
-			return fmt.Errorf("no create func registered")
-		},
 	}
 
 	return p, nil
@@ -48,16 +38,18 @@ func (p *ChatProvider) GetWebhooks() rez.Webhooks {
 	}
 }
 
-func (p *ChatProvider) SetLookupUserFunc(fn rez.LookupProviderUserFunc) {
-	p.lookupUserFn = fn
+func (p *ChatProvider) SetAnnotationSupporter(ip rez.ChatMessageAnnotationSupporter) {
+	p.annos = ip
 }
 
-func (p *ChatProvider) SetCreateAnnotationFunc(fn rez.ChatCreateAnnotationFunc) {
-	p.createAnnotationFn = fn
+func (p *ChatProvider) SendMessage(ctx context.Context, id string, content *rez.ContentNode) error {
+	blocks := convertContentToBlocks(content, nil)
+	msg := slack.MsgOptionBlocks(blocks...)
+	return p.sendUserMessage(ctx, id, msg)
 }
 
-func (p *ChatProvider) SendUserMessage(ctx context.Context, id string, msg string) error {
-	return p.sendUserMessage(ctx, id, slack.MsgOptionText(msg, false))
+func (p *ChatProvider) SendTextMessage(ctx context.Context, id string, text string) error {
+	return p.sendUserMessage(ctx, id, slack.MsgOptionText(text, false))
 }
 
 func (p *ChatProvider) sendUserMessage(ctx context.Context, id string, msg slack.MsgOption) error {

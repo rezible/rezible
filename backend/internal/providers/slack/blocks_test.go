@@ -86,7 +86,6 @@ func TestConvertContent(t *testing.T) {
 		senderId:    "foo",
 		receiverId:  "foo",
 		endingShift: &ent.OncallUserShift{},
-		annotations: annos,
 	}
 
 	if convErr := builder.build(content); convErr != nil {

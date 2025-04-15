@@ -15,7 +15,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallannotation"
 )
 
 var (
@@ -75,7 +74,6 @@ func (p *ChatProvider) handleMessageAction(ctx context.Context, ic *slack.Intera
 }
 
 func (p *ChatProvider) handleBlockActions(ctx context.Context, ic *slack.InteractionCallback) error {
-	// fmt.Printf("block actions: %+v\n", ic)
 	switch ic.CallbackID {
 	case createAnnotationConfirmCallbackID:
 		return p.handleCreateAnnotationModalBlockAction(ctx, ic)
@@ -121,6 +119,7 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
+/*
 func (p *ChatProvider) getUserOncallRosters(ctx context.Context, id string) ([]*ent.OncallRoster, error) {
 	user, userErr := p.lookupUserFn(ctx, id)
 	if userErr != nil {
@@ -134,6 +133,7 @@ func (p *ChatProvider) getUserOncallRosters(ctx context.Context, id string) ([]*
 
 	return rosters, nil
 }
+*/
 
 type createAnnotationMetadata struct {
 	MsgId        string    `json:"mid"`
@@ -143,9 +143,11 @@ type createAnnotationMetadata struct {
 }
 
 func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
-	rosters, rostersErr := p.getUserOncallRosters(ctx, ic.User.ID)
-	if rostersErr != nil {
-		return nil, fmt.Errorf("failed to get oncall rosters: %w", rostersErr)
+	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
+
+	rosters, currAnnos, infoErr := p.annos.QueryChatMessageAnnotationDetails(ctx, ic.User.ID, msgId)
+	if infoErr != nil {
+		return nil, fmt.Errorf("failed to get annotation information: %w", infoErr)
 	}
 
 	if len(rosters) == 0 {
@@ -160,7 +162,6 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		}, nil
 	}
 
-	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
 	msgTime := convertSlackTs(ic.MessageTs)
 
 	metadata := createAnnotationMetadata{
@@ -196,16 +197,22 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 				slack.SectionBlockOptionBlockID("shift_select"))
 		}
 	*/
-
 	metadata.RosterId = roster.ID
 
-	curr, annoErr := roster.QueryAnnotations().Where(oncallannotation.EventID(msgId)).Only(ctx)
-	if annoErr != nil && !ent.IsNotFound(annoErr) {
-		return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
+	var curr *ent.OncallAnnotation
+	for _, anno := range currAnnos {
+		if anno.RosterID == roster.ID && anno.EventID == msgId {
+			curr = anno
+			break
+		}
 	}
-	if curr != nil {
-		metadata.AnnotationId = curr.ID
-	}
+
+	//curr, annoErr := roster.QueryAnnotations().Where(oncallannotation.EventID(msgId)).Only(ctx)
+	//if annoErr != nil && !ent.IsNotFound(annoErr) {
+	//	return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
+	//}
+	//if curr != nil {
+	//}
 
 	messageUserDetails := slack.NewRichTextSection(
 		slack.NewRichTextSectionUserElement(ic.Message.User, nil),
@@ -215,9 +222,16 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 
 	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
 	inputHint := plainText("You can edit this later")
+
+	titleText := "Create Annotation"
+	submitText := "Create"
+
 	if curr != nil {
 		inputBlock.WithInitialValue(curr.Notes)
+		metadata.AnnotationId = curr.ID
 		inputHint = nil
+		titleText = "Update Annotation"
+		submitText = "Update"
 	}
 
 	blockSet := []slack.Block{
@@ -231,13 +245,6 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	jsonMetadata, jsonErr := json.Marshal(metadata)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
-	}
-
-	titleText := "Create Annotation"
-	submitText := "Create"
-	if curr != nil {
-		titleText = "Update Annotation"
-		submitText = "Update"
 	}
 
 	return &slack.ModalViewRequest{
@@ -284,17 +291,19 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		}
 	}
 
-	event := &rez.OncallEvent{
-		ID:        meta.MsgId,
-		Kind:      "message",
-		Timestamp: meta.MsgTimestamp,
-		// TODO: add more message details
+	msgAnno := rez.OncallEventAnnotation{
+		Event: &rez.OncallEvent{
+			ID:        meta.MsgId,
+			Kind:      "message",
+			Timestamp: meta.MsgTimestamp,
+			// TODO: add more message details
+		},
+		Annotation: &ent.OncallAnnotation{
+			ID:       meta.AnnotationId,
+			RosterID: rosterId,
+			Notes:    notes,
+		},
 	}
 
-	return p.createAnnotationFn(ctx, rosterId, event, func(anno *ent.OncallAnnotation) {
-		if meta.AnnotationId != uuid.Nil {
-			anno.ID = meta.AnnotationId
-		}
-		anno.Notes = notes
-	})
+	return p.annos.CreateEventAnnotation(ctx, msgAnno)
 }

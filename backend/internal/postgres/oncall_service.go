@@ -30,12 +30,12 @@ type OncallService struct {
 	db        *ent.Client
 	jobs      rez.JobsService
 	docs      rez.DocumentsService
-	chat      rez.ChatService
+	chat      rez.ChatProvider
 	users     rez.UserService
 	incidents rez.IncidentService
 }
 
-func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
+func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatProvider, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
 	s := &OncallService{
 		db:        db,
 		jobs:      jobs,
@@ -43,10 +43,6 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService,
 		chat:      chat,
 		users:     users,
 		incidents: incidents,
-	}
-
-	if chat != nil {
-		chat.SetCreateAnnotationFunc(s.createChatAnnotation)
 	}
 
 	if jobsErr := s.registerBackgroundJobs(); jobsErr != nil {
@@ -97,17 +93,46 @@ func (s *OncallService) registerHandoverSchema() {
 	prosemirror.RegisterSchema(schema)
 }
 
-func (s *OncallService) createChatAnnotation(ctx context.Context, rosterId uuid.UUID, msg *rez.OncallEvent, setFn func(*ent.OncallAnnotation)) error {
+func (s *OncallService) CreateEventAnnotation(ctx context.Context, evAnno rez.OncallEventAnnotation) error {
+	return nil
+}
+
+func (s *OncallService) QueryChatMessageAnnotationDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error) {
+	user, userErr := s.users.GetByChatId(ctx, userChatId)
+	if userErr != nil {
+		return nil, nil, userErr
+	}
+
+	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
+	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
+		return nil, nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
+	}
+
+	rosterIds := make([]uuid.UUID, len(rosters))
+	for i, r := range rosters {
+		rosterIds[i] = r.ID
+	}
+
+	annos, annosErr := s.db.OncallAnnotation.Query().
+		Where(oncallannotation.EventID(msgId)).
+		Where(oncallannotation.RosterIDIn(rosterIds...)).
+		All(ctx)
+	if annosErr != nil && !ent.IsNotFound(annosErr) {
+		return nil, nil, fmt.Errorf("failed to query oncall annotations for user: %w", annosErr)
+	}
+
+	return rosters, annos, nil
+}
+
+/*
+func (s *OncallService) CreateAnnotation(ctx context.Context, rosterId uuid.UUID, ev *rez.OncallEvent, anno *ent.OncallAnnotation) error {
 	annos, annosErr := s.db.OncallAnnotation.Query().
 		Where(oncallannotation.RosterID(rosterId)).
 		All(ctx)
 	if annosErr != nil {
 		return fmt.Errorf("failed to query: %w", annosErr)
 	}
-	anno := &ent.OncallAnnotation{
-		RosterID: rosterId,
-		EventID:  msg.ID,
-	}
+
 	for _, an := range annos {
 		if an.EventID != "" && an.EventID == msg.ID {
 			anno = an
@@ -115,6 +140,10 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, rosterId uuid.
 		}
 	}
 	prevId := anno.ID.String()
+	anno := &ent.OncallAnnotation{
+		RosterID: rosterId,
+		EventID:  msg.ID,
+	}
 	setFn(anno)
 	if anno.ID.String() != prevId {
 		return fmt.Errorf("annotation id mismatch: %s", anno.ID)
@@ -131,6 +160,7 @@ func (s *OncallService) createChatAnnotation(ctx context.Context, rosterId uuid.
 
 	return nil
 }
+*/
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {
 	var query *ent.OncallScheduleQuery
@@ -371,17 +401,20 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 		return fmt.Errorf("failed to get shift user: %w", userErr)
 	}
 
-	roster, rosterErr := s.GetRosterByID(ctx, shift.RosterID)
-	if rosterErr != nil {
-		return fmt.Errorf("failed to get roster: %w", rosterErr)
-	}
+	//roster, rosterErr := s.GetRosterByID(ctx, shift.RosterID)
+	//if rosterErr != nil {
+	//	return fmt.Errorf("failed to get roster: %w", rosterErr)
+	//}
 
-	msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
-		roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
-	msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shift.ID)
-	if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, "Complete Handover"); msgErr != nil {
+	if msgErr := s.chat.SendTextMessage(ctx, user.ChatID, "TODO: complete handover message"); msgErr != nil {
 		return fmt.Errorf("failed to send message: %w", msgErr)
 	}
+	//msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
+	//	roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
+	//msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shift.ID)
+	//if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, "Complete Handover"); msgErr != nil {
+	//	return fmt.Errorf("failed to send message: %w", msgErr)
+	//}
 
 	if updateErr := ho.Update().SetReminderSent(true).Exec(ctx); updateErr != nil {
 		return fmt.Errorf("failed to set reminder_sent: %w", updateErr)
@@ -526,11 +559,6 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.U
 	return handover, nil
 }
 
-func (s *OncallService) getEvents(ctx context.Context, ids []string) ([]*rez.OncallEvent, error) {
-	evs := make([]*rez.OncallEvent, len(ids))
-	return evs, nil
-}
-
 func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
 	shift, shiftErr := s.GetShiftByID(ctx, ho.ShiftID)
 	if shiftErr != nil {
@@ -555,24 +583,11 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 			Annotation: anno,
 		}
 	}
-	//var incidents []*ent.Incident
-	//if includeIncidents {
-	//	var listErr error
-	//	incidents, listErr = s.incidents.ListIncidents(ctx, rez.ListIncidentsParams{
-	//		UserId: shift.UserID,
-	//		// OpenedAfter:  shift.StartAt,
-	//		OpenedBefore: shift.EndAt,
-	//	})
-	//	if listErr != nil && !ent.IsNotFound(listErr) {
-	//		return fmt.Errorf("failed to query incidents: %w", listErr)
-	//	}
-	//}
 
 	params := rez.SendOncallHandoverParams{
-		Content:       content,
-		EndingShift:   shift,
-		StartingShift: nextShift,
-		//Incidents:     incidents,
+		Content:                content,
+		EndingShift:            shift,
+		StartingShift:          nextShift,
 		PinnedEventAnnotations: pinnedEventAnnos,
 	}
 	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {

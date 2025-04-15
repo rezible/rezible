@@ -31,7 +31,15 @@ func plainText(text string) *slack.TextBlockObject {
 	return slack.NewTextBlockObject("plain_text", text, false, false)
 }
 
-func (c *blockConverter) convertDocument(doc *rez.ContentNode) []slack.Block {
+func convertContentToBlocks(content *rez.ContentNode, prefix *string) []slack.Block {
+	c := &blockConverter{}
+	if prefix != nil {
+		c.prefix = *prefix
+	}
+	return c.convertContent(content)
+}
+
+func (c *blockConverter) convertContent(doc *rez.ContentNode) []slack.Block {
 	if doc == nil {
 		return nil
 	}
