@@ -17,35 +17,27 @@ export type PageActions<PComponent extends Component<any>> = {
 	routeBase: string;
 }
 
-const createAppShellState = () => {
-	let breadcrumbs = $state<PageBreadcrumb[]>([]);
-	let pageActions = $state<PageActions<any>>();
+export class AppShellState {
+	breadcrumbs = $state<PageBreadcrumb[]>([]);
+	pageActions = $state<PageActions<any>>();
 
-	const checkPageActions = (newRouteId: string) => {
-		if (!pageActions) return;
-		const isChild = newRouteId.startsWith(pageActions.routeBase);
-		if (!isChild || !pageActions.allowChildren) {pageActions = undefined}
+	setup = () => {
+		onNavigate(nav => this.checkPageActions(nav.to?.route.id ?? ""));
 	}
 
-	const setup = () => {
-		onNavigate(nav => checkPageActions(nav.to?.route.id ?? ""));
+	private checkPageActions = (newRouteId: string) => {
+		if (!this.pageActions) return;
+		const isChild = newRouteId.startsWith(this.pageActions.routeBase);
+		if (!isChild || !this.pageActions.allowChildren) {this.pageActions = undefined}
 	}
 
-	const setPageActions = <PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) => {
-		pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
+	setPageActions = <PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) => {
+		this.pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
-	const setPageBreadcrumbs = (crumbsFn: () => PageBreadcrumb[]) => {
-		watch(crumbsFn, crumbs => {breadcrumbs = crumbs});
+	setPageBreadcrumbs = (crumbsFn: () => PageBreadcrumb[]) => {
+		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
 	}
+}
 
-	return {
-		setup,
-		get breadcrumbs() { return breadcrumbs },
-		set	breadcrumbs(value: PageBreadcrumb[]) { breadcrumbs = value },
-		setPageBreadcrumbs,
-		setPageActions,
-		get pageActions() { return pageActions },
-	};
-};
-export const appShell = createAppShellState();
+export const appShell = new AppShellState();
