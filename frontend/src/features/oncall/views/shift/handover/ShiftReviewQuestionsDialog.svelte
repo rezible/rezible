@@ -4,11 +4,9 @@
 	import { createMutation } from "@tanstack/svelte-query";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
+	import { shiftIdCtx } from "../context.svelte";
 
-	type Props = {
-		shiftId: string;
-	};
-	let { shiftId }: Props = $props();
+	const shiftId = shiftIdCtx.get();
 
 	const reviewShiftMutation = createMutation(() => ({
 		// TODO: use correct query

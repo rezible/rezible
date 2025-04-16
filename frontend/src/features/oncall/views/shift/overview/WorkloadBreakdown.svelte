@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { formatDuration } from "date-fns";
-	import type { OncallShiftMetrics, OncallEvent } from "$lib/api";
-	import { Header } from "svelte-ux";
+	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12 } from "$lib/format.svelte";
+
+	import { formatDuration } from "date-fns";
+	import { Header } from "svelte-ux";
 
 	import { getHourLabel, isBusinessHours } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
@@ -11,11 +12,14 @@
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
 
+	import { shiftViewStateCtx } from "../context.svelte";
+
 	type Props = {
-		shiftEvents: OncallEvent[];
 		metrics: OncallShiftMetrics;
 	};
-	let { shiftEvents, metrics }: Props = $props();
+	let { metrics }: Props = $props();
+
+	const viewState = shiftViewStateCtx.get();
 
 	const getScoreLabel = (score: number) => {
 		if (score < 30) return "Low";
@@ -120,10 +124,10 @@
 			alerts: 0,
 			incidents: 0,
 		}));
-		shiftEvents.forEach((ev) => {
-			const hour = new Date(ev.timestamp).getHours();
-			if (ev.kind === "alert") hours[hour].alerts++;
-			if (ev.kind === "incident") hours[hour].incidents++;
+		viewState.filteredEvents.forEach(({attributes: a}) => {
+			const hour = new Date(a.timestamp).getHours();
+			if (a.kind === "alert") hours[hour].alerts++;
+			if (a.kind === "incident") hours[hour].incidents++;
 		});
 		return hours;
 	});

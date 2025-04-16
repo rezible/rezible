@@ -10,16 +10,18 @@
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { SvelteSet } from "svelte/reactivity";
 	import { Header } from "svelte-ux";
-	import EventListItem from "$features/oncall/components/shift-events-list/EventListItem.svelte";
+	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
+	import { shiftIdCtx } from "../context.svelte";
 
 	type Props = {
-		shift: OncallShift;
 		handover: OncallShiftHandover;
 		onUpdated: () => void;
 	};
-	const { shift, handover, onUpdated }: Props = $props();
+	const { handover, onUpdated }: Props = $props();
 
-	const annoEventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: shift.id, annotated: true } }));
+	const shiftId = shiftIdCtx.get();
+
+	const annoEventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId, annotated: true } }));
 	const events = $derived(annoEventsQuery.data?.data ?? []);
 
 	let pinnedAnnos = $derived(handover.attributes.pinnedEvents ?? []);
@@ -61,13 +63,13 @@
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each pinnedAnnos as {event, annotation}}
-			<EventListItem {event} {annotation} pinned {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
+			<EventRowItem {event} {annotation} pinned {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
 		{/each}
 
 		{#each events as event}
 			{@const annotation = event.attributes.annotations?.at(0) ?? blankAnnotation}
 			{#if !pinnedEventIds.has(event.id)}
-				<EventListItem {event} {annotation} {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
+				<EventRowItem {event} {annotation} {loadingId} togglePinned={() => togglePinned(event.id, annotation.id)} />
 			{/if}
 		{/each}
 	</div>

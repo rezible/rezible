@@ -1,41 +1,46 @@
 <script lang="ts">
 	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { Collapse } from "svelte-ux";
-	import { mdiBellAlert, mdiBellSleep, mdiFire, mdiHeadQuestion } from "@mdi/js";
+	import { mdiBellAlert, mdiBellSleep, mdiFire } from "@mdi/js";
+
+	import type { OncallShiftMetrics } from "$lib/api";
 	import { settings } from "$lib/settings.svelte";
-	import type { OncallShiftMetrics, OncallEvent } from "$lib/api";
-	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
-	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
+	
+	import { shiftViewStateCtx } from "../context.svelte";
+	import type { ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
+
 
 	type Props = {
 		metrics: OncallShiftMetrics;
 		comparison: OncallShiftMetrics;
-		shiftEvents: OncallEvent[];
-		eventsFilter: ShiftEventFilterKind | undefined;
 	};
 
-	let { metrics, comparison, shiftEvents, eventsFilter = $bindable() }: Props = $props();
+	let { metrics, comparison }: Props = $props();
+
+	const viewState = shiftViewStateCtx.get();
 
 	const onEventKindClicked = (kind: ShiftEventFilterKind) => {
-		if (eventsFilter === kind) {
-			eventsFilter = undefined;
+		if (viewState.eventsFilter === kind) {
+			viewState.eventsFilter = undefined;
 			return;
 		}
-		eventsFilter = kind;
+		viewState.eventsFilter = kind;
 	};
 
-	const startDate = $derived(shiftState.shiftStart.toDate());
-	const endDate = $derived(shiftState.shiftEnd.toDate());
+	const startDate = $derived(viewState.shiftStart?.toDate());
+	const endDate = $derived(viewState.shiftEnd?.toDate());
+
+	const numDays = $derived((!!startDate && !!endDate) ? differenceInCalendarDays(endDate, startDate) : 0);
 
 	const eventDayKey = (day: number, hour: number) => `${day}-${hour}`;
 	const hourlyEventCount = $derived.by(() => {
-		const numDays = differenceInCalendarDays(endDate, startDate);
+		if (!startDate || !endDate) return [];
 
 		const numEvents = new Map<string, number>();
-		shiftEvents.forEach((event) => {
-			if (!!eventsFilter && !shiftEventMatchesFilter(event, eventsFilter)) return;
+		viewState.filteredEvents.forEach((event) => {
+			// if (!!shiftState.eventsFilter && !shiftEventMatchesFilter(event, shiftState.eventsFilter)) return;
 			const eventDate = new Date(event.attributes.timestamp);
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, eventDate.getHours());
@@ -50,10 +55,12 @@
 			]);
 		});
 	});
-	const numDays = $derived(Math.floor(hourlyEventCount.length / 24));
+	
 	const heatmapDayLabels = $derived.by(() => {
 		return Array.from({ length: numDays }, (_, day) => {
-			const date = shiftState.shiftStart.add({ days: day });
+			const start = viewState.shiftStart;
+			if (!start) return "";
+			const date = start.add({ days: day });
 			const dayOfWeek = getDay(date.toAbsoluteString());
 			const dayName = settings.format.getDayOfWeekName(dayOfWeek);
 			return `${dayName} ${String(date.day).padStart(2, "0")}`;

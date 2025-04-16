@@ -2,15 +2,16 @@
 	import { DateToken, PeriodType } from "@layerstack/utils";
 	import { isFuture } from "date-fns";
 	import { settings } from "$lib/settings.svelte";
-	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { shiftViewStateCtx } from "./context.svelte";
 
-	const attr = $derived(shiftState.shift?.attributes);
+	const viewState = shiftViewStateCtx.get();
+	const attr = $derived(viewState.shift?.attributes);
 	const roster = $derived(attr?.roster);
 	const user = $derived(attr?.user);
 
-	const startDate = $derived(shiftState.shiftStart?.toDate());
-	const endDate = $derived(shiftState.shiftEnd?.toDate());
+	const startDate = $derived(viewState.shiftStart?.toDate());
+	const endDate = $derived(viewState.shiftEnd?.toDate());
 
 	const timeFmt = `${DateToken.Hour_numeric}:${DateToken.Minute_numeric}`;
 </script>

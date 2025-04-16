@@ -1,16 +1,14 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftMetricsOptions } from "$lib/api";
-	import { shiftIdCtx } from "$features/oncall/lib/context.svelte";
-	import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
-	import { shiftState } from "$features/oncall/views/shift/shift.svelte";
+	import { shiftIdCtx } from "../context.svelte";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
 	import ShiftEvents from "./ShiftEvents.svelte";
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
-	import ShiftEventsList from "$features/oncall/components/shift-events-list/ShiftEventsList.svelte";
+	import ShiftEventsList from "$src/features/oncall/views/shift/overview/ShiftEventsList.svelte";
 
 	const shiftId = shiftIdCtx.get();
 
@@ -19,14 +17,6 @@
 	
 	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
 	const metrics = $derived(metricsQuery.data?.data);
-
-	let eventsFilter = $state<ShiftEventFilterKind>();
-	const shiftEvents = $derived.by(() => {
-		if (!eventsFilter) return shiftState.shiftEvents;
-		return shiftState.shiftEvents.filter(
-			(e) => !eventsFilter || shiftEventMatchesFilter(e, eventsFilter)
-		);
-	});
 </script>
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
@@ -36,15 +26,13 @@
 				<LoadingIndicator />
 			</div>
 		{:else}
-			<ShiftEvents {shiftEvents} {metrics} {comparison} bind:eventsFilter />
-			<WorkloadBreakdown {shiftEvents} {metrics} />
+			<ShiftEvents {metrics} {comparison} />
+			<WorkloadBreakdown {metrics} />
 			<IncidentMetrics {metrics} {comparison} />
 		{/if}
 	</div>
 
 	<div class="h-full flex flex-col overflow-y-auto">
-		{#if shiftState.shift}
-			<ShiftEventsList shift={shiftState.shift} events={shiftEvents} />
-		{/if}
+		<ShiftEventsList />
 	</div>
 </div>
