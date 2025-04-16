@@ -38,7 +38,7 @@
 	};
 </script>
 
-<div class="flex flex-col min-h-0 overflow-y-auto bg-surface-300 grow">
+<div class="flex flex-col min-h-0 overflow-y-auto grow">
 	<div class="w-full overflow-y-auto flex flex-col gap-4" bind:this={containerEl}>
 		{#if collaboration.provider}
 			{#each sections as section, i}

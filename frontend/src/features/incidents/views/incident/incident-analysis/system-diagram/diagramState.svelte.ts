@@ -16,10 +16,9 @@ import { updateSystemAnalysisComponentMutation, type SystemAnalysis, type System
 
 import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import { createMutation } from "@tanstack/svelte-query";
-import { IncidentAnalysisState, useIncidentAnalysis } from "../analysisState.svelte";
-import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
-import { RelationshipDialogState, useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
-import { ComponentDialogState, useComponentDialog } from "./component-dialog/dialogState.svelte";
+import { useIncidentAnalysis } from "../analysisState.svelte";
+import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
+import { useComponentDialog } from "./component-dialog/dialogState.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -155,7 +154,9 @@ export class SystemDiagramState {
 	constructor(containerElFn: () => HTMLElement | undefined) {
 		this.componentDialog.onAddComponent = this.setAddingComponent;
 
-		watch(containerElFn, ref => {this.containerEl = ref});
+		watch(containerElFn, ref => {
+			this.containerEl = ref;
+		});
 
 		watch(
 			() => this.analysis.analysisData,
@@ -170,6 +171,7 @@ export class SystemDiagramState {
 
 	flow = $state<ReturnType<typeof useSvelteFlow>>();
 	flowStore = $state<ReturnType<typeof useSvelteFlowStore>>();
+
 	onFlowInit() {
 		this.flow = useSvelteFlow();
 		this.flowStore = useSvelteFlowStore();
@@ -273,14 +275,17 @@ export class SystemDiagramState {
 		const posX = event.pageX - x;
 		const posY = event.pageY - y;
 
-		const boundLeft = width - ContextMenuWidth;
-		const boundTop = height - ContextMenuHeight;
+		const boundLeft = Math.max(width - ContextMenuWidth, x);
+		const boundTop = Math.max(height - ContextMenuHeight, y);
+
+		const left = posX > boundLeft ? posX - ContextMenuWidth : posX;
+		const top = posY;//posY > boundTop ? height - ContextMenuHeight : posY;
 
 		this.ctxMenuProps = {
 			nodeId: "node" in detail ? detail.node?.id : undefined,
 			edgeId: "edge" in detail ? detail.edge?.id : undefined,
-			top: posY > boundTop ? height - ContextMenuHeight : posY,
-			left: posX > boundLeft ? posX - ContextMenuWidth : posX,
+			top,
+			left,
 			x: posX,
 			y: posY,
 		};

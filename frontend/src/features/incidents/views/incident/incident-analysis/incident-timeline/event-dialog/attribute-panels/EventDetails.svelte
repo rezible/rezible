@@ -12,10 +12,8 @@
 	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
 	import { onMount } from "svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
-	import { useEventDialog } from "../dialogState.svelte";
+	import { eventAttributes } from "./eventAttributesState.svelte";
 	
-	const eventDialog = useEventDialog();
-
 	const eventKindOptions = [
 		{
 			label: "Observation",
@@ -43,14 +41,16 @@
 		},
 	];
 
-	onMount(eventDialog.eventAttributes.mountDescriptionEditor);
+	onMount(() => {
+		eventAttributes.mountDescriptionEditor();
+	});
 </script>
 
 <div class="flex flex-col gap-2 flex-1">
-	<TextField label="Title" bind:value={eventDialog.eventAttributes.title} />
+	<TextField label="Title" bind:value={eventAttributes.title} />
 
 	<Field label="Event Kind">
-		<ToggleGroup bind:value={eventDialog.eventAttributes.kind} variant="fill" inset class="w-full">
+		<ToggleGroup bind:value={eventAttributes.kind} variant="fill" inset class="w-full">
 			{#each eventKindOptions as opt}
 				<ToggleOption value={opt.value}>
 					<Tooltip title={opt.hint}>
@@ -65,19 +65,19 @@
 	</Field>
 
 	<Field label="Key Event" let:id icon={mdiFlag}>
-		<Switch {id} bind:value={eventDialog.eventAttributes.isKey} />
+		<Switch {id} bind:value={eventAttributes.isKey} />
 	</Field>
 
 	<DateTimePickerField
 		label="Time"
-		current={eventDialog.eventAttributes.timestamp}
-		onChange={ts => (eventDialog.eventAttributes.timestamp = ts)}
+		current={eventAttributes.timestamp}
+		onChange={ts => (eventAttributes.timestamp = ts)}
 		exactTime
 	/>
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
-		{#if eventDialog.eventAttributes.descriptionEditor}
-			<TiptapEditor bind:editor={eventDialog.eventAttributes.descriptionEditor} />
+		{#if eventAttributes.descriptionEditor}
+			<TiptapEditor bind:editor={eventAttributes.descriptionEditor} />
 		{/if}
 	</Field>
 </div>

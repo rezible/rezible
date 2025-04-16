@@ -11,7 +11,7 @@ import { Context, watch } from "runed";
 
 import { useIncidentViewState } from "../../../viewState.svelte";
 import { TimelineState, useIncidentTimeline } from "../timelineState.svelte";
-import { TimelineEventDialogAttributesState } from "./attribute-panels/eventAttributesState.svelte";
+import { eventAttributes, TimelineEventDialogAttributesState } from "./attribute-panels/eventAttributesState.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
 
@@ -22,14 +22,12 @@ export class EventDialogState {
 	view = $state<EditorDialogView>("closed");
 	previousView = $state<EditorDialogView>("closed");
 
-	eventAttributes = new TimelineEventDialogAttributesState();
-
 	open = $derived(this.view !== "closed");
 
 	constructor() {
 		this.timeline = useIncidentTimeline();
 		const viewState = useIncidentViewState();
-		watch(() => viewState.incident, inc => {this.incident})
+		watch(() => viewState.incident, inc => {this.incident = inc});
 	}
 
 	setView(v: EditorDialogView) {
@@ -54,7 +52,7 @@ export class EventDialogState {
 
 	doCreate() {
 		if (!this.incident) return;
-		const attrs = this.eventAttributes.snapshot();
+		const attrs = eventAttributes.snapshot();
 		const path = { id: $state.snapshot(this.incident.id) };
 		const attributes: CreateIncidentEventAttributes = {
 			kind: attrs.kind,
@@ -67,7 +65,7 @@ export class EventDialogState {
 
 	doEdit() {
 		if (!this.editingEvent) return;
-		const attrs = this.eventAttributes.snapshot();
+		const attrs = eventAttributes.snapshot();
 		const path = { id: $state.snapshot(this.editingEvent.id) };
 		const attributes: UpdateIncidentEventAttributes = {
 			kind: attrs.kind,
@@ -79,13 +77,13 @@ export class EventDialogState {
 
 	setCreating() {
 		this.setView("create");
-		this.eventAttributes.init(this.incident);
+		eventAttributes.init(this.incident);
 	}
 
 	setEditing(ev: IncidentEvent) {
 		this.setView("edit");
 		this.editingEvent = $state.snapshot(ev);
-		this.eventAttributes.init(this.incident, ev.attributes);
+		eventAttributes.init(this.incident, ev.attributes);
 	};
 
 	confirm() {

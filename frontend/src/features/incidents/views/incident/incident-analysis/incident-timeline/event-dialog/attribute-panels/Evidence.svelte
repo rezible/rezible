@@ -8,10 +8,8 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";
-	import { useEventDialog } from "../dialogState.svelte";
+	import { eventAttributes } from "./eventAttributesState.svelte";
 	// import Github from "./data-sources/Github.svelte";
-
-	const eventDialog = useEventDialog();
 
 	type DataSourceComponent = Component<{ dataValue: string }, {}, "dataValue">;
 	type DataSourceMenuOption = MenuOption<string> & { component: DataSourceComponent };
@@ -31,9 +29,9 @@
 	const cancelEditing = () => (editing = undefined);
 	const confirmEdit = () => {
 		if (!editing) return;
-		const idx = eventDialog.eventAttributes.evidence.findIndex((ev) => ev.id === editing?.id);
+		const idx = eventAttributes.evidence.findIndex((ev) => ev.id === editing?.id);
 		if (idx === -1) return;
-		eventDialog.eventAttributes.evidence[idx] = $state.snapshot(editing);
+		eventAttributes.evidence[idx] = $state.snapshot(editing);
 		editing = undefined;
 	};
 
@@ -46,15 +44,15 @@
 	const cancelAddingNew = () => (adding = undefined);
 	const confirmAdd = () => {
 		if (!adding) return;
-		eventDialog.eventAttributes.evidence.push({ id: uuidv4(), attributes: $state.snapshot(adding) });
+		eventAttributes.evidence.push({ id: uuidv4(), attributes: $state.snapshot(adding) });
 		adding = undefined;
 	};
 
 	const confirmDelete = (ev: IncidentEventEvidence) => {
 		if (!confirm("Are you sure you want to delete this evidence?")) return;
-		const idx = eventDialog.eventAttributes.evidence.findIndex((e) => e.id === ev.id);
+		const idx = eventAttributes.evidence.findIndex((e) => e.id === ev.id);
 		if (idx === -1) return;
-		eventDialog.eventAttributes.evidence.splice(idx, 1);
+		eventAttributes.evidence.splice(idx, 1);
 	};
 </script>
 
@@ -90,7 +88,7 @@
 			/>
 		</div>
 	{:else}
-		{#each eventDialog.eventAttributes.evidence as ev, i}
+		{#each eventAttributes.evidence as ev, i}
 			<ListItem
 				title={ev.attributes.source}
 				subheading={ev.attributes.value}

@@ -72,3 +72,5 @@ export class TimelineEventDialogAttributesState {
 		})
 	}
 }
+
+export const eventAttributes = new TimelineEventDialogAttributesState();

@@ -30,7 +30,9 @@ export class IncidentAnalysisState {
 
 	private addComponentMutation = createMutation(() => ({
 		...addSystemAnalysisComponentMutation(),
-		onSuccess: this.invalidateAnalysisQuery,
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		},
 	}));
 
 	async addComponent(component: SystemComponent, pos: XYPosition) {
@@ -48,6 +50,7 @@ export class IncidentAnalysisState {
 			});
 			return resp.data;
 		} catch (e) {
+			console.error(e);
 			return false;
 		}
 	}

@@ -9,16 +9,21 @@
 	import EventDialog from "./event-dialog/EventDialog.svelte";
 	import MilestonesDialog from "./milestones-dialog/MilestonesDialog.svelte";
 	import { MilestonesDialogState, setMilestonesDialog } from "./milestones-dialog/dialogState.svelte";
-
-	let containerEl = $state<HTMLElement>();
+	import { watch } from "runed";
 	
-	const timelineState = new TimelineState(() => containerEl);
+	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
 	setEventDialog(new EventDialogState());
 	setMilestonesDialog(new MilestonesDialogState());
+
+	let containerRef = $state<HTMLElement>();
+	watch(() => containerRef, ref => {
+		if (!containerRef) return;
+		timelineState.mountTimeline(containerRef);
+	})
 </script>
 
-<div class="w-full h-full overflow-y-hidden" bind:this={containerEl}></div>
+<div class="w-full h-full overflow-y-hidden" bind:this={containerRef}></div>
 
 <IncidentTimelineActionsBar />
 

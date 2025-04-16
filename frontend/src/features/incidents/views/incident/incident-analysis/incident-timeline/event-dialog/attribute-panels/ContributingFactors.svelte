@@ -18,9 +18,7 @@
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { SvelteMap } from "svelte/reactivity";
-	import { useEventDialog } from "../dialogState.svelte";
-
-	const eventDialog = useEventDialog();
+	import { eventAttributes } from "./eventAttributesState.svelte";
 
 	const categoriesQuery = createQuery(() => listIncidentEventContributingFactorCategoriesOptions());
 	const categories = $derived(categoriesQuery.data?.data ?? []);
@@ -67,8 +65,8 @@
 
 	const confirmRemoveFactor = (f: IncidentEventContributingFactor) => {
 		if (!confirm("Are you sure you want to remove this factor?")) return;
-		const newFactors = eventDialog.eventAttributes.contributingFactors.filter(v => v.id !== f.id);
-		eventDialog.eventAttributes.contributingFactors = newFactors;
+		const newFactors = eventAttributes.contributingFactors.filter(v => v.id !== f.id);
+		eventAttributes.contributingFactors = newFactors;
 	};
 
 	const resetAddingState = () => {
@@ -76,7 +74,7 @@
 	};
 	const confirmAddingFactor = () => {
 		if (!editFactor) return;
-		eventDialog.eventAttributes.contributingFactors.push($state.snapshot(editFactor));
+		eventAttributes.contributingFactors.push($state.snapshot(editFactor));
 		resetAddingState();
 	};
 </script>
@@ -130,7 +128,7 @@
 			</div>
 		</div>
 	{:else}
-		{#each eventDialog.eventAttributes.contributingFactors as f}
+		{#each eventAttributes.contributingFactors as f}
 			{@const categoryName = factorCategoryNames.get(f.attributes.factorTypeId) ?? "Unknown Category"}
 			<ListItem
 				title={f.attributes.description}

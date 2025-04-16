@@ -3,14 +3,12 @@
 	import { Collapse, Header, ListItem } from "svelte-ux";
 	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
 
+	import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 	import EventDetailsPanel from "./attribute-panels/EventDetails.svelte";
 	import DecisionContextPanel from "./attribute-panels/DecisionContext.svelte";
 	import ContributingFactorsPanel from "./attribute-panels/ContributingFactors.svelte";
 	import EvidencePanel from "./attribute-panels/Evidence.svelte";
 	import SystemContextPanel from "./attribute-panels/SystemContext.svelte";
-	import { useEventDialog } from "./dialogState.svelte";
-
-	const eventDialog = useEventDialog();
 </script>
 
 <div class="flex flex-row min-h-0 max-h-full flex-1 gap-2 p-2">
@@ -26,7 +24,7 @@
 		<Header title="Context" />
 
 		<div class="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
-			{#if eventDialog.eventAttributes.kind === "decision"}
+			{#if eventAttributes.kind === "decision"}
 				{@render componentTraitPanel(
 					"Decision Context",
 					"Document the options, constraints, and reasoning behind this choice",

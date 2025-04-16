@@ -21,8 +21,6 @@
 		componentDialog.view === "create" && componentDialog.previousView === "add"
 	);
 	const cancelLabel = $derived(creatingToAdd ? "Cancel" : "Cancel");
-
-	const valid = $derived(componentDialog.editValid);
 </script>
 
 <Dialog
@@ -56,7 +54,7 @@
 			loading={componentDialog.loading}
 			closeText={cancelLabel}
 			confirmText={labels.confirm}
-			saveEnabled={valid}
+			saveEnabled={componentDialog.valid}
 			onClose={() => componentDialog.goBack()}
 			onConfirm={() => componentDialog.onConfirm()}
 		/>

@@ -5,10 +5,11 @@
 	import { mdiMagicStaff } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
+	import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 
 	const eventDialog = useEventDialog();
 
-	const attributesValid = $derived(!!eventDialog.eventAttributes.title);
+	const attributesValid = $derived(!!eventAttributes.title);
 
 	const creating = $derived(eventDialog.view === "create");
 </script>
@@ -40,9 +41,9 @@
 
 	<svelte:fragment slot="actions">
 		<ConfirmButtons
-			onClose={eventDialog.clear}
+			onClose={() => eventDialog.clear()}
 			confirmText={creating ? "Create" : "Save"}
-			onConfirm={eventDialog.confirm}
+			onConfirm={() => eventDialog.confirm()}
 			saveEnabled={attributesValid}
 		/>
 	</svelte:fragment>

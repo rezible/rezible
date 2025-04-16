@@ -9,16 +9,14 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { getIconForComponentKind } from "$lib/systemComponents";
 	import { SvelteMap } from "svelte/reactivity";
-	import { Button, Field, Icon, ListItem, State, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Button, Icon, ListItem, State, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { mdiPencil, mdiPlus, mdiShapeSquareRoundedPlus, mdiTrashCan } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 
 	import { useIncidentAnalysis } from "../../../analysisState.svelte";
-	import { useEventDialog } from "../dialogState.svelte";
+	import { eventAttributes } from "./eventAttributesState.svelte";
 
 	const analysis = useIncidentAnalysis();
-	const eventDialog = useEventDialog();
-
 	const analysisId = $derived(analysis.analysisId);
 
 	const analysisComponentsQuery = createQuery(() => ({
@@ -67,8 +65,8 @@
 		const cmp = analysisComponentMap.get(cx.attributes.analysisComponentId);
 		editing = undefined;
 		if (!cmp || !confirm(`Are you sure you want to remove ${cmp.attributes.component.attributes.name}?`)) return;
-		const idx = eventDialog.eventAttributes.systemContext.findIndex((c) => c.id === cx.id);
-		if (idx >= 0) eventDialog.eventAttributes.systemContext.splice(idx, 1);
+		const idx = eventAttributes.systemContext.findIndex((c) => c.id === cx.id);
+		if (idx >= 0) eventAttributes.systemContext.splice(idx, 1);
 	};
 
 	const resetState = () => {
@@ -89,14 +87,14 @@
 
 	const onConfirm = () => {
 		if (selecting && selectedComponent) {
-			eventDialog.eventAttributes.systemContext.push({
+			eventAttributes.systemContext.push({
 				id: uuidv4(),
 				attributes: getAttributes(selectedComponent),
 			});
 		} else if (editing && editComponent) {
-			const idx = eventDialog.eventAttributes.systemContext.findIndex((c) => c.id === editing?.id);
+			const idx = eventAttributes.systemContext.findIndex((c) => c.id === editing?.id);
 			if (idx < 0) return;
-			eventDialog.eventAttributes.systemContext[idx].attributes = getAttributes(editComponent);
+			eventAttributes.systemContext[idx].attributes = getAttributes(editComponent);
 		}
 		resetState();
 	};
@@ -201,7 +199,7 @@
 			{/if}
 		</div>
 	{:else}
-		{#each eventDialog.eventAttributes.systemContext as cx, i}
+		{#each eventAttributes.systemContext as cx, i}
 			{@const cmp = analysisComponentMap.get(cx.attributes.analysisComponentId)?.attributes.component}
 			<ListItem
 				title={cmp?.attributes.name ?? "Unknown Component"}

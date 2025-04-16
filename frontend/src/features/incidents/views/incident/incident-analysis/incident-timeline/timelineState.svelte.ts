@@ -12,7 +12,6 @@ import { useIncidentViewState } from "../../viewState.svelte";
 import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentProps } from "./IncidentTimelineEventItemContent.svelte";
 import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneComponentProps } from "./IncidentTimelineMilestoneItemContent.svelte";
 
-
 const createTimelineEventElement = (event: IncidentEvent) => {
 	let props = $state<TimelineEventComponentProps>({ event, selected: false });
 
@@ -284,64 +283,60 @@ export class TimelineState {
 	viewState = useIncidentViewState();
 
 	items = $state(new DataSet<TimelineItem>([]));
-	events = $state<TimelineEventsState>();
-	milestones = $state<TimelineMilestonesState>();
+	events = new TimelineEventsState(this.items);
+	milestones = new TimelineMilestonesState(this.items);
 
 	timeline = $state<Timeline>();
 	selectedItems = $state<Set<string>>(new Set());
+
+	constructor() {
+		this.items.clear();
+
+		watch(() => this.viewState.incident, inc => {
+			if (!inc) return;
+
+			this.events.setIncidentId(inc.id);
+			this.milestones.setIncident(inc);
+
+			const openedAt = new Date(inc.attributes.openedAt);
+			const closedAt = new Date(inc.attributes.closedAt);
+	
+			this.items.clear();
+			this.items.add({ id: "incidentStart", type: "box", group: "default", subgroup: "incident", align: "left", content: "Incident Opened", start: openedAt });
+			this.items.add({ id: "incidentClosed", type: "box", group: "default", subgroup: "incident", align: "right", content: "Incident Closed", start: closedAt });
+		});
+
+		onMount(() => {
+			return this.cleanup()
+		});
+	}
+
+	mountTimeline(ref: HTMLElement) {
+		const timelineOpts: TimelineOptions = {
+			height: "100%",
+			zoomMin: 1000 * 60 * 60,
+			zoomMax: 1000 * 60 * 60 * 24,
+		};
+
+		const timelineGroups: DataGroup[] = [
+			{ id: "default", title: "Incident", content: "", subgroupStack: { "incident": true } },
+		];
+
+		if (this.timeline) this.timeline.destroy();
+		
+		const tl = new Timeline(ref, this.items as DataItemCollectionType, timelineGroups, timelineOpts);
+		this.timeline = tl;
+		this.events.setTimeline(tl);
+		this.milestones.setTimeline(tl);
+
+		tl.on("select", e => this.onTimelineSelect(e));
+	}
 
 	cleanup() {
 		this.timeline?.destroy();
 		this.events?.clearTimelineElements();
 		this.milestones?.clearTimelineElements();
 		this.items.clear();
-	}
-
-	constructor(refFn: () => (HTMLElement | undefined)) {
-		this.items.clear();
-
-		this.events = new TimelineEventsState(this.items);
-		this.milestones = new TimelineMilestonesState(this.items);
-
-		watch(() => this.viewState.incident, inc => {
-			if (!inc) return;
-
-			this.events?.setIncidentId(inc.id);
-			this.milestones?.setIncident(inc);
-
-			const openedAt = new Date(inc.attributes.openedAt);
-			const closedAt = new Date(inc.attributes.closedAt);
-	
-			this.items.add({ id: "incidentStart", type: "box", group: "default", subgroup: "incident", align: "left", content: "Incident Opened", start: openedAt });
-			this.items.add({ id: "incidentClosed", type: "box", group: "default", subgroup: "incident", align: "right", content: "Incident Closed", start: closedAt });
-		})
-
-		const onRefChange = (ref: HTMLElement | undefined) => {
-			if (!ref) return;
-
-			const timelineOpts: TimelineOptions = {
-				height: "100%",
-				zoomMin: 1000 * 60 * 60,
-				zoomMax: 1000 * 60 * 60 * 24,
-			};
-	
-			const timelineGroups: DataGroup[] = [
-				{ id: "default", title: "Incident", content: "", subgroupStack: { "incident": true } },
-			];
-			
-			const tl = new Timeline(ref, this.items as DataItemCollectionType, timelineGroups, timelineOpts);
-			tl.fit();
-			this.timeline = tl;
-			this.events?.setTimeline(tl);
-			this.milestones?.setTimeline(tl);
-
-			tl.on("select", (e) => this.onTimelineSelect(e));
-		}
-		watch(refFn, onRefChange);
-
-		onMount(() => {
-			return this.cleanup()
-		});
 	}
 
 	onTimelineSelect(e: any) {

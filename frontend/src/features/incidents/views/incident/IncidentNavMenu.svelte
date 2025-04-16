@@ -12,7 +12,7 @@
 	const viewState = useIncidentViewState();
 </script>
 
-<div class="w-40 h-fit border p-2 bg-surface-200 flex flex-col gap-2 overflow-y-auto">
+<div class="w-40 h-fit p-2 bg-surface-200 flex flex-col gap-2 overflow-y-auto">
 	{#snippet navMenuItem(label: string, route?: IncidentViewRouteParam)}
 		{@const active = route === view}
 		<a href="/incidents/{viewState.incidentId}/{route}">

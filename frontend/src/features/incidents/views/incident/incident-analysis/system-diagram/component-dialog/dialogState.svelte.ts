@@ -124,6 +124,7 @@ export class ComponentDialogState {
 
 	editValid = $derived(componentAttributes.valid && (this.view === "create" || this.view === "edit"));
 	addValid = $derived(!!this.selectedAddComponent && this.view === "add");
+	valid = $derived(this.editValid || this.addValid);
 
 	clear() {
 		this.setView("closed");
