@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { convertIncidentViewParam, type IncidentViewRouteParam } from "$src/params/incidentView.js";
-	import IncidentOmniView from "$features/incidents/views/incident/IncidentOmniView.svelte";
+	import { convertIncidentViewParam } from "$src/params/incidentView.js";
+	import IncidentView from "$features/incidents/views/incident/IncidentView.svelte";
 
 	const { data } = $props();
 
 	const view = $derived(convertIncidentViewParam(page.params.view));
 </script>
 
-<IncidentOmniView incidentId={data.id} {view}/>
+<IncidentView incidentId={data.id} {view}/>

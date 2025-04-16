@@ -21,21 +21,21 @@ export class AppShellState {
 	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	pageActions = $state<PageActions<any>>();
 
-	setup = () => {
+	setup() {
 		onNavigate(nav => this.checkPageActions(nav.to?.route.id ?? ""));
 	}
 
-	private checkPageActions = (newRouteId: string) => {
+	private checkPageActions(newRouteId: string) {
 		if (!this.pageActions) return;
 		const isChild = newRouteId.startsWith(this.pageActions.routeBase);
 		if (!isChild || !this.pageActions.allowChildren) {this.pageActions = undefined}
 	}
 
-	setPageActions = <PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) => {
+	setPageActions<PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) {
 		this.pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
-	setPageBreadcrumbs = (crumbsFn: () => PageBreadcrumb[]) => {
+	setPageBreadcrumbs(crumbsFn: () => PageBreadcrumb[]) {
 		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
 	}
 }

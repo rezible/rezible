@@ -1,49 +1,48 @@
 <script lang="ts">
+	import { createMutation } from "@tanstack/svelte-query";
 	import { goto } from "$app/navigation";
-	import { page } from "$app/state";
 	import { watch } from "runed";
-	import { Dialog, Header } from "svelte-ux";
 	import { createRetrospectiveMutation } from "$lib/api";
+	import { useIncidentViewState } from "./viewState.svelte";
+
+	import { Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { createMutation, useQueryClient, type QueryKey } from "@tanstack/svelte-query";
 
 	type Props = {
-		open: boolean;
-		incidentId: string;
 		isIncidentView: boolean;
-		queryKey: QueryKey;
 	};
-	let { open = $bindable(), incidentId, isIncidentView, queryKey }: Props = $props();
+	let { isIncidentView }: Props = $props();
 
-	const queryClient = useQueryClient();
+	const viewState = useIncidentViewState();
+	const incidentId = $derived(viewState.incident?.id);
 
 	const createRetroMut = createMutation(() => ({
 		...createRetrospectiveMutation(),
 		onSuccess: (resp) => {
-			queryClient.setQueryData(queryKey, resp);
-			open = false;
+			viewState.onRetrospectiveCreated(resp.data);
 		},
 	}));
 	const onConfirmCreateRetrospective = () => {
+		if (!incidentId) return;
 		createRetroMut.mutate({ body: { attributes: { incidentId, systemAnalysis: true } } });
 	};
 
 	const onCloseRetroDialog = () => {
-		open = false;
+		viewState.createRetrospectiveDialogOpen = false;
 		if (!isIncidentView) goto(`/incidents/${incidentId}`);
 	};
 
-	const isRetroView = $derived(!isIncidentView);
 	watch(
-		() => isRetroView,
-		(forceOpen) => {
-			open = open || forceOpen;
+		() => isIncidentView,
+		(isIncidentView) => {
+			const shouldBeOpen = !isIncidentView || viewState.createRetrospectiveDialogOpen;
+			viewState.createRetrospectiveDialogOpen = shouldBeOpen;
 		}
 	);
 </script>
 
 <Dialog
-	{open}
+	open={viewState.createRetrospectiveDialogOpen}
 	persistent
 	portal
 	classes={{
