@@ -1,6 +1,4 @@
-import type { OncallEvent, OncallShift } from "$lib/api";
-import { settings } from "$lib/settings.svelte";
-import { PeriodType } from "@layerstack/utils";
+import type { OncallEvent } from "$lib/api";
 
 export type ShiftEventFilterKind = "alerts" | "nightAlerts" | "incidents";
 

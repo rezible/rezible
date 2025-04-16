@@ -3,9 +3,9 @@
 	import { getUserOncallInformationOptions } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
 
-	import ShiftsHeader from "$features/home/components/shifts-header/ShiftsHeader.svelte";
-	import UserItems from "$features/home/components/user-items/UserItems.svelte";
-	import UserPinnedItems from "$features/home/components/user-items/UserPinnedItems.svelte";
+	import ShiftsHeader from "$src/features/home/views/user-home/shifts-header/ShiftsHeader.svelte";
+	import UserItems from "$src/features/home/views/user-home/user-items/UserItems.svelte";
+	import UserPinnedItems from "$src/features/home/views/user-home/user-items/UserPinnedItems.svelte";
 	import OncallEventsTable from "$components/oncall-events/OncallEventsTable.svelte";
 
 	const userId = $derived(session.userId);
