@@ -1,4 +1,11 @@
 import { useQueryClient, type QueryClient } from "@tanstack/svelte-query";
+import { Context } from "runed";
+
+export const rosterIdCtx = new Context<string>("rosterId");
+
+export class RosterViewState {
+	rosterId = $state<string>();
+}
 
 const makeRosterState = () => {
 	let rosterId = $state<string>();

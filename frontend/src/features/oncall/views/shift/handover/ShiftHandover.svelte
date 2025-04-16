@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { getOncallShiftHandoverOptions } from "$lib/api";
-	import { shiftIdCtx } from "../context.svelte";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 	import ShiftHandoverContent from "$features/oncall/components/shift-handover-content/ShiftHandoverContent.svelte";
+
+	import { shiftViewStateCtx } from "../context.svelte";
+
 	import AnnotatedEventsList from "./AnnotatedEventsList.svelte";
 	import ShiftReviewQuestionsDialog from "./ShiftReviewQuestionsDialog.svelte";
 
-	const shiftId = shiftIdCtx.get();
+	const viewState = shiftViewStateCtx.get();
+	const shiftId = $derived(viewState.shiftId);
 
 	const handoverQueryOpts = $derived(getOncallShiftHandoverOptions({ path: { id: shiftId } }));
 	const handoverQuery = createQuery(() => handoverQueryOpts);

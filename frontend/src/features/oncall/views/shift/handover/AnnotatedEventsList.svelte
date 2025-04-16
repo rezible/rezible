@@ -3,7 +3,6 @@
 		listOncallEventsOptions,
 		updateOncallShiftHandoverMutation,
 		type OncallAnnotation,
-		type OncallShift,
 		type OncallShiftHandover,
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
@@ -11,7 +10,7 @@
 	import { SvelteSet } from "svelte/reactivity";
 	import { Header } from "svelte-ux";
 	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
-	import { shiftIdCtx } from "../context.svelte";
+	import { shiftViewStateCtx } from "../context.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;
@@ -19,7 +18,8 @@
 	};
 	const { handover, onUpdated }: Props = $props();
 
-	const shiftId = shiftIdCtx.get();
+	const viewState = shiftViewStateCtx.get();
+	const shiftId = $derived(viewState.shiftId);
 
 	const annoEventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId, annotated: true } }));
 	const events = $derived(annoEventsQuery.data?.data ?? []);

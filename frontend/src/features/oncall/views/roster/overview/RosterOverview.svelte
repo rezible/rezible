@@ -14,7 +14,7 @@
 	import { Button, Header, Icon, Badge, Progress } from "svelte-ux";
 	import { formatDistanceToNow, formatRelative } from "date-fns";
 	import MetricCard from "$components/viz/MetricCard.svelte";
-	import { rosterIdCtx } from "../context";
+	import { rosterIdCtx } from "../context.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import {
 		getOncallRosterMetricsOptions,

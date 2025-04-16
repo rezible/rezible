@@ -1,15 +1,18 @@
-import { getLocalTimeZone, now, parseAbsolute } from "@internationalized/date";
+import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, listOncallEventsOptions } from "$lib/api";
+import { getOncallShiftOptions, listOncallEventsOptions, type OncallShift } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch } from "runed";
-
-export const shiftIdCtx = new Context<string>("shiftId");
-
-type Getter<T> = () => T;
+import { settings } from "$lib/settings.svelte";
+import { PeriodType } from "@layerstack/utils";
 
 export class ShiftViewState {
-	shiftId = $state<string>();
+	shiftId = $state("");
+
+	constructor(idFn: () => string) {
+		watch(idFn, id => { this.shiftId = id });
+	}
+
 	useShiftTimezone = $state(false);
 	timezone = $derived(this.useShiftTimezone ? "" : getLocalTimeZone());
 
@@ -17,8 +20,17 @@ export class ShiftViewState {
 	shiftQuery = createQuery(() => ({ ...this.shiftQueryOpts, enabled: !!this.shiftId }))
 	shift = $derived(this.shiftQuery.data?.data);
 
+	roster = $derived(this.shift?.attributes.roster);
+
 	shiftStart = $derived(this.shift && parseAbsolute(this.shift.attributes.startAt, this.timezone));
 	shiftEnd = $derived(this.shift && parseAbsolute(this.shift.attributes.endAt, this.timezone));
+
+	shiftTitle = $derived.by(() => {
+		if (!this.shiftStart || !this.shiftEnd || !this.roster) return "";
+		const startFmt = settings.format(this.shiftStart.toDate(), PeriodType.Day);
+		const endFmt = settings.format(this.shiftEnd.toDate(), PeriodType.Day);
+		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
+	})
 
 	shiftEventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: (this.shiftId ?? "") } }));
 	eventsQuery = createQuery(() => ({ ...this.shiftEventsQueryOpts, enabled: !!this.shift }))
@@ -30,11 +42,6 @@ export class ShiftViewState {
 		if (!this.eventsFilter) return this.events;
 		return this.events.filter(e => (!this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter)));
 	});
-
-	constructor(idFn: Getter<string>) {
-		watch(idFn, id => { this.shiftId = id });
-		// this.shiftId = shiftId;
-	}
 }
 
 export const shiftViewStateCtx = new Context<ShiftViewState>("shiftViewState");

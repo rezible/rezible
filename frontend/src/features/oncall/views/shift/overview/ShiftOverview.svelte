@@ -1,16 +1,18 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftMetricsOptions } from "$lib/api";
-	import { shiftIdCtx } from "../context.svelte";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 
 	import ShiftEvents from "./ShiftEvents.svelte";
 	import IncidentMetrics from "./IncidentMetrics.svelte";
 	import WorkloadBreakdown from "./WorkloadBreakdown.svelte";
-	import ShiftEventsList from "$src/features/oncall/views/shift/overview/ShiftEventsList.svelte";
+	import ShiftEventsList from "./ShiftEventsList.svelte";
 
-	const shiftId = shiftIdCtx.get();
+	import { shiftViewStateCtx } from "../context.svelte";
+
+	const viewState = shiftViewStateCtx.get();
+	const shiftId = $derived(viewState.shiftId);
 
 	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
 	const comparison = $derived(comparisonQuery.data?.data);

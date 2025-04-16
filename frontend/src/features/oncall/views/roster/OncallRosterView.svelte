@@ -5,7 +5,7 @@
 
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import PageActions from "./PageActions.svelte";
-	import { rosterIdCtx } from "./context";
+	import { rosterIdCtx } from "./context.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import RosterDetailsBar from "./RosterDetailsBar.svelte";

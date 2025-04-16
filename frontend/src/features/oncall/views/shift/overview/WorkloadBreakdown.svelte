@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { OncallShiftMetrics } from "$lib/api";
-	import { hour12 } from "$lib/format.svelte";
+	import { hour12, hour12Label } from "$lib/format.svelte";
 
 	import { formatDuration } from "date-fns";
 	import { Header } from "svelte-ux";
 
-	import { getHourLabel, isBusinessHours } from "$features/oncall/lib/utils";
+	import { isBusinessHours } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 
@@ -138,7 +138,7 @@
 	});
 	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
 	const peakAlertHours = $derived(hourlyDistribution.filter((d) => d.alerts === maxAlertCount));
-	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => getHourLabel(v.hour)).join(", "));
+	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
 
 	const alertHourArcBackgroundColor = (hour: number) => {
 		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.2)";
@@ -206,7 +206,7 @@
 			formatter: (params) => {
 				const hour = Array.isArray(params) ? params[0].dataIndex : params.dataIndex;
 				const numAlerts = hourAlertCounts[hour];
-				return `${getHourLabel(hour)} - ${numAlerts} alert${numAlerts !== 1 ? "s" : ""}`;
+				return `${hour12Label(hour)} - ${numAlerts} alert${numAlerts !== 1 ? "s" : ""}`;
 			},
 			confine: true,
 			position: ["50%", "50%"],

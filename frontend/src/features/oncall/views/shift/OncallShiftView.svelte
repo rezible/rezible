@@ -1,11 +1,10 @@
 <script lang="ts">
 	import type { OncallShiftViewRouteParam } from "$src/params/oncallShiftView";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import { formatShiftDates } from "$features/oncall/lib/utils";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
-	import { shiftIdCtx, ShiftViewState, shiftViewStateCtx } from "./context.svelte";
+	import { ShiftViewState, shiftViewStateCtx } from "./context.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
@@ -17,13 +16,10 @@
 	};
 	const { shiftId, view }: Props = $props();
 
-	shiftIdCtx.set(shiftId);
-
 	const state = new ShiftViewState(() => shiftId);
 	shiftViewStateCtx.set(state);
 
-	const shiftDates = $derived(state.shift && formatShiftDates(state.shift))
-	const shiftBreadcrumb = $derived(shiftDates ? [{ label: shiftDates, href: "/oncall/shifts/" + shiftId }] : []);
+	const shiftBreadcrumb = $derived([{ label: state.shiftTitle, href: "/oncall/shifts/" + shiftId }]);
 	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/oncall/shifts/${shiftId}/handover`}] : []);
 
 	appShell.setPageActions(PageActions, true);
