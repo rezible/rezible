@@ -4,7 +4,7 @@
 	
 	import { Header } from "svelte-ux";
 
-	import { rosterIdCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../context.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	
 	type BacklogItem = {
@@ -18,7 +18,8 @@
 		createdAt: Date;
 	};
 
-	const rosterId = rosterIdCtx.get();
+	const viewCtx = rosterViewCtx.get();
+	const rosterId = $derived(viewCtx.rosterId);
 
 	const mockBacklogItems: BacklogItem[] = [
 		// TODO: fill this with some items

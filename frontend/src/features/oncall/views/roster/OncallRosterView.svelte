@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
 	import type { OncallRosterViewRouteParam } from "$src/params/oncallRosterView";
-	import { getOncallRosterOptions } from "$lib/api";
 
-	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import { appShell, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
 	import PageActions from "./PageActions.svelte";
-	import { rosterIdCtx } from "./context.svelte";
+	import { rosterViewCtx, RosterViewState } from "./context.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import RosterDetailsBar from "./RosterDetailsBar.svelte";
@@ -23,22 +21,25 @@
 	};
 	const { rosterId, view }: Props = $props();
 
-	rosterIdCtx.set(rosterId);
+	const viewState = new RosterViewState(() => rosterId);
+	rosterViewCtx.set(viewState);
 
-	const query = createQuery(() => getOncallRosterOptions({ path: { id: rosterId } }));
-	const roster = $derived(query.data?.data);
-	const rosterName = $derived(roster?.attributes.name ?? "");
+	const rosterBreadcrumb = $derived<PageBreadcrumb>({
+		label: viewState.rosterName ?? "",
+		href: `/oncall/rosters/${rosterId}`,
+		avatar: { kind: "roster", id: rosterId },
+	});
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall", href: "/oncall" },
 		{ label: "Rosters", href: "/oncall/rosters" },
-		{ label: rosterName, href: `/oncall/rosters/${rosterId}`, avatar: { kind: "roster", id: rosterId } },
+		rosterBreadcrumb,
 	]);
-	appShell.setPageActions(PageActions, true, () => ({roster}));
+	appShell.setPageActions(PageActions, true, () => ({ viewState }));
 </script>
 
-<TabbedViewContainer 
-	pathBase="/oncall/rosters/{rosterId}" 
+<TabbedViewContainer
+	pathBase="/oncall/rosters/{rosterId}"
 	infoBar={RosterDetailsBar}
 	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },

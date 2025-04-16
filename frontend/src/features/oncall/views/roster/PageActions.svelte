@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { Button } from "svelte-ux";
-	import type { OncallRoster } from "./types";
-	import type { OncallRosterViewRouteParam } from "$src/params/oncallRosterView";
+	import type { RosterViewState } from "./context.svelte";
 
 	type Props = {
-		roster?: OncallRoster;
+		viewState: RosterViewState;
 	}
-	const { roster }: Props = $props();
+	const { viewState }: Props = $props();
 
 </script>
 

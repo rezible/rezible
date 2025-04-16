@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { scaleOrdinal } from "d3-scale";
 	import { getOncallRosterMetricsOptions } from "$lib/api";
-	import { rosterIdCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../context.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {};
 	const {}: Props = $props();
 
-	const rosterId = rosterIdCtx.get();
+	const viewCtx = rosterViewCtx.get();
+	const rosterId = $derived(viewCtx.rosterId);
 
 	const metricsQuery = createQuery(() => getOncallRosterMetricsOptions({query: {rosterId}}));
 	const metrics = $derived(metricsQuery.data?.data);

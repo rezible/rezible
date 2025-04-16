@@ -1,32 +1,20 @@
-import { useQueryClient, type QueryClient } from "@tanstack/svelte-query";
-import { Context } from "runed";
-
-export const rosterIdCtx = new Context<string>("rosterId");
+import { getOncallRosterOptions } from "$src/lib/api";
+import { createQuery } from "@tanstack/svelte-query";
+import { Context, watch } from "runed";
 
 export class RosterViewState {
-	rosterId = $state<string>();
-}
-
-const makeRosterState = () => {
-	let rosterId = $state<string>();
-
-	let queryClient = $state<QueryClient>();
-
-	// const shiftQueryOpts = $derived(getOncallShiftOptions({ path: { id: (shiftId ?? "") } }))
-	// const makeShiftQuery = () => createQuery(() => ({...shiftQueryOpts, enabled: !!shiftId}));
-	// let shiftQuery = $state<ReturnType<typeof makeShiftQuery>>();
-
-	// const shift = $derived(shiftQuery?.data?.data);
-
-
-	const setup = (id: string) => {
-		rosterId = id;
-		queryClient = useQueryClient();
+	rosterId = $state<string>("");
+	constructor(idFn: () => string) {
+		watch(idFn, id => {this.rosterId = id});
 	}
 
-	return {
-		setup,
-	}
+	private rosterQuery = createQuery(() => ({
+		...getOncallRosterOptions({ path: { id: this.rosterId } }),
+		enabled: !!this.rosterId,
+	}));
+
+	roster = $derived(this.rosterQuery.data?.data);
+	rosterName = $derived(this.roster?.attributes.name ?? "");
 }
 
-export const rosterState = makeRosterState();
+export const rosterViewCtx = new Context<RosterViewState>("rosterView");
