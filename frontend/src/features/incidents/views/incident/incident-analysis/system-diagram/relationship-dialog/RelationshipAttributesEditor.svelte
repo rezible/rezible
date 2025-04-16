@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getSystemComponentOptions, type SystemComponent } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { relationshipAttributes } from "./dialogState.svelte";
+	import { relationshipAttributes } from "./attributesState.svelte";
 	import RelationshipAttributesComponentColumn from "./RelationshipAttributesComponentColumn.svelte";
 	import RelationshipLoopsColumn from "./RelationshipLoopsColumn.svelte";
 

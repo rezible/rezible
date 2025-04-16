@@ -4,7 +4,7 @@
 	import { mdiPencil, mdiPlus } from "@mdi/js";
 	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
-	import { relationshipAttributes, relationshipTraits, type RelationshipTrait } from "./dialogState.svelte";
+	import { relationshipAttributes, relationshipTraits, type RelationshipTrait } from "./attributesState.svelte";
 
 	type Props = { component: SystemComponent };
 	const { component }: Props = $props();

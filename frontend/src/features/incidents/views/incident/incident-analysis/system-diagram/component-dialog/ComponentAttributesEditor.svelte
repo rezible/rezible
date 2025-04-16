@@ -9,9 +9,9 @@
 	import { getSystemComponentKindMenuOptions } from "$lib/systemComponents";
 	import { ComponentTraitsState } from "./componentTraitsState.svelte";
 
-	const attr = $derived(componentAttributes);
-
 	const componentTraits = new ComponentTraitsState();
+
+	const attr = $derived(componentAttributes);
 
 	const kindsQuery = createQuery(() => listSystemComponentKindsOptions({}));
 	const kinds = $derived(kindsQuery.data?.data ?? []);
