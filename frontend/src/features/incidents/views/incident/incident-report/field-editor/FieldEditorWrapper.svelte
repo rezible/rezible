@@ -1,12 +1,23 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import type { Editor } from "@tiptap/core";
 	import { type RetrospectiveReportSection } from "$lib/api";
-	import MenuBar from "./MenuBar.svelte";
-	import { activeEditor, configureEditorExtensions } from "$features/incidents/lib/editor.svelte";
-	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
+	import { session } from "$lib/auth.svelte";
+
+	import { activeAnnotation, activeEditor } from "$features/incidents/lib/activeEditor.svelte";
+	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
+	import type { Editor, Extensions } from "@tiptap/core";
 	import type { HocuspocusProvider } from "@hocuspocus/provider";
+	import {
+		configureBaseExtensions,
+		configureUserMentionExtension,
+		configureAnnotationExtension,
+		configureDraftDiscussionHighlightExtension,
+	} from "@rezible/documents/tiptap-extensions";
+	import Collaboration from "@tiptap/extension-collaboration";
+	import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
+	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
+	import MenuBar from "./MenuBar.svelte";
 
 	type Props = {
 		section: RetrospectiveReportSection;
@@ -17,8 +28,23 @@
 	};
 	let { section, provider, setIsActive, onCreateAnnotation, focusEditor = $bindable() }: Props = $props();
 
+	const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
+		const user = { name: session.username, color: session.accentColor };
+		const extensions: Extensions = [
+			...configureBaseExtensions(false),
+			configureUserMentionExtension(RezUserSuggestion),
+			configureAnnotationExtension(activeAnnotation.set),
+			configureDraftDiscussionHighlightExtension(session.user?.id),
+			Collaboration.configure({ document: provider.document, field }),
+			CollaborationCursor.configure({ provider, user }),
+		];
+
+		return extensions;
+	};
+
+
 	let editor = $state<SvelteEditor>();
-	onMount(() => {
+	const mountEditor = () => {
 		editor = new SvelteEditor({
 			extensions: configureEditorExtensions(section.field, provider),
 			editable: true,
@@ -38,7 +64,8 @@
 		return () => {
 			if (!editor?.isDestroyed) editor?.destroy();
 		};
-	});
+	};
+	onMount(mountEditor);
 
 	const onEditorContainerFocused = () => {
 		if (!editor || editor.isFocused) return;

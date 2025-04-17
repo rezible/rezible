@@ -16,7 +16,7 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 
-	import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
+	import { createMentionEditor } from "$components/tiptap-editor/editors";
 	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
 	import { useIncidentViewState } from "../../../viewState.svelte";
 

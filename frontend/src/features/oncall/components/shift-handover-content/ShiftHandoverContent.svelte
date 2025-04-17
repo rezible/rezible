@@ -7,7 +7,7 @@
 	import {
 		type OncallShiftHandover,
 	} from "$lib/api";
-	import { handoverState, type HandoverEditorSection } from "./state.svelte";
+	import { HandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import SendButton from "./SendButton.svelte";
 
 	type Props = {
@@ -18,6 +18,8 @@
 	const { shiftId, editable, handover }: Props = $props();
 
 	const isSent = $derived(new Date(handover.attributes.sentAt ?? 0).valueOf() > 0);
+
+	const handoverState = new HandoverEditorState(() => handover);
 
 	let focusIdx = $state(-1);
 	const onSectionFocus = (e: FocusEvent, idx: number, focus: boolean) => {
@@ -44,11 +46,6 @@
 	};
 
 	const pinnedAnnotations = $derived(handover.attributes.pinnedEvents ?? []);
-
-	onMount(() => {
-		handoverState.setup(handover);
-		return () => handoverState.destroy();
-	});
 </script>
 
 <div class="flex flex-col gap-2 shrink overflow-y-auto">
@@ -73,7 +70,7 @@
 
 {#if !handoverState.sent && editable}
 	<div class="w-full flex justify-end px-2">
-		<SendButton {shiftId} />
+		<SendButton {shiftId} {handoverState} />
 	</div>
 {/if}
 

@@ -1,5 +1,5 @@
 import type { IncidentEventDecisionContext, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventSystemComponent, Incident } from "$lib/api";
-import { createMentionEditor } from "$features/incidents/lib/editor.svelte";
+import { createMentionEditor } from "$components/tiptap-editor/editors";
 import type { Content } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
 

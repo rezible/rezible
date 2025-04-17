@@ -130,7 +130,7 @@ type (
 	}
 
 	OncallShiftHandoverTemplateSection struct {
-		Type   string `json:"type" enum:"regular,annotations,incidents"`
+		Type   string `json:"type" enum:"regular,annotations"`
 		Header string `json:"header"`
 		List   bool   `json:"list"`
 	}

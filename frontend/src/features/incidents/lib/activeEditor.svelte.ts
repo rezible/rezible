@@ -1,36 +1,7 @@
-import { isActive, type ChainedCommands, type Editor, type Extensions, type Content } from "@tiptap/core";
+import { isActive, type ChainedCommands, type Editor } from "@tiptap/core";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
-import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 
 import { debounce } from "$lib/utils.svelte";
-import { session } from "$lib/auth.svelte";
-
-import {
-	configureBaseExtensions,
-	configureUserMentionExtension,
-	configureAnnotationExtension,
-	configureDraftDiscussionHighlightExtension,
-} from "@rezible/documents/tiptap-extensions";
-
-import type { HocuspocusProvider } from "@hocuspocus/provider";
-import Collaboration from "@tiptap/extension-collaboration";
-import CollaborationCursor from "@tiptap/extension-collaboration-cursor";
-
-import { RezUserSuggestion } from "./user-suggestions/user-suggestion.svelte";
-
-export const createMentionEditor = (content: Content, classes = "") => {
-	const userMentions = configureUserMentionExtension(RezUserSuggestion);
-	const baseExtensions = configureBaseExtensions(true);
-	return new SvelteEditor({
-		content,
-		extensions: [...baseExtensions, userMentions],
-		editorProps: {
-			attributes: {
-				class: "focus:outline-none " + classes,
-			},
-		},
-	});
-};
 
 export type ActiveStatus = {
 	focused?: boolean;
@@ -193,17 +164,3 @@ const createActiveAnnotationIdState = () => {
 };
 
 export const activeAnnotation = createActiveAnnotationIdState();
-
-export const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
-	const user = { name: session.username, color: session.accentColor };
-	const extensions: Extensions = [
-		...configureBaseExtensions(false),
-		configureUserMentionExtension(RezUserSuggestion),
-		configureAnnotationExtension(activeAnnotation.set),
-		configureDraftDiscussionHighlightExtension(session.user?.id),
-		Collaboration.configure({ document: provider.document, field }),
-		CollaborationCursor.configure({ provider, user }),
-	];
-
-	return extensions;
-};

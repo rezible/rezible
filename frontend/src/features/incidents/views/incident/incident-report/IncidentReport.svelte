@@ -3,7 +3,7 @@
 	import type { Editor as TiptapEditor } from "@tiptap/core";
 
 	import { draft } from "$features/incidents/lib/discussions.svelte";
-	import { activeEditor } from "$features/incidents/lib/editor.svelte";
+	import { activeEditor } from "$features/incidents/lib/activeEditor.svelte";
 
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";

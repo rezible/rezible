@@ -15,7 +15,7 @@
 		mdiChevronDown,
 		mdiFormatListCheckbox,
 	} from "@mdi/js";
-	import { activeEditor, activeStatus } from "$features/incidents/lib/editor.svelte";
+	import { activeEditor, activeStatus } from "$features/incidents/lib/activeEditor.svelte";
 
 	const getIconForStatus = () => {
 		if (activeStatus.paragraph) return mdiText;

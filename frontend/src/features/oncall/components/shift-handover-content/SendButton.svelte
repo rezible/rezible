@@ -9,12 +9,13 @@
 	} from "$lib/api";
 	import { getToastState } from "$features/app/lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { handoverState } from "./state.svelte";
+	import { HandoverEditorState } from "./state.svelte";
 
 	type Props = { 
 		shiftId: string;
+		handoverState: HandoverEditorState;
 	};
-	const { shiftId }: Props = $props();
+	const { shiftId, handoverState }: Props = $props();
 
 	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
 	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);

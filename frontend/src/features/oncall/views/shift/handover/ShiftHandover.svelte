@@ -28,7 +28,7 @@
 
 <div class="flex-1 flex gap-2 max-h-full h-full min-h-0 overflow-y-auto">
 	{#if handover && !isSent}
-		<div class="w-1/3 flex flex-col gap-2 min-h-0 border rounded-lg p-2 h-full max-h-full overflow-hidden">
+		<div class="w-2/5 flex flex-col gap-2 min-h-0 rounded-lg h-full max-h-full overflow-hidden">
 			<AnnotatedEventsList {handover} {onUpdated} />
 		</div>
 	{/if}
