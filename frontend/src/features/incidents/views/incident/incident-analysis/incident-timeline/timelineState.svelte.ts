@@ -6,11 +6,14 @@ import { createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query
 import { Context, watch } from "runed";
 
 import { listIncidentEventsOptions, listIncidentMilestonesOptions, type Incident, type IncidentEvent, type IncidentMilestone } from "$lib/api";
-import { debounce } from "$lib/utils.svelte";
 import { useIncidentViewState } from "../../viewState.svelte";
 
 import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentProps } from "./IncidentTimelineEventItemContent.svelte";
 import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneComponentProps } from "./IncidentTimelineMilestoneItemContent.svelte";
+import { SvelteSet } from "svelte/reactivity";
+
+const EventsSubgroup = "events";
+const MilestonesSubgroup = "milestones";
 
 const createTimelineEventElement = (event: IncidentEvent) => {
 	let props = $state<TimelineEventComponentProps>({ event, selected: false });
@@ -27,17 +30,14 @@ const createTimelineEventElement = (event: IncidentEvent) => {
 		unmount: () => (unmount(component)),
 	};
 };
+
+// const fitTimeline = debounce((t?: Timeline) => {
+// 	try {
+// 		t?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } })
+// 	} catch (e) {}
+// }, 100);
+
 type TimelineEventElement = ReturnType<typeof createTimelineEventElement>;
-
-const EventsSubgroup = "events";
-const MilestonesSubgroup = "milestones";
-
-const fitTimeline = debounce((t?: Timeline) => {
-	try {
-		t?.fit({ zoom: true, animation: { duration: 500, easingFunction: "easeInOutQuad" } })
-	} catch (e) {}
-}, 100);
-
 const makeTimelineEventItem = (el: TimelineEventElement, event: IncidentEvent) => {
 	const start = new Date(event.attributes.timestamp);
 	return { id: event.id, type: "box", group: "default", subgroup: EventsSubgroup, content: el.ref, start } as TimelineItem;
@@ -110,8 +110,6 @@ class TimelineEventsState {
 		eventsMap.forEach(this.setEvent);
 
 		if (this.items?.flush) this.items.flush();
-
-		fitTimeline(this.timeline);
 	}
 
 	eventAdded(event: IncidentEvent) {
@@ -163,7 +161,7 @@ const getBackgroundStylesForMilestone = (m: IncidentMilestone) => {
 
 const getMilestoneIds = (id: string) => ({bg: id + "_bg", box: id + "_box"});
 
-const makeTimelineItems = (el: TimelineMilestoneElement, ms: IncidentMilestone, endTime: Date) => {
+const makeMilestoneTimelineItems = (el: TimelineMilestoneElement, ms: IncidentMilestone, endTime: Date) => {
 	const start = new Date(ms.attributes.timestamp);
 
 	const ids = getMilestoneIds(ms.id);
@@ -198,7 +196,7 @@ const sortMilestones = (a: IncidentMilestone, b: IncidentMilestone) => {
 }
 
 class TimelineMilestonesState {
-	items = $state<DataSet<TimelineItem>>();
+	items: DataSet<TimelineItem>;
 	timeline = $state<Timeline>();
 
 	timelineElements = new Map<string, TimelineMilestoneElement>();
@@ -243,8 +241,6 @@ class TimelineMilestonesState {
 		});
 
 		if (this.items?.flush) this.items.flush();
-
-		fitTimeline(this.timeline);
 	};
 
 	setMilestone(ms: IncidentMilestone, nextMs?: IncidentMilestone) {
@@ -255,7 +251,7 @@ class TimelineMilestonesState {
 		}
 
 		const endDate = nextMs ? new Date(nextMs.attributes.timestamp) : this.incidentEnd;
-		const msItems = makeTimelineItems(el, ms, endDate);
+		const msItems = makeMilestoneTimelineItems(el, ms, endDate);
 		if (!!this.items?.get(msItems[0].id)) {
 			this.items.update(msItems);
 		} else {
@@ -282,12 +278,22 @@ class TimelineMilestonesState {
 export class TimelineState {
 	viewState = useIncidentViewState();
 
-	items = $state(new DataSet<TimelineItem>([]));
+	items = new DataSet<TimelineItem>([]);
 	events = new TimelineEventsState(this.items);
 	milestones = new TimelineMilestonesState(this.items);
 
 	timeline = $state<Timeline>();
-	selectedItems = $state<Set<string>>(new Set());
+	selectedItems = new SvelteSet<string>();
+
+	setIncidentWindow(inc?: Incident) {
+		if (!inc || !this.timeline) return;
+
+		const openedAt = new Date(inc.attributes.openedAt).valueOf();
+		const closedAt = new Date(inc.attributes.closedAt).valueOf();
+
+		const hour = 100 * 60 * 60;		
+		this.timeline.setWindow(openedAt - hour, closedAt + hour, {animation: false});
+	}
 
 	constructor() {
 		this.items.clear();
@@ -304,6 +310,9 @@ export class TimelineState {
 			this.items.clear();
 			this.items.add({ id: "incidentStart", type: "box", group: "default", subgroup: "incident", align: "left", content: "Incident Opened", start: openedAt });
 			this.items.add({ id: "incidentClosed", type: "box", group: "default", subgroup: "incident", align: "right", content: "Incident Closed", start: closedAt });
+			if (this.items.flush) this.items.flush();
+			
+			this.setIncidentWindow(inc);
 		});
 
 		onMount(() => {
@@ -323,19 +332,20 @@ export class TimelineState {
 		];
 
 		if (this.timeline) this.timeline.destroy();
-		
-		const tl = new Timeline(ref, this.items as DataItemCollectionType, timelineGroups, timelineOpts);
-		this.timeline = tl;
-		this.events.setTimeline(tl);
-		this.milestones.setTimeline(tl);
 
-		tl.on("select", e => this.onTimelineSelect(e));
+		this.timeline = new Timeline(ref, this.items as DataItemCollectionType, timelineGroups, timelineOpts);
+		this.events.setTimeline(this.timeline);
+		this.milestones.setTimeline(this.timeline);
+
+		this.timeline.on("select", e => this.onTimelineSelect(e));
+
+		this.setIncidentWindow(this.viewState.incident);
 	}
 
 	cleanup() {
 		this.timeline?.destroy();
-		this.events?.clearTimelineElements();
-		this.milestones?.clearTimelineElements();
+		this.events.clearTimelineElements();
+		this.milestones.clearTimelineElements();
 		this.items.clear();
 	}
 
@@ -344,19 +354,19 @@ export class TimelineState {
 		const deselectedItems = this.selectedItems.difference(newSelected);
 		
 		deselectedItems.forEach(id => {
-			this.events?.setSelected(id, false);
-			this.milestones?.setSelected(id, false);
+			this.selectedItems.delete(id);
+			this.events.setSelected(id, false);
+			this.milestones.setSelected(id, false);
 		});
 		newSelected.forEach(id => {
-			this.events?.setSelected(id, true);
-			this.milestones?.setSelected(id, true);
+			this.selectedItems.add(id);
+			this.events.setSelected(id, true);
+			this.milestones.setSelected(id, true);
 		});
-
-		this.selectedItems = newSelected;
 	}
 
 	onEventAdded(event: IncidentEvent) {
-		this.events?.eventAdded(event);
+		this.events.eventAdded(event);
 	}
 };
 

@@ -2,6 +2,7 @@
 	import "vis-timeline/dist/vis-timeline-graph2d.min.css";
 	import "./timeline-styles.css";
 
+	import { watch } from "runed";
 	import { TimelineState, setIncidentTimeline } from "./timelineState.svelte";
 	import { EventDialogState, setEventDialog } from "./event-dialog/dialogState.svelte";
 	
@@ -9,7 +10,6 @@
 	import EventDialog from "./event-dialog/EventDialog.svelte";
 	import MilestonesDialog from "./milestones-dialog/MilestonesDialog.svelte";
 	import { MilestonesDialogState, setMilestonesDialog } from "./milestones-dialog/dialogState.svelte";
-	import { watch } from "runed";
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
@@ -18,8 +18,8 @@
 
 	let containerRef = $state<HTMLElement>();
 	watch(() => containerRef, ref => {
-		if (!containerRef) return;
-		timelineState.mountTimeline(containerRef);
+		if (!ref) return;
+		timelineState.mountTimeline(ref);
 	})
 </script>
 
