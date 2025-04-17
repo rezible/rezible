@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import type { IncidentMilestone } from "$lib/api";
 	export type Props = {
-		milestone: IncidentMilestone;
+		milestone?: IncidentMilestone;
 		selected: boolean;
 	};
 </script>
@@ -10,4 +10,4 @@
 	let { milestone, selected }: Props = $props();
 </script>
 
-<span>{milestone.attributes.kind} selected:{selected}</span>
+<span>{milestone?.attributes.kind} selected:{selected}</span>
