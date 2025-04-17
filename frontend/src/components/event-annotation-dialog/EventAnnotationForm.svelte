@@ -1,10 +1,15 @@
 <script lang="ts">
-	import type { OncallEvent } from "$lib/api";
+	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	
 	type Props = {
 		event: OncallEvent;
+		current?: OncallAnnotation;
 	}
-	const { event }: Props = $props();
+	const { event, current }: Props = $props();
+
+	const attrs = $derived(event.attributes);
 </script>
 
-<span>event {event.id}</span>
+{#if attrs.kind === "alert"}
+	<span>alert event {event.id}</span>
+{/if}

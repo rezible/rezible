@@ -2,11 +2,10 @@ package openapi
 
 import (
 	"context"
-	"net/http"
-	"time"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	"net/http"
+	"time"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -36,9 +35,10 @@ type (
 	}
 
 	OncallEventAttributes struct {
-		Timestamp   time.Time          `json:"timestamp"`
 		Kind        string             `json:"kind"`
 		Title       string             `json:"title"`
+		Description string             `json:"description"`
+		Timestamp   time.Time          `json:"timestamp"`
 		Annotations []OncallAnnotation `json:"annotations"`
 	}
 
@@ -48,11 +48,18 @@ type (
 	}
 
 	OncallAnnotationAttributes struct {
-		EventId         string    `json:"eventId"`
-		RosterId        uuid.UUID `json:"rosterId"`
-		Creator         *User     `json:"creator"`
-		Notes           string    `json:"notes"`
-		MinutesOccupied int       `json:"minutesOccupied"`
+		EventId         string               `json:"eventId"`
+		RosterId        uuid.UUID            `json:"rosterId"`
+		Creator         *User                `json:"creator"`
+		Notes           string               `json:"notes"`
+		Tags            []string             `json:"tags"`
+		MinutesOccupied int                  `json:"minutesOccupied"`
+		AlertFeedback   *OncallAlertFeedback `json:"alertFeedback,omitempty"`
+	}
+
+	OncallAlertFeedback struct {
+		RequiredAction bool   `json:"requiredAction"`
+		Accuracy       string `json:"accuracy" enum:"yes,no,unknown"`
 	}
 
 	OncallEventAnnotation struct {

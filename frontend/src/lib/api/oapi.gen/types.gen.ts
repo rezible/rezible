@@ -1691,17 +1691,24 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
+export type OncallAlertFeedback = {
+    accuracy: 'yes' | 'no' | 'unknown';
+    requiredAction: boolean;
+};
+
 export type OncallAnnotation = {
     attributes: OncallAnnotationAttributes;
     id: string;
 };
 
 export type OncallAnnotationAttributes = {
+    alertFeedback?: OncallAlertFeedback;
     creator: User;
     eventId: string;
     minutesOccupied: number;
     notes: string;
     rosterId: string;
+    tags: Array<string>;
 };
 
 export type OncallEvent = {
@@ -1716,6 +1723,7 @@ export type OncallEventAnnotation = {
 
 export type OncallEventAttributes = {
     annotations: Array<OncallAnnotation>;
+    description: string;
     kind: string;
     timestamp: string;
     title: string;
@@ -1816,7 +1824,7 @@ export type OncallShiftHandoverTemplateAttributes = {
 export type OncallShiftHandoverTemplateSection = {
     header: string;
     list: boolean;
-    type: 'regular' | 'annotations' | 'incidents';
+    type: 'regular' | 'annotations';
 };
 
 export type OncallShiftIncidentResponseTime = {

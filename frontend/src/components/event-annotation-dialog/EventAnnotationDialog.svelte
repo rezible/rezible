@@ -2,7 +2,7 @@
 	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { createOncallAnnotationMutation, type CreateOncallAnnotationRequestBody, type OncallAnnotation, type OncallEvent } from "$src/lib/api";
+	import { createOncallAnnotationMutation, type CreateOncallAnnotationRequestAttributes, type OncallAnnotation, type OncallEvent } from "$src/lib/api";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	
@@ -20,7 +20,7 @@
 		}
 	}));
 
-	let mutationData = $state<CreateOncallAnnotationRequestBody>()
+	let attributes = $state<CreateOncallAnnotationRequestAttributes>()
 
 	const onConfirm = () => {
 		createMut.mutate
@@ -47,7 +47,7 @@
 
 	<div slot="default" class="p-2 flex-1 min-h-0 max-h-full grid">
 		{#if !!event}
-			<EventAnnotationForm {event} />
+			<EventAnnotationForm {event} {current} />
 		{/if}
 	</div>
 
