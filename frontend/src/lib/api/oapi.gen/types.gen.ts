@@ -380,6 +380,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallAnnotationRequestAttributes = {
+    alertFeedback: OncallAnnotationAlertFeedback;
     eventId: string;
     minutesOccupied: number;
     notes: string;
@@ -1691,18 +1692,19 @@ export type MeetingSessionAttributes = {
     title: string;
 };
 
-export type OncallAlertFeedback = {
-    accuracy: 'yes' | 'no' | 'unknown';
-    requiredAction: boolean;
-};
-
 export type OncallAnnotation = {
     attributes: OncallAnnotationAttributes;
     id: string;
 };
 
+export type OncallAnnotationAlertFeedback = {
+    accuracy: 'yes' | 'no' | 'unknown';
+    documentationAvailable: boolean;
+    requiredAction: boolean;
+};
+
 export type OncallAnnotationAttributes = {
-    alertFeedback?: OncallAlertFeedback;
+    alertFeedback?: OncallAnnotationAlertFeedback;
     creator: User;
     eventId: string;
     minutesOccupied: number;

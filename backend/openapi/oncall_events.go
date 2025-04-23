@@ -48,18 +48,19 @@ type (
 	}
 
 	OncallAnnotationAttributes struct {
-		EventId         string               `json:"eventId"`
-		RosterId        uuid.UUID            `json:"rosterId"`
-		Creator         *User                `json:"creator"`
-		Notes           string               `json:"notes"`
-		Tags            []string             `json:"tags"`
-		MinutesOccupied int                  `json:"minutesOccupied"`
-		AlertFeedback   *OncallAlertFeedback `json:"alertFeedback,omitempty"`
+		EventId         string                         `json:"eventId"`
+		RosterId        uuid.UUID                      `json:"rosterId"`
+		Creator         *User                          `json:"creator"`
+		Notes           string                         `json:"notes"`
+		Tags            []string                       `json:"tags"`
+		MinutesOccupied int                            `json:"minutesOccupied"`
+		AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
 	}
 
-	OncallAlertFeedback struct {
-		RequiredAction bool   `json:"requiredAction"`
-		Accuracy       string `json:"accuracy" enum:"yes,no,unknown"`
+	OncallAnnotationAlertFeedback struct {
+		RequiredAction         bool   `json:"requiredAction"`
+		DocumentationAvailable bool   `json:"documentationAvailable"`
+		Accuracy               string `json:"accuracy" enum:"yes,no,unknown"`
 	}
 
 	OncallEventAnnotation struct {
@@ -125,10 +126,11 @@ var CreateOncallAnnotation = huma.Operation{
 }
 
 type CreateOncallAnnotationRequestAttributes struct {
-	EventId         string    `json:"eventId"`
-	RosterId        uuid.UUID `json:"rosterId"`
-	MinutesOccupied int       `json:"minutesOccupied"`
-	Notes           string    `json:"notes"`
+	EventId         string                         `json:"eventId"`
+	RosterId        uuid.UUID                      `json:"rosterId"`
+	Notes           string                         `json:"notes"`
+	MinutesOccupied int                            `json:"minutesOccupied"`
+	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback"`
 }
 type CreateOncallAnnotationRequest CreateIdRequest[CreateOncallAnnotationRequestAttributes]
 type CreateOncallAnnotationResponse ItemResponse[OncallAnnotation]
