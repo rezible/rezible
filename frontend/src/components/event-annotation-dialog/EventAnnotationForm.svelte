@@ -10,6 +10,10 @@
 	const attrs = $derived(event.attributes);
 </script>
 
-{#if attrs.kind === "alert"}
+<div class:hidden={attrs.kind !== "alert"}>
 	<span>alert event {event.id}</span>
-{/if}
+</div>
+
+<div class="flex flex-col gap-2">
+	<span>{attrs.kind}</span>
+</div>
