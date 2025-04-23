@@ -42,6 +42,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -128,6 +129,8 @@ type Client struct {
 	OncallAlert *OncallAlertClient
 	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
 	OncallAnnotation *OncallAnnotationClient
+	// OncallAnnotationAlertFeedback is the client for interacting with the OncallAnnotationAlertFeedback builders.
+	OncallAnnotationAlertFeedback *OncallAnnotationAlertFeedbackClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -219,6 +222,7 @@ func (c *Client) init() {
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallAlert = NewOncallAlertClient(c.config)
 	c.OncallAnnotation = NewOncallAnnotationClient(c.config)
+	c.OncallAnnotationAlertFeedback = NewOncallAnnotationAlertFeedbackClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallSchedule = NewOncallScheduleClient(c.config)
@@ -364,6 +368,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAlert:                      NewOncallAlertClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
+		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -436,6 +441,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAlert:                      NewOncallAlertClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
+		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -500,15 +506,16 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
-		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftCover,
-		c.OncallUserShiftHandover, c.ProviderConfig, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
+		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
+		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
+		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
+		c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
+		c.Team, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -526,15 +533,16 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallSchedule,
-		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftCover,
-		c.OncallUserShiftHandover, c.ProviderConfig, c.ProviderSyncHistory,
-		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
+		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
+		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
+		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
+		c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
+		c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -595,6 +603,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallAlert.mutate(ctx, m)
 	case *OncallAnnotationMutation:
 		return c.OncallAnnotation.mutate(ctx, m)
+	case *OncallAnnotationAlertFeedbackMutation:
+		return c.OncallAnnotationAlertFeedback.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -5157,6 +5167,22 @@ func (c *OncallAnnotationClient) QueryCreator(oa *OncallAnnotation) *UserQuery {
 	return query
 }
 
+// QueryAlertFeedback queries the alert_feedback edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryAlertFeedback(oa *OncallAnnotation) *OncallAnnotationAlertFeedbackQuery {
+	query := (&OncallAnnotationAlertFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
+			sqlgraph.To(oncallannotationalertfeedback.Table, oncallannotationalertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, oncallannotation.AlertFeedbackTable, oncallannotation.AlertFeedbackColumn),
+		)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryHandovers queries the handovers edge of a OncallAnnotation.
 func (c *OncallAnnotationClient) QueryHandovers(oa *OncallAnnotation) *OncallUserShiftHandoverQuery {
 	query := (&OncallUserShiftHandoverClient{config: c.config}).Query()
@@ -5195,6 +5221,155 @@ func (c *OncallAnnotationClient) mutate(ctx context.Context, m *OncallAnnotation
 		return (&OncallAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallAnnotation mutation op: %q", m.Op())
+	}
+}
+
+// OncallAnnotationAlertFeedbackClient is a client for the OncallAnnotationAlertFeedback schema.
+type OncallAnnotationAlertFeedbackClient struct {
+	config
+}
+
+// NewOncallAnnotationAlertFeedbackClient returns a client for the OncallAnnotationAlertFeedback from the given config.
+func NewOncallAnnotationAlertFeedbackClient(c config) *OncallAnnotationAlertFeedbackClient {
+	return &OncallAnnotationAlertFeedbackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oncallannotationalertfeedback.Hooks(f(g(h())))`.
+func (c *OncallAnnotationAlertFeedbackClient) Use(hooks ...Hook) {
+	c.hooks.OncallAnnotationAlertFeedback = append(c.hooks.OncallAnnotationAlertFeedback, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oncallannotationalertfeedback.Intercept(f(g(h())))`.
+func (c *OncallAnnotationAlertFeedbackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OncallAnnotationAlertFeedback = append(c.inters.OncallAnnotationAlertFeedback, interceptors...)
+}
+
+// Create returns a builder for creating a OncallAnnotationAlertFeedback entity.
+func (c *OncallAnnotationAlertFeedbackClient) Create() *OncallAnnotationAlertFeedbackCreate {
+	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpCreate)
+	return &OncallAnnotationAlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OncallAnnotationAlertFeedback entities.
+func (c *OncallAnnotationAlertFeedbackClient) CreateBulk(builders ...*OncallAnnotationAlertFeedbackCreate) *OncallAnnotationAlertFeedbackCreateBulk {
+	return &OncallAnnotationAlertFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OncallAnnotationAlertFeedbackClient) MapCreateBulk(slice any, setFunc func(*OncallAnnotationAlertFeedbackCreate, int)) *OncallAnnotationAlertFeedbackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OncallAnnotationAlertFeedbackCreateBulk{err: fmt.Errorf("calling to OncallAnnotationAlertFeedbackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OncallAnnotationAlertFeedbackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OncallAnnotationAlertFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OncallAnnotationAlertFeedback.
+func (c *OncallAnnotationAlertFeedbackClient) Update() *OncallAnnotationAlertFeedbackUpdate {
+	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdate)
+	return &OncallAnnotationAlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OncallAnnotationAlertFeedbackClient) UpdateOne(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationAlertFeedbackUpdateOne {
+	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdateOne, withOncallAnnotationAlertFeedback(oaaf))
+	return &OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OncallAnnotationAlertFeedbackClient) UpdateOneID(id uuid.UUID) *OncallAnnotationAlertFeedbackUpdateOne {
+	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdateOne, withOncallAnnotationAlertFeedbackID(id))
+	return &OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OncallAnnotationAlertFeedback.
+func (c *OncallAnnotationAlertFeedbackClient) Delete() *OncallAnnotationAlertFeedbackDelete {
+	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpDelete)
+	return &OncallAnnotationAlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OncallAnnotationAlertFeedbackClient) DeleteOne(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationAlertFeedbackDeleteOne {
+	return c.DeleteOneID(oaaf.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OncallAnnotationAlertFeedbackClient) DeleteOneID(id uuid.UUID) *OncallAnnotationAlertFeedbackDeleteOne {
+	builder := c.Delete().Where(oncallannotationalertfeedback.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OncallAnnotationAlertFeedbackDeleteOne{builder}
+}
+
+// Query returns a query builder for OncallAnnotationAlertFeedback.
+func (c *OncallAnnotationAlertFeedbackClient) Query() *OncallAnnotationAlertFeedbackQuery {
+	return &OncallAnnotationAlertFeedbackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOncallAnnotationAlertFeedback},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OncallAnnotationAlertFeedback entity by its id.
+func (c *OncallAnnotationAlertFeedbackClient) Get(ctx context.Context, id uuid.UUID) (*OncallAnnotationAlertFeedback, error) {
+	return c.Query().Where(oncallannotationalertfeedback.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OncallAnnotationAlertFeedbackClient) GetX(ctx context.Context, id uuid.UUID) *OncallAnnotationAlertFeedback {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAnnotation queries the annotation edge of a OncallAnnotationAlertFeedback.
+func (c *OncallAnnotationAlertFeedbackClient) QueryAnnotation(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oaaf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotationalertfeedback.Table, oncallannotationalertfeedback.FieldID, id),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, oncallannotationalertfeedback.AnnotationTable, oncallannotationalertfeedback.AnnotationColumn),
+		)
+		fromV = sqlgraph.Neighbors(oaaf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OncallAnnotationAlertFeedbackClient) Hooks() []Hook {
+	return c.hooks.OncallAnnotationAlertFeedback
+}
+
+// Interceptors returns the client interceptors.
+func (c *OncallAnnotationAlertFeedbackClient) Interceptors() []Interceptor {
+	return c.inters.OncallAnnotationAlertFeedback
+}
+
+func (c *OncallAnnotationAlertFeedbackClient) mutate(ctx context.Context, m *OncallAnnotationAlertFeedbackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OncallAnnotationAlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OncallAnnotationAlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OncallAnnotationAlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OncallAnnotationAlertFeedback mutation op: %q", m.Op())
 	}
 }
 
@@ -10226,14 +10401,14 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallAnnotation, OncallHandoverTemplate,
-		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal,
+		MeetingSession, OncallAlert, OncallAnnotation, OncallAnnotationAlertFeedback,
+		OncallHandoverTemplate, OncallRoster, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
+		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
+		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Hook
 	}
@@ -10244,14 +10419,14 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallAnnotation, OncallHandoverTemplate,
-		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftCover, OncallUserShiftHandover, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal,
+		MeetingSession, OncallAlert, OncallAnnotation, OncallAnnotationAlertFeedback,
+		OncallHandoverTemplate, OncallRoster, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
+		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
+		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Interceptor
 	}

@@ -382,6 +382,29 @@ func HasCreatorWith(preds ...predicate.User) predicate.OncallAnnotation {
 	})
 }
 
+// HasAlertFeedback applies the HasEdge predicate on the "alert_feedback" edge.
+func HasAlertFeedback() predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, AlertFeedbackTable, AlertFeedbackColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlertFeedbackWith applies the HasEdge predicate on the "alert_feedback" edge with a given conditions (other predicates).
+func HasAlertFeedbackWith(preds ...predicate.OncallAnnotationAlertFeedback) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := newAlertFeedbackStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasHandovers applies the HasEdge predicate on the "handovers" edge.
 func HasHandovers() predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(func(s *sql.Selector) {

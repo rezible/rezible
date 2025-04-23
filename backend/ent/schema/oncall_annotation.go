@@ -32,6 +32,32 @@ func (OncallAnnotation) Edges() []ent.Edge {
 		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),
 		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),
 
+		edge.To("alert_feedback", OncallAnnotationAlertFeedback.Type).Unique(),
 		edge.From("handovers", OncallUserShiftHandover.Type).Ref("pinned_annotations"),
+	}
+}
+
+// OncallAnnotationAlertFeedback holds the schema definition for the OncallAnnotationAlertFeedback entity.
+type OncallAnnotationAlertFeedback struct {
+	ent.Schema
+}
+
+// Fields of the OncallAnnotationAlertFeedback.
+func (OncallAnnotationAlertFeedback) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("annotation_id", uuid.UUID{}),
+		field.Bool("actionable"),
+		field.Bool("documentation_available"),
+		field.Enum("accuracy").Values("yes", "no", "unknown"),
+	}
+}
+
+// Edges of the OncallAnnotationAlertFeedback.
+func (OncallAnnotationAlertFeedback) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("annotation", OncallAnnotation.Type).
+			Ref("alert_feedback").
+			Field("annotation_id").Unique().Required(),
 	}
 }

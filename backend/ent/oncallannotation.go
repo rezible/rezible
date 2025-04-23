@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -44,11 +45,13 @@ type OncallAnnotationEdges struct {
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
+	// AlertFeedback holds the value of the alert_feedback edge.
+	AlertFeedback *OncallAnnotationAlertFeedback `json:"alert_feedback,omitempty"`
 	// Handovers holds the value of the handovers edge.
 	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -73,10 +76,21 @@ func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "creator"}
 }
 
+// AlertFeedbackOrErr returns the AlertFeedback value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*OncallAnnotationAlertFeedback, error) {
+	if e.AlertFeedback != nil {
+		return e.AlertFeedback, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: oncallannotationalertfeedback.Label}
+	}
+	return nil, &NotLoadedError{edge: "alert_feedback"}
+}
+
 // HandoversOrErr returns the Handovers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Handovers, nil
 	}
 	return nil, &NotLoadedError{edge: "handovers"}
@@ -173,6 +187,11 @@ func (oa *OncallAnnotation) QueryRoster() *OncallRosterQuery {
 // QueryCreator queries the "creator" edge of the OncallAnnotation entity.
 func (oa *OncallAnnotation) QueryCreator() *UserQuery {
 	return NewOncallAnnotationClient(oa.config).QueryCreator(oa)
+}
+
+// QueryAlertFeedback queries the "alert_feedback" edge of the OncallAnnotation entity.
+func (oa *OncallAnnotation) QueryAlertFeedback() *OncallAnnotationAlertFeedbackQuery {
+	return NewOncallAnnotationClient(oa.config).QueryAlertFeedback(oa)
 }
 
 // QueryHandovers queries the "handovers" edge of the OncallAnnotation entity.

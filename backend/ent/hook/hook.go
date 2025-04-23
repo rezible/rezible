@@ -321,6 +321,18 @@ func (f OncallAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAnnotationMutation", m)
 }
 
+// The OncallAnnotationAlertFeedbackFunc type is an adapter to allow the use of ordinary
+// function as OncallAnnotationAlertFeedback mutator.
+type OncallAnnotationAlertFeedbackFunc func(context.Context, *ent.OncallAnnotationAlertFeedbackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OncallAnnotationAlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallAnnotationAlertFeedbackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAnnotationAlertFeedbackMutation", m)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary
 // function as OncallHandoverTemplate mutator.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateMutation) (ent.Value, error)

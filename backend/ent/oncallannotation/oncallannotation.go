@@ -31,6 +31,8 @@ const (
 	EdgeRoster = "roster"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
 	EdgeCreator = "creator"
+	// EdgeAlertFeedback holds the string denoting the alert_feedback edge name in mutations.
+	EdgeAlertFeedback = "alert_feedback"
 	// EdgeHandovers holds the string denoting the handovers edge name in mutations.
 	EdgeHandovers = "handovers"
 	// Table holds the table name of the oncallannotation in the database.
@@ -49,6 +51,13 @@ const (
 	CreatorInverseTable = "users"
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "creator_id"
+	// AlertFeedbackTable is the table that holds the alert_feedback relation/edge.
+	AlertFeedbackTable = "oncall_annotation_alert_feedbacks"
+	// AlertFeedbackInverseTable is the table name for the OncallAnnotationAlertFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallannotationalertfeedback" package.
+	AlertFeedbackInverseTable = "oncall_annotation_alert_feedbacks"
+	// AlertFeedbackColumn is the table column denoting the alert_feedback relation/edge.
+	AlertFeedbackColumn = "annotation_id"
 	// HandoversTable is the table that holds the handovers relation/edge. The primary key declared below.
 	HandoversTable = "oncall_user_shift_handover_pinned_annotations"
 	// HandoversInverseTable is the table name for the OncallUserShiftHandover entity.
@@ -142,6 +151,13 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByAlertFeedbackField orders the results by alert_feedback field.
+func ByAlertFeedbackField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertFeedbackStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByHandoversCount orders the results by handovers count.
 func ByHandoversCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -167,6 +183,13 @@ func newCreatorStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(CreatorInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
+	)
+}
+func newAlertFeedbackStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertFeedbackInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, AlertFeedbackTable, AlertFeedbackColumn),
 	)
 }
 func newHandoversStep() *sqlgraph.Step {

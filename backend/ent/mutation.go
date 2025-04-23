@@ -38,6 +38,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -103,6 +104,7 @@ const (
 	TypeMeetingSession                   = "MeetingSession"
 	TypeOncallAlert                      = "OncallAlert"
 	TypeOncallAnnotation                 = "OncallAnnotation"
+	TypeOncallAnnotationAlertFeedback    = "OncallAnnotationAlertFeedback"
 	TypeOncallHandoverTemplate           = "OncallHandoverTemplate"
 	TypeOncallRoster                     = "OncallRoster"
 	TypeOncallSchedule                   = "OncallSchedule"
@@ -18247,25 +18249,27 @@ func (m *OncallAlertMutation) ResetEdge(name string) error {
 // OncallAnnotationMutation represents an operation that mutates the OncallAnnotation nodes in the graph.
 type OncallAnnotationMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	event_id            *string
-	created_at          *time.Time
-	minutes_occupied    *int
-	addminutes_occupied *int
-	notes               *string
-	clearedFields       map[string]struct{}
-	roster              *uuid.UUID
-	clearedroster       bool
-	creator             *uuid.UUID
-	clearedcreator      bool
-	handovers           map[uuid.UUID]struct{}
-	removedhandovers    map[uuid.UUID]struct{}
-	clearedhandovers    bool
-	done                bool
-	oldValue            func(context.Context) (*OncallAnnotation, error)
-	predicates          []predicate.OncallAnnotation
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	event_id              *string
+	created_at            *time.Time
+	minutes_occupied      *int
+	addminutes_occupied   *int
+	notes                 *string
+	clearedFields         map[string]struct{}
+	roster                *uuid.UUID
+	clearedroster         bool
+	creator               *uuid.UUID
+	clearedcreator        bool
+	alert_feedback        *uuid.UUID
+	clearedalert_feedback bool
+	handovers             map[uuid.UUID]struct{}
+	removedhandovers      map[uuid.UUID]struct{}
+	clearedhandovers      bool
+	done                  bool
+	oldValue              func(context.Context) (*OncallAnnotation, error)
+	predicates            []predicate.OncallAnnotation
 }
 
 var _ ent.Mutation = (*OncallAnnotationMutation)(nil)
@@ -18662,6 +18666,45 @@ func (m *OncallAnnotationMutation) ResetCreator() {
 	m.clearedcreator = false
 }
 
+// SetAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by id.
+func (m *OncallAnnotationMutation) SetAlertFeedbackID(id uuid.UUID) {
+	m.alert_feedback = &id
+}
+
+// ClearAlertFeedback clears the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
+func (m *OncallAnnotationMutation) ClearAlertFeedback() {
+	m.clearedalert_feedback = true
+}
+
+// AlertFeedbackCleared reports if the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity was cleared.
+func (m *OncallAnnotationMutation) AlertFeedbackCleared() bool {
+	return m.clearedalert_feedback
+}
+
+// AlertFeedbackID returns the "alert_feedback" edge ID in the mutation.
+func (m *OncallAnnotationMutation) AlertFeedbackID() (id uuid.UUID, exists bool) {
+	if m.alert_feedback != nil {
+		return *m.alert_feedback, true
+	}
+	return
+}
+
+// AlertFeedbackIDs returns the "alert_feedback" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AlertFeedbackID instead. It exists only for internal usage by the builders.
+func (m *OncallAnnotationMutation) AlertFeedbackIDs() (ids []uuid.UUID) {
+	if id := m.alert_feedback; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAlertFeedback resets all changes to the "alert_feedback" edge.
+func (m *OncallAnnotationMutation) ResetAlertFeedback() {
+	m.alert_feedback = nil
+	m.clearedalert_feedback = false
+}
+
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by ids.
 func (m *OncallAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
 	if m.handovers == nil {
@@ -18949,12 +18992,15 @@ func (m *OncallAnnotationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallAnnotationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.roster != nil {
 		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.creator != nil {
 		edges = append(edges, oncallannotation.EdgeCreator)
+	}
+	if m.alert_feedback != nil {
+		edges = append(edges, oncallannotation.EdgeAlertFeedback)
 	}
 	if m.handovers != nil {
 		edges = append(edges, oncallannotation.EdgeHandovers)
@@ -18974,6 +19020,10 @@ func (m *OncallAnnotationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.creator; id != nil {
 			return []ent.Value{*id}
 		}
+	case oncallannotation.EdgeAlertFeedback:
+		if id := m.alert_feedback; id != nil {
+			return []ent.Value{*id}
+		}
 	case oncallannotation.EdgeHandovers:
 		ids := make([]ent.Value, 0, len(m.handovers))
 		for id := range m.handovers {
@@ -18986,7 +19036,7 @@ func (m *OncallAnnotationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallAnnotationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedhandovers != nil {
 		edges = append(edges, oncallannotation.EdgeHandovers)
 	}
@@ -19009,12 +19059,15 @@ func (m *OncallAnnotationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallAnnotationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedroster {
 		edges = append(edges, oncallannotation.EdgeRoster)
 	}
 	if m.clearedcreator {
 		edges = append(edges, oncallannotation.EdgeCreator)
+	}
+	if m.clearedalert_feedback {
+		edges = append(edges, oncallannotation.EdgeAlertFeedback)
 	}
 	if m.clearedhandovers {
 		edges = append(edges, oncallannotation.EdgeHandovers)
@@ -19030,6 +19083,8 @@ func (m *OncallAnnotationMutation) EdgeCleared(name string) bool {
 		return m.clearedroster
 	case oncallannotation.EdgeCreator:
 		return m.clearedcreator
+	case oncallannotation.EdgeAlertFeedback:
+		return m.clearedalert_feedback
 	case oncallannotation.EdgeHandovers:
 		return m.clearedhandovers
 	}
@@ -19046,6 +19101,9 @@ func (m *OncallAnnotationMutation) ClearEdge(name string) error {
 	case oncallannotation.EdgeCreator:
 		m.ClearCreator()
 		return nil
+	case oncallannotation.EdgeAlertFeedback:
+		m.ClearAlertFeedback()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallAnnotation unique edge %s", name)
 }
@@ -19060,11 +19118,562 @@ func (m *OncallAnnotationMutation) ResetEdge(name string) error {
 	case oncallannotation.EdgeCreator:
 		m.ResetCreator()
 		return nil
+	case oncallannotation.EdgeAlertFeedback:
+		m.ResetAlertFeedback()
+		return nil
 	case oncallannotation.EdgeHandovers:
 		m.ResetHandovers()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallAnnotation edge %s", name)
+}
+
+// OncallAnnotationAlertFeedbackMutation represents an operation that mutates the OncallAnnotationAlertFeedback nodes in the graph.
+type OncallAnnotationAlertFeedbackMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	actionable              *bool
+	documentation_available *bool
+	accuracy                *oncallannotationalertfeedback.Accuracy
+	clearedFields           map[string]struct{}
+	annotation              *uuid.UUID
+	clearedannotation       bool
+	done                    bool
+	oldValue                func(context.Context) (*OncallAnnotationAlertFeedback, error)
+	predicates              []predicate.OncallAnnotationAlertFeedback
+}
+
+var _ ent.Mutation = (*OncallAnnotationAlertFeedbackMutation)(nil)
+
+// oncallannotationalertfeedbackOption allows management of the mutation configuration using functional options.
+type oncallannotationalertfeedbackOption func(*OncallAnnotationAlertFeedbackMutation)
+
+// newOncallAnnotationAlertFeedbackMutation creates new mutation for the OncallAnnotationAlertFeedback entity.
+func newOncallAnnotationAlertFeedbackMutation(c config, op Op, opts ...oncallannotationalertfeedbackOption) *OncallAnnotationAlertFeedbackMutation {
+	m := &OncallAnnotationAlertFeedbackMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOncallAnnotationAlertFeedback,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOncallAnnotationAlertFeedbackID sets the ID field of the mutation.
+func withOncallAnnotationAlertFeedbackID(id uuid.UUID) oncallannotationalertfeedbackOption {
+	return func(m *OncallAnnotationAlertFeedbackMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OncallAnnotationAlertFeedback
+		)
+		m.oldValue = func(ctx context.Context) (*OncallAnnotationAlertFeedback, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OncallAnnotationAlertFeedback.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOncallAnnotationAlertFeedback sets the old OncallAnnotationAlertFeedback of the mutation.
+func withOncallAnnotationAlertFeedback(node *OncallAnnotationAlertFeedback) oncallannotationalertfeedbackOption {
+	return func(m *OncallAnnotationAlertFeedbackMutation) {
+		m.oldValue = func(context.Context) (*OncallAnnotationAlertFeedback, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OncallAnnotationAlertFeedbackMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OncallAnnotationAlertFeedbackMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OncallAnnotationAlertFeedback entities.
+func (m *OncallAnnotationAlertFeedbackMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OncallAnnotationAlertFeedbackMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OncallAnnotationAlertFeedback.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAnnotationID sets the "annotation_id" field.
+func (m *OncallAnnotationAlertFeedbackMutation) SetAnnotationID(u uuid.UUID) {
+	m.annotation = &u
+}
+
+// AnnotationID returns the value of the "annotation_id" field in the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) AnnotationID() (r uuid.UUID, exists bool) {
+	v := m.annotation
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAnnotationID returns the old "annotation_id" field's value of the OncallAnnotationAlertFeedback entity.
+// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallAnnotationAlertFeedbackMutation) OldAnnotationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAnnotationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAnnotationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAnnotationID: %w", err)
+	}
+	return oldValue.AnnotationID, nil
+}
+
+// ResetAnnotationID resets all changes to the "annotation_id" field.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetAnnotationID() {
+	m.annotation = nil
+}
+
+// SetActionable sets the "actionable" field.
+func (m *OncallAnnotationAlertFeedbackMutation) SetActionable(b bool) {
+	m.actionable = &b
+}
+
+// Actionable returns the value of the "actionable" field in the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) Actionable() (r bool, exists bool) {
+	v := m.actionable
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldActionable returns the old "actionable" field's value of the OncallAnnotationAlertFeedback entity.
+// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallAnnotationAlertFeedbackMutation) OldActionable(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldActionable is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldActionable requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldActionable: %w", err)
+	}
+	return oldValue.Actionable, nil
+}
+
+// ResetActionable resets all changes to the "actionable" field.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetActionable() {
+	m.actionable = nil
+}
+
+// SetDocumentationAvailable sets the "documentation_available" field.
+func (m *OncallAnnotationAlertFeedbackMutation) SetDocumentationAvailable(b bool) {
+	m.documentation_available = &b
+}
+
+// DocumentationAvailable returns the value of the "documentation_available" field in the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) DocumentationAvailable() (r bool, exists bool) {
+	v := m.documentation_available
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocumentationAvailable returns the old "documentation_available" field's value of the OncallAnnotationAlertFeedback entity.
+// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallAnnotationAlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocumentationAvailable is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocumentationAvailable requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocumentationAvailable: %w", err)
+	}
+	return oldValue.DocumentationAvailable, nil
+}
+
+// ResetDocumentationAvailable resets all changes to the "documentation_available" field.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetDocumentationAvailable() {
+	m.documentation_available = nil
+}
+
+// SetAccuracy sets the "accuracy" field.
+func (m *OncallAnnotationAlertFeedbackMutation) SetAccuracy(o oncallannotationalertfeedback.Accuracy) {
+	m.accuracy = &o
+}
+
+// Accuracy returns the value of the "accuracy" field in the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) Accuracy() (r oncallannotationalertfeedback.Accuracy, exists bool) {
+	v := m.accuracy
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccuracy returns the old "accuracy" field's value of the OncallAnnotationAlertFeedback entity.
+// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallAnnotationAlertFeedbackMutation) OldAccuracy(ctx context.Context) (v oncallannotationalertfeedback.Accuracy, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccuracy is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccuracy requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccuracy: %w", err)
+	}
+	return oldValue.Accuracy, nil
+}
+
+// ResetAccuracy resets all changes to the "accuracy" field.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetAccuracy() {
+	m.accuracy = nil
+}
+
+// ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
+func (m *OncallAnnotationAlertFeedbackMutation) ClearAnnotation() {
+	m.clearedannotation = true
+	m.clearedFields[oncallannotationalertfeedback.FieldAnnotationID] = struct{}{}
+}
+
+// AnnotationCleared reports if the "annotation" edge to the OncallAnnotation entity was cleared.
+func (m *OncallAnnotationAlertFeedbackMutation) AnnotationCleared() bool {
+	return m.clearedannotation
+}
+
+// AnnotationIDs returns the "annotation" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AnnotationID instead. It exists only for internal usage by the builders.
+func (m *OncallAnnotationAlertFeedbackMutation) AnnotationIDs() (ids []uuid.UUID) {
+	if id := m.annotation; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAnnotation resets all changes to the "annotation" edge.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetAnnotation() {
+	m.annotation = nil
+	m.clearedannotation = false
+}
+
+// Where appends a list predicates to the OncallAnnotationAlertFeedbackMutation builder.
+func (m *OncallAnnotationAlertFeedbackMutation) Where(ps ...predicate.OncallAnnotationAlertFeedback) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OncallAnnotationAlertFeedbackMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OncallAnnotationAlertFeedbackMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallAnnotationAlertFeedback, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OncallAnnotationAlertFeedbackMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OncallAnnotationAlertFeedbackMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OncallAnnotationAlertFeedback).
+func (m *OncallAnnotationAlertFeedbackMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OncallAnnotationAlertFeedbackMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.annotation != nil {
+		fields = append(fields, oncallannotationalertfeedback.FieldAnnotationID)
+	}
+	if m.actionable != nil {
+		fields = append(fields, oncallannotationalertfeedback.FieldActionable)
+	}
+	if m.documentation_available != nil {
+		fields = append(fields, oncallannotationalertfeedback.FieldDocumentationAvailable)
+	}
+	if m.accuracy != nil {
+		fields = append(fields, oncallannotationalertfeedback.FieldAccuracy)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OncallAnnotationAlertFeedbackMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oncallannotationalertfeedback.FieldAnnotationID:
+		return m.AnnotationID()
+	case oncallannotationalertfeedback.FieldActionable:
+		return m.Actionable()
+	case oncallannotationalertfeedback.FieldDocumentationAvailable:
+		return m.DocumentationAvailable()
+	case oncallannotationalertfeedback.FieldAccuracy:
+		return m.Accuracy()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OncallAnnotationAlertFeedbackMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oncallannotationalertfeedback.FieldAnnotationID:
+		return m.OldAnnotationID(ctx)
+	case oncallannotationalertfeedback.FieldActionable:
+		return m.OldActionable(ctx)
+	case oncallannotationalertfeedback.FieldDocumentationAvailable:
+		return m.OldDocumentationAvailable(ctx)
+	case oncallannotationalertfeedback.FieldAccuracy:
+		return m.OldAccuracy(ctx)
+	}
+	return nil, fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallAnnotationAlertFeedbackMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oncallannotationalertfeedback.FieldAnnotationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAnnotationID(v)
+		return nil
+	case oncallannotationalertfeedback.FieldActionable:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetActionable(v)
+		return nil
+	case oncallannotationalertfeedback.FieldDocumentationAvailable:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocumentationAvailable(v)
+		return nil
+	case oncallannotationalertfeedback.FieldAccuracy:
+		v, ok := value.(oncallannotationalertfeedback.Accuracy)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccuracy(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OncallAnnotationAlertFeedbackMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallAnnotationAlertFeedbackMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OncallAnnotationAlertFeedbackMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetField(name string) error {
+	switch name {
+	case oncallannotationalertfeedback.FieldAnnotationID:
+		m.ResetAnnotationID()
+		return nil
+	case oncallannotationalertfeedback.FieldActionable:
+		m.ResetActionable()
+		return nil
+	case oncallannotationalertfeedback.FieldDocumentationAvailable:
+		m.ResetDocumentationAvailable()
+		return nil
+	case oncallannotationalertfeedback.FieldAccuracy:
+		m.ResetAccuracy()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.annotation != nil {
+		edges = append(edges, oncallannotationalertfeedback.EdgeAnnotation)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oncallannotationalertfeedback.EdgeAnnotation:
+		if id := m.annotation; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedannotation {
+		edges = append(edges, oncallannotationalertfeedback.EdgeAnnotation)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oncallannotationalertfeedback.EdgeAnnotation:
+		return m.clearedannotation
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OncallAnnotationAlertFeedbackMutation) ClearEdge(name string) error {
+	switch name {
+	case oncallannotationalertfeedback.EdgeAnnotation:
+		m.ClearAnnotation()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetEdge(name string) error {
+	switch name {
+	case oncallannotationalertfeedback.EdgeAnnotation:
+		m.ResetAnnotation()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallAnnotationAlertFeedback edge %s", name)
 }
 
 // OncallHandoverTemplateMutation represents an operation that mutates the OncallHandoverTemplate nodes in the graph.

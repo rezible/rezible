@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/user"
@@ -93,6 +94,25 @@ func (oac *OncallAnnotationCreate) SetRoster(o *OncallRoster) *OncallAnnotationC
 // SetCreator sets the "creator" edge to the User entity.
 func (oac *OncallAnnotationCreate) SetCreator(u *User) *OncallAnnotationCreate {
 	return oac.SetCreatorID(u.ID)
+}
+
+// SetAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID.
+func (oac *OncallAnnotationCreate) SetAlertFeedbackID(id uuid.UUID) *OncallAnnotationCreate {
+	oac.mutation.SetAlertFeedbackID(id)
+	return oac
+}
+
+// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID if the given value is not nil.
+func (oac *OncallAnnotationCreate) SetNillableAlertFeedbackID(id *uuid.UUID) *OncallAnnotationCreate {
+	if id != nil {
+		oac = oac.SetAlertFeedbackID(*id)
+	}
+	return oac
+}
+
+// SetAlertFeedback sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
+func (oac *OncallAnnotationCreate) SetAlertFeedback(o *OncallAnnotationAlertFeedback) *OncallAnnotationCreate {
+	return oac.SetAlertFeedbackID(o.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
@@ -265,6 +285,22 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.CreatorID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oac.mutation.AlertFeedbackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallannotation.AlertFeedbackTable,
+			Columns: []string{oncallannotation.AlertFeedbackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oac.mutation.HandoversIDs(); len(nodes) > 0 {

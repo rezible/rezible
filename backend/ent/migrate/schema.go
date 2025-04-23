@@ -599,6 +599,28 @@ var (
 			},
 		},
 	}
+	// OncallAnnotationAlertFeedbacksColumns holds the columns for the "oncall_annotation_alert_feedbacks" table.
+	OncallAnnotationAlertFeedbacksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "actionable", Type: field.TypeBool},
+		{Name: "documentation_available", Type: field.TypeBool},
+		{Name: "accuracy", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
+		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
+	}
+	// OncallAnnotationAlertFeedbacksTable holds the schema information for the "oncall_annotation_alert_feedbacks" table.
+	OncallAnnotationAlertFeedbacksTable = &schema.Table{
+		Name:       "oncall_annotation_alert_feedbacks",
+		Columns:    OncallAnnotationAlertFeedbacksColumns,
+		PrimaryKey: []*schema.Column{OncallAnnotationAlertFeedbacksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_annotation_alert_feedbacks_oncall_annotations_alert_feedback",
+				Columns:    []*schema.Column{OncallAnnotationAlertFeedbacksColumns[4]},
+				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1657,6 +1679,7 @@ var (
 		MeetingSessionsTable,
 		OncallAlertsTable,
 		OncallAnnotationsTable,
+		OncallAnnotationAlertFeedbacksTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallSchedulesTable,
@@ -1728,6 +1751,7 @@ func init() {
 	OncallAlertsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallAnnotationsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallAnnotationsTable.ForeignKeys[1].RefTable = UsersTable
+	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable
