@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -196,21 +195,6 @@ func (orc *OncallRosterCreate) AddShifts(o ...*OncallUserShift) *OncallRosterCre
 		ids[i] = o[i].ID
 	}
 	return orc.AddShiftIDs(ids...)
-}
-
-// AddAlertIDs adds the "alerts" edge to the OncallAlert entity by IDs.
-func (orc *OncallRosterCreate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	orc.mutation.AddAlertIDs(ids...)
-	return orc
-}
-
-// AddAlerts adds the "alerts" edges to the OncallAlert entity.
-func (orc *OncallRosterCreate) AddAlerts(o ...*OncallAlert) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return orc.AddAlertIDs(ids...)
 }
 
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
@@ -424,22 +408,6 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := orc.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

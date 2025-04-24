@@ -47,7 +47,7 @@ func (Incident) Edges() []ent.Edge {
 
 		edge.To("milestones", IncidentMilestone.Type),
 		edge.To("events", IncidentEvent.Type),
-		
+
 		edge.From("retrospective", Retrospective.Type).
 			Ref("incident"),
 
@@ -59,5 +59,44 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("tag_assignments", IncidentTag.Type),
 		edge.To("debriefs", IncidentDebrief.Type),
 		edge.To("review_sessions", MeetingSession.Type),
+	}
+}
+
+type IncidentTeamAssignment struct {
+	ent.Schema
+}
+
+func (IncidentTeamAssignment) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("team_id", uuid.UUID{}),
+	}
+}
+
+func (IncidentTeamAssignment) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("incident", Incident.Type).Unique().Required().Field("incident_id"),
+		edge.To("team", Team.Type).Unique().Required().Field("team_id"),
+	}
+}
+
+type IncidentRoleAssignment struct {
+	ent.Schema
+}
+
+func (IncidentRoleAssignment) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("role_id", uuid.UUID{}),
+		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
+	}
+}
+
+func (IncidentRoleAssignment) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("role", IncidentRole.Type).Unique().Required().Field("role_id"),
+		edge.To("incident", Incident.Type).Unique().Required().Field("incident_id"),
+		edge.To("user", User.Type).Unique().Required().Field("user_id"),
 	}
 }

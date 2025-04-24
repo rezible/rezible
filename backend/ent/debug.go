@@ -196,14 +196,6 @@ func (c *MeetingSessionClient) Debug() *MeetingSessionClient {
 	return &MeetingSessionClient{config: cfg}
 }
 
-func (c *OncallAlertClient) Debug() *OncallAlertClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallAlertClient{config: cfg}
-}
-
 func (c *OncallAnnotationClient) Debug() *OncallAnnotationClient {
 	if c.debug {
 		return c

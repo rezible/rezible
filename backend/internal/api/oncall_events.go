@@ -16,11 +16,10 @@ type oncallEventsHandler struct {
 	users     rez.UserService
 	incidents rez.IncidentService
 	oncall    rez.OncallService
-	alerts    rez.AlertsService
 }
 
-func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService, alerts rez.AlertsService) *oncallEventsHandler {
-	return &oncallEventsHandler{auth: auth, users: users, incidents: inc, oncall: oncall, alerts: alerts}
+func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService) *oncallEventsHandler {
+	return &oncallEventsHandler{auth: auth, users: users, incidents: inc, oncall: oncall}
 }
 
 func makeFakeShiftEvent(date time.Time) oapi.OncallEvent {

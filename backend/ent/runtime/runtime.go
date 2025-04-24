@@ -28,7 +28,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
-	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -310,12 +309,6 @@ func init() {
 	meetingsessionDescID := meetingsessionFields[0].Descriptor()
 	// meetingsession.DefaultID holds the default value on creation for the id field.
 	meetingsession.DefaultID = meetingsessionDescID.Default.(func() uuid.UUID)
-	oncallalertFields := schema.OncallAlert{}.Fields()
-	_ = oncallalertFields
-	// oncallalertDescID is the schema descriptor for id field.
-	oncallalertDescID := oncallalertFields[0].Descriptor()
-	// oncallalert.DefaultID holds the default value on creation for the id field.
-	oncallalert.DefaultID = oncallalertDescID.Default.(func() uuid.UUID)
 	oncallannotationFields := schema.OncallAnnotation{}.Fields()
 	_ = oncallannotationFields
 	// oncallannotationDescCreatedAt is the schema descriptor for created_at field.

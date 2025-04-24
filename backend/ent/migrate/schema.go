@@ -548,27 +548,6 @@ var (
 			},
 		},
 	}
-	// OncallAlertsColumns holds the columns for the "oncall_alerts" table.
-	OncallAlertsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "roster_id", Type: field.TypeUUID},
-	}
-	// OncallAlertsTable holds the schema information for the "oncall_alerts" table.
-	OncallAlertsTable = &schema.Table{
-		Name:       "oncall_alerts",
-		Columns:    OncallAlertsColumns,
-		PrimaryKey: []*schema.Column{OncallAlertsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "oncall_alerts_oncall_rosters_roster",
-				Columns:    []*schema.Column{OncallAlertsColumns[3]},
-				RefColumns: []*schema.Column{OncallRostersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// OncallAnnotationsColumns holds the columns for the "oncall_annotations" table.
 	OncallAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1677,7 +1656,6 @@ var (
 		IncidentTypesTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
-		OncallAlertsTable,
 		OncallAnnotationsTable,
 		OncallAnnotationAlertFeedbacksTable,
 		OncallHandoverTemplatesTable,
@@ -1748,7 +1726,6 @@ func init() {
 	IncidentTeamAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentTeamAssignmentsTable.ForeignKeys[1].RefTable = TeamsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
-	OncallAlertsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallAnnotationsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallAnnotationsTable.ForeignKeys[1].RefTable = UsersTable
 	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable

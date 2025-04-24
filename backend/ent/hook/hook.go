@@ -297,18 +297,6 @@ func (f MeetingSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MeetingSessionMutation", m)
 }
 
-// The OncallAlertFunc type is an adapter to allow the use of ordinary
-// function as OncallAlert mutator.
-type OncallAlertFunc func(context.Context, *ent.OncallAlertMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallAlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallAlertMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAlertMutation", m)
-}
-
 // The OncallAnnotationFunc type is an adapter to allow the use of ordinary
 // function as OncallAnnotation mutator.
 type OncallAnnotationFunc func(context.Context, *ent.OncallAnnotationMutation) (ent.Value, error)

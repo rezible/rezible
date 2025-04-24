@@ -711,29 +711,6 @@ func HasShiftsWith(preds ...predicate.OncallUserShift) predicate.OncallRoster {
 	})
 }
 
-// HasAlerts applies the HasEdge predicate on the "alerts" edge.
-func HasAlerts() predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AlertsTable, AlertsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertsWith applies the HasEdge predicate on the "alerts" edge with a given conditions (other predicates).
-func HasAlertsWith(preds ...predicate.OncallAlert) predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := newAlertsStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasUserWatchers applies the HasEdge predicate on the "user_watchers" edge.
 func HasUserWatchers() predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {

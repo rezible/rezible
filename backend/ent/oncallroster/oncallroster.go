@@ -40,8 +40,6 @@ const (
 	EdgeTeams = "teams"
 	// EdgeShifts holds the string denoting the shifts edge name in mutations.
 	EdgeShifts = "shifts"
-	// EdgeAlerts holds the string denoting the alerts edge name in mutations.
-	EdgeAlerts = "alerts"
 	// EdgeUserWatchers holds the string denoting the user_watchers edge name in mutations.
 	EdgeUserWatchers = "user_watchers"
 	// Table holds the table name of the oncallroster in the database.
@@ -79,13 +77,6 @@ const (
 	ShiftsInverseTable = "oncall_user_shifts"
 	// ShiftsColumn is the table column denoting the shifts relation/edge.
 	ShiftsColumn = "roster_id"
-	// AlertsTable is the table that holds the alerts relation/edge.
-	AlertsTable = "oncall_alerts"
-	// AlertsInverseTable is the table name for the OncallAlert entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallalert" package.
-	AlertsInverseTable = "oncall_alerts"
-	// AlertsColumn is the table column denoting the alerts relation/edge.
-	AlertsColumn = "roster_id"
 	// UserWatchersTable is the table that holds the user_watchers relation/edge. The primary key declared below.
 	UserWatchersTable = "user_watched_oncall_rosters"
 	// UserWatchersInverseTable is the table name for the User entity.
@@ -248,20 +239,6 @@ func ByShifts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByAlertsCount orders the results by alerts count.
-func ByAlertsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAlertsStep(), opts...)
-	}
-}
-
-// ByAlerts orders the results by alerts terms.
-func ByAlerts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByUserWatchersCount orders the results by user_watchers count.
 func ByUserWatchersCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -308,13 +285,6 @@ func newShiftsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ShiftsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, ShiftsTable, ShiftsColumn),
-	)
-}
-func newAlertsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AlertsTable, AlertsColumn),
 	)
 }
 func newUserWatchersStep() *sqlgraph.Step {

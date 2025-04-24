@@ -40,7 +40,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
-	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
@@ -125,8 +124,6 @@ type Client struct {
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
 	MeetingSession *MeetingSessionClient
-	// OncallAlert is the client for interacting with the OncallAlert builders.
-	OncallAlert *OncallAlertClient
 	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
 	OncallAnnotation *OncallAnnotationClient
 	// OncallAnnotationAlertFeedback is the client for interacting with the OncallAnnotationAlertFeedback builders.
@@ -220,7 +217,6 @@ func (c *Client) init() {
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
-	c.OncallAlert = NewOncallAlertClient(c.config)
 	c.OncallAnnotation = NewOncallAnnotationClient(c.config)
 	c.OncallAnnotationAlertFeedback = NewOncallAnnotationAlertFeedbackClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
@@ -366,7 +362,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
-		OncallAlert:                      NewOncallAlertClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -439,7 +434,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
-		OncallAlert:                      NewOncallAlertClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
@@ -505,7 +499,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
 		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
@@ -532,7 +526,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAlert, c.OncallAnnotation,
+		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
 		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
@@ -599,8 +593,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSchedule.mutate(ctx, m)
 	case *MeetingSessionMutation:
 		return c.MeetingSession.mutate(ctx, m)
-	case *OncallAlertMutation:
-		return c.OncallAlert.mutate(ctx, m)
 	case *OncallAnnotationMutation:
 		return c.OncallAnnotation.mutate(ctx, m)
 	case *OncallAnnotationAlertFeedbackMutation:
@@ -4878,155 +4870,6 @@ func (c *MeetingSessionClient) mutate(ctx context.Context, m *MeetingSessionMuta
 	}
 }
 
-// OncallAlertClient is a client for the OncallAlert schema.
-type OncallAlertClient struct {
-	config
-}
-
-// NewOncallAlertClient returns a client for the OncallAlert from the given config.
-func NewOncallAlertClient(c config) *OncallAlertClient {
-	return &OncallAlertClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `oncallalert.Hooks(f(g(h())))`.
-func (c *OncallAlertClient) Use(hooks ...Hook) {
-	c.hooks.OncallAlert = append(c.hooks.OncallAlert, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `oncallalert.Intercept(f(g(h())))`.
-func (c *OncallAlertClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OncallAlert = append(c.inters.OncallAlert, interceptors...)
-}
-
-// Create returns a builder for creating a OncallAlert entity.
-func (c *OncallAlertClient) Create() *OncallAlertCreate {
-	mutation := newOncallAlertMutation(c.config, OpCreate)
-	return &OncallAlertCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OncallAlert entities.
-func (c *OncallAlertClient) CreateBulk(builders ...*OncallAlertCreate) *OncallAlertCreateBulk {
-	return &OncallAlertCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OncallAlertClient) MapCreateBulk(slice any, setFunc func(*OncallAlertCreate, int)) *OncallAlertCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OncallAlertCreateBulk{err: fmt.Errorf("calling to OncallAlertClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OncallAlertCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OncallAlertCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OncallAlert.
-func (c *OncallAlertClient) Update() *OncallAlertUpdate {
-	mutation := newOncallAlertMutation(c.config, OpUpdate)
-	return &OncallAlertUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OncallAlertClient) UpdateOne(oa *OncallAlert) *OncallAlertUpdateOne {
-	mutation := newOncallAlertMutation(c.config, OpUpdateOne, withOncallAlert(oa))
-	return &OncallAlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OncallAlertClient) UpdateOneID(id uuid.UUID) *OncallAlertUpdateOne {
-	mutation := newOncallAlertMutation(c.config, OpUpdateOne, withOncallAlertID(id))
-	return &OncallAlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OncallAlert.
-func (c *OncallAlertClient) Delete() *OncallAlertDelete {
-	mutation := newOncallAlertMutation(c.config, OpDelete)
-	return &OncallAlertDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OncallAlertClient) DeleteOne(oa *OncallAlert) *OncallAlertDeleteOne {
-	return c.DeleteOneID(oa.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OncallAlertClient) DeleteOneID(id uuid.UUID) *OncallAlertDeleteOne {
-	builder := c.Delete().Where(oncallalert.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OncallAlertDeleteOne{builder}
-}
-
-// Query returns a query builder for OncallAlert.
-func (c *OncallAlertClient) Query() *OncallAlertQuery {
-	return &OncallAlertQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOncallAlert},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OncallAlert entity by its id.
-func (c *OncallAlertClient) Get(ctx context.Context, id uuid.UUID) (*OncallAlert, error) {
-	return c.Query().Where(oncallalert.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OncallAlertClient) GetX(ctx context.Context, id uuid.UUID) *OncallAlert {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryRoster queries the roster edge of a OncallAlert.
-func (c *OncallAlertClient) QueryRoster(oa *OncallAlert) *OncallRosterQuery {
-	query := (&OncallRosterClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := oa.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallalert.Table, oncallalert.FieldID, id),
-			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, oncallalert.RosterTable, oncallalert.RosterColumn),
-		)
-		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OncallAlertClient) Hooks() []Hook {
-	return c.hooks.OncallAlert
-}
-
-// Interceptors returns the client interceptors.
-func (c *OncallAlertClient) Interceptors() []Interceptor {
-	return c.inters.OncallAlert
-}
-
-func (c *OncallAlertClient) mutate(ctx context.Context, m *OncallAlertMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OncallAlertCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OncallAlertUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OncallAlertUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OncallAlertDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OncallAlert mutation op: %q", m.Op())
-	}
-}
-
 // OncallAnnotationClient is a client for the OncallAnnotation schema.
 type OncallAnnotationClient struct {
 	config
@@ -5703,22 +5546,6 @@ func (c *OncallRosterClient) QueryShifts(or *OncallRoster) *OncallUserShiftQuery
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
 			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.ShiftsTable, oncallroster.ShiftsColumn),
-		)
-		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlerts queries the alerts edge of a OncallRoster.
-func (c *OncallRosterClient) QueryAlerts(or *OncallRoster) *OncallAlertQuery {
-	query := (&OncallAlertClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := or.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
-			sqlgraph.To(oncallalert.Table, oncallalert.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.AlertsTable, oncallroster.AlertsColumn),
 		)
 		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
 		return fromV, nil
@@ -10401,7 +10228,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallAnnotation, OncallAnnotationAlertFeedback,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
 		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
@@ -10419,7 +10246,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAlert, OncallAnnotation, OncallAnnotationAlertFeedback,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
 		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,

@@ -78,9 +78,6 @@ type MeetingSchedule func(*sql.Selector)
 // MeetingSession is the predicate function for meetingsession builders.
 type MeetingSession func(*sql.Selector)
 
-// OncallAlert is the predicate function for oncallalert builders.
-type OncallAlert func(*sql.Selector)
-
 // OncallAnnotation is the predicate function for oncallannotation builders.
 type OncallAnnotation func(*sql.Selector)
 

@@ -87,3 +87,64 @@ func (IncidentEventSystemComponent) Edges() []ent.Edge {
 		edge.To("system_component", SystemComponent.Type).Unique().Required().Field("system_component_id"),
 	}
 }
+
+type IncidentEventContext struct {
+	ent.Schema
+}
+
+func (IncidentEventContext) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.Text("system_state").Optional(),
+		field.JSON("decision_options", []string{}).Optional(),
+		field.Text("decision_rationale").Optional(),
+		field.JSON("involved_personnel", []string{}).Optional(),
+		field.Time("created_at").Default(time.Now),
+	}
+}
+
+func (IncidentEventContext) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("event", IncidentEvent.Type).Ref("context").Unique().Required(),
+	}
+}
+
+type IncidentEventContributingFactor struct {
+	ent.Schema
+}
+
+func (IncidentEventContributingFactor) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.String("factor_type").NotEmpty(),
+		field.Text("description").Optional(),
+		field.Time("created_at").Default(time.Now),
+	}
+}
+
+func (IncidentEventContributingFactor) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("event", IncidentEvent.Type).Ref("factors").Unique().Required(),
+	}
+}
+
+type IncidentEventEvidence struct {
+	ent.Schema
+}
+
+func (IncidentEventEvidence) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.Enum("evidence_type").Values("log", "metric", "chat", "ticket", "other"),
+		field.String("url").NotEmpty(),
+		field.String("title").NotEmpty(),
+		field.Text("description").Optional(),
+		field.Time("created_at").Default(time.Now),
+	}
+}
+
+func (IncidentEventEvidence) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("event", IncidentEvent.Type).Ref("evidence").Unique().Required(),
+	}
+}

@@ -398,6 +398,6 @@ type (
 	}
 
 	AlertsService interface {
-		ListAlerts(ctx context.Context, params ListAlertsParams) ([]*ent.OncallAlert, error)
+		// ListAlerts(ctx context.Context, params ListAlertsParams) ([]*ent.OncallAlert, error)
 	}
 )

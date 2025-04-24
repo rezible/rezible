@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallalert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -244,21 +243,6 @@ func (oru *OncallRosterUpdate) AddShifts(o ...*OncallUserShift) *OncallRosterUpd
 	return oru.AddShiftIDs(ids...)
 }
 
-// AddAlertIDs adds the "alerts" edge to the OncallAlert entity by IDs.
-func (oru *OncallRosterUpdate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.AddAlertIDs(ids...)
-	return oru
-}
-
-// AddAlerts adds the "alerts" edges to the OncallAlert entity.
-func (oru *OncallRosterUpdate) AddAlerts(o ...*OncallAlert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oru.AddAlertIDs(ids...)
-}
-
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
 func (oru *OncallRosterUpdate) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdate {
 	oru.mutation.AddUserWatcherIDs(ids...)
@@ -367,27 +351,6 @@ func (oru *OncallRosterUpdate) RemoveShifts(o ...*OncallUserShift) *OncallRoster
 		ids[i] = o[i].ID
 	}
 	return oru.RemoveShiftIDs(ids...)
-}
-
-// ClearAlerts clears all "alerts" edges to the OncallAlert entity.
-func (oru *OncallRosterUpdate) ClearAlerts() *OncallRosterUpdate {
-	oru.mutation.ClearAlerts()
-	return oru
-}
-
-// RemoveAlertIDs removes the "alerts" edge to OncallAlert entities by IDs.
-func (oru *OncallRosterUpdate) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	oru.mutation.RemoveAlertIDs(ids...)
-	return oru
-}
-
-// RemoveAlerts removes "alerts" edges to OncallAlert entities.
-func (oru *OncallRosterUpdate) RemoveAlerts(o ...*OncallAlert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oru.RemoveAlertIDs(ids...)
 }
 
 // ClearUserWatchers clears all "user_watchers" edges to the User entity.
@@ -695,51 +658,6 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if oru.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !oru.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oru.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if oru.mutation.UserWatchersCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1014,21 +932,6 @@ func (oruo *OncallRosterUpdateOne) AddShifts(o ...*OncallUserShift) *OncallRoste
 	return oruo.AddShiftIDs(ids...)
 }
 
-// AddAlertIDs adds the "alerts" edge to the OncallAlert entity by IDs.
-func (oruo *OncallRosterUpdateOne) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.AddAlertIDs(ids...)
-	return oruo
-}
-
-// AddAlerts adds the "alerts" edges to the OncallAlert entity.
-func (oruo *OncallRosterUpdateOne) AddAlerts(o ...*OncallAlert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oruo.AddAlertIDs(ids...)
-}
-
 // AddUserWatcherIDs adds the "user_watchers" edge to the User entity by IDs.
 func (oruo *OncallRosterUpdateOne) AddUserWatcherIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
 	oruo.mutation.AddUserWatcherIDs(ids...)
@@ -1137,27 +1040,6 @@ func (oruo *OncallRosterUpdateOne) RemoveShifts(o ...*OncallUserShift) *OncallRo
 		ids[i] = o[i].ID
 	}
 	return oruo.RemoveShiftIDs(ids...)
-}
-
-// ClearAlerts clears all "alerts" edges to the OncallAlert entity.
-func (oruo *OncallRosterUpdateOne) ClearAlerts() *OncallRosterUpdateOne {
-	oruo.mutation.ClearAlerts()
-	return oruo
-}
-
-// RemoveAlertIDs removes the "alerts" edge to OncallAlert entities by IDs.
-func (oruo *OncallRosterUpdateOne) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	oruo.mutation.RemoveAlertIDs(ids...)
-	return oruo
-}
-
-// RemoveAlerts removes "alerts" edges to OncallAlert entities.
-func (oruo *OncallRosterUpdateOne) RemoveAlerts(o ...*OncallAlert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return oruo.RemoveAlertIDs(ids...)
 }
 
 // ClearUserWatchers clears all "user_watchers" edges to the User entity.
@@ -1488,51 +1370,6 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if oruo.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !oruo.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := oruo.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallalert.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

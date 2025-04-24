@@ -53,13 +53,11 @@ type OncallRosterEdges struct {
 	Teams []*Team `json:"teams,omitempty"`
 	// Shifts holds the value of the shifts edge.
 	Shifts []*OncallUserShift `json:"shifts,omitempty"`
-	// Alerts holds the value of the alerts edge.
-	Alerts []*OncallAlert `json:"alerts,omitempty"`
 	// UserWatchers holds the value of the user_watchers edge.
 	UserWatchers []*User `json:"user_watchers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [6]bool
 }
 
 // SchedulesOrErr returns the Schedules value or an error if the edge
@@ -109,19 +107,10 @@ func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
 	return nil, &NotLoadedError{edge: "shifts"}
 }
 
-// AlertsOrErr returns the Alerts value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallRosterEdges) AlertsOrErr() ([]*OncallAlert, error) {
-	if e.loadedTypes[5] {
-		return e.Alerts, nil
-	}
-	return nil, &NotLoadedError{edge: "alerts"}
-}
-
 // UserWatchersOrErr returns the UserWatchers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[5] {
 		return e.UserWatchers, nil
 	}
 	return nil, &NotLoadedError{edge: "user_watchers"}
@@ -243,11 +232,6 @@ func (or *OncallRoster) QueryTeams() *TeamQuery {
 // QueryShifts queries the "shifts" edge of the OncallRoster entity.
 func (or *OncallRoster) QueryShifts() *OncallUserShiftQuery {
 	return NewOncallRosterClient(or.config).QueryShifts(or)
-}
-
-// QueryAlerts queries the "alerts" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryAlerts() *OncallAlertQuery {
-	return NewOncallRosterClient(or.config).QueryAlerts(or)
 }
 
 // QueryUserWatchers queries the "user_watchers" edge of the OncallRoster entity.

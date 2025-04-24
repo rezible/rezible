@@ -39,3 +39,25 @@ func (OncallSchedule) Edges() []ent.Edge {
 			Unique().Required().Field("roster_id"),
 	}
 }
+
+type OncallScheduleParticipant struct {
+	ent.Schema
+}
+
+func (OncallScheduleParticipant) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("schedule_id", uuid.UUID{}),
+		field.UUID("user_id", uuid.UUID{}),
+		field.Int("index"),
+	}
+}
+
+func (OncallScheduleParticipant) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("schedule", OncallSchedule.Type).
+			Ref("participants").Unique().Required().Field("schedule_id"),
+		edge.To("user", User.Type).
+			Unique().Required().Field("user_id"),
+	}
+}
