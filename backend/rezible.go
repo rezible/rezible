@@ -72,14 +72,11 @@ type (
 	}
 
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
-	LookupProviderUserFunc              = func(context.Context, string) (*ent.User, error)
 )
 
 type (
 	JobsService interface {
-		//RegisterWorker(jobs.Worker) error
 		RegisterPeriodicJob(*jobs.PeriodicJob)
-		// RegisterWorkers(OncallService, DebriefService) error
 
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
