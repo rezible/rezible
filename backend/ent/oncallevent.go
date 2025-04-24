@@ -29,8 +29,29 @@ type OncallEvent struct {
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// Source holds the value of the "source" field.
-	Source       string `json:"source,omitempty"`
+	Source string `json:"source,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OncallEventQuery when eager-loading is set.
+	Edges        OncallEventEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// OncallEventEdges holds the relations/edges for other nodes in the graph.
+type OncallEventEdges struct {
+	// Annotations holds the value of the annotations edge.
+	Annotations []*OncallAnnotation `json:"annotations,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// AnnotationsOrErr returns the Annotations value or an error if the edge
+// was not loaded in eager-loading.
+func (e OncallEventEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
+	if e.loadedTypes[0] {
+		return e.Annotations, nil
+	}
+	return nil, &NotLoadedError{edge: "annotations"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -112,6 +133,11 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (oe *OncallEvent) Value(name string) (ent.Value, error) {
 	return oe.selectValues.Get(name)
+}
+
+// QueryAnnotations queries the "annotations" edge of the OncallEvent entity.
+func (oe *OncallEvent) QueryAnnotations() *OncallAnnotationQuery {
+	return NewOncallEventClient(oe.config).QueryAnnotations(oe)
 }
 
 // Update returns a builder for updating this OncallEvent.

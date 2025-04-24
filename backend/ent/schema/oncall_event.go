@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -24,6 +25,6 @@ func (OncallEvent) Fields() []ent.Field {
 
 func (OncallEvent) Edges() []ent.Edge {
 	return []ent.Edge{
-		//edge.From("annotations", OncallAnnotation.Type).Ref("event"),
+		edge.From("annotations", OncallAnnotation.Type).Ref("event"),
 	}
 }

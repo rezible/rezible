@@ -190,7 +190,7 @@ type (
 type (
 	ChatMessageAnnotationSupporter interface {
 		CreateEventAnnotation(ctx context.Context, evAnno OncallEventAnnotation) error
-		QueryChatMessageAnnotationDetails(ctx context.Context, userId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error)
+		QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error)
 	}
 
 	ChatProvider interface {

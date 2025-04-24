@@ -32,14 +32,14 @@ func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 	attr := OncallEventAttributes{}
 
 	return OncallEvent{
-		Id:         e.ID.String(),
+		Id:         e.ID,
 		Attributes: attr,
 	}
 }
 
 type (
 	OncallEvent struct {
-		Id         string                `json:"id"`
+		Id         uuid.UUID             `json:"id"`
 		Attributes OncallEventAttributes `json:"attributes"`
 	}
 
@@ -57,7 +57,7 @@ type (
 	}
 
 	OncallAnnotationAttributes struct {
-		EventId         string                         `json:"eventId"`
+		EventId         uuid.UUID                      `json:"eventId"`
 		RosterId        uuid.UUID                      `json:"rosterId"`
 		Creator         *User                          `json:"creator"`
 		Notes           string                         `json:"notes"`
@@ -135,7 +135,7 @@ var CreateOncallAnnotation = huma.Operation{
 }
 
 type CreateOncallAnnotationRequestAttributes struct {
-	EventId         string                         `json:"eventId"`
+	EventId         uuid.UUID                      `json:"eventId"`
 	RosterId        uuid.UUID                      `json:"rosterId"`
 	Notes           string                         `json:"notes"`
 	MinutesOccupied int                            `json:"minutesOccupied"`

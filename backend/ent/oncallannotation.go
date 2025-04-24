@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -21,12 +22,12 @@ type OncallAnnotation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// EventID holds the value of the "event_id" field.
+	EventID uuid.UUID `json:"event_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID uuid.UUID `json:"creator_id,omitempty"`
-	// EventID holds the value of the "event_id" field.
-	EventID string `json:"event_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// MinutesOccupied holds the value of the "minutes_occupied" field.
@@ -41,6 +42,8 @@ type OncallAnnotation struct {
 
 // OncallAnnotationEdges holds the relations/edges for other nodes in the graph.
 type OncallAnnotationEdges struct {
+	// Event holds the value of the event edge.
+	Event *OncallEvent `json:"event,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// Creator holds the value of the creator edge.
@@ -51,7 +54,18 @@ type OncallAnnotationEdges struct {
 	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
+}
+
+// EventOrErr returns the Event value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallAnnotationEdges) EventOrErr() (*OncallEvent, error) {
+	if e.Event != nil {
+		return e.Event, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: oncallevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "event"}
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -59,7 +73,7 @@ type OncallAnnotationEdges struct {
 func (e OncallAnnotationEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -70,7 +84,7 @@ func (e OncallAnnotationEdges) RosterOrErr() (*OncallRoster, error) {
 func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 	if e.Creator != nil {
 		return e.Creator, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -81,7 +95,7 @@ func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*OncallAnnotationAlertFeedback, error) {
 	if e.AlertFeedback != nil {
 		return e.AlertFeedback, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: oncallannotationalertfeedback.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert_feedback"}
@@ -90,7 +104,7 @@ func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*OncallAnnotationAlertFeedb
 // HandoversOrErr returns the Handovers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Handovers, nil
 	}
 	return nil, &NotLoadedError{edge: "handovers"}
@@ -103,11 +117,11 @@ func (*OncallAnnotation) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
-		case oncallannotation.FieldEventID, oncallannotation.FieldNotes:
+		case oncallannotation.FieldNotes:
 			values[i] = new(sql.NullString)
 		case oncallannotation.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case oncallannotation.FieldID, oncallannotation.FieldRosterID, oncallannotation.FieldCreatorID:
+		case oncallannotation.FieldID, oncallannotation.FieldEventID, oncallannotation.FieldRosterID, oncallannotation.FieldCreatorID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -130,6 +144,12 @@ func (oa *OncallAnnotation) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				oa.ID = *value
 			}
+		case oncallannotation.FieldEventID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field event_id", values[i])
+			} else if value != nil {
+				oa.EventID = *value
+			}
 		case oncallannotation.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
@@ -141,12 +161,6 @@ func (oa *OncallAnnotation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field creator_id", values[i])
 			} else if value != nil {
 				oa.CreatorID = *value
-			}
-		case oncallannotation.FieldEventID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field event_id", values[i])
-			} else if value.Valid {
-				oa.EventID = value.String
 			}
 		case oncallannotation.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -177,6 +191,11 @@ func (oa *OncallAnnotation) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (oa *OncallAnnotation) Value(name string) (ent.Value, error) {
 	return oa.selectValues.Get(name)
+}
+
+// QueryEvent queries the "event" edge of the OncallAnnotation entity.
+func (oa *OncallAnnotation) QueryEvent() *OncallEventQuery {
+	return NewOncallAnnotationClient(oa.config).QueryEvent(oa)
 }
 
 // QueryRoster queries the "roster" edge of the OncallAnnotation entity.
@@ -222,14 +241,14 @@ func (oa *OncallAnnotation) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallAnnotation(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", oa.ID))
+	builder.WriteString("event_id=")
+	builder.WriteString(fmt.Sprintf("%v", oa.EventID))
+	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
 	builder.WriteString(fmt.Sprintf("%v", oa.RosterID))
 	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
 	builder.WriteString(fmt.Sprintf("%v", oa.CreatorID))
-	builder.WriteString(", ")
-	builder.WriteString("event_id=")
-	builder.WriteString(oa.EventID)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(oa.CreatedAt.Format(time.ANSIC))

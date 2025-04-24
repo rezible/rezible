@@ -4986,6 +4986,22 @@ func (c *OncallAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *Oncall
 	return obj
 }
 
+// QueryEvent queries the event edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryEvent(oa *OncallAnnotation) *OncallEventQuery {
+	query := (&OncallEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
+			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.EventTable, oncallannotation.EventColumn),
+		)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRoster queries the roster edge of a OncallAnnotation.
 func (c *OncallAnnotationClient) QueryRoster(oa *OncallAnnotation) *OncallRosterQuery {
 	query := (&OncallRosterClient{config: c.config}).Query()
@@ -5330,6 +5346,22 @@ func (c *OncallEventClient) GetX(ctx context.Context, id uuid.UUID) *OncallEvent
 		panic(err)
 	}
 	return obj
+}
+
+// QueryAnnotations queries the annotations edge of a OncallEvent.
+func (c *OncallEventClient) QueryAnnotations(oe *OncallEvent) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oe.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, id),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallevent.AnnotationsTable, oncallevent.AnnotationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(oe.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

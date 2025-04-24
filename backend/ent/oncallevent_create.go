@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 )
 
@@ -72,6 +73,21 @@ func (oec *OncallEventCreate) SetNillableID(u *uuid.UUID) *OncallEventCreate {
 		oec.SetID(*u)
 	}
 	return oec
+}
+
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (oec *OncallEventCreate) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventCreate {
+	oec.mutation.AddAnnotationIDs(ids...)
+	return oec
+}
+
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (oec *OncallEventCreate) AddAnnotations(o ...*OncallAnnotation) *OncallEventCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oec.AddAnnotationIDs(ids...)
 }
 
 // Mutation returns the OncallEventMutation object of the builder.
@@ -194,6 +210,22 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 	if value, ok := oec.mutation.Source(); ok {
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
 		_node.Source = value
+	}
+	if nodes := oec.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

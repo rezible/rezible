@@ -551,10 +551,10 @@ var (
 	// OncallAnnotationsColumns holds the columns for the "oncall_annotations" table.
 	OncallAnnotationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "event_id", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "minutes_occupied", Type: field.TypeInt},
 		{Name: "notes", Type: field.TypeString, Size: 2147483647},
+		{Name: "event_id", Type: field.TypeUUID},
 		{Name: "roster_id", Type: field.TypeUUID},
 		{Name: "creator_id", Type: field.TypeUUID},
 	}
@@ -564,6 +564,12 @@ var (
 		Columns:    OncallAnnotationsColumns,
 		PrimaryKey: []*schema.Column{OncallAnnotationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_annotations_oncall_events_event",
+				Columns:    []*schema.Column{OncallAnnotationsColumns[4]},
+				RefColumns: []*schema.Column{OncallEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
 			{
 				Symbol:     "oncall_annotations_oncall_rosters_roster",
 				Columns:    []*schema.Column{OncallAnnotationsColumns[5]},
@@ -1743,8 +1749,9 @@ func init() {
 	IncidentTeamAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentTeamAssignmentsTable.ForeignKeys[1].RefTable = TeamsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
-	OncallAnnotationsTable.ForeignKeys[0].RefTable = OncallRostersTable
-	OncallAnnotationsTable.ForeignKeys[1].RefTable = UsersTable
+	OncallAnnotationsTable.ForeignKeys[0].RefTable = OncallEventsTable
+	OncallAnnotationsTable.ForeignKeys[1].RefTable = OncallRostersTable
+	OncallAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
 	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable

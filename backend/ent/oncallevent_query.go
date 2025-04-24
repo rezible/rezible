@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -19,11 +21,12 @@ import (
 // OncallEventQuery is the builder for querying OncallEvent entities.
 type OncallEventQuery struct {
 	config
-	ctx        *QueryContext
-	order      []oncallevent.OrderOption
-	inters     []Interceptor
-	predicates []predicate.OncallEvent
-	modifiers  []func(*sql.Selector)
+	ctx             *QueryContext
+	order           []oncallevent.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.OncallEvent
+	withAnnotations *OncallAnnotationQuery
+	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,6 +61,28 @@ func (oeq *OncallEventQuery) Unique(unique bool) *OncallEventQuery {
 func (oeq *OncallEventQuery) Order(o ...oncallevent.OrderOption) *OncallEventQuery {
 	oeq.order = append(oeq.order, o...)
 	return oeq
+}
+
+// QueryAnnotations chains the current query on the "annotations" edge.
+func (oeq *OncallEventQuery) QueryAnnotations() *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: oeq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, selector),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallevent.AnnotationsTable, oncallevent.AnnotationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first OncallEvent entity from the query.
@@ -247,16 +272,28 @@ func (oeq *OncallEventQuery) Clone() *OncallEventQuery {
 		return nil
 	}
 	return &OncallEventQuery{
-		config:     oeq.config,
-		ctx:        oeq.ctx.Clone(),
-		order:      append([]oncallevent.OrderOption{}, oeq.order...),
-		inters:     append([]Interceptor{}, oeq.inters...),
-		predicates: append([]predicate.OncallEvent{}, oeq.predicates...),
+		config:          oeq.config,
+		ctx:             oeq.ctx.Clone(),
+		order:           append([]oncallevent.OrderOption{}, oeq.order...),
+		inters:          append([]Interceptor{}, oeq.inters...),
+		predicates:      append([]predicate.OncallEvent{}, oeq.predicates...),
+		withAnnotations: oeq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:       oeq.sql.Clone(),
 		path:      oeq.path,
 		modifiers: append([]func(*sql.Selector){}, oeq.modifiers...),
 	}
+}
+
+// WithAnnotations tells the query-builder to eager-load the nodes that are connected to
+// the "annotations" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeq *OncallEventQuery) WithAnnotations(opts ...func(*OncallAnnotationQuery)) *OncallEventQuery {
+	query := (&OncallAnnotationClient{config: oeq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeq.withAnnotations = query
+	return oeq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -335,8 +372,11 @@ func (oeq *OncallEventQuery) prepareQuery(ctx context.Context) error {
 
 func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallEvent, error) {
 	var (
-		nodes = []*OncallEvent{}
-		_spec = oeq.querySpec()
+		nodes       = []*OncallEvent{}
+		_spec       = oeq.querySpec()
+		loadedTypes = [1]bool{
+			oeq.withAnnotations != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallEvent).scanValues(nil, columns)
@@ -344,6 +384,7 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &OncallEvent{config: oeq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(oeq.modifiers) > 0 {
@@ -358,7 +399,45 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := oeq.withAnnotations; query != nil {
+		if err := oeq.loadAnnotations(ctx, query, nodes,
+			func(n *OncallEvent) { n.Edges.Annotations = []*OncallAnnotation{} },
+			func(n *OncallEvent, e *OncallAnnotation) { n.Edges.Annotations = append(n.Edges.Annotations, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (oeq *OncallEventQuery) loadAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *OncallAnnotation)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*OncallEvent)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oncallannotation.FieldEventID)
+	}
+	query.Where(predicate.OncallAnnotation(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(oncallevent.AnnotationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.EventID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "event_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (oeq *OncallEventQuery) sqlCount(ctx context.Context) (int, error) {

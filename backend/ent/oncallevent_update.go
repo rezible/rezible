@@ -11,6 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -113,9 +115,45 @@ func (oeu *OncallEventUpdate) SetNillableSource(s *string) *OncallEventUpdate {
 	return oeu
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (oeu *OncallEventUpdate) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdate {
+	oeu.mutation.AddAnnotationIDs(ids...)
+	return oeu
+}
+
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (oeu *OncallEventUpdate) AddAnnotations(o ...*OncallAnnotation) *OncallEventUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oeu.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the OncallEventMutation object of the builder.
 func (oeu *OncallEventUpdate) Mutation() *OncallEventMutation {
 	return oeu.mutation
+}
+
+// ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
+func (oeu *OncallEventUpdate) ClearAnnotations() *OncallEventUpdate {
+	oeu.mutation.ClearAnnotations()
+	return oeu
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to OncallAnnotation entities by IDs.
+func (oeu *OncallEventUpdate) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdate {
+	oeu.mutation.RemoveAnnotationIDs(ids...)
+	return oeu
+}
+
+// RemoveAnnotations removes "annotations" edges to OncallAnnotation entities.
+func (oeu *OncallEventUpdate) RemoveAnnotations(o ...*OncallAnnotation) *OncallEventUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oeu.RemoveAnnotationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -177,6 +215,51 @@ func (oeu *OncallEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := oeu.mutation.Source(); ok {
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
+	}
+	if oeu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeu.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !oeu.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeu.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.AddModifiers(oeu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, oeu.driver, _spec); err != nil {
@@ -284,9 +367,45 @@ func (oeuo *OncallEventUpdateOne) SetNillableSource(s *string) *OncallEventUpdat
 	return oeuo
 }
 
+// AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
+func (oeuo *OncallEventUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdateOne {
+	oeuo.mutation.AddAnnotationIDs(ids...)
+	return oeuo
+}
+
+// AddAnnotations adds the "annotations" edges to the OncallAnnotation entity.
+func (oeuo *OncallEventUpdateOne) AddAnnotations(o ...*OncallAnnotation) *OncallEventUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oeuo.AddAnnotationIDs(ids...)
+}
+
 // Mutation returns the OncallEventMutation object of the builder.
 func (oeuo *OncallEventUpdateOne) Mutation() *OncallEventMutation {
 	return oeuo.mutation
+}
+
+// ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
+func (oeuo *OncallEventUpdateOne) ClearAnnotations() *OncallEventUpdateOne {
+	oeuo.mutation.ClearAnnotations()
+	return oeuo
+}
+
+// RemoveAnnotationIDs removes the "annotations" edge to OncallAnnotation entities by IDs.
+func (oeuo *OncallEventUpdateOne) RemoveAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdateOne {
+	oeuo.mutation.RemoveAnnotationIDs(ids...)
+	return oeuo
+}
+
+// RemoveAnnotations removes "annotations" edges to OncallAnnotation entities.
+func (oeuo *OncallEventUpdateOne) RemoveAnnotations(o ...*OncallAnnotation) *OncallEventUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oeuo.RemoveAnnotationIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallEventUpdate builder.
@@ -378,6 +497,51 @@ func (oeuo *OncallEventUpdateOne) sqlSave(ctx context.Context) (_node *OncallEve
 	}
 	if value, ok := oeuo.mutation.Source(); ok {
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
+	}
+	if oeuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeuo.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !oeuo.mutation.AnnotationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeuo.mutation.AnnotationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallevent.AnnotationsTable,
+			Columns: []string{oncallevent.AnnotationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallannotation.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.AddModifiers(oeuo.modifiers...)
 	_node = &OncallEvent{config: oeuo.config}

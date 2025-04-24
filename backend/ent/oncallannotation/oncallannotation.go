@@ -15,18 +15,20 @@ const (
 	Label = "oncall_annotation"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldEventID holds the string denoting the event_id field in the database.
+	FieldEventID = "event_id"
 	// FieldRosterID holds the string denoting the roster_id field in the database.
 	FieldRosterID = "roster_id"
 	// FieldCreatorID holds the string denoting the creator_id field in the database.
 	FieldCreatorID = "creator_id"
-	// FieldEventID holds the string denoting the event_id field in the database.
-	FieldEventID = "event_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldMinutesOccupied holds the string denoting the minutes_occupied field in the database.
 	FieldMinutesOccupied = "minutes_occupied"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
+	// EdgeEvent holds the string denoting the event edge name in mutations.
+	EdgeEvent = "event"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
 	// EdgeCreator holds the string denoting the creator edge name in mutations.
@@ -37,6 +39,13 @@ const (
 	EdgeHandovers = "handovers"
 	// Table holds the table name of the oncallannotation in the database.
 	Table = "oncall_annotations"
+	// EventTable is the table that holds the event relation/edge.
+	EventTable = "oncall_annotations"
+	// EventInverseTable is the table name for the OncallEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallevent" package.
+	EventInverseTable = "oncall_events"
+	// EventColumn is the table column denoting the event relation/edge.
+	EventColumn = "event_id"
 	// RosterTable is the table that holds the roster relation/edge.
 	RosterTable = "oncall_annotations"
 	// RosterInverseTable is the table name for the OncallRoster entity.
@@ -68,9 +77,9 @@ const (
 // Columns holds all SQL columns for oncallannotation fields.
 var Columns = []string{
 	FieldID,
+	FieldEventID,
 	FieldRosterID,
 	FieldCreatorID,
-	FieldEventID,
 	FieldCreatedAt,
 	FieldMinutesOccupied,
 	FieldNotes,
@@ -107,6 +116,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByEventID orders the results by the event_id field.
+func ByEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventID, opts...).ToFunc()
+}
+
 // ByRosterID orders the results by the roster_id field.
 func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
@@ -115,11 +129,6 @@ func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatorID orders the results by the creator_id field.
 func ByCreatorID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatorID, opts...).ToFunc()
-}
-
-// ByEventID orders the results by the event_id field.
-func ByEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -135,6 +144,13 @@ func ByMinutesOccupied(opts ...sql.OrderTermOption) OrderOption {
 // ByNotes orders the results by the notes field.
 func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotes, opts...).ToFunc()
+}
+
+// ByEventField orders the results by event field.
+func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByRosterField orders the results by roster field.
@@ -170,6 +186,13 @@ func ByHandovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newHandoversStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newEventStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+	)
 }
 func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldLTE(FieldID, id))
 }
 
+// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
+func EventID(v uuid.UUID) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldEQ(FieldEventID, v))
+}
+
 // RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
 func RosterID(v uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldEQ(FieldRosterID, v))
@@ -64,11 +69,6 @@ func RosterID(v uuid.UUID) predicate.OncallAnnotation {
 // CreatorID applies equality check predicate on the "creator_id" field. It's identical to CreatorIDEQ.
 func CreatorID(v uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldEQ(FieldCreatorID, v))
-}
-
-// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
-func EventID(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldEQ(FieldEventID, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -84,6 +84,26 @@ func MinutesOccupied(v int) predicate.OncallAnnotation {
 // Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
 func Notes(v string) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldEQ(FieldNotes, v))
+}
+
+// EventIDEQ applies the EQ predicate on the "event_id" field.
+func EventIDEQ(v uuid.UUID) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldEQ(FieldEventID, v))
+}
+
+// EventIDNEQ applies the NEQ predicate on the "event_id" field.
+func EventIDNEQ(v uuid.UUID) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldNEQ(FieldEventID, v))
+}
+
+// EventIDIn applies the In predicate on the "event_id" field.
+func EventIDIn(vs ...uuid.UUID) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldIn(FieldEventID, vs...))
+}
+
+// EventIDNotIn applies the NotIn predicate on the "event_id" field.
+func EventIDNotIn(vs ...uuid.UUID) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldNotIn(FieldEventID, vs...))
 }
 
 // RosterIDEQ applies the EQ predicate on the "roster_id" field.
@@ -124,71 +144,6 @@ func CreatorIDIn(vs ...uuid.UUID) predicate.OncallAnnotation {
 // CreatorIDNotIn applies the NotIn predicate on the "creator_id" field.
 func CreatorIDNotIn(vs ...uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldNotIn(FieldCreatorID, vs...))
-}
-
-// EventIDEQ applies the EQ predicate on the "event_id" field.
-func EventIDEQ(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldEQ(FieldEventID, v))
-}
-
-// EventIDNEQ applies the NEQ predicate on the "event_id" field.
-func EventIDNEQ(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldNEQ(FieldEventID, v))
-}
-
-// EventIDIn applies the In predicate on the "event_id" field.
-func EventIDIn(vs ...string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldIn(FieldEventID, vs...))
-}
-
-// EventIDNotIn applies the NotIn predicate on the "event_id" field.
-func EventIDNotIn(vs ...string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldNotIn(FieldEventID, vs...))
-}
-
-// EventIDGT applies the GT predicate on the "event_id" field.
-func EventIDGT(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldGT(FieldEventID, v))
-}
-
-// EventIDGTE applies the GTE predicate on the "event_id" field.
-func EventIDGTE(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldGTE(FieldEventID, v))
-}
-
-// EventIDLT applies the LT predicate on the "event_id" field.
-func EventIDLT(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldLT(FieldEventID, v))
-}
-
-// EventIDLTE applies the LTE predicate on the "event_id" field.
-func EventIDLTE(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldLTE(FieldEventID, v))
-}
-
-// EventIDContains applies the Contains predicate on the "event_id" field.
-func EventIDContains(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldContains(FieldEventID, v))
-}
-
-// EventIDHasPrefix applies the HasPrefix predicate on the "event_id" field.
-func EventIDHasPrefix(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldHasPrefix(FieldEventID, v))
-}
-
-// EventIDHasSuffix applies the HasSuffix predicate on the "event_id" field.
-func EventIDHasSuffix(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldHasSuffix(FieldEventID, v))
-}
-
-// EventIDEqualFold applies the EqualFold predicate on the "event_id" field.
-func EventIDEqualFold(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldEqualFold(FieldEventID, v))
-}
-
-// EventIDContainsFold applies the ContainsFold predicate on the "event_id" field.
-func EventIDContainsFold(v string) predicate.OncallAnnotation {
-	return predicate.OncallAnnotation(sql.FieldContainsFold(FieldEventID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -334,6 +289,29 @@ func NotesEqualFold(v string) predicate.OncallAnnotation {
 // NotesContainsFold applies the ContainsFold predicate on the "notes" field.
 func NotesContainsFold(v string) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldContainsFold(FieldNotes, v))
+}
+
+// HasEvent applies the HasEdge predicate on the "event" edge.
+func HasEvent() predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
+func HasEventWith(preds ...predicate.OncallEvent) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := newEventStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasRoster applies the HasEdge predicate on the "roster" edge.

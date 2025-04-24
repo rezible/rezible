@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/user"
@@ -28,6 +29,12 @@ type OncallAnnotationCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetEventID sets the "event_id" field.
+func (oac *OncallAnnotationCreate) SetEventID(u uuid.UUID) *OncallAnnotationCreate {
+	oac.mutation.SetEventID(u)
+	return oac
+}
+
 // SetRosterID sets the "roster_id" field.
 func (oac *OncallAnnotationCreate) SetRosterID(u uuid.UUID) *OncallAnnotationCreate {
 	oac.mutation.SetRosterID(u)
@@ -37,12 +44,6 @@ func (oac *OncallAnnotationCreate) SetRosterID(u uuid.UUID) *OncallAnnotationCre
 // SetCreatorID sets the "creator_id" field.
 func (oac *OncallAnnotationCreate) SetCreatorID(u uuid.UUID) *OncallAnnotationCreate {
 	oac.mutation.SetCreatorID(u)
-	return oac
-}
-
-// SetEventID sets the "event_id" field.
-func (oac *OncallAnnotationCreate) SetEventID(s string) *OncallAnnotationCreate {
-	oac.mutation.SetEventID(s)
 	return oac
 }
 
@@ -84,6 +85,11 @@ func (oac *OncallAnnotationCreate) SetNillableID(u *uuid.UUID) *OncallAnnotation
 		oac.SetID(*u)
 	}
 	return oac
+}
+
+// SetEvent sets the "event" edge to the OncallEvent entity.
+func (oac *OncallAnnotationCreate) SetEvent(o *OncallEvent) *OncallAnnotationCreate {
+	return oac.SetEventID(o.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
@@ -177,14 +183,14 @@ func (oac *OncallAnnotationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (oac *OncallAnnotationCreate) check() error {
+	if _, ok := oac.mutation.EventID(); !ok {
+		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallAnnotation.event_id"`)}
+	}
 	if _, ok := oac.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallAnnotation.roster_id"`)}
 	}
 	if _, ok := oac.mutation.CreatorID(); !ok {
 		return &ValidationError{Name: "creator_id", err: errors.New(`ent: missing required field "OncallAnnotation.creator_id"`)}
-	}
-	if _, ok := oac.mutation.EventID(); !ok {
-		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallAnnotation.event_id"`)}
 	}
 	if _, ok := oac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallAnnotation.created_at"`)}
@@ -194,6 +200,9 @@ func (oac *OncallAnnotationCreate) check() error {
 	}
 	if _, ok := oac.mutation.Notes(); !ok {
 		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "OncallAnnotation.notes"`)}
+	}
+	if len(oac.mutation.EventIDs()) == 0 {
+		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "OncallAnnotation.event"`)}
 	}
 	if len(oac.mutation.RosterIDs()) == 0 {
 		return &ValidationError{Name: "roster", err: errors.New(`ent: missing required edge "OncallAnnotation.roster"`)}
@@ -237,10 +246,6 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := oac.mutation.EventID(); ok {
-		_spec.SetField(oncallannotation.FieldEventID, field.TypeString, value)
-		_node.EventID = value
-	}
 	if value, ok := oac.mutation.CreatedAt(); ok {
 		_spec.SetField(oncallannotation.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -252,6 +257,23 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 	if value, ok := oac.mutation.Notes(); ok {
 		_spec.SetField(oncallannotation.FieldNotes, field.TypeString, value)
 		_node.Notes = value
+	}
+	if nodes := oac.mutation.EventIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallannotation.EventTable,
+			Columns: []string{oncallannotation.EventColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.EventID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oac.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -326,7 +348,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 // of the `INSERT` statement. For example:
 //
 //	client.OncallAnnotation.Create().
-//		SetRosterID(v).
+//		SetEventID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -335,7 +357,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallAnnotationUpsert) {
-//			SetRosterID(v+v).
+//			SetEventID(v+v).
 //		}).
 //		Exec(ctx)
 func (oac *OncallAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *OncallAnnotationUpsertOne {
@@ -371,6 +393,18 @@ type (
 	}
 )
 
+// SetEventID sets the "event_id" field.
+func (u *OncallAnnotationUpsert) SetEventID(v uuid.UUID) *OncallAnnotationUpsert {
+	u.Set(oncallannotation.FieldEventID, v)
+	return u
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallAnnotationUpsert) UpdateEventID() *OncallAnnotationUpsert {
+	u.SetExcluded(oncallannotation.FieldEventID)
+	return u
+}
+
 // SetRosterID sets the "roster_id" field.
 func (u *OncallAnnotationUpsert) SetRosterID(v uuid.UUID) *OncallAnnotationUpsert {
 	u.Set(oncallannotation.FieldRosterID, v)
@@ -392,18 +426,6 @@ func (u *OncallAnnotationUpsert) SetCreatorID(v uuid.UUID) *OncallAnnotationUpse
 // UpdateCreatorID sets the "creator_id" field to the value that was provided on create.
 func (u *OncallAnnotationUpsert) UpdateCreatorID() *OncallAnnotationUpsert {
 	u.SetExcluded(oncallannotation.FieldCreatorID)
-	return u
-}
-
-// SetEventID sets the "event_id" field.
-func (u *OncallAnnotationUpsert) SetEventID(v string) *OncallAnnotationUpsert {
-	u.Set(oncallannotation.FieldEventID, v)
-	return u
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallAnnotationUpsert) UpdateEventID() *OncallAnnotationUpsert {
-	u.SetExcluded(oncallannotation.FieldEventID)
 	return u
 }
 
@@ -497,6 +519,20 @@ func (u *OncallAnnotationUpsertOne) Update(set func(*OncallAnnotationUpsert)) *O
 	return u
 }
 
+// SetEventID sets the "event_id" field.
+func (u *OncallAnnotationUpsertOne) SetEventID(v uuid.UUID) *OncallAnnotationUpsertOne {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.SetEventID(v)
+	})
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallAnnotationUpsertOne) UpdateEventID() *OncallAnnotationUpsertOne {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.UpdateEventID()
+	})
+}
+
 // SetRosterID sets the "roster_id" field.
 func (u *OncallAnnotationUpsertOne) SetRosterID(v uuid.UUID) *OncallAnnotationUpsertOne {
 	return u.Update(func(s *OncallAnnotationUpsert) {
@@ -522,20 +558,6 @@ func (u *OncallAnnotationUpsertOne) SetCreatorID(v uuid.UUID) *OncallAnnotationU
 func (u *OncallAnnotationUpsertOne) UpdateCreatorID() *OncallAnnotationUpsertOne {
 	return u.Update(func(s *OncallAnnotationUpsert) {
 		s.UpdateCreatorID()
-	})
-}
-
-// SetEventID sets the "event_id" field.
-func (u *OncallAnnotationUpsertOne) SetEventID(v string) *OncallAnnotationUpsertOne {
-	return u.Update(func(s *OncallAnnotationUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallAnnotationUpsertOne) UpdateEventID() *OncallAnnotationUpsertOne {
-	return u.Update(func(s *OncallAnnotationUpsert) {
-		s.UpdateEventID()
 	})
 }
 
@@ -724,7 +746,7 @@ func (oacb *OncallAnnotationCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallAnnotationUpsert) {
-//			SetRosterID(v+v).
+//			SetEventID(v+v).
 //		}).
 //		Exec(ctx)
 func (oacb *OncallAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallAnnotationUpsertBulk {
@@ -803,6 +825,20 @@ func (u *OncallAnnotationUpsertBulk) Update(set func(*OncallAnnotationUpsert)) *
 	return u
 }
 
+// SetEventID sets the "event_id" field.
+func (u *OncallAnnotationUpsertBulk) SetEventID(v uuid.UUID) *OncallAnnotationUpsertBulk {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.SetEventID(v)
+	})
+}
+
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *OncallAnnotationUpsertBulk) UpdateEventID() *OncallAnnotationUpsertBulk {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.UpdateEventID()
+	})
+}
+
 // SetRosterID sets the "roster_id" field.
 func (u *OncallAnnotationUpsertBulk) SetRosterID(v uuid.UUID) *OncallAnnotationUpsertBulk {
 	return u.Update(func(s *OncallAnnotationUpsert) {
@@ -828,20 +864,6 @@ func (u *OncallAnnotationUpsertBulk) SetCreatorID(v uuid.UUID) *OncallAnnotation
 func (u *OncallAnnotationUpsertBulk) UpdateCreatorID() *OncallAnnotationUpsertBulk {
 	return u.Update(func(s *OncallAnnotationUpsert) {
 		s.UpdateCreatorID()
-	})
-}
-
-// SetEventID sets the "event_id" field.
-func (u *OncallAnnotationUpsertBulk) SetEventID(v string) *OncallAnnotationUpsertBulk {
-	return u.Update(func(s *OncallAnnotationUpsert) {
-		s.SetEventID(v)
-	})
-}
-
-// UpdateEventID sets the "event_id" field to the value that was provided on create.
-func (u *OncallAnnotationUpsertBulk) UpdateEventID() *OncallAnnotationUpsertBulk {
-	return u.Update(func(s *OncallAnnotationUpsert) {
-		s.UpdateEventID()
 	})
 }
 

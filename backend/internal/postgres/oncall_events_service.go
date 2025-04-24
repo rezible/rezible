@@ -7,6 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"math/rand"
 	"time"
@@ -88,7 +89,7 @@ func (s *OncallEventsService) CreateEventAnnotation(ctx context.Context, evAnno 
 	return nil
 }
 
-func (s *OncallEventsService) QueryChatMessageAnnotationDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error) {
+func (s *OncallEventsService) QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error) {
 	user, userErr := s.users.GetByChatId(ctx, userChatId)
 	if userErr != nil {
 		return nil, nil, userErr
@@ -104,15 +105,13 @@ func (s *OncallEventsService) QueryChatMessageAnnotationDetails(ctx context.Cont
 		rosterIds[i] = r.ID
 	}
 
-	annos, annosErr := s.db.OncallAnnotation.Query().
-		Where(oncallannotation.EventID(msgId)).
-		Where(oncallannotation.RosterIDIn(rosterIds...)).
-		All(ctx)
-	if annosErr != nil && !ent.IsNotFound(annosErr) {
-		return nil, nil, fmt.Errorf("failed to query oncall annotations for user: %w", annosErr)
+	// Get event by message id
+	event, eventErr := s.db.OncallEvent.Query().Where(oncallevent.ProviderID(msgId)).Only(ctx)
+	if eventErr != nil && !ent.IsNotFound(eventErr) {
+		return nil, nil, fmt.Errorf("failed to query oncall event for msg: %w", eventErr)
 	}
 
-	return rosters, annos, nil
+	return rosters, event, nil
 }
 
 /*

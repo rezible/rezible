@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"net/http"
 	"strconv"
 	"strings"
@@ -145,7 +146,7 @@ type createAnnotationMetadata struct {
 func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
 	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
 
-	rosters, currAnnos, infoErr := p.annos.QueryChatMessageAnnotationDetails(ctx, ic.User.ID, msgId)
+	rosters, event, infoErr := p.annos.QueryUserChatMessageEventDetails(ctx, ic.User.ID, msgId)
 	if infoErr != nil {
 		return nil, fmt.Errorf("failed to get annotation information: %w", infoErr)
 	}
@@ -200,19 +201,16 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	metadata.RosterId = roster.ID
 
 	var curr *ent.OncallAnnotation
-	for _, anno := range currAnnos {
-		if anno.RosterID == roster.ID && anno.EventID == msgId {
-			curr = anno
-			break
-		}
-	}
 
-	//curr, annoErr := roster.QueryAnnotations().Where(oncallannotation.EventID(msgId)).Only(ctx)
-	//if annoErr != nil && !ent.IsNotFound(annoErr) {
-	//	return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
-	//}
-	//if curr != nil {
-	//}
+	if event != nil {
+		rosterAnno, annoErr := event.QueryAnnotations().
+			Where(oncallannotation.RosterID(roster.ID)).
+			Only(ctx)
+		if annoErr != nil && !ent.IsNotFound(annoErr) {
+			return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
+		}
+		curr = rosterAnno
+	}
 
 	messageUserDetails := slack.NewRichTextSection(
 		slack.NewRichTextSectionUserElement(ic.Message.User, nil),

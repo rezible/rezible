@@ -4,6 +4,7 @@ package oncallevent
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -24,8 +25,17 @@ const (
 	FieldDescription = "description"
 	// FieldSource holds the string denoting the source field in the database.
 	FieldSource = "source"
+	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
+	EdgeAnnotations = "annotations"
 	// Table holds the table name of the oncallevent in the database.
 	Table = "oncall_events"
+	// AnnotationsTable is the table that holds the annotations relation/edge.
+	AnnotationsTable = "oncall_annotations"
+	// AnnotationsInverseTable is the table name for the OncallAnnotation entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallannotation" package.
+	AnnotationsInverseTable = "oncall_annotations"
+	// AnnotationsColumn is the table column denoting the annotations relation/edge.
+	AnnotationsColumn = "event_id"
 )
 
 // Columns holds all SQL columns for oncallevent fields.
@@ -90,4 +100,25 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 // BySource orders the results by the source field.
 func BySource(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSource, opts...).ToFunc()
+}
+
+// ByAnnotationsCount orders the results by annotations count.
+func ByAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAnnotationsStep(), opts...)
+	}
+}
+
+// ByAnnotations orders the results by annotations terms.
+func ByAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newAnnotationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AnnotationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AnnotationsTable, AnnotationsColumn),
+	)
 }

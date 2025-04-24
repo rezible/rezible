@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -448,6 +449,29 @@ func SourceEqualFold(v string) predicate.OncallEvent {
 // SourceContainsFold applies the ContainsFold predicate on the "source" field.
 func SourceContainsFold(v string) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldContainsFold(FieldSource, v))
+}
+
+// HasAnnotations applies the HasEdge predicate on the "annotations" edge.
+func HasAnnotations() predicate.OncallEvent {
+	return predicate.OncallEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnnotationsTable, AnnotationsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAnnotationsWith applies the HasEdge predicate on the "annotations" edge with a given conditions (other predicates).
+func HasAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.OncallEvent {
+	return predicate.OncallEvent(func(s *sql.Selector) {
+		step := newAnnotationsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

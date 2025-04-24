@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -28,6 +29,7 @@ type OncallAnnotationQuery struct {
 	order             []oncallannotation.OrderOption
 	inters            []Interceptor
 	predicates        []predicate.OncallAnnotation
+	withEvent         *OncallEventQuery
 	withRoster        *OncallRosterQuery
 	withCreator       *UserQuery
 	withAlertFeedback *OncallAnnotationAlertFeedbackQuery
@@ -67,6 +69,28 @@ func (oaq *OncallAnnotationQuery) Unique(unique bool) *OncallAnnotationQuery {
 func (oaq *OncallAnnotationQuery) Order(o ...oncallannotation.OrderOption) *OncallAnnotationQuery {
 	oaq.order = append(oaq.order, o...)
 	return oaq
+}
+
+// QueryEvent chains the current query on the "event" edge.
+func (oaq *OncallAnnotationQuery) QueryEvent() *OncallEventQuery {
+	query := (&OncallEventClient{config: oaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
+			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.EventTable, oncallannotation.EventColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
@@ -349,6 +373,7 @@ func (oaq *OncallAnnotationQuery) Clone() *OncallAnnotationQuery {
 		order:             append([]oncallannotation.OrderOption{}, oaq.order...),
 		inters:            append([]Interceptor{}, oaq.inters...),
 		predicates:        append([]predicate.OncallAnnotation{}, oaq.predicates...),
+		withEvent:         oaq.withEvent.Clone(),
 		withRoster:        oaq.withRoster.Clone(),
 		withCreator:       oaq.withCreator.Clone(),
 		withAlertFeedback: oaq.withAlertFeedback.Clone(),
@@ -358,6 +383,17 @@ func (oaq *OncallAnnotationQuery) Clone() *OncallAnnotationQuery {
 		path:      oaq.path,
 		modifiers: append([]func(*sql.Selector){}, oaq.modifiers...),
 	}
+}
+
+// WithEvent tells the query-builder to eager-load the nodes that are connected to
+// the "event" edge. The optional arguments are used to configure the query builder of the edge.
+func (oaq *OncallAnnotationQuery) WithEvent(opts ...func(*OncallEventQuery)) *OncallAnnotationQuery {
+	query := (&OncallEventClient{config: oaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oaq.withEvent = query
+	return oaq
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
@@ -410,12 +446,12 @@ func (oaq *OncallAnnotationQuery) WithHandovers(opts ...func(*OncallUserShiftHan
 // Example:
 //
 //	var v []struct {
-//		RosterID uuid.UUID `json:"roster_id,omitempty"`
+//		EventID uuid.UUID `json:"event_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallAnnotation.Query().
-//		GroupBy(oncallannotation.FieldRosterID).
+//		GroupBy(oncallannotation.FieldEventID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oaq *OncallAnnotationQuery) GroupBy(field string, fields ...string) *OncallAnnotationGroupBy {
@@ -433,11 +469,11 @@ func (oaq *OncallAnnotationQuery) GroupBy(field string, fields ...string) *Oncal
 // Example:
 //
 //	var v []struct {
-//		RosterID uuid.UUID `json:"roster_id,omitempty"`
+//		EventID uuid.UUID `json:"event_id,omitempty"`
 //	}
 //
 //	client.OncallAnnotation.Query().
-//		Select(oncallannotation.FieldRosterID).
+//		Select(oncallannotation.FieldEventID).
 //		Scan(ctx, &v)
 func (oaq *OncallAnnotationQuery) Select(fields ...string) *OncallAnnotationSelect {
 	oaq.ctx.Fields = append(oaq.ctx.Fields, fields...)
@@ -482,7 +518,8 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*OncallAnnotation{}
 		_spec       = oaq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
+			oaq.withEvent != nil,
 			oaq.withRoster != nil,
 			oaq.withCreator != nil,
 			oaq.withAlertFeedback != nil,
@@ -509,6 +546,12 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := oaq.withEvent; query != nil {
+		if err := oaq.loadEvent(ctx, query, nodes, nil,
+			func(n *OncallAnnotation, e *OncallEvent) { n.Edges.Event = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := oaq.withRoster; query != nil {
 		if err := oaq.loadRoster(ctx, query, nodes, nil,
@@ -540,6 +583,35 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	return nodes, nil
 }
 
+func (oaq *OncallAnnotationQuery) loadEvent(ctx context.Context, query *OncallEventQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallEvent)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallAnnotation)
+	for i := range nodes {
+		fk := nodes[i].EventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(oncallevent.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "event_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (oaq *OncallAnnotationQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallAnnotation)
@@ -714,6 +786,9 @@ func (oaq *OncallAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallannotation.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oaq.withEvent != nil {
+			_spec.Node.AddColumnOnce(oncallannotation.FieldEventID)
 		}
 		if oaq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallannotation.FieldRosterID)
