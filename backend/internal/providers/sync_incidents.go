@@ -38,18 +38,6 @@ func (ds *incidentDataSyncer) resetState() {
 	ds.roleProvIdMap = make(map[string]uuid.UUID)
 }
 
-func (ds *incidentDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
-	historyErr := ds.db.ProviderSyncHistory.Create().
-		SetStartedAt(start).
-		SetFinishedAt(time.Now()).
-		SetNumMutations(num).
-		SetDataType(dataType).
-		Exec(ctx)
-	if historyErr != nil {
-		log.Error().Err(historyErr).Msg("failed to save sync history")
-	}
-}
-
 func (ds *incidentDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
@@ -121,7 +109,9 @@ func (ds *incidentDataSyncer) syncAllProviderIncidentRoles(ctx context.Context) 
 		return fmt.Errorf("failed to sync incident roles: %w", syncErr)
 	}
 
-	ds.saveSyncHistory(ctx, start, numMutations, "incident_roles")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "incident_roles"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save incident roles data sync history")
+	}
 
 	return nil
 }
@@ -174,7 +164,9 @@ func (ds *incidentDataSyncer) syncAllProviderIncidents(ctx context.Context) erro
 	}
 	numMutations += lastBatchMuts
 
-	ds.saveSyncHistory(ctx, start, numMutations, "incidents")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "incidents"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save incidents data sync history")
+	}
 
 	return nil
 }

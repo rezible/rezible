@@ -84,6 +84,9 @@ type OncallAnnotation func(*sql.Selector)
 // OncallAnnotationAlertFeedback is the predicate function for oncallannotationalertfeedback builders.
 type OncallAnnotationAlertFeedback func(*sql.Selector)
 
+// OncallEvent is the predicate function for oncallevent builders.
+type OncallEvent func(*sql.Selector)
+
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)
 

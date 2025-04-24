@@ -122,12 +122,17 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, handoverErr := postgres.NewOncallService(ctx, dbc, j, docs, chat, users, incidents)
-	if handoverErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallHandoverService: %w", handoverErr)
+	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, j, docs, chat, users, incidents)
+	if oncallErr != nil {
+		return nil, fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
 
-	provs.Chat.SetAnnotationSupporter(oncall)
+	oncallEvents, eventsErr := postgres.NewOncallEventsService(ctx, dbc, users, oncall, incidents)
+	if eventsErr != nil {
+		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
+	}
+
+	provs.Chat.SetAnnotationSupporter(oncallEvents)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, ai, chat)
 	if debriefsErr != nil {
@@ -139,7 +144,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
-	componentsSvc, cmpsErr := postgres.NewSystemComponentsService(dbc)
+	components, cmpsErr := postgres.NewSystemComponentsService(dbc)
 	if cmpsErr != nil {
 		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpsErr)
 	}
@@ -150,7 +155,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	}
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, docs, retros, componentsSvc)
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 
 	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, pl.WebhookHandler())
 	if httpErr != nil {

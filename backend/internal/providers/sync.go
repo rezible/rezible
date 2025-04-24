@@ -140,6 +140,15 @@ func getLastSyncTime(ctx context.Context, db *ent.Client, dataType string) time.
 	return lastSync.FinishedAt
 }
 
+func saveSyncHistory(ctx context.Context, db *ent.Client, start time.Time, num int, dataType string) error {
+	return db.ProviderSyncHistory.Create().
+		SetStartedAt(start).
+		SetFinishedAt(time.Now()).
+		SetNumMutations(num).
+		SetDataType(dataType).
+		Exec(ctx)
+}
+
 func applySyncMutations(ctx context.Context, client *ent.Client, mutations []ent.Mutation) error {
 	if len(mutations) == 0 {
 		return nil

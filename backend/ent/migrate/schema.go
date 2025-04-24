@@ -600,6 +600,22 @@ var (
 			},
 		},
 	}
+	// OncallEventsColumns holds the columns for the "oncall_events" table.
+	OncallEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "timestamp", Type: field.TypeTime},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString},
+	}
+	// OncallEventsTable holds the schema information for the "oncall_events" table.
+	OncallEventsTable = &schema.Table{
+		Name:       "oncall_events",
+		Columns:    OncallEventsColumns,
+		PrimaryKey: []*schema.Column{OncallEventsColumns[0]},
+	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1658,6 +1674,7 @@ var (
 		MeetingSessionsTable,
 		OncallAnnotationsTable,
 		OncallAnnotationAlertFeedbacksTable,
+		OncallEventsTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallSchedulesTable,

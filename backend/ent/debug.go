@@ -212,6 +212,14 @@ func (c *OncallAnnotationAlertFeedbackClient) Debug() *OncallAnnotationAlertFeed
 	return &OncallAnnotationAlertFeedbackClient{config: cfg}
 }
 
+func (c *OncallEventClient) Debug() *OncallEventClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &OncallEventClient{config: cfg}
+}
+
 func (c *OncallHandoverTemplateClient) Debug() *OncallHandoverTemplateClient {
 	if c.debug {
 		return c

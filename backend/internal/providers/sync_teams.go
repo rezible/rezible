@@ -32,18 +32,6 @@ func (ds *teamDataSyncer) resetState() {
 	ds.slugs.reset()
 }
 
-func (ds *teamDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
-	historyErr := ds.db.ProviderSyncHistory.Create().
-		SetStartedAt(start).
-		SetFinishedAt(time.Now()).
-		SetNumMutations(num).
-		SetDataType(dataType).
-		Exec(ctx)
-	if historyErr != nil {
-		log.Error().Err(historyErr).Msg("failed to save sync history")
-	}
-}
-
 func (ds *teamDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
@@ -89,7 +77,9 @@ func (ds *teamDataSyncer) syncAllProviderTeams(ctx context.Context) error {
 	}
 	numMutations += lastBatchMuts
 
-	ds.saveSyncHistory(ctx, start, numMutations, "teams")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "teams"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save teams data sync history")
+	}
 
 	return nil
 }

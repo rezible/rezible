@@ -16,7 +16,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -92,75 +91,6 @@ func (s *OncallService) registerHandoverSchema() {
 	}
 	prosemirror.RegisterSchema(schema)
 }
-
-func (s *OncallService) CreateEventAnnotation(ctx context.Context, evAnno rez.OncallEventAnnotation) error {
-	return nil
-}
-
-func (s *OncallService) QueryChatMessageAnnotationDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, []*ent.OncallAnnotation, error) {
-	user, userErr := s.users.GetByChatId(ctx, userChatId)
-	if userErr != nil {
-		return nil, nil, userErr
-	}
-
-	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
-	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
-		return nil, nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
-	}
-
-	rosterIds := make([]uuid.UUID, len(rosters))
-	for i, r := range rosters {
-		rosterIds[i] = r.ID
-	}
-
-	annos, annosErr := s.db.OncallAnnotation.Query().
-		Where(oncallannotation.EventID(msgId)).
-		Where(oncallannotation.RosterIDIn(rosterIds...)).
-		All(ctx)
-	if annosErr != nil && !ent.IsNotFound(annosErr) {
-		return nil, nil, fmt.Errorf("failed to query oncall annotations for user: %w", annosErr)
-	}
-
-	return rosters, annos, nil
-}
-
-/*
-func (s *OncallService) CreateAnnotation(ctx context.Context, rosterId uuid.UUID, ev *rez.OncallEvent, anno *ent.OncallAnnotation) error {
-	annos, annosErr := s.db.OncallAnnotation.Query().
-		Where(oncallannotation.RosterID(rosterId)).
-		All(ctx)
-	if annosErr != nil {
-		return fmt.Errorf("failed to query: %w", annosErr)
-	}
-
-	for _, an := range annos {
-		if an.EventID != "" && an.EventID == msg.ID {
-			anno = an
-			break
-		}
-	}
-	prevId := anno.ID.String()
-	anno := &ent.OncallAnnotation{
-		RosterID: rosterId,
-		EventID:  msg.ID,
-	}
-	setFn(anno)
-	if anno.ID.String() != prevId {
-		return fmt.Errorf("annotation id mismatch: %s", anno.ID)
-	}
-
-	upsertQuery := s.db.OncallAnnotation.Create().
-		SetRosterID(anno.RosterID).
-		SetEventID(anno.EventID).
-		SetNotes(anno.Notes).
-		SetMinutesOccupied(anno.MinutesOccupied)
-	if upsertErr := upsertQuery.Exec(ctx); upsertErr != nil {
-		return fmt.Errorf("failed to upsert char annotation: %w", upsertErr)
-	}
-
-	return nil
-}
-*/
 
 func (s *OncallService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) ([]*ent.OncallSchedule, error) {
 	var query *ent.OncallScheduleQuery
@@ -601,56 +531,4 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		StartingShift:          nextShift,
 		PinnedEventAnnotations: annos,
 	})
-}
-
-func (s *OncallService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
-	query := s.db.OncallAnnotation.Query().
-		Limit(params.GetLimit()).
-		Offset(params.Offset)
-
-	rosterId := params.RosterID
-	if params.ShiftID != uuid.Nil {
-		shift, shiftErr := s.GetShiftByID(ctx, params.ShiftID)
-		if shiftErr != nil {
-			return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
-		}
-		rosterId = shift.RosterID
-		query.Where(oncallannotation.And(
-			oncallannotation.CreatedAtGT(shift.StartAt),
-			oncallannotation.CreatedAtLT(shift.EndAt)))
-	}
-	if rosterId != uuid.Nil {
-		query.Where(oncallannotation.HasRosterWith(oncallroster.ID(rosterId)))
-	}
-
-	annos, annosErr := query.All(params.GetQueryContext(ctx))
-	if annosErr != nil {
-		return nil, fmt.Errorf("query annotations: %w", annosErr)
-	}
-
-	return annos, nil
-}
-
-func (s *OncallService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {
-	return s.db.OncallAnnotation.Get(ctx, id)
-}
-
-func (s *OncallService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
-	query := s.db.OncallAnnotation.Create().
-		SetID(uuid.New()).
-		SetEventID(anno.EventID).
-		SetMinutesOccupied(anno.MinutesOccupied).
-		SetNotes(anno.Notes).
-		SetRosterID(anno.RosterID).
-		OnConflictColumns(oncallannotation.FieldID).
-		UpdateNewValues()
-
-	if err := query.Exec(ctx); err != nil {
-		return nil, fmt.Errorf("upsert oncall annotation: %w", err)
-	}
-	return anno, nil
-}
-
-func (s *OncallService) DeleteAnnotation(ctx context.Context, id uuid.UUID) error {
-	return s.db.OncallAnnotation.DeleteOneID(id).Exec(ctx)
 }

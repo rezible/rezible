@@ -30,18 +30,6 @@ func (ds *userDataSyncer) resetState() {
 	ds.mutations = make([]ent.Mutation, 0)
 }
 
-func (ds *userDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
-	historyErr := ds.db.ProviderSyncHistory.Create().
-		SetStartedAt(start).
-		SetFinishedAt(time.Now()).
-		SetNumMutations(num).
-		SetDataType(dataType).
-		Exec(ctx)
-	if historyErr != nil {
-		log.Error().Err(historyErr).Msg("failed to save sync history")
-	}
-}
-
 func (ds *userDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
@@ -89,7 +77,9 @@ func (ds *userDataSyncer) syncAllProviderUsers(ctx context.Context) error {
 	}
 	numMutations += lastBatchMuts
 
-	ds.saveSyncHistory(ctx, start, numMutations, "users")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "users"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save users data sync history")
+	}
 
 	return nil
 }

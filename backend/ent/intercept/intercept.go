@@ -34,6 +34,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -822,6 +823,33 @@ func (f TraverseOncallAnnotationAlertFeedback) Traverse(ctx context.Context, q e
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationAlertFeedbackQuery", q)
 }
 
+// The OncallEventFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallEventFunc func(context.Context, *ent.OncallEventQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OncallEventFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallEventQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallEventQuery", q)
+}
+
+// The TraverseOncallEvent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallEvent func(context.Context, *ent.OncallEventQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOncallEvent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOncallEvent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallEventQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallEventQuery", q)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateQuery) (ent.Value, error)
 
@@ -1606,6 +1634,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallAnnotationQuery, predicate.OncallAnnotation, oncallannotation.OrderOption]{typ: ent.TypeOncallAnnotation, tq: q}, nil
 	case *ent.OncallAnnotationAlertFeedbackQuery:
 		return &query[*ent.OncallAnnotationAlertFeedbackQuery, predicate.OncallAnnotationAlertFeedback, oncallannotationalertfeedback.OrderOption]{typ: ent.TypeOncallAnnotationAlertFeedback, tq: q}, nil
+	case *ent.OncallEventQuery:
+		return &query[*ent.OncallEventQuery, predicate.OncallEvent, oncallevent.OrderOption]{typ: ent.TypeOncallEvent, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:

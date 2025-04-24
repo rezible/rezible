@@ -100,18 +100,6 @@ func getLatestShiftsByRoster(ctx context.Context, client *ent.OncallUserShiftCli
 }
 */
 
-func (ds *oncallDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
-	historyErr := ds.db.ProviderSyncHistory.Create().
-		SetStartedAt(start).
-		SetFinishedAt(time.Now()).
-		SetNumMutations(num).
-		SetDataType(dataType).
-		Exec(ctx)
-	if historyErr != nil {
-		log.Error().Err(historyErr).Msg("failed to save sync history")
-	}
-}
-
 func (ds *oncallDataSyncer) syncAllRosters(ctx context.Context) error {
 	start := time.Now()
 	var numMutations int
@@ -141,7 +129,9 @@ func (ds *oncallDataSyncer) syncAllRosters(ctx context.Context) error {
 	}
 	numMutations += batchMuts
 
-	ds.saveSyncHistory(ctx, start, numMutations, "oncall_rosters")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "oncall_rosters"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save oncall rosters data sync history")
+	}
 
 	return nil
 }
@@ -404,7 +394,9 @@ func (ds *oncallDataSyncer) syncAllOncallShifts(ctx context.Context) error {
 		ds.mutations = nil
 	}
 
-	ds.saveSyncHistory(ctx, start, numMutations, "oncall_shifts")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "oncall_shifts"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save oncall shifts data sync history")
+	}
 
 	return nil
 }

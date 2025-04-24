@@ -31,8 +31,8 @@ func (p *OncallEventsDataProvider) GetWebhooks() rez.Webhooks {
 	return rez.Webhooks{}
 }
 
-func (p *OncallEventsDataProvider) PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*rez.OncallEvent, error] {
-	return func(yield func(*rez.OncallEvent, error) bool) {
+func (p *OncallEventsDataProvider) PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error] {
+	return func(yield func(*ent.OncallEvent, error) bool) {
 
 	}
 }

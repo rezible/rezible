@@ -36,18 +36,6 @@ func (ds *systemComponentsDataSyncer) resetState() {
 	ds.mutations = make([]ent.Mutation, 0)
 }
 
-func (ds *systemComponentsDataSyncer) saveSyncHistory(ctx context.Context, start time.Time, num int, dataType string) {
-	historyErr := ds.db.ProviderSyncHistory.Create().
-		SetStartedAt(start).
-		SetFinishedAt(time.Now()).
-		SetNumMutations(num).
-		SetDataType(dataType).
-		Exec(ctx)
-	if historyErr != nil {
-		log.Error().Err(historyErr).Msg("failed to save sync history")
-	}
-}
-
 func (ds *systemComponentsDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
@@ -117,7 +105,9 @@ func (ds *systemComponentsDataSyncer) syncAllProviderComponents(ctx context.Cont
 	}
 	numMutations += lastBatchMuts
 
-	ds.saveSyncHistory(ctx, start, numMutations, systemComponentsDataType)
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, systemComponentsDataType); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save system components data sync history")
+	}
 
 	return nil
 }

@@ -42,6 +42,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -128,6 +129,8 @@ type Client struct {
 	OncallAnnotation *OncallAnnotationClient
 	// OncallAnnotationAlertFeedback is the client for interacting with the OncallAnnotationAlertFeedback builders.
 	OncallAnnotationAlertFeedback *OncallAnnotationAlertFeedbackClient
+	// OncallEvent is the client for interacting with the OncallEvent builders.
+	OncallEvent *OncallEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -219,6 +222,7 @@ func (c *Client) init() {
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallAnnotation = NewOncallAnnotationClient(c.config)
 	c.OncallAnnotationAlertFeedback = NewOncallAnnotationAlertFeedbackClient(c.config)
+	c.OncallEvent = NewOncallEventClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallSchedule = NewOncallScheduleClient(c.config)
@@ -364,6 +368,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
+		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -436,6 +441,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
 		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
+		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
@@ -500,16 +506,16 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
-		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
-		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
-		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
-		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.User,
+		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
+		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallUserShift, c.OncallUserShiftCover, c.OncallUserShiftHandover,
+		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -527,16 +533,16 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
-		c.OncallAnnotationAlertFeedback, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallUserShift,
-		c.OncallUserShiftCover, c.OncallUserShiftHandover, c.ProviderConfig,
-		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
-		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.User,
+		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
+		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallUserShift, c.OncallUserShiftCover, c.OncallUserShiftHandover,
+		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -597,6 +603,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallAnnotation.mutate(ctx, m)
 	case *OncallAnnotationAlertFeedbackMutation:
 		return c.OncallAnnotationAlertFeedback.mutate(ctx, m)
+	case *OncallEventMutation:
+		return c.OncallEvent.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -5213,6 +5221,139 @@ func (c *OncallAnnotationAlertFeedbackClient) mutate(ctx context.Context, m *Onc
 		return (&OncallAnnotationAlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallAnnotationAlertFeedback mutation op: %q", m.Op())
+	}
+}
+
+// OncallEventClient is a client for the OncallEvent schema.
+type OncallEventClient struct {
+	config
+}
+
+// NewOncallEventClient returns a client for the OncallEvent from the given config.
+func NewOncallEventClient(c config) *OncallEventClient {
+	return &OncallEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oncallevent.Hooks(f(g(h())))`.
+func (c *OncallEventClient) Use(hooks ...Hook) {
+	c.hooks.OncallEvent = append(c.hooks.OncallEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oncallevent.Intercept(f(g(h())))`.
+func (c *OncallEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OncallEvent = append(c.inters.OncallEvent, interceptors...)
+}
+
+// Create returns a builder for creating a OncallEvent entity.
+func (c *OncallEventClient) Create() *OncallEventCreate {
+	mutation := newOncallEventMutation(c.config, OpCreate)
+	return &OncallEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OncallEvent entities.
+func (c *OncallEventClient) CreateBulk(builders ...*OncallEventCreate) *OncallEventCreateBulk {
+	return &OncallEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OncallEventClient) MapCreateBulk(slice any, setFunc func(*OncallEventCreate, int)) *OncallEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OncallEventCreateBulk{err: fmt.Errorf("calling to OncallEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OncallEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OncallEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OncallEvent.
+func (c *OncallEventClient) Update() *OncallEventUpdate {
+	mutation := newOncallEventMutation(c.config, OpUpdate)
+	return &OncallEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OncallEventClient) UpdateOne(oe *OncallEvent) *OncallEventUpdateOne {
+	mutation := newOncallEventMutation(c.config, OpUpdateOne, withOncallEvent(oe))
+	return &OncallEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OncallEventClient) UpdateOneID(id uuid.UUID) *OncallEventUpdateOne {
+	mutation := newOncallEventMutation(c.config, OpUpdateOne, withOncallEventID(id))
+	return &OncallEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OncallEvent.
+func (c *OncallEventClient) Delete() *OncallEventDelete {
+	mutation := newOncallEventMutation(c.config, OpDelete)
+	return &OncallEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OncallEventClient) DeleteOne(oe *OncallEvent) *OncallEventDeleteOne {
+	return c.DeleteOneID(oe.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OncallEventClient) DeleteOneID(id uuid.UUID) *OncallEventDeleteOne {
+	builder := c.Delete().Where(oncallevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OncallEventDeleteOne{builder}
+}
+
+// Query returns a query builder for OncallEvent.
+func (c *OncallEventClient) Query() *OncallEventQuery {
+	return &OncallEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOncallEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OncallEvent entity by its id.
+func (c *OncallEventClient) Get(ctx context.Context, id uuid.UUID) (*OncallEvent, error) {
+	return c.Query().Where(oncallevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OncallEventClient) GetX(ctx context.Context, id uuid.UUID) *OncallEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *OncallEventClient) Hooks() []Hook {
+	return c.hooks.OncallEvent
+}
+
+// Interceptors returns the client interceptors.
+func (c *OncallEventClient) Interceptors() []Interceptor {
+	return c.inters.OncallEvent
+}
+
+func (c *OncallEventClient) mutate(ctx context.Context, m *OncallEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OncallEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OncallEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OncallEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OncallEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OncallEvent mutation op: %q", m.Op())
 	}
 }
 
@@ -10228,7 +10369,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
 		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
@@ -10246,7 +10387,7 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
 		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,

@@ -8,12 +8,10 @@ import (
 	"time"
 )
 
-// OncallAnnotation holds the schema definition for the OncallAnnotation entity.
 type OncallAnnotation struct {
 	ent.Schema
 }
 
-// Fields of the OncallAnnotation.
 func (OncallAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -26,7 +24,6 @@ func (OncallAnnotation) Fields() []ent.Field {
 	}
 }
 
-// Edges of the OncallAnnotation.
 func (OncallAnnotation) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roster", OncallRoster.Type).Unique().Required().Field("roster_id"),

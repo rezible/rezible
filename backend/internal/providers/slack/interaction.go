@@ -292,10 +292,10 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 	}
 
 	msgAnno := rez.OncallEventAnnotation{
-		Event: &rez.OncallEvent{
-			ID:        meta.MsgId,
-			Kind:      "message",
-			Timestamp: meta.MsgTimestamp,
+		Event: &ent.OncallEvent{
+			ProviderID: meta.MsgId,
+			Kind:       "message",
+			Timestamp:  meta.MsgTimestamp,
 			// TODO: add more message details
 		},
 		Annotation: &ent.OncallAnnotation{

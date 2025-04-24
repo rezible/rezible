@@ -28,6 +28,15 @@ func (o operations) RegisterOncallEvents(api huma.API) {
 	huma.Register(api, DeleteOncallAnnotation, o.DeleteOncallAnnotation)
 }
 
+func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
+	attr := OncallEventAttributes{}
+
+	return OncallEvent{
+		Id:         e.ID.String(),
+		Attributes: attr,
+	}
+}
+
 type (
 	OncallEvent struct {
 		Id         string                `json:"id"`

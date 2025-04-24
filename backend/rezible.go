@@ -300,24 +300,15 @@ type (
 )
 
 type (
-	OncallEvent struct {
-		ID          string    `json:"id"`
-		Timestamp   time.Time `json:"timestamp"`
-		Kind        string    `json:"kind"`
-		Title       string    `json:"title,omitempty"`
-		Description *string   `json:"description,omitempty"`
-		Source      *string   `json:"source,omitempty"`
-	}
-
 	OncallEventAnnotation struct {
-		Event      *OncallEvent          `json:"event"`
+		Event      *ent.OncallEvent      `json:"event"`
 		Annotation *ent.OncallAnnotation `json:"annotation"`
 	}
 
 	OncallEventsDataProvider interface {
 		GetWebhooks() Webhooks
 
-		PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*OncallEvent, error]
+		PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
 	}
 
 	ListOncallEventsParams struct {
@@ -326,8 +317,21 @@ type (
 		End   time.Time
 	}
 
+	ListOncallAnnotationsParams struct {
+		ListParams
+		RosterID uuid.UUID
+		ShiftID  uuid.UUID
+	}
+
 	OncallEventsService interface {
-		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*OncallEvent, error)
+		ChatMessageAnnotationSupporter
+
+		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, error)
+
+		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
+		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
+		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
+		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}
 )
 
@@ -356,11 +360,6 @@ type (
 		Anchor time.Time
 		Window time.Duration
 	}
-	ListOncallAnnotationsParams struct {
-		ListParams
-		RosterID uuid.UUID
-		ShiftID  uuid.UUID
-	}
 
 	OncallShiftHandoverSection struct {
 		Header  string            `json:"header"`
@@ -369,8 +368,6 @@ type (
 	}
 
 	OncallService interface {
-		ChatMessageAnnotationSupporter
-
 		HandleScanForShiftsNeedingHandoverJob(context.Context, jobs.ScanOncallHandovers) error
 		HandleEnsureShiftHandoverJob(context.Context, jobs.EnsureShiftHandover) error
 
@@ -385,11 +382,6 @@ type (
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 		GetNextShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
 		GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
-
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
-		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
-		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
-		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 
 		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error)
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)

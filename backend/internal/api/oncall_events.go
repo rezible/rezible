@@ -3,80 +3,49 @@ package api
 import (
 	"context"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
-	"math/rand"
-	"time"
-
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
+	"time"
 )
 
 type oncallEventsHandler struct {
 	auth      rez.AuthSessionService
 	users     rez.UserService
-	incidents rez.IncidentService
 	oncall    rez.OncallService
+	incidents rez.IncidentService
+	events    rez.OncallEventsService
 }
 
-func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, oncall rez.OncallService) *oncallEventsHandler {
-	return &oncallEventsHandler{auth: auth, users: users, incidents: inc, oncall: oncall}
-}
-
-func makeFakeShiftEvent(date time.Time) oapi.OncallEvent {
-	isAlert := rand.Float64() > 0.25
-	eventKind := "incident"
-	if isAlert {
-		eventKind = "alert"
-	}
-
-	hour := rand.Intn(24)
-	minute := rand.Intn(60)
-
-	timestamp := time.Date(
-		date.Year(), date.Month(), date.Day(),
-		hour, minute, 0, 0, date.Location(),
-	)
-
-	return oapi.OncallEvent{
-		Id: uuid.New().String(),
-		Attributes: oapi.OncallEventAttributes{
-			Title:       "title",
-			Timestamp:   timestamp,
-			Kind:        eventKind,
-			Annotations: make([]oapi.OncallAnnotation, 0),
-		},
-	}
-}
-
-func makeFakeOncallEvents(start time.Time) []oapi.OncallEvent {
-	const NumDays = 7
-	events := make([]oapi.OncallEvent, 0, NumDays*10)
-
-	for day := 0; day < NumDays; day++ {
-		dayDate := start.AddDate(0, 0, day)
-		numDayEvents := rand.Intn(10)
-
-		for i := 0; i < numDayEvents; i++ {
-			events = append(events, makeFakeShiftEvent(dayDate))
-		}
-	}
-
-	return events
+func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, oncall rez.OncallService, inc rez.IncidentService, events rez.OncallEventsService) *oncallEventsHandler {
+	return &oncallEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
 }
 
 func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
 	var resp oapi.ListOncallEventsResponse
 
-	eventsStart := time.Now().Add(time.Hour * -24 * 7)
-	//if request.RosterId != uuid.Nil {
-	//	shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
-	//	if shiftErr != nil {
-	//		return nil, detailError("failed to query shift", shiftErr)
-	//	}
-	//	eventsStart = shift.StartAt
-	//}
+	params := rez.ListOncallEventsParams{
+		Start: time.Now().Add(time.Hour * -24 * 7), // 7 days ago
+		End:   time.Now(),
+	}
 
-	resp.Body.Data = makeFakeOncallEvents(eventsStart)
+	if request.ShiftId != uuid.Nil {
+		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
+		if shiftErr != nil {
+			return nil, detailError("failed to query shift", shiftErr)
+		}
+		params.Start = shift.StartAt
+		params.End = shift.EndAt
+	}
+
+	events, eventsErr := h.events.ListEvents(ctx, params)
+	if eventsErr != nil {
+		return nil, detailError("failed to query events", eventsErr)
+	}
+	resp.Body.Data = make([]oapi.OncallEvent, len(events))
+	for i, event := range events {
+		resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
+	}
 
 	return &resp, nil
 }
@@ -84,7 +53,7 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request *oapi.ListOncallAnnotationsRequest) (*oapi.ListOncallAnnotationsResponse, error) {
 	var resp oapi.ListOncallAnnotationsResponse
 
-	annos, annosErr := h.oncall.ListAnnotations(ctx, rez.ListOncallAnnotationsParams{
+	annos, annosErr := h.events.ListAnnotations(ctx, rez.ListOncallAnnotationsParams{
 		ListParams: request.ListParams(),
 		RosterID:   request.RosterId,
 		ShiftID:    request.ShiftId,
@@ -114,7 +83,7 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 	}
 
 	var createErr error
-	anno, createErr = h.oncall.CreateAnnotation(ctx, anno)
+	anno, createErr = h.events.CreateAnnotation(ctx, anno)
 	if createErr != nil {
 		return nil, detailError("failed to create annotation", createErr)
 	}
@@ -126,7 +95,7 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, request *oapi.UpdateOncallAnnotationRequest) (*oapi.UpdateOncallAnnotationResponse, error) {
 	var resp oapi.UpdateOncallAnnotationResponse
 
-	anno, annoErr := h.oncall.GetAnnotation(ctx, request.Id)
+	anno, annoErr := h.events.GetAnnotation(ctx, request.Id)
 	if annoErr != nil {
 		return nil, detailError("failed to get annotation", annoErr)
 	}
@@ -148,7 +117,7 @@ func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, reques
 func (h *oncallEventsHandler) DeleteOncallAnnotation(ctx context.Context, request *oapi.DeleteOncallAnnotationRequest) (*oapi.DeleteOncallAnnotationResponse, error) {
 	var resp oapi.DeleteOncallAnnotationResponse
 
-	if err := h.oncall.DeleteAnnotation(ctx, request.Id); err != nil {
+	if err := h.events.DeleteAnnotation(ctx, request.Id); err != nil {
 		return nil, detailError("failed to archive annotation", err)
 	}
 
