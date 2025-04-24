@@ -155,7 +155,10 @@ func (s *OncallService) CreateAnnotation(ctx context.Context, rosterId uuid.UUID
 func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
 	query := s.db.OncallAnnotation.Query().
 		Limit(params.GetLimit()).
-		Offset(params.Offset)
+		Offset(params.Offset).
+		WithCreator().
+		WithEvent().
+		WithRoster()
 
 	rosterId := params.RosterID
 	if params.ShiftID != uuid.Nil {
@@ -181,7 +184,10 @@ func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.Li
 }
 
 func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {
-	return s.db.OncallAnnotation.Get(ctx, id)
+	return s.db.OncallAnnotation.Query().
+		WithCreator().WithRoster().WithEvent().
+		Where(oncallannotation.ID(id)).
+		Only(ctx)
 }
 
 func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {

@@ -2,7 +2,7 @@
 	import { mdiFilter } from "@mdi/js";
 	import { Header, Button } from "svelte-ux";
 	import type { OncallEvent } from "$lib/api";
-	import EventAnnotationDialog from "$components/event-annotation-dialog/EventAnnotationDialog.svelte";
+	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
 	import { shiftViewStateCtx } from "../context.svelte";
 

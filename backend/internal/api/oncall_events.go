@@ -38,6 +38,10 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 		params.End = shift.EndAt
 	}
 
+	if request.RosterIds != nil {
+		// TODO: handle this
+	}
+
 	events, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {
 		return nil, detailError("failed to query events", eventsErr)

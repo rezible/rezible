@@ -141,10 +141,10 @@ type (
 	}
 
 	OncallShiftHandoverAttributes struct {
-		ShiftId      uuid.UUID                    `json:"shiftId"`
-		SentAt       time.Time                    `json:"sentAt"`
-		Content      []OncallShiftHandoverSection `json:"content"`
-		PinnedEvents []OncallEventAnnotation      `json:"pinnedEvents"`
+		ShiftId           uuid.UUID                    `json:"shiftId"`
+		SentAt            time.Time                    `json:"sentAt"`
+		Content           []OncallShiftHandoverSection `json:"content"`
+		PinnedAnnotations []OncallAnnotation           `json:"pinnedAnnotations"`
 	}
 
 	OncallShiftHandoverSection struct {

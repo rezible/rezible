@@ -5,7 +5,7 @@
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
 	import { listOncallEventsOptions, type OncallAnnotation, type OncallEvent, type OncallShift } from "$lib/api";
-	import EventAnnotationDialog from "$components/event-annotation-dialog/EventAnnotationDialog.svelte";
+	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventsFilters, { type DisabledFilters, type FilterOptions } from "./EventsFilters.svelte";
 	import EventRowItem from "./EventRowItem.svelte";
 

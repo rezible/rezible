@@ -1706,21 +1706,16 @@ export type OncallAnnotationAlertFeedback = {
 export type OncallAnnotationAttributes = {
     alertFeedback?: OncallAnnotationAlertFeedback;
     creator: User;
-    eventId: string;
+    event: OncallEvent;
     minutesOccupied: number;
     notes: string;
-    rosterId: string;
+    roster: OncallRoster;
     tags: Array<string>;
 };
 
 export type OncallEvent = {
     attributes: OncallEventAttributes;
     id: string;
-};
-
-export type OncallEventAnnotation = {
-    annotation: OncallAnnotation;
-    event: OncallEvent;
 };
 
 export type OncallEventAttributes = {
@@ -1803,7 +1798,7 @@ export type OncallShiftHandover = {
 
 export type OncallShiftHandoverAttributes = {
     content: Array<OncallShiftHandoverSection>;
-    pinnedEvents: Array<OncallEventAnnotation>;
+    pinnedAnnotations: Array<OncallAnnotation>;
     sentAt: string;
     shiftId: string;
 };

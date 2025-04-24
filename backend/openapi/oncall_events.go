@@ -28,15 +28,6 @@ func (o operations) RegisterOncallEvents(api huma.API) {
 	huma.Register(api, DeleteOncallAnnotation, o.DeleteOncallAnnotation)
 }
 
-func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
-	attr := OncallEventAttributes{}
-
-	return OncallEvent{
-		Id:         e.ID,
-		Attributes: attr,
-	}
-}
-
 type (
 	OncallEvent struct {
 		Id         uuid.UUID             `json:"id"`
@@ -44,10 +35,11 @@ type (
 	}
 
 	OncallEventAttributes struct {
-		Kind        string             `json:"kind"`
-		Title       string             `json:"title"`
-		Description string             `json:"description"`
-		Timestamp   time.Time          `json:"timestamp"`
+		Kind        string    `json:"kind"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+		Timestamp   time.Time `json:"timestamp"`
+		// TODO: don't include annotations with the event
 		Annotations []OncallAnnotation `json:"annotations"`
 	}
 
@@ -57,9 +49,9 @@ type (
 	}
 
 	OncallAnnotationAttributes struct {
-		EventId         uuid.UUID                      `json:"eventId"`
-		RosterId        uuid.UUID                      `json:"rosterId"`
-		Creator         *User                          `json:"creator"`
+		Event           OncallEvent                    `json:"event"`
+		Roster          OncallRoster                   `json:"roster"`
+		Creator         User                           `json:"creator"`
 		Notes           string                         `json:"notes"`
 		Tags            []string                       `json:"tags"`
 		MinutesOccupied int                            `json:"minutesOccupied"`
@@ -71,16 +63,53 @@ type (
 		DocumentationAvailable bool   `json:"documentationAvailable"`
 		Accuracy               string `json:"accuracy" enum:"yes,no,unknown"`
 	}
-
-	OncallEventAnnotation struct {
-		Event      OncallEvent      `json:"event"`
-		Annotation OncallAnnotation `json:"annotation"`
-	}
 )
 
+func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
+	attr := OncallEventAttributes{
+		Kind:        e.Kind,
+		Title:       e.Title,
+		Description: e.Description,
+		Timestamp:   e.Timestamp,
+	}
+
+	attr.Annotations = make([]OncallAnnotation, len(e.Edges.Annotations))
+	for i, a := range e.Edges.Annotations {
+		attr.Annotations[i] = OncallAnnotationFromEnt(a)
+	}
+
+	return OncallEvent{
+		Id:         e.ID,
+		Attributes: attr,
+	}
+}
+
 func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
-	// TODO
-	attr := OncallAnnotationAttributes{}
+	attr := OncallAnnotationAttributes{
+		Notes:           e.Notes,
+		Tags:            nil,
+		MinutesOccupied: e.MinutesOccupied,
+	}
+
+	if e.Edges.Roster != nil {
+		attr.Roster = OncallRosterFromEnt(e.Edges.Roster)
+	}
+
+	if e.Edges.Creator != nil {
+		attr.Creator = UserFromEnt(e.Edges.Creator)
+	}
+
+	if e.Edges.AlertFeedback != nil {
+		attr.AlertFeedback = &OncallAnnotationAlertFeedback{
+			RequiredAction:         e.Edges.AlertFeedback.Actionable,
+			DocumentationAvailable: e.Edges.AlertFeedback.DocumentationAvailable,
+			Accuracy:               e.Edges.AlertFeedback.Accuracy.String(),
+		}
+	}
+
+	if e.Edges.Event != nil {
+		attr.Event = OncallEventFromEnt(e.Edges.Event)
+	}
 
 	return OncallAnnotation{
 		Id:         e.ID,
