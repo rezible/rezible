@@ -13,7 +13,7 @@ type ProviderConfig struct {
 	ent.Schema
 }
 
-var ProviderTypes = []string{"auth_session", "users", "teams", "chat", "incidents", "oncall", "alerts", "ai", "system_components"}
+var ProviderTypes = []string{"auth_session", "users", "teams", "chat", "incidents", "oncall", "oncall_events", "ai", "system_components"}
 
 // Fields of the ProviderConfig.
 func (ProviderConfig) Fields() []ent.Field {
@@ -32,8 +32,3 @@ func (ProviderConfig) Indexes() []ent.Index {
 		index.Fields("provider_name", "provider_type").Unique(),
 	}
 }
-
-//// Edges of the ProviderConfig.
-//func (ProviderConfig) Edges() []ent.Edge {
-//	return []ent.Edge{}
-//}

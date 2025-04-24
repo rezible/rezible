@@ -52,6 +52,7 @@ type (
 
 		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
+		LoadOncallEventsDataProvider(context.Context) (OncallEventsDataProvider, error)
 		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
 		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
@@ -64,6 +65,7 @@ type (
 
 		IncidentData         IncidentDataProvider
 		OncallData           OncallDataProvider
+		OncallEventsData     OncallEventsDataProvider
 		SystemComponentsData SystemComponentsDataProvider
 		TeamData             TeamDataProvider
 		UserData             UserDataProvider
@@ -315,6 +317,24 @@ type (
 		Annotation *ent.OncallAnnotation `json:"annotation"`
 	}
 
+	OncallEventsDataProvider interface {
+		GetWebhooks() Webhooks
+
+		PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*OncallEvent, error]
+	}
+
+	ListOncallEventsParams struct {
+		ListParams
+		Start time.Time
+		End   time.Time
+	}
+
+	OncallEventsService interface {
+		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*OncallEvent, error)
+	}
+)
+
+type (
 	OncallDataProvider interface {
 		GetWebhooks() Webhooks
 

@@ -64,7 +64,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 			Teams:            true,
 			Incidents:        true,
 			Oncall:           true,
-			Alerts:           true,
+			OncallEvents:     true,
 			SystemComponents: true,
 		}
 

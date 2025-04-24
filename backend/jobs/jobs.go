@@ -87,7 +87,7 @@ type SyncProviderData struct {
 	Teams            bool
 	Incidents        bool
 	Oncall           bool
-	Alerts           bool
+	OncallEvents     bool
 	SystemComponents bool
 }
 

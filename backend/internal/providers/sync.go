@@ -31,6 +31,7 @@ func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Du
 		Teams:            true,
 		Incidents:        true,
 		Oncall:           true,
+		OncallEvents:     true,
 		SystemComponents: true,
 	}
 
@@ -90,6 +91,17 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 		syncer := newOncallDataSyncer(s.db, oncallProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("oncall sync failed: %w", syncErr)
+		}
+	}
+
+	if args.OncallEvents {
+		oncallEventsProv, provErr := s.l.LoadOncallEventsDataProvider(ctx)
+		if provErr != nil {
+			return fmt.Errorf("failed to load oncall events data provider: %w", provErr)
+		}
+		syncer := newOncallEventsDataSyncer(s.db, oncallEventsProv)
+		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
+			return fmt.Errorf("oncall events sync failed: %w", syncErr)
 		}
 	}
 
