@@ -50,7 +50,6 @@ type (
 		LoadChatProvider(context.Context) (ChatProvider, error)
 		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 
-		LoadAlertsDataProvider(context.Context) (AlertsDataProvider, error)
 		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
 		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
@@ -63,7 +62,6 @@ type (
 		AuthSession AuthSessionProvider
 		Chat        ChatProvider
 
-		AlertsData           AlertsDataProvider
 		IncidentData         IncidentDataProvider
 		OncallData           OncallDataProvider
 		SystemComponentsData SystemComponentsDataProvider
@@ -380,24 +378,5 @@ type (
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
 		UpdateShiftHandover(ctx context.Context, handover *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error)
 		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
-	}
-)
-
-type (
-	AlertsDataProvider interface {
-		GetWebhooks() Webhooks
-
-		SetOnAlertInstanceUpdatedCallback(DataProviderResourceUpdatedCallback)
-		//PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallAlertInstance, error]
-	}
-
-	ListAlertsParams struct {
-		ListParams
-		Start time.Time
-		End   time.Time
-	}
-
-	AlertsService interface {
-		// ListAlerts(ctx context.Context, params ListAlertsParams) ([]*ent.OncallAlert, error)
 	}
 )

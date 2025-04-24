@@ -31,7 +31,6 @@ func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Du
 		Teams:            true,
 		Incidents:        true,
 		Oncall:           true,
-		Alerts:           true,
 		SystemComponents: true,
 	}
 

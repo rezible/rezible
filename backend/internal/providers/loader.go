@@ -133,10 +133,10 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 		return nil, fmt.Errorf("chat: %w", loadErr)
 	}
 
-	provs.AlertsData, loadErr = l.LoadAlertsDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("alerts: %w", loadErr)
-	}
+	//provs.AlertsData, loadErr = l.LoadAlertsDataProvider(ctx)
+	//if loadErr != nil {
+	//	return nil, fmt.Errorf("alerts: %w", loadErr)
+	//}
 
 	provs.IncidentData, loadErr = l.LoadIncidentDataProvider(ctx)
 	if loadErr != nil {
@@ -269,29 +269,29 @@ func (l *Loader) LoadOncallDataProvider(ctx context.Context) (rez.OncallDataProv
 	return prov, provErr
 }
 
-func (l *Loader) LoadAlertsDataProvider(ctx context.Context) (rez.AlertsDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-
-	var prov rez.AlertsDataProvider
-	var provErr error
-	switch pCfg.Name {
-	case "grafana":
-		prov, provErr = loadProvider(grafana.NewAlertsDataProvider, pCfg)
-	case "fake":
-		prov, provErr = loadProvider(fakeprovider.NewAlertsDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid alerts data provider: %s", pCfg.Name)
-	}
-
-	if prov != nil && provErr == nil {
-		l.updateWebhooks("alerts", prov.GetWebhooks())
-	}
-
-	return prov, provErr
-}
+//func (l *Loader) LoadAlertsDataProvider(ctx context.Context) (rez.AlertsDataProvider, error) {
+//	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
+//	if cfgErr != nil {
+//		return nil, cfgErr
+//	}
+//
+//	var prov rez.AlertsDataProvider
+//	var provErr error
+//	switch pCfg.Name {
+//	case "grafana":
+//		prov, provErr = loadProvider(grafana.NewAlertsDataProvider, pCfg)
+//	case "fake":
+//		prov, provErr = loadProvider(fakeprovider.NewAlertsDataProvider, pCfg)
+//	default:
+//		return nil, fmt.Errorf("invalid alerts data provider: %s", pCfg.Name)
+//	}
+//
+//	if prov != nil && provErr == nil {
+//		l.updateWebhooks("alerts", prov.GetWebhooks())
+//	}
+//
+//	return prov, provErr
+//}
 
 func (l *Loader) LoadIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeIncidents)
