@@ -58,30 +58,30 @@ func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetNillableActionable(b *bool)
 	return oaafu
 }
 
-// SetDocumentationAvailable sets the "documentation_available" field.
-func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetDocumentationAvailable(b bool) *OncallAnnotationAlertFeedbackUpdate {
-	oaafu.mutation.SetDocumentationAvailable(b)
+// SetAccurate sets the "accurate" field.
+func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetAccurate(o oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpdate {
+	oaafu.mutation.SetAccurate(o)
 	return oaafu
 }
 
-// SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetNillableDocumentationAvailable(b *bool) *OncallAnnotationAlertFeedbackUpdate {
-	if b != nil {
-		oaafu.SetDocumentationAvailable(*b)
+// SetNillableAccurate sets the "accurate" field if the given value is not nil.
+func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetNillableAccurate(o *oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpdate {
+	if o != nil {
+		oaafu.SetAccurate(*o)
 	}
 	return oaafu
 }
 
-// SetAccuracy sets the "accuracy" field.
-func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetAccuracy(o oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpdate {
-	oaafu.mutation.SetAccuracy(o)
+// SetDocumentationAvailable sets the "documentation_available" field.
+func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetDocumentationAvailable(oa oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpdate {
+	oaafu.mutation.SetDocumentationAvailable(oa)
 	return oaafu
 }
 
-// SetNillableAccuracy sets the "accuracy" field if the given value is not nil.
-func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetNillableAccuracy(o *oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpdate {
-	if o != nil {
-		oaafu.SetAccuracy(*o)
+// SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
+func (oaafu *OncallAnnotationAlertFeedbackUpdate) SetNillableDocumentationAvailable(oa *oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpdate {
+	if oa != nil {
+		oaafu.SetDocumentationAvailable(*oa)
 	}
 	return oaafu
 }
@@ -131,9 +131,14 @@ func (oaafu *OncallAnnotationAlertFeedbackUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oaafu *OncallAnnotationAlertFeedbackUpdate) check() error {
-	if v, ok := oaafu.mutation.Accuracy(); ok {
-		if err := oncallannotationalertfeedback.AccuracyValidator(v); err != nil {
-			return &ValidationError{Name: "accuracy", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accuracy": %w`, err)}
+	if v, ok := oaafu.mutation.Accurate(); ok {
+		if err := oncallannotationalertfeedback.AccurateValidator(v); err != nil {
+			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accurate": %w`, err)}
+		}
+	}
+	if v, ok := oaafu.mutation.DocumentationAvailable(); ok {
+		if err := oncallannotationalertfeedback.DocumentationAvailableValidator(v); err != nil {
+			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.documentation_available": %w`, err)}
 		}
 	}
 	if oaafu.mutation.AnnotationCleared() && len(oaafu.mutation.AnnotationIDs()) > 0 {
@@ -163,11 +168,11 @@ func (oaafu *OncallAnnotationAlertFeedbackUpdate) sqlSave(ctx context.Context) (
 	if value, ok := oaafu.mutation.Actionable(); ok {
 		_spec.SetField(oncallannotationalertfeedback.FieldActionable, field.TypeBool, value)
 	}
-	if value, ok := oaafu.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
+	if value, ok := oaafu.mutation.Accurate(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
-	if value, ok := oaafu.mutation.Accuracy(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldAccuracy, field.TypeEnum, value)
+	if value, ok := oaafu.mutation.DocumentationAvailable(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
 	}
 	if oaafu.mutation.AnnotationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -248,30 +253,30 @@ func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetNillableActionable(b *b
 	return oaafuo
 }
 
-// SetDocumentationAvailable sets the "documentation_available" field.
-func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetDocumentationAvailable(b bool) *OncallAnnotationAlertFeedbackUpdateOne {
-	oaafuo.mutation.SetDocumentationAvailable(b)
+// SetAccurate sets the "accurate" field.
+func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetAccurate(o oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpdateOne {
+	oaafuo.mutation.SetAccurate(o)
 	return oaafuo
 }
 
-// SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetNillableDocumentationAvailable(b *bool) *OncallAnnotationAlertFeedbackUpdateOne {
-	if b != nil {
-		oaafuo.SetDocumentationAvailable(*b)
+// SetNillableAccurate sets the "accurate" field if the given value is not nil.
+func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetNillableAccurate(o *oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpdateOne {
+	if o != nil {
+		oaafuo.SetAccurate(*o)
 	}
 	return oaafuo
 }
 
-// SetAccuracy sets the "accuracy" field.
-func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetAccuracy(o oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpdateOne {
-	oaafuo.mutation.SetAccuracy(o)
+// SetDocumentationAvailable sets the "documentation_available" field.
+func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetDocumentationAvailable(oa oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpdateOne {
+	oaafuo.mutation.SetDocumentationAvailable(oa)
 	return oaafuo
 }
 
-// SetNillableAccuracy sets the "accuracy" field if the given value is not nil.
-func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetNillableAccuracy(o *oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpdateOne {
-	if o != nil {
-		oaafuo.SetAccuracy(*o)
+// SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
+func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) SetNillableDocumentationAvailable(oa *oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpdateOne {
+	if oa != nil {
+		oaafuo.SetDocumentationAvailable(*oa)
 	}
 	return oaafuo
 }
@@ -334,9 +339,14 @@ func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) ExecX(ctx context.Context)
 
 // check runs all checks and user-defined validators on the builder.
 func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) check() error {
-	if v, ok := oaafuo.mutation.Accuracy(); ok {
-		if err := oncallannotationalertfeedback.AccuracyValidator(v); err != nil {
-			return &ValidationError{Name: "accuracy", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accuracy": %w`, err)}
+	if v, ok := oaafuo.mutation.Accurate(); ok {
+		if err := oncallannotationalertfeedback.AccurateValidator(v); err != nil {
+			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accurate": %w`, err)}
+		}
+	}
+	if v, ok := oaafuo.mutation.DocumentationAvailable(); ok {
+		if err := oncallannotationalertfeedback.DocumentationAvailableValidator(v); err != nil {
+			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.documentation_available": %w`, err)}
 		}
 	}
 	if oaafuo.mutation.AnnotationCleared() && len(oaafuo.mutation.AnnotationIDs()) > 0 {
@@ -383,11 +393,11 @@ func (oaafuo *OncallAnnotationAlertFeedbackUpdateOne) sqlSave(ctx context.Contex
 	if value, ok := oaafuo.mutation.Actionable(); ok {
 		_spec.SetField(oncallannotationalertfeedback.FieldActionable, field.TypeBool, value)
 	}
-	if value, ok := oaafuo.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
+	if value, ok := oaafuo.mutation.Accurate(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
-	if value, ok := oaafuo.mutation.Accuracy(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldAccuracy, field.TypeEnum, value)
+	if value, ok := oaafuo.mutation.DocumentationAvailable(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
 	}
 	if oaafuo.mutation.AnnotationCleared() {
 		edge := &sqlgraph.EdgeSpec{

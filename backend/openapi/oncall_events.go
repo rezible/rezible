@@ -59,9 +59,9 @@ type (
 	}
 
 	OncallAnnotationAlertFeedback struct {
-		RequiredAction         bool   `json:"requiredAction"`
-		DocumentationAvailable bool   `json:"documentationAvailable"`
-		Accuracy               string `json:"accuracy" enum:"yes,no,unknown"`
+		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
+		Actionable             bool   `json:"actionable"`
+		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,needs_update,no"`
 	}
 )
 
@@ -101,9 +101,9 @@ func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
 
 	if e.Edges.AlertFeedback != nil {
 		attr.AlertFeedback = &OncallAnnotationAlertFeedback{
-			RequiredAction:         e.Edges.AlertFeedback.Actionable,
-			DocumentationAvailable: e.Edges.AlertFeedback.DocumentationAvailable,
-			Accuracy:               e.Edges.AlertFeedback.Accuracy.String(),
+			Accurate:               e.Edges.AlertFeedback.Accurate.String(),
+			Actionable:             e.Edges.AlertFeedback.Actionable,
+			DocumentationAvailable: e.Edges.AlertFeedback.DocumentationAvailable.String(),
 		}
 	}
 
@@ -168,9 +168,10 @@ type CreateOncallAnnotationRequestAttributes struct {
 	RosterId        uuid.UUID                      `json:"rosterId"`
 	Notes           string                         `json:"notes"`
 	MinutesOccupied int                            `json:"minutesOccupied"`
-	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback"`
+	Tags            []string                       `json:"tags"`
+	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
 }
-type CreateOncallAnnotationRequest CreateIdRequest[CreateOncallAnnotationRequestAttributes]
+type CreateOncallAnnotationRequest RequestWithBodyAttributes[CreateOncallAnnotationRequestAttributes]
 type CreateOncallAnnotationResponse ItemResponse[OncallAnnotation]
 
 var UpdateOncallAnnotation = huma.Operation{
@@ -183,8 +184,10 @@ var UpdateOncallAnnotation = huma.Operation{
 }
 
 type UpdateOncallAnnotationRequestAttributes struct {
-	Notes           *string `json:"notes,omitempty"`
-	MinutesOccupied *int    `json:"minutesOccupied,omitempty"`
+	Notes           *string                        `json:"notes,omitempty"`
+	MinutesOccupied *int                           `json:"minutesOccupied,omitempty"`
+	Tags            *[]string                      `json:"tags,omitempty"`
+	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
 }
 type UpdateOncallAnnotationRequest UpdateIdRequest[UpdateOncallAnnotationRequestAttributes]
 type UpdateOncallAnnotationResponse ItemResponse[OncallAnnotation]

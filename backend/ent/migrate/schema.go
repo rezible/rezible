@@ -588,8 +588,8 @@ var (
 	OncallAnnotationAlertFeedbacksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "actionable", Type: field.TypeBool},
-		{Name: "documentation_available", Type: field.TypeBool},
-		{Name: "accuracy", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
+		{Name: "accurate", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
+		{Name: "documentation_available", Type: field.TypeEnum, Enums: []string{"yes", "needs_update", "no"}},
 		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
 	}
 	// OncallAnnotationAlertFeedbacksTable holds the schema information for the "oncall_annotation_alert_feedbacks" table.

@@ -39,6 +39,8 @@
 		annotationEvent = ev;
 		annotationCurrent = anno;
 	};
+
+	const annotationRosterId = $derived(shift?.attributes.roster.id ?? rosterIds?.at(0));
 </script>
 
 <div class="w-full h-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
@@ -74,4 +76,11 @@
 	/>
 </div>
 
-<EventAnnotationDialog event={annotationEvent} current={annotationCurrent} onClose={() => setAnnotationDialog()} />
+{#if annotationRosterId}
+	<EventAnnotationDialog 
+		rosterId={annotationRosterId}
+		event={annotationEvent} 
+		current={annotationCurrent} 
+		onClose={() => setAnnotationDialog()}
+	/>
+{/if}

@@ -19,10 +19,10 @@ const (
 	FieldAnnotationID = "annotation_id"
 	// FieldActionable holds the string denoting the actionable field in the database.
 	FieldActionable = "actionable"
+	// FieldAccurate holds the string denoting the accurate field in the database.
+	FieldAccurate = "accurate"
 	// FieldDocumentationAvailable holds the string denoting the documentation_available field in the database.
 	FieldDocumentationAvailable = "documentation_available"
-	// FieldAccuracy holds the string denoting the accuracy field in the database.
-	FieldAccuracy = "accuracy"
 	// EdgeAnnotation holds the string denoting the annotation edge name in mutations.
 	EdgeAnnotation = "annotation"
 	// Table holds the table name of the oncallannotationalertfeedback in the database.
@@ -41,8 +41,8 @@ var Columns = []string{
 	FieldID,
 	FieldAnnotationID,
 	FieldActionable,
+	FieldAccurate,
 	FieldDocumentationAvailable,
-	FieldAccuracy,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -60,27 +60,51 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Accuracy defines the type for the "accuracy" enum field.
-type Accuracy string
+// Accurate defines the type for the "accurate" enum field.
+type Accurate string
 
-// Accuracy values.
+// Accurate values.
 const (
-	AccuracyYes     Accuracy = "yes"
-	AccuracyNo      Accuracy = "no"
-	AccuracyUnknown Accuracy = "unknown"
+	AccurateYes     Accurate = "yes"
+	AccurateNo      Accurate = "no"
+	AccurateUnknown Accurate = "unknown"
 )
 
-func (a Accuracy) String() string {
+func (a Accurate) String() string {
 	return string(a)
 }
 
-// AccuracyValidator is a validator for the "accuracy" field enum values. It is called by the builders before save.
-func AccuracyValidator(a Accuracy) error {
+// AccurateValidator is a validator for the "accurate" field enum values. It is called by the builders before save.
+func AccurateValidator(a Accurate) error {
 	switch a {
-	case AccuracyYes, AccuracyNo, AccuracyUnknown:
+	case AccurateYes, AccurateNo, AccurateUnknown:
 		return nil
 	default:
-		return fmt.Errorf("oncallannotationalertfeedback: invalid enum value for accuracy field: %q", a)
+		return fmt.Errorf("oncallannotationalertfeedback: invalid enum value for accurate field: %q", a)
+	}
+}
+
+// DocumentationAvailable defines the type for the "documentation_available" enum field.
+type DocumentationAvailable string
+
+// DocumentationAvailable values.
+const (
+	DocumentationAvailableYes         DocumentationAvailable = "yes"
+	DocumentationAvailableNeedsUpdate DocumentationAvailable = "needs_update"
+	DocumentationAvailableNo          DocumentationAvailable = "no"
+)
+
+func (da DocumentationAvailable) String() string {
+	return string(da)
+}
+
+// DocumentationAvailableValidator is a validator for the "documentation_available" field enum values. It is called by the builders before save.
+func DocumentationAvailableValidator(da DocumentationAvailable) error {
+	switch da {
+	case DocumentationAvailableYes, DocumentationAvailableNeedsUpdate, DocumentationAvailableNo:
+		return nil
+	default:
+		return fmt.Errorf("oncallannotationalertfeedback: invalid enum value for documentation_available field: %q", da)
 	}
 }
 
@@ -102,14 +126,14 @@ func ByActionable(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldActionable, opts...).ToFunc()
 }
 
+// ByAccurate orders the results by the accurate field.
+func ByAccurate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAccurate, opts...).ToFunc()
+}
+
 // ByDocumentationAvailable orders the results by the documentation_available field.
 func ByDocumentationAvailable(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentationAvailable, opts...).ToFunc()
-}
-
-// ByAccuracy orders the results by the accuracy field.
-func ByAccuracy(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAccuracy, opts...).ToFunc()
 }
 
 // ByAnnotationField orders the results by annotation field.

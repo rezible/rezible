@@ -64,11 +64,6 @@ func Actionable(v bool) predicate.OncallAnnotationAlertFeedback {
 	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldActionable, v))
 }
 
-// DocumentationAvailable applies equality check predicate on the "documentation_available" field. It's identical to DocumentationAvailableEQ.
-func DocumentationAvailable(v bool) predicate.OncallAnnotationAlertFeedback {
-	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldDocumentationAvailable, v))
-}
-
 // AnnotationIDEQ applies the EQ predicate on the "annotation_id" field.
 func AnnotationIDEQ(v uuid.UUID) predicate.OncallAnnotationAlertFeedback {
 	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldAnnotationID, v))
@@ -99,34 +94,44 @@ func ActionableNEQ(v bool) predicate.OncallAnnotationAlertFeedback {
 	return predicate.OncallAnnotationAlertFeedback(sql.FieldNEQ(FieldActionable, v))
 }
 
+// AccurateEQ applies the EQ predicate on the "accurate" field.
+func AccurateEQ(v Accurate) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldAccurate, v))
+}
+
+// AccurateNEQ applies the NEQ predicate on the "accurate" field.
+func AccurateNEQ(v Accurate) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldNEQ(FieldAccurate, v))
+}
+
+// AccurateIn applies the In predicate on the "accurate" field.
+func AccurateIn(vs ...Accurate) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldIn(FieldAccurate, vs...))
+}
+
+// AccurateNotIn applies the NotIn predicate on the "accurate" field.
+func AccurateNotIn(vs ...Accurate) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldNotIn(FieldAccurate, vs...))
+}
+
 // DocumentationAvailableEQ applies the EQ predicate on the "documentation_available" field.
-func DocumentationAvailableEQ(v bool) predicate.OncallAnnotationAlertFeedback {
+func DocumentationAvailableEQ(v DocumentationAvailable) predicate.OncallAnnotationAlertFeedback {
 	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldDocumentationAvailable, v))
 }
 
 // DocumentationAvailableNEQ applies the NEQ predicate on the "documentation_available" field.
-func DocumentationAvailableNEQ(v bool) predicate.OncallAnnotationAlertFeedback {
+func DocumentationAvailableNEQ(v DocumentationAvailable) predicate.OncallAnnotationAlertFeedback {
 	return predicate.OncallAnnotationAlertFeedback(sql.FieldNEQ(FieldDocumentationAvailable, v))
 }
 
-// AccuracyEQ applies the EQ predicate on the "accuracy" field.
-func AccuracyEQ(v Accuracy) predicate.OncallAnnotationAlertFeedback {
-	return predicate.OncallAnnotationAlertFeedback(sql.FieldEQ(FieldAccuracy, v))
+// DocumentationAvailableIn applies the In predicate on the "documentation_available" field.
+func DocumentationAvailableIn(vs ...DocumentationAvailable) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldIn(FieldDocumentationAvailable, vs...))
 }
 
-// AccuracyNEQ applies the NEQ predicate on the "accuracy" field.
-func AccuracyNEQ(v Accuracy) predicate.OncallAnnotationAlertFeedback {
-	return predicate.OncallAnnotationAlertFeedback(sql.FieldNEQ(FieldAccuracy, v))
-}
-
-// AccuracyIn applies the In predicate on the "accuracy" field.
-func AccuracyIn(vs ...Accuracy) predicate.OncallAnnotationAlertFeedback {
-	return predicate.OncallAnnotationAlertFeedback(sql.FieldIn(FieldAccuracy, vs...))
-}
-
-// AccuracyNotIn applies the NotIn predicate on the "accuracy" field.
-func AccuracyNotIn(vs ...Accuracy) predicate.OncallAnnotationAlertFeedback {
-	return predicate.OncallAnnotationAlertFeedback(sql.FieldNotIn(FieldAccuracy, vs...))
+// DocumentationAvailableNotIn applies the NotIn predicate on the "documentation_available" field.
+func DocumentationAvailableNotIn(vs ...DocumentationAvailable) predicate.OncallAnnotationAlertFeedback {
+	return predicate.OncallAnnotationAlertFeedback(sql.FieldNotIn(FieldDocumentationAvailable, vs...))
 }
 
 // HasAnnotation applies the HasEdge predicate on the "annotation" edge.

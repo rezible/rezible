@@ -380,11 +380,12 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallAnnotationRequestAttributes = {
-    alertFeedback: OncallAnnotationAlertFeedback;
+    alertFeedback?: OncallAnnotationAlertFeedback;
     eventId: string;
     minutesOccupied: number;
     notes: string;
     rosterId: string;
+    tags: Array<string>;
 };
 
 export type CreateOncallAnnotationRequestBody = {
@@ -1698,9 +1699,9 @@ export type OncallAnnotation = {
 };
 
 export type OncallAnnotationAlertFeedback = {
-    accuracy: 'yes' | 'no' | 'unknown';
-    documentationAvailable: boolean;
-    requiredAction: boolean;
+    accurate: 'yes' | 'no' | 'unknown';
+    actionable: boolean;
+    documentationAvailable: 'yes' | 'needs_update' | 'no';
 };
 
 export type OncallAnnotationAttributes = {
@@ -2419,8 +2420,10 @@ export type UpdateMeetingSessionResponseBody = {
 };
 
 export type UpdateOncallAnnotationRequestAttributes = {
+    alertFeedback?: OncallAnnotationAlertFeedback;
     minutesOccupied?: number;
     notes?: string;
+    tags?: Array<string>;
 };
 
 export type UpdateOncallAnnotationRequestBody = {
@@ -6759,9 +6762,7 @@ export type ListOncallAnnotationsResponse = ListOncallAnnotationsResponses[keyof
 
 export type CreateOncallAnnotationData = {
     body: CreateOncallAnnotationRequestBody;
-    path: {
-        id: string;
-    };
+    path?: never;
     query?: never;
     url: '/oncall/annotations';
 };

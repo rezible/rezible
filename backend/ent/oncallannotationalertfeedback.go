@@ -22,10 +22,10 @@ type OncallAnnotationAlertFeedback struct {
 	AnnotationID uuid.UUID `json:"annotation_id,omitempty"`
 	// Actionable holds the value of the "actionable" field.
 	Actionable bool `json:"actionable,omitempty"`
+	// Accurate holds the value of the "accurate" field.
+	Accurate oncallannotationalertfeedback.Accurate `json:"accurate,omitempty"`
 	// DocumentationAvailable holds the value of the "documentation_available" field.
-	DocumentationAvailable bool `json:"documentation_available,omitempty"`
-	// Accuracy holds the value of the "accuracy" field.
-	Accuracy oncallannotationalertfeedback.Accuracy `json:"accuracy,omitempty"`
+	DocumentationAvailable oncallannotationalertfeedback.DocumentationAvailable `json:"documentation_available,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallAnnotationAlertFeedbackQuery when eager-loading is set.
 	Edges        OncallAnnotationAlertFeedbackEdges `json:"edges"`
@@ -57,9 +57,9 @@ func (*OncallAnnotationAlertFeedback) scanValues(columns []string) ([]any, error
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallannotationalertfeedback.FieldActionable, oncallannotationalertfeedback.FieldDocumentationAvailable:
+		case oncallannotationalertfeedback.FieldActionable:
 			values[i] = new(sql.NullBool)
-		case oncallannotationalertfeedback.FieldAccuracy:
+		case oncallannotationalertfeedback.FieldAccurate, oncallannotationalertfeedback.FieldDocumentationAvailable:
 			values[i] = new(sql.NullString)
 		case oncallannotationalertfeedback.FieldID, oncallannotationalertfeedback.FieldAnnotationID:
 			values[i] = new(uuid.UUID)
@@ -96,17 +96,17 @@ func (oaaf *OncallAnnotationAlertFeedback) assignValues(columns []string, values
 			} else if value.Valid {
 				oaaf.Actionable = value.Bool
 			}
+		case oncallannotationalertfeedback.FieldAccurate:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field accurate", values[i])
+			} else if value.Valid {
+				oaaf.Accurate = oncallannotationalertfeedback.Accurate(value.String)
+			}
 		case oncallannotationalertfeedback.FieldDocumentationAvailable:
-			if value, ok := values[i].(*sql.NullBool); !ok {
+			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field documentation_available", values[i])
 			} else if value.Valid {
-				oaaf.DocumentationAvailable = value.Bool
-			}
-		case oncallannotationalertfeedback.FieldAccuracy:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field accuracy", values[i])
-			} else if value.Valid {
-				oaaf.Accuracy = oncallannotationalertfeedback.Accuracy(value.String)
+				oaaf.DocumentationAvailable = oncallannotationalertfeedback.DocumentationAvailable(value.String)
 			}
 		default:
 			oaaf.selectValues.Set(columns[i], values[i])
@@ -155,11 +155,11 @@ func (oaaf *OncallAnnotationAlertFeedback) String() string {
 	builder.WriteString("actionable=")
 	builder.WriteString(fmt.Sprintf("%v", oaaf.Actionable))
 	builder.WriteString(", ")
+	builder.WriteString("accurate=")
+	builder.WriteString(fmt.Sprintf("%v", oaaf.Accurate))
+	builder.WriteString(", ")
 	builder.WriteString("documentation_available=")
 	builder.WriteString(fmt.Sprintf("%v", oaaf.DocumentationAvailable))
-	builder.WriteString(", ")
-	builder.WriteString("accuracy=")
-	builder.WriteString(fmt.Sprintf("%v", oaaf.Accuracy))
 	builder.WriteByte(')')
 	return builder.String()
 }

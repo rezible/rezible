@@ -18687,8 +18687,8 @@ type OncallAnnotationAlertFeedbackMutation struct {
 	typ                     string
 	id                      *uuid.UUID
 	actionable              *bool
-	documentation_available *bool
-	accuracy                *oncallannotationalertfeedback.Accuracy
+	accurate                *oncallannotationalertfeedback.Accurate
+	documentation_available *oncallannotationalertfeedback.DocumentationAvailable
 	clearedFields           map[string]struct{}
 	annotation              *uuid.UUID
 	clearedannotation       bool
@@ -18873,13 +18873,49 @@ func (m *OncallAnnotationAlertFeedbackMutation) ResetActionable() {
 	m.actionable = nil
 }
 
+// SetAccurate sets the "accurate" field.
+func (m *OncallAnnotationAlertFeedbackMutation) SetAccurate(o oncallannotationalertfeedback.Accurate) {
+	m.accurate = &o
+}
+
+// Accurate returns the value of the "accurate" field in the mutation.
+func (m *OncallAnnotationAlertFeedbackMutation) Accurate() (r oncallannotationalertfeedback.Accurate, exists bool) {
+	v := m.accurate
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAccurate returns the old "accurate" field's value of the OncallAnnotationAlertFeedback entity.
+// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallAnnotationAlertFeedbackMutation) OldAccurate(ctx context.Context) (v oncallannotationalertfeedback.Accurate, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAccurate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAccurate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAccurate: %w", err)
+	}
+	return oldValue.Accurate, nil
+}
+
+// ResetAccurate resets all changes to the "accurate" field.
+func (m *OncallAnnotationAlertFeedbackMutation) ResetAccurate() {
+	m.accurate = nil
+}
+
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (m *OncallAnnotationAlertFeedbackMutation) SetDocumentationAvailable(b bool) {
-	m.documentation_available = &b
+func (m *OncallAnnotationAlertFeedbackMutation) SetDocumentationAvailable(oa oncallannotationalertfeedback.DocumentationAvailable) {
+	m.documentation_available = &oa
 }
 
 // DocumentationAvailable returns the value of the "documentation_available" field in the mutation.
-func (m *OncallAnnotationAlertFeedbackMutation) DocumentationAvailable() (r bool, exists bool) {
+func (m *OncallAnnotationAlertFeedbackMutation) DocumentationAvailable() (r oncallannotationalertfeedback.DocumentationAvailable, exists bool) {
 	v := m.documentation_available
 	if v == nil {
 		return
@@ -18890,7 +18926,7 @@ func (m *OncallAnnotationAlertFeedbackMutation) DocumentationAvailable() (r bool
 // OldDocumentationAvailable returns the old "documentation_available" field's value of the OncallAnnotationAlertFeedback entity.
 // If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallAnnotationAlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (v bool, err error) {
+func (m *OncallAnnotationAlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (v oncallannotationalertfeedback.DocumentationAvailable, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDocumentationAvailable is only allowed on UpdateOne operations")
 	}
@@ -18907,42 +18943,6 @@ func (m *OncallAnnotationAlertFeedbackMutation) OldDocumentationAvailable(ctx co
 // ResetDocumentationAvailable resets all changes to the "documentation_available" field.
 func (m *OncallAnnotationAlertFeedbackMutation) ResetDocumentationAvailable() {
 	m.documentation_available = nil
-}
-
-// SetAccuracy sets the "accuracy" field.
-func (m *OncallAnnotationAlertFeedbackMutation) SetAccuracy(o oncallannotationalertfeedback.Accuracy) {
-	m.accuracy = &o
-}
-
-// Accuracy returns the value of the "accuracy" field in the mutation.
-func (m *OncallAnnotationAlertFeedbackMutation) Accuracy() (r oncallannotationalertfeedback.Accuracy, exists bool) {
-	v := m.accuracy
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAccuracy returns the old "accuracy" field's value of the OncallAnnotationAlertFeedback entity.
-// If the OncallAnnotationAlertFeedback object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallAnnotationAlertFeedbackMutation) OldAccuracy(ctx context.Context) (v oncallannotationalertfeedback.Accuracy, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAccuracy is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAccuracy requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAccuracy: %w", err)
-	}
-	return oldValue.Accuracy, nil
-}
-
-// ResetAccuracy resets all changes to the "accuracy" field.
-func (m *OncallAnnotationAlertFeedbackMutation) ResetAccuracy() {
-	m.accuracy = nil
 }
 
 // ClearAnnotation clears the "annotation" edge to the OncallAnnotation entity.
@@ -19013,11 +19013,11 @@ func (m *OncallAnnotationAlertFeedbackMutation) Fields() []string {
 	if m.actionable != nil {
 		fields = append(fields, oncallannotationalertfeedback.FieldActionable)
 	}
+	if m.accurate != nil {
+		fields = append(fields, oncallannotationalertfeedback.FieldAccurate)
+	}
 	if m.documentation_available != nil {
 		fields = append(fields, oncallannotationalertfeedback.FieldDocumentationAvailable)
-	}
-	if m.accuracy != nil {
-		fields = append(fields, oncallannotationalertfeedback.FieldAccuracy)
 	}
 	return fields
 }
@@ -19031,10 +19031,10 @@ func (m *OncallAnnotationAlertFeedbackMutation) Field(name string) (ent.Value, b
 		return m.AnnotationID()
 	case oncallannotationalertfeedback.FieldActionable:
 		return m.Actionable()
+	case oncallannotationalertfeedback.FieldAccurate:
+		return m.Accurate()
 	case oncallannotationalertfeedback.FieldDocumentationAvailable:
 		return m.DocumentationAvailable()
-	case oncallannotationalertfeedback.FieldAccuracy:
-		return m.Accuracy()
 	}
 	return nil, false
 }
@@ -19048,10 +19048,10 @@ func (m *OncallAnnotationAlertFeedbackMutation) OldField(ctx context.Context, na
 		return m.OldAnnotationID(ctx)
 	case oncallannotationalertfeedback.FieldActionable:
 		return m.OldActionable(ctx)
+	case oncallannotationalertfeedback.FieldAccurate:
+		return m.OldAccurate(ctx)
 	case oncallannotationalertfeedback.FieldDocumentationAvailable:
 		return m.OldDocumentationAvailable(ctx)
-	case oncallannotationalertfeedback.FieldAccuracy:
-		return m.OldAccuracy(ctx)
 	}
 	return nil, fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)
 }
@@ -19075,19 +19075,19 @@ func (m *OncallAnnotationAlertFeedbackMutation) SetField(name string, value ent.
 		}
 		m.SetActionable(v)
 		return nil
+	case oncallannotationalertfeedback.FieldAccurate:
+		v, ok := value.(oncallannotationalertfeedback.Accurate)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAccurate(v)
+		return nil
 	case oncallannotationalertfeedback.FieldDocumentationAvailable:
-		v, ok := value.(bool)
+		v, ok := value.(oncallannotationalertfeedback.DocumentationAvailable)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDocumentationAvailable(v)
-		return nil
-	case oncallannotationalertfeedback.FieldAccuracy:
-		v, ok := value.(oncallannotationalertfeedback.Accuracy)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAccuracy(v)
 		return nil
 	}
 	return fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)
@@ -19144,11 +19144,11 @@ func (m *OncallAnnotationAlertFeedbackMutation) ResetField(name string) error {
 	case oncallannotationalertfeedback.FieldActionable:
 		m.ResetActionable()
 		return nil
+	case oncallannotationalertfeedback.FieldAccurate:
+		m.ResetAccurate()
+		return nil
 	case oncallannotationalertfeedback.FieldDocumentationAvailable:
 		m.ResetDocumentationAvailable()
-		return nil
-	case oncallannotationalertfeedback.FieldAccuracy:
-		m.ResetAccuracy()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallAnnotationAlertFeedback field %s", name)

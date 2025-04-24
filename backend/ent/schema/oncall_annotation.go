@@ -46,8 +46,8 @@ func (OncallAnnotationAlertFeedback) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("annotation_id", uuid.UUID{}),
 		field.Bool("actionable"),
-		field.Bool("documentation_available"),
-		field.Enum("accuracy").Values("yes", "no", "unknown"),
+		field.Enum("accurate").Values("yes", "no", "unknown"),
+		field.Enum("documentation_available").Values("yes", "needs_update", "no"),
 	}
 }
 

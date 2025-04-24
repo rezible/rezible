@@ -36,15 +36,15 @@ func (oaafc *OncallAnnotationAlertFeedbackCreate) SetActionable(b bool) *OncallA
 	return oaafc
 }
 
-// SetDocumentationAvailable sets the "documentation_available" field.
-func (oaafc *OncallAnnotationAlertFeedbackCreate) SetDocumentationAvailable(b bool) *OncallAnnotationAlertFeedbackCreate {
-	oaafc.mutation.SetDocumentationAvailable(b)
+// SetAccurate sets the "accurate" field.
+func (oaafc *OncallAnnotationAlertFeedbackCreate) SetAccurate(o oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackCreate {
+	oaafc.mutation.SetAccurate(o)
 	return oaafc
 }
 
-// SetAccuracy sets the "accuracy" field.
-func (oaafc *OncallAnnotationAlertFeedbackCreate) SetAccuracy(o oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackCreate {
-	oaafc.mutation.SetAccuracy(o)
+// SetDocumentationAvailable sets the "documentation_available" field.
+func (oaafc *OncallAnnotationAlertFeedbackCreate) SetDocumentationAvailable(oa oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackCreate {
+	oaafc.mutation.SetDocumentationAvailable(oa)
 	return oaafc
 }
 
@@ -116,15 +116,20 @@ func (oaafc *OncallAnnotationAlertFeedbackCreate) check() error {
 	if _, ok := oaafc.mutation.Actionable(); !ok {
 		return &ValidationError{Name: "actionable", err: errors.New(`ent: missing required field "OncallAnnotationAlertFeedback.actionable"`)}
 	}
+	if _, ok := oaafc.mutation.Accurate(); !ok {
+		return &ValidationError{Name: "accurate", err: errors.New(`ent: missing required field "OncallAnnotationAlertFeedback.accurate"`)}
+	}
+	if v, ok := oaafc.mutation.Accurate(); ok {
+		if err := oncallannotationalertfeedback.AccurateValidator(v); err != nil {
+			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accurate": %w`, err)}
+		}
+	}
 	if _, ok := oaafc.mutation.DocumentationAvailable(); !ok {
 		return &ValidationError{Name: "documentation_available", err: errors.New(`ent: missing required field "OncallAnnotationAlertFeedback.documentation_available"`)}
 	}
-	if _, ok := oaafc.mutation.Accuracy(); !ok {
-		return &ValidationError{Name: "accuracy", err: errors.New(`ent: missing required field "OncallAnnotationAlertFeedback.accuracy"`)}
-	}
-	if v, ok := oaafc.mutation.Accuracy(); ok {
-		if err := oncallannotationalertfeedback.AccuracyValidator(v); err != nil {
-			return &ValidationError{Name: "accuracy", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.accuracy": %w`, err)}
+	if v, ok := oaafc.mutation.DocumentationAvailable(); ok {
+		if err := oncallannotationalertfeedback.DocumentationAvailableValidator(v); err != nil {
+			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "OncallAnnotationAlertFeedback.documentation_available": %w`, err)}
 		}
 	}
 	if len(oaafc.mutation.AnnotationIDs()) == 0 {
@@ -170,13 +175,13 @@ func (oaafc *OncallAnnotationAlertFeedbackCreate) createSpec() (*OncallAnnotatio
 		_spec.SetField(oncallannotationalertfeedback.FieldActionable, field.TypeBool, value)
 		_node.Actionable = value
 	}
-	if value, ok := oaafc.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
-		_node.DocumentationAvailable = value
+	if value, ok := oaafc.mutation.Accurate(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldAccurate, field.TypeEnum, value)
+		_node.Accurate = value
 	}
-	if value, ok := oaafc.mutation.Accuracy(); ok {
-		_spec.SetField(oncallannotationalertfeedback.FieldAccuracy, field.TypeEnum, value)
-		_node.Accuracy = value
+	if value, ok := oaafc.mutation.DocumentationAvailable(); ok {
+		_spec.SetField(oncallannotationalertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+		_node.DocumentationAvailable = value
 	}
 	if nodes := oaafc.mutation.AnnotationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -271,8 +276,20 @@ func (u *OncallAnnotationAlertFeedbackUpsert) UpdateActionable() *OncallAnnotati
 	return u
 }
 
+// SetAccurate sets the "accurate" field.
+func (u *OncallAnnotationAlertFeedbackUpsert) SetAccurate(v oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpsert {
+	u.Set(oncallannotationalertfeedback.FieldAccurate, v)
+	return u
+}
+
+// UpdateAccurate sets the "accurate" field to the value that was provided on create.
+func (u *OncallAnnotationAlertFeedbackUpsert) UpdateAccurate() *OncallAnnotationAlertFeedbackUpsert {
+	u.SetExcluded(oncallannotationalertfeedback.FieldAccurate)
+	return u
+}
+
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *OncallAnnotationAlertFeedbackUpsert) SetDocumentationAvailable(v bool) *OncallAnnotationAlertFeedbackUpsert {
+func (u *OncallAnnotationAlertFeedbackUpsert) SetDocumentationAvailable(v oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpsert {
 	u.Set(oncallannotationalertfeedback.FieldDocumentationAvailable, v)
 	return u
 }
@@ -280,18 +297,6 @@ func (u *OncallAnnotationAlertFeedbackUpsert) SetDocumentationAvailable(v bool) 
 // UpdateDocumentationAvailable sets the "documentation_available" field to the value that was provided on create.
 func (u *OncallAnnotationAlertFeedbackUpsert) UpdateDocumentationAvailable() *OncallAnnotationAlertFeedbackUpsert {
 	u.SetExcluded(oncallannotationalertfeedback.FieldDocumentationAvailable)
-	return u
-}
-
-// SetAccuracy sets the "accuracy" field.
-func (u *OncallAnnotationAlertFeedbackUpsert) SetAccuracy(v oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpsert {
-	u.Set(oncallannotationalertfeedback.FieldAccuracy, v)
-	return u
-}
-
-// UpdateAccuracy sets the "accuracy" field to the value that was provided on create.
-func (u *OncallAnnotationAlertFeedbackUpsert) UpdateAccuracy() *OncallAnnotationAlertFeedbackUpsert {
-	u.SetExcluded(oncallannotationalertfeedback.FieldAccuracy)
 	return u
 }
 
@@ -371,8 +376,22 @@ func (u *OncallAnnotationAlertFeedbackUpsertOne) UpdateActionable() *OncallAnnot
 	})
 }
 
+// SetAccurate sets the "accurate" field.
+func (u *OncallAnnotationAlertFeedbackUpsertOne) SetAccurate(v oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpsertOne {
+	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
+		s.SetAccurate(v)
+	})
+}
+
+// UpdateAccurate sets the "accurate" field to the value that was provided on create.
+func (u *OncallAnnotationAlertFeedbackUpsertOne) UpdateAccurate() *OncallAnnotationAlertFeedbackUpsertOne {
+	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
+		s.UpdateAccurate()
+	})
+}
+
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *OncallAnnotationAlertFeedbackUpsertOne) SetDocumentationAvailable(v bool) *OncallAnnotationAlertFeedbackUpsertOne {
+func (u *OncallAnnotationAlertFeedbackUpsertOne) SetDocumentationAvailable(v oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpsertOne {
 	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
 		s.SetDocumentationAvailable(v)
 	})
@@ -382,20 +401,6 @@ func (u *OncallAnnotationAlertFeedbackUpsertOne) SetDocumentationAvailable(v boo
 func (u *OncallAnnotationAlertFeedbackUpsertOne) UpdateDocumentationAvailable() *OncallAnnotationAlertFeedbackUpsertOne {
 	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
 		s.UpdateDocumentationAvailable()
-	})
-}
-
-// SetAccuracy sets the "accuracy" field.
-func (u *OncallAnnotationAlertFeedbackUpsertOne) SetAccuracy(v oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpsertOne {
-	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
-		s.SetAccuracy(v)
-	})
-}
-
-// UpdateAccuracy sets the "accuracy" field to the value that was provided on create.
-func (u *OncallAnnotationAlertFeedbackUpsertOne) UpdateAccuracy() *OncallAnnotationAlertFeedbackUpsertOne {
-	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
-		s.UpdateAccuracy()
 	})
 }
 
@@ -642,8 +647,22 @@ func (u *OncallAnnotationAlertFeedbackUpsertBulk) UpdateActionable() *OncallAnno
 	})
 }
 
+// SetAccurate sets the "accurate" field.
+func (u *OncallAnnotationAlertFeedbackUpsertBulk) SetAccurate(v oncallannotationalertfeedback.Accurate) *OncallAnnotationAlertFeedbackUpsertBulk {
+	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
+		s.SetAccurate(v)
+	})
+}
+
+// UpdateAccurate sets the "accurate" field to the value that was provided on create.
+func (u *OncallAnnotationAlertFeedbackUpsertBulk) UpdateAccurate() *OncallAnnotationAlertFeedbackUpsertBulk {
+	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
+		s.UpdateAccurate()
+	})
+}
+
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *OncallAnnotationAlertFeedbackUpsertBulk) SetDocumentationAvailable(v bool) *OncallAnnotationAlertFeedbackUpsertBulk {
+func (u *OncallAnnotationAlertFeedbackUpsertBulk) SetDocumentationAvailable(v oncallannotationalertfeedback.DocumentationAvailable) *OncallAnnotationAlertFeedbackUpsertBulk {
 	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
 		s.SetDocumentationAvailable(v)
 	})
@@ -653,20 +672,6 @@ func (u *OncallAnnotationAlertFeedbackUpsertBulk) SetDocumentationAvailable(v bo
 func (u *OncallAnnotationAlertFeedbackUpsertBulk) UpdateDocumentationAvailable() *OncallAnnotationAlertFeedbackUpsertBulk {
 	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
 		s.UpdateDocumentationAvailable()
-	})
-}
-
-// SetAccuracy sets the "accuracy" field.
-func (u *OncallAnnotationAlertFeedbackUpsertBulk) SetAccuracy(v oncallannotationalertfeedback.Accuracy) *OncallAnnotationAlertFeedbackUpsertBulk {
-	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
-		s.SetAccuracy(v)
-	})
-}
-
-// UpdateAccuracy sets the "accuracy" field to the value that was provided on create.
-func (u *OncallAnnotationAlertFeedbackUpsertBulk) UpdateAccuracy() *OncallAnnotationAlertFeedbackUpsertBulk {
-	return u.Update(func(s *OncallAnnotationAlertFeedbackUpsert) {
-		s.UpdateAccuracy()
 	})
 }
 
