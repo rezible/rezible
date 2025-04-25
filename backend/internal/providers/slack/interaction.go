@@ -14,7 +14,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -289,19 +288,22 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		}
 	}
 
-	msgAnno := rez.OncallEventAnnotation{
-		Event: &ent.OncallEvent{
-			ProviderID: meta.MsgId,
-			Kind:       "message",
-			Timestamp:  meta.MsgTimestamp,
-			// TODO: add more message details
-		},
-		Annotation: &ent.OncallAnnotation{
-			ID:       meta.AnnotationId,
-			RosterID: rosterId,
-			Notes:    notes,
-		},
+	msgEvent := &ent.OncallEvent{
+		ProviderID: meta.MsgId,
+		Kind:       "message",
+		Timestamp:  meta.MsgTimestamp,
+		// TODO: add more message details
+	}
+	msgAnno := &ent.OncallAnnotation{
+		ID:       meta.AnnotationId,
+		RosterID: rosterId,
+		Notes:    notes,
+		Edges:    ent.OncallAnnotationEdges{Event: msgEvent},
+	}
+	_, createErr := p.annos.CreateAnnotation(ctx, msgAnno)
+	if createErr != nil {
+		return fmt.Errorf("failed to create annotation: %w", createErr)
 	}
 
-	return p.annos.CreateEventAnnotation(ctx, msgAnno)
+	return nil
 }

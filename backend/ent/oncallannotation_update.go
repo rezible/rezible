@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
@@ -123,6 +124,18 @@ func (oau *OncallAnnotationUpdate) SetNillableNotes(s *string) *OncallAnnotation
 	if s != nil {
 		oau.SetNotes(*s)
 	}
+	return oau
+}
+
+// SetTags sets the "tags" field.
+func (oau *OncallAnnotationUpdate) SetTags(s []string) *OncallAnnotationUpdate {
+	oau.mutation.SetTags(s)
+	return oau
+}
+
+// AppendTags appends s to the "tags" field.
+func (oau *OncallAnnotationUpdate) AppendTags(s []string) *OncallAnnotationUpdate {
+	oau.mutation.AppendTags(s)
 	return oau
 }
 
@@ -295,6 +308,14 @@ func (oau *OncallAnnotationUpdate) sqlSave(ctx context.Context) (n int, err erro
 	}
 	if value, ok := oau.mutation.Notes(); ok {
 		_spec.SetField(oncallannotation.FieldNotes, field.TypeString, value)
+	}
+	if value, ok := oau.mutation.Tags(); ok {
+		_spec.SetField(oncallannotation.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := oau.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oncallannotation.FieldTags, value)
+		})
 	}
 	if oau.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -570,6 +591,18 @@ func (oauo *OncallAnnotationUpdateOne) SetNillableNotes(s *string) *OncallAnnota
 	return oauo
 }
 
+// SetTags sets the "tags" field.
+func (oauo *OncallAnnotationUpdateOne) SetTags(s []string) *OncallAnnotationUpdateOne {
+	oauo.mutation.SetTags(s)
+	return oauo
+}
+
+// AppendTags appends s to the "tags" field.
+func (oauo *OncallAnnotationUpdateOne) AppendTags(s []string) *OncallAnnotationUpdateOne {
+	oauo.mutation.AppendTags(s)
+	return oauo
+}
+
 // SetEvent sets the "event" edge to the OncallEvent entity.
 func (oauo *OncallAnnotationUpdateOne) SetEvent(o *OncallEvent) *OncallAnnotationUpdateOne {
 	return oauo.SetEventID(o.ID)
@@ -769,6 +802,14 @@ func (oauo *OncallAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 	}
 	if value, ok := oauo.mutation.Notes(); ok {
 		_spec.SetField(oncallannotation.FieldNotes, field.TypeString, value)
+	}
+	if value, ok := oauo.mutation.Tags(); ok {
+		_spec.SetField(oncallannotation.FieldTags, field.TypeJSON, value)
+	}
+	if value, ok := oauo.mutation.AppendedTags(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, oncallannotation.FieldTags, value)
+		})
 	}
 	if oauo.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{

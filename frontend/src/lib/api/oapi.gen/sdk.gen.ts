@@ -1986,12 +1986,6 @@ export const listOncallEvents = <ThrowOnError extends boolean = false>(options?:
                 type: 'http'
             }
         ],
-        querySerializer: {
-            array: {
-                explode: false,
-                style: 'form'
-            }
-        },
         url: '/oncall/events',
         ...options
     });

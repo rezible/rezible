@@ -2,11 +2,13 @@ package api
 
 import (
 	"context"
+	"time"
+
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
-	"time"
 )
 
 type oncallEventsHandler struct {
@@ -38,7 +40,7 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oap
 		params.End = shift.EndAt
 	}
 
-	if request.RosterIds != nil {
+	if request.RosterId != uuid.Nil {
 		// TODO: handle this
 	}
 
@@ -77,13 +79,17 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
 	var resp oapi.CreateOncallAnnotationResponse
 
+	user := mustGetAuthSession(ctx, h.auth)
+
 	attr := request.Body.Attributes
 
 	anno := &ent.OncallAnnotation{
 		EventID:         attr.EventId,
 		RosterID:        attr.RosterId,
+		CreatorID:       user.UserId,
 		MinutesOccupied: attr.MinutesOccupied,
 		Notes:           attr.Notes,
+		Tags:            attr.Tags,
 	}
 
 	var createErr error
@@ -99,15 +105,23 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 func (h *oncallEventsHandler) UpdateOncallAnnotation(ctx context.Context, request *oapi.UpdateOncallAnnotationRequest) (*oapi.UpdateOncallAnnotationResponse, error) {
 	var resp oapi.UpdateOncallAnnotationResponse
 
+	attr := request.Body.Attributes
 	anno, annoErr := h.events.GetAnnotation(ctx, request.Id)
 	if annoErr != nil {
 		return nil, detailError("failed to get annotation", annoErr)
 	}
 
-	attr := request.Body.Attributes
 	update := anno.Update().
 		SetNillableNotes(attr.Notes).
 		SetNillableMinutesOccupied(attr.MinutesOccupied)
+
+	if attr.Tags != nil {
+		update.SetTags(*attr.Tags)
+	}
+
+	if attr.AlertFeedback != nil {
+
+	}
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {

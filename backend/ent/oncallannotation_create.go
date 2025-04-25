@@ -73,6 +73,12 @@ func (oac *OncallAnnotationCreate) SetNotes(s string) *OncallAnnotationCreate {
 	return oac
 }
 
+// SetTags sets the "tags" field.
+func (oac *OncallAnnotationCreate) SetTags(s []string) *OncallAnnotationCreate {
+	oac.mutation.SetTags(s)
+	return oac
+}
+
 // SetID sets the "id" field.
 func (oac *OncallAnnotationCreate) SetID(u uuid.UUID) *OncallAnnotationCreate {
 	oac.mutation.SetID(u)
@@ -201,6 +207,9 @@ func (oac *OncallAnnotationCreate) check() error {
 	if _, ok := oac.mutation.Notes(); !ok {
 		return &ValidationError{Name: "notes", err: errors.New(`ent: missing required field "OncallAnnotation.notes"`)}
 	}
+	if _, ok := oac.mutation.Tags(); !ok {
+		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "OncallAnnotation.tags"`)}
+	}
 	if len(oac.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "OncallAnnotation.event"`)}
 	}
@@ -257,6 +266,10 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 	if value, ok := oac.mutation.Notes(); ok {
 		_spec.SetField(oncallannotation.FieldNotes, field.TypeString, value)
 		_node.Notes = value
+	}
+	if value, ok := oac.mutation.Tags(); ok {
+		_spec.SetField(oncallannotation.FieldTags, field.TypeJSON, value)
+		_node.Tags = value
 	}
 	if nodes := oac.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -471,6 +484,18 @@ func (u *OncallAnnotationUpsert) UpdateNotes() *OncallAnnotationUpsert {
 	return u
 }
 
+// SetTags sets the "tags" field.
+func (u *OncallAnnotationUpsert) SetTags(v []string) *OncallAnnotationUpsert {
+	u.Set(oncallannotation.FieldTags, v)
+	return u
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *OncallAnnotationUpsert) UpdateTags() *OncallAnnotationUpsert {
+	u.SetExcluded(oncallannotation.FieldTags)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -607,6 +632,20 @@ func (u *OncallAnnotationUpsertOne) SetNotes(v string) *OncallAnnotationUpsertOn
 func (u *OncallAnnotationUpsertOne) UpdateNotes() *OncallAnnotationUpsertOne {
 	return u.Update(func(s *OncallAnnotationUpsert) {
 		s.UpdateNotes()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *OncallAnnotationUpsertOne) SetTags(v []string) *OncallAnnotationUpsertOne {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *OncallAnnotationUpsertOne) UpdateTags() *OncallAnnotationUpsertOne {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.UpdateTags()
 	})
 }
 
@@ -913,6 +952,20 @@ func (u *OncallAnnotationUpsertBulk) SetNotes(v string) *OncallAnnotationUpsertB
 func (u *OncallAnnotationUpsertBulk) UpdateNotes() *OncallAnnotationUpsertBulk {
 	return u.Update(func(s *OncallAnnotationUpsert) {
 		s.UpdateNotes()
+	})
+}
+
+// SetTags sets the "tags" field.
+func (u *OncallAnnotationUpsertBulk) SetTags(v []string) *OncallAnnotationUpsertBulk {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.SetTags(v)
+	})
+}
+
+// UpdateTags sets the "tags" field to the value that was provided on create.
+func (u *OncallAnnotationUpsertBulk) UpdateTags() *OncallAnnotationUpsertBulk {
+	return u.Update(func(s *OncallAnnotationUpsert) {
+		s.UpdateTags()
 	})
 }
 

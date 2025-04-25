@@ -61,6 +61,11 @@ func ProviderID(v string) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldProviderID, v))
 }
 
+// RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
+func RosterID(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldEQ(FieldRosterID, v))
+}
+
 // Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
 func Timestamp(v time.Time) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldTimestamp, v))
@@ -149,6 +154,36 @@ func ProviderIDEqualFold(v string) predicate.OncallEvent {
 // ProviderIDContainsFold applies the ContainsFold predicate on the "provider_id" field.
 func ProviderIDContainsFold(v string) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldContainsFold(FieldProviderID, v))
+}
+
+// RosterIDEQ applies the EQ predicate on the "roster_id" field.
+func RosterIDEQ(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldEQ(FieldRosterID, v))
+}
+
+// RosterIDNEQ applies the NEQ predicate on the "roster_id" field.
+func RosterIDNEQ(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNEQ(FieldRosterID, v))
+}
+
+// RosterIDIn applies the In predicate on the "roster_id" field.
+func RosterIDIn(vs ...uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldIn(FieldRosterID, vs...))
+}
+
+// RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
+func RosterIDNotIn(vs ...uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNotIn(FieldRosterID, vs...))
+}
+
+// RosterIDIsNil applies the IsNil predicate on the "roster_id" field.
+func RosterIDIsNil() predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldIsNull(FieldRosterID))
+}
+
+// RosterIDNotNil applies the NotNil predicate on the "roster_id" field.
+func RosterIDNotNil() predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNotNull(FieldRosterID))
 }
 
 // TimestampEQ applies the EQ predicate on the "timestamp" field.
@@ -449,6 +484,29 @@ func SourceEqualFold(v string) predicate.OncallEvent {
 // SourceContainsFold applies the ContainsFold predicate on the "source" field.
 func SourceContainsFold(v string) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldContainsFold(FieldSource, v))
+}
+
+// HasRoster applies the HasEdge predicate on the "roster" edge.
+func HasRoster() predicate.OncallEvent {
+	return predicate.OncallEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRosterWith applies the HasEdge predicate on the "roster" edge with a given conditions (other predicates).
+func HasRosterWith(preds ...predicate.OncallRoster) predicate.OncallEvent {
+	return predicate.OncallEvent(func(s *sql.Selector) {
+		step := newRosterStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAnnotations applies the HasEdge predicate on the "annotations" edge.

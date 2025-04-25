@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 )
 
 // OncallEventCreate is the builder for creating a OncallEvent entity.
@@ -28,6 +29,20 @@ type OncallEventCreate struct {
 // SetProviderID sets the "provider_id" field.
 func (oec *OncallEventCreate) SetProviderID(s string) *OncallEventCreate {
 	oec.mutation.SetProviderID(s)
+	return oec
+}
+
+// SetRosterID sets the "roster_id" field.
+func (oec *OncallEventCreate) SetRosterID(u uuid.UUID) *OncallEventCreate {
+	oec.mutation.SetRosterID(u)
+	return oec
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (oec *OncallEventCreate) SetNillableRosterID(u *uuid.UUID) *OncallEventCreate {
+	if u != nil {
+		oec.SetRosterID(*u)
+	}
 	return oec
 }
 
@@ -73,6 +88,11 @@ func (oec *OncallEventCreate) SetNillableID(u *uuid.UUID) *OncallEventCreate {
 		oec.SetID(*u)
 	}
 	return oec
+}
+
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oec *OncallEventCreate) SetRoster(o *OncallRoster) *OncallEventCreate {
+	return oec.SetRosterID(o.ID)
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
@@ -211,6 +231,23 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
 		_node.Source = value
 	}
+	if nodes := oec.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.RosterTable,
+			Columns: []string{oncallevent.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.RosterID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := oec.mutation.AnnotationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -288,6 +325,24 @@ func (u *OncallEventUpsert) SetProviderID(v string) *OncallEventUpsert {
 // UpdateProviderID sets the "provider_id" field to the value that was provided on create.
 func (u *OncallEventUpsert) UpdateProviderID() *OncallEventUpsert {
 	u.SetExcluded(oncallevent.FieldProviderID)
+	return u
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventUpsert) SetRosterID(v uuid.UUID) *OncallEventUpsert {
+	u.Set(oncallevent.FieldRosterID, v)
+	return u
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventUpsert) UpdateRosterID() *OncallEventUpsert {
+	u.SetExcluded(oncallevent.FieldRosterID)
+	return u
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *OncallEventUpsert) ClearRosterID() *OncallEventUpsert {
+	u.SetNull(oncallevent.FieldRosterID)
 	return u
 }
 
@@ -410,6 +465,27 @@ func (u *OncallEventUpsertOne) SetProviderID(v string) *OncallEventUpsertOne {
 func (u *OncallEventUpsertOne) UpdateProviderID() *OncallEventUpsertOne {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.UpdateProviderID()
+	})
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventUpsertOne) SetRosterID(v uuid.UUID) *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventUpsertOne) UpdateRosterID() *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *OncallEventUpsertOne) ClearRosterID() *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.ClearRosterID()
 	})
 }
 
@@ -709,6 +785,27 @@ func (u *OncallEventUpsertBulk) SetProviderID(v string) *OncallEventUpsertBulk {
 func (u *OncallEventUpsertBulk) UpdateProviderID() *OncallEventUpsertBulk {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.UpdateProviderID()
+	})
+}
+
+// SetRosterID sets the "roster_id" field.
+func (u *OncallEventUpsertBulk) SetRosterID(v uuid.UUID) *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.SetRosterID(v)
+	})
+}
+
+// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
+func (u *OncallEventUpsertBulk) UpdateRosterID() *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.UpdateRosterID()
+	})
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (u *OncallEventUpsertBulk) ClearRosterID() *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.ClearRosterID()
 	})
 }
 

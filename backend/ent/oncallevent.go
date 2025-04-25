@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 )
 
 // OncallEvent is the model entity for the OncallEvent schema.
@@ -20,6 +21,8 @@ type OncallEvent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
+	// RosterID holds the value of the "roster_id" field.
+	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Kind holds the value of the "kind" field.
@@ -38,17 +41,30 @@ type OncallEvent struct {
 
 // OncallEventEdges holds the relations/edges for other nodes in the graph.
 type OncallEventEdges struct {
+	// Roster holds the value of the roster edge.
+	Roster *OncallRoster `json:"roster,omitempty"`
 	// Annotations holds the value of the annotations edge.
 	Annotations []*OncallAnnotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// RosterOrErr returns the Roster value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallEventEdges) RosterOrErr() (*OncallRoster, error) {
+	if e.Roster != nil {
+		return e.Roster, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: oncallroster.Label}
+	}
+	return nil, &NotLoadedError{edge: "roster"}
 }
 
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallEventEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -63,7 +79,7 @@ func (*OncallEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case oncallevent.FieldTimestamp:
 			values[i] = new(sql.NullTime)
-		case oncallevent.FieldID:
+		case oncallevent.FieldID, oncallevent.FieldRosterID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -91,6 +107,12 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
 				oe.ProviderID = value.String
+			}
+		case oncallevent.FieldRosterID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
+			} else if value != nil {
+				oe.RosterID = *value
 			}
 		case oncallevent.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -135,6 +157,11 @@ func (oe *OncallEvent) Value(name string) (ent.Value, error) {
 	return oe.selectValues.Get(name)
 }
 
+// QueryRoster queries the "roster" edge of the OncallEvent entity.
+func (oe *OncallEvent) QueryRoster() *OncallRosterQuery {
+	return NewOncallEventClient(oe.config).QueryRoster(oe)
+}
+
 // QueryAnnotations queries the "annotations" edge of the OncallEvent entity.
 func (oe *OncallEvent) QueryAnnotations() *OncallAnnotationQuery {
 	return NewOncallEventClient(oe.config).QueryAnnotations(oe)
@@ -165,6 +192,9 @@ func (oe *OncallEvent) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", oe.ID))
 	builder.WriteString("provider_id=")
 	builder.WriteString(oe.ProviderID)
+	builder.WriteString(", ")
+	builder.WriteString("roster_id=")
+	builder.WriteString(fmt.Sprintf("%v", oe.RosterID))
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
 	builder.WriteString(oe.Timestamp.Format(time.ANSIC))

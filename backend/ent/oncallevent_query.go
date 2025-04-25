@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -25,6 +26,7 @@ type OncallEventQuery struct {
 	order           []oncallevent.OrderOption
 	inters          []Interceptor
 	predicates      []predicate.OncallEvent
+	withRoster      *OncallRosterQuery
 	withAnnotations *OncallAnnotationQuery
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (oeq *OncallEventQuery) Unique(unique bool) *OncallEventQuery {
 func (oeq *OncallEventQuery) Order(o ...oncallevent.OrderOption) *OncallEventQuery {
 	oeq.order = append(oeq.order, o...)
 	return oeq
+}
+
+// QueryRoster chains the current query on the "roster" edge.
+func (oeq *OncallEventQuery) QueryRoster() *OncallRosterQuery {
+	query := (&OncallRosterClient{config: oeq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, selector),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.RosterTable, oncallevent.RosterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAnnotations chains the current query on the "annotations" edge.
@@ -277,12 +301,24 @@ func (oeq *OncallEventQuery) Clone() *OncallEventQuery {
 		order:           append([]oncallevent.OrderOption{}, oeq.order...),
 		inters:          append([]Interceptor{}, oeq.inters...),
 		predicates:      append([]predicate.OncallEvent{}, oeq.predicates...),
+		withRoster:      oeq.withRoster.Clone(),
 		withAnnotations: oeq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:       oeq.sql.Clone(),
 		path:      oeq.path,
 		modifiers: append([]func(*sql.Selector){}, oeq.modifiers...),
 	}
+}
+
+// WithRoster tells the query-builder to eager-load the nodes that are connected to
+// the "roster" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeq *OncallEventQuery) WithRoster(opts ...func(*OncallRosterQuery)) *OncallEventQuery {
+	query := (&OncallRosterClient{config: oeq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeq.withRoster = query
+	return oeq
 }
 
 // WithAnnotations tells the query-builder to eager-load the nodes that are connected to
@@ -374,7 +410,8 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*OncallEvent{}
 		_spec       = oeq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			oeq.withRoster != nil,
 			oeq.withAnnotations != nil,
 		}
 	)
@@ -399,6 +436,12 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := oeq.withRoster; query != nil {
+		if err := oeq.loadRoster(ctx, query, nodes, nil,
+			func(n *OncallEvent, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := oeq.withAnnotations; query != nil {
 		if err := oeq.loadAnnotations(ctx, query, nodes,
 			func(n *OncallEvent) { n.Edges.Annotations = []*OncallAnnotation{} },
@@ -409,6 +452,35 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
+func (oeq *OncallEventQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *OncallRoster)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallEvent)
+	for i := range nodes {
+		fk := nodes[i].RosterID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(oncallroster.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "roster_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (oeq *OncallEventQuery) loadAnnotations(ctx context.Context, query *OncallAnnotationQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *OncallAnnotation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallEvent)
@@ -467,6 +539,9 @@ func (oeq *OncallEventQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallevent.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oeq.withRoster != nil {
+			_spec.Node.AddColumnOnce(oncallevent.FieldRosterID)
 		}
 	}
 	if ps := oeq.predicates; len(ps) > 0 {

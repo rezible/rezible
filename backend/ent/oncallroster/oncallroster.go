@@ -34,6 +34,8 @@ const (
 	EdgeSchedules = "schedules"
 	// EdgeHandoverTemplate holds the string denoting the handover_template edge name in mutations.
 	EdgeHandoverTemplate = "handover_template"
+	// EdgeEvents holds the string denoting the events edge name in mutations.
+	EdgeEvents = "events"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
 	EdgeAnnotations = "annotations"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
@@ -58,6 +60,13 @@ const (
 	HandoverTemplateInverseTable = "oncall_handover_templates"
 	// HandoverTemplateColumn is the table column denoting the handover_template relation/edge.
 	HandoverTemplateColumn = "handover_template_id"
+	// EventsTable is the table that holds the events relation/edge.
+	EventsTable = "oncall_events"
+	// EventsInverseTable is the table name for the OncallEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallevent" package.
+	EventsInverseTable = "oncall_events"
+	// EventsColumn is the table column denoting the events relation/edge.
+	EventsColumn = "roster_id"
 	// AnnotationsTable is the table that holds the annotations relation/edge.
 	AnnotationsTable = "oncall_annotations"
 	// AnnotationsInverseTable is the table name for the OncallAnnotation entity.
@@ -197,6 +206,20 @@ func ByHandoverTemplateField(field string, opts ...sql.OrderTermOption) OrderOpt
 	}
 }
 
+// ByEventsCount orders the results by events count.
+func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+	}
+}
+
+// ByEvents orders the results by events terms.
+func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAnnotationsCount orders the results by annotations count.
 func ByAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -264,6 +287,13 @@ func newHandoverTemplateStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HandoverTemplateInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, HandoverTemplateTable, HandoverTemplateColumn),
+	)
+}
+func newEventsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(EventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, EventsTable, EventsColumn),
 	)
 }
 func newAnnotationsStep() *sqlgraph.Step {

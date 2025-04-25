@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -42,6 +43,26 @@ func (oeu *OncallEventUpdate) SetNillableProviderID(s *string) *OncallEventUpdat
 	if s != nil {
 		oeu.SetProviderID(*s)
 	}
+	return oeu
+}
+
+// SetRosterID sets the "roster_id" field.
+func (oeu *OncallEventUpdate) SetRosterID(u uuid.UUID) *OncallEventUpdate {
+	oeu.mutation.SetRosterID(u)
+	return oeu
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (oeu *OncallEventUpdate) SetNillableRosterID(u *uuid.UUID) *OncallEventUpdate {
+	if u != nil {
+		oeu.SetRosterID(*u)
+	}
+	return oeu
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (oeu *OncallEventUpdate) ClearRosterID() *OncallEventUpdate {
+	oeu.mutation.ClearRosterID()
 	return oeu
 }
 
@@ -115,6 +136,11 @@ func (oeu *OncallEventUpdate) SetNillableSource(s *string) *OncallEventUpdate {
 	return oeu
 }
 
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oeu *OncallEventUpdate) SetRoster(o *OncallRoster) *OncallEventUpdate {
+	return oeu.SetRosterID(o.ID)
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
 func (oeu *OncallEventUpdate) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdate {
 	oeu.mutation.AddAnnotationIDs(ids...)
@@ -133,6 +159,12 @@ func (oeu *OncallEventUpdate) AddAnnotations(o ...*OncallAnnotation) *OncallEven
 // Mutation returns the OncallEventMutation object of the builder.
 func (oeu *OncallEventUpdate) Mutation() *OncallEventMutation {
 	return oeu.mutation
+}
+
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (oeu *OncallEventUpdate) ClearRoster() *OncallEventUpdate {
+	oeu.mutation.ClearRoster()
+	return oeu
 }
 
 // ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
@@ -216,6 +248,35 @@ func (oeu *OncallEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := oeu.mutation.Source(); ok {
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
 	}
+	if oeu.mutation.RosterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.RosterTable,
+			Columns: []string{oncallevent.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeu.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.RosterTable,
+			Columns: []string{oncallevent.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if oeu.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -297,6 +358,26 @@ func (oeuo *OncallEventUpdateOne) SetNillableProviderID(s *string) *OncallEventU
 	return oeuo
 }
 
+// SetRosterID sets the "roster_id" field.
+func (oeuo *OncallEventUpdateOne) SetRosterID(u uuid.UUID) *OncallEventUpdateOne {
+	oeuo.mutation.SetRosterID(u)
+	return oeuo
+}
+
+// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
+func (oeuo *OncallEventUpdateOne) SetNillableRosterID(u *uuid.UUID) *OncallEventUpdateOne {
+	if u != nil {
+		oeuo.SetRosterID(*u)
+	}
+	return oeuo
+}
+
+// ClearRosterID clears the value of the "roster_id" field.
+func (oeuo *OncallEventUpdateOne) ClearRosterID() *OncallEventUpdateOne {
+	oeuo.mutation.ClearRosterID()
+	return oeuo
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (oeuo *OncallEventUpdateOne) SetTimestamp(t time.Time) *OncallEventUpdateOne {
 	oeuo.mutation.SetTimestamp(t)
@@ -367,6 +448,11 @@ func (oeuo *OncallEventUpdateOne) SetNillableSource(s *string) *OncallEventUpdat
 	return oeuo
 }
 
+// SetRoster sets the "roster" edge to the OncallRoster entity.
+func (oeuo *OncallEventUpdateOne) SetRoster(o *OncallRoster) *OncallEventUpdateOne {
+	return oeuo.SetRosterID(o.ID)
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
 func (oeuo *OncallEventUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdateOne {
 	oeuo.mutation.AddAnnotationIDs(ids...)
@@ -385,6 +471,12 @@ func (oeuo *OncallEventUpdateOne) AddAnnotations(o ...*OncallAnnotation) *Oncall
 // Mutation returns the OncallEventMutation object of the builder.
 func (oeuo *OncallEventUpdateOne) Mutation() *OncallEventMutation {
 	return oeuo.mutation
+}
+
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (oeuo *OncallEventUpdateOne) ClearRoster() *OncallEventUpdateOne {
+	oeuo.mutation.ClearRoster()
+	return oeuo
 }
 
 // ClearAnnotations clears all "annotations" edges to the OncallAnnotation entity.
@@ -497,6 +589,35 @@ func (oeuo *OncallEventUpdateOne) sqlSave(ctx context.Context) (_node *OncallEve
 	}
 	if value, ok := oeuo.mutation.Source(); ok {
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
+	}
+	if oeuo.mutation.RosterCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.RosterTable,
+			Columns: []string{oncallevent.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeuo.mutation.RosterIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.RosterTable,
+			Columns: []string{oncallevent.RosterColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if oeuo.mutation.AnnotationsCleared() {
 		edge := &sqlgraph.EdgeSpec{

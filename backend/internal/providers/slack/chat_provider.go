@@ -12,7 +12,7 @@ import (
 type ChatProvider struct {
 	client        *slack.Client
 	signingSecret string
-	annos         rez.ChatMessageAnnotationSupporter
+	annos         rez.ChatMessageAnnotator
 }
 
 type ChatProviderConfig struct {
@@ -38,7 +38,7 @@ func (p *ChatProvider) GetWebhooks() rez.Webhooks {
 	}
 }
 
-func (p *ChatProvider) SetAnnotationSupporter(ip rez.ChatMessageAnnotationSupporter) {
+func (p *ChatProvider) SetMessageAnnotator(ip rez.ChatMessageAnnotator) {
 	p.annos = ip
 }
 
@@ -119,12 +119,12 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 	}
 
 	builder := handoverMessageBuilder{
-		roster:                 roster,
-		senderId:               sender.ChatID,
-		receiverId:             receiver.ChatID,
-		endingShift:            params.EndingShift,
-		startingShift:          params.StartingShift,
-		pinnedEventAnnotations: params.PinnedEventAnnotations,
+		roster:            roster,
+		senderId:          sender.ChatID,
+		receiverId:        receiver.ChatID,
+		endingShift:       params.EndingShift,
+		startingShift:     params.StartingShift,
+		pinnedAnnotations: params.PinnedAnnotations,
 	}
 
 	if buildErr := builder.build(params.Content); buildErr != nil {

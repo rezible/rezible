@@ -5348,6 +5348,22 @@ func (c *OncallEventClient) GetX(ctx context.Context, id uuid.UUID) *OncallEvent
 	return obj
 }
 
+// QueryRoster queries the roster edge of a OncallEvent.
+func (c *OncallEventClient) QueryRoster(oe *OncallEvent) *OncallRosterQuery {
+	query := (&OncallRosterClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oe.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, id),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.RosterTable, oncallevent.RosterColumn),
+		)
+		fromV = sqlgraph.Neighbors(oe.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAnnotations queries the annotations edge of a OncallEvent.
 func (c *OncallEventClient) QueryAnnotations(oe *OncallEvent) *OncallAnnotationQuery {
 	query := (&OncallAnnotationClient{config: c.config}).Query()
@@ -5671,6 +5687,22 @@ func (c *OncallRosterClient) QueryHandoverTemplate(or *OncallRoster) *OncallHand
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvents queries the events edge of a OncallRoster.
+func (c *OncallRosterClient) QueryEvents(or *OncallRoster) *OncallEventQuery {
+	query := (&OncallEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(oncallevent.Table, oncallevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.EventsTable, oncallroster.EventsColumn),
 		)
 		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
 		return fromV, nil

@@ -183,19 +183,19 @@ type (
 		CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (readOnly bool, err error)
 		GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
 
-		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []OncallEventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) (*ContentNode, error)
+		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) (*ContentNode, error)
 	}
 )
 
 type (
-	ChatMessageAnnotationSupporter interface {
-		CreateEventAnnotation(ctx context.Context, evAnno OncallEventAnnotation) error
+	ChatMessageAnnotator interface {
+		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
 		QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error)
 	}
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
-		SetAnnotationSupporter(ChatMessageAnnotationSupporter)
+		SetMessageAnnotator(ChatMessageAnnotator)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendTextMessage(ctx context.Context, id string, text string) error
@@ -207,9 +207,9 @@ type (
 	SendOncallHandoverParams struct {
 		Content []OncallShiftHandoverSection
 
-		EndingShift            *ent.OncallUserShift
-		StartingShift          *ent.OncallUserShift
-		PinnedEventAnnotations []OncallEventAnnotation
+		EndingShift       *ent.OncallUserShift
+		StartingShift     *ent.OncallUserShift
+		PinnedAnnotations []*ent.OncallAnnotation
 	}
 )
 
@@ -300,11 +300,6 @@ type (
 )
 
 type (
-	OncallEventAnnotation struct {
-		Event      *ent.OncallEvent      `json:"event"`
-		Annotation *ent.OncallAnnotation `json:"annotation"`
-	}
-
 	OncallEventsDataProvider interface {
 		GetWebhooks() Webhooks
 
@@ -313,8 +308,10 @@ type (
 
 	ListOncallEventsParams struct {
 		ListParams
-		Start time.Time
-		End   time.Time
+		Start           time.Time
+		End             time.Time
+		RosterID        uuid.UUID
+		WithAnnotations bool
 	}
 
 	ListOncallAnnotationsParams struct {
@@ -324,13 +321,12 @@ type (
 	}
 
 	OncallEventsService interface {
-		ChatMessageAnnotationSupporter
-
 		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, error)
 
 		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
+		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
 		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}
 )

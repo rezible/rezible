@@ -7,10 +7,9 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"math/rand"
-	"time"
 )
 
 type OncallEventsService struct {
@@ -31,62 +30,18 @@ func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserS
 	return s, nil
 }
 
-func makeFakeShiftEvent(date time.Time) *ent.OncallEvent {
-	isAlert := rand.Float64() > 0.25
-	eventKind := "incident"
-	if isAlert {
-		eventKind = "alert"
-	}
-
-	hour := rand.Intn(24)
-	minute := rand.Intn(60)
-
-	timestamp := time.Date(
-		date.Year(), date.Month(), date.Day(),
-		hour, minute, 0, 0, date.Location(),
-	)
-
-	id := uuid.New()
-
-	return &ent.OncallEvent{
-		ID:          id,
-		ProviderID:  id.String(),
-		Timestamp:   timestamp,
-		Source:      "fake",
-		Kind:        eventKind,
-		Title:       "title",
-		Description: "fake description",
-	}
-}
-
-func makeFakeOncallEvents(start, end time.Time) []*ent.OncallEvent {
-	numHours := end.Sub(start).Hours()
-	if numHours <= 0 {
-		return nil
-	}
-	numDays := int(numHours / 24)
-	events := make([]*ent.OncallEvent, 0, numDays*10)
-
-	for day := 0; day < numDays; day++ {
-		dayDate := start.AddDate(0, 0, day)
-		numDayEvents := rand.Intn(10)
-
-		for i := 0; i < numDayEvents; i++ {
-			events = append(events, makeFakeShiftEvent(dayDate))
-		}
-	}
-
-	return events
-}
-
 func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, error) {
-	events := makeFakeOncallEvents(params.Start, params.End)
+	withinWindow := oncallevent.And(oncallevent.TimestampGT(params.Start), oncallevent.TimestampLT(params.End))
+	query := s.db.OncallEvent.Query().
+		Limit(params.GetLimit()).
+		Offset(params.Offset).
+		Where(withinWindow)
 
-	return events, nil
-}
+	if params.WithAnnotations {
+		query.WithAnnotations()
+	}
 
-func (s *OncallEventsService) CreateEventAnnotation(ctx context.Context, evAnno rez.OncallEventAnnotation) error {
-	return nil
+	return query.All(params.GetQueryContext(ctx))
 }
 
 func (s *OncallEventsService) QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error) {
@@ -114,51 +69,14 @@ func (s *OncallEventsService) QueryUserChatMessageEventDetails(ctx context.Conte
 	return rosters, event, nil
 }
 
-/*
-func (s *OncallService) CreateAnnotation(ctx context.Context, rosterId uuid.UUID, ev *rez.OncallEvent, anno *ent.OncallAnnotation) error {
-	annos, annosErr := s.db.OncallAnnotation.Query().
-		Where(oncallannotation.RosterID(rosterId)).
-		All(ctx)
-	if annosErr != nil {
-		return fmt.Errorf("failed to query: %w", annosErr)
-	}
-
-	for _, an := range annos {
-		if an.EventID != "" && an.EventID == msg.ID {
-			anno = an
-			break
-		}
-	}
-	prevId := anno.ID.String()
-	anno := &ent.OncallAnnotation{
-		RosterID: rosterId,
-		EventID:  msg.ID,
-	}
-	setFn(anno)
-	if anno.ID.String() != prevId {
-		return fmt.Errorf("annotation id mismatch: %s", anno.ID)
-	}
-
-	upsertQuery := s.db.OncallAnnotation.Create().
-		SetRosterID(anno.RosterID).
-		SetEventID(anno.EventID).
-		SetNotes(anno.Notes).
-		SetMinutesOccupied(anno.MinutesOccupied)
-	if upsertErr := upsertQuery.Exec(ctx); upsertErr != nil {
-		return fmt.Errorf("failed to upsert char annotation: %w", upsertErr)
-	}
-
-	return nil
-}
-*/
-
 func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
 	query := s.db.OncallAnnotation.Query().
 		Limit(params.GetLimit()).
 		Offset(params.Offset).
 		WithCreator().
 		WithEvent().
-		WithRoster()
+		WithRoster().
+		WithAlertFeedback()
 
 	rosterId := params.RosterID
 	if params.ShiftID != uuid.Nil {
@@ -185,25 +103,92 @@ func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.Li
 
 func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {
 	return s.db.OncallAnnotation.Query().
-		WithCreator().WithRoster().WithEvent().
 		Where(oncallannotation.ID(id)).
+		WithCreator().WithRoster().WithEvent().WithAlertFeedback().
 		Only(ctx)
 }
 
 func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
-	query := s.db.OncallAnnotation.Create().
-		SetID(uuid.New()).
-		SetEventID(anno.EventID).
-		SetMinutesOccupied(anno.MinutesOccupied).
-		SetNotes(anno.Notes).
-		SetRosterID(anno.RosterID).
-		OnConflictColumns(oncallannotation.FieldID).
-		UpdateNewValues()
-
-	if err := query.Exec(ctx); err != nil {
-		return nil, fmt.Errorf("upsert oncall annotation: %w", err)
+	var created *ent.OncallAnnotation
+	createFn := func(tx *ent.Tx) error {
+		createdAnno, annoErr := tx.OncallAnnotation.Create().
+			SetEventID(anno.EventID).
+			SetMinutesOccupied(anno.MinutesOccupied).
+			SetNotes(anno.Notes).
+			SetRosterID(anno.RosterID).
+			Save(ctx)
+		if annoErr != nil {
+			return fmt.Errorf("failed to create annotation: %w", annoErr)
+		}
+		if alertFb := anno.Edges.AlertFeedback; alertFb != nil {
+			createdFb, fbErr := tx.OncallAnnotationAlertFeedback.Create().
+				SetDocumentationAvailable(alertFb.DocumentationAvailable).
+				SetActionable(alertFb.Actionable).
+				SetAccurate(alertFb.Accurate).
+				SetAnnotation(createdAnno).
+				Save(ctx)
+			if fbErr != nil {
+				return fmt.Errorf("failed to create alert feedback: %w", fbErr)
+			}
+			createdAnno.Edges.AlertFeedback = createdFb
+		}
+		created = createdAnno
+		return nil
 	}
-	return anno, nil
+	if txErr := ent.WithTx(ctx, s.db, createFn); txErr != nil {
+		return nil, fmt.Errorf("failed to create annotation: %w", txErr)
+	}
+	return created, nil
+}
+
+func (s *OncallEventsService) UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
+	dbAnno, currErr := s.db.OncallAnnotation.Query().
+		Where(oncallannotation.ID(anno.ID)).
+		WithAlertFeedback().
+		WithEvent().
+		Only(ctx)
+	if currErr != nil {
+		return nil, fmt.Errorf("failed to query current annotation: %w", currErr)
+	}
+	dbAlertFb := dbAnno.Edges.AlertFeedback
+	updated := dbAnno
+	updateFn := func(tx *ent.Tx) error {
+		updatedAnno, annoErr := tx.OncallAnnotation.UpdateOneID(anno.ID).
+			SetMinutesOccupied(anno.MinutesOccupied).
+			SetNotes(anno.Notes).
+			SetTags(anno.Tags).
+			Save(ctx)
+		if annoErr != nil {
+			return fmt.Errorf("failed to update annotation: %w", annoErr)
+		}
+
+		if fb := anno.Edges.AlertFeedback; fb != nil {
+			upsert := tx.OncallAnnotationAlertFeedback.Create()
+			if dbAlertFb != nil {
+				upsert.SetID(dbAlertFb.ID)
+			}
+			updateFb := upsert.
+				SetAccurate(fb.Accurate).
+				SetActionable(fb.Actionable).
+				SetDocumentationAvailable(fb.DocumentationAvailable).
+				SetAnnotationID(updatedAnno.ID).
+				OnConflictColumns(oncallannotationalertfeedback.FieldID).
+				UpdateNewValues()
+			fbId, updateErr := updateFb.ID(ctx)
+			if updateErr != nil {
+				return fmt.Errorf("failed to update alert feedback: %w", updateErr)
+			}
+			fb.ID = fbId
+			updatedAnno.Edges.AlertFeedback = fb
+		}
+
+		updated = updatedAnno
+		return nil
+	}
+	if txErr := ent.WithTx(ctx, s.db, updateFn); txErr != nil {
+		return nil, fmt.Errorf("failed to update annotation: %w", txErr)
+	}
+	return updated, nil
 }
 
 func (s *OncallEventsService) DeleteAnnotation(ctx context.Context, id uuid.UUID) error {

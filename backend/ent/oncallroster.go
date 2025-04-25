@@ -47,6 +47,8 @@ type OncallRosterEdges struct {
 	Schedules []*OncallSchedule `json:"schedules,omitempty"`
 	// HandoverTemplate holds the value of the handover_template edge.
 	HandoverTemplate *OncallHandoverTemplate `json:"handover_template,omitempty"`
+	// Events holds the value of the events edge.
+	Events []*OncallEvent `json:"events,omitempty"`
 	// Annotations holds the value of the annotations edge.
 	Annotations []*OncallAnnotation `json:"annotations,omitempty"`
 	// Teams holds the value of the teams edge.
@@ -57,7 +59,7 @@ type OncallRosterEdges struct {
 	UserWatchers []*User `json:"user_watchers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
 }
 
 // SchedulesOrErr returns the Schedules value or an error if the edge
@@ -80,10 +82,19 @@ func (e OncallRosterEdges) HandoverTemplateOrErr() (*OncallHandoverTemplate, err
 	return nil, &NotLoadedError{edge: "handover_template"}
 }
 
+// EventsOrErr returns the Events value or an error if the edge
+// was not loaded in eager-loading.
+func (e OncallRosterEdges) EventsOrErr() ([]*OncallEvent, error) {
+	if e.loadedTypes[2] {
+		return e.Events, nil
+	}
+	return nil, &NotLoadedError{edge: "events"}
+}
+
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -92,7 +103,7 @@ func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -101,7 +112,7 @@ func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
 // ShiftsOrErr returns the Shifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Shifts, nil
 	}
 	return nil, &NotLoadedError{edge: "shifts"}
@@ -110,7 +121,7 @@ func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
 // UserWatchersOrErr returns the UserWatchers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.UserWatchers, nil
 	}
 	return nil, &NotLoadedError{edge: "user_watchers"}
@@ -217,6 +228,11 @@ func (or *OncallRoster) QuerySchedules() *OncallScheduleQuery {
 // QueryHandoverTemplate queries the "handover_template" edge of the OncallRoster entity.
 func (or *OncallRoster) QueryHandoverTemplate() *OncallHandoverTemplateQuery {
 	return NewOncallRosterClient(or.config).QueryHandoverTemplate(or)
+}
+
+// QueryEvents queries the "events" edge of the OncallRoster entity.
+func (or *OncallRoster) QueryEvents() *OncallEventQuery {
+	return NewOncallRosterClient(or.config).QueryEvents(or)
 }
 
 // QueryAnnotations queries the "annotations" edge of the OncallRoster entity.

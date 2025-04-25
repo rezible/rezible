@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -34,6 +35,8 @@ type OncallAnnotation struct {
 	MinutesOccupied int `json:"minutes_occupied,omitempty"`
 	// Notes holds the value of the "notes" field.
 	Notes string `json:"notes,omitempty"`
+	// Tags holds the value of the "tags" field.
+	Tags []string `json:"tags,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallAnnotationQuery when eager-loading is set.
 	Edges        OncallAnnotationEdges `json:"edges"`
@@ -115,6 +118,8 @@ func (*OncallAnnotation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallannotation.FieldTags:
+			values[i] = new([]byte)
 		case oncallannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
 		case oncallannotation.FieldNotes:
@@ -179,6 +184,14 @@ func (oa *OncallAnnotation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field notes", values[i])
 			} else if value.Valid {
 				oa.Notes = value.String
+			}
+		case oncallannotation.FieldTags:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field tags", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &oa.Tags); err != nil {
+					return fmt.Errorf("unmarshal field tags: %w", err)
+				}
 			}
 		default:
 			oa.selectValues.Set(columns[i], values[i])
@@ -258,6 +271,9 @@ func (oa *OncallAnnotation) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("notes=")
 	builder.WriteString(oa.Notes)
+	builder.WriteString(", ")
+	builder.WriteString("tags=")
+	builder.WriteString(fmt.Sprintf("%v", oa.Tags))
 	builder.WriteByte(')')
 	return builder.String()
 }

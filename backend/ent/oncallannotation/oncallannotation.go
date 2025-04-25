@@ -27,6 +27,8 @@ const (
 	FieldMinutesOccupied = "minutes_occupied"
 	// FieldNotes holds the string denoting the notes field in the database.
 	FieldNotes = "notes"
+	// FieldTags holds the string denoting the tags field in the database.
+	FieldTags = "tags"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
@@ -83,6 +85,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldMinutesOccupied,
 	FieldNotes,
+	FieldTags,
 }
 
 var (

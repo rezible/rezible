@@ -19,12 +19,12 @@ import (
 type handoverMessageBuilder struct {
 	blocks []slack.Block
 
-	roster                 *ent.OncallRoster
-	senderId               string
-	receiverId             string
-	endingShift            *ent.OncallUserShift
-	startingShift          *ent.OncallUserShift
-	pinnedEventAnnotations []rez.OncallEventAnnotation
+	roster            *ent.OncallRoster
+	senderId          string
+	receiverId        string
+	endingShift       *ent.OncallUserShift
+	startingShift     *ent.OncallUserShift
+	pinnedAnnotations []*ent.OncallAnnotation
 }
 
 func (b *handoverMessageBuilder) addBlocks(blocks ...slack.Block) {
@@ -90,8 +90,8 @@ func (b *handoverMessageBuilder) addSection(idx int, section rez.OncallShiftHand
 }
 
 func (b *handoverMessageBuilder) addPinnedAnnotations() {
-	if len(b.pinnedEventAnnotations) == 0 {
-		b.addBlocks(slack.NewSectionBlock(plainText("No Pinned Events"), nil, nil))
+	if len(b.pinnedAnnotations) == 0 {
+		b.addBlocks(slack.NewSectionBlock(plainText("No Pinned Annotations"), nil, nil))
 		return
 	}
 
@@ -110,9 +110,9 @@ func (b *handoverMessageBuilder) addPinnedAnnotations() {
 		numListBlocks++
 	}
 
-	for _, p := range b.pinnedEventAnnotations {
+	for _, a := range b.pinnedAnnotations {
 		var el slack.RichTextSectionElement
-		if ev := p.Event; ev != nil {
+		if ev := a.Edges.Event; ev != nil {
 			if ev.Kind == "incident" {
 				link := fmt.Sprintf("http://localhost:5173/incidents/%s", ev.ID)
 				el = slack.NewRichTextSectionLinkElement(link, ev.Title, nil)
@@ -122,19 +122,18 @@ func (b *handoverMessageBuilder) addPinnedAnnotations() {
 		} else {
 			el = slack.NewRichTextSectionTextElement("Unknown Event", nil)
 		}
-		els = append(els, el)
-		if p.Annotation != nil {
-			flushList()
 
-			style := &slack.RichTextSectionTextStyle{
-				Italic: true,
-			}
-			section := slack.NewRichTextSection(slack.NewRichTextSectionTextElement(p.Annotation.Notes, style))
-			blockId := fmt.Sprintf("handover_event_annotation_%d", numNoteBlocks)
-			numNoteBlocks++
-			annoBlock := slack.NewRichTextBlock(blockId, slack.NewRichTextList(slack.RTEListBullet, 1, section))
-			b.addBlocks(annoBlock)
+		els = append(els, el)
+		flushList()
+
+		style := &slack.RichTextSectionTextStyle{
+			Italic: true,
 		}
+		section := slack.NewRichTextSection(slack.NewRichTextSectionTextElement(a.Notes, style))
+		blockId := fmt.Sprintf("handover_pinned_annotation_%d", numNoteBlocks)
+		numNoteBlocks++
+		annoBlock := slack.NewRichTextBlock(blockId, slack.NewRichTextList(slack.RTEListBullet, 1, section))
+		b.addBlocks(annoBlock)
 	}
 	if len(els) > 0 {
 		flushList()

@@ -132,9 +132,12 @@ var ListOncallEvents = huma.Operation{
 
 type ListOncallEventsRequest struct {
 	ListRequest
-	ShiftId   uuid.UUID `query:"shiftId"`
-	Annotated bool      `query:"annotated"`
-	RosterIds []string  `query:"rosterIds"`
+	From            time.Time `query:"from"`
+	To              time.Time `query:"to"`
+	WithAnnotations bool      `query:"withAnnotations"`
+	OnlyAnnotated   bool      `query:"onlyAnnotated"`
+	ShiftId         uuid.UUID `query:"shiftId"`
+	RosterId        uuid.UUID `query:"rosterId"`
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 

@@ -21,6 +21,7 @@ func (OncallAnnotation) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now),
 		field.Int("minutes_occupied"),
 		field.Text("notes"),
+		field.JSON("tags", []string{}),
 	}
 }
 

@@ -554,6 +554,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "minutes_occupied", Type: field.TypeInt},
 		{Name: "notes", Type: field.TypeString, Size: 2147483647},
+		{Name: "tags", Type: field.TypeJSON},
 		{Name: "event_id", Type: field.TypeUUID},
 		{Name: "roster_id", Type: field.TypeUUID},
 		{Name: "creator_id", Type: field.TypeUUID},
@@ -566,19 +567,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_annotations_oncall_events_event",
-				Columns:    []*schema.Column{OncallAnnotationsColumns[4]},
+				Columns:    []*schema.Column{OncallAnnotationsColumns[5]},
 				RefColumns: []*schema.Column{OncallEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_annotations_oncall_rosters_roster",
-				Columns:    []*schema.Column{OncallAnnotationsColumns[5]},
+				Columns:    []*schema.Column{OncallAnnotationsColumns[6]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_annotations_users_creator",
-				Columns:    []*schema.Column{OncallAnnotationsColumns[6]},
+				Columns:    []*schema.Column{OncallAnnotationsColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -615,12 +616,21 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
+		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// OncallEventsTable holds the schema information for the "oncall_events" table.
 	OncallEventsTable = &schema.Table{
 		Name:       "oncall_events",
 		Columns:    OncallEventsColumns,
 		PrimaryKey: []*schema.Column{OncallEventsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_events_oncall_rosters_roster",
+				Columns:    []*schema.Column{OncallEventsColumns[7]},
+				RefColumns: []*schema.Column{OncallRostersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
@@ -1753,6 +1763,7 @@ func init() {
 	OncallAnnotationsTable.ForeignKeys[1].RefTable = OncallRostersTable
 	OncallAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
 	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable
+	OncallEventsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable

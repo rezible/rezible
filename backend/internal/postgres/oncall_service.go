@@ -513,8 +513,10 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		return fmt.Errorf("no roster chat channel found")
 	}
 
-	annos := make([]rez.OncallEventAnnotation, 0)
-	// TODO: get event annotations
+	annos, annosErr := ho.QueryPinnedAnnotations().WithEvent().All(ctx)
+	if annosErr != nil {
+		return fmt.Errorf("failed to get pinned annotations: %w", annosErr)
+	}
 
 	/*
 		msgContent, contentErr := s.docs.CreateOncallShiftHandoverMessage(sections, annos, roster, shift, nextShift)
@@ -526,9 +528,9 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 	*/
 
 	return s.chat.SendOncallHandover(ctx, rez.SendOncallHandoverParams{
-		Content:                sections,
-		EndingShift:            shift,
-		StartingShift:          nextShift,
-		PinnedEventAnnotations: annos,
+		Content:           sections,
+		EndingShift:       shift,
+		StartingShift:     nextShift,
+		PinnedAnnotations: annos,
 	})
 }

@@ -15,6 +15,8 @@ const (
 	FieldID = "id"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// FieldRosterID holds the string denoting the roster_id field in the database.
+	FieldRosterID = "roster_id"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
 	// FieldKind holds the string denoting the kind field in the database.
@@ -25,10 +27,19 @@ const (
 	FieldDescription = "description"
 	// FieldSource holds the string denoting the source field in the database.
 	FieldSource = "source"
+	// EdgeRoster holds the string denoting the roster edge name in mutations.
+	EdgeRoster = "roster"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
 	EdgeAnnotations = "annotations"
 	// Table holds the table name of the oncallevent in the database.
 	Table = "oncall_events"
+	// RosterTable is the table that holds the roster relation/edge.
+	RosterTable = "oncall_events"
+	// RosterInverseTable is the table name for the OncallRoster entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
+	RosterInverseTable = "oncall_rosters"
+	// RosterColumn is the table column denoting the roster relation/edge.
+	RosterColumn = "roster_id"
 	// AnnotationsTable is the table that holds the annotations relation/edge.
 	AnnotationsTable = "oncall_annotations"
 	// AnnotationsInverseTable is the table name for the OncallAnnotation entity.
@@ -42,6 +53,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldProviderID,
+	FieldRosterID,
 	FieldTimestamp,
 	FieldKind,
 	FieldTitle,
@@ -77,6 +89,11 @@ func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
+// ByRosterID orders the results by the roster_id field.
+func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
+}
+
 // ByTimestamp orders the results by the timestamp field.
 func ByTimestamp(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimestamp, opts...).ToFunc()
@@ -102,6 +119,13 @@ func BySource(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSource, opts...).ToFunc()
 }
 
+// ByRosterField orders the results by roster field.
+func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAnnotationsCount orders the results by annotations count.
 func ByAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -114,6 +138,13 @@ func ByAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newRosterStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RosterInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
+	)
 }
 func newAnnotationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

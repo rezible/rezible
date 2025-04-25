@@ -6907,9 +6907,12 @@ export type ListOncallEventsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        from?: string;
+        to?: string;
+        withAnnotations?: boolean;
+        onlyAnnotated?: boolean;
         shiftId?: string;
-        annotated?: boolean;
-        rosterIds?: Array<string>;
+        rosterId?: string;
     };
     url: '/oncall/events';
 };

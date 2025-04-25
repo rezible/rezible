@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
@@ -150,6 +151,21 @@ func (orc *OncallRosterCreate) AddSchedules(o ...*OncallSchedule) *OncallRosterC
 // SetHandoverTemplate sets the "handover_template" edge to the OncallHandoverTemplate entity.
 func (orc *OncallRosterCreate) SetHandoverTemplate(o *OncallHandoverTemplate) *OncallRosterCreate {
 	return orc.SetHandoverTemplateID(o.ID)
+}
+
+// AddEventIDs adds the "events" edge to the OncallEvent entity by IDs.
+func (orc *OncallRosterCreate) AddEventIDs(ids ...uuid.UUID) *OncallRosterCreate {
+	orc.mutation.AddEventIDs(ids...)
+	return orc
+}
+
+// AddEvents adds the "events" edges to the OncallEvent entity.
+func (orc *OncallRosterCreate) AddEvents(o ...*OncallEvent) *OncallRosterCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return orc.AddEventIDs(ids...)
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
@@ -365,6 +381,22 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.HandoverTemplateID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := orc.mutation.EventsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.EventsTable,
+			Columns: []string{oncallroster.EventsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := orc.mutation.AnnotationsIDs(); len(nodes) > 0 {

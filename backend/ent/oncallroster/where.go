@@ -642,6 +642,29 @@ func HasHandoverTemplateWith(preds ...predicate.OncallHandoverTemplate) predicat
 	})
 }
 
+// HasEvents applies the HasEdge predicate on the "events" edge.
+func HasEvents() predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, EventsTable, EventsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
+func HasEventsWith(preds ...predicate.OncallEvent) predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := newEventsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasAnnotations applies the HasEdge predicate on the "annotations" edge.
 func HasAnnotations() predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
