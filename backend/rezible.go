@@ -302,14 +302,14 @@ type (
 type (
 	OncallEventsDataProvider interface {
 		GetWebhooks() Webhooks
-
+		Source() string
 		PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
 	}
 
 	ListOncallEventsParams struct {
 		ListParams
-		Start           time.Time
-		End             time.Time
+		From            time.Time
+		To              time.Time
 		RosterID        uuid.UUID
 		WithAnnotations bool
 	}

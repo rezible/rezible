@@ -10,12 +10,13 @@
 
 	const shift = $derived(viewState.shift);
 	const events = $derived(viewState.filteredEvents);
-	const rosterId = $derived(shift?.attributes.roster.id);
+	const shiftRoster = $derived(shift?.attributes.roster);
 
 	let showFilters = $state(false);
 
 	let annoEvent = $state<OncallEvent>();
-	const currentAnnotation = $derived(annoEvent?.attributes.annotations.find(a => a.attributes.rosterId === rosterId));
+	const annotationRosterIds = $derived(shiftRoster ? [shiftRoster.id] : []);
+	const currentAnnotation = $derived(annoEvent?.attributes.annotations.find(a => a.attributes.roster.id === shiftRoster?.id));
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10 rounded">
@@ -31,11 +32,11 @@
 		{/if}
 	</div>
 	<div class="flex-1 flex flex-col gap-1 px-0 overflow-y-auto">
-		{#if shift && events && rosterId}
+		{#if shift && events && shiftRoster}
 			{#each events as event}
 				<EventRowItem 
 					{event}
-					annotationRosterIds={[rosterId]}
+					{annotationRosterIds}
 					annotation={event.attributes.annotations?.at(0)}
 					editAnnotation={() => (annoEvent = event)}
 				/>
@@ -44,8 +45,11 @@
 	</div>
 </div>
 
-<EventAnnotationDialog 
-	event={annoEvent}
-	current={currentAnnotation}
-	onClose={() => (annoEvent = undefined)}
-/>
+{#if shiftRoster}
+	<EventAnnotationDialog 
+		event={annoEvent}
+		current={currentAnnotation}
+		roster={shiftRoster}
+		onClose={() => (annoEvent = undefined)}
+	/>
+{/if}

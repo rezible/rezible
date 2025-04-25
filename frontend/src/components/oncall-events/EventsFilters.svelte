@@ -4,14 +4,14 @@
 	type EventKind = OncallEventAttributes["kind"];
 
 	export type FilterOptions = {
-		rosterIds?: string[];
+		rosterId?: string;
 		eventKinds?: EventKind[];
 		annotated?: boolean;
 		dateRange?: DateRangeType;
 	};
 
 	export type DisabledFilters = {
-		rosters?: boolean;
+		roster?: boolean;
 		kinds?: boolean;
 		annotated?: boolean;
 		dateRange?: boolean;
@@ -26,18 +26,19 @@
 		DateRangeField,
 		Field,
 		Icon,
+		MenuItem,
 		MultiSelectMenu,
 		MultiSelectOption,
 		SelectField,
 		type MenuOption,
 	} from "svelte-ux";
-	import { v4 as uuidv4 } from "uuid";
 	import { PeriodType } from "@layerstack/utils";
 	import { subDays } from "date-fns";
 	import { listOncallRostersOptions, type OncallEventAttributes, type OncallRoster } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { debounce } from "$lib/utils.svelte";
 	import { watch } from "runed";
+	import { cls } from "@layerstack/tailwind";
 
 	type Props = {
 		filters: FilterOptions;
@@ -79,22 +80,25 @@
 		const options: MenuOption<string>[] = [];
 		const seenIds = new Set<string>();
 		queryRosterOptions.forEach(r => {
-			options.push(r);
 			seenIds.add(r.value);
+			options.push(r);
 		});
 		userRosters.forEach(r => {
-			if (!seenIds.has(r.id)) options.push({value: r.id, label: r.attributes.name});
+			if (seenIds.has(r.id)) return;
+			options.push({value: r.id, label: r.attributes.name});
 		});
 		return options;
 	});
 	
-	let selectedRosterOptions = $state<MenuOption<string>[]>([]);
-	watch(() => filters.rosterIds, (ids) => {
-		selectedRosterOptions = ids ? $state.snapshot(rosterOptions.filter(o => (ids.includes(o.value)))) : [];
+	let rosterMenuOpen = $state(false);
+	let selectedRosterOption = $state<MenuOption<string>>();
+	watch(() => filters.rosterId, id => {
+		selectedRosterOption = id ? $state.snapshot(rosterOptions.find(o => (o.value === id))) : undefined;
 	});
 
-	let rosterMenuOpen = $state(false);
-	const toggleRosterMenu = () => (rosterMenuOpen = !rosterMenuOpen);
+	const onRosterSelected = (value?: string | null) => {
+		filters.rosterId = !!value ? value : undefined;
+	}
 
 	const today = new Date();
 	const defaultDateRange: DateRangeType = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
@@ -127,7 +131,7 @@
 			labelPlacement="top"
 			resize
 			dense
-			classes={{ root: "gap-0 w-32", field: { root: "gap-0", container: "h-8 flex items-center", input: "my-0" } }}
+			classes={{ root: "w-28", field: { root: "gap-0", container: "h-8 flex items-center", input: "my-0" } }}
 			options={annoOptions}
 			clearable={false}
 			value={annoValue}
@@ -135,57 +139,50 @@
 		/>
 	{/if}
 
-	{#if !disabled?.rosters}
-		<Field
+	{#if !disabled?.roster}
+		<SelectField 
 			label="Roster"
 			labelPlacement="top"
+			value={filters.rosterId}
+			bind:open={rosterMenuOpen}
+			on:change={e => onRosterSelected(e.detail.value)}
+			search={async (s, o) => {setRostersSearch(s); return o}}
+			maintainOrder
 			dense
-			classes={{ root: "gap-0", container: "px-0 h-8 flex items-center", input: "my-0" }}
-			let:id
+			classes={{ root: "gap-0 w-44", field: {root: "gap-0", container: "h-8"} }}
+			options={rosterOptions}
 		>
-			<Button {id} on:click={toggleRosterMenu} classes={{ root: "h-8" }}>
-				<div class="flex gap-2">
-					{#each selectedRosterOptions as v, i (v.value)}
-						<span class="flex items-center gap-1">
-							<Avatar kind="roster" id={v.value} size={14} />
-							{v.label + (i < selectedRosterOptions.length - 1 ? "," : "")}
-						</span>
-					{:else}
-						<span>Any</span>
-					{/each}
-				</div>
-				<Icon data={mdiChevronDown} />
-				<MultiSelectMenu
-					options={rosterOptions}
-					value={filters.rosterIds}
-					open={rosterMenuOpen}
-					search={async (s, o) => {setRostersSearch(s); return o}}
-					maintainOrder
-					placeholder="Filter to roster"
-					on:change={(e) => (filters.rosterIds = (e.detail.value as string[]))}
-					on:close={toggleRosterMenu}
+			<div slot="prepend" class:hidden={rosterMenuOpen} class="mr-2">
+				{#if !!selectedRosterOption}
+					<Avatar kind="roster" id={selectedRosterOption.value} size={18} />
+				{:else}
+					<span>Any</span>
+				{/if}
+			</div>
+
+			<svelte:fragment
+				slot="option"
+				let:option
+				let:index
+				let:selected
+				let:highlightIndex
+			>
+				<MenuItem
+					class={cls(
+						index === highlightIndex && "bg-surface-content/5",
+						option === selected && "font-semibold",
+						option.group ? "px-4" : "px-2",
+					)}
+					scrollIntoView={index === highlightIndex}
+					disabled={option.disabled}
 				>
-					<MultiSelectOption
-						slot="option"
-						let:option
-						let:label
-						let:checked
-						let:indeterminate
-						let:onChange
-						{checked}
-						{indeterminate}
-						on:change={onChange}
-						classes={{
-							checkbox: { label: "label flex-1 flex items-center pl-1 py-2" },
-							container: "inline-flex items-center gap-2",
-						}}
-					>
-						<Avatar kind="roster" id={(option as MenuOption<string>).value} size={22} />
-						{label}
-					</MultiSelectOption>
-				</MultiSelectMenu>
-			</Button>
-		</Field>
+					<span class="flex items-center gap-2">
+						<Avatar kind="roster" id={option.value} size={18} />
+						{option.label}
+					</span>
+				</MenuItem>
+			</svelte:fragment>
+		</SelectField>
 	{/if}
 
 	{#if !disabled?.kinds}

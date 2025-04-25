@@ -1,23 +1,22 @@
 <script lang="ts">
-	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiPlus } from "@mdi/js";
 	import { Button } from "svelte-ux";
-	import { getUserOncallInformationOptions, type OncallShift, type UserOncallInformation } from "$lib/api";
+	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { session } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
 
-	type Props = {
-		oncallInfo?: UserOncallInformation;
-	}
-	const { oncallInfo }: Props = $props();
-
 	const userId = $derived(session.userId);
-	const watchedRosterIds = $derived(oncallInfo?.watchingRosters.map(r => r.id) ?? []);
-	const userRosterIds = $derived(oncallInfo?.rosters.map(r => r.id) ?? []);
+	const oncallInfoQueryOpts = $derived(getUserOncallInformationOptions({query: { userId: session.userId }}));
+	const oncallInfoQuery = createQuery(() => oncallInfoQueryOpts);
+	const userOncallInfo = $derived(oncallInfoQuery.data?.data);
+
+	const watchedRosterIds = $derived(userOncallInfo?.watchingRosters.map(r => r.id) ?? []);
+	const userRosterIds = $derived(userOncallInfo?.rosters.map(r => r.id) ?? []);
 	const rosterIds = $derived([...userRosterIds, ...watchedRosterIds]);
 
-	const shifts = $derived(oncallInfo?.activeShifts ?? []);
+	const shifts = $derived(userOncallInfo?.activeShifts ?? []);
 	const [userShifts, rosterShifts] = $derived.by(() => {
 		let userShifts: OncallShift[] = [];
 		let rosterShifts: OncallShift[] = [];
@@ -34,12 +33,8 @@
 		return [userShifts, rosterShifts];
 	});
 
-	const queryClient = useQueryClient();
-
 	let rosterDialogOpen = $state(false);
-	const onWatchedRostersUpdated = () => {
-		queryClient.invalidateQueries(getUserOncallInformationOptions({query: {userId}}));
-	};
+	const onWatchedRostersUpdated = () => oncallInfoQuery.refetch();
 </script>
 
 <div class="w-full flex gap-2">

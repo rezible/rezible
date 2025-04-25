@@ -19,7 +19,7 @@
 	const attrs = $derived(event.attributes);
 
 	const annotations = $derived(annotationRosterIds ? event.attributes.annotations.filter(a => annotationRosterIds?.includes(a.id)) : []);
-	const rosterIdsWithAnnotations = $derived(new Set(event.attributes.annotations.map(a => a.attributes.rosterId)));
+	const rosterIdsWithAnnotations = $derived(new Set(event.attributes.annotations.map(a => a.attributes.roster.id)));
 	const showAnnotationButton = $derived(annotationRosterIds?.some(id => !rosterIdsWithAnnotations.has(id)));
 	const loading = $derived(!!loadingId && loadingId === event.id);
 	const disabled = $derived(!!loadingId && loadingId !== event.id);

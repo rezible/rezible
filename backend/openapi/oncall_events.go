@@ -134,10 +134,9 @@ type ListOncallEventsRequest struct {
 	ListRequest
 	From            time.Time `query:"from"`
 	To              time.Time `query:"to"`
-	WithAnnotations bool      `query:"withAnnotations"`
-	OnlyAnnotated   bool      `query:"onlyAnnotated"`
 	ShiftId         uuid.UUID `query:"shiftId"`
 	RosterId        uuid.UUID `query:"rosterId"`
+	WithAnnotations bool      `query:"withAnnotations"`
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 

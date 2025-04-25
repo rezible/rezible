@@ -4,7 +4,6 @@
 	import { getAuthSessionConfigOptions } from "$lib/api";
 	import { session, type SessionErrorCategory } from "$lib/auth.svelte";
 	import { Button, Header } from "svelte-ux";
-	import { mdiAccount } from "@mdi/js";
 
 	// TODO: load this
 	const AUTH_URL_BASE = dev ? "http://localhost:8888/auth" : "/auth";
@@ -26,7 +25,11 @@
 		no_session: "",
 	};
 
-	const buttonText = $derived(config ? `Continue with ${config.providerName}` : "Continue");
+	const buttonText = $derived.by(() => {
+		if (session.error?.category === "no_user") return "Logout";
+		if (!config) return "Continue";
+		return `Continue with ${config.providerName}`;
+	});
 </script>
 
 <div class="grid h-full w-full place-items-center">

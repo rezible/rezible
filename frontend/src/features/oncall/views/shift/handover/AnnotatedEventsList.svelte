@@ -1,5 +1,6 @@
 <script lang="ts">
 	import {
+	listOncallAnnotationsOptions,
 		listOncallEventsOptions,
 		updateOncallShiftHandoverMutation,
 		type OncallAnnotation,
@@ -21,8 +22,8 @@
 	const viewState = shiftViewStateCtx.get();
 	const shiftId = $derived(viewState.shiftId);
 
-	const shiftAnnoEventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId, annotated: true } }));
-	const events = $derived(shiftAnnoEventsQuery.data?.data ?? []);
+	const shiftAnnoEventsQuery = createQuery(() => listOncallAnnotationsOptions({ query: { shiftId } }));
+	const annos = $derived(shiftAnnoEventsQuery.data?.data ?? []);
 
 	let pinnedAnnos = $derived(handover.attributes.pinnedAnnotations ?? []);
 	const pinnedEventIds = $derived(new SvelteSet(pinnedAnnos.map(p => p.attributes.event.id)));
@@ -88,8 +89,8 @@
 			<EventRowItem {event} {annotation} pinned {loadingId} togglePinned={() => togglePinned(annotation)} />
 		{/each}
 
-		{#each events as event}
-			{@const annotation = event.attributes.annotations?.at(0) ?? blankAnnotation}
+		{#each annos as annotation}
+			{@const event = annotation.attributes.event}
 			{#if !pinnedEventIds.has(event.id)}
 				<EventRowItem {event} {annotation} {loadingId} togglePinned={() => togglePinned(annotation)} />
 			{/if}

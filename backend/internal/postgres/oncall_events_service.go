@@ -31,11 +31,14 @@ func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserS
 }
 
 func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, error) {
-	withinWindow := oncallevent.And(oncallevent.TimestampGT(params.Start), oncallevent.TimestampLT(params.End))
 	query := s.db.OncallEvent.Query().
 		Limit(params.GetLimit()).
 		Offset(params.Offset).
-		Where(withinWindow)
+		Where(oncallevent.And(oncallevent.TimestampGT(params.From), oncallevent.TimestampLT(params.To)))
+
+	if params.RosterID != uuid.Nil {
+		query.Where(oncallevent.RosterID(params.RosterID))
+	}
 
 	if params.WithAnnotations {
 		query.WithAnnotations()
@@ -113,9 +116,11 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 	createFn := func(tx *ent.Tx) error {
 		createdAnno, annoErr := tx.OncallAnnotation.Create().
 			SetEventID(anno.EventID).
+			SetRosterID(anno.RosterID).
+			SetCreatorID(anno.CreatorID).
 			SetMinutesOccupied(anno.MinutesOccupied).
 			SetNotes(anno.Notes).
-			SetRosterID(anno.RosterID).
+			SetTags(anno.Tags).
 			Save(ctx)
 		if annoErr != nil {
 			return fmt.Errorf("failed to create annotation: %w", annoErr)

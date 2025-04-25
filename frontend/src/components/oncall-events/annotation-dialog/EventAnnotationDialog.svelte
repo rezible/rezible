@@ -2,18 +2,18 @@
 	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog, Header } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { createOncallAnnotationMutation, updateOncallAnnotationMutation, type CreateOncallAnnotationRequestAttributes, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallEvent } from "$src/lib/api";
+	import { createOncallAnnotationMutation, updateOncallAnnotationMutation, type CreateOncallAnnotationRequestAttributes, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallEvent, type OncallRoster } from "$src/lib/api";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { attributesState } from "./attributes.svelte";
 	
 	type Props = {
-		rosterId: string;
+		roster: OncallRoster;
 		event?: OncallEvent;
 		current?: OncallAnnotation;
 		onClose: () => void;
 	}
-	const { rosterId, event, current, onClose }: Props = $props();
+	const { roster, event, current, onClose }: Props = $props();
 
 	const createMut = createMutation(() => ({
 		...createOncallAnnotationMutation(),
@@ -38,7 +38,7 @@
 		}
 		const attributes = $state.snapshot({
 			eventId: event.id,
-			rosterId: rosterId,
+			rosterId: roster.id,
 			minutesOccupied: 0,
 			notes: attributesState.notes,
 			tags: attributesState.tags.values().toArray(),
@@ -65,7 +65,7 @@
 	}}
 >
 	<div slot="header" class="border-b p-2" let:close>
-		<Header title="{formAction} Event Annotation">
+		<Header title="{formAction} Event Annotation" subheading="For {roster.attributes.name}">
 			<svelte:fragment slot="actions">
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
 			</svelte:fragment>

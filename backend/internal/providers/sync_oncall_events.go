@@ -30,6 +30,9 @@ func (ds *oncallEventsDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, "oncall_events")
+	if ds.provider.Source() == "fake" && !lastSync.IsZero() {
+		return nil
+	}
 	if lastSync.Add(time.Minute * 30).After(start) {
 		return nil
 	}
@@ -70,8 +73,8 @@ func (ds *oncallEventsDataSyncer) syncProviderEvents(ctx context.Context, from t
 	}
 	numMutations += lastBatchMuts
 
-	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "teams"); saveErr != nil {
-		log.Error().Err(saveErr).Msg("failed to save teams data sync history")
+	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "oncall_events"); saveErr != nil {
+		log.Error().Err(saveErr).Msg("failed to save oncall events data sync history")
 	}
 
 	return nil

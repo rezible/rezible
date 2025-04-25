@@ -6909,10 +6909,9 @@ export type ListOncallEventsData = {
         archived?: boolean;
         from?: string;
         to?: string;
-        withAnnotations?: boolean;
-        onlyAnnotated?: boolean;
         shiftId?: string;
         rosterId?: string;
+        withAnnotations?: boolean;
     };
     url: '/oncall/events';
 };

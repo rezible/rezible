@@ -2,10 +2,7 @@ package api
 
 import (
 	"context"
-	"time"
-
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
@@ -23,25 +20,25 @@ func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, 
 	return &oncallEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
 }
 
-func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, request *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
+func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
 	var resp oapi.ListOncallEventsResponse
 
 	params := rez.ListOncallEventsParams{
-		Start: time.Now().Add(time.Hour * -24 * 7), // 7 days ago
-		End:   time.Now(),
+		ListParams:      req.ListParams(),
+		From:            req.From,
+		To:              req.To,
+		RosterID:        req.RosterId,
+		WithAnnotations: req.WithAnnotations,
 	}
 
-	if request.ShiftId != uuid.Nil {
-		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)
+	if req.ShiftId != uuid.Nil {
+		shift, shiftErr := h.oncall.GetShiftByID(ctx, req.ShiftId)
 		if shiftErr != nil {
 			return nil, detailError("failed to query shift", shiftErr)
 		}
-		params.Start = shift.StartAt
-		params.End = shift.EndAt
-	}
-
-	if request.RosterId != uuid.Nil {
-		// TODO: handle this
+		params.From = shift.StartAt
+		params.To = shift.EndAt
+		params.RosterID = shift.RosterID
 	}
 
 	events, eventsErr := h.events.ListEvents(ctx, params)
