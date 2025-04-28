@@ -158,9 +158,9 @@
 		{#if metrics}
 		<div class="flex gap-2 flex-wrap">
 			<MetricCard
-				title="Oncall Burden Score"
+				title="Health Score"
 				icon={mdiHeartPulse}
-				metric={metrics.burdenScore}
+				metric={metrics.healthScore}
 				comparison={{ value: .44 }}
 			/>
 			<MetricCard title="Incidents" icon={mdiFire} metric={metrics.incidents} />

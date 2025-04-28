@@ -1743,8 +1743,8 @@ export type OncallRosterMetrics = {
     alertActionability: number;
     alerts: number;
     backlogBurnRate: number;
-    burdenScore: number;
     handoverCompletion: number;
+    healthScore: number;
     incidents: number;
     nightAlerts: number;
     outOfHoursAlerts: number;
@@ -1773,21 +1773,10 @@ export type OncallShift = {
 };
 
 export type OncallShiftAttributes = {
-    covers: Array<OncallShiftCover>;
     endAt: string;
+    primaryShift: OncallShift;
     role: string;
     roster: OncallRoster;
-    startAt: string;
-    user: User;
-};
-
-export type OncallShiftCover = {
-    attributes: OncallShiftCoverAttributes;
-    id: string;
-};
-
-export type OncallShiftCoverAttributes = {
-    endAt: string;
     startAt: string;
     user: User;
 };
@@ -2783,100 +2772,6 @@ export type VerifyDocumentEditorSessionResponseBody = {
     readonly $schema?: string;
     data: DocumentEditorSessionAuth;
 };
-
-export type GetOncallRosterMetricsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        rosterId?: string;
-    };
-    url: '/analytics/oncall_rosters';
-};
-
-export type GetOncallRosterMetricsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetOncallRosterMetricsError = GetOncallRosterMetricsErrors[keyof GetOncallRosterMetricsErrors];
-
-export type GetOncallRosterMetricsResponses = {
-    /**
-     * OK
-     */
-    200: GetOncallRosterMetricsResponseBody;
-};
-
-export type GetOncallRosterMetricsResponse = GetOncallRosterMetricsResponses[keyof GetOncallRosterMetricsResponses];
-
-export type GetOncallShiftMetricsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        shiftId?: string;
-    };
-    url: '/analytics/oncall_shifts';
-};
-
-export type GetOncallShiftMetricsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetOncallShiftMetricsError = GetOncallShiftMetricsErrors[keyof GetOncallShiftMetricsErrors];
-
-export type GetOncallShiftMetricsResponses = {
-    /**
-     * OK
-     */
-    200: GetOncallShiftMetricsResponseBody;
-};
-
-export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
 export type GetAuthSessionConfigData = {
     body?: never;
@@ -7758,6 +7653,100 @@ export type AddWatchedOncallRosterResponses = {
 };
 
 export type AddWatchedOncallRosterResponse = AddWatchedOncallRosterResponses[keyof AddWatchedOncallRosterResponses];
+
+export type GetOncallRosterMetricsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        rosterId?: string;
+    };
+    url: '/oncall_metrics/rosters';
+};
+
+export type GetOncallRosterMetricsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallRosterMetricsError = GetOncallRosterMetricsErrors[keyof GetOncallRosterMetricsErrors];
+
+export type GetOncallRosterMetricsResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallRosterMetricsResponseBody;
+};
+
+export type GetOncallRosterMetricsResponse = GetOncallRosterMetricsResponses[keyof GetOncallRosterMetricsResponses];
+
+export type GetOncallShiftMetricsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        shiftId?: string;
+    };
+    url: '/oncall_metrics/shifts';
+};
+
+export type GetOncallShiftMetricsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallShiftMetricsError = GetOncallShiftMetricsErrors[keyof GetOncallShiftMetricsErrors];
+
+export type GetOncallShiftMetricsResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftMetricsResponseBody;
+};
+
+export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
 export type ArchiveRetrospectiveReviewData = {
     body?: never;

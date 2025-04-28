@@ -13,7 +13,6 @@ import (
 type Handler struct {
 	*middlewareHandler
 
-	*analyticsHandler
 	*authSessionsHandler
 	*documentsHandler
 	*environmentsHandler
@@ -32,6 +31,7 @@ type Handler struct {
 	*meetingsHandler
 	*oncallHandler
 	*oncallEventsHandler
+	*oncallMetricsHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*systemComponentsHandler
@@ -57,7 +57,7 @@ func NewHandler(
 	return &Handler{
 		middlewareHandler: newMiddlewareHandler(auth),
 
-		analyticsHandler:          newAnalyticsHandler(),
+		oncallMetricsHandler:      newOncallMetricsHandler(),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
 		environmentsHandler:       newEnvironmentsHandler(db.Environment),
