@@ -1,39 +1,31 @@
 <script lang="ts" module>
-	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
-
 	type EventKind = OncallEventAttributes["kind"];
 
 	export type FilterOptions = {
 		rosterId?: string;
 		eventKinds?: EventKind[];
 		annotated?: boolean;
-		dateRange?: DateRangeType;
 	};
 
 	export type DisabledFilters = {
 		roster?: boolean;
 		kinds?: boolean;
 		annotated?: boolean;
-		dateRange?: boolean;
 	};
 </script>
 
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
+	import { mdiChevronDown } from "@mdi/js";
 	import {
 		Button,
-		DateRangeField,
 		Field,
 		Icon,
 		MenuItem,
 		MultiSelectMenu,
-		MultiSelectOption,
 		SelectField,
 		type MenuOption,
 	} from "svelte-ux";
-	import { PeriodType } from "@layerstack/utils";
-	import { subDays } from "date-fns";
 	import { listOncallRostersOptions, type OncallEventAttributes, type OncallRoster } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { debounce } from "$lib/utils.svelte";
@@ -100,9 +92,6 @@
 		filters.rosterId = !!value ? value : undefined;
 	}
 
-	const today = new Date();
-	const defaultDateRange: DateRangeType = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
-
 	let kindMenuOpen = $state(false);
 	const toggleKindMenu = () => (kindMenuOpen = !kindMenuOpen);
 	const eventKindOptions: MenuOption<EventKind>[] = [
@@ -110,21 +99,7 @@
 	]
 </script>
 
-<div class="flex flex-row items-center gap-2 justify-end">
-	{#if !disabled?.dateRange}
-		<DateRangeField
-			label="Date Range"
-			labelPlacement="top"
-			dense
-			classes={{
-				field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
-			}}
-			icon={mdiCalendarRange}
-			value={filters.dateRange || defaultDateRange}
-			on:change={(e) => {filters.dateRange = (e.detail as DateRangeType)}}
-		/>
-	{/if}
-
+<div class="flex flex-row items-center justify-end gap-2">
 	{#if !disabled?.annotated}
 		<SelectField 
 			label="Annotation"

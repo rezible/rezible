@@ -1,24 +1,30 @@
 <script lang="ts">
-	import { Icon, Header, ListItem, Button } from "svelte-ux";
-	import { mdiGhostOutline, mdiFileDocument, mdiChevronRight, mdiVideo } from "@mdi/js";
-	import { formatDistanceToNow } from "date-fns";
+	import { Icon, Header, Button } from "svelte-ux";
+	import { mdiGhostOutline } from "@mdi/js";
 
 	// let params = $state<ListUserAssignmentsData["query"]>({});
 	// const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
 
+	const assignments: any[] = [];
 	// const assignments = $derived(query.data?.data ?? []);
 	// const incidents = $derived(assignments.filter((a) => a.itemType === "incident"));
 	// const shifts = $derived(assignments.filter((a) => a.itemType === "oncall_shift"));
 	// const tasks = $derived(assignments.filter((a) => a.itemType === "tasks"));
 </script>
 
-<div class="flex flex-col h-fit gap-2 border p-2 rounded-lg overflow-y-auto">
-	<Header title="Assigned to You" class="border-b" />
+<div class="flex flex-col h-fit border rounded-lg overflow-y-auto">
+	<Header title="Backlog Items" subheading="Items assigned to you" classes={{root: "p-2 w-full"}}>
+		<svelte:fragment slot="actions">
+				<div class="justify-end flex gap-2 items-end">
+					<Button>View All</Button>
+				</div>
+		</svelte:fragment>
+	</Header>
 
-	<div class="flex flex-col gap-2 overflow-y-auto">
-		<span class="flex items-center gap-2">Nothing! <Icon data={mdiGhostOutline} /></span>
-		<!--
+	<div class="flex flex-col gap-2 overflow-y-auto border-t p-2">
 		{#each assignments as a, i (i)}
+			{JSON.stringify(a)}
+			<!--
 			{#if a.itemType == "retrospective"}
 				<a href="/incidents/{a.itemId}/retrospective">
 					<ListItem
@@ -46,15 +52,16 @@
 					</ListItem>
 				</a>
 			{:else}
-				{JSON.stringify(a)}
 			{/if}
+			-->
 		{:else}
-			<div class="flex gap-2 items-center">
-				<span class="leading-none">No Assigned Items</span>
-				<Icon data={mdiGhostOutline} />
+			<div class="grid place-items-center">
+				<div class="flex gap-2 items-center text-surface-content/80">
+					<span class="leading-none">Backlog Empty</span>
+					<Icon data={mdiGhostOutline} />
+				</div>
 			</div>
 		{/each}
-		-->
 	</div>
 </div>
 
