@@ -48,7 +48,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -141,8 +140,6 @@ type Client struct {
 	OncallScheduleParticipant *OncallScheduleParticipantClient
 	// OncallUserShift is the client for interacting with the OncallUserShift builders.
 	OncallUserShift *OncallUserShiftClient
-	// OncallUserShiftCover is the client for interacting with the OncallUserShiftCover builders.
-	OncallUserShiftCover *OncallUserShiftCoverClient
 	// OncallUserShiftHandover is the client for interacting with the OncallUserShiftHandover builders.
 	OncallUserShiftHandover *OncallUserShiftHandoverClient
 	// ProviderConfig is the client for interacting with the ProviderConfig builders.
@@ -228,7 +225,6 @@ func (c *Client) init() {
 	c.OncallSchedule = NewOncallScheduleClient(c.config)
 	c.OncallScheduleParticipant = NewOncallScheduleParticipantClient(c.config)
 	c.OncallUserShift = NewOncallUserShiftClient(c.config)
-	c.OncallUserShiftCover = NewOncallUserShiftCoverClient(c.config)
 	c.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(c.config)
 	c.ProviderConfig = NewProviderConfigClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
@@ -374,7 +370,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
-		OncallUserShiftCover:             NewOncallUserShiftCoverClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
@@ -447,7 +442,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
-		OncallUserShiftCover:             NewOncallUserShiftCoverClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
@@ -508,14 +502,14 @@ func (c *Client) Use(hooks ...Hook) {
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftCover, c.OncallUserShiftHandover,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
+		c.OncallUserShift, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
+		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
+		c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
+		c.Team, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -535,14 +529,14 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftCover, c.OncallUserShiftHandover,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
-		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
-		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
-		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
-		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
+		c.OncallUserShift, c.OncallUserShiftHandover, c.ProviderConfig,
+		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
+		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
+		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
+		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
+		c.SystemComponentRelationship, c.SystemComponentSignal,
+		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
+		c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -615,8 +609,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallScheduleParticipant.mutate(ctx, m)
 	case *OncallUserShiftMutation:
 		return c.OncallUserShift.mutate(ctx, m)
-	case *OncallUserShiftCoverMutation:
-		return c.OncallUserShiftCover.mutate(ctx, m)
 	case *OncallUserShiftHandoverMutation:
 		return c.OncallUserShiftHandover.mutate(ctx, m)
 	case *ProviderConfigMutation:
@@ -6273,15 +6265,15 @@ func (c *OncallUserShiftClient) QueryRoster(ous *OncallUserShift) *OncallRosterQ
 	return query
 }
 
-// QueryCovers queries the covers edge of a OncallUserShift.
-func (c *OncallUserShiftClient) QueryCovers(ous *OncallUserShift) *OncallUserShiftCoverQuery {
-	query := (&OncallUserShiftCoverClient{config: c.config}).Query()
+// QueryPrimaryShift queries the primary_shift edge of a OncallUserShift.
+func (c *OncallUserShiftClient) QueryPrimaryShift(ous *OncallUserShift) *OncallUserShiftQuery {
+	query := (&OncallUserShiftClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ous.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, id),
-			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, oncallusershift.CoversTable, oncallusershift.CoversColumn),
+			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, oncallusershift.PrimaryShiftTable, oncallusershift.PrimaryShiftColumn),
 		)
 		fromV = sqlgraph.Neighbors(ous.driver.Dialect(), step)
 		return fromV, nil
@@ -6327,171 +6319,6 @@ func (c *OncallUserShiftClient) mutate(ctx context.Context, m *OncallUserShiftMu
 		return (&OncallUserShiftDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallUserShift mutation op: %q", m.Op())
-	}
-}
-
-// OncallUserShiftCoverClient is a client for the OncallUserShiftCover schema.
-type OncallUserShiftCoverClient struct {
-	config
-}
-
-// NewOncallUserShiftCoverClient returns a client for the OncallUserShiftCover from the given config.
-func NewOncallUserShiftCoverClient(c config) *OncallUserShiftCoverClient {
-	return &OncallUserShiftCoverClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `oncallusershiftcover.Hooks(f(g(h())))`.
-func (c *OncallUserShiftCoverClient) Use(hooks ...Hook) {
-	c.hooks.OncallUserShiftCover = append(c.hooks.OncallUserShiftCover, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `oncallusershiftcover.Intercept(f(g(h())))`.
-func (c *OncallUserShiftCoverClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OncallUserShiftCover = append(c.inters.OncallUserShiftCover, interceptors...)
-}
-
-// Create returns a builder for creating a OncallUserShiftCover entity.
-func (c *OncallUserShiftCoverClient) Create() *OncallUserShiftCoverCreate {
-	mutation := newOncallUserShiftCoverMutation(c.config, OpCreate)
-	return &OncallUserShiftCoverCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OncallUserShiftCover entities.
-func (c *OncallUserShiftCoverClient) CreateBulk(builders ...*OncallUserShiftCoverCreate) *OncallUserShiftCoverCreateBulk {
-	return &OncallUserShiftCoverCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OncallUserShiftCoverClient) MapCreateBulk(slice any, setFunc func(*OncallUserShiftCoverCreate, int)) *OncallUserShiftCoverCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OncallUserShiftCoverCreateBulk{err: fmt.Errorf("calling to OncallUserShiftCoverClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OncallUserShiftCoverCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OncallUserShiftCoverCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OncallUserShiftCover.
-func (c *OncallUserShiftCoverClient) Update() *OncallUserShiftCoverUpdate {
-	mutation := newOncallUserShiftCoverMutation(c.config, OpUpdate)
-	return &OncallUserShiftCoverUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OncallUserShiftCoverClient) UpdateOne(ousc *OncallUserShiftCover) *OncallUserShiftCoverUpdateOne {
-	mutation := newOncallUserShiftCoverMutation(c.config, OpUpdateOne, withOncallUserShiftCover(ousc))
-	return &OncallUserShiftCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OncallUserShiftCoverClient) UpdateOneID(id uuid.UUID) *OncallUserShiftCoverUpdateOne {
-	mutation := newOncallUserShiftCoverMutation(c.config, OpUpdateOne, withOncallUserShiftCoverID(id))
-	return &OncallUserShiftCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OncallUserShiftCover.
-func (c *OncallUserShiftCoverClient) Delete() *OncallUserShiftCoverDelete {
-	mutation := newOncallUserShiftCoverMutation(c.config, OpDelete)
-	return &OncallUserShiftCoverDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OncallUserShiftCoverClient) DeleteOne(ousc *OncallUserShiftCover) *OncallUserShiftCoverDeleteOne {
-	return c.DeleteOneID(ousc.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OncallUserShiftCoverClient) DeleteOneID(id uuid.UUID) *OncallUserShiftCoverDeleteOne {
-	builder := c.Delete().Where(oncallusershiftcover.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OncallUserShiftCoverDeleteOne{builder}
-}
-
-// Query returns a query builder for OncallUserShiftCover.
-func (c *OncallUserShiftCoverClient) Query() *OncallUserShiftCoverQuery {
-	return &OncallUserShiftCoverQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOncallUserShiftCover},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OncallUserShiftCover entity by its id.
-func (c *OncallUserShiftCoverClient) Get(ctx context.Context, id uuid.UUID) (*OncallUserShiftCover, error) {
-	return c.Query().Where(oncallusershiftcover.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OncallUserShiftCoverClient) GetX(ctx context.Context, id uuid.UUID) *OncallUserShiftCover {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryUser queries the user edge of a OncallUserShiftCover.
-func (c *OncallUserShiftCoverClient) QueryUser(ousc *OncallUserShiftCover) *UserQuery {
-	query := (&UserClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ousc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallusershiftcover.Table, oncallusershiftcover.FieldID, id),
-			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershiftcover.UserTable, oncallusershiftcover.UserColumn),
-		)
-		fromV = sqlgraph.Neighbors(ousc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryShift queries the shift edge of a OncallUserShiftCover.
-func (c *OncallUserShiftCoverClient) QueryShift(ousc *OncallUserShiftCover) *OncallUserShiftQuery {
-	query := (&OncallUserShiftClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ousc.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallusershiftcover.Table, oncallusershiftcover.FieldID, id),
-			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, oncallusershiftcover.ShiftTable, oncallusershiftcover.ShiftColumn),
-		)
-		fromV = sqlgraph.Neighbors(ousc.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OncallUserShiftCoverClient) Hooks() []Hook {
-	return c.hooks.OncallUserShiftCover
-}
-
-// Interceptors returns the client interceptors.
-func (c *OncallUserShiftCoverClient) Interceptors() []Interceptor {
-	return c.inters.OncallUserShiftCover
-}
-
-func (c *OncallUserShiftCoverClient) mutate(ctx context.Context, m *OncallUserShiftCoverMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OncallUserShiftCoverCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OncallUserShiftCoverUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OncallUserShiftCoverUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OncallUserShiftCoverDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OncallUserShiftCover mutation op: %q", m.Op())
 	}
 }
 
@@ -10271,22 +10098,6 @@ func (c *UserClient) QueryOncallShifts(u *User) *OncallUserShiftQuery {
 	return query
 }
 
-// QueryOncallShiftCovers queries the oncall_shift_covers edge of a User.
-func (c *UserClient) QueryOncallShiftCovers(u *User) *OncallUserShiftCoverQuery {
-	query := (&OncallUserShiftCoverClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := u.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftCoversTable, user.OncallShiftCoversColumn),
-		)
-		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryOncallAnnotations queries the oncall_annotations edge of a User.
 func (c *UserClient) QueryOncallAnnotations(u *User) *OncallAnnotationQuery {
 	query := (&OncallAnnotationClient{config: c.config}).Query()
@@ -10435,12 +10246,12 @@ type (
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
 		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
-		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
-		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
-		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Hook
 	}
@@ -10453,12 +10264,12 @@ type (
 		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
 		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
-		OncallScheduleParticipant, OncallUserShift, OncallUserShiftCover,
-		OncallUserShiftHandover, ProviderConfig, ProviderSyncHistory, Retrospective,
-		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
+		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
+		SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Interceptor
 	}

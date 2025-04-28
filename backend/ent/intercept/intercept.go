@@ -40,7 +40,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
@@ -985,33 +984,6 @@ func (f TraverseOncallUserShift) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftQuery", q)
 }
 
-// The OncallUserShiftCoverFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallUserShiftCoverFunc func(context.Context, *ent.OncallUserShiftCoverQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f OncallUserShiftCoverFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallUserShiftCoverQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftCoverQuery", q)
-}
-
-// The TraverseOncallUserShiftCover type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallUserShiftCover func(context.Context, *ent.OncallUserShiftCoverQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallUserShiftCover) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseOncallUserShiftCover) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftCoverQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftCoverQuery", q)
-}
-
 // The OncallUserShiftHandoverFunc type is an adapter to allow the use of ordinary function as a Querier.
 type OncallUserShiftHandoverFunc func(context.Context, *ent.OncallUserShiftHandoverQuery) (ent.Value, error)
 
@@ -1646,8 +1618,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallScheduleParticipantQuery, predicate.OncallScheduleParticipant, oncallscheduleparticipant.OrderOption]{typ: ent.TypeOncallScheduleParticipant, tq: q}, nil
 	case *ent.OncallUserShiftQuery:
 		return &query[*ent.OncallUserShiftQuery, predicate.OncallUserShift, oncallusershift.OrderOption]{typ: ent.TypeOncallUserShift, tq: q}, nil
-	case *ent.OncallUserShiftCoverQuery:
-		return &query[*ent.OncallUserShiftCoverQuery, predicate.OncallUserShiftCover, oncallusershiftcover.OrderOption]{typ: ent.TypeOncallUserShiftCover, tq: q}, nil
 	case *ent.OncallUserShiftHandoverQuery:
 		return &query[*ent.OncallUserShiftHandoverQuery, predicate.OncallUserShiftHandover, oncallusershifthandover.OrderOption]{typ: ent.TypeOncallUserShiftHandover, tq: q}, nil
 	case *ent.ProviderConfigQuery:

@@ -14,7 +14,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
@@ -62,6 +61,66 @@ func (ousu *OncallUserShiftUpdate) SetNillableRosterID(u *uuid.UUID) *OncallUser
 	return ousu
 }
 
+// SetProviderID sets the "provider_id" field.
+func (ousu *OncallUserShiftUpdate) SetProviderID(s string) *OncallUserShiftUpdate {
+	ousu.mutation.SetProviderID(s)
+	return ousu
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (ousu *OncallUserShiftUpdate) SetNillableProviderID(s *string) *OncallUserShiftUpdate {
+	if s != nil {
+		ousu.SetProviderID(*s)
+	}
+	return ousu
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (ousu *OncallUserShiftUpdate) ClearProviderID() *OncallUserShiftUpdate {
+	ousu.mutation.ClearProviderID()
+	return ousu
+}
+
+// SetRole sets the "role" field.
+func (ousu *OncallUserShiftUpdate) SetRole(o oncallusershift.Role) *OncallUserShiftUpdate {
+	ousu.mutation.SetRole(o)
+	return ousu
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (ousu *OncallUserShiftUpdate) SetNillableRole(o *oncallusershift.Role) *OncallUserShiftUpdate {
+	if o != nil {
+		ousu.SetRole(*o)
+	}
+	return ousu
+}
+
+// ClearRole clears the value of the "role" field.
+func (ousu *OncallUserShiftUpdate) ClearRole() *OncallUserShiftUpdate {
+	ousu.mutation.ClearRole()
+	return ousu
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (ousu *OncallUserShiftUpdate) SetPrimaryShiftID(u uuid.UUID) *OncallUserShiftUpdate {
+	ousu.mutation.SetPrimaryShiftID(u)
+	return ousu
+}
+
+// SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
+func (ousu *OncallUserShiftUpdate) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallUserShiftUpdate {
+	if u != nil {
+		ousu.SetPrimaryShiftID(*u)
+	}
+	return ousu
+}
+
+// ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
+func (ousu *OncallUserShiftUpdate) ClearPrimaryShiftID() *OncallUserShiftUpdate {
+	ousu.mutation.ClearPrimaryShiftID()
+	return ousu
+}
+
 // SetStartAt sets the "start_at" field.
 func (ousu *OncallUserShiftUpdate) SetStartAt(t time.Time) *OncallUserShiftUpdate {
 	ousu.mutation.SetStartAt(t)
@@ -90,26 +149,6 @@ func (ousu *OncallUserShiftUpdate) SetNillableEndAt(t *time.Time) *OncallUserShi
 	return ousu
 }
 
-// SetProviderID sets the "provider_id" field.
-func (ousu *OncallUserShiftUpdate) SetProviderID(s string) *OncallUserShiftUpdate {
-	ousu.mutation.SetProviderID(s)
-	return ousu
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (ousu *OncallUserShiftUpdate) SetNillableProviderID(s *string) *OncallUserShiftUpdate {
-	if s != nil {
-		ousu.SetProviderID(*s)
-	}
-	return ousu
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (ousu *OncallUserShiftUpdate) ClearProviderID() *OncallUserShiftUpdate {
-	ousu.mutation.ClearProviderID()
-	return ousu
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (ousu *OncallUserShiftUpdate) SetUser(u *User) *OncallUserShiftUpdate {
 	return ousu.SetUserID(u.ID)
@@ -120,19 +159,9 @@ func (ousu *OncallUserShiftUpdate) SetRoster(o *OncallRoster) *OncallUserShiftUp
 	return ousu.SetRosterID(o.ID)
 }
 
-// AddCoverIDs adds the "covers" edge to the OncallUserShiftCover entity by IDs.
-func (ousu *OncallUserShiftUpdate) AddCoverIDs(ids ...uuid.UUID) *OncallUserShiftUpdate {
-	ousu.mutation.AddCoverIDs(ids...)
-	return ousu
-}
-
-// AddCovers adds the "covers" edges to the OncallUserShiftCover entity.
-func (ousu *OncallUserShiftUpdate) AddCovers(o ...*OncallUserShiftCover) *OncallUserShiftUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousu.AddCoverIDs(ids...)
+// SetPrimaryShift sets the "primary_shift" edge to the OncallUserShift entity.
+func (ousu *OncallUserShiftUpdate) SetPrimaryShift(o *OncallUserShift) *OncallUserShiftUpdate {
+	return ousu.SetPrimaryShiftID(o.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
@@ -171,25 +200,10 @@ func (ousu *OncallUserShiftUpdate) ClearRoster() *OncallUserShiftUpdate {
 	return ousu
 }
 
-// ClearCovers clears all "covers" edges to the OncallUserShiftCover entity.
-func (ousu *OncallUserShiftUpdate) ClearCovers() *OncallUserShiftUpdate {
-	ousu.mutation.ClearCovers()
+// ClearPrimaryShift clears the "primary_shift" edge to the OncallUserShift entity.
+func (ousu *OncallUserShiftUpdate) ClearPrimaryShift() *OncallUserShiftUpdate {
+	ousu.mutation.ClearPrimaryShift()
 	return ousu
-}
-
-// RemoveCoverIDs removes the "covers" edge to OncallUserShiftCover entities by IDs.
-func (ousu *OncallUserShiftUpdate) RemoveCoverIDs(ids ...uuid.UUID) *OncallUserShiftUpdate {
-	ousu.mutation.RemoveCoverIDs(ids...)
-	return ousu
-}
-
-// RemoveCovers removes "covers" edges to OncallUserShiftCover entities.
-func (ousu *OncallUserShiftUpdate) RemoveCovers(o ...*OncallUserShiftCover) *OncallUserShiftUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousu.RemoveCoverIDs(ids...)
 }
 
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
@@ -227,6 +241,11 @@ func (ousu *OncallUserShiftUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousu *OncallUserShiftUpdate) check() error {
+	if v, ok := ousu.mutation.Role(); ok {
+		if err := oncallusershift.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallUserShift.role": %w`, err)}
+		}
+	}
 	if ousu.mutation.UserCleared() && len(ousu.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShift.user"`)
 	}
@@ -254,17 +273,23 @@ func (ousu *OncallUserShiftUpdate) sqlSave(ctx context.Context) (n int, err erro
 			}
 		}
 	}
-	if value, ok := ousu.mutation.StartAt(); ok {
-		_spec.SetField(oncallusershift.FieldStartAt, field.TypeTime, value)
-	}
-	if value, ok := ousu.mutation.EndAt(); ok {
-		_spec.SetField(oncallusershift.FieldEndAt, field.TypeTime, value)
-	}
 	if value, ok := ousu.mutation.ProviderID(); ok {
 		_spec.SetField(oncallusershift.FieldProviderID, field.TypeString, value)
 	}
 	if ousu.mutation.ProviderIDCleared() {
 		_spec.ClearField(oncallusershift.FieldProviderID, field.TypeString)
+	}
+	if value, ok := ousu.mutation.Role(); ok {
+		_spec.SetField(oncallusershift.FieldRole, field.TypeEnum, value)
+	}
+	if ousu.mutation.RoleCleared() {
+		_spec.ClearField(oncallusershift.FieldRole, field.TypeEnum)
+	}
+	if value, ok := ousu.mutation.StartAt(); ok {
+		_spec.SetField(oncallusershift.FieldStartAt, field.TypeTime, value)
+	}
+	if value, ok := ousu.mutation.EndAt(); ok {
+		_spec.SetField(oncallusershift.FieldEndAt, field.TypeTime, value)
 	}
 	if ousu.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -324,44 +349,28 @@ func (ousu *OncallUserShiftUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ousu.mutation.CoversCleared() {
+	if ousu.mutation.PrimaryShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
+			Table:   oncallusershift.PrimaryShiftTable,
+			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ousu.mutation.RemovedCoversIDs(); len(nodes) > 0 && !ousu.mutation.CoversCleared() {
+	if nodes := ousu.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
+			Table:   oncallusershift.PrimaryShiftTable,
+			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousu.mutation.CoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -448,6 +457,66 @@ func (ousuo *OncallUserShiftUpdateOne) SetNillableRosterID(u *uuid.UUID) *Oncall
 	return ousuo
 }
 
+// SetProviderID sets the "provider_id" field.
+func (ousuo *OncallUserShiftUpdateOne) SetProviderID(s string) *OncallUserShiftUpdateOne {
+	ousuo.mutation.SetProviderID(s)
+	return ousuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (ousuo *OncallUserShiftUpdateOne) SetNillableProviderID(s *string) *OncallUserShiftUpdateOne {
+	if s != nil {
+		ousuo.SetProviderID(*s)
+	}
+	return ousuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (ousuo *OncallUserShiftUpdateOne) ClearProviderID() *OncallUserShiftUpdateOne {
+	ousuo.mutation.ClearProviderID()
+	return ousuo
+}
+
+// SetRole sets the "role" field.
+func (ousuo *OncallUserShiftUpdateOne) SetRole(o oncallusershift.Role) *OncallUserShiftUpdateOne {
+	ousuo.mutation.SetRole(o)
+	return ousuo
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (ousuo *OncallUserShiftUpdateOne) SetNillableRole(o *oncallusershift.Role) *OncallUserShiftUpdateOne {
+	if o != nil {
+		ousuo.SetRole(*o)
+	}
+	return ousuo
+}
+
+// ClearRole clears the value of the "role" field.
+func (ousuo *OncallUserShiftUpdateOne) ClearRole() *OncallUserShiftUpdateOne {
+	ousuo.mutation.ClearRole()
+	return ousuo
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (ousuo *OncallUserShiftUpdateOne) SetPrimaryShiftID(u uuid.UUID) *OncallUserShiftUpdateOne {
+	ousuo.mutation.SetPrimaryShiftID(u)
+	return ousuo
+}
+
+// SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
+func (ousuo *OncallUserShiftUpdateOne) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallUserShiftUpdateOne {
+	if u != nil {
+		ousuo.SetPrimaryShiftID(*u)
+	}
+	return ousuo
+}
+
+// ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
+func (ousuo *OncallUserShiftUpdateOne) ClearPrimaryShiftID() *OncallUserShiftUpdateOne {
+	ousuo.mutation.ClearPrimaryShiftID()
+	return ousuo
+}
+
 // SetStartAt sets the "start_at" field.
 func (ousuo *OncallUserShiftUpdateOne) SetStartAt(t time.Time) *OncallUserShiftUpdateOne {
 	ousuo.mutation.SetStartAt(t)
@@ -476,26 +545,6 @@ func (ousuo *OncallUserShiftUpdateOne) SetNillableEndAt(t *time.Time) *OncallUse
 	return ousuo
 }
 
-// SetProviderID sets the "provider_id" field.
-func (ousuo *OncallUserShiftUpdateOne) SetProviderID(s string) *OncallUserShiftUpdateOne {
-	ousuo.mutation.SetProviderID(s)
-	return ousuo
-}
-
-// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
-func (ousuo *OncallUserShiftUpdateOne) SetNillableProviderID(s *string) *OncallUserShiftUpdateOne {
-	if s != nil {
-		ousuo.SetProviderID(*s)
-	}
-	return ousuo
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (ousuo *OncallUserShiftUpdateOne) ClearProviderID() *OncallUserShiftUpdateOne {
-	ousuo.mutation.ClearProviderID()
-	return ousuo
-}
-
 // SetUser sets the "user" edge to the User entity.
 func (ousuo *OncallUserShiftUpdateOne) SetUser(u *User) *OncallUserShiftUpdateOne {
 	return ousuo.SetUserID(u.ID)
@@ -506,19 +555,9 @@ func (ousuo *OncallUserShiftUpdateOne) SetRoster(o *OncallRoster) *OncallUserShi
 	return ousuo.SetRosterID(o.ID)
 }
 
-// AddCoverIDs adds the "covers" edge to the OncallUserShiftCover entity by IDs.
-func (ousuo *OncallUserShiftUpdateOne) AddCoverIDs(ids ...uuid.UUID) *OncallUserShiftUpdateOne {
-	ousuo.mutation.AddCoverIDs(ids...)
-	return ousuo
-}
-
-// AddCovers adds the "covers" edges to the OncallUserShiftCover entity.
-func (ousuo *OncallUserShiftUpdateOne) AddCovers(o ...*OncallUserShiftCover) *OncallUserShiftUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousuo.AddCoverIDs(ids...)
+// SetPrimaryShift sets the "primary_shift" edge to the OncallUserShift entity.
+func (ousuo *OncallUserShiftUpdateOne) SetPrimaryShift(o *OncallUserShift) *OncallUserShiftUpdateOne {
+	return ousuo.SetPrimaryShiftID(o.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
@@ -557,25 +596,10 @@ func (ousuo *OncallUserShiftUpdateOne) ClearRoster() *OncallUserShiftUpdateOne {
 	return ousuo
 }
 
-// ClearCovers clears all "covers" edges to the OncallUserShiftCover entity.
-func (ousuo *OncallUserShiftUpdateOne) ClearCovers() *OncallUserShiftUpdateOne {
-	ousuo.mutation.ClearCovers()
+// ClearPrimaryShift clears the "primary_shift" edge to the OncallUserShift entity.
+func (ousuo *OncallUserShiftUpdateOne) ClearPrimaryShift() *OncallUserShiftUpdateOne {
+	ousuo.mutation.ClearPrimaryShift()
 	return ousuo
-}
-
-// RemoveCoverIDs removes the "covers" edge to OncallUserShiftCover entities by IDs.
-func (ousuo *OncallUserShiftUpdateOne) RemoveCoverIDs(ids ...uuid.UUID) *OncallUserShiftUpdateOne {
-	ousuo.mutation.RemoveCoverIDs(ids...)
-	return ousuo
-}
-
-// RemoveCovers removes "covers" edges to OncallUserShiftCover entities.
-func (ousuo *OncallUserShiftUpdateOne) RemoveCovers(o ...*OncallUserShiftCover) *OncallUserShiftUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousuo.RemoveCoverIDs(ids...)
 }
 
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
@@ -626,6 +650,11 @@ func (ousuo *OncallUserShiftUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousuo *OncallUserShiftUpdateOne) check() error {
+	if v, ok := ousuo.mutation.Role(); ok {
+		if err := oncallusershift.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallUserShift.role": %w`, err)}
+		}
+	}
 	if ousuo.mutation.UserCleared() && len(ousuo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShift.user"`)
 	}
@@ -670,17 +699,23 @@ func (ousuo *OncallUserShiftUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			}
 		}
 	}
-	if value, ok := ousuo.mutation.StartAt(); ok {
-		_spec.SetField(oncallusershift.FieldStartAt, field.TypeTime, value)
-	}
-	if value, ok := ousuo.mutation.EndAt(); ok {
-		_spec.SetField(oncallusershift.FieldEndAt, field.TypeTime, value)
-	}
 	if value, ok := ousuo.mutation.ProviderID(); ok {
 		_spec.SetField(oncallusershift.FieldProviderID, field.TypeString, value)
 	}
 	if ousuo.mutation.ProviderIDCleared() {
 		_spec.ClearField(oncallusershift.FieldProviderID, field.TypeString)
+	}
+	if value, ok := ousuo.mutation.Role(); ok {
+		_spec.SetField(oncallusershift.FieldRole, field.TypeEnum, value)
+	}
+	if ousuo.mutation.RoleCleared() {
+		_spec.ClearField(oncallusershift.FieldRole, field.TypeEnum)
+	}
+	if value, ok := ousuo.mutation.StartAt(); ok {
+		_spec.SetField(oncallusershift.FieldStartAt, field.TypeTime, value)
+	}
+	if value, ok := ousuo.mutation.EndAt(); ok {
+		_spec.SetField(oncallusershift.FieldEndAt, field.TypeTime, value)
 	}
 	if ousuo.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -740,44 +775,28 @@ func (ousuo *OncallUserShiftUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ousuo.mutation.CoversCleared() {
+	if ousuo.mutation.PrimaryShiftCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
+			Table:   oncallusershift.PrimaryShiftTable,
+			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ousuo.mutation.RemovedCoversIDs(); len(nodes) > 0 && !ousuo.mutation.CoversCleared() {
+	if nodes := ousuo.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
+			Table:   oncallusershift.PrimaryShiftTable,
+			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ousuo.mutation.CoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

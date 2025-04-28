@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
@@ -24,15 +23,15 @@ import (
 // OncallUserShiftQuery is the builder for querying OncallUserShift entities.
 type OncallUserShiftQuery struct {
 	config
-	ctx          *QueryContext
-	order        []oncallusershift.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.OncallUserShift
-	withUser     *UserQuery
-	withRoster   *OncallRosterQuery
-	withCovers   *OncallUserShiftCoverQuery
-	withHandover *OncallUserShiftHandoverQuery
-	modifiers    []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []oncallusershift.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.OncallUserShift
+	withUser         *UserQuery
+	withRoster       *OncallRosterQuery
+	withPrimaryShift *OncallUserShiftQuery
+	withHandover     *OncallUserShiftHandoverQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -113,9 +112,9 @@ func (ousq *OncallUserShiftQuery) QueryRoster() *OncallRosterQuery {
 	return query
 }
 
-// QueryCovers chains the current query on the "covers" edge.
-func (ousq *OncallUserShiftQuery) QueryCovers() *OncallUserShiftCoverQuery {
-	query := (&OncallUserShiftCoverClient{config: ousq.config}).Query()
+// QueryPrimaryShift chains the current query on the "primary_shift" edge.
+func (ousq *OncallUserShiftQuery) QueryPrimaryShift() *OncallUserShiftQuery {
+	query := (&OncallUserShiftClient{config: ousq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := ousq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -126,8 +125,8 @@ func (ousq *OncallUserShiftQuery) QueryCovers() *OncallUserShiftCoverQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, selector),
-			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, oncallusershift.CoversTable, oncallusershift.CoversColumn),
+			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, oncallusershift.PrimaryShiftTable, oncallusershift.PrimaryShiftColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ousq.driver.Dialect(), step)
 		return fromU, nil
@@ -344,15 +343,15 @@ func (ousq *OncallUserShiftQuery) Clone() *OncallUserShiftQuery {
 		return nil
 	}
 	return &OncallUserShiftQuery{
-		config:       ousq.config,
-		ctx:          ousq.ctx.Clone(),
-		order:        append([]oncallusershift.OrderOption{}, ousq.order...),
-		inters:       append([]Interceptor{}, ousq.inters...),
-		predicates:   append([]predicate.OncallUserShift{}, ousq.predicates...),
-		withUser:     ousq.withUser.Clone(),
-		withRoster:   ousq.withRoster.Clone(),
-		withCovers:   ousq.withCovers.Clone(),
-		withHandover: ousq.withHandover.Clone(),
+		config:           ousq.config,
+		ctx:              ousq.ctx.Clone(),
+		order:            append([]oncallusershift.OrderOption{}, ousq.order...),
+		inters:           append([]Interceptor{}, ousq.inters...),
+		predicates:       append([]predicate.OncallUserShift{}, ousq.predicates...),
+		withUser:         ousq.withUser.Clone(),
+		withRoster:       ousq.withRoster.Clone(),
+		withPrimaryShift: ousq.withPrimaryShift.Clone(),
+		withHandover:     ousq.withHandover.Clone(),
 		// clone intermediate query.
 		sql:       ousq.sql.Clone(),
 		path:      ousq.path,
@@ -382,14 +381,14 @@ func (ousq *OncallUserShiftQuery) WithRoster(opts ...func(*OncallRosterQuery)) *
 	return ousq
 }
 
-// WithCovers tells the query-builder to eager-load the nodes that are connected to
-// the "covers" edge. The optional arguments are used to configure the query builder of the edge.
-func (ousq *OncallUserShiftQuery) WithCovers(opts ...func(*OncallUserShiftCoverQuery)) *OncallUserShiftQuery {
-	query := (&OncallUserShiftCoverClient{config: ousq.config}).Query()
+// WithPrimaryShift tells the query-builder to eager-load the nodes that are connected to
+// the "primary_shift" edge. The optional arguments are used to configure the query builder of the edge.
+func (ousq *OncallUserShiftQuery) WithPrimaryShift(opts ...func(*OncallUserShiftQuery)) *OncallUserShiftQuery {
+	query := (&OncallUserShiftClient{config: ousq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	ousq.withCovers = query
+	ousq.withPrimaryShift = query
 	return ousq
 }
 
@@ -485,7 +484,7 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 		loadedTypes = [4]bool{
 			ousq.withUser != nil,
 			ousq.withRoster != nil,
-			ousq.withCovers != nil,
+			ousq.withPrimaryShift != nil,
 			ousq.withHandover != nil,
 		}
 	)
@@ -522,10 +521,9 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			return nil, err
 		}
 	}
-	if query := ousq.withCovers; query != nil {
-		if err := ousq.loadCovers(ctx, query, nodes,
-			func(n *OncallUserShift) { n.Edges.Covers = []*OncallUserShiftCover{} },
-			func(n *OncallUserShift, e *OncallUserShiftCover) { n.Edges.Covers = append(n.Edges.Covers, e) }); err != nil {
+	if query := ousq.withPrimaryShift; query != nil {
+		if err := ousq.loadPrimaryShift(ctx, query, nodes, nil,
+			func(n *OncallUserShift, e *OncallUserShift) { n.Edges.PrimaryShift = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -596,33 +594,32 @@ func (ousq *OncallUserShiftQuery) loadRoster(ctx context.Context, query *OncallR
 	}
 	return nil
 }
-func (ousq *OncallUserShiftQuery) loadCovers(ctx context.Context, query *OncallUserShiftCoverQuery, nodes []*OncallUserShift, init func(*OncallUserShift), assign func(*OncallUserShift, *OncallUserShiftCover)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*OncallUserShift)
+func (ousq *OncallUserShiftQuery) loadPrimaryShift(ctx context.Context, query *OncallUserShiftQuery, nodes []*OncallUserShift, init func(*OncallUserShift), assign func(*OncallUserShift, *OncallUserShift)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallUserShift)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		fk := nodes[i].PrimaryShiftID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
 		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallusershiftcover.FieldShiftID)
+	if len(ids) == 0 {
+		return nil
 	}
-	query.Where(predicate.OncallUserShiftCover(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(oncallusershift.CoversColumn), fks...))
-	}))
+	query.Where(oncallusershift.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.ShiftID
-		node, ok := nodeids[fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "shift_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "primary_shift_id" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -687,6 +684,9 @@ func (ousq *OncallUserShiftQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if ousq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallusershift.FieldRosterID)
+		}
+		if ousq.withPrimaryShift != nil {
+			_spec.Node.AddColumnOnce(oncallusershift.FieldPrimaryShiftID)
 		}
 	}
 	if ps := ousq.predicates; len(ps) > 0 {

@@ -17,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
@@ -165,21 +164,6 @@ func (uu *UserUpdate) AddOncallShifts(o ...*OncallUserShift) *UserUpdate {
 		ids[i] = o[i].ID
 	}
 	return uu.AddOncallShiftIDs(ids...)
-}
-
-// AddOncallShiftCoverIDs adds the "oncall_shift_covers" edge to the OncallUserShiftCover entity by IDs.
-func (uu *UserUpdate) AddOncallShiftCoverIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddOncallShiftCoverIDs(ids...)
-	return uu
-}
-
-// AddOncallShiftCovers adds the "oncall_shift_covers" edges to the OncallUserShiftCover entity.
-func (uu *UserUpdate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.AddOncallShiftCoverIDs(ids...)
 }
 
 // AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
@@ -374,27 +358,6 @@ func (uu *UserUpdate) RemoveOncallShifts(o ...*OncallUserShift) *UserUpdate {
 		ids[i] = o[i].ID
 	}
 	return uu.RemoveOncallShiftIDs(ids...)
-}
-
-// ClearOncallShiftCovers clears all "oncall_shift_covers" edges to the OncallUserShiftCover entity.
-func (uu *UserUpdate) ClearOncallShiftCovers() *UserUpdate {
-	uu.mutation.ClearOncallShiftCovers()
-	return uu
-}
-
-// RemoveOncallShiftCoverIDs removes the "oncall_shift_covers" edge to OncallUserShiftCover entities by IDs.
-func (uu *UserUpdate) RemoveOncallShiftCoverIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveOncallShiftCoverIDs(ids...)
-	return uu
-}
-
-// RemoveOncallShiftCovers removes "oncall_shift_covers" edges to OncallUserShiftCover entities.
-func (uu *UserUpdate) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uu.RemoveOncallShiftCoverIDs(ids...)
 }
 
 // ClearOncallAnnotations clears all "oncall_annotations" edges to the OncallAnnotation entity.
@@ -777,51 +740,6 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uu.mutation.OncallShiftCoversCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.RemovedOncallShiftCoversIDs(); len(nodes) > 0 && !uu.mutation.OncallShiftCoversCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uu.mutation.OncallShiftCoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1294,21 +1212,6 @@ func (uuo *UserUpdateOne) AddOncallShifts(o ...*OncallUserShift) *UserUpdateOne 
 	return uuo.AddOncallShiftIDs(ids...)
 }
 
-// AddOncallShiftCoverIDs adds the "oncall_shift_covers" edge to the OncallUserShiftCover entity by IDs.
-func (uuo *UserUpdateOne) AddOncallShiftCoverIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddOncallShiftCoverIDs(ids...)
-	return uuo
-}
-
-// AddOncallShiftCovers adds the "oncall_shift_covers" edges to the OncallUserShiftCover entity.
-func (uuo *UserUpdateOne) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.AddOncallShiftCoverIDs(ids...)
-}
-
 // AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
 func (uuo *UserUpdateOne) AddOncallAnnotationIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddOncallAnnotationIDs(ids...)
@@ -1501,27 +1404,6 @@ func (uuo *UserUpdateOne) RemoveOncallShifts(o ...*OncallUserShift) *UserUpdateO
 		ids[i] = o[i].ID
 	}
 	return uuo.RemoveOncallShiftIDs(ids...)
-}
-
-// ClearOncallShiftCovers clears all "oncall_shift_covers" edges to the OncallUserShiftCover entity.
-func (uuo *UserUpdateOne) ClearOncallShiftCovers() *UserUpdateOne {
-	uuo.mutation.ClearOncallShiftCovers()
-	return uuo
-}
-
-// RemoveOncallShiftCoverIDs removes the "oncall_shift_covers" edge to OncallUserShiftCover entities by IDs.
-func (uuo *UserUpdateOne) RemoveOncallShiftCoverIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveOncallShiftCoverIDs(ids...)
-	return uuo
-}
-
-// RemoveOncallShiftCovers removes "oncall_shift_covers" edges to OncallUserShiftCover entities.
-func (uuo *UserUpdateOne) RemoveOncallShiftCovers(o ...*OncallUserShiftCover) *UserUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uuo.RemoveOncallShiftCoverIDs(ids...)
 }
 
 // ClearOncallAnnotations clears all "oncall_annotations" edges to the OncallAnnotation entity.
@@ -1934,51 +1816,6 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if uuo.mutation.OncallShiftCoversCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.RemovedOncallShiftCoversIDs(); len(nodes) > 0 && !uuo.mutation.OncallShiftCoversCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := uuo.mutation.OncallShiftCoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -3,6 +3,8 @@
 package oncallusershift
 
 import (
+	"fmt"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -17,18 +19,22 @@ const (
 	FieldUserID = "user_id"
 	// FieldRosterID holds the string denoting the roster_id field in the database.
 	FieldRosterID = "roster_id"
+	// FieldProviderID holds the string denoting the provider_id field in the database.
+	FieldProviderID = "provider_id"
+	// FieldRole holds the string denoting the role field in the database.
+	FieldRole = "role"
+	// FieldPrimaryShiftID holds the string denoting the primary_shift_id field in the database.
+	FieldPrimaryShiftID = "primary_shift_id"
 	// FieldStartAt holds the string denoting the start_at field in the database.
 	FieldStartAt = "start_at"
 	// FieldEndAt holds the string denoting the end_at field in the database.
 	FieldEndAt = "end_at"
-	// FieldProviderID holds the string denoting the provider_id field in the database.
-	FieldProviderID = "provider_id"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
-	// EdgeCovers holds the string denoting the covers edge name in mutations.
-	EdgeCovers = "covers"
+	// EdgePrimaryShift holds the string denoting the primary_shift edge name in mutations.
+	EdgePrimaryShift = "primary_shift"
 	// EdgeHandover holds the string denoting the handover edge name in mutations.
 	EdgeHandover = "handover"
 	// Table holds the table name of the oncallusershift in the database.
@@ -47,13 +53,10 @@ const (
 	RosterInverseTable = "oncall_rosters"
 	// RosterColumn is the table column denoting the roster relation/edge.
 	RosterColumn = "roster_id"
-	// CoversTable is the table that holds the covers relation/edge.
-	CoversTable = "oncall_user_shift_covers"
-	// CoversInverseTable is the table name for the OncallUserShiftCover entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershiftcover" package.
-	CoversInverseTable = "oncall_user_shift_covers"
-	// CoversColumn is the table column denoting the covers relation/edge.
-	CoversColumn = "shift_id"
+	// PrimaryShiftTable is the table that holds the primary_shift relation/edge.
+	PrimaryShiftTable = "oncall_user_shifts"
+	// PrimaryShiftColumn is the table column denoting the primary_shift relation/edge.
+	PrimaryShiftColumn = "primary_shift_id"
 	// HandoverTable is the table that holds the handover relation/edge.
 	HandoverTable = "oncall_user_shift_handovers"
 	// HandoverInverseTable is the table name for the OncallUserShiftHandover entity.
@@ -68,9 +71,11 @@ var Columns = []string{
 	FieldID,
 	FieldUserID,
 	FieldRosterID,
+	FieldProviderID,
+	FieldRole,
+	FieldPrimaryShiftID,
 	FieldStartAt,
 	FieldEndAt,
-	FieldProviderID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -87,6 +92,34 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Role defines the type for the "role" enum field.
+type Role string
+
+// RolePrimary is the default value of the Role enum.
+const DefaultRole = RolePrimary
+
+// Role values.
+const (
+	RolePrimary   Role = "primary"
+	RoleSecondary Role = "secondary"
+	RoleShadow    Role = "shadow"
+	RoleCovering  Role = "covering"
+)
+
+func (r Role) String() string {
+	return string(r)
+}
+
+// RoleValidator is a validator for the "role" field enum values. It is called by the builders before save.
+func RoleValidator(r Role) error {
+	switch r {
+	case RolePrimary, RoleSecondary, RoleShadow, RoleCovering:
+		return nil
+	default:
+		return fmt.Errorf("oncallusershift: invalid enum value for role field: %q", r)
+	}
+}
 
 // OrderOption defines the ordering options for the OncallUserShift queries.
 type OrderOption func(*sql.Selector)
@@ -106,6 +139,21 @@ func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
 }
 
+// ByProviderID orders the results by the provider_id field.
+func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
+// ByRole orders the results by the role field.
+func ByRole(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByPrimaryShiftID orders the results by the primary_shift_id field.
+func ByPrimaryShiftID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPrimaryShiftID, opts...).ToFunc()
+}
+
 // ByStartAt orders the results by the start_at field.
 func ByStartAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStartAt, opts...).ToFunc()
@@ -114,11 +162,6 @@ func ByStartAt(opts ...sql.OrderTermOption) OrderOption {
 // ByEndAt orders the results by the end_at field.
 func ByEndAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEndAt, opts...).ToFunc()
-}
-
-// ByProviderID orders the results by the provider_id field.
-func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
 // ByUserField orders the results by user field.
@@ -135,17 +178,10 @@ func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByCoversCount orders the results by covers count.
-func ByCoversCount(opts ...sql.OrderTermOption) OrderOption {
+// ByPrimaryShiftField orders the results by primary_shift field.
+func ByPrimaryShiftField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCoversStep(), opts...)
-	}
-}
-
-// ByCovers orders the results by covers terms.
-func ByCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCoversStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newPrimaryShiftStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -169,11 +205,11 @@ func newRosterStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
 	)
 }
-func newCoversStep() *sqlgraph.Step {
+func newPrimaryShiftStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CoversInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CoversTable, CoversColumn),
+		sqlgraph.To(Table, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, PrimaryShiftTable, PrimaryShiftColumn),
 	)
 }
 func newHandoverStep() *sqlgraph.Step {

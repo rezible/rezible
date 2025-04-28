@@ -19,7 +19,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
@@ -38,7 +37,6 @@ type UserQuery struct {
 	withWatchedOncallRosters         *OncallRosterQuery
 	withOncallSchedules              *OncallScheduleParticipantQuery
 	withOncallShifts                 *OncallUserShiftQuery
-	withOncallShiftCovers            *OncallUserShiftCoverQuery
 	withOncallAnnotations            *OncallAnnotationQuery
 	withIncidentRoleAssignments      *IncidentRoleAssignmentQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
@@ -164,28 +162,6 @@ func (uq *UserQuery) QueryOncallShifts() *OncallUserShiftQuery {
 			sqlgraph.From(user.Table, user.FieldID, selector),
 			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftsTable, user.OncallShiftsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryOncallShiftCovers chains the current query on the "oncall_shift_covers" edge.
-func (uq *UserQuery) QueryOncallShiftCovers() *OncallUserShiftCoverQuery {
-	query := (&OncallUserShiftCoverClient{config: uq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := uq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := uq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(oncallusershiftcover.Table, oncallusershiftcover.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftCoversTable, user.OncallShiftCoversColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
 		return fromU, nil
@@ -543,7 +519,6 @@ func (uq *UserQuery) Clone() *UserQuery {
 		withWatchedOncallRosters:         uq.withWatchedOncallRosters.Clone(),
 		withOncallSchedules:              uq.withOncallSchedules.Clone(),
 		withOncallShifts:                 uq.withOncallShifts.Clone(),
-		withOncallShiftCovers:            uq.withOncallShiftCovers.Clone(),
 		withOncallAnnotations:            uq.withOncallAnnotations.Clone(),
 		withIncidentRoleAssignments:      uq.withIncidentRoleAssignments.Clone(),
 		withIncidentDebriefs:             uq.withIncidentDebriefs.Clone(),
@@ -599,17 +574,6 @@ func (uq *UserQuery) WithOncallShifts(opts ...func(*OncallUserShiftQuery)) *User
 		opt(query)
 	}
 	uq.withOncallShifts = query
-	return uq
-}
-
-// WithOncallShiftCovers tells the query-builder to eager-load the nodes that are connected to
-// the "oncall_shift_covers" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithOncallShiftCovers(opts ...func(*OncallUserShiftCoverQuery)) *UserQuery {
-	query := (&OncallUserShiftCoverClient{config: uq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	uq.withOncallShiftCovers = query
 	return uq
 }
 
@@ -768,12 +732,11 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [12]bool{
+		loadedTypes = [11]bool{
 			uq.withTeams != nil,
 			uq.withWatchedOncallRosters != nil,
 			uq.withOncallSchedules != nil,
 			uq.withOncallShifts != nil,
-			uq.withOncallShiftCovers != nil,
 			uq.withOncallAnnotations != nil,
 			uq.withIncidentRoleAssignments != nil,
 			uq.withIncidentDebriefs != nil,
@@ -831,15 +794,6 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 		if err := uq.loadOncallShifts(ctx, query, nodes,
 			func(n *User) { n.Edges.OncallShifts = []*OncallUserShift{} },
 			func(n *User, e *OncallUserShift) { n.Edges.OncallShifts = append(n.Edges.OncallShifts, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := uq.withOncallShiftCovers; query != nil {
-		if err := uq.loadOncallShiftCovers(ctx, query, nodes,
-			func(n *User) { n.Edges.OncallShiftCovers = []*OncallUserShiftCover{} },
-			func(n *User, e *OncallUserShiftCover) {
-				n.Edges.OncallShiftCovers = append(n.Edges.OncallShiftCovers, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1068,36 +1022,6 @@ func (uq *UserQuery) loadOncallShifts(ctx context.Context, query *OncallUserShif
 	}
 	query.Where(predicate.OncallUserShift(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.OncallShiftsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.UserID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (uq *UserQuery) loadOncallShiftCovers(ctx context.Context, query *OncallUserShiftCoverQuery, nodes []*User, init func(*User), assign func(*User, *OncallUserShiftCover)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*User)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallusershiftcover.FieldUserID)
-	}
-	query.Where(predicate.OncallUserShiftCover(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(user.OncallShiftCoversColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

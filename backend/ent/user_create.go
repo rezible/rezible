@@ -18,7 +18,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
@@ -145,21 +144,6 @@ func (uc *UserCreate) AddOncallShifts(o ...*OncallUserShift) *UserCreate {
 		ids[i] = o[i].ID
 	}
 	return uc.AddOncallShiftIDs(ids...)
-}
-
-// AddOncallShiftCoverIDs adds the "oncall_shift_covers" edge to the OncallUserShiftCover entity by IDs.
-func (uc *UserCreate) AddOncallShiftCoverIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddOncallShiftCoverIDs(ids...)
-	return uc
-}
-
-// AddOncallShiftCovers adds the "oncall_shift_covers" edges to the OncallUserShiftCover entity.
-func (uc *UserCreate) AddOncallShiftCovers(o ...*OncallUserShiftCover) *UserCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return uc.AddOncallShiftCoverIDs(ids...)
 }
 
 // AddOncallAnnotationIDs adds the "oncall_annotations" edge to the OncallAnnotation entity by IDs.
@@ -425,22 +409,6 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := uc.mutation.OncallShiftCoversIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.OncallShiftCoversTable,
-			Columns: []string{user.OncallShiftCoversColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

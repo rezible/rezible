@@ -29,8 +29,6 @@ const (
 	EdgeOncallSchedules = "oncall_schedules"
 	// EdgeOncallShifts holds the string denoting the oncall_shifts edge name in mutations.
 	EdgeOncallShifts = "oncall_shifts"
-	// EdgeOncallShiftCovers holds the string denoting the oncall_shift_covers edge name in mutations.
-	EdgeOncallShiftCovers = "oncall_shift_covers"
 	// EdgeOncallAnnotations holds the string denoting the oncall_annotations edge name in mutations.
 	EdgeOncallAnnotations = "oncall_annotations"
 	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
@@ -71,13 +69,6 @@ const (
 	OncallShiftsInverseTable = "oncall_user_shifts"
 	// OncallShiftsColumn is the table column denoting the oncall_shifts relation/edge.
 	OncallShiftsColumn = "user_id"
-	// OncallShiftCoversTable is the table that holds the oncall_shift_covers relation/edge.
-	OncallShiftCoversTable = "oncall_user_shift_covers"
-	// OncallShiftCoversInverseTable is the table name for the OncallUserShiftCover entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershiftcover" package.
-	OncallShiftCoversInverseTable = "oncall_user_shift_covers"
-	// OncallShiftCoversColumn is the table column denoting the oncall_shift_covers relation/edge.
-	OncallShiftCoversColumn = "user_id"
 	// OncallAnnotationsTable is the table that holds the oncall_annotations relation/edge.
 	OncallAnnotationsTable = "oncall_annotations"
 	// OncallAnnotationsInverseTable is the table name for the OncallAnnotation entity.
@@ -246,20 +237,6 @@ func ByOncallShifts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByOncallShiftCoversCount orders the results by oncall_shift_covers count.
-func ByOncallShiftCoversCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOncallShiftCoversStep(), opts...)
-	}
-}
-
-// ByOncallShiftCovers orders the results by oncall_shift_covers terms.
-func ByOncallShiftCovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOncallShiftCoversStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByOncallAnnotationsCount orders the results by oncall_annotations count.
 func ByOncallAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -383,13 +360,6 @@ func newOncallShiftsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OncallShiftsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftsTable, OncallShiftsColumn),
-	)
-}
-func newOncallShiftCoversStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OncallShiftCoversInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftCoversTable, OncallShiftCoversColumn),
 	)
 }
 func newOncallAnnotationsStep() *sqlgraph.Step {

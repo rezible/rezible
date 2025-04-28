@@ -393,18 +393,6 @@ func (f OncallUserShiftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMutation", m)
 }
 
-// The OncallUserShiftCoverFunc type is an adapter to allow the use of ordinary
-// function as OncallUserShiftCover mutator.
-type OncallUserShiftCoverFunc func(context.Context, *ent.OncallUserShiftCoverMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallUserShiftCoverFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallUserShiftCoverMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftCoverMutation", m)
-}
-
 // The OncallUserShiftHandoverFunc type is an adapter to allow the use of ordinary
 // function as OncallUserShiftHandover mutator.
 type OncallUserShiftHandoverFunc func(context.Context, *ent.OncallUserShiftHandoverMutation) (ent.Value, error)

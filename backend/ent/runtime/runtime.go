@@ -36,7 +36,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -384,12 +383,6 @@ func init() {
 	oncallusershiftDescID := oncallusershiftFields[0].Descriptor()
 	// oncallusershift.DefaultID holds the default value on creation for the id field.
 	oncallusershift.DefaultID = oncallusershiftDescID.Default.(func() uuid.UUID)
-	oncallusershiftcoverFields := schema.OncallUserShiftCover{}.Fields()
-	_ = oncallusershiftcoverFields
-	// oncallusershiftcoverDescID is the schema descriptor for id field.
-	oncallusershiftcoverDescID := oncallusershiftcoverFields[0].Descriptor()
-	// oncallusershiftcover.DefaultID holds the default value on creation for the id field.
-	oncallusershiftcover.DefaultID = oncallusershiftcoverDescID.Default.(func() uuid.UUID)
 	oncallusershifthandoverFields := schema.OncallUserShiftHandover{}.Fields()
 	_ = oncallusershifthandoverFields
 	// oncallusershifthandoverDescReminderSent is the schema descriptor for reminder_sent field.

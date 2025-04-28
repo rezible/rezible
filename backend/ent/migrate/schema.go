@@ -725,11 +725,13 @@ var (
 	// OncallUserShiftsColumns holds the columns for the "oncall_user_shifts" table.
 	OncallUserShiftsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_id", Type: field.TypeString, Unique: true, Nullable: true},
+		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"primary", "secondary", "shadow", "covering"}, Default: "primary"},
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime},
-		{Name: "provider_id", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "roster_id", Type: field.TypeUUID},
+		{Name: "primary_shift_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// OncallUserShiftsTable holds the schema information for the "oncall_user_shifts" table.
 	OncallUserShiftsTable = &schema.Table{
@@ -739,44 +741,21 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "oncall_user_shifts_users_user",
-				Columns:    []*schema.Column{OncallUserShiftsColumns[4]},
+				Columns:    []*schema.Column{OncallUserShiftsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_user_shifts_oncall_rosters_roster",
-				Columns:    []*schema.Column{OncallUserShiftsColumns[5]},
+				Columns:    []*schema.Column{OncallUserShiftsColumns[6]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-		},
-	}
-	// OncallUserShiftCoversColumns holds the columns for the "oncall_user_shift_covers" table.
-	OncallUserShiftCoversColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "start_at", Type: field.TypeTime},
-		{Name: "end_at", Type: field.TypeTime},
-		{Name: "provider_id", Type: field.TypeString, Unique: true, Nullable: true},
-		{Name: "shift_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
-	}
-	// OncallUserShiftCoversTable holds the schema information for the "oncall_user_shift_covers" table.
-	OncallUserShiftCoversTable = &schema.Table{
-		Name:       "oncall_user_shift_covers",
-		Columns:    OncallUserShiftCoversColumns,
-		PrimaryKey: []*schema.Column{OncallUserShiftCoversColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oncall_user_shift_covers_oncall_user_shifts_covers",
-				Columns:    []*schema.Column{OncallUserShiftCoversColumns[4]},
+				Symbol:     "oncall_user_shifts_oncall_user_shifts_primary_shift",
+				Columns:    []*schema.Column{OncallUserShiftsColumns[7]},
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "oncall_user_shift_covers_users_user",
-				Columns:    []*schema.Column{OncallUserShiftCoversColumns[5]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.SetNull,
 			},
 		},
 	}
@@ -1696,7 +1675,6 @@ var (
 		OncallSchedulesTable,
 		OncallScheduleParticipantsTable,
 		OncallUserShiftsTable,
-		OncallUserShiftCoversTable,
 		OncallUserShiftHandoversTable,
 		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
@@ -1770,8 +1748,7 @@ func init() {
 	OncallScheduleParticipantsTable.ForeignKeys[1].RefTable = UsersTable
 	OncallUserShiftsTable.ForeignKeys[0].RefTable = UsersTable
 	OncallUserShiftsTable.ForeignKeys[1].RefTable = OncallRostersTable
-	OncallUserShiftCoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
-	OncallUserShiftCoversTable.ForeignKeys[1].RefTable = UsersTable
+	OncallUserShiftsTable.ForeignKeys[2].RefTable = OncallUserShiftsTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = SystemAnalysesTable

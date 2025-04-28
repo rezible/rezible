@@ -101,23 +101,12 @@ type (
 	}
 
 	OncallShiftAttributes struct {
-		User    User               `json:"user"`
-		Roster  OncallRoster       `json:"roster"`
-		Role    string             `json:"role"`
-		StartAt time.Time          `json:"startAt"`
-		EndAt   time.Time          `json:"endAt"`
-		Covers  []OncallShiftCover `json:"covers"`
-	}
-
-	OncallShiftCover struct {
-		Id         uuid.UUID                  `json:"id"`
-		Attributes OncallShiftCoverAttributes `json:"attributes"`
-	}
-
-	OncallShiftCoverAttributes struct {
-		User    User      `json:"user"`
-		StartAt time.Time `json:"startAt"`
-		EndAt   time.Time `json:"endAt"`
+		User         User         `json:"user"`
+		Roster       OncallRoster `json:"roster"`
+		Role         string       `json:"role"`
+		StartAt      time.Time    `json:"startAt"`
+		EndAt        time.Time    `json:"endAt"`
+		PrimaryShift *OncallShift `json:"primaryShift"`
 	}
 
 	OncallShiftHandoverTemplate struct {
@@ -175,13 +164,16 @@ func OncallRosterFromEnt(roster *ent.OncallRoster) OncallRoster {
 
 func OncallScheduleFromEnt(schedule *ent.OncallSchedule) OncallSchedule {
 	attr := OncallScheduleAttributes{
-		Description: "",
 		Timezone:    schedule.Timezone,
+		Description: "",
 	}
 
 	attr.Participants = make([]OncallScheduleParticipant, len(schedule.Edges.Participants))
 	for i, p := range schedule.Edges.Participants {
-		attr.Participants[i] = OncallScheduleParticipantFromEnt(p)
+		attr.Participants[i] = OncallScheduleParticipant{
+			User:  UserFromEnt(p.Edges.User),
+			Index: p.Index,
+		}
 	}
 
 	return OncallSchedule{
@@ -190,46 +182,33 @@ func OncallScheduleFromEnt(schedule *ent.OncallSchedule) OncallSchedule {
 	}
 }
 
-func OncallScheduleParticipantFromEnt(p *ent.OncallScheduleParticipant) OncallScheduleParticipant {
-	return OncallScheduleParticipant{
-		User:  UserFromEnt(p.Edges.User),
-		Index: p.Index,
-	}
-}
-
 func OncallShiftFromEnt(shift *ent.OncallUserShift) OncallShift {
 	attr := OncallShiftAttributes{
-		Role:    "primary",
+		Role:    shift.Role.String(),
 		StartAt: shift.StartAt,
 		EndAt:   shift.EndAt,
 	}
 
 	if shift.Edges.Roster != nil {
 		attr.Roster = OncallRosterFromEnt(shift.Edges.Roster)
+	} else if shift.RosterID != uuid.Nil {
+		attr.Roster = OncallRoster{Id: shift.RosterID}
 	}
+
 	if shift.Edges.User != nil {
 		attr.User = UserFromEnt(shift.Edges.User)
+	} else if shift.UserID != uuid.Nil {
+		attr.User = User{Id: shift.UserID}
 	}
-	attr.Covers = make([]OncallShiftCover, len(shift.Edges.Covers))
-	for i, o := range shift.Edges.Covers {
-		attr.Covers[i] = OncallShiftCoverFromEnt(o)
+
+	if shift.Edges.PrimaryShift != nil {
+		primary := OncallShiftFromEnt(shift.Edges.PrimaryShift)
+		attr.PrimaryShift = &primary
+	} else if shift.PrimaryShiftID != uuid.Nil {
+		attr.PrimaryShift = &OncallShift{Id: shift.PrimaryShiftID}
 	}
 
 	return OncallShift{
-		Id:         shift.ID,
-		Attributes: attr,
-	}
-}
-
-func OncallShiftCoverFromEnt(shift *ent.OncallUserShiftCover) OncallShiftCover {
-	attr := OncallShiftCoverAttributes{
-		StartAt: shift.StartAt,
-		EndAt:   shift.EndAt,
-	}
-	if shift.Edges.User != nil {
-		attr.User = UserFromEnt(shift.Edges.User)
-	}
-	return OncallShiftCover{
 		Id:         shift.ID,
 		Attributes: attr,
 	}

@@ -260,14 +260,6 @@ func (c *OncallUserShiftClient) Debug() *OncallUserShiftClient {
 	return &OncallUserShiftClient{config: cfg}
 }
 
-func (c *OncallUserShiftCoverClient) Debug() *OncallUserShiftCoverClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallUserShiftCoverClient{config: cfg}
-}
-
 func (c *OncallUserShiftHandoverClient) Debug() *OncallUserShiftHandoverClient {
 	if c.debug {
 		return c

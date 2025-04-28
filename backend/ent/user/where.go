@@ -446,29 +446,6 @@ func HasOncallShiftsWith(preds ...predicate.OncallUserShift) predicate.User {
 	})
 }
 
-// HasOncallShiftCovers applies the HasEdge predicate on the "oncall_shift_covers" edge.
-func HasOncallShiftCovers() predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, OncallShiftCoversTable, OncallShiftCoversColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasOncallShiftCoversWith applies the HasEdge predicate on the "oncall_shift_covers" edge with a given conditions (other predicates).
-func HasOncallShiftCoversWith(preds ...predicate.OncallUserShiftCover) predicate.User {
-	return predicate.User(func(s *sql.Selector) {
-		step := newOncallShiftCoversStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasOncallAnnotations applies the HasEdge predicate on the "oncall_annotations" edge.
 func HasOncallAnnotations() predicate.User {
 	return predicate.User(func(s *sql.Selector) {

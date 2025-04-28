@@ -44,7 +44,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -158,7 +157,6 @@ func checkColumn(table, column string) error {
 			oncallschedule.Table:                   oncallschedule.ValidColumn,
 			oncallscheduleparticipant.Table:        oncallscheduleparticipant.ValidColumn,
 			oncallusershift.Table:                  oncallusershift.ValidColumn,
-			oncallusershiftcover.Table:             oncallusershiftcover.ValidColumn,
 			oncallusershifthandover.Table:          oncallusershifthandover.ValidColumn,
 			providerconfig.Table:                   providerconfig.ValidColumn,
 			providersynchistory.Table:              providersynchistory.ValidColumn,

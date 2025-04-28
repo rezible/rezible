@@ -15,7 +15,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershiftcover"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -40,18 +39,6 @@ func (ousc *OncallUserShiftCreate) SetRosterID(u uuid.UUID) *OncallUserShiftCrea
 	return ousc
 }
 
-// SetStartAt sets the "start_at" field.
-func (ousc *OncallUserShiftCreate) SetStartAt(t time.Time) *OncallUserShiftCreate {
-	ousc.mutation.SetStartAt(t)
-	return ousc
-}
-
-// SetEndAt sets the "end_at" field.
-func (ousc *OncallUserShiftCreate) SetEndAt(t time.Time) *OncallUserShiftCreate {
-	ousc.mutation.SetEndAt(t)
-	return ousc
-}
-
 // SetProviderID sets the "provider_id" field.
 func (ousc *OncallUserShiftCreate) SetProviderID(s string) *OncallUserShiftCreate {
 	ousc.mutation.SetProviderID(s)
@@ -63,6 +50,46 @@ func (ousc *OncallUserShiftCreate) SetNillableProviderID(s *string) *OncallUserS
 	if s != nil {
 		ousc.SetProviderID(*s)
 	}
+	return ousc
+}
+
+// SetRole sets the "role" field.
+func (ousc *OncallUserShiftCreate) SetRole(o oncallusershift.Role) *OncallUserShiftCreate {
+	ousc.mutation.SetRole(o)
+	return ousc
+}
+
+// SetNillableRole sets the "role" field if the given value is not nil.
+func (ousc *OncallUserShiftCreate) SetNillableRole(o *oncallusershift.Role) *OncallUserShiftCreate {
+	if o != nil {
+		ousc.SetRole(*o)
+	}
+	return ousc
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (ousc *OncallUserShiftCreate) SetPrimaryShiftID(u uuid.UUID) *OncallUserShiftCreate {
+	ousc.mutation.SetPrimaryShiftID(u)
+	return ousc
+}
+
+// SetNillablePrimaryShiftID sets the "primary_shift_id" field if the given value is not nil.
+func (ousc *OncallUserShiftCreate) SetNillablePrimaryShiftID(u *uuid.UUID) *OncallUserShiftCreate {
+	if u != nil {
+		ousc.SetPrimaryShiftID(*u)
+	}
+	return ousc
+}
+
+// SetStartAt sets the "start_at" field.
+func (ousc *OncallUserShiftCreate) SetStartAt(t time.Time) *OncallUserShiftCreate {
+	ousc.mutation.SetStartAt(t)
+	return ousc
+}
+
+// SetEndAt sets the "end_at" field.
+func (ousc *OncallUserShiftCreate) SetEndAt(t time.Time) *OncallUserShiftCreate {
+	ousc.mutation.SetEndAt(t)
 	return ousc
 }
 
@@ -90,19 +117,9 @@ func (ousc *OncallUserShiftCreate) SetRoster(o *OncallRoster) *OncallUserShiftCr
 	return ousc.SetRosterID(o.ID)
 }
 
-// AddCoverIDs adds the "covers" edge to the OncallUserShiftCover entity by IDs.
-func (ousc *OncallUserShiftCreate) AddCoverIDs(ids ...uuid.UUID) *OncallUserShiftCreate {
-	ousc.mutation.AddCoverIDs(ids...)
-	return ousc
-}
-
-// AddCovers adds the "covers" edges to the OncallUserShiftCover entity.
-func (ousc *OncallUserShiftCreate) AddCovers(o ...*OncallUserShiftCover) *OncallUserShiftCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ousc.AddCoverIDs(ids...)
+// SetPrimaryShift sets the "primary_shift" edge to the OncallUserShift entity.
+func (ousc *OncallUserShiftCreate) SetPrimaryShift(o *OncallUserShift) *OncallUserShiftCreate {
+	return ousc.SetPrimaryShiftID(o.ID)
 }
 
 // SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by ID.
@@ -159,6 +176,10 @@ func (ousc *OncallUserShiftCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (ousc *OncallUserShiftCreate) defaults() {
+	if _, ok := ousc.mutation.Role(); !ok {
+		v := oncallusershift.DefaultRole
+		ousc.mutation.SetRole(v)
+	}
 	if _, ok := ousc.mutation.ID(); !ok {
 		v := oncallusershift.DefaultID()
 		ousc.mutation.SetID(v)
@@ -172,6 +193,11 @@ func (ousc *OncallUserShiftCreate) check() error {
 	}
 	if _, ok := ousc.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallUserShift.roster_id"`)}
+	}
+	if v, ok := ousc.mutation.Role(); ok {
+		if err := oncallusershift.RoleValidator(v); err != nil {
+			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallUserShift.role": %w`, err)}
+		}
 	}
 	if _, ok := ousc.mutation.StartAt(); !ok {
 		return &ValidationError{Name: "start_at", err: errors.New(`ent: missing required field "OncallUserShift.start_at"`)}
@@ -221,6 +247,14 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := ousc.mutation.ProviderID(); ok {
+		_spec.SetField(oncallusershift.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
+	if value, ok := ousc.mutation.Role(); ok {
+		_spec.SetField(oncallusershift.FieldRole, field.TypeEnum, value)
+		_node.Role = value
+	}
 	if value, ok := ousc.mutation.StartAt(); ok {
 		_spec.SetField(oncallusershift.FieldStartAt, field.TypeTime, value)
 		_node.StartAt = value
@@ -228,10 +262,6 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 	if value, ok := ousc.mutation.EndAt(); ok {
 		_spec.SetField(oncallusershift.FieldEndAt, field.TypeTime, value)
 		_node.EndAt = value
-	}
-	if value, ok := ousc.mutation.ProviderID(); ok {
-		_spec.SetField(oncallusershift.FieldProviderID, field.TypeString, value)
-		_node.ProviderID = value
 	}
 	if nodes := ousc.mutation.UserIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -267,20 +297,21 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 		_node.RosterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := ousc.mutation.CoversIDs(); len(nodes) > 0 {
+	if nodes := ousc.mutation.PrimaryShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.CoversTable,
-			Columns: []string{oncallusershift.CoversColumn},
-			Bidi:    false,
+			Table:   oncallusershift.PrimaryShiftTable,
+			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftcover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.PrimaryShiftID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ousc.mutation.HandoverIDs(); len(nodes) > 0 {
@@ -375,6 +406,60 @@ func (u *OncallUserShiftUpsert) UpdateRosterID() *OncallUserShiftUpsert {
 	return u
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *OncallUserShiftUpsert) SetProviderID(v string) *OncallUserShiftUpsert {
+	u.Set(oncallusershift.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsert) UpdateProviderID() *OncallUserShiftUpsert {
+	u.SetExcluded(oncallusershift.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *OncallUserShiftUpsert) ClearProviderID() *OncallUserShiftUpsert {
+	u.SetNull(oncallusershift.FieldProviderID)
+	return u
+}
+
+// SetRole sets the "role" field.
+func (u *OncallUserShiftUpsert) SetRole(v oncallusershift.Role) *OncallUserShiftUpsert {
+	u.Set(oncallusershift.FieldRole, v)
+	return u
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *OncallUserShiftUpsert) UpdateRole() *OncallUserShiftUpsert {
+	u.SetExcluded(oncallusershift.FieldRole)
+	return u
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *OncallUserShiftUpsert) ClearRole() *OncallUserShiftUpsert {
+	u.SetNull(oncallusershift.FieldRole)
+	return u
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (u *OncallUserShiftUpsert) SetPrimaryShiftID(v uuid.UUID) *OncallUserShiftUpsert {
+	u.Set(oncallusershift.FieldPrimaryShiftID, v)
+	return u
+}
+
+// UpdatePrimaryShiftID sets the "primary_shift_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsert) UpdatePrimaryShiftID() *OncallUserShiftUpsert {
+	u.SetExcluded(oncallusershift.FieldPrimaryShiftID)
+	return u
+}
+
+// ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
+func (u *OncallUserShiftUpsert) ClearPrimaryShiftID() *OncallUserShiftUpsert {
+	u.SetNull(oncallusershift.FieldPrimaryShiftID)
+	return u
+}
+
 // SetStartAt sets the "start_at" field.
 func (u *OncallUserShiftUpsert) SetStartAt(v time.Time) *OncallUserShiftUpsert {
 	u.Set(oncallusershift.FieldStartAt, v)
@@ -396,24 +481,6 @@ func (u *OncallUserShiftUpsert) SetEndAt(v time.Time) *OncallUserShiftUpsert {
 // UpdateEndAt sets the "end_at" field to the value that was provided on create.
 func (u *OncallUserShiftUpsert) UpdateEndAt() *OncallUserShiftUpsert {
 	u.SetExcluded(oncallusershift.FieldEndAt)
-	return u
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallUserShiftUpsert) SetProviderID(v string) *OncallUserShiftUpsert {
-	u.Set(oncallusershift.FieldProviderID, v)
-	return u
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallUserShiftUpsert) UpdateProviderID() *OncallUserShiftUpsert {
-	u.SetExcluded(oncallusershift.FieldProviderID)
-	return u
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *OncallUserShiftUpsert) ClearProviderID() *OncallUserShiftUpsert {
-	u.SetNull(oncallusershift.FieldProviderID)
 	return u
 }
 
@@ -493,6 +560,69 @@ func (u *OncallUserShiftUpsertOne) UpdateRosterID() *OncallUserShiftUpsertOne {
 	})
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *OncallUserShiftUpsertOne) SetProviderID(v string) *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertOne) UpdateProviderID() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *OncallUserShiftUpsertOne) ClearProviderID() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearProviderID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *OncallUserShiftUpsertOne) SetRole(v oncallusershift.Role) *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertOne) UpdateRole() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *OncallUserShiftUpsertOne) ClearRole() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearRole()
+	})
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (u *OncallUserShiftUpsertOne) SetPrimaryShiftID(v uuid.UUID) *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetPrimaryShiftID(v)
+	})
+}
+
+// UpdatePrimaryShiftID sets the "primary_shift_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertOne) UpdatePrimaryShiftID() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdatePrimaryShiftID()
+	})
+}
+
+// ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
+func (u *OncallUserShiftUpsertOne) ClearPrimaryShiftID() *OncallUserShiftUpsertOne {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearPrimaryShiftID()
+	})
+}
+
 // SetStartAt sets the "start_at" field.
 func (u *OncallUserShiftUpsertOne) SetStartAt(v time.Time) *OncallUserShiftUpsertOne {
 	return u.Update(func(s *OncallUserShiftUpsert) {
@@ -518,27 +648,6 @@ func (u *OncallUserShiftUpsertOne) SetEndAt(v time.Time) *OncallUserShiftUpsertO
 func (u *OncallUserShiftUpsertOne) UpdateEndAt() *OncallUserShiftUpsertOne {
 	return u.Update(func(s *OncallUserShiftUpsert) {
 		s.UpdateEndAt()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallUserShiftUpsertOne) SetProviderID(v string) *OncallUserShiftUpsertOne {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallUserShiftUpsertOne) UpdateProviderID() *OncallUserShiftUpsertOne {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *OncallUserShiftUpsertOne) ClearProviderID() *OncallUserShiftUpsertOne {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.ClearProviderID()
 	})
 }
 
@@ -785,6 +894,69 @@ func (u *OncallUserShiftUpsertBulk) UpdateRosterID() *OncallUserShiftUpsertBulk 
 	})
 }
 
+// SetProviderID sets the "provider_id" field.
+func (u *OncallUserShiftUpsertBulk) SetProviderID(v string) *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertBulk) UpdateProviderID() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *OncallUserShiftUpsertBulk) ClearProviderID() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearProviderID()
+	})
+}
+
+// SetRole sets the "role" field.
+func (u *OncallUserShiftUpsertBulk) SetRole(v oncallusershift.Role) *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetRole(v)
+	})
+}
+
+// UpdateRole sets the "role" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertBulk) UpdateRole() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdateRole()
+	})
+}
+
+// ClearRole clears the value of the "role" field.
+func (u *OncallUserShiftUpsertBulk) ClearRole() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearRole()
+	})
+}
+
+// SetPrimaryShiftID sets the "primary_shift_id" field.
+func (u *OncallUserShiftUpsertBulk) SetPrimaryShiftID(v uuid.UUID) *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.SetPrimaryShiftID(v)
+	})
+}
+
+// UpdatePrimaryShiftID sets the "primary_shift_id" field to the value that was provided on create.
+func (u *OncallUserShiftUpsertBulk) UpdatePrimaryShiftID() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.UpdatePrimaryShiftID()
+	})
+}
+
+// ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
+func (u *OncallUserShiftUpsertBulk) ClearPrimaryShiftID() *OncallUserShiftUpsertBulk {
+	return u.Update(func(s *OncallUserShiftUpsert) {
+		s.ClearPrimaryShiftID()
+	})
+}
+
 // SetStartAt sets the "start_at" field.
 func (u *OncallUserShiftUpsertBulk) SetStartAt(v time.Time) *OncallUserShiftUpsertBulk {
 	return u.Update(func(s *OncallUserShiftUpsert) {
@@ -810,27 +982,6 @@ func (u *OncallUserShiftUpsertBulk) SetEndAt(v time.Time) *OncallUserShiftUpsert
 func (u *OncallUserShiftUpsertBulk) UpdateEndAt() *OncallUserShiftUpsertBulk {
 	return u.Update(func(s *OncallUserShiftUpsert) {
 		s.UpdateEndAt()
-	})
-}
-
-// SetProviderID sets the "provider_id" field.
-func (u *OncallUserShiftUpsertBulk) SetProviderID(v string) *OncallUserShiftUpsertBulk {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.SetProviderID(v)
-	})
-}
-
-// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
-func (u *OncallUserShiftUpsertBulk) UpdateProviderID() *OncallUserShiftUpsertBulk {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.UpdateProviderID()
-	})
-}
-
-// ClearProviderID clears the value of the "provider_id" field.
-func (u *OncallUserShiftUpsertBulk) ClearProviderID() *OncallUserShiftUpsertBulk {
-	return u.Update(func(s *OncallUserShiftUpsert) {
-		s.ClearProviderID()
 	})
 }
 

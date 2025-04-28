@@ -25,12 +25,16 @@ type OncallUserShift struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
+	// ProviderID holds the value of the "provider_id" field.
+	ProviderID string `json:"provider_id,omitempty"`
+	// Role holds the value of the "role" field.
+	Role oncallusershift.Role `json:"role,omitempty"`
+	// PrimaryShiftID holds the value of the "primary_shift_id" field.
+	PrimaryShiftID uuid.UUID `json:"primary_shift_id,omitempty"`
 	// StartAt holds the value of the "start_at" field.
 	StartAt time.Time `json:"start_at,omitempty"`
 	// EndAt holds the value of the "end_at" field.
 	EndAt time.Time `json:"end_at,omitempty"`
-	// ProviderID holds the value of the "provider_id" field.
-	ProviderID string `json:"provider_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallUserShiftQuery when eager-loading is set.
 	Edges        OncallUserShiftEdges `json:"edges"`
@@ -43,8 +47,8 @@ type OncallUserShiftEdges struct {
 	User *User `json:"user,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
-	// Covers holds the value of the covers edge.
-	Covers []*OncallUserShiftCover `json:"covers,omitempty"`
+	// PrimaryShift holds the value of the primary_shift edge.
+	PrimaryShift *OncallUserShift `json:"primary_shift,omitempty"`
 	// Handover holds the value of the handover edge.
 	Handover *OncallUserShiftHandover `json:"handover,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -74,13 +78,15 @@ func (e OncallUserShiftEdges) RosterOrErr() (*OncallRoster, error) {
 	return nil, &NotLoadedError{edge: "roster"}
 }
 
-// CoversOrErr returns the Covers value or an error if the edge
-// was not loaded in eager-loading.
-func (e OncallUserShiftEdges) CoversOrErr() ([]*OncallUserShiftCover, error) {
-	if e.loadedTypes[2] {
-		return e.Covers, nil
+// PrimaryShiftOrErr returns the PrimaryShift value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallUserShiftEdges) PrimaryShiftOrErr() (*OncallUserShift, error) {
+	if e.PrimaryShift != nil {
+		return e.PrimaryShift, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: oncallusershift.Label}
 	}
-	return nil, &NotLoadedError{edge: "covers"}
+	return nil, &NotLoadedError{edge: "primary_shift"}
 }
 
 // HandoverOrErr returns the Handover value or an error if the edge
@@ -99,11 +105,11 @@ func (*OncallUserShift) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershift.FieldProviderID:
+		case oncallusershift.FieldProviderID, oncallusershift.FieldRole:
 			values[i] = new(sql.NullString)
 		case oncallusershift.FieldStartAt, oncallusershift.FieldEndAt:
 			values[i] = new(sql.NullTime)
-		case oncallusershift.FieldID, oncallusershift.FieldUserID, oncallusershift.FieldRosterID:
+		case oncallusershift.FieldID, oncallusershift.FieldUserID, oncallusershift.FieldRosterID, oncallusershift.FieldPrimaryShiftID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -138,6 +144,24 @@ func (ous *OncallUserShift) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				ous.RosterID = *value
 			}
+		case oncallusershift.FieldProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
+			} else if value.Valid {
+				ous.ProviderID = value.String
+			}
+		case oncallusershift.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				ous.Role = oncallusershift.Role(value.String)
+			}
+		case oncallusershift.FieldPrimaryShiftID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field primary_shift_id", values[i])
+			} else if value != nil {
+				ous.PrimaryShiftID = *value
+			}
 		case oncallusershift.FieldStartAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_at", values[i])
@@ -149,12 +173,6 @@ func (ous *OncallUserShift) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field end_at", values[i])
 			} else if value.Valid {
 				ous.EndAt = value.Time
-			}
-		case oncallusershift.FieldProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
-			} else if value.Valid {
-				ous.ProviderID = value.String
 			}
 		default:
 			ous.selectValues.Set(columns[i], values[i])
@@ -179,9 +197,9 @@ func (ous *OncallUserShift) QueryRoster() *OncallRosterQuery {
 	return NewOncallUserShiftClient(ous.config).QueryRoster(ous)
 }
 
-// QueryCovers queries the "covers" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryCovers() *OncallUserShiftCoverQuery {
-	return NewOncallUserShiftClient(ous.config).QueryCovers(ous)
+// QueryPrimaryShift queries the "primary_shift" edge of the OncallUserShift entity.
+func (ous *OncallUserShift) QueryPrimaryShift() *OncallUserShiftQuery {
+	return NewOncallUserShiftClient(ous.config).QueryPrimaryShift(ous)
 }
 
 // QueryHandover queries the "handover" edge of the OncallUserShift entity.
@@ -218,14 +236,20 @@ func (ous *OncallUserShift) String() string {
 	builder.WriteString("roster_id=")
 	builder.WriteString(fmt.Sprintf("%v", ous.RosterID))
 	builder.WriteString(", ")
+	builder.WriteString("provider_id=")
+	builder.WriteString(ous.ProviderID)
+	builder.WriteString(", ")
+	builder.WriteString("role=")
+	builder.WriteString(fmt.Sprintf("%v", ous.Role))
+	builder.WriteString(", ")
+	builder.WriteString("primary_shift_id=")
+	builder.WriteString(fmt.Sprintf("%v", ous.PrimaryShiftID))
+	builder.WriteString(", ")
 	builder.WriteString("start_at=")
 	builder.WriteString(ous.StartAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("end_at=")
 	builder.WriteString(ous.EndAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("provider_id=")
-	builder.WriteString(ous.ProviderID)
 	builder.WriteByte(')')
 	return builder.String()
 }

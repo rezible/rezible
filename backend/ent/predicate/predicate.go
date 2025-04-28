@@ -102,9 +102,6 @@ type OncallScheduleParticipant func(*sql.Selector)
 // OncallUserShift is the predicate function for oncallusershift builders.
 type OncallUserShift func(*sql.Selector)
 
-// OncallUserShiftCover is the predicate function for oncallusershiftcover builders.
-type OncallUserShiftCover func(*sql.Selector)
-
 // OncallUserShiftHandover is the predicate function for oncallusershifthandover builders.
 type OncallUserShiftHandover func(*sql.Selector)
 
