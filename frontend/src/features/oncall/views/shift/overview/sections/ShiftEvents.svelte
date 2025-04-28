@@ -6,11 +6,10 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { settings } from "$lib/settings.svelte";
 	
-	import { shiftViewStateCtx } from "../context.svelte";
+	import { shiftViewStateCtx } from "../../context.svelte";
 	import type { ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
-
 
 	type Props = {
 		metrics: OncallShiftMetrics;

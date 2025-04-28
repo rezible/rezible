@@ -2,7 +2,6 @@
 	import { Header } from "svelte-ux";
 	import { formatDuration } from "date-fns";
 	import type { OncallShiftMetrics } from "$lib/api";
-	// import { PieChart, Text } from "layerchart";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 
