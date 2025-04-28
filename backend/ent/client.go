@@ -49,6 +49,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -142,6 +143,8 @@ type Client struct {
 	OncallUserShift *OncallUserShiftClient
 	// OncallUserShiftHandover is the client for interacting with the OncallUserShiftHandover builders.
 	OncallUserShiftHandover *OncallUserShiftHandoverClient
+	// OncallUserShiftMetrics is the client for interacting with the OncallUserShiftMetrics builders.
+	OncallUserShiftMetrics *OncallUserShiftMetricsClient
 	// ProviderConfig is the client for interacting with the ProviderConfig builders.
 	ProviderConfig *ProviderConfigClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
@@ -226,6 +229,7 @@ func (c *Client) init() {
 	c.OncallScheduleParticipant = NewOncallScheduleParticipantClient(c.config)
 	c.OncallUserShift = NewOncallUserShiftClient(c.config)
 	c.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(c.config)
+	c.OncallUserShiftMetrics = NewOncallUserShiftMetricsClient(c.config)
 	c.ProviderConfig = NewProviderConfigClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
@@ -371,6 +375,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
+		OncallUserShiftMetrics:           NewOncallUserShiftMetricsClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
@@ -443,6 +448,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
+		OncallUserShiftMetrics:           NewOncallUserShiftMetricsClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
@@ -502,14 +508,14 @@ func (c *Client) Use(hooks ...Hook) {
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftHandover, c.ProviderConfig,
-		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
-		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.User,
+		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
+		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -529,14 +535,14 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftHandover, c.ProviderConfig,
-		c.ProviderSyncHistory, c.Retrospective, c.RetrospectiveDiscussion,
-		c.RetrospectiveDiscussionReply, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.User,
+		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
+		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
+		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
+		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
+		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -611,6 +617,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallUserShift.mutate(ctx, m)
 	case *OncallUserShiftHandoverMutation:
 		return c.OncallUserShiftHandover.mutate(ctx, m)
+	case *OncallUserShiftMetricsMutation:
+		return c.OncallUserShiftMetrics.mutate(ctx, m)
 	case *ProviderConfigMutation:
 		return c.ProviderConfig.mutate(ctx, m)
 	case *ProviderSyncHistoryMutation:
@@ -6297,6 +6305,22 @@ func (c *OncallUserShiftClient) QueryHandover(ous *OncallUserShift) *OncallUserS
 	return query
 }
 
+// QueryMetrics queries the metrics edge of a OncallUserShift.
+func (c *OncallUserShiftClient) QueryMetrics(ous *OncallUserShift) *OncallUserShiftMetricsQuery {
+	query := (&OncallUserShiftMetricsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ous.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, id),
+			sqlgraph.To(oncallusershiftmetrics.Table, oncallusershiftmetrics.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, oncallusershift.MetricsTable, oncallusershift.MetricsColumn),
+		)
+		fromV = sqlgraph.Neighbors(ous.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *OncallUserShiftClient) Hooks() []Hook {
 	return c.hooks.OncallUserShift
@@ -6484,6 +6508,155 @@ func (c *OncallUserShiftHandoverClient) mutate(ctx context.Context, m *OncallUse
 		return (&OncallUserShiftHandoverDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallUserShiftHandover mutation op: %q", m.Op())
+	}
+}
+
+// OncallUserShiftMetricsClient is a client for the OncallUserShiftMetrics schema.
+type OncallUserShiftMetricsClient struct {
+	config
+}
+
+// NewOncallUserShiftMetricsClient returns a client for the OncallUserShiftMetrics from the given config.
+func NewOncallUserShiftMetricsClient(c config) *OncallUserShiftMetricsClient {
+	return &OncallUserShiftMetricsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oncallusershiftmetrics.Hooks(f(g(h())))`.
+func (c *OncallUserShiftMetricsClient) Use(hooks ...Hook) {
+	c.hooks.OncallUserShiftMetrics = append(c.hooks.OncallUserShiftMetrics, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oncallusershiftmetrics.Intercept(f(g(h())))`.
+func (c *OncallUserShiftMetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OncallUserShiftMetrics = append(c.inters.OncallUserShiftMetrics, interceptors...)
+}
+
+// Create returns a builder for creating a OncallUserShiftMetrics entity.
+func (c *OncallUserShiftMetricsClient) Create() *OncallUserShiftMetricsCreate {
+	mutation := newOncallUserShiftMetricsMutation(c.config, OpCreate)
+	return &OncallUserShiftMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OncallUserShiftMetrics entities.
+func (c *OncallUserShiftMetricsClient) CreateBulk(builders ...*OncallUserShiftMetricsCreate) *OncallUserShiftMetricsCreateBulk {
+	return &OncallUserShiftMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OncallUserShiftMetricsClient) MapCreateBulk(slice any, setFunc func(*OncallUserShiftMetricsCreate, int)) *OncallUserShiftMetricsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OncallUserShiftMetricsCreateBulk{err: fmt.Errorf("calling to OncallUserShiftMetricsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OncallUserShiftMetricsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OncallUserShiftMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OncallUserShiftMetrics.
+func (c *OncallUserShiftMetricsClient) Update() *OncallUserShiftMetricsUpdate {
+	mutation := newOncallUserShiftMetricsMutation(c.config, OpUpdate)
+	return &OncallUserShiftMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OncallUserShiftMetricsClient) UpdateOne(ousm *OncallUserShiftMetrics) *OncallUserShiftMetricsUpdateOne {
+	mutation := newOncallUserShiftMetricsMutation(c.config, OpUpdateOne, withOncallUserShiftMetrics(ousm))
+	return &OncallUserShiftMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OncallUserShiftMetricsClient) UpdateOneID(id uuid.UUID) *OncallUserShiftMetricsUpdateOne {
+	mutation := newOncallUserShiftMetricsMutation(c.config, OpUpdateOne, withOncallUserShiftMetricsID(id))
+	return &OncallUserShiftMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OncallUserShiftMetrics.
+func (c *OncallUserShiftMetricsClient) Delete() *OncallUserShiftMetricsDelete {
+	mutation := newOncallUserShiftMetricsMutation(c.config, OpDelete)
+	return &OncallUserShiftMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OncallUserShiftMetricsClient) DeleteOne(ousm *OncallUserShiftMetrics) *OncallUserShiftMetricsDeleteOne {
+	return c.DeleteOneID(ousm.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OncallUserShiftMetricsClient) DeleteOneID(id uuid.UUID) *OncallUserShiftMetricsDeleteOne {
+	builder := c.Delete().Where(oncallusershiftmetrics.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OncallUserShiftMetricsDeleteOne{builder}
+}
+
+// Query returns a query builder for OncallUserShiftMetrics.
+func (c *OncallUserShiftMetricsClient) Query() *OncallUserShiftMetricsQuery {
+	return &OncallUserShiftMetricsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOncallUserShiftMetrics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OncallUserShiftMetrics entity by its id.
+func (c *OncallUserShiftMetricsClient) Get(ctx context.Context, id uuid.UUID) (*OncallUserShiftMetrics, error) {
+	return c.Query().Where(oncallusershiftmetrics.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OncallUserShiftMetricsClient) GetX(ctx context.Context, id uuid.UUID) *OncallUserShiftMetrics {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryShift queries the shift edge of a OncallUserShiftMetrics.
+func (c *OncallUserShiftMetricsClient) QueryShift(ousm *OncallUserShiftMetrics) *OncallUserShiftQuery {
+	query := (&OncallUserShiftClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ousm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershiftmetrics.Table, oncallusershiftmetrics.FieldID, id),
+			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, oncallusershiftmetrics.ShiftTable, oncallusershiftmetrics.ShiftColumn),
+		)
+		fromV = sqlgraph.Neighbors(ousm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OncallUserShiftMetricsClient) Hooks() []Hook {
+	return c.hooks.OncallUserShiftMetrics
+}
+
+// Interceptors returns the client interceptors.
+func (c *OncallUserShiftMetricsClient) Interceptors() []Interceptor {
+	return c.inters.OncallUserShiftMetrics
+}
+
+func (c *OncallUserShiftMetricsClient) mutate(ctx context.Context, m *OncallUserShiftMetricsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OncallUserShiftMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OncallUserShiftMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OncallUserShiftMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OncallUserShiftMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OncallUserShiftMetrics mutation op: %q", m.Op())
 	}
 }
 
@@ -10247,11 +10420,11 @@ type (
 		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal,
+		OncallUserShiftMetrics, ProviderConfig, ProviderSyncHistory, Retrospective,
+		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Hook
 	}
@@ -10265,11 +10438,11 @@ type (
 		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal,
+		OncallUserShiftMetrics, ProviderConfig, ProviderSyncHistory, Retrospective,
+		RetrospectiveDiscussion, RetrospectiveDiscussionReply, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		User []ent.Interceptor
 	}

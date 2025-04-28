@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -51,9 +52,11 @@ type OncallUserShiftEdges struct {
 	PrimaryShift *OncallUserShift `json:"primary_shift,omitempty"`
 	// Handover holds the value of the handover edge.
 	Handover *OncallUserShiftHandover `json:"handover,omitempty"`
+	// Metrics holds the value of the metrics edge.
+	Metrics *OncallUserShiftMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -98,6 +101,17 @@ func (e OncallUserShiftEdges) HandoverOrErr() (*OncallUserShiftHandover, error) 
 		return nil, &NotFoundError{label: oncallusershifthandover.Label}
 	}
 	return nil, &NotLoadedError{edge: "handover"}
+}
+
+// MetricsOrErr returns the Metrics value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallUserShiftEdges) MetricsOrErr() (*OncallUserShiftMetrics, error) {
+	if e.Metrics != nil {
+		return e.Metrics, nil
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: oncallusershiftmetrics.Label}
+	}
+	return nil, &NotLoadedError{edge: "metrics"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -205,6 +219,11 @@ func (ous *OncallUserShift) QueryPrimaryShift() *OncallUserShiftQuery {
 // QueryHandover queries the "handover" edge of the OncallUserShift entity.
 func (ous *OncallUserShift) QueryHandover() *OncallUserShiftHandoverQuery {
 	return NewOncallUserShiftClient(ous.config).QueryHandover(ous)
+}
+
+// QueryMetrics queries the "metrics" edge of the OncallUserShift entity.
+func (ous *OncallUserShift) QueryMetrics() *OncallUserShiftMetricsQuery {
+	return NewOncallUserShiftClient(ous.config).QueryMetrics(ous)
 }
 
 // Update returns a builder for updating this OncallUserShift.

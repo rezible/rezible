@@ -37,6 +37,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -397,6 +398,12 @@ func init() {
 	oncallusershifthandoverDescID := oncallusershifthandoverFields[0].Descriptor()
 	// oncallusershifthandover.DefaultID holds the default value on creation for the id field.
 	oncallusershifthandover.DefaultID = oncallusershifthandoverDescID.Default.(func() uuid.UUID)
+	oncallusershiftmetricsFields := schema.OncallUserShiftMetrics{}.Fields()
+	_ = oncallusershiftmetricsFields
+	// oncallusershiftmetricsDescID is the schema descriptor for id field.
+	oncallusershiftmetricsDescID := oncallusershiftmetricsFields[0].Descriptor()
+	// oncallusershiftmetrics.DefaultID holds the default value on creation for the id field.
+	oncallusershiftmetrics.DefaultID = oncallusershiftmetricsDescID.Default.(func() uuid.UUID)
 	providerconfigFields := schema.ProviderConfig{}.Fields()
 	_ = providerconfigFields
 	// providerconfigDescEnabled is the schema descriptor for enabled field.

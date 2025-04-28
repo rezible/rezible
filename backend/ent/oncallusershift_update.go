@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -183,6 +184,25 @@ func (ousu *OncallUserShiftUpdate) SetHandover(o *OncallUserShiftHandover) *Onca
 	return ousu.SetHandoverID(o.ID)
 }
 
+// SetMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID.
+func (ousu *OncallUserShiftUpdate) SetMetricsID(id uuid.UUID) *OncallUserShiftUpdate {
+	ousu.mutation.SetMetricsID(id)
+	return ousu
+}
+
+// SetNillableMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID if the given value is not nil.
+func (ousu *OncallUserShiftUpdate) SetNillableMetricsID(id *uuid.UUID) *OncallUserShiftUpdate {
+	if id != nil {
+		ousu = ousu.SetMetricsID(*id)
+	}
+	return ousu
+}
+
+// SetMetrics sets the "metrics" edge to the OncallUserShiftMetrics entity.
+func (ousu *OncallUserShiftUpdate) SetMetrics(o *OncallUserShiftMetrics) *OncallUserShiftUpdate {
+	return ousu.SetMetricsID(o.ID)
+}
+
 // Mutation returns the OncallUserShiftMutation object of the builder.
 func (ousu *OncallUserShiftUpdate) Mutation() *OncallUserShiftMutation {
 	return ousu.mutation
@@ -209,6 +229,12 @@ func (ousu *OncallUserShiftUpdate) ClearPrimaryShift() *OncallUserShiftUpdate {
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
 func (ousu *OncallUserShiftUpdate) ClearHandover() *OncallUserShiftUpdate {
 	ousu.mutation.ClearHandover()
+	return ousu
+}
+
+// ClearMetrics clears the "metrics" edge to the OncallUserShiftMetrics entity.
+func (ousu *OncallUserShiftUpdate) ClearMetrics() *OncallUserShiftUpdate {
+	ousu.mutation.ClearMetrics()
 	return ousu
 }
 
@@ -407,6 +433,35 @@ func (ousu *OncallUserShiftUpdate) sqlSave(ctx context.Context) (n int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ousu.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallusershift.MetricsTable,
+			Columns: []string{oncallusershift.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftmetrics.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ousu.mutation.MetricsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallusershift.MetricsTable,
+			Columns: []string{oncallusershift.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftmetrics.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(ousu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, ousu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -579,6 +634,25 @@ func (ousuo *OncallUserShiftUpdateOne) SetHandover(o *OncallUserShiftHandover) *
 	return ousuo.SetHandoverID(o.ID)
 }
 
+// SetMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID.
+func (ousuo *OncallUserShiftUpdateOne) SetMetricsID(id uuid.UUID) *OncallUserShiftUpdateOne {
+	ousuo.mutation.SetMetricsID(id)
+	return ousuo
+}
+
+// SetNillableMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID if the given value is not nil.
+func (ousuo *OncallUserShiftUpdateOne) SetNillableMetricsID(id *uuid.UUID) *OncallUserShiftUpdateOne {
+	if id != nil {
+		ousuo = ousuo.SetMetricsID(*id)
+	}
+	return ousuo
+}
+
+// SetMetrics sets the "metrics" edge to the OncallUserShiftMetrics entity.
+func (ousuo *OncallUserShiftUpdateOne) SetMetrics(o *OncallUserShiftMetrics) *OncallUserShiftUpdateOne {
+	return ousuo.SetMetricsID(o.ID)
+}
+
 // Mutation returns the OncallUserShiftMutation object of the builder.
 func (ousuo *OncallUserShiftUpdateOne) Mutation() *OncallUserShiftMutation {
 	return ousuo.mutation
@@ -605,6 +679,12 @@ func (ousuo *OncallUserShiftUpdateOne) ClearPrimaryShift() *OncallUserShiftUpdat
 // ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
 func (ousuo *OncallUserShiftUpdateOne) ClearHandover() *OncallUserShiftUpdateOne {
 	ousuo.mutation.ClearHandover()
+	return ousuo
+}
+
+// ClearMetrics clears the "metrics" edge to the OncallUserShiftMetrics entity.
+func (ousuo *OncallUserShiftUpdateOne) ClearMetrics() *OncallUserShiftUpdateOne {
+	ousuo.mutation.ClearMetrics()
 	return ousuo
 }
 
@@ -826,6 +906,35 @@ func (ousuo *OncallUserShiftUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ousuo.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallusershift.MetricsTable,
+			Columns: []string{oncallusershift.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftmetrics.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ousuo.mutation.MetricsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallusershift.MetricsTable,
+			Columns: []string{oncallusershift.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftmetrics.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -405,6 +405,18 @@ func (f OncallUserShiftHandoverFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftHandoverMutation", m)
 }
 
+// The OncallUserShiftMetricsFunc type is an adapter to allow the use of ordinary
+// function as OncallUserShiftMetrics mutator.
+type OncallUserShiftMetricsFunc func(context.Context, *ent.OncallUserShiftMetricsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OncallUserShiftMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallUserShiftMetricsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMetricsMutation", m)
+}
+
 // The ProviderConfigFunc type is an adapter to allow the use of ordinary
 // function as ProviderConfig mutator.
 type ProviderConfigFunc func(context.Context, *ent.ProviderConfigMutation) (ent.Value, error)

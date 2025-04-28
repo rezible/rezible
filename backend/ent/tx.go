@@ -78,6 +78,8 @@ type Tx struct {
 	OncallUserShift *OncallUserShiftClient
 	// OncallUserShiftHandover is the client for interacting with the OncallUserShiftHandover builders.
 	OncallUserShiftHandover *OncallUserShiftHandoverClient
+	// OncallUserShiftMetrics is the client for interacting with the OncallUserShiftMetrics builders.
+	OncallUserShiftMetrics *OncallUserShiftMetricsClient
 	// ProviderConfig is the client for interacting with the ProviderConfig builders.
 	ProviderConfig *ProviderConfigClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
@@ -282,6 +284,7 @@ func (tx *Tx) init() {
 	tx.OncallScheduleParticipant = NewOncallScheduleParticipantClient(tx.config)
 	tx.OncallUserShift = NewOncallUserShiftClient(tx.config)
 	tx.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(tx.config)
+	tx.OncallUserShiftMetrics = NewOncallUserShiftMetricsClient(tx.config)
 	tx.ProviderConfig = NewProviderConfigClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)

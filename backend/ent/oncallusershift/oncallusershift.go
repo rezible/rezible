@@ -37,6 +37,8 @@ const (
 	EdgePrimaryShift = "primary_shift"
 	// EdgeHandover holds the string denoting the handover edge name in mutations.
 	EdgeHandover = "handover"
+	// EdgeMetrics holds the string denoting the metrics edge name in mutations.
+	EdgeMetrics = "metrics"
 	// Table holds the table name of the oncallusershift in the database.
 	Table = "oncall_user_shifts"
 	// UserTable is the table that holds the user relation/edge.
@@ -64,6 +66,13 @@ const (
 	HandoverInverseTable = "oncall_user_shift_handovers"
 	// HandoverColumn is the table column denoting the handover relation/edge.
 	HandoverColumn = "shift_id"
+	// MetricsTable is the table that holds the metrics relation/edge.
+	MetricsTable = "oncall_user_shift_metrics"
+	// MetricsInverseTable is the table name for the OncallUserShiftMetrics entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallusershiftmetrics" package.
+	MetricsInverseTable = "oncall_user_shift_metrics"
+	// MetricsColumn is the table column denoting the metrics relation/edge.
+	MetricsColumn = "shift_id"
 )
 
 // Columns holds all SQL columns for oncallusershift fields.
@@ -191,6 +200,13 @@ func ByHandoverField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newHandoverStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByMetricsField orders the results by metrics field.
+func ByMetricsField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMetricsStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newUserStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -217,5 +233,12 @@ func newHandoverStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HandoverInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, HandoverTable, HandoverColumn),
+	)
+}
+func newMetricsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MetricsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, MetricsTable, MetricsColumn),
 	)
 }

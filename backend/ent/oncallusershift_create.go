@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -139,6 +140,25 @@ func (ousc *OncallUserShiftCreate) SetNillableHandoverID(id *uuid.UUID) *OncallU
 // SetHandover sets the "handover" edge to the OncallUserShiftHandover entity.
 func (ousc *OncallUserShiftCreate) SetHandover(o *OncallUserShiftHandover) *OncallUserShiftCreate {
 	return ousc.SetHandoverID(o.ID)
+}
+
+// SetMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID.
+func (ousc *OncallUserShiftCreate) SetMetricsID(id uuid.UUID) *OncallUserShiftCreate {
+	ousc.mutation.SetMetricsID(id)
+	return ousc
+}
+
+// SetNillableMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by ID if the given value is not nil.
+func (ousc *OncallUserShiftCreate) SetNillableMetricsID(id *uuid.UUID) *OncallUserShiftCreate {
+	if id != nil {
+		ousc = ousc.SetMetricsID(*id)
+	}
+	return ousc
+}
+
+// SetMetrics sets the "metrics" edge to the OncallUserShiftMetrics entity.
+func (ousc *OncallUserShiftCreate) SetMetrics(o *OncallUserShiftMetrics) *OncallUserShiftCreate {
+	return ousc.SetMetricsID(o.ID)
 }
 
 // Mutation returns the OncallUserShiftMutation object of the builder.
@@ -323,6 +343,22 @@ func (ousc *OncallUserShiftCreate) createSpec() (*OncallUserShift, *sqlgraph.Cre
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ousc.mutation.MetricsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   oncallusershift.MetricsTable,
+			Columns: []string{oncallusershift.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallusershiftmetrics.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

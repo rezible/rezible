@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -31,6 +32,7 @@ type OncallUserShiftQuery struct {
 	withRoster       *OncallRosterQuery
 	withPrimaryShift *OncallUserShiftQuery
 	withHandover     *OncallUserShiftHandoverQuery
+	withMetrics      *OncallUserShiftMetricsQuery
 	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -149,6 +151,28 @@ func (ousq *OncallUserShiftQuery) QueryHandover() *OncallUserShiftHandoverQuery 
 			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, selector),
 			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallusershift.HandoverTable, oncallusershift.HandoverColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ousq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMetrics chains the current query on the "metrics" edge.
+func (ousq *OncallUserShiftQuery) QueryMetrics() *OncallUserShiftMetricsQuery {
+	query := (&OncallUserShiftMetricsClient{config: ousq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ousq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ousq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, selector),
+			sqlgraph.To(oncallusershiftmetrics.Table, oncallusershiftmetrics.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, oncallusershift.MetricsTable, oncallusershift.MetricsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(ousq.driver.Dialect(), step)
 		return fromU, nil
@@ -352,6 +376,7 @@ func (ousq *OncallUserShiftQuery) Clone() *OncallUserShiftQuery {
 		withRoster:       ousq.withRoster.Clone(),
 		withPrimaryShift: ousq.withPrimaryShift.Clone(),
 		withHandover:     ousq.withHandover.Clone(),
+		withMetrics:      ousq.withMetrics.Clone(),
 		// clone intermediate query.
 		sql:       ousq.sql.Clone(),
 		path:      ousq.path,
@@ -400,6 +425,17 @@ func (ousq *OncallUserShiftQuery) WithHandover(opts ...func(*OncallUserShiftHand
 		opt(query)
 	}
 	ousq.withHandover = query
+	return ousq
+}
+
+// WithMetrics tells the query-builder to eager-load the nodes that are connected to
+// the "metrics" edge. The optional arguments are used to configure the query builder of the edge.
+func (ousq *OncallUserShiftQuery) WithMetrics(opts ...func(*OncallUserShiftMetricsQuery)) *OncallUserShiftQuery {
+	query := (&OncallUserShiftMetricsClient{config: ousq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ousq.withMetrics = query
 	return ousq
 }
 
@@ -481,11 +517,12 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*OncallUserShift{}
 		_spec       = ousq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			ousq.withUser != nil,
 			ousq.withRoster != nil,
 			ousq.withPrimaryShift != nil,
 			ousq.withHandover != nil,
+			ousq.withMetrics != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -530,6 +567,12 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if query := ousq.withHandover; query != nil {
 		if err := ousq.loadHandover(ctx, query, nodes, nil,
 			func(n *OncallUserShift, e *OncallUserShiftHandover) { n.Edges.Handover = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := ousq.withMetrics; query != nil {
+		if err := ousq.loadMetrics(ctx, query, nodes, nil,
+			func(n *OncallUserShift, e *OncallUserShiftMetrics) { n.Edges.Metrics = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -635,6 +678,33 @@ func (ousq *OncallUserShiftQuery) loadHandover(ctx context.Context, query *Oncal
 	}
 	query.Where(predicate.OncallUserShiftHandover(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(oncallusershift.HandoverColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ShiftID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "shift_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (ousq *OncallUserShiftQuery) loadMetrics(ctx context.Context, query *OncallUserShiftMetricsQuery, nodes []*OncallUserShift, init func(*OncallUserShift), assign func(*OncallUserShift, *OncallUserShiftMetrics)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*OncallUserShift)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oncallusershiftmetrics.FieldShiftID)
+	}
+	query.Where(predicate.OncallUserShiftMetrics(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(oncallusershift.MetricsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

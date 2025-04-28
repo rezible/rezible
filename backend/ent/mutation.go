@@ -45,6 +45,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -110,6 +111,7 @@ const (
 	TypeOncallScheduleParticipant        = "OncallScheduleParticipant"
 	TypeOncallUserShift                  = "OncallUserShift"
 	TypeOncallUserShiftHandover          = "OncallUserShiftHandover"
+	TypeOncallUserShiftMetrics           = "OncallUserShiftMetrics"
 	TypeProviderConfig                   = "ProviderConfig"
 	TypeProviderSyncHistory              = "ProviderSyncHistory"
 	TypeRetrospective                    = "Retrospective"
@@ -23385,6 +23387,8 @@ type OncallUserShiftMutation struct {
 	clearedprimary_shift bool
 	handover             *uuid.UUID
 	clearedhandover      bool
+	metrics              *uuid.UUID
+	clearedmetrics       bool
 	done                 bool
 	oldValue             func(context.Context) (*OncallUserShift, error)
 	predicates           []predicate.OncallUserShift
@@ -23905,6 +23909,45 @@ func (m *OncallUserShiftMutation) ResetHandover() {
 	m.clearedhandover = false
 }
 
+// SetMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by id.
+func (m *OncallUserShiftMutation) SetMetricsID(id uuid.UUID) {
+	m.metrics = &id
+}
+
+// ClearMetrics clears the "metrics" edge to the OncallUserShiftMetrics entity.
+func (m *OncallUserShiftMutation) ClearMetrics() {
+	m.clearedmetrics = true
+}
+
+// MetricsCleared reports if the "metrics" edge to the OncallUserShiftMetrics entity was cleared.
+func (m *OncallUserShiftMutation) MetricsCleared() bool {
+	return m.clearedmetrics
+}
+
+// MetricsID returns the "metrics" edge ID in the mutation.
+func (m *OncallUserShiftMutation) MetricsID() (id uuid.UUID, exists bool) {
+	if m.metrics != nil {
+		return *m.metrics, true
+	}
+	return
+}
+
+// MetricsIDs returns the "metrics" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// MetricsID instead. It exists only for internal usage by the builders.
+func (m *OncallUserShiftMutation) MetricsIDs() (ids []uuid.UUID) {
+	if id := m.metrics; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetMetrics resets all changes to the "metrics" edge.
+func (m *OncallUserShiftMutation) ResetMetrics() {
+	m.metrics = nil
+	m.clearedmetrics = false
+}
+
 // Where appends a list predicates to the OncallUserShiftMutation builder.
 func (m *OncallUserShiftMutation) Where(ps ...predicate.OncallUserShift) {
 	m.predicates = append(m.predicates, ps...)
@@ -24161,7 +24204,7 @@ func (m *OncallUserShiftMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallUserShiftMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.user != nil {
 		edges = append(edges, oncallusershift.EdgeUser)
 	}
@@ -24173,6 +24216,9 @@ func (m *OncallUserShiftMutation) AddedEdges() []string {
 	}
 	if m.handover != nil {
 		edges = append(edges, oncallusershift.EdgeHandover)
+	}
+	if m.metrics != nil {
+		edges = append(edges, oncallusershift.EdgeMetrics)
 	}
 	return edges
 }
@@ -24197,13 +24243,17 @@ func (m *OncallUserShiftMutation) AddedIDs(name string) []ent.Value {
 		if id := m.handover; id != nil {
 			return []ent.Value{*id}
 		}
+	case oncallusershift.EdgeMetrics:
+		if id := m.metrics; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallUserShiftMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	return edges
 }
 
@@ -24215,7 +24265,7 @@ func (m *OncallUserShiftMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallUserShiftMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.cleareduser {
 		edges = append(edges, oncallusershift.EdgeUser)
 	}
@@ -24227,6 +24277,9 @@ func (m *OncallUserShiftMutation) ClearedEdges() []string {
 	}
 	if m.clearedhandover {
 		edges = append(edges, oncallusershift.EdgeHandover)
+	}
+	if m.clearedmetrics {
+		edges = append(edges, oncallusershift.EdgeMetrics)
 	}
 	return edges
 }
@@ -24243,6 +24296,8 @@ func (m *OncallUserShiftMutation) EdgeCleared(name string) bool {
 		return m.clearedprimary_shift
 	case oncallusershift.EdgeHandover:
 		return m.clearedhandover
+	case oncallusershift.EdgeMetrics:
+		return m.clearedmetrics
 	}
 	return false
 }
@@ -24263,6 +24318,9 @@ func (m *OncallUserShiftMutation) ClearEdge(name string) error {
 	case oncallusershift.EdgeHandover:
 		m.ClearHandover()
 		return nil
+	case oncallusershift.EdgeMetrics:
+		m.ClearMetrics()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShift unique edge %s", name)
 }
@@ -24282,6 +24340,9 @@ func (m *OncallUserShiftMutation) ResetEdge(name string) error {
 		return nil
 	case oncallusershift.EdgeHandover:
 		m.ResetHandover()
+		return nil
+	case oncallusershift.EdgeMetrics:
+		m.ResetMetrics()
 		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShift edge %s", name)
@@ -25048,6 +25109,392 @@ func (m *OncallUserShiftHandoverMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShiftHandover edge %s", name)
+}
+
+// OncallUserShiftMetricsMutation represents an operation that mutates the OncallUserShiftMetrics nodes in the graph.
+type OncallUserShiftMetricsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	clearedFields map[string]struct{}
+	shift         *uuid.UUID
+	clearedshift  bool
+	done          bool
+	oldValue      func(context.Context) (*OncallUserShiftMetrics, error)
+	predicates    []predicate.OncallUserShiftMetrics
+}
+
+var _ ent.Mutation = (*OncallUserShiftMetricsMutation)(nil)
+
+// oncallusershiftmetricsOption allows management of the mutation configuration using functional options.
+type oncallusershiftmetricsOption func(*OncallUserShiftMetricsMutation)
+
+// newOncallUserShiftMetricsMutation creates new mutation for the OncallUserShiftMetrics entity.
+func newOncallUserShiftMetricsMutation(c config, op Op, opts ...oncallusershiftmetricsOption) *OncallUserShiftMetricsMutation {
+	m := &OncallUserShiftMetricsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOncallUserShiftMetrics,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOncallUserShiftMetricsID sets the ID field of the mutation.
+func withOncallUserShiftMetricsID(id uuid.UUID) oncallusershiftmetricsOption {
+	return func(m *OncallUserShiftMetricsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OncallUserShiftMetrics
+		)
+		m.oldValue = func(ctx context.Context) (*OncallUserShiftMetrics, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OncallUserShiftMetrics.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOncallUserShiftMetrics sets the old OncallUserShiftMetrics of the mutation.
+func withOncallUserShiftMetrics(node *OncallUserShiftMetrics) oncallusershiftmetricsOption {
+	return func(m *OncallUserShiftMetricsMutation) {
+		m.oldValue = func(context.Context) (*OncallUserShiftMetrics, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OncallUserShiftMetricsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OncallUserShiftMetricsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OncallUserShiftMetrics entities.
+func (m *OncallUserShiftMetricsMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OncallUserShiftMetricsMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OncallUserShiftMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OncallUserShiftMetrics.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetShiftID sets the "shift_id" field.
+func (m *OncallUserShiftMetricsMutation) SetShiftID(u uuid.UUID) {
+	m.shift = &u
+}
+
+// ShiftID returns the value of the "shift_id" field in the mutation.
+func (m *OncallUserShiftMetricsMutation) ShiftID() (r uuid.UUID, exists bool) {
+	v := m.shift
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldShiftID returns the old "shift_id" field's value of the OncallUserShiftMetrics entity.
+// If the OncallUserShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallUserShiftMetricsMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldShiftID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldShiftID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldShiftID: %w", err)
+	}
+	return oldValue.ShiftID, nil
+}
+
+// ResetShiftID resets all changes to the "shift_id" field.
+func (m *OncallUserShiftMetricsMutation) ResetShiftID() {
+	m.shift = nil
+}
+
+// ClearShift clears the "shift" edge to the OncallUserShift entity.
+func (m *OncallUserShiftMetricsMutation) ClearShift() {
+	m.clearedshift = true
+	m.clearedFields[oncallusershiftmetrics.FieldShiftID] = struct{}{}
+}
+
+// ShiftCleared reports if the "shift" edge to the OncallUserShift entity was cleared.
+func (m *OncallUserShiftMetricsMutation) ShiftCleared() bool {
+	return m.clearedshift
+}
+
+// ShiftIDs returns the "shift" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// ShiftID instead. It exists only for internal usage by the builders.
+func (m *OncallUserShiftMetricsMutation) ShiftIDs() (ids []uuid.UUID) {
+	if id := m.shift; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetShift resets all changes to the "shift" edge.
+func (m *OncallUserShiftMetricsMutation) ResetShift() {
+	m.shift = nil
+	m.clearedshift = false
+}
+
+// Where appends a list predicates to the OncallUserShiftMetricsMutation builder.
+func (m *OncallUserShiftMetricsMutation) Where(ps ...predicate.OncallUserShiftMetrics) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OncallUserShiftMetricsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OncallUserShiftMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallUserShiftMetrics, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OncallUserShiftMetricsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OncallUserShiftMetricsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OncallUserShiftMetrics).
+func (m *OncallUserShiftMetricsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OncallUserShiftMetricsMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.shift != nil {
+		fields = append(fields, oncallusershiftmetrics.FieldShiftID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OncallUserShiftMetricsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oncallusershiftmetrics.FieldShiftID:
+		return m.ShiftID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OncallUserShiftMetricsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oncallusershiftmetrics.FieldShiftID:
+		return m.OldShiftID(ctx)
+	}
+	return nil, fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallUserShiftMetricsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oncallusershiftmetrics.FieldShiftID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetShiftID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OncallUserShiftMetricsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OncallUserShiftMetricsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallUserShiftMetricsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OncallUserShiftMetrics numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OncallUserShiftMetricsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OncallUserShiftMetricsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OncallUserShiftMetricsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown OncallUserShiftMetrics nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OncallUserShiftMetricsMutation) ResetField(name string) error {
+	switch name {
+	case oncallusershiftmetrics.FieldShiftID:
+		m.ResetShiftID()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OncallUserShiftMetricsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.shift != nil {
+		edges = append(edges, oncallusershiftmetrics.EdgeShift)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OncallUserShiftMetricsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oncallusershiftmetrics.EdgeShift:
+		if id := m.shift; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OncallUserShiftMetricsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OncallUserShiftMetricsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OncallUserShiftMetricsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedshift {
+		edges = append(edges, oncallusershiftmetrics.EdgeShift)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OncallUserShiftMetricsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oncallusershiftmetrics.EdgeShift:
+		return m.clearedshift
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OncallUserShiftMetricsMutation) ClearEdge(name string) error {
+	switch name {
+	case oncallusershiftmetrics.EdgeShift:
+		m.ClearShift()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallUserShiftMetrics unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OncallUserShiftMetricsMutation) ResetEdge(name string) error {
+	switch name {
+	case oncallusershiftmetrics.EdgeShift:
+		m.ResetShift()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallUserShiftMetrics edge %s", name)
 }
 
 // ProviderConfigMutation represents an operation that mutates the ProviderConfig nodes in the graph.

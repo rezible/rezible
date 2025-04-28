@@ -783,6 +783,25 @@ var (
 			},
 		},
 	}
+	// OncallUserShiftMetricsColumns holds the columns for the "oncall_user_shift_metrics" table.
+	OncallUserShiftMetricsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
+	}
+	// OncallUserShiftMetricsTable holds the schema information for the "oncall_user_shift_metrics" table.
+	OncallUserShiftMetricsTable = &schema.Table{
+		Name:       "oncall_user_shift_metrics",
+		Columns:    OncallUserShiftMetricsColumns,
+		PrimaryKey: []*schema.Column{OncallUserShiftMetricsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_user_shift_metrics_oncall_user_shifts_metrics",
+				Columns:    []*schema.Column{OncallUserShiftMetricsColumns[1]},
+				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// ProviderConfigsColumns holds the columns for the "provider_configs" table.
 	ProviderConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1676,6 +1695,7 @@ var (
 		OncallScheduleParticipantsTable,
 		OncallUserShiftsTable,
 		OncallUserShiftHandoversTable,
+		OncallUserShiftMetricsTable,
 		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
@@ -1750,6 +1770,7 @@ func init() {
 	OncallUserShiftsTable.ForeignKeys[1].RefTable = OncallRostersTable
 	OncallUserShiftsTable.ForeignKeys[2].RefTable = OncallUserShiftsTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
+	OncallUserShiftMetricsTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = RetrospectivesTable

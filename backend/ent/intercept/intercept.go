@@ -41,6 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -1011,6 +1012,33 @@ func (f TraverseOncallUserShiftHandover) Traverse(ctx context.Context, q ent.Que
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftHandoverQuery", q)
 }
 
+// The OncallUserShiftMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallUserShiftMetricsFunc func(context.Context, *ent.OncallUserShiftMetricsQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OncallUserShiftMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallUserShiftMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftMetricsQuery", q)
+}
+
+// The TraverseOncallUserShiftMetrics type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallUserShiftMetrics func(context.Context, *ent.OncallUserShiftMetricsQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOncallUserShiftMetrics) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOncallUserShiftMetrics) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallUserShiftMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftMetricsQuery", q)
+}
+
 // The ProviderConfigFunc type is an adapter to allow the use of ordinary function as a Querier.
 type ProviderConfigFunc func(context.Context, *ent.ProviderConfigQuery) (ent.Value, error)
 
@@ -1620,6 +1648,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallUserShiftQuery, predicate.OncallUserShift, oncallusershift.OrderOption]{typ: ent.TypeOncallUserShift, tq: q}, nil
 	case *ent.OncallUserShiftHandoverQuery:
 		return &query[*ent.OncallUserShiftHandoverQuery, predicate.OncallUserShiftHandover, oncallusershifthandover.OrderOption]{typ: ent.TypeOncallUserShiftHandover, tq: q}, nil
+	case *ent.OncallUserShiftMetricsQuery:
+		return &query[*ent.OncallUserShiftMetricsQuery, predicate.OncallUserShiftMetrics, oncallusershiftmetrics.OrderOption]{typ: ent.TypeOncallUserShiftMetrics, tq: q}, nil
 	case *ent.ProviderConfigQuery:
 		return &query[*ent.ProviderConfigQuery, predicate.ProviderConfig, providerconfig.OrderOption]{typ: ent.TypeProviderConfig, tq: q}, nil
 	case *ent.ProviderSyncHistoryQuery:

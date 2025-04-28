@@ -433,6 +433,29 @@ func HasHandoverWith(preds ...predicate.OncallUserShiftHandover) predicate.Oncal
 	})
 }
 
+// HasMetrics applies the HasEdge predicate on the "metrics" edge.
+func HasMetrics() predicate.OncallUserShift {
+	return predicate.OncallUserShift(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, MetricsTable, MetricsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMetricsWith applies the HasEdge predicate on the "metrics" edge with a given conditions (other predicates).
+func HasMetricsWith(preds ...predicate.OncallUserShiftMetrics) predicate.OncallUserShift {
+	return predicate.OncallUserShift(func(s *sql.Selector) {
+		step := newMetricsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.OncallUserShift) predicate.OncallUserShift {
 	return predicate.OncallUserShift(sql.AndPredicates(predicates...))

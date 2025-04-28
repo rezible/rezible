@@ -34,9 +34,10 @@ func (OncallUserShift) Edges() []ent.Edge {
 			Unique().Required().Field("user_id"),
 		edge.To("roster", OncallRoster.Type).
 			Unique().Required().Field("roster_id"),
-
 		edge.To("primary_shift", OncallUserShift.Type).Field("primary_shift_id").Unique(),
+
 		edge.To("handover", OncallUserShiftHandover.Type).Unique(),
+		edge.To("metrics", OncallUserShiftMetrics.Type).Unique(),
 	}
 }
 
@@ -61,5 +62,22 @@ func (OncallUserShiftHandover) Edges() []ent.Edge {
 		edge.From("shift", OncallUserShift.Type).
 			Ref("handover").Unique().Required().Field("shift_id"),
 		edge.To("pinned_annotations", OncallAnnotation.Type),
+	}
+}
+
+type OncallUserShiftMetrics struct {
+	ent.Schema
+}
+
+func (OncallUserShiftMetrics) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("shift_id", uuid.UUID{}),
+	}
+}
+
+func (OncallUserShiftMetrics) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("shift", OncallUserShift.Type).Ref("metrics").Unique().Required().Field("shift_id"),
 	}
 }
