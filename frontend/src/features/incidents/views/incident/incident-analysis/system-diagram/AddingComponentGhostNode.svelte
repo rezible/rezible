@@ -17,7 +17,7 @@
 
 <svelte:body onpointermove={onPointerMove} />
 
-<ViewportPortal>
+<ViewportPortal target="front">
 	{#if !!addingComponent}
 		<div class="absolute border rounded-lg bg-surface-100 p-1 z-10 opacity-75" style="left: {pos.x}px; top: {pos.y}px">
 			<span>adding: {addingComponent.attributes.name}</span>

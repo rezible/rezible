@@ -1,15 +1,13 @@
-import { onMount } from "svelte";
 import { Context, watch } from "runed";
-import { writable, get } from "svelte/store";
 
 import {
-	SvelteFlow,
 	useSvelteFlow,
 	useStore as useSvelteFlowStore,
 	type Node,
 	type Edge,
 	type XYPosition,
 	type Connection,
+	type Rect as BoundsRect
 } from "@xyflow/svelte";
 
 import { updateSystemAnalysisComponentMutation, type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
@@ -126,12 +124,6 @@ const translateSystemAnalysis = (an: SystemAnalysis) => {
 	return { nodes, edges };
 };
 
-type SvelteFlowEvents = SvelteFlow["$$events_def"];
-type SvelteFlowContextMenuEvent =
-	| SvelteFlowEvents["panecontextmenu"]
-	| SvelteFlowEvents["nodecontextmenu"]
-	| SvelteFlowEvents["edgecontextmenu"]
-	| SvelteFlowEvents["selectioncontextmenu"];
 type DiagramSelectionState = { node?: Node; edge?: Edge };
 
 export class SystemDiagramState {
@@ -141,13 +133,14 @@ export class SystemDiagramState {
 	componentDialog = useComponentDialog();
 
 	selected = $state<DiagramSelectionState>({});
-	toolbarPosition = $state<XYPosition>({ x: 0, y: 0 });
+	selectedLivePosition = $state<XYPosition>();
+
 	containerEl = $state<HTMLElement>();
 	ctxMenuProps = $state<ContextMenuProps>();
 	addingComponent = $state<SystemComponent>();
 
-	nodes = writable<Node[]>([]);
-	edges = writable<Edge[]>([]);
+	nodes = $state.raw<Node[]>([]);
+	edges = $state.raw<Edge[]>([]);
 
 	updateAnalysisComponentMut = createMutation(() => updateSystemAnalysisComponentMutation());
 
@@ -163,8 +156,8 @@ export class SystemDiagramState {
 			(data) => {
 				if (!data) return;
 				const translated = translateSystemAnalysis($state.snapshot(data));
-				this.nodes.set(translated.nodes);
-				this.edges.set(translated.edges);
+				this.nodes = translated.nodes;
+				this.edges = translated.edges;
 			}
 		);
 	}
@@ -178,56 +171,45 @@ export class SystemDiagramState {
 	};
 
 	interactionLocked() {
-		return this.flowStore && !get(this.flowStore.elementsSelectable);
+		return this.flowStore && !this.flowStore.elementsSelectable;
 	}
 
-	updateToolbarPosition() {
-		if (!this.flow) return;
-		const { node, edge } = this.selected;
-		if (edge) {
-			const { x, y, width, height } = this.flow.getNodesBounds([edge.source, edge.target]);
-			this.toolbarPosition = {
-				x: x + width / 2,
-				y: y + height / 2,
-			};
+	updateSelectedPosition({node, edge}: {node?: Node, edge?: Edge}) {
+		if (this.flow && edge) {
+			this.selectedLivePosition = this.flow.getNodesBounds([edge.source, edge.target]);
 		} else if (node) {
-			const { x, y, width, height } = this.flow.getNodesBounds([node]);
-			this.toolbarPosition = {
-				x: x + width / 2,
-				y: y + height + 25,
-			};
+			this.selectedLivePosition = node.position;
 		} else {
-			this.toolbarPosition = { x: 0, y: 0 };
+			this.selectedLivePosition = undefined;
 		}
-	};
+	}
 
 	setSelected(state: DiagramSelectionState) {
 		this.ctxMenuProps = undefined;
 		this.selected = state;
-		this.updateToolbarPosition();
+		this.updateSelectedPosition(state);
 	};
 
-	handleNodeClicked(e: SvelteFlowEvents["nodeclick"]) {
+	handleNodeClicked(e: {node: Node, event: MouseEvent | TouchEvent}) {
 		if (this.interactionLocked()) return;
-		const { event, node } = e.detail;
+		this.setSelected({ node: e.node });
+	};
+
+	handleNodeDragStart(e: {targetNode?: Node | null}) {
+		const node = !!e.targetNode ? e.targetNode : undefined;
 		this.setSelected({ node });
 	};
 
-	handleNodeDragStart(e: SvelteFlowEvents["nodedragstart"]) {
-		this.setSelected({ node: e.detail.targetNode ?? undefined });
-	};
-
-	handleNodeDrag(e: SvelteFlowEvents["nodedrag"]) {
-		if (this.selected.node?.id === e.detail.targetNode?.id) {
-			this.updateToolbarPosition();
+	handleNodeDrag(e: {targetNode?: Node | null}) {
+		if (this.selected.node?.id === e.targetNode?.id && e.targetNode) {
+			this.updateSelectedPosition({node: e.targetNode});
 		}
 	};
 
-	handleNodeDragStop(e: SvelteFlowEvents["nodedragstop"]) {
-		const node = e.detail.targetNode;
-		if (!node) return;
-		const {analysisComponent} = node.data as SystemComponentNodeData;
-		const attributes = {position: node.position};
+	handleNodeDragStop(e: {targetNode?: Node | null}) {
+		if (!e.targetNode) return;
+		const {analysisComponent} = e.targetNode.data as SystemComponentNodeData;
+		const attributes = {position: e.targetNode.position};
 		this.updateAnalysisComponentMut.mutate({path: {id: analysisComponent.id}, body: {attributes}});
 	};
 
@@ -235,11 +217,10 @@ export class SystemDiagramState {
 		this.addingComponent = c;
 	};
 
-	handlePaneClicked(e: SvelteFlowEvents["paneclick"]) {
+	handlePaneClicked({event}: {event: MouseEvent}) {
 		this.setSelected({});
 
 		if (this.addingComponent) {
-			const event = e.detail.event;
 			event.preventDefault();
 
 			if (!this.containerEl || !("pageX" in event)) return;
@@ -254,26 +235,25 @@ export class SystemDiagramState {
 		}
 	};
 
-	handleEdgeClicked(e: SvelteFlowEvents["edgeclick"]) {
+	handleEdgeClicked({edge}: {edge: Edge}) {
 		if (this.interactionLocked()) return;
-		const { event, edge } = e.detail;
 		this.setSelected({ edge });
 	};
 
-	handleContextMenuEvent(e: SvelteFlowContextMenuEvent) {
+	handleContextMenuEvent(e: {event: MouseEvent, node?: Node, edge?: Edge, nodes?: Node[]}) {
 		if (this.interactionLocked()) return;
 		if (!this.containerEl) return;
 
-		const detail = e.detail;
-		const event = detail.event;
-		event.preventDefault();
+		e.event.preventDefault();
 
-		if (!("pageX" in event)) return;
+		// console.log("todo: nodes");
+
+		if (!("pageX" in e.event)) return;
 
 		const { x, y, width, height } = this.containerEl.getBoundingClientRect();
 
-		const posX = event.pageX - x;
-		const posY = event.pageY - y;
+		const posX = e.event.pageX - x;
+		const posY = e.event.pageY - y;
 
 		const boundLeft = Math.max(width - ContextMenuWidth, x);
 		const boundTop = Math.max(height - ContextMenuHeight, y);
@@ -282,8 +262,8 @@ export class SystemDiagramState {
 		const top = posY;//posY > boundTop ? height - ContextMenuHeight : posY;
 
 		this.ctxMenuProps = {
-			nodeId: "node" in detail ? detail.node?.id : undefined,
-			edgeId: "edge" in detail ? detail.edge?.id : undefined,
+			nodeId: e.node?.id,
+			edgeId: e.edge?.id,
 			top,
 			left,
 			x: posX,
@@ -296,8 +276,7 @@ export class SystemDiagramState {
 	}
 
 	onEdgeConnect({source, target}: Connection) {
-		const newEdges = get(this.edges).filter(e => (!(e.source === source && e.target === target)));
-		this.edges.set(newEdges);
+		this.edges = this.edges.filter(e => (!(e.source === source && e.target === target)));
 		this.relationshipDialog.setCreating(source, target);
 	}
 };

@@ -26,8 +26,8 @@
 	const edges = useEdges();
 
 	const deleteNode = (nodeId: string) => {
-		nodes.set($nodes.filter(({ id }) => id !== nodeId));
-		edges.set($edges.filter(({ source, target }) => source !== nodeId && target !== nodeId));
+		nodes.set(nodes.current.filter(({ id }) => id !== nodeId));
+		edges.set(edges.current.filter(({ source, target }) => source !== nodeId && target !== nodeId));
 	};
 
 	const addComponent = () => {

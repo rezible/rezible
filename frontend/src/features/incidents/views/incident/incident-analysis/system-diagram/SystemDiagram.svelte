@@ -11,6 +11,7 @@
 		type MiniMapProps,
 		type SvelteFlowProps,
 		type ColorMode,
+		type Viewport,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
 	import "./diagram-styles.css";
@@ -41,16 +42,13 @@
 	const colorMode = $derived<ColorMode>(settings.theme.dark ? "dark" : "light");
 
 	const flowSettings: SvelteFlowProps = {
+		connectionLineComponent: ConnectionLine,
 		nodeTypes: {
-			// @ts-expect-error this will be resolved
 			default: ComponentNode,
-			// @ts-expect-error this will be resolved
 			component: ComponentNode,
 		},
 		edgeTypes: {
-			// @ts-expect-error this will be resolved
 			default: RelationshipEdge,
-			// @ts-expect-error this will be resolved
 			relationship: RelationshipEdge,
 		},
 		snapGrid: [25, 25],
@@ -70,6 +68,8 @@
 	const minimapSettings: MiniMapProps = {
 		position: "top-right",
 	};
+
+	let viewport = $state<Viewport>({ x: 100, y: 100, zoom: 1.25 });
 </script>
 
 <SvelteFlowProvider>
@@ -82,25 +82,25 @@
 		<SvelteFlow
 			{...flowSettings}
 			{colorMode}
-			nodes={diagram.nodes}
-			edges={diagram.edges}
+			bind:nodes={diagram.nodes}
+			bind:edges={diagram.edges}
+			bind:viewport
 			oninit={() => diagram.onFlowInit()}
 			onconnect={e => diagram.onEdgeConnect(e)}
-			on:panecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			on:edgecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			on:nodecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			on:selectioncontextmenu={e => diagram.handleContextMenuEvent(e)}
-			on:nodeclick={e => diagram.handleNodeClicked(e)}
-			on:nodedragstart={e => diagram.handleNodeDragStart(e)}
-			on:nodedrag={e => diagram.handleNodeDrag(e)}
-			on:nodedragstop={e => diagram.handleNodeDragStop(e)}
-			on:paneclick={e => diagram.handlePaneClicked(e)}
-			on:edgeclick={e => diagram.handleEdgeClicked(e)}
+			onpanecontextmenu={e => diagram.handleContextMenuEvent(e)}
+			onedgecontextmenu={e => diagram.handleContextMenuEvent(e)}
+			onnodecontextmenu={e => diagram.handleContextMenuEvent(e)}
+			onselectioncontextmenu={e => diagram.handleContextMenuEvent(e)}
+			onnodeclick={e => diagram.handleNodeClicked(e)}
+			onnodedragstart={e => diagram.handleNodeDragStart(e)}
+			onnodedrag={e => diagram.handleNodeDrag(e)}
+			onnodedragstop={e => diagram.handleNodeDragStop(e)}
+			onpaneclick={e => diagram.handlePaneClicked(e)}
+			onedgeclick={e => diagram.handleEdgeClicked(e)}
 		>
 			<Background {...backgroundSettings} />
 			<Controls {...controlsSettings} />
 			<MiniMap {...minimapSettings} />
-			<ConnectionLine slot="connectionLine" />
 			<ContextMenu />
 			<EditToolbar />
 			<AddingComponentGhostNode />
