@@ -45,7 +45,7 @@
 		};
 	};
 
-	const pinnedAnnotations = $derived(handover.attributes.pinnedEvents ?? []);
+	const pinnedAnnotations = $derived(handover.attributes.pinnedAnnotations ?? []);
 </script>
 
 <div class="flex flex-col gap-2 shrink overflow-y-auto">
@@ -85,11 +85,11 @@
 		</div>
 	{:else}
 		<ul class="list-disc pl-5">
-			{#each pinnedAnnotations as p}
-				<li>{p.event.attributes.title || "title"}</li>
+			{#each pinnedAnnotations as anno}
+				<li>{anno.attributes.event.attributes.title || "title"}</li>
 				<ul class="pl-5">
 					<li>
-						<span class="italic">{p.annotation.attributes.notes}</span>
+						<span class="italic">{anno.attributes.notes}</span>
 					</li>
 				</ul>
 			{/each}

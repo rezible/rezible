@@ -115,13 +115,7 @@ type (
 	}
 
 	OncallShiftHandoverTemplateAttributes struct {
-		Sections []OncallShiftHandoverTemplateSection `json:"sections"`
-	}
-
-	OncallShiftHandoverTemplateSection struct {
-		Type   string `json:"type" enum:"regular,annotations"`
-		Header string `json:"header"`
-		List   bool   `json:"list"`
+		Sections []OncallShiftHandoverSection `json:"sections"`
 	}
 
 	OncallShiftHandover struct {
@@ -404,7 +398,7 @@ var CreateOncallShiftHandoverTemplate = huma.Operation{
 }
 
 type CreateOncallShiftHandoverTemplateRequestAttributes struct {
-	Sections []OncallShiftHandoverTemplateSection `json:"sections"`
+	Sections []OncallShiftHandoverSection `json:"sections"`
 }
 type CreateOncallShiftHandoverTemplateRequest RequestWithBodyAttributes[CreateOncallShiftHandoverTemplateRequestAttributes]
 type CreateOncallShiftHandoverTemplateResponse ItemResponse[OncallShiftHandoverTemplate]
@@ -431,7 +425,7 @@ var UpdateOncallShiftHandoverTemplate = huma.Operation{
 }
 
 type UpdateOncallShiftHandoverTemplateRequestAttributes struct {
-	Sections []OncallShiftHandoverTemplateSection `json:"sections"`
+	Sections []OncallShiftHandoverSection `json:"sections"`
 }
 type UpdateOncallShiftHandoverTemplateRequest UpdateIdRequest[UpdateOncallShiftHandoverTemplateRequestAttributes]
 type UpdateOncallShiftHandoverTemplateResponse ItemResponse[OncallShiftHandoverTemplate]

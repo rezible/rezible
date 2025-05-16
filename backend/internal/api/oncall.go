@@ -283,23 +283,21 @@ func (h *oncallHandler) CreateOncallShiftHandoverTemplate(ctx context.Context, r
 func (h *oncallHandler) GetOncallShiftHandoverTemplate(ctx context.Context, request *oapi.GetOncallShiftHandoverTemplateRequest) (*oapi.GetOncallShiftHandoverTemplateResponse, error) {
 	var resp oapi.GetOncallShiftHandoverTemplateResponse
 
-	sections := []oapi.OncallShiftHandoverTemplateSection{
+	sections := []oapi.OncallShiftHandoverSection{
 		{
-			Type:   "regular",
+			Kind:   "regular",
 			Header: "Overview",
 		},
 		{
-			Type:   "regular",
+			Kind:   "regular",
 			Header: "Handoff Tasks",
-			List:   true,
 		},
 		{
-			Type:   "regular",
+			Kind:   "regular",
 			Header: "Things to Monitor",
-			List:   true,
 		},
 		{
-			Type:   "annotations",
+			Kind:   "annotations",
 			Header: "Event Annotations",
 		},
 	}

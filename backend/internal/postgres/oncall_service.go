@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	oapi "github.com/rezible/rezible/openapi"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -353,35 +353,25 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 	return nil
 }
 
-var defaultHandoverContents = []oapi.OncallShiftHandoverSection{
-	{
-		Kind:   "regular",
-		Header: "Overview",
-	},
-	{
-		Kind:   "regular",
-		Header: "Handoff Tasks",
-	},
-	{
-		Kind:   "regular",
-		Header: "Things to Monitor",
-	},
-	{
-		Kind:   "annotations",
-		Header: "Pinned Annotations",
-	},
-}
+var defaultHandoverTemplate = []byte(`[
+{"kind":"regular","header":"Overview"},
+{"kind":"regular","header":"Handoff Tasks"},
+{"kind":"regular","header":"Things to Monitor"},
+{"kind":"annotations","header":"Pinned Annotations"}
+]`)
 
-func (s *OncallService) GetRosterHandoverTemplateContents(ctx context.Context, rosterId uuid.UUID) ([]byte, error) {
-	roster, rosterErr := s.db.OncallRoster.Get(ctx, rosterId)
-	if rosterErr != nil {
-		return nil, fmt.Errorf("failed to get roster: %w", rosterErr)
-	}
-	if roster.HandoverTemplateID == uuid.Nil {
-		return json.Marshal(defaultHandoverContents)
-	}
-	tmpl, tmplErr := roster.QueryHandoverTemplate().Only(ctx)
+func (s *OncallService) getRosterHandoverTemplateContents(ctx context.Context, rosterId uuid.UUID) ([]byte, error) {
+	isRosterOrDefault := oncallhandovertemplate.Or(
+		oncallhandovertemplate.HasRosterWith(oncallroster.ID(rosterId)),
+		oncallhandovertemplate.IsDefault(true))
+	tmpl, tmplErr := s.db.OncallHandoverTemplate.Query().
+		Where(isRosterOrDefault).
+		Order(oncallhandovertemplate.ByUpdatedAt()).
+		First(ctx)
 	if tmplErr != nil {
+		if ent.IsNotFound(tmplErr) {
+			return defaultHandoverTemplate, nil
+		}
 		return nil, fmt.Errorf("failed to get roster handover template: %w", tmplErr)
 	}
 	return tmpl.Contents, nil
@@ -395,20 +385,25 @@ func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UU
 	handover, queryErr := s.db.OncallUserShiftHandover.Query().
 		Where(oncallusershifthandover.ShiftID(shiftId)).
 		Only(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("failed to query shift handover: %w", queryErr)
+	if queryErr != nil {
+		if !create || !ent.IsNotFound(queryErr) {
+			return nil, fmt.Errorf("failed to query shift handover: %w", queryErr)
+		}
 	}
-	if handover != nil || !create {
-		return handover, queryErr
+	if handover != nil {
+		return handover, nil
 	}
+
 	shift, shiftErr := s.db.OncallUserShift.Get(ctx, shiftId)
 	if shiftErr != nil {
 		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
-	contents, contentsErr := s.GetRosterHandoverTemplateContents(ctx, shift.RosterID)
+
+	contents, contentsErr := s.getRosterHandoverTemplateContents(ctx, shift.RosterID)
 	if contentsErr != nil {
 		return nil, fmt.Errorf("failed to get roster handover template contents: %w", contentsErr)
 	}
+
 	return s.createShiftHandover(ctx, shift.ID, contents)
 }
 
@@ -420,23 +415,6 @@ func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UU
 		SetUpdatedAt(time.Now()).
 		Save(ctx)
 }
-
-//
-//func (s *OncallService) sendFallbackShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
-//	if ho == nil || !ho.SentAt.IsZero() { // already sent
-//		return nil
-//	}
-//	if sendErr := s.sendShiftHandover(ctx, ho); sendErr != nil {
-//		return fmt.Errorf("sending fallback handover: %w", sendErr)
-//	}
-//
-//	updateErr := ho.Update().SetSentAt(time.Now()).Exec(ctx)
-//	if updateErr != nil {
-//		return fmt.Errorf("failed to update handover sent_at time: %w", updateErr)
-//	}
-//
-//	return nil
-//}
 
 func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error) {
 	curr, getErr := s.GetShiftHandover(ctx, update.ID)
