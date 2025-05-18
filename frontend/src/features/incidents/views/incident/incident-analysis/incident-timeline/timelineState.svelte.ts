@@ -1,4 +1,4 @@
-import { hydrate, mount, onMount, unmount } from "svelte";
+import { hydrate, mount, onMount, tick, unmount } from "svelte";
 import { Timeline, type DataGroup, type DataItemCollectionType, type TimelineItem, type TimelineOptions } from "vis-timeline/esnext";
 import { DataSet } from "vis-data/esnext";
 
@@ -15,29 +15,35 @@ import { SvelteMap, SvelteSet } from "svelte/reactivity";
 const EventsSubgroup = "events";
 const MilestonesSubgroup = "milestones";
 
-const createTimelineEventElement = (event: IncidentEvent) => {
-	let props = $state<TimelineEventComponentProps>({ event, selected: false });
-	const target = document.createElement("div");
-	target.setAttribute("event-id", $state.snapshot(event.id));
-	const component = mount(IncidentTimelineEventItemContent, { target, props });
-	
-	// TODO: for some reason we need to call mount/hydrate twice to get reactivity working?? probably not ideal
-	hydrate(IncidentTimelineEventItemContent, { target, props, recover: true });
+const flushItemsAndRedrawTimeline = (i: DataSet<TimelineItem>, tl?: Timeline) => {
+	if (i.flush) i.flush();
+	if (tl) tick().then(() => {if (tl) tl.redraw()});
+}
 
-	return {
-		get ref() { return target },
-		get props() { return props },
-		set props(p: TimelineEventComponentProps) { props = p },
-		unmount: () => (unmount(component)),
-	};
-};
-type TimelineEventElement = ReturnType<typeof createTimelineEventElement>;
+class TimelineEventElement {
+	props = $state<TimelineEventComponentProps>({ selected: false });
+	ref = document.createElement("div");
+	component: ReturnType<typeof mount> | undefined;
+
+	constructor(event: IncidentEvent) {
+		this.ref.setAttribute("event-id", $state.snapshot(event.id));
+		this.props.event = event;
+		tick().then(() => {
+			this.component = mount(IncidentTimelineEventItemContent, { target: this.ref, props: this.props });	
+		})
+	}
+
+	unmount() {
+		if (this.component) unmount(this.component);
+		this.ref.remove();
+	}
+}
 
 class TimelineEventsState {
-	items = $state<DataSet<TimelineItem>>();
+	items: DataSet<TimelineItem>;
 	incidentId = $state("");
 	timeline = $state<Timeline>();
-	timelineElements = $state(new SvelteMap<string, TimelineEventElement>());
+	timelineElements = new SvelteMap<string, TimelineEventElement>();
 
 	queryClient = $state<QueryClient>();
 	
@@ -67,34 +73,34 @@ class TimelineEventsState {
 		this.timelineElements.clear();
 	}
 
-	makeTimelineEventItem(el: TimelineEventElement, event: IncidentEvent) {
-		const start = new Date(event.attributes.timestamp);
-		return { id: event.id, type: "box", group: "default", subgroup: EventsSubgroup, content: el.ref, start } as TimelineItem;
-	}
-
 	setEvent(event: IncidentEvent) {
-		const curr = this.timelineElements.get(event.id);
-		if (curr /* && needsUpdate */) {
-			this.items?.update(this.makeTimelineEventItem(curr, event));
-		} else {
-			const el = createTimelineEventElement(event);
+		let el = this.timelineElements.get(event.id);
+		if (!el) {
+			el = new TimelineEventElement(event);
 			this.timelineElements.set(event.id, el);
-			this.items?.add(this.makeTimelineEventItem(el, event));
 		}
+		this.items.update({ 
+			id: event.id, 
+			start: new Date(event.attributes.timestamp),
+			type: "box",
+			group: "default",
+			subgroup: EventsSubgroup,
+			content: el.ref,
+		});
 	}
 
 	removeEvent(id: string) {
 		const el = this.timelineElements.get(id);
 		if (el) el.unmount();
-		this.items?.remove(id);
+		this.items.remove(id);
 		this.timelineElements.delete(id);
 	}
 
 	onEventsDataUpdated() {
-		const eventsMap = new Map(this.events?.map(ev => [ev.id, ev]));
+		const eventsMap = new Map(this.events.map(ev => [ev.id, ev]));
 		const removeIds: string[] = [];
 
-		this.items?.forEach((item, rawId) => {
+		this.items.forEach((item, rawId) => {
 			if (item.subgroup !== "events") return;
 			const id = String(rawId);
 			if (eventsMap.has(id)) return;
@@ -104,7 +110,7 @@ class TimelineEventsState {
 		removeIds.forEach(id => {this.removeEvent(id)});
 		eventsMap.forEach(ev => {this.setEvent(ev)});
 
-		if (this.items?.flush) this.items.flush();
+		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
 	eventAdded(event: IncidentEvent) {
@@ -117,25 +123,24 @@ class TimelineEventsState {
 	}
 }
 
-const createTimelineMilestoneElement = (milestone: IncidentMilestone) => {
-	let props = $state<TimelineMilestoneComponentProps>({ milestone, selected: false });
+class TimelineMilestoneElement {
+	props = $state<TimelineMilestoneComponentProps>({ selected: false });
+	ref = document.createElement("div");
+	component: ReturnType<typeof mount> | undefined;
 
-	const target = document.createElement("div");
-	target.setAttribute("milestone-id", $state.snapshot(milestone.id));
+	constructor(milestone: IncidentMilestone) {
+		this.ref.setAttribute("milestone-id", $state.snapshot(milestone.id));
+		this.props.milestone = milestone;
+		tick().then(() => {
+			this.component = mount(IncidentTimelineMilestoneItemContent, { target: this.ref, props: this.props });	
+		})
+	}
 
-	const component = mount(IncidentTimelineMilestoneItemContent, { target, props });
-	
-	// TODO: for some reason we need to call mount/hydrate twice to get reactivity working?? probably not ideal
-	hydrate(IncidentTimelineMilestoneItemContent, { target, props, recover: true });
-
-	return {
-		get ref() { return target },
-		get props() { return props },
-		set props(p: TimelineMilestoneComponentProps) { props = p },
-		unmount: () => (unmount(component)),
-	};
-};
-type TimelineMilestoneElement = ReturnType<typeof createTimelineMilestoneElement>;
+	unmount() {
+		if (this.component) unmount(this.component);
+		this.ref.remove();
+	}
+}
 
 class TimelineMilestonesState {
 	items: DataSet<TimelineItem>;
@@ -165,7 +170,7 @@ class TimelineMilestonesState {
 		...listIncidentMilestonesOptions({ path: { id: this.incident?.id ?? "" } }),
 		enabled: !!this.incident,
 	}));
-	milestones = $derived(this.milestonesQuery?.data?.data ?? []);
+	milestones = $derived(this.milestonesQuery.data?.data ?? []);
 
 	onMilestonesDataUpdated() {
 		const dataMap = new Map(this.milestones.map(m => [m.id, m]));
@@ -186,7 +191,7 @@ class TimelineMilestonesState {
 			this.setMilestone(ms, idx < arr.length - 1 ? arr[idx + 1] : undefined);
 		});
 
-		if (this.items?.flush) this.items.flush();
+		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	};
 
 	getMilestoneIds(id: string) {
@@ -236,31 +241,31 @@ class TimelineMilestonesState {
 	setMilestone(ms: IncidentMilestone, nextMs?: IncidentMilestone) {
 		let el = this.timelineElements.get(ms.id);
 		if (!el) {
-			el = createTimelineMilestoneElement(ms);
+			el = new TimelineMilestoneElement(ms);
 			this.timelineElements.set(ms.id, el);
 		}
 
 		const endDate = nextMs ? new Date(nextMs.attributes.timestamp) : this.incidentEnd;
 		const msItems = this.makeMilestoneTimelineItems(el, ms, endDate);
-		if (!!this.items?.get(msItems[0].id)) {
-			this.items.update(msItems);
-		} else {
-			this.items?.add(msItems);
-		}
+		// if (!!this.items.get(msItems[0].id)) {
+		// 	this.items.update(msItems);
+		// } else {
+		// 	this.items.add(msItems);
+		// }
+		this.items.update(msItems);
 	}
 
 	setSelected(id: string, selected: boolean) {
 		const msId = id.split("_")[0];
 		const el = this.timelineElements.get(msId);
-		if (!el) return;
-		el.props.selected = selected;
+		if (el) el.props.selected = selected;
 	}
 
 	removeMilestone(id: string) {
 		const el = this.timelineElements.get(id);
 		if (el) el.unmount();
 		const ids = this.getMilestoneIds(id);
-		this.items?.remove([ids.bg, ids.box]);
+		this.items.remove([ids.bg, ids.box]);
 		this.timelineElements.delete(id);
 	}
 }
@@ -272,7 +277,7 @@ export class TimelineState {
 	events = new TimelineEventsState(this.items);
 	milestones = new TimelineMilestonesState(this.items);
 
-	timeline = $state<Timeline>();
+	timeline = $state.raw<Timeline>();
 	selectedItems = new SvelteSet<string>();
 
 	setIncidentWindow(inc?: Incident) {
@@ -319,7 +324,7 @@ export class TimelineState {
 		this.events.setTimeline(this.timeline);
 		this.milestones.setTimeline(this.timeline);
 
-		this.timeline.on("select", e => this.onTimelineSelect(e));
+		this.timeline.on("select", e => {this.onTimelineSelect(e)});
 
 		this.setIncidentWindow(this.viewState.incident);
 	}

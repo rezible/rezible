@@ -11,5 +11,5 @@
 </script>
 
 <div class="p-2">
-	<span>{event?.attributes.title ?? "title"} - selected:${selected}</span>
+	<span>{event?.attributes.title || "title"} - selected:${selected}</span>
 </div>
