@@ -3,7 +3,7 @@
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button, ButtonGroup } from "svelte-ux";
 	import { useSystemDiagram } from "./diagramState.svelte";
-	import { onMount, tick } from "svelte";
+	import { IsMounted } from "runed";
 
 	const { getNodesBounds } = useSvelteFlow();
 	const diagram = useSystemDiagram();
@@ -25,8 +25,8 @@
 		if (!diagram.selectedLivePosition || !rect) return;
 		const { x, y } = diagram.selectedLivePosition;
 		const posX = (x + rect.width / 2);
-		const offset = (!!node) ? 25 : 0;
-		const posY = (y + rect.height) + offset;
+		const offset = 10;
+		const posY = !!node ? (y + rect.height + offset) : (y + rect.height / 2) - offset;
 		return `translate(${posX}px, ${posY}px) translate(-50%, 0%)`
 	});
 
@@ -37,21 +37,25 @@
 	const openEditRelationshipDialog = () => {
 		if (relationship) diagram.relationshipDialog.setEditing(relationship);
 	};
+
+	const mounted = new IsMounted();
 </script>
 
-<ViewportPortal target="back">
-	{#if transform}
-		<div
-			class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-10 svelte-flow__node-toolbar"
-			style:transform
-		>
-			<ButtonGroup variant="fill-light" color="accent" size="sm">
-				{#if node}
-					<Button on:click={openEditComponentDialog}>Edit Component</Button>
-				{:else if edge}
-					<Button on:click={openEditRelationshipDialog}>Edit Relationship</Button>
-				{/if}
-			</ButtonGroup>
-		</div>
-	{/if}
-</ViewportPortal>
+{#if mounted.current}
+	<ViewportPortal target="front">
+		{#if transform}
+			<div
+				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
+				style:transform
+			>
+				<ButtonGroup variant="fill-light" color="accent" size="sm">
+					{#if node}
+						<Button on:click={openEditComponentDialog}>Edit Component</Button>
+					{:else if edge}
+						<Button on:click={openEditRelationshipDialog}>Edit Relationship</Button>
+					{/if}
+				</ButtonGroup>
+			</div>
+		{/if}
+	</ViewportPortal>
+{/if}
