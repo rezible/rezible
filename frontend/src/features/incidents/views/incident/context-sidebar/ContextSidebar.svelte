@@ -27,6 +27,4 @@
 			<Button iconOnly icon={mdiChevronRight} />
 		</div>
 	</Header>
-
-	
 </div>
