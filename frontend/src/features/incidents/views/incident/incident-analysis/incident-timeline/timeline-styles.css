@@ -1,7 +1,7 @@
 /* the root timeline container element */
 .vis-timeline {
 	background-color: oklch(var(--color-surface-200) / var(--tw-bg-opacity, 1));
-	border-color: #3e3e3e;
+	border: none;
 }
 
 /* horizontal timeline line (item dots connect to this) */

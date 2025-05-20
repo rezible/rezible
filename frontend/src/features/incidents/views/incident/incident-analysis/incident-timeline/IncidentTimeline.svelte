@@ -10,6 +10,7 @@
 	import EventDialog from "./event-dialog/EventDialog.svelte";
 	import MilestonesDialog from "./milestones-dialog/MilestonesDialog.svelte";
 	import { MilestonesDialogState, setMilestonesDialog } from "./milestones-dialog/dialogState.svelte";
+	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
@@ -18,12 +19,16 @@
 
 	let containerRef = $state<HTMLElement>();
 	watch(() => containerRef, ref => {
-		if (!ref) return;
-		timelineState.mountTimeline(ref);
+		if (ref) timelineState.mountTimeline(ref);
 	})
 </script>
 
-<div class="w-full h-full overflow-y-hidden" bind:this={containerRef}></div>
+<div class="w-full h-full overflow-y-hidden border">
+	<div class="w-full" style="height: 90%" bind:this={containerRef}></div>
+	<div class="w-full border-t" style="height: 10%">
+		<IncidentTimelineMinimap {timelineState} />
+	</div>
+</div>
 
 <IncidentTimelineActionsBar />
 
