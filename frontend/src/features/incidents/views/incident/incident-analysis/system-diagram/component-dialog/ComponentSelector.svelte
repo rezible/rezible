@@ -21,29 +21,16 @@
 	const selectedId = $derived(diagram.componentDialog.selectedAddComponent?.id);
 </script>
 
-<div class="flex flex-col gap-2 p-2 border rounded-lg">
-	<div class="w-full border-b pb-2">
-		<Header title="Components">
-			<svelte:fragment slot="actions">
-				<Button
-					icon={mdiFilter}
-					on:click={() => {
-						showFilters = !showFilters;
-					}}
-				>
-					{showFilters ? "Hide" : "Show"} Filters
-				</Button>
+<div class="flex flex-col gap-2">
+	<div class="flex w-full justify-between items-center border-b pb-2">
+		<div class="">filters</div>
 
-				{#if components.length > 0}
-					<Button on:click={() => diagram.componentDialog.setCreating()} color="secondary">
-						Create New
-						<Icon data={mdiPlus} />
-					</Button>
-				{/if}
-			</svelte:fragment>
-		</Header>
-
-		<div class="" class:hidden={!showFilters}>filters</div>
+		{#if components.length > 0}
+			<Button on:click={() => diagram.componentDialog.setCreating()} color="secondary">
+				Create New
+				<Icon data={mdiPlus} />
+			</Button>
+		{/if}
 	</div>
 
 	<LoadingQueryWrapper query={componentsQuery} view={componentsListView} />
