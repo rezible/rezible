@@ -97,7 +97,6 @@ class TimelineEventsState {
 	}
 
 	onEventsDataUpdated(events: IncidentEvent[]) {
-		const wasEmpty = this.timelineElements.size === 0;
 		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
 		const removeIds: string[] = [];
 
@@ -111,11 +110,10 @@ class TimelineEventsState {
 		removeIds.forEach(id => {this.removeEvent(id)});
 		eventsMap.forEach(ev => {this.updateEvent(ev)});
 
-		if (wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
+		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
 	eventAdded(event: IncidentEvent) {
-		console.log("event added");
 		this.eventsQuery.refetch();
 	}
 
@@ -269,6 +267,8 @@ export type TimelineRange = {
 	end: Date;
 }
 
+const OneHour = 1000 * 60 * 60;
+
 export class TimelineState {
 	viewState = useIncidentViewState();
 
@@ -321,8 +321,26 @@ export class TimelineState {
 		this.timeline.on("rangechange", e => {
 			this.viewWindow = {start: e.start as Date, end: e.end as Date};
 		});
+		this.items.on("*", () => {
+			this.updateMinMaxRange();
+		})
 
 		this.setIncidentWindow(this.viewState.incident);
+	}
+
+	updateMinMaxRange() {
+		if (!this.timeline || !this.incidentWindow) return;
+
+		const offset = 2 * OneHour;
+		let min = this.incidentWindow.start.valueOf();
+		let max = this.incidentWindow.end.valueOf();
+		this.items.forEach(item => {
+			const d = new Date(item.start.valueOf()).valueOf();
+			if (d < min) min = d;
+			if (d > max) max = d;
+		});
+
+		this.timeline.setOptions({min: min - offset, max: max + offset});
 	}
 
 	setIncidentWindow(inc?: Incident) {
@@ -332,20 +350,20 @@ export class TimelineState {
 		const end = new Date(inc.attributes.closedAt);
 
 		this.incidentWindow = {start, end};
+		this.updateMinMaxRange();
 
-		const hour = 1000 * 60 * 60;		
-		this.timeline.setWindow(start.valueOf() - hour, end.valueOf() + hour, {animation: false});
+		this.timeline.setWindow(start.valueOf() - OneHour, end.valueOf() + OneHour, {animation: false});
 
 		const windowKey = "incident-window-bg";
-		const windowBackgroundStyle = "background-color:rgba(74, 163, 144, 0.5);";
-		this.items.update({
+		const windowBackgroundStyle = "background-color:rgba(74, 163, 144, 0.1);";
+		const windowBg: TimelineItem = {
 			id: windowKey,
 			start, end,
 			type: "background",
+			content: "",
 			style: windowBackgroundStyle,
-		});
-
-		this.items.update({
+		};
+		const windowPoint: TimelineItem = {
 			id: "incident-window-start",
 			type: "point",
 			title: "Incident Opened",
@@ -353,7 +371,8 @@ export class TimelineState {
 			align: "left",
 			selectable: false,
 			start,
-		});
+		}
+		this.items.update([windowBg, windowPoint]);
 	}
 
 	cleanup() {

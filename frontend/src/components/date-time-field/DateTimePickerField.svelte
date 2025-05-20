@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { slide } from "svelte/transition";
 	import { mdiCalendar } from "@mdi/js";
-	import { Field, Dialog, DateSelect, getSettings } from "svelte-ux";
-	import { DateToken, PeriodType } from "@layerstack/utils";
+	import { Field, Dialog, DateSelect } from "svelte-ux";
+	import { PeriodType } from "@layerstack/utils";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import TimePicker from "$components/time-picker/TimePicker.svelte";
-	import { parseZonedDateTime, Time, ZonedDateTime } from "@internationalized/date";
-	import { convertTime, format, type Period } from "./format.svelte";
+	import { CalendarDateTime, parseAbsolute, parseZonedDateTime, toZoned, ZonedDateTime } from "@internationalized/date";
+	import { convertTime, format } from "./format.svelte";
 	import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
 	import { isSameDay } from "date-fns";
 
@@ -27,9 +27,13 @@
 	const currentVal = $derived(convertTime(current));
 
 	const onConfirm = () => {
-		const valStr = `${value.date.toISOString().split("T")[0]}T${value.time}[${value.timezone}]`;
-		console.log(valStr);
-		const newValue = parseZonedDateTime(valStr);
+		const d = value.date;
+		const t = value.time;
+		const val = new CalendarDateTime(d.getFullYear(), d.getMonth() + 1, d.getDate(), t.hour, t.minute, t.second);
+		const newValue = toZoned(val, value.timezone);
+		// const valStr = `${value.date.getFullYear()}T${value.time}[${value.timezone}]`;
+		// const newValue = parseAbsolute(valStr, value.timezone);
+		// console.log(valStr, newValue.toDate());
 		onChange(newValue);
 		open = false;
 	};
@@ -89,7 +93,7 @@
 		{/if}
 
 		<div class="p-2 w-96">
-			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => (value.date = e.detail)} {disabledDates} />
+			<DateSelect selected={value.date} periodType={PeriodType.Day} on:dateChange={(e) => {value.date = e.detail; console.log(e)}} {disabledDates} />
 
 			<div class="flex items-center justify-center gap-2 border-t pt-2">
 				{#if exactTime}

@@ -10,13 +10,13 @@ import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 import { useIncidentViewState } from "../../../viewState.svelte";
-import { TimelineState, useIncidentTimeline } from "../timelineState.svelte";
-import { eventAttributes, TimelineEventDialogAttributesState } from "./attribute-panels/eventAttributesState.svelte";
+import { TimelineState } from "../timelineState.svelte";
+import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
 
 export class EventDialogState {
-	timeline = $state<TimelineState>();
+	timeline: TimelineState;
 	incident = $state<Incident>();
 	editingEvent = $state<IncidentEvent>();
 	view = $state<EditorDialogView>("closed");
@@ -24,8 +24,8 @@ export class EventDialogState {
 
 	open = $derived(this.view !== "closed");
 
-	constructor() {
-		this.timeline = useIncidentTimeline();
+	constructor(tl: TimelineState) {
+		this.timeline = tl;
 		const viewState = useIncidentViewState();
 		watch(() => viewState.incident, inc => {this.incident = inc});
 	}
@@ -41,12 +41,12 @@ export class EventDialogState {
 	};
 
 	onSuccess({ data: event }: { data: IncidentEvent }) {
-		this.timeline?.onEventAdded(event);
+		this.timeline.onEventAdded(event);
 		this.clear();
 	}
 
-	createEventMut = createMutation(() => ({ ...createIncidentEventMutation(), onSuccess: this.onSuccess }));
-	updateEventMut = createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess: this.onSuccess }));
+	createEventMut = createMutation(() => ({ ...createIncidentEventMutation(), onSuccess: e => this.onSuccess(e) }));
+	updateEventMut = createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess: e => this.onSuccess(e) }));
 	
 	loading = $derived(this.createEventMut.isPending || this.updateEventMut.isPending);
 

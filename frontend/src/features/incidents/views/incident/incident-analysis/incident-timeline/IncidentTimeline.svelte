@@ -14,7 +14,7 @@
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
-	setEventDialog(new EventDialogState());
+	setEventDialog(new EventDialogState(timelineState));
 	setMilestonesDialog(new MilestonesDialogState());
 
 	let containerRef = $state<HTMLElement>();
