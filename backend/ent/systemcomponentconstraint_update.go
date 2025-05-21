@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
+	"github.com/rezible/rezible/ent/systemhazard"
 )
 
 // SystemComponentConstraintUpdate is the builder for updating SystemComponentConstraint entities.
@@ -98,6 +99,21 @@ func (sccu *SystemComponentConstraintUpdate) SetComponent(s *SystemComponent) *S
 	return sccu.SetComponentID(s.ID)
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (sccu *SystemComponentConstraintUpdate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
+	sccu.mutation.AddHazardIDs(ids...)
+	return sccu
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (sccu *SystemComponentConstraintUpdate) AddHazards(s ...*SystemHazard) *SystemComponentConstraintUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccu.AddHazardIDs(ids...)
+}
+
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
 func (sccu *SystemComponentConstraintUpdate) Mutation() *SystemComponentConstraintMutation {
 	return sccu.mutation
@@ -107,6 +123,27 @@ func (sccu *SystemComponentConstraintUpdate) Mutation() *SystemComponentConstrai
 func (sccu *SystemComponentConstraintUpdate) ClearComponent() *SystemComponentConstraintUpdate {
 	sccu.mutation.ClearComponent()
 	return sccu
+}
+
+// ClearHazards clears all "hazards" edges to the SystemHazard entity.
+func (sccu *SystemComponentConstraintUpdate) ClearHazards() *SystemComponentConstraintUpdate {
+	sccu.mutation.ClearHazards()
+	return sccu
+}
+
+// RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
+func (sccu *SystemComponentConstraintUpdate) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdate {
+	sccu.mutation.RemoveHazardIDs(ids...)
+	return sccu
+}
+
+// RemoveHazards removes "hazards" edges to SystemHazard entities.
+func (sccu *SystemComponentConstraintUpdate) RemoveHazards(s ...*SystemHazard) *SystemComponentConstraintUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccu.RemoveHazardIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -203,6 +240,51 @@ func (sccu *SystemComponentConstraintUpdate) sqlSave(ctx context.Context) (n int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if sccu.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sccu.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !sccu.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sccu.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(sccu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, sccu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -292,6 +374,21 @@ func (sccuo *SystemComponentConstraintUpdateOne) SetComponent(s *SystemComponent
 	return sccuo.SetComponentID(s.ID)
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (sccuo *SystemComponentConstraintUpdateOne) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
+	sccuo.mutation.AddHazardIDs(ids...)
+	return sccuo
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (sccuo *SystemComponentConstraintUpdateOne) AddHazards(s ...*SystemHazard) *SystemComponentConstraintUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccuo.AddHazardIDs(ids...)
+}
+
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
 func (sccuo *SystemComponentConstraintUpdateOne) Mutation() *SystemComponentConstraintMutation {
 	return sccuo.mutation
@@ -301,6 +398,27 @@ func (sccuo *SystemComponentConstraintUpdateOne) Mutation() *SystemComponentCons
 func (sccuo *SystemComponentConstraintUpdateOne) ClearComponent() *SystemComponentConstraintUpdateOne {
 	sccuo.mutation.ClearComponent()
 	return sccuo
+}
+
+// ClearHazards clears all "hazards" edges to the SystemHazard entity.
+func (sccuo *SystemComponentConstraintUpdateOne) ClearHazards() *SystemComponentConstraintUpdateOne {
+	sccuo.mutation.ClearHazards()
+	return sccuo
+}
+
+// RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
+func (sccuo *SystemComponentConstraintUpdateOne) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintUpdateOne {
+	sccuo.mutation.RemoveHazardIDs(ids...)
+	return sccuo
+}
+
+// RemoveHazards removes "hazards" edges to SystemHazard entities.
+func (sccuo *SystemComponentConstraintUpdateOne) RemoveHazards(s ...*SystemHazard) *SystemComponentConstraintUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccuo.RemoveHazardIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentConstraintUpdate builder.
@@ -420,6 +538,51 @@ func (sccuo *SystemComponentConstraintUpdateOne) sqlSave(ctx context.Context) (_
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if sccuo.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sccuo.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !sccuo.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := sccuo.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

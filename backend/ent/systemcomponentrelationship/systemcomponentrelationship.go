@@ -31,6 +31,8 @@ const (
 	EdgeTarget = "target"
 	// EdgeSystemAnalyses holds the string denoting the system_analyses edge name in mutations.
 	EdgeSystemAnalyses = "system_analyses"
+	// EdgeHazards holds the string denoting the hazards edge name in mutations.
+	EdgeHazards = "hazards"
 	// Table holds the table name of the systemcomponentrelationship in the database.
 	Table = "system_component_relationships"
 	// SourceTable is the table that holds the source relation/edge.
@@ -54,6 +56,11 @@ const (
 	SystemAnalysesInverseTable = "system_analysis_relationships"
 	// SystemAnalysesColumn is the table column denoting the system_analyses relation/edge.
 	SystemAnalysesColumn = "component_relationship_id"
+	// HazardsTable is the table that holds the hazards relation/edge. The primary key declared below.
+	HazardsTable = "system_hazard_relationships"
+	// HazardsInverseTable is the table name for the SystemHazard entity.
+	// It exists in this package in order to avoid circular dependency with the "systemhazard" package.
+	HazardsInverseTable = "system_hazards"
 )
 
 // Columns holds all SQL columns for systemcomponentrelationship fields.
@@ -65,6 +72,12 @@ var Columns = []string{
 	FieldDescription,
 	FieldCreatedAt,
 }
+
+var (
+	// HazardsPrimaryKey and HazardsColumn2 are the table columns denoting the
+	// primary key for the hazards relation (M2M).
+	HazardsPrimaryKey = []string{"system_hazard_id", "system_component_relationship_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -143,6 +156,20 @@ func BySystemAnalyses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newSystemAnalysesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByHazardsCount orders the results by hazards count.
+func ByHazardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newHazardsStep(), opts...)
+	}
+}
+
+// ByHazards orders the results by hazards terms.
+func ByHazards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHazardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSourceStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -162,5 +189,12 @@ func newSystemAnalysesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SystemAnalysesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
+	)
+}
+func newHazardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HazardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
 	)
 }

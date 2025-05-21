@@ -294,6 +294,29 @@ func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemCompon
 	})
 }
 
+// HasHazards applies the HasEdge predicate on the "hazards" edge.
+func HasHazards() predicate.SystemComponentConstraint {
+	return predicate.SystemComponentConstraint(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHazardsWith applies the HasEdge predicate on the "hazards" edge with a given conditions (other predicates).
+func HasHazardsWith(preds ...predicate.SystemHazard) predicate.SystemComponentConstraint {
+	return predicate.SystemComponentConstraint(func(s *sql.Selector) {
+		step := newHazardsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // And groups predicates with the AND operator between them.
 func And(predicates ...predicate.SystemComponentConstraint) predicate.SystemComponentConstraint {
 	return predicate.SystemComponentConstraint(sql.AndPredicates(predicates...))

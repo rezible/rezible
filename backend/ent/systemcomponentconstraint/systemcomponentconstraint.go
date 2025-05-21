@@ -25,6 +25,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeComponent holds the string denoting the component edge name in mutations.
 	EdgeComponent = "component"
+	// EdgeHazards holds the string denoting the hazards edge name in mutations.
+	EdgeHazards = "hazards"
 	// Table holds the table name of the systemcomponentconstraint in the database.
 	Table = "system_component_constraints"
 	// ComponentTable is the table that holds the component relation/edge.
@@ -34,6 +36,11 @@ const (
 	ComponentInverseTable = "system_components"
 	// ComponentColumn is the table column denoting the component relation/edge.
 	ComponentColumn = "component_id"
+	// HazardsTable is the table that holds the hazards relation/edge. The primary key declared below.
+	HazardsTable = "system_hazard_constraints"
+	// HazardsInverseTable is the table name for the SystemHazard entity.
+	// It exists in this package in order to avoid circular dependency with the "systemhazard" package.
+	HazardsInverseTable = "system_hazards"
 )
 
 // Columns holds all SQL columns for systemcomponentconstraint fields.
@@ -44,6 +51,12 @@ var Columns = []string{
 	FieldDescription,
 	FieldCreatedAt,
 }
+
+var (
+	// HazardsPrimaryKey and HazardsColumn2 are the table columns denoting the
+	// primary key for the hazards relation (M2M).
+	HazardsPrimaryKey = []string{"system_hazard_id", "system_component_constraint_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -96,10 +109,31 @@ func ByComponentField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newComponentStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByHazardsCount orders the results by hazards count.
+func ByHazardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newHazardsStep(), opts...)
+	}
+}
+
+// ByHazards orders the results by hazards terms.
+func ByHazards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHazardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newComponentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ComponentInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
+	)
+}
+func newHazardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HazardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
 	)
 }

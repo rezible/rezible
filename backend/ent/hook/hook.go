@@ -597,6 +597,18 @@ func (f SystemComponentSignalFunc) Mutate(ctx context.Context, m ent.Mutation) (
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemComponentSignalMutation", m)
 }
 
+// The SystemHazardFunc type is an adapter to allow the use of ordinary
+// function as SystemHazard mutator.
+type SystemHazardFunc func(context.Context, *ent.SystemHazardMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SystemHazardFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SystemHazardMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SystemHazardMutation", m)
+}
+
 // The SystemRelationshipControlActionFunc type is an adapter to allow the use of ordinary
 // function as SystemRelationshipControlAction mutator.
 type SystemRelationshipControlActionFunc func(context.Context, *ent.SystemRelationshipControlActionMutation) (ent.Value, error)

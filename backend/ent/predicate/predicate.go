@@ -153,6 +153,9 @@ type SystemComponentRelationship func(*sql.Selector)
 // SystemComponentSignal is the predicate function for systemcomponentsignal builders.
 type SystemComponentSignal func(*sql.Selector)
 
+// SystemHazard is the predicate function for systemhazard builders.
+type SystemHazard func(*sql.Selector)
+
 // SystemRelationshipControlAction is the predicate function for systemrelationshipcontrolaction builders.
 type SystemRelationshipControlAction func(*sql.Selector)
 

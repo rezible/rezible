@@ -62,6 +62,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -127,6 +128,7 @@ const (
 	TypeSystemComponentKind              = "SystemComponentKind"
 	TypeSystemComponentRelationship      = "SystemComponentRelationship"
 	TypeSystemComponentSignal            = "SystemComponentSignal"
+	TypeSystemHazard                     = "SystemHazard"
 	TypeSystemRelationshipControlAction  = "SystemRelationshipControlAction"
 	TypeSystemRelationshipFeedbackSignal = "SystemRelationshipFeedbackSignal"
 	TypeTask                             = "Task"
@@ -31673,6 +31675,9 @@ type SystemComponentMutation struct {
 	signals                           map[uuid.UUID]struct{}
 	removedsignals                    map[uuid.UUID]struct{}
 	clearedsignals                    bool
+	hazards                           map[uuid.UUID]struct{}
+	removedhazards                    map[uuid.UUID]struct{}
+	clearedhazards                    bool
 	component_relationships           map[uuid.UUID]struct{}
 	removedcomponent_relationships    map[uuid.UUID]struct{}
 	clearedcomponent_relationships    bool
@@ -32446,6 +32451,60 @@ func (m *SystemComponentMutation) ResetSignals() {
 	m.removedsignals = nil
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by ids.
+func (m *SystemComponentMutation) AddHazardIDs(ids ...uuid.UUID) {
+	if m.hazards == nil {
+		m.hazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.hazards[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHazards clears the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentMutation) ClearHazards() {
+	m.clearedhazards = true
+}
+
+// HazardsCleared reports if the "hazards" edge to the SystemHazard entity was cleared.
+func (m *SystemComponentMutation) HazardsCleared() bool {
+	return m.clearedhazards
+}
+
+// RemoveHazardIDs removes the "hazards" edge to the SystemHazard entity by IDs.
+func (m *SystemComponentMutation) RemoveHazardIDs(ids ...uuid.UUID) {
+	if m.removedhazards == nil {
+		m.removedhazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.hazards, ids[i])
+		m.removedhazards[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHazards returns the removed IDs of the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentMutation) RemovedHazardsIDs() (ids []uuid.UUID) {
+	for id := range m.removedhazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HazardsIDs returns the "hazards" edge IDs in the mutation.
+func (m *SystemComponentMutation) HazardsIDs() (ids []uuid.UUID) {
+	for id := range m.hazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHazards resets all changes to the "hazards" edge.
+func (m *SystemComponentMutation) ResetHazards() {
+	m.hazards = nil
+	m.clearedhazards = false
+	m.removedhazards = nil
+}
+
 // AddComponentRelationshipIDs adds the "component_relationships" edge to the SystemComponentRelationship entity by ids.
 func (m *SystemComponentMutation) AddComponentRelationshipIDs(ids ...uuid.UUID) {
 	if m.component_relationships == nil {
@@ -32870,7 +32929,7 @@ func (m *SystemComponentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemComponentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.kind != nil {
 		edges = append(edges, systemcomponent.EdgeKind)
 	}
@@ -32891,6 +32950,9 @@ func (m *SystemComponentMutation) AddedEdges() []string {
 	}
 	if m.signals != nil {
 		edges = append(edges, systemcomponent.EdgeSignals)
+	}
+	if m.hazards != nil {
+		edges = append(edges, systemcomponent.EdgeHazards)
 	}
 	if m.component_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeComponentRelationships)
@@ -32948,6 +33010,12 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.hazards))
+		for id := range m.hazards {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemcomponent.EdgeComponentRelationships:
 		ids := make([]ent.Value, 0, len(m.component_relationships))
 		for id := range m.component_relationships {
@@ -32972,7 +33040,7 @@ func (m *SystemComponentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemComponentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.removedrelated != nil {
 		edges = append(edges, systemcomponent.EdgeRelated)
 	}
@@ -32990,6 +33058,9 @@ func (m *SystemComponentMutation) RemovedEdges() []string {
 	}
 	if m.removedsignals != nil {
 		edges = append(edges, systemcomponent.EdgeSignals)
+	}
+	if m.removedhazards != nil {
+		edges = append(edges, systemcomponent.EdgeHazards)
 	}
 	if m.removedcomponent_relationships != nil {
 		edges = append(edges, systemcomponent.EdgeComponentRelationships)
@@ -33043,6 +33114,12 @@ func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponent.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.removedhazards))
+		for id := range m.removedhazards {
+			ids = append(ids, id)
+		}
+		return ids
 	case systemcomponent.EdgeComponentRelationships:
 		ids := make([]ent.Value, 0, len(m.removedcomponent_relationships))
 		for id := range m.removedcomponent_relationships {
@@ -33067,7 +33144,7 @@ func (m *SystemComponentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemComponentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 10)
+	edges := make([]string, 0, 11)
 	if m.clearedkind {
 		edges = append(edges, systemcomponent.EdgeKind)
 	}
@@ -33088,6 +33165,9 @@ func (m *SystemComponentMutation) ClearedEdges() []string {
 	}
 	if m.clearedsignals {
 		edges = append(edges, systemcomponent.EdgeSignals)
+	}
+	if m.clearedhazards {
+		edges = append(edges, systemcomponent.EdgeHazards)
 	}
 	if m.clearedcomponent_relationships {
 		edges = append(edges, systemcomponent.EdgeComponentRelationships)
@@ -33119,6 +33199,8 @@ func (m *SystemComponentMutation) EdgeCleared(name string) bool {
 		return m.clearedcontrols
 	case systemcomponent.EdgeSignals:
 		return m.clearedsignals
+	case systemcomponent.EdgeHazards:
+		return m.clearedhazards
 	case systemcomponent.EdgeComponentRelationships:
 		return m.clearedcomponent_relationships
 	case systemcomponent.EdgeSystemAnalysisComponents:
@@ -33165,6 +33247,9 @@ func (m *SystemComponentMutation) ResetEdge(name string) error {
 	case systemcomponent.EdgeSignals:
 		m.ResetSignals()
 		return nil
+	case systemcomponent.EdgeHazards:
+		m.ResetHazards()
+		return nil
 	case systemcomponent.EdgeComponentRelationships:
 		m.ResetComponentRelationships()
 		return nil
@@ -33190,6 +33275,9 @@ type SystemComponentConstraintMutation struct {
 	clearedFields    map[string]struct{}
 	component        *uuid.UUID
 	clearedcomponent bool
+	hazards          map[uuid.UUID]struct{}
+	removedhazards   map[uuid.UUID]struct{}
+	clearedhazards   bool
 	done             bool
 	oldValue         func(context.Context) (*SystemComponentConstraint, error)
 	predicates       []predicate.SystemComponentConstraint
@@ -33483,6 +33571,60 @@ func (m *SystemComponentConstraintMutation) ResetComponent() {
 	m.clearedcomponent = false
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by ids.
+func (m *SystemComponentConstraintMutation) AddHazardIDs(ids ...uuid.UUID) {
+	if m.hazards == nil {
+		m.hazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.hazards[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHazards clears the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentConstraintMutation) ClearHazards() {
+	m.clearedhazards = true
+}
+
+// HazardsCleared reports if the "hazards" edge to the SystemHazard entity was cleared.
+func (m *SystemComponentConstraintMutation) HazardsCleared() bool {
+	return m.clearedhazards
+}
+
+// RemoveHazardIDs removes the "hazards" edge to the SystemHazard entity by IDs.
+func (m *SystemComponentConstraintMutation) RemoveHazardIDs(ids ...uuid.UUID) {
+	if m.removedhazards == nil {
+		m.removedhazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.hazards, ids[i])
+		m.removedhazards[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHazards returns the removed IDs of the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentConstraintMutation) RemovedHazardsIDs() (ids []uuid.UUID) {
+	for id := range m.removedhazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HazardsIDs returns the "hazards" edge IDs in the mutation.
+func (m *SystemComponentConstraintMutation) HazardsIDs() (ids []uuid.UUID) {
+	for id := range m.hazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHazards resets all changes to the "hazards" edge.
+func (m *SystemComponentConstraintMutation) ResetHazards() {
+	m.hazards = nil
+	m.clearedhazards = false
+	m.removedhazards = nil
+}
+
 // Where appends a list predicates to the SystemComponentConstraintMutation builder.
 func (m *SystemComponentConstraintMutation) Where(ps ...predicate.SystemComponentConstraint) {
 	m.predicates = append(m.predicates, ps...)
@@ -33676,9 +33818,12 @@ func (m *SystemComponentConstraintMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemComponentConstraintMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.component != nil {
 		edges = append(edges, systemcomponentconstraint.EdgeComponent)
+	}
+	if m.hazards != nil {
+		edges = append(edges, systemcomponentconstraint.EdgeHazards)
 	}
 	return edges
 }
@@ -33691,27 +33836,47 @@ func (m *SystemComponentConstraintMutation) AddedIDs(name string) []ent.Value {
 		if id := m.component; id != nil {
 			return []ent.Value{*id}
 		}
+	case systemcomponentconstraint.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.hazards))
+		for id := range m.hazards {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemComponentConstraintMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedhazards != nil {
+		edges = append(edges, systemcomponentconstraint.EdgeHazards)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *SystemComponentConstraintMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case systemcomponentconstraint.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.removedhazards))
+		for id := range m.removedhazards {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemComponentConstraintMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
 	if m.clearedcomponent {
 		edges = append(edges, systemcomponentconstraint.EdgeComponent)
+	}
+	if m.clearedhazards {
+		edges = append(edges, systemcomponentconstraint.EdgeHazards)
 	}
 	return edges
 }
@@ -33722,6 +33887,8 @@ func (m *SystemComponentConstraintMutation) EdgeCleared(name string) bool {
 	switch name {
 	case systemcomponentconstraint.EdgeComponent:
 		return m.clearedcomponent
+	case systemcomponentconstraint.EdgeHazards:
+		return m.clearedhazards
 	}
 	return false
 }
@@ -33743,6 +33910,9 @@ func (m *SystemComponentConstraintMutation) ResetEdge(name string) error {
 	switch name {
 	case systemcomponentconstraint.EdgeComponent:
 		m.ResetComponent()
+		return nil
+	case systemcomponentconstraint.EdgeHazards:
+		m.ResetHazards()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponentConstraint edge %s", name)
@@ -35131,6 +35301,9 @@ type SystemComponentRelationshipMutation struct {
 	system_analyses        map[uuid.UUID]struct{}
 	removedsystem_analyses map[uuid.UUID]struct{}
 	clearedsystem_analyses bool
+	hazards                map[uuid.UUID]struct{}
+	removedhazards         map[uuid.UUID]struct{}
+	clearedhazards         bool
 	done                   bool
 	oldValue               func(context.Context) (*SystemComponentRelationship, error)
 	predicates             []predicate.SystemComponentRelationship
@@ -35554,6 +35727,60 @@ func (m *SystemComponentRelationshipMutation) ResetSystemAnalyses() {
 	m.removedsystem_analyses = nil
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by ids.
+func (m *SystemComponentRelationshipMutation) AddHazardIDs(ids ...uuid.UUID) {
+	if m.hazards == nil {
+		m.hazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.hazards[ids[i]] = struct{}{}
+	}
+}
+
+// ClearHazards clears the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentRelationshipMutation) ClearHazards() {
+	m.clearedhazards = true
+}
+
+// HazardsCleared reports if the "hazards" edge to the SystemHazard entity was cleared.
+func (m *SystemComponentRelationshipMutation) HazardsCleared() bool {
+	return m.clearedhazards
+}
+
+// RemoveHazardIDs removes the "hazards" edge to the SystemHazard entity by IDs.
+func (m *SystemComponentRelationshipMutation) RemoveHazardIDs(ids ...uuid.UUID) {
+	if m.removedhazards == nil {
+		m.removedhazards = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.hazards, ids[i])
+		m.removedhazards[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHazards returns the removed IDs of the "hazards" edge to the SystemHazard entity.
+func (m *SystemComponentRelationshipMutation) RemovedHazardsIDs() (ids []uuid.UUID) {
+	for id := range m.removedhazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// HazardsIDs returns the "hazards" edge IDs in the mutation.
+func (m *SystemComponentRelationshipMutation) HazardsIDs() (ids []uuid.UUID) {
+	for id := range m.hazards {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetHazards resets all changes to the "hazards" edge.
+func (m *SystemComponentRelationshipMutation) ResetHazards() {
+	m.hazards = nil
+	m.clearedhazards = false
+	m.removedhazards = nil
+}
+
 // Where appends a list predicates to the SystemComponentRelationshipMutation builder.
 func (m *SystemComponentRelationshipMutation) Where(ps ...predicate.SystemComponentRelationship) {
 	m.predicates = append(m.predicates, ps...)
@@ -35770,7 +35997,7 @@ func (m *SystemComponentRelationshipMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SystemComponentRelationshipMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.source != nil {
 		edges = append(edges, systemcomponentrelationship.EdgeSource)
 	}
@@ -35779,6 +36006,9 @@ func (m *SystemComponentRelationshipMutation) AddedEdges() []string {
 	}
 	if m.system_analyses != nil {
 		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	if m.hazards != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeHazards)
 	}
 	return edges
 }
@@ -35801,15 +36031,24 @@ func (m *SystemComponentRelationshipMutation) AddedIDs(name string) []ent.Value 
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponentrelationship.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.hazards))
+		for id := range m.hazards {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SystemComponentRelationshipMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.removedsystem_analyses != nil {
 		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	if m.removedhazards != nil {
+		edges = append(edges, systemcomponentrelationship.EdgeHazards)
 	}
 	return edges
 }
@@ -35824,13 +36063,19 @@ func (m *SystemComponentRelationshipMutation) RemovedIDs(name string) []ent.Valu
 			ids = append(ids, id)
 		}
 		return ids
+	case systemcomponentrelationship.EdgeHazards:
+		ids := make([]ent.Value, 0, len(m.removedhazards))
+		for id := range m.removedhazards {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SystemComponentRelationshipMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
 	if m.clearedsource {
 		edges = append(edges, systemcomponentrelationship.EdgeSource)
 	}
@@ -35839,6 +36084,9 @@ func (m *SystemComponentRelationshipMutation) ClearedEdges() []string {
 	}
 	if m.clearedsystem_analyses {
 		edges = append(edges, systemcomponentrelationship.EdgeSystemAnalyses)
+	}
+	if m.clearedhazards {
+		edges = append(edges, systemcomponentrelationship.EdgeHazards)
 	}
 	return edges
 }
@@ -35853,6 +36101,8 @@ func (m *SystemComponentRelationshipMutation) EdgeCleared(name string) bool {
 		return m.clearedtarget
 	case systemcomponentrelationship.EdgeSystemAnalyses:
 		return m.clearedsystem_analyses
+	case systemcomponentrelationship.EdgeHazards:
+		return m.clearedhazards
 	}
 	return false
 }
@@ -35883,6 +36133,9 @@ func (m *SystemComponentRelationshipMutation) ResetEdge(name string) error {
 		return nil
 	case systemcomponentrelationship.EdgeSystemAnalyses:
 		m.ResetSystemAnalyses()
+		return nil
+	case systemcomponentrelationship.EdgeHazards:
+		m.ResetHazards()
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponentRelationship edge %s", name)
@@ -36624,6 +36877,759 @@ func (m *SystemComponentSignalMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown SystemComponentSignal edge %s", name)
+}
+
+// SystemHazardMutation represents an operation that mutates the SystemHazard nodes in the graph.
+type SystemHazardMutation struct {
+	config
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	name                 *string
+	description          *string
+	created_at           *time.Time
+	updated_at           *time.Time
+	clearedFields        map[string]struct{}
+	components           map[uuid.UUID]struct{}
+	removedcomponents    map[uuid.UUID]struct{}
+	clearedcomponents    bool
+	constraints          map[uuid.UUID]struct{}
+	removedconstraints   map[uuid.UUID]struct{}
+	clearedconstraints   bool
+	relationships        map[uuid.UUID]struct{}
+	removedrelationships map[uuid.UUID]struct{}
+	clearedrelationships bool
+	done                 bool
+	oldValue             func(context.Context) (*SystemHazard, error)
+	predicates           []predicate.SystemHazard
+}
+
+var _ ent.Mutation = (*SystemHazardMutation)(nil)
+
+// systemhazardOption allows management of the mutation configuration using functional options.
+type systemhazardOption func(*SystemHazardMutation)
+
+// newSystemHazardMutation creates new mutation for the SystemHazard entity.
+func newSystemHazardMutation(c config, op Op, opts ...systemhazardOption) *SystemHazardMutation {
+	m := &SystemHazardMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeSystemHazard,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withSystemHazardID sets the ID field of the mutation.
+func withSystemHazardID(id uuid.UUID) systemhazardOption {
+	return func(m *SystemHazardMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *SystemHazard
+		)
+		m.oldValue = func(ctx context.Context) (*SystemHazard, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().SystemHazard.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withSystemHazard sets the old SystemHazard of the mutation.
+func withSystemHazard(node *SystemHazard) systemhazardOption {
+	return func(m *SystemHazardMutation) {
+		m.oldValue = func(context.Context) (*SystemHazard, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m SystemHazardMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m SystemHazardMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of SystemHazard entities.
+func (m *SystemHazardMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *SystemHazardMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *SystemHazardMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().SystemHazard.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetName sets the "name" field.
+func (m *SystemHazardMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *SystemHazardMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the SystemHazard entity.
+// If the SystemHazard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemHazardMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *SystemHazardMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *SystemHazardMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *SystemHazardMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the SystemHazard entity.
+// If the SystemHazard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemHazardMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *SystemHazardMutation) ResetDescription() {
+	m.description = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *SystemHazardMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *SystemHazardMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the SystemHazard entity.
+// If the SystemHazard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemHazardMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *SystemHazardMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *SystemHazardMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *SystemHazardMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the SystemHazard entity.
+// If the SystemHazard object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *SystemHazardMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *SystemHazardMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// AddComponentIDs adds the "components" edge to the SystemComponent entity by ids.
+func (m *SystemHazardMutation) AddComponentIDs(ids ...uuid.UUID) {
+	if m.components == nil {
+		m.components = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.components[ids[i]] = struct{}{}
+	}
+}
+
+// ClearComponents clears the "components" edge to the SystemComponent entity.
+func (m *SystemHazardMutation) ClearComponents() {
+	m.clearedcomponents = true
+}
+
+// ComponentsCleared reports if the "components" edge to the SystemComponent entity was cleared.
+func (m *SystemHazardMutation) ComponentsCleared() bool {
+	return m.clearedcomponents
+}
+
+// RemoveComponentIDs removes the "components" edge to the SystemComponent entity by IDs.
+func (m *SystemHazardMutation) RemoveComponentIDs(ids ...uuid.UUID) {
+	if m.removedcomponents == nil {
+		m.removedcomponents = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.components, ids[i])
+		m.removedcomponents[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedComponents returns the removed IDs of the "components" edge to the SystemComponent entity.
+func (m *SystemHazardMutation) RemovedComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.removedcomponents {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ComponentsIDs returns the "components" edge IDs in the mutation.
+func (m *SystemHazardMutation) ComponentsIDs() (ids []uuid.UUID) {
+	for id := range m.components {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetComponents resets all changes to the "components" edge.
+func (m *SystemHazardMutation) ResetComponents() {
+	m.components = nil
+	m.clearedcomponents = false
+	m.removedcomponents = nil
+}
+
+// AddConstraintIDs adds the "constraints" edge to the SystemComponentConstraint entity by ids.
+func (m *SystemHazardMutation) AddConstraintIDs(ids ...uuid.UUID) {
+	if m.constraints == nil {
+		m.constraints = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.constraints[ids[i]] = struct{}{}
+	}
+}
+
+// ClearConstraints clears the "constraints" edge to the SystemComponentConstraint entity.
+func (m *SystemHazardMutation) ClearConstraints() {
+	m.clearedconstraints = true
+}
+
+// ConstraintsCleared reports if the "constraints" edge to the SystemComponentConstraint entity was cleared.
+func (m *SystemHazardMutation) ConstraintsCleared() bool {
+	return m.clearedconstraints
+}
+
+// RemoveConstraintIDs removes the "constraints" edge to the SystemComponentConstraint entity by IDs.
+func (m *SystemHazardMutation) RemoveConstraintIDs(ids ...uuid.UUID) {
+	if m.removedconstraints == nil {
+		m.removedconstraints = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.constraints, ids[i])
+		m.removedconstraints[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedConstraints returns the removed IDs of the "constraints" edge to the SystemComponentConstraint entity.
+func (m *SystemHazardMutation) RemovedConstraintsIDs() (ids []uuid.UUID) {
+	for id := range m.removedconstraints {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ConstraintsIDs returns the "constraints" edge IDs in the mutation.
+func (m *SystemHazardMutation) ConstraintsIDs() (ids []uuid.UUID) {
+	for id := range m.constraints {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetConstraints resets all changes to the "constraints" edge.
+func (m *SystemHazardMutation) ResetConstraints() {
+	m.constraints = nil
+	m.clearedconstraints = false
+	m.removedconstraints = nil
+}
+
+// AddRelationshipIDs adds the "relationships" edge to the SystemComponentRelationship entity by ids.
+func (m *SystemHazardMutation) AddRelationshipIDs(ids ...uuid.UUID) {
+	if m.relationships == nil {
+		m.relationships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.relationships[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRelationships clears the "relationships" edge to the SystemComponentRelationship entity.
+func (m *SystemHazardMutation) ClearRelationships() {
+	m.clearedrelationships = true
+}
+
+// RelationshipsCleared reports if the "relationships" edge to the SystemComponentRelationship entity was cleared.
+func (m *SystemHazardMutation) RelationshipsCleared() bool {
+	return m.clearedrelationships
+}
+
+// RemoveRelationshipIDs removes the "relationships" edge to the SystemComponentRelationship entity by IDs.
+func (m *SystemHazardMutation) RemoveRelationshipIDs(ids ...uuid.UUID) {
+	if m.removedrelationships == nil {
+		m.removedrelationships = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.relationships, ids[i])
+		m.removedrelationships[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRelationships returns the removed IDs of the "relationships" edge to the SystemComponentRelationship entity.
+func (m *SystemHazardMutation) RemovedRelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.removedrelationships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RelationshipsIDs returns the "relationships" edge IDs in the mutation.
+func (m *SystemHazardMutation) RelationshipsIDs() (ids []uuid.UUID) {
+	for id := range m.relationships {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRelationships resets all changes to the "relationships" edge.
+func (m *SystemHazardMutation) ResetRelationships() {
+	m.relationships = nil
+	m.clearedrelationships = false
+	m.removedrelationships = nil
+}
+
+// Where appends a list predicates to the SystemHazardMutation builder.
+func (m *SystemHazardMutation) Where(ps ...predicate.SystemHazard) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the SystemHazardMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *SystemHazardMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.SystemHazard, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *SystemHazardMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *SystemHazardMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (SystemHazard).
+func (m *SystemHazardMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *SystemHazardMutation) Fields() []string {
+	fields := make([]string, 0, 4)
+	if m.name != nil {
+		fields = append(fields, systemhazard.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, systemhazard.FieldDescription)
+	}
+	if m.created_at != nil {
+		fields = append(fields, systemhazard.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, systemhazard.FieldUpdatedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *SystemHazardMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case systemhazard.FieldName:
+		return m.Name()
+	case systemhazard.FieldDescription:
+		return m.Description()
+	case systemhazard.FieldCreatedAt:
+		return m.CreatedAt()
+	case systemhazard.FieldUpdatedAt:
+		return m.UpdatedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *SystemHazardMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case systemhazard.FieldName:
+		return m.OldName(ctx)
+	case systemhazard.FieldDescription:
+		return m.OldDescription(ctx)
+	case systemhazard.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case systemhazard.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown SystemHazard field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemHazardMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case systemhazard.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case systemhazard.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case systemhazard.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case systemhazard.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown SystemHazard field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *SystemHazardMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *SystemHazardMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *SystemHazardMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown SystemHazard numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *SystemHazardMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *SystemHazardMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *SystemHazardMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown SystemHazard nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *SystemHazardMutation) ResetField(name string) error {
+	switch name {
+	case systemhazard.FieldName:
+		m.ResetName()
+		return nil
+	case systemhazard.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case systemhazard.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case systemhazard.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemHazard field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *SystemHazardMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.components != nil {
+		edges = append(edges, systemhazard.EdgeComponents)
+	}
+	if m.constraints != nil {
+		edges = append(edges, systemhazard.EdgeConstraints)
+	}
+	if m.relationships != nil {
+		edges = append(edges, systemhazard.EdgeRelationships)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *SystemHazardMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case systemhazard.EdgeComponents:
+		ids := make([]ent.Value, 0, len(m.components))
+		for id := range m.components {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemhazard.EdgeConstraints:
+		ids := make([]ent.Value, 0, len(m.constraints))
+		for id := range m.constraints {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemhazard.EdgeRelationships:
+		ids := make([]ent.Value, 0, len(m.relationships))
+		for id := range m.relationships {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *SystemHazardMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedcomponents != nil {
+		edges = append(edges, systemhazard.EdgeComponents)
+	}
+	if m.removedconstraints != nil {
+		edges = append(edges, systemhazard.EdgeConstraints)
+	}
+	if m.removedrelationships != nil {
+		edges = append(edges, systemhazard.EdgeRelationships)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *SystemHazardMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case systemhazard.EdgeComponents:
+		ids := make([]ent.Value, 0, len(m.removedcomponents))
+		for id := range m.removedcomponents {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemhazard.EdgeConstraints:
+		ids := make([]ent.Value, 0, len(m.removedconstraints))
+		for id := range m.removedconstraints {
+			ids = append(ids, id)
+		}
+		return ids
+	case systemhazard.EdgeRelationships:
+		ids := make([]ent.Value, 0, len(m.removedrelationships))
+		for id := range m.removedrelationships {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *SystemHazardMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedcomponents {
+		edges = append(edges, systemhazard.EdgeComponents)
+	}
+	if m.clearedconstraints {
+		edges = append(edges, systemhazard.EdgeConstraints)
+	}
+	if m.clearedrelationships {
+		edges = append(edges, systemhazard.EdgeRelationships)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *SystemHazardMutation) EdgeCleared(name string) bool {
+	switch name {
+	case systemhazard.EdgeComponents:
+		return m.clearedcomponents
+	case systemhazard.EdgeConstraints:
+		return m.clearedconstraints
+	case systemhazard.EdgeRelationships:
+		return m.clearedrelationships
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *SystemHazardMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown SystemHazard unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *SystemHazardMutation) ResetEdge(name string) error {
+	switch name {
+	case systemhazard.EdgeComponents:
+		m.ResetComponents()
+		return nil
+	case systemhazard.EdgeConstraints:
+		m.ResetConstraints()
+		return nil
+	case systemhazard.EdgeRelationships:
+		m.ResetRelationships()
+		return nil
+	}
+	return fmt.Errorf("unknown SystemHazard edge %s", name)
 }
 
 // SystemRelationshipControlActionMutation represents an operation that mutates the SystemRelationshipControlAction nodes in the graph.

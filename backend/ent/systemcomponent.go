@@ -56,6 +56,8 @@ type SystemComponentEdges struct {
 	Controls []*SystemComponentControl `json:"controls,omitempty"`
 	// Signals holds the value of the signals edge.
 	Signals []*SystemComponentSignal `json:"signals,omitempty"`
+	// Hazards holds the value of the hazards edge.
+	Hazards []*SystemHazard `json:"hazards,omitempty"`
 	// ComponentRelationships holds the value of the component_relationships edge.
 	ComponentRelationships []*SystemComponentRelationship `json:"component_relationships,omitempty"`
 	// SystemAnalysisComponents holds the value of the system_analysis_components edge.
@@ -64,7 +66,7 @@ type SystemComponentEdges struct {
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // KindOrErr returns the Kind value or an error if the edge
@@ -132,10 +134,19 @@ func (e SystemComponentEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
 	return nil, &NotLoadedError{edge: "signals"}
 }
 
+// HazardsOrErr returns the Hazards value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentEdges) HazardsOrErr() ([]*SystemHazard, error) {
+	if e.loadedTypes[7] {
+		return e.Hazards, nil
+	}
+	return nil, &NotLoadedError{edge: "hazards"}
+}
+
 // ComponentRelationshipsOrErr returns the ComponentRelationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) ComponentRelationshipsOrErr() ([]*SystemComponentRelationship, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.ComponentRelationships, nil
 	}
 	return nil, &NotLoadedError{edge: "component_relationships"}
@@ -144,7 +155,7 @@ func (e SystemComponentEdges) ComponentRelationshipsOrErr() ([]*SystemComponentR
 // SystemAnalysisComponentsOrErr returns the SystemAnalysisComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) SystemAnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.SystemAnalysisComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "system_analysis_components"}
@@ -153,7 +164,7 @@ func (e SystemComponentEdges) SystemAnalysisComponentsOrErr() ([]*SystemAnalysis
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.EventComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "event_components"}
@@ -283,6 +294,11 @@ func (sc *SystemComponent) QueryControls() *SystemComponentControlQuery {
 // QuerySignals queries the "signals" edge of the SystemComponent entity.
 func (sc *SystemComponent) QuerySignals() *SystemComponentSignalQuery {
 	return NewSystemComponentClient(sc.config).QuerySignals(sc)
+}
+
+// QueryHazards queries the "hazards" edge of the SystemComponent entity.
+func (sc *SystemComponent) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentClient(sc.config).QueryHazards(sc)
 }
 
 // QueryComponentRelationships queries the "component_relationships" edge of the SystemComponent entity.

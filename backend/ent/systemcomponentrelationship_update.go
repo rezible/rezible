@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemhazard"
 )
 
 // SystemComponentRelationshipUpdate is the builder for updating SystemComponentRelationship entities.
@@ -139,6 +140,21 @@ func (scru *SystemComponentRelationshipUpdate) AddSystemAnalyses(s ...*SystemAna
 	return scru.AddSystemAnalysisIDs(ids...)
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (scru *SystemComponentRelationshipUpdate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	scru.mutation.AddHazardIDs(ids...)
+	return scru
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (scru *SystemComponentRelationshipUpdate) AddHazards(s ...*SystemHazard) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scru.AddHazardIDs(ids...)
+}
+
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
 func (scru *SystemComponentRelationshipUpdate) Mutation() *SystemComponentRelationshipMutation {
 	return scru.mutation
@@ -175,6 +191,27 @@ func (scru *SystemComponentRelationshipUpdate) RemoveSystemAnalyses(s ...*System
 		ids[i] = s[i].ID
 	}
 	return scru.RemoveSystemAnalysisIDs(ids...)
+}
+
+// ClearHazards clears all "hazards" edges to the SystemHazard entity.
+func (scru *SystemComponentRelationshipUpdate) ClearHazards() *SystemComponentRelationshipUpdate {
+	scru.mutation.ClearHazards()
+	return scru
+}
+
+// RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
+func (scru *SystemComponentRelationshipUpdate) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdate {
+	scru.mutation.RemoveHazardIDs(ids...)
+	return scru
+}
+
+// RemoveHazards removes "hazards" edges to SystemHazard entities.
+func (scru *SystemComponentRelationshipUpdate) RemoveHazards(s ...*SystemHazard) *SystemComponentRelationshipUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scru.RemoveHazardIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -351,6 +388,51 @@ func (scru *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (n i
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if scru.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scru.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !scru.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scru.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(scru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, scru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -480,6 +562,21 @@ func (scruo *SystemComponentRelationshipUpdateOne) AddSystemAnalyses(s ...*Syste
 	return scruo.AddSystemAnalysisIDs(ids...)
 }
 
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (scruo *SystemComponentRelationshipUpdateOne) AddHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	scruo.mutation.AddHazardIDs(ids...)
+	return scruo
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (scruo *SystemComponentRelationshipUpdateOne) AddHazards(s ...*SystemHazard) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scruo.AddHazardIDs(ids...)
+}
+
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
 func (scruo *SystemComponentRelationshipUpdateOne) Mutation() *SystemComponentRelationshipMutation {
 	return scruo.mutation
@@ -516,6 +613,27 @@ func (scruo *SystemComponentRelationshipUpdateOne) RemoveSystemAnalyses(s ...*Sy
 		ids[i] = s[i].ID
 	}
 	return scruo.RemoveSystemAnalysisIDs(ids...)
+}
+
+// ClearHazards clears all "hazards" edges to the SystemHazard entity.
+func (scruo *SystemComponentRelationshipUpdateOne) ClearHazards() *SystemComponentRelationshipUpdateOne {
+	scruo.mutation.ClearHazards()
+	return scruo
+}
+
+// RemoveHazardIDs removes the "hazards" edge to SystemHazard entities by IDs.
+func (scruo *SystemComponentRelationshipUpdateOne) RemoveHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipUpdateOne {
+	scruo.mutation.RemoveHazardIDs(ids...)
+	return scruo
+}
+
+// RemoveHazards removes "hazards" edges to SystemHazard entities.
+func (scruo *SystemComponentRelationshipUpdateOne) RemoveHazards(s ...*SystemHazard) *SystemComponentRelationshipUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scruo.RemoveHazardIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemComponentRelationshipUpdate builder.
@@ -715,6 +833,51 @@ func (scruo *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if scruo.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scruo.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !scruo.mutation.HazardsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := scruo.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/systemhazard"
 )
 
 // SystemComponentRelationshipCreate is the builder for creating a SystemComponentRelationship entity.
@@ -117,6 +118,21 @@ func (scrc *SystemComponentRelationshipCreate) AddSystemAnalyses(s ...*SystemAna
 		ids[i] = s[i].ID
 	}
 	return scrc.AddSystemAnalysisIDs(ids...)
+}
+
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (scrc *SystemComponentRelationshipCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentRelationshipCreate {
+	scrc.mutation.AddHazardIDs(ids...)
+	return scrc
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (scrc *SystemComponentRelationshipCreate) AddHazards(s ...*SystemHazard) *SystemComponentRelationshipCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return scrc.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentRelationshipMutation object of the builder.
@@ -272,6 +288,22 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := scrc.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentrelationship.HazardsTable,
+			Columns: systemcomponentrelationship.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

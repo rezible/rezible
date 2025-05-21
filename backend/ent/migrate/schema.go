@@ -1173,6 +1173,20 @@ var (
 			},
 		},
 	}
+	// SystemHazardsColumns holds the columns for the "system_hazards" table.
+	SystemHazardsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Size: 2147483647},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+	}
+	// SystemHazardsTable holds the schema information for the "system_hazards" table.
+	SystemHazardsTable = &schema.Table{
+		Name:       "system_hazards",
+		Columns:    SystemHazardsColumns,
+		PrimaryKey: []*schema.Column{SystemHazardsColumns[0]},
+	}
 	// SystemRelationshipControlActionsColumns holds the columns for the "system_relationship_control_actions" table.
 	SystemRelationshipControlActionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1585,6 +1599,81 @@ var (
 			},
 		},
 	}
+	// SystemHazardComponentsColumns holds the columns for the "system_hazard_components" table.
+	SystemHazardComponentsColumns = []*schema.Column{
+		{Name: "system_hazard_id", Type: field.TypeUUID},
+		{Name: "system_component_id", Type: field.TypeUUID},
+	}
+	// SystemHazardComponentsTable holds the schema information for the "system_hazard_components" table.
+	SystemHazardComponentsTable = &schema.Table{
+		Name:       "system_hazard_components",
+		Columns:    SystemHazardComponentsColumns,
+		PrimaryKey: []*schema.Column{SystemHazardComponentsColumns[0], SystemHazardComponentsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_hazard_components_system_hazard_id",
+				Columns:    []*schema.Column{SystemHazardComponentsColumns[0]},
+				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "system_hazard_components_system_component_id",
+				Columns:    []*schema.Column{SystemHazardComponentsColumns[1]},
+				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// SystemHazardConstraintsColumns holds the columns for the "system_hazard_constraints" table.
+	SystemHazardConstraintsColumns = []*schema.Column{
+		{Name: "system_hazard_id", Type: field.TypeUUID},
+		{Name: "system_component_constraint_id", Type: field.TypeUUID},
+	}
+	// SystemHazardConstraintsTable holds the schema information for the "system_hazard_constraints" table.
+	SystemHazardConstraintsTable = &schema.Table{
+		Name:       "system_hazard_constraints",
+		Columns:    SystemHazardConstraintsColumns,
+		PrimaryKey: []*schema.Column{SystemHazardConstraintsColumns[0], SystemHazardConstraintsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_hazard_constraints_system_hazard_id",
+				Columns:    []*schema.Column{SystemHazardConstraintsColumns[0]},
+				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "system_hazard_constraints_system_component_constraint_id",
+				Columns:    []*schema.Column{SystemHazardConstraintsColumns[1]},
+				RefColumns: []*schema.Column{SystemComponentConstraintsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// SystemHazardRelationshipsColumns holds the columns for the "system_hazard_relationships" table.
+	SystemHazardRelationshipsColumns = []*schema.Column{
+		{Name: "system_hazard_id", Type: field.TypeUUID},
+		{Name: "system_component_relationship_id", Type: field.TypeUUID},
+	}
+	// SystemHazardRelationshipsTable holds the schema information for the "system_hazard_relationships" table.
+	SystemHazardRelationshipsTable = &schema.Table{
+		Name:       "system_hazard_relationships",
+		Columns:    SystemHazardRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemHazardRelationshipsColumns[0], SystemHazardRelationshipsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_hazard_relationships_system_hazard_id",
+				Columns:    []*schema.Column{SystemHazardRelationshipsColumns[0]},
+				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "system_hazard_relationships_system_component_relationship_id",
+				Columns:    []*schema.Column{SystemHazardRelationshipsColumns[1]},
+				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TeamUsersColumns holds the columns for the "team_users" table.
 	TeamUsersColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeUUID},
@@ -1711,6 +1800,7 @@ var (
 		SystemComponentKindsTable,
 		SystemComponentRelationshipsTable,
 		SystemComponentSignalsTable,
+		SystemHazardsTable,
 		SystemRelationshipControlActionsTable,
 		SystemRelationshipFeedbackSignalsTable,
 		TasksTable,
@@ -1727,6 +1817,9 @@ var (
 		IncidentDebriefQuestionIncidentTypesTable,
 		MeetingScheduleOwningTeamTable,
 		OncallUserShiftHandoverPinnedAnnotationsTable,
+		SystemHazardComponentsTable,
+		SystemHazardConstraintsTable,
+		SystemHazardRelationshipsTable,
 		TeamUsersTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -1819,6 +1912,12 @@ func init() {
 	MeetingScheduleOwningTeamTable.ForeignKeys[1].RefTable = TeamsTable
 	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[0].RefTable = OncallUserShiftHandoversTable
 	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = OncallAnnotationsTable
+	SystemHazardComponentsTable.ForeignKeys[0].RefTable = SystemHazardsTable
+	SystemHazardComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemHazardConstraintsTable.ForeignKeys[0].RefTable = SystemHazardsTable
+	SystemHazardConstraintsTable.ForeignKeys[1].RefTable = SystemComponentConstraintsTable
+	SystemHazardRelationshipsTable.ForeignKeys[0].RefTable = SystemHazardsTable
+	SystemHazardRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
 	TeamUsersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

@@ -405,7 +405,7 @@ export type CreateOncallAnnotationResponseBody = {
 };
 
 export type CreateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverTemplateSection>;
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type CreateOncallShiftHandoverTemplateRequestBody = {
@@ -1805,13 +1805,7 @@ export type OncallShiftHandoverTemplate = {
 };
 
 export type OncallShiftHandoverTemplateAttributes = {
-    sections: Array<OncallShiftHandoverTemplateSection>;
-};
-
-export type OncallShiftHandoverTemplateSection = {
-    header: string;
-    list: boolean;
-    type: 'regular' | 'annotations';
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type OncallShiftIncidentResponseTime = {
@@ -2453,7 +2447,7 @@ export type UpdateOncallShiftHandoverResponseBody = {
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverTemplateSection>;
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestBody = {

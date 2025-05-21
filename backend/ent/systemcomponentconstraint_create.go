@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
+	"github.com/rezible/rezible/ent/systemhazard"
 )
 
 // SystemComponentConstraintCreate is the builder for creating a SystemComponentConstraint entity.
@@ -82,6 +83,21 @@ func (sccc *SystemComponentConstraintCreate) SetNillableID(u *uuid.UUID) *System
 // SetComponent sets the "component" edge to the SystemComponent entity.
 func (sccc *SystemComponentConstraintCreate) SetComponent(s *SystemComponent) *SystemComponentConstraintCreate {
 	return sccc.SetComponentID(s.ID)
+}
+
+// AddHazardIDs adds the "hazards" edge to the SystemHazard entity by IDs.
+func (sccc *SystemComponentConstraintCreate) AddHazardIDs(ids ...uuid.UUID) *SystemComponentConstraintCreate {
+	sccc.mutation.AddHazardIDs(ids...)
+	return sccc
+}
+
+// AddHazards adds the "hazards" edges to the SystemHazard entity.
+func (sccc *SystemComponentConstraintCreate) AddHazards(s ...*SystemHazard) *SystemComponentConstraintCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sccc.AddHazardIDs(ids...)
 }
 
 // Mutation returns the SystemComponentConstraintMutation object of the builder.
@@ -206,6 +222,22 @@ func (sccc *SystemComponentConstraintCreate) createSpec() (*SystemComponentConst
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.ComponentID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := sccc.mutation.HazardsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   systemcomponentconstraint.HazardsTable,
+			Columns: systemcomponentconstraint.HazardsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

@@ -58,6 +58,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -1444,6 +1445,33 @@ func (f TraverseSystemComponentSignal) Traverse(ctx context.Context, q ent.Query
 	return fmt.Errorf("unexpected query type %T. expect *ent.SystemComponentSignalQuery", q)
 }
 
+// The SystemHazardFunc type is an adapter to allow the use of ordinary function as a Querier.
+type SystemHazardFunc func(context.Context, *ent.SystemHazardQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f SystemHazardFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.SystemHazardQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.SystemHazardQuery", q)
+}
+
+// The TraverseSystemHazard type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseSystemHazard func(context.Context, *ent.SystemHazardQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseSystemHazard) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseSystemHazard) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemHazardQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.SystemHazardQuery", q)
+}
+
 // The SystemRelationshipControlActionFunc type is an adapter to allow the use of ordinary function as a Querier.
 type SystemRelationshipControlActionFunc func(context.Context, *ent.SystemRelationshipControlActionQuery) (ent.Value, error)
 
@@ -1680,6 +1708,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.SystemComponentRelationshipQuery, predicate.SystemComponentRelationship, systemcomponentrelationship.OrderOption]{typ: ent.TypeSystemComponentRelationship, tq: q}, nil
 	case *ent.SystemComponentSignalQuery:
 		return &query[*ent.SystemComponentSignalQuery, predicate.SystemComponentSignal, systemcomponentsignal.OrderOption]{typ: ent.TypeSystemComponentSignal, tq: q}, nil
+	case *ent.SystemHazardQuery:
+		return &query[*ent.SystemHazardQuery, predicate.SystemHazard, systemhazard.OrderOption]{typ: ent.TypeSystemHazard, tq: q}, nil
 	case *ent.SystemRelationshipControlActionQuery:
 		return &query[*ent.SystemRelationshipControlActionQuery, predicate.SystemRelationshipControlAction, systemrelationshipcontrolaction.OrderOption]{typ: ent.TypeSystemRelationshipControlAction, tq: q}, nil
 	case *ent.SystemRelationshipFeedbackSignalQuery:

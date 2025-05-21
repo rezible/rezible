@@ -582,6 +582,29 @@ func HasSignalsWith(preds ...predicate.SystemComponentSignal) predicate.SystemCo
 	})
 }
 
+// HasHazards applies the HasEdge predicate on the "hazards" edge.
+func HasHazards() predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHazardsWith applies the HasEdge predicate on the "hazards" edge with a given conditions (other predicates).
+func HasHazardsWith(preds ...predicate.SystemHazard) predicate.SystemComponent {
+	return predicate.SystemComponent(func(s *sql.Selector) {
+		step := newHazardsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasComponentRelationships applies the HasEdge predicate on the "component_relationships" edge.
 func HasComponentRelationships() predicate.SystemComponent {
 	return predicate.SystemComponent(func(s *sql.Selector) {

@@ -54,6 +54,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -570,6 +571,26 @@ func init() {
 	systemcomponentsignalDescID := systemcomponentsignalFields[0].Descriptor()
 	// systemcomponentsignal.DefaultID holds the default value on creation for the id field.
 	systemcomponentsignal.DefaultID = systemcomponentsignalDescID.Default.(func() uuid.UUID)
+	systemhazardFields := schema.SystemHazard{}.Fields()
+	_ = systemhazardFields
+	// systemhazardDescName is the schema descriptor for name field.
+	systemhazardDescName := systemhazardFields[1].Descriptor()
+	// systemhazard.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	systemhazard.NameValidator = systemhazardDescName.Validators[0].(func(string) error)
+	// systemhazardDescCreatedAt is the schema descriptor for created_at field.
+	systemhazardDescCreatedAt := systemhazardFields[3].Descriptor()
+	// systemhazard.DefaultCreatedAt holds the default value on creation for the created_at field.
+	systemhazard.DefaultCreatedAt = systemhazardDescCreatedAt.Default.(func() time.Time)
+	// systemhazardDescUpdatedAt is the schema descriptor for updated_at field.
+	systemhazardDescUpdatedAt := systemhazardFields[4].Descriptor()
+	// systemhazard.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	systemhazard.DefaultUpdatedAt = systemhazardDescUpdatedAt.Default.(func() time.Time)
+	// systemhazard.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	systemhazard.UpdateDefaultUpdatedAt = systemhazardDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// systemhazardDescID is the schema descriptor for id field.
+	systemhazardDescID := systemhazardFields[0].Descriptor()
+	// systemhazard.DefaultID holds the default value on creation for the id field.
+	systemhazard.DefaultID = systemhazardDescID.Default.(func() uuid.UUID)
 	systemrelationshipcontrolactionFields := schema.SystemRelationshipControlAction{}.Fields()
 	_ = systemrelationshipcontrolactionFields
 	// systemrelationshipcontrolactionDescType is the schema descriptor for type field.

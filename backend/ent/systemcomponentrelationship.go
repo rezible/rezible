@@ -43,9 +43,11 @@ type SystemComponentRelationshipEdges struct {
 	Target *SystemComponent `json:"target,omitempty"`
 	// SystemAnalyses holds the value of the system_analyses edge.
 	SystemAnalyses []*SystemAnalysisRelationship `json:"system_analyses,omitempty"`
+	// Hazards holds the value of the hazards edge.
+	Hazards []*SystemHazard `json:"hazards,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // SourceOrErr returns the Source value or an error if the edge
@@ -77,6 +79,15 @@ func (e SystemComponentRelationshipEdges) SystemAnalysesOrErr() ([]*SystemAnalys
 		return e.SystemAnalyses, nil
 	}
 	return nil, &NotLoadedError{edge: "system_analyses"}
+}
+
+// HazardsOrErr returns the Hazards value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentRelationshipEdges) HazardsOrErr() ([]*SystemHazard, error) {
+	if e.loadedTypes[3] {
+		return e.Hazards, nil
+	}
+	return nil, &NotLoadedError{edge: "hazards"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -167,6 +178,11 @@ func (scr *SystemComponentRelationship) QueryTarget() *SystemComponentQuery {
 // QuerySystemAnalyses queries the "system_analyses" edge of the SystemComponentRelationship entity.
 func (scr *SystemComponentRelationship) QuerySystemAnalyses() *SystemAnalysisRelationshipQuery {
 	return NewSystemComponentRelationshipClient(scr.config).QuerySystemAnalyses(scr)
+}
+
+// QueryHazards queries the "hazards" edge of the SystemComponentRelationship entity.
+func (scr *SystemComponentRelationship) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentRelationshipClient(scr.config).QueryHazards(scr)
 }
 
 // Update returns a builder for updating this SystemComponentRelationship.

@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 )
 
 // SystemComponentQuery is the builder for querying SystemComponent entities.
@@ -40,6 +41,7 @@ type SystemComponentQuery struct {
 	withConstraints              *SystemComponentConstraintQuery
 	withControls                 *SystemComponentControlQuery
 	withSignals                  *SystemComponentSignalQuery
+	withHazards                  *SystemHazardQuery
 	withComponentRelationships   *SystemComponentRelationshipQuery
 	withSystemAnalysisComponents *SystemAnalysisComponentQuery
 	withEventComponents          *IncidentEventSystemComponentQuery
@@ -227,6 +229,28 @@ func (scq *SystemComponentQuery) QuerySignals() *SystemComponentSignalQuery {
 			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, selector),
 			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SignalsTable, systemcomponent.SignalsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHazards chains the current query on the "hazards" edge.
+func (scq *SystemComponentQuery) QueryHazards() *SystemHazardQuery {
+	query := (&SystemHazardClient{config: scq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, selector),
+			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.HazardsTable, systemcomponent.HazardsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(scq.driver.Dialect(), step)
 		return fromU, nil
@@ -499,6 +523,7 @@ func (scq *SystemComponentQuery) Clone() *SystemComponentQuery {
 		withConstraints:              scq.withConstraints.Clone(),
 		withControls:                 scq.withControls.Clone(),
 		withSignals:                  scq.withSignals.Clone(),
+		withHazards:                  scq.withHazards.Clone(),
 		withComponentRelationships:   scq.withComponentRelationships.Clone(),
 		withSystemAnalysisComponents: scq.withSystemAnalysisComponents.Clone(),
 		withEventComponents:          scq.withEventComponents.Clone(),
@@ -583,6 +608,17 @@ func (scq *SystemComponentQuery) WithSignals(opts ...func(*SystemComponentSignal
 		opt(query)
 	}
 	scq.withSignals = query
+	return scq
+}
+
+// WithHazards tells the query-builder to eager-load the nodes that are connected to
+// the "hazards" edge. The optional arguments are used to configure the query builder of the edge.
+func (scq *SystemComponentQuery) WithHazards(opts ...func(*SystemHazardQuery)) *SystemComponentQuery {
+	query := (&SystemHazardClient{config: scq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	scq.withHazards = query
 	return scq
 }
 
@@ -697,7 +733,7 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*SystemComponent{}
 		_spec       = scq.querySpec()
-		loadedTypes = [10]bool{
+		loadedTypes = [11]bool{
 			scq.withKind != nil,
 			scq.withRelated != nil,
 			scq.withSystemAnalyses != nil,
@@ -705,6 +741,7 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 			scq.withConstraints != nil,
 			scq.withControls != nil,
 			scq.withSignals != nil,
+			scq.withHazards != nil,
 			scq.withComponentRelationships != nil,
 			scq.withSystemAnalysisComponents != nil,
 			scq.withEventComponents != nil,
@@ -780,6 +817,13 @@ func (scq *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 		if err := scq.loadSignals(ctx, query, nodes,
 			func(n *SystemComponent) { n.Edges.Signals = []*SystemComponentSignal{} },
 			func(n *SystemComponent, e *SystemComponentSignal) { n.Edges.Signals = append(n.Edges.Signals, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := scq.withHazards; query != nil {
+		if err := scq.loadHazards(ctx, query, nodes,
+			func(n *SystemComponent) { n.Edges.Hazards = []*SystemHazard{} },
+			func(n *SystemComponent, e *SystemHazard) { n.Edges.Hazards = append(n.Edges.Hazards, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1112,6 +1156,67 @@ func (scq *SystemComponentQuery) loadSignals(ctx context.Context, query *SystemC
 			return fmt.Errorf(`unexpected referenced foreign-key "component_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (scq *SystemComponentQuery) loadHazards(ctx context.Context, query *SystemHazardQuery, nodes []*SystemComponent, init func(*SystemComponent), assign func(*SystemComponent, *SystemHazard)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*SystemComponent)
+	nids := make(map[uuid.UUID]map[*SystemComponent]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(systemcomponent.HazardsTable)
+		s.Join(joinT).On(s.C(systemhazard.FieldID), joinT.C(systemcomponent.HazardsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(systemcomponent.HazardsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(systemcomponent.HazardsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*SystemComponent]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*SystemHazard](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "hazards" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

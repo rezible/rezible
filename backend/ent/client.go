@@ -65,6 +65,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -175,6 +176,8 @@ type Client struct {
 	SystemComponentRelationship *SystemComponentRelationshipClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
+	// SystemHazard is the client for interacting with the SystemHazard builders.
+	SystemHazard *SystemHazardClient
 	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
 	SystemRelationshipControlAction *SystemRelationshipControlActionClient
 	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
@@ -245,6 +248,7 @@ func (c *Client) init() {
 	c.SystemComponentKind = NewSystemComponentKindClient(c.config)
 	c.SystemComponentRelationship = NewSystemComponentRelationshipClient(c.config)
 	c.SystemComponentSignal = NewSystemComponentSignalClient(c.config)
+	c.SystemHazard = NewSystemHazardClient(c.config)
 	c.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(c.config)
 	c.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(c.config)
 	c.Task = NewTaskClient(c.config)
@@ -391,6 +395,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		SystemComponentKind:              NewSystemComponentKindClient(cfg),
 		SystemComponentRelationship:      NewSystemComponentRelationshipClient(cfg),
 		SystemComponentSignal:            NewSystemComponentSignalClient(cfg),
+		SystemHazard:                     NewSystemHazardClient(cfg),
 		SystemRelationshipControlAction:  NewSystemRelationshipControlActionClient(cfg),
 		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
 		Task:                             NewTaskClient(cfg),
@@ -464,6 +469,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		SystemComponentKind:              NewSystemComponentKindClient(cfg),
 		SystemComponentRelationship:      NewSystemComponentRelationshipClient(cfg),
 		SystemComponentSignal:            NewSystemComponentSignalClient(cfg),
+		SystemHazard:                     NewSystemHazardClient(cfg),
 		SystemRelationshipControlAction:  NewSystemRelationshipControlActionClient(cfg),
 		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
 		Task:                             NewTaskClient(cfg),
@@ -514,7 +520,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
 		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Use(hooks...)
@@ -541,7 +547,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
 		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
-		c.SystemComponentSignal, c.SystemRelationshipControlAction,
+		c.SystemComponentSignal, c.SystemHazard, c.SystemRelationshipControlAction,
 		c.SystemRelationshipFeedbackSignal, c.Task, c.Team, c.User,
 	} {
 		n.Intercept(interceptors...)
@@ -649,6 +655,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.SystemComponentRelationship.mutate(ctx, m)
 	case *SystemComponentSignalMutation:
 		return c.SystemComponentSignal.mutate(ctx, m)
+	case *SystemHazardMutation:
+		return c.SystemHazard.mutate(ctx, m)
 	case *SystemRelationshipControlActionMutation:
 		return c.SystemRelationshipControlAction.mutate(ctx, m)
 	case *SystemRelationshipFeedbackSignalMutation:
@@ -8477,6 +8485,22 @@ func (c *SystemComponentClient) QuerySignals(sc *SystemComponent) *SystemCompone
 	return query
 }
 
+// QueryHazards queries the hazards edge of a SystemComponent.
+func (c *SystemComponentClient) QueryHazards(sc *SystemComponent) *SystemHazardQuery {
+	query := (&SystemHazardClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.HazardsTable, systemcomponent.HazardsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryComponentRelationships queries the component_relationships edge of a SystemComponent.
 func (c *SystemComponentClient) QueryComponentRelationships(sc *SystemComponent) *SystemComponentRelationshipQuery {
 	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
@@ -8667,6 +8691,22 @@ func (c *SystemComponentConstraintClient) QueryComponent(scc *SystemComponentCon
 			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.ComponentTable, systemcomponentconstraint.ComponentColumn),
+		)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHazards queries the hazards edge of a SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) QueryHazards(scc *SystemComponentConstraint) *SystemHazardQuery {
+	query := (&SystemHazardClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
+			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentconstraint.HazardsTable, systemcomponentconstraint.HazardsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
 		return fromV, nil
@@ -9185,6 +9225,22 @@ func (c *SystemComponentRelationshipClient) QuerySystemAnalyses(scr *SystemCompo
 	return query
 }
 
+// QueryHazards queries the hazards edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryHazards(scr *SystemComponentRelationship) *SystemHazardQuery {
+	query := (&SystemHazardClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentrelationship.HazardsTable, systemcomponentrelationship.HazardsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SystemComponentRelationshipClient) Hooks() []Hook {
 	return c.hooks.SystemComponentRelationship
@@ -9388,6 +9444,187 @@ func (c *SystemComponentSignalClient) mutate(ctx context.Context, m *SystemCompo
 		return (&SystemComponentSignalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown SystemComponentSignal mutation op: %q", m.Op())
+	}
+}
+
+// SystemHazardClient is a client for the SystemHazard schema.
+type SystemHazardClient struct {
+	config
+}
+
+// NewSystemHazardClient returns a client for the SystemHazard from the given config.
+func NewSystemHazardClient(c config) *SystemHazardClient {
+	return &SystemHazardClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `systemhazard.Hooks(f(g(h())))`.
+func (c *SystemHazardClient) Use(hooks ...Hook) {
+	c.hooks.SystemHazard = append(c.hooks.SystemHazard, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `systemhazard.Intercept(f(g(h())))`.
+func (c *SystemHazardClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemHazard = append(c.inters.SystemHazard, interceptors...)
+}
+
+// Create returns a builder for creating a SystemHazard entity.
+func (c *SystemHazardClient) Create() *SystemHazardCreate {
+	mutation := newSystemHazardMutation(c.config, OpCreate)
+	return &SystemHazardCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of SystemHazard entities.
+func (c *SystemHazardClient) CreateBulk(builders ...*SystemHazardCreate) *SystemHazardCreateBulk {
+	return &SystemHazardCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *SystemHazardClient) MapCreateBulk(slice any, setFunc func(*SystemHazardCreate, int)) *SystemHazardCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &SystemHazardCreateBulk{err: fmt.Errorf("calling to SystemHazardClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*SystemHazardCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &SystemHazardCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for SystemHazard.
+func (c *SystemHazardClient) Update() *SystemHazardUpdate {
+	mutation := newSystemHazardMutation(c.config, OpUpdate)
+	return &SystemHazardUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *SystemHazardClient) UpdateOne(sh *SystemHazard) *SystemHazardUpdateOne {
+	mutation := newSystemHazardMutation(c.config, OpUpdateOne, withSystemHazard(sh))
+	return &SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *SystemHazardClient) UpdateOneID(id uuid.UUID) *SystemHazardUpdateOne {
+	mutation := newSystemHazardMutation(c.config, OpUpdateOne, withSystemHazardID(id))
+	return &SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for SystemHazard.
+func (c *SystemHazardClient) Delete() *SystemHazardDelete {
+	mutation := newSystemHazardMutation(c.config, OpDelete)
+	return &SystemHazardDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *SystemHazardClient) DeleteOne(sh *SystemHazard) *SystemHazardDeleteOne {
+	return c.DeleteOneID(sh.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *SystemHazardClient) DeleteOneID(id uuid.UUID) *SystemHazardDeleteOne {
+	builder := c.Delete().Where(systemhazard.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &SystemHazardDeleteOne{builder}
+}
+
+// Query returns a query builder for SystemHazard.
+func (c *SystemHazardClient) Query() *SystemHazardQuery {
+	return &SystemHazardQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeSystemHazard},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a SystemHazard entity by its id.
+func (c *SystemHazardClient) Get(ctx context.Context, id uuid.UUID) (*SystemHazard, error) {
+	return c.Query().Where(systemhazard.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *SystemHazardClient) GetX(ctx context.Context, id uuid.UUID) *SystemHazard {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryComponents queries the components edge of a SystemHazard.
+func (c *SystemHazardClient) QueryComponents(sh *SystemHazard) *SystemComponentQuery {
+	query := (&SystemComponentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sh.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
+			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ComponentsTable, systemhazard.ComponentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sh.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryConstraints queries the constraints edge of a SystemHazard.
+func (c *SystemHazardClient) QueryConstraints(sh *SystemHazard) *SystemComponentConstraintQuery {
+	query := (&SystemComponentConstraintClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sh.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
+			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ConstraintsTable, systemhazard.ConstraintsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sh.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRelationships queries the relationships edge of a SystemHazard.
+func (c *SystemHazardClient) QueryRelationships(sh *SystemHazard) *SystemComponentRelationshipQuery {
+	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sh.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
+			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.RelationshipsTable, systemhazard.RelationshipsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(sh.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *SystemHazardClient) Hooks() []Hook {
+	return c.hooks.SystemHazard
+}
+
+// Interceptors returns the client interceptors.
+func (c *SystemHazardClient) Interceptors() []Interceptor {
+	return c.inters.SystemHazard
+}
+
+func (c *SystemHazardClient) mutate(ctx context.Context, m *SystemHazardMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&SystemHazardCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&SystemHazardUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&SystemHazardDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown SystemHazard mutation op: %q", m.Op())
 	}
 }
 
@@ -10425,8 +10662,8 @@ type (
 		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
 		SystemComponent, SystemComponentConstraint, SystemComponentControl,
 		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		User []ent.Hook
+		SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, User []ent.Hook
 	}
 	inters struct {
 		Environment, Functionality, Incident, IncidentDebrief, IncidentDebriefMessage,
@@ -10443,7 +10680,7 @@ type (
 		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
 		SystemComponent, SystemComponentConstraint, SystemComponentControl,
 		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		User []ent.Interceptor
+		SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, User []ent.Interceptor
 	}
 )

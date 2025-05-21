@@ -110,6 +110,8 @@ type Tx struct {
 	SystemComponentRelationship *SystemComponentRelationshipClient
 	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
 	SystemComponentSignal *SystemComponentSignalClient
+	// SystemHazard is the client for interacting with the SystemHazard builders.
+	SystemHazard *SystemHazardClient
 	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
 	SystemRelationshipControlAction *SystemRelationshipControlActionClient
 	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
@@ -300,6 +302,7 @@ func (tx *Tx) init() {
 	tx.SystemComponentKind = NewSystemComponentKindClient(tx.config)
 	tx.SystemComponentRelationship = NewSystemComponentRelationshipClient(tx.config)
 	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
+	tx.SystemHazard = NewSystemHazardClient(tx.config)
 	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
 	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)

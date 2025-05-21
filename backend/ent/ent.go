@@ -61,6 +61,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/systemhazard"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
@@ -175,6 +176,7 @@ func checkColumn(table, column string) error {
 			systemcomponentkind.Table:              systemcomponentkind.ValidColumn,
 			systemcomponentrelationship.Table:      systemcomponentrelationship.ValidColumn,
 			systemcomponentsignal.Table:            systemcomponentsignal.ValidColumn,
+			systemhazard.Table:                     systemhazard.ValidColumn,
 			systemrelationshipcontrolaction.Table:  systemrelationshipcontrolaction.ValidColumn,
 			systemrelationshipfeedbacksignal.Table: systemrelationshipfeedbacksignal.ValidColumn,
 			task.Table:                             task.ValidColumn,

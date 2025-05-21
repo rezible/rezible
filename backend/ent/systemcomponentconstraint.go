@@ -37,9 +37,11 @@ type SystemComponentConstraint struct {
 type SystemComponentConstraintEdges struct {
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
+	// Hazards holds the value of the hazards edge.
+	Hazards []*SystemHazard `json:"hazards,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // ComponentOrErr returns the Component value or an error if the edge
@@ -51,6 +53,15 @@ func (e SystemComponentConstraintEdges) ComponentOrErr() (*SystemComponent, erro
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "component"}
+}
+
+// HazardsOrErr returns the Hazards value or an error if the edge
+// was not loaded in eager-loading.
+func (e SystemComponentConstraintEdges) HazardsOrErr() ([]*SystemHazard, error) {
+	if e.loadedTypes[1] {
+		return e.Hazards, nil
+	}
+	return nil, &NotLoadedError{edge: "hazards"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -125,6 +136,11 @@ func (scc *SystemComponentConstraint) Value(name string) (ent.Value, error) {
 // QueryComponent queries the "component" edge of the SystemComponentConstraint entity.
 func (scc *SystemComponentConstraint) QueryComponent() *SystemComponentQuery {
 	return NewSystemComponentConstraintClient(scc.config).QueryComponent(scc)
+}
+
+// QueryHazards queries the "hazards" edge of the SystemComponentConstraint entity.
+func (scc *SystemComponentConstraint) QueryHazards() *SystemHazardQuery {
+	return NewSystemComponentConstraintClient(scc.config).QueryHazards(scc)
 }
 
 // Update returns a builder for updating this SystemComponentConstraint.

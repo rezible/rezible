@@ -43,6 +43,8 @@ const (
 	EdgeControls = "controls"
 	// EdgeSignals holds the string denoting the signals edge name in mutations.
 	EdgeSignals = "signals"
+	// EdgeHazards holds the string denoting the hazards edge name in mutations.
+	EdgeHazards = "hazards"
 	// EdgeComponentRelationships holds the string denoting the component_relationships edge name in mutations.
 	EdgeComponentRelationships = "component_relationships"
 	// EdgeSystemAnalysisComponents holds the string denoting the system_analysis_components edge name in mutations.
@@ -91,6 +93,11 @@ const (
 	SignalsInverseTable = "system_component_signals"
 	// SignalsColumn is the table column denoting the signals relation/edge.
 	SignalsColumn = "component_id"
+	// HazardsTable is the table that holds the hazards relation/edge. The primary key declared below.
+	HazardsTable = "system_hazard_components"
+	// HazardsInverseTable is the table name for the SystemHazard entity.
+	// It exists in this package in order to avoid circular dependency with the "systemhazard" package.
+	HazardsInverseTable = "system_hazards"
 	// ComponentRelationshipsTable is the table that holds the component_relationships relation/edge.
 	ComponentRelationshipsTable = "system_component_relationships"
 	// ComponentRelationshipsInverseTable is the table name for the SystemComponentRelationship entity.
@@ -136,6 +143,9 @@ var (
 	// EventsPrimaryKey and EventsColumn2 are the table columns denoting the
 	// primary key for the events relation (M2M).
 	EventsPrimaryKey = []string{"incident_event_id", "system_component_id"}
+	// HazardsPrimaryKey and HazardsColumn2 are the table columns denoting the
+	// primary key for the hazards relation (M2M).
+	HazardsPrimaryKey = []string{"system_hazard_id", "system_component_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -290,6 +300,20 @@ func BySignals(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByHazardsCount orders the results by hazards count.
+func ByHazardsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newHazardsStep(), opts...)
+	}
+}
+
+// ByHazards orders the results by hazards terms.
+func ByHazards(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHazardsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByComponentRelationshipsCount orders the results by component_relationships count.
 func ByComponentRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -378,6 +402,13 @@ func newSignalsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(SignalsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, SignalsTable, SignalsColumn),
+	)
+}
+func newHazardsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HazardsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
 	)
 }
 func newComponentRelationshipsStep() *sqlgraph.Step {
