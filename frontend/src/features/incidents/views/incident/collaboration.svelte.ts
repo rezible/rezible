@@ -28,7 +28,7 @@ export class IncidentCollaborationState {
 		// if (collab.provider && collab.provider.isConnected) {}
 		try {
 			this.documentName = undefined;
-			// if (this.provider?.isConnected) this.provider?.disconnect();
+			if (this.provider?.isConnected) this.provider?.disconnect();
 			this.provider?.destroy();
 			this.provider = undefined;
 			this.awareness = [];
@@ -86,7 +86,7 @@ export class IncidentCollaborationState {
 			token: sess.token,
 			name: sess.documentName,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),
-			// onStatus: (e) => this.onConnectionStatusChange(e),
+			onStatus: (e) => this.onConnectionStatusChange(e),
 			onAuthenticated: () => this.onAuthenticated(),
 			onAuthenticationFailed: e => this.onAuthenticationFailed(e),
 		};

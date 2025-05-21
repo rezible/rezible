@@ -26,12 +26,12 @@
     }
   },
   "dependencies": {
-    "@hocuspocus/extension-database": "^3.1.1",
-    "@hocuspocus/extension-logger": "^3.1.1",
-    "@hocuspocus/extension-sqlite": "^3.1.1",
-    "@hocuspocus/extension-webhook": "^3.1.1",
-    "@hocuspocus/server": "^3.1.1",
-    "@hocuspocus/transformer": "^3.1.1",
+    "@hocuspocus/extension-database": "^2.15.2",
+    "@hocuspocus/extension-logger": "^2.15.2",
+    "@hocuspocus/extension-sqlite": "^2.15.2",
+    "@hocuspocus/extension-webhook": "^2.15.2",
+    "@hocuspocus/server": "^2.15.2",
+    "@hocuspocus/transformer": "^2.15.2",
     "@tiptap/core": "^2.12.0",
     "@tiptap/extension-bold": "^2.12.0",
     "@tiptap/extension-bubble-menu": "^2.12.0",

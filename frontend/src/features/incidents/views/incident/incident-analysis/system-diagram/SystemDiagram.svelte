@@ -12,6 +12,7 @@
 		type SvelteFlowProps,
 		type ColorMode,
 		type Viewport,
+		Panel,
 	} from "@xyflow/svelte";
 	import "@xyflow/svelte/dist/style.css";
 	import "./diagram-styles.css";
@@ -104,9 +105,11 @@
 			<ContextMenu />
 			<EditToolbar />
 			<AddingComponentGhostNode />
-		</SvelteFlow>
 
-		<ActionsBar />
+			<Panel position="bottom-right">
+				<ActionsBar />
+			</Panel>
+		</SvelteFlow>
 	</div>
 
 	<ComponentDialog />

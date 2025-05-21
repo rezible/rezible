@@ -9,7 +9,6 @@ import TaskList from '@tiptap/extension-task-list'
 import { HighlightDraftDiscussionExtension } from './highlight-draft-discussions';
 import { RezUserMentionExtension, type SuggestionExtensionType } from './user-mention';
 import { AnnotationExtension } from './annotation';
-import { BulletList } from '@tiptap/extension-bullet-list';
 
 export const configureUserMentionExtension = (suggestion?: SuggestionExtensionType) => {
 	return RezUserMentionExtension.configure({suggestion});

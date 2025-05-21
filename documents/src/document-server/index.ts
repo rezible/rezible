@@ -56,7 +56,7 @@ const createServer = async (cfg: Config) => {
 	const docsApi = new RezibleDocumentsApi({
 
 	})
-
+	
 	const server = Server.configure({
 		name: cfg.name,
 		address: cfg.host,

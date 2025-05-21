@@ -7,7 +7,7 @@ import {
   configureAnnotationExtension,
   getHandoverExtensions,
 } from "@rezible/documents/tiptap-extensions";
-import { MarkType, NodeType, type MarkSpec, type NodeSpec, type SchemaSpec } from "@tiptap/pm/model";
+import type { MarkSpec, NodeSpec, SchemaSpec } from "@tiptap/pm/model";
 
 const getTipTapExtensions = (): Extensions => {
   return [
