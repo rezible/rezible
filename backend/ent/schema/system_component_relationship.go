@@ -34,5 +34,7 @@ func (SystemComponentRelationship) Edges() []ent.Edge {
 
 		edge.From("system_analyses", SystemAnalysisRelationship.Type).
 			Ref("component_relationship"),
+
+		edge.From("hazards", SystemHazard.Type).Ref("relationships"),
 	}
 }

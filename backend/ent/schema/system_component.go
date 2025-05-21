@@ -19,7 +19,7 @@ func (SystemComponent) Fields() []ent.Field {
 		field.String("provider_id").Optional(),
 		field.UUID("kind_id", uuid.UUID{}).Optional(),
 		field.Text("description").Optional(),
-		field.JSON("properties", map[string]any{}).Optional(), // Flexible properties based on component type
+		field.JSON("properties", map[string]any{}).Optional(),
 		field.Time("created_at").
 			Default(time.Now),
 		field.Time("updated_at").
@@ -57,6 +57,8 @@ func (SystemComponent) Edges() []ent.Edge {
 			Ref("component"),
 		edge.From("signals", SystemComponentSignal.Type).
 			Ref("component"),
+
+		edge.From("hazards", SystemHazard.Type).Ref("components"),
 	}
 }
 
@@ -98,6 +100,8 @@ func (SystemComponentConstraint) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("component", SystemComponent.Type).
 			Required().Unique().Field("component_id"),
+
+		edge.From("hazards", SystemHazard.Type).Ref("constraints"),
 	}
 }
 
