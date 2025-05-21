@@ -33,7 +33,7 @@
 		</div>
 	{/if}
 
-	<div class="flex-1 flex flex-col gap-2 h-full max-h-full">
+	<div class="flex-1 flex flex-col justify-between gap-2 h-full max-h-full">
 		{#if loading}
 			<LoadingIndicator />
 		{:else if handover}

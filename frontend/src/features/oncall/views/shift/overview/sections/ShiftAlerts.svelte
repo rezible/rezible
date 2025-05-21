@@ -45,14 +45,16 @@
 	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
 
 	const alertHourArcBackgroundColor = (hour: number) => {
-		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.2)";
-		if (hour > 5 && hour < 22) return "rgba(225, 230, 170, 0.2)";
-		return "rgba(70, 50, 120, 0.2)";
+		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.25)";
+		if (hour > 5 && hour < 22) return "rgba(225, 230, 120, 0.25)";
+		return "rgba(70, 50, 120, 0.25)";
 	};
 	const alertHourArcFillColor = (hour: number) => {
-		if (hourAlertCounts[hour] === maxAlertCount) return "rgba(210, 110, 140, 1)";
+		const count = hourAlertCounts[hour];
+		if (count === 0) return "rgba(100, 100, 100, .8)"
+		if (count === maxAlertCount) return "rgba(210, 110, 140, 1)";
 		if (isBusinessHours(hour)) return "rgba(100, 110, 120, 1)";
-		if (hour > 5 && hour < 22) return "rgba(210, 210, 130, 0.6)"; // off-hours alert
+		if (hour > 5 && hour < 22) return "rgba(230, 230, 80, .6)"; // off-hours alert
 		return "rgba(200, 190, 100, 0.8)"; // night alert
 	};
 
@@ -63,6 +65,7 @@
 		// { title: "Stat 4", subheading: `desc`, value: "" },
 	]);
 
+	const MinRadius = 30;
 	const alertHoursChartOptions = $derived<ChartProps["options"]>({
 		series: [
 			{
@@ -98,7 +101,7 @@
 				data: Array.from({ length: 24 }).map((_, hour) => {
 					const alerts = hourAlertCounts[hour];
 					return {
-						value: alerts > 0 ? Math.round(30 + 70 * (alerts / maxAlertCount)) / 100 : 0,
+						value: alerts > 0 ? Math.round(MinRadius + 70 * (alerts / maxAlertCount)) / 100 : 0,
 						name: `${hour12(hour)}${hour >= 12 ? "PM" : "AM"}`,
 					};
 				}),

@@ -50,7 +50,7 @@
 	"type": "module",
 	"dependencies": {
 		"@hey-api/client-fetch": "^0.10.0",
-		"@hocuspocus/provider": "^2.15.2",
+		"@hocuspocus/provider": "^3.1.1",
 		"@internationalized/date": "^3.7.0",
 		"@layerstack/svelte-table": "^1.0.0",
 		"@layerstack/tailwind": "^1.0.0",
@@ -59,10 +59,10 @@
 		"@rezible/documents": "workspace:*",
 		"@sveltejs/adapter-auto": "^4.0.0",
 		"@tanstack/svelte-query": "https://pkg.pr.new/@tanstack/svelte-query@ccce0b8",
-		"@tiptap/core": "^2.11.7",
-		"@tiptap/extension-collaboration": "^2.11.7",
-		"@tiptap/extension-collaboration-cursor": "^2.11.7",
-		"@tiptap/pm": "^2.11.7",
+		"@tiptap/core": "^2.12.0",
+		"@tiptap/extension-collaboration": "^2.12.0",
+		"@tiptap/extension-collaboration-cursor": "^2.12.0",
+		"@tiptap/pm": "^2.12.0",
 		"@xyflow/svelte": "^1.0.2",
 		"d3-array": "^3.2.4",
 		"d3-random": "^3.0.1",
@@ -77,7 +77,10 @@
 		"svelte-ux": "^1.0.4",
 		"uuid": "^11.1.0",
 		"vis-timeline": "^7.7.3",
-		"yjs": "^13.6.24",
+		"yjs": "^13.6.27",
 		"zod": "^3.24.2"
+	},
+	"overrides": {
+		"prosemirror-model": "1.23.0"
 	}
 }

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RetrospectiveSection } from "$lib/api";
+	import type { RetrospectiveReportSection } from "$lib/api";
 	import { mdiCircleMedium } from "@mdi/js";
 	import { onMount } from "svelte";
 	import { Icon } from "svelte-ux";
@@ -8,7 +8,7 @@
 	type Props = {
 		visible: boolean;
 		containerEl: HTMLElement;
-		sections: RetrospectiveSection[];
+		sections: RetrospectiveReportSection[];
 		sectionElements: Record<string, HTMLElement>;
 		onSectionClicked: (field: string) => void;
 	};

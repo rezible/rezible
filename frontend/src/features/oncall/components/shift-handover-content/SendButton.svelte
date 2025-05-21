@@ -49,7 +49,7 @@
 	disabled={!canSend}
 	loading={sendMutation.isPending}
 	on:click={submitHandover}
-	classes={{ root: "gap-2" }}
+	classes={{ root: "gap-2 py-3" }}
 >
 	<span class="flex items-center gap-2 text-lg">
 		{#if handoverState.sent}
