@@ -12,13 +12,15 @@
 		type IncidentMilestoneAttributes,
 		type UpdateIncidentMilestoneAttributes,
 	} from "$lib/api";
-	import { type ZonedDateTime, getLocalTimeZone, now, parseAbsoluteToLocal } from "@internationalized/date";
+	import { type ZonedDateTime, fromAbsolute, getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 
 	import { createMentionEditor } from "$components/tiptap-editor/editors";
 	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
 	import { useIncidentViewState } from "../../../viewState.svelte";
+	import { watch } from "runed";
+	import { useIncidentTimeline } from "../timelineState.svelte";
 
 	type Props = {
 		milestone?: IncidentMilestone;
@@ -27,6 +29,9 @@
 		onSaved: (milestone: IncidentMilestone) => void;
 	};
 	const { milestone, otherMilestones, onClose, onSaved }: Props = $props();
+
+	const timeline = useIncidentTimeline();
+	const incidentTimeBounds = $derived(timeline.incidentWindow);
 
 	const incidentViewState = useIncidentViewState();
 	const incident = $derived(incidentViewState.incident);
@@ -65,20 +70,31 @@
 			hint: "Impact is resolved",
 		},
 	];
+	const existingKinds = $derived(new Set(otherMilestones.map(m => m.attributes.kind)));
+	const validOptions = $derived(milestoneKindOptions.filter(o => (!o.unique || !existingKinds.has(o.value))));
 
 	type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
 	type MilestoneKind = IncidentMilestoneAttributes["kind"];
 
 	let kind = $state<MilestoneKind>(milestone?.attributes.kind ?? "impact");
+	watch(() => validOptions, v => {
+		const defaultOption = v.at(0);
+		if (defaultOption) kind = defaultOption.value;
+	});
 	let descriptionEditor = $state<DescriptionEditor>(null);
 
-	const prevMs = $derived(getPreviousOrderedMilestone(kind, otherMilestones));
-	const timeMin = $derived(prevMs ? parseAbsoluteToLocal(prevMs.attributes.timestamp) : undefined);
-	const nextMs = $derived(getNextOrderedMilestone(kind, otherMilestones));
-	const timeMax = $derived(nextMs ? parseAbsoluteToLocal(nextMs.attributes.timestamp) : undefined);
+	const timezone = getLocalTimeZone();
+
+	const incidentStart = $derived(fromAbsolute(incidentTimeBounds.start, timezone));
+
+	const prevMs = $derived(getPreviousOrderedMilestone(kind, otherMilestones, timezone));
+	const timeMin = $derived(prevMs ? parseAbsolute(prevMs.attributes.timestamp, timezone) : undefined);
+	const nextMs = $derived(getNextOrderedMilestone(kind, otherMilestones, timezone));
+	const timeMax = $derived(nextMs ? parseAbsolute(nextMs.attributes.timestamp, timezone) : undefined);
 
 	const msTimestamp = milestone?.attributes.timestamp;
-	let timestamp = $state<ZonedDateTime>(msTimestamp ? parseAbsoluteToLocal(msTimestamp) : now(getLocalTimeZone()));
+	let timestamp = $state<ZonedDateTime | undefined>(msTimestamp ? parseAbsolute(msTimestamp, timezone) : undefined);
+	const timestampValue = $derived((timestamp || incidentStart).toAbsoluteString());
 
 	const saveEnabled = $derived(true);
 
@@ -108,7 +124,7 @@
 		const path = { id: $state.snapshot(incident.id) };
 		const attributes: CreateIncidentMilestoneAttributes = {
 			kind: $state.snapshot(kind),
-			timestamp: timestamp.toAbsoluteString(),
+			timestamp: timestampValue,
 			description: getDescriptionContent(),
 		};
 		createMut.mutate({ path, body: { attributes } });
@@ -119,7 +135,7 @@
 		const path = { id: $state.snapshot(milestone.id) };
 		const attributes: UpdateIncidentMilestoneAttributes = {
 			kind: $state.snapshot(kind),
-			timestamp: timestamp.toAbsoluteString(),
+			timestamp: timestampValue,
 			description: getDescriptionContent(),
 		};
 		updateMut.mutate({ path, body: { attributes } });
@@ -135,19 +151,21 @@
 	<Field label="Kind" icon={mdiShape}>
 		<ToggleGroup bind:value={kind} variant="fill" inset class="w-full">
 			{#each milestoneKindOptions as opt}
-				<ToggleOption value={opt.value}>
-					<Tooltip title={opt.hint}>
-						<span class="flex items-center justify-center gap-2 px-2">
-							<Icon data={getIconForIncidentMilestoneKind(opt.value)} />
-							{opt.label}
-						</span>
-					</Tooltip>
-				</ToggleOption>
+				{#if !opt.unique || !existingKinds.has(opt.value)}
+					<ToggleOption value={opt.value}>
+						<Tooltip title={opt.hint}>
+							<span class="flex items-center justify-center gap-2 px-2">
+								<Icon data={getIconForIncidentMilestoneKind(opt.value)} />
+								{opt.label}
+							</span>
+						</Tooltip>
+					</ToggleOption>
+				{/if}
 			{/each}
 		</ToggleGroup>
 	</Field>
 
-	<DateTimePickerField label="Time" current={timestamp} onChange={(ts) => (timestamp = ts)} exactTime rangeMin={timeMin} rangeMax={timeMax} />
+	<DateTimePickerField label="Time" current={timestamp || incidentStart} onChange={(ts) => (timestamp = ts)} exactTime rangeMin={timeMin} rangeMax={timeMax} />
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}

@@ -6,16 +6,15 @@
 
 /* horizontal timeline line (item dots connect to this) */
 .vis-panel.vis-center {
-	border-color: oklch(var(--border-surface-content) * .75);
-	border-color: #b1b1b7;
+	border-color: oklch(var(--color-surface-content) / .25);
 }
 
 /* vertical grid lines */
 .vis-time-axis .vis-grid.vis-minor {
-	border-color: #b1b1b7;
+	border-color: oklch(var(--color-surface-content) / .25);
 }
 .vis-time-axis .vis-grid.vis-major {
-	border-color: #b1b1b7;
+	border-color: oklch(var(--color-surface-content) / .75);
 }
 
 /* item dot connecting to horizontal timeline line */
@@ -54,4 +53,8 @@
 /* current time vertical line */
 .vis-current-time {
 	background-color: oklch(var(--color-secondary) / var(--tw-bg-opacity, 1));
+}
+
+.vis-foreground .vis-group {
+	border-bottom: none;
 }

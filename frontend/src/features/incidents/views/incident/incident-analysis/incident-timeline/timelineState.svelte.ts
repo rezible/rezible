@@ -186,7 +186,7 @@ class TimelineMilestonesState {
 			return new Date(a.attributes.timestamp).valueOf() - new Date(b.attributes.timestamp).valueOf();
 		});
 		sortedMilestones.forEach((ms, idx, arr) => {
-			this.setMilestone(ms, idx < arr.length - 1 ? arr[idx + 1] : undefined);
+			this.setMilestone(ms, arr.at(idx + 1));
 		});
 
 		if (wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
@@ -216,7 +216,7 @@ class TimelineMilestonesState {
 		const bgItem: TimelineItem = {
 			id: bgId,
 			type: "background",
-			content: "foo",
+			content: "",
 			style: bgStyles,
 			start,
 			end: endTime,
@@ -225,7 +225,7 @@ class TimelineMilestonesState {
 		const boxItem: TimelineItem = {
 			id: boxId,
 			type: "point",
-			group: "default",
+			group: "milestones",
 			subgroup: MilestonesSubgroup,
 			title: ms.attributes.kind,
 			content: el.ref,
@@ -263,8 +263,8 @@ class TimelineMilestonesState {
 }
 
 export type TimelineRange = {
-	start: Date;
-	end: Date;
+	start: number;
+	end: number;
 }
 
 const OneHour = 1000 * 60 * 60;
@@ -278,8 +278,9 @@ export class TimelineState {
 
 	timeline = $state.raw<Timeline>();
 
-	incidentWindow = $state.raw<TimelineRange>();
-	viewWindow = $state.raw<TimelineRange>();
+	incidentWindow = $state.raw<TimelineRange>({start: 0, end: 0});
+	viewWindow = $state.raw<TimelineRange>({start: 0, end: 0});
+	viewBounds = $state.raw<TimelineRange>({start: 0, end: 0});
 
 	selectedItems = new SvelteSet<string>();
 
@@ -308,7 +309,8 @@ export class TimelineState {
 		};
 
 		const timelineGroups: DataGroup[] = [
-			{ id: "default", title: "Default", content: "" },
+			{ id: "default", title: "Events", content: "" },
+			{ id: "milestones", title: "Milestones", content: "" },
 		];
 
 		if (this.timeline) this.timeline.destroy();
@@ -319,16 +321,14 @@ export class TimelineState {
 
 		this.timeline.on("select", e => {this.onTimelineSelect(e)});
 		this.timeline.on("rangechange", e => {
-			this.viewWindow = {start: e.start as Date, end: e.end as Date};
+			this.viewWindow = {start: (e.start as Date).valueOf(), end: (e.end as Date).valueOf()};
 		});
-		this.items.on("*", () => {
-			this.updateMinMaxRange();
-		})
+		this.items.on("*", () => {this.updateViewBounds()});
 
 		this.setIncidentWindow(this.viewState.incident);
 	}
 
-	updateMinMaxRange() {
+	updateViewBounds() {
 		if (!this.timeline || !this.incidentWindow) return;
 
 		const offset = 2 * OneHour;
@@ -340,19 +340,22 @@ export class TimelineState {
 			if (d > max) max = d;
 		});
 
-		this.timeline.setOptions({min: min - offset, max: max + offset});
+		const offsetMin = min - offset;
+		const offsetMax = max + offset;
+
+		this.timeline.setOptions({min: offsetMin, max: offsetMax});
+		this.viewBounds = {start: offsetMin, end: offsetMax};
 	}
 
 	setIncidentWindow(inc?: Incident) {
 		if (!inc || !this.timeline) return;
 
-		const start = new Date(inc.attributes.openedAt);
-		const end = new Date(inc.attributes.closedAt);
+		const start = new Date(inc.attributes.openedAt).valueOf();
+		const end = new Date(inc.attributes.closedAt).valueOf();
 
 		this.incidentWindow = {start, end};
-		this.updateMinMaxRange();
 
-		this.timeline.setWindow(start.valueOf() - OneHour, end.valueOf() + OneHour, {animation: false});
+		this.timeline.setWindow(start - OneHour, end + OneHour, {animation: false});
 
 		const windowKey = "incident-window-bg";
 		const windowBackgroundStyle = "background-color:rgba(74, 163, 144, 0.1);";
@@ -363,16 +366,27 @@ export class TimelineState {
 			content: "",
 			style: windowBackgroundStyle,
 		};
-		const windowPoint: TimelineItem = {
+		const windowStartPoint: TimelineItem = {
 			id: "incident-window-start",
 			type: "point",
-			title: "Incident Opened",
+			group: "milestones",
+			title: "",
 			content: "Incident Opened",
 			align: "left",
 			selectable: false,
 			start,
-		}
-		this.items.update([windowBg, windowPoint]);
+		};
+		const windowEndPoint: TimelineItem = {
+			id: "incident-window-end",
+			type: "point",
+			group: "milestones",
+			title: "",
+			content: "Incident Closed",
+			align: "left",
+			selectable: false,
+			start: end,
+		};
+		this.items.update([windowBg, windowStartPoint, windowEndPoint]);
 	}
 
 	cleanup() {
