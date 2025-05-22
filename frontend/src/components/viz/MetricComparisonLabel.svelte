@@ -6,8 +6,7 @@
 		icon?: string;
 		deltaLabel?: string;
 		hint?: string;
-	}
-
+	};
 </script>
 
 <script lang="ts">
@@ -44,7 +43,7 @@
 </script>
 
 <div class="{comparisonClass(delta, !!comparison.positive)} flex flex-col items-end gap-2">
-	<span>{deltaLabel}</span>
+	<span>{deltaText}</span>
 
 	{#if comparison.hint}
 		<div class="text-warning">

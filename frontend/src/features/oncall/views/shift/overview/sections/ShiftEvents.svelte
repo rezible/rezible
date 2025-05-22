@@ -95,7 +95,7 @@
 </div>
 
 <Collapse classes={{ root: "border rounded border-surface-content/10", icon: "mr-2" }}>
-	<div slot="trigger" class="flex-1 px-3 py-3">Events Heatmap</div>
+	<div slot="trigger" class="flex-1 px-3 py-3">Event Heatmap</div>
 	<div class="border-surface-content/10">
 		<ShiftEventsHeatmap
 			data={hourlyEventCount}

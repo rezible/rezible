@@ -2,7 +2,6 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12, hour12Label } from "$lib/format.svelte";
 
-	import { formatDuration } from "date-fns";
 	import { Header } from "svelte-ux";
 
 	import { isBusinessHours } from "$features/oncall/lib/utils";

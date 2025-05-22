@@ -24,18 +24,15 @@
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
 	<div class="col-span-2 h-full w-full overflow-y-auto pr-1 space-y-2">
-		{#if !!metrics && !!comparison}
-			<ShiftEvents {metrics} {comparison} />
-
-			<ShiftBurden {metrics} />
-
-			<ShiftAlerts {metrics} />
-			
-			<ShiftIncidents {metrics} {comparison} />
-		{:else}
+		{#if !metrics || !comparison}
 			<div class="grid w-full h-full place-items-center">
 				<LoadingIndicator />
 			</div>
+		{:else}
+			<ShiftEvents {metrics} {comparison} />
+			<ShiftBurden {metrics} />
+			<ShiftAlerts {metrics} />
+			<ShiftIncidents {metrics} {comparison} />
 		{/if}
 	</div>
 
