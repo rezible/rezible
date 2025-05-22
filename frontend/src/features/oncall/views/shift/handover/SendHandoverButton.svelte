@@ -9,29 +9,32 @@
 	} from "$lib/api";
 	import { getToastState } from "$features/app/lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { HandoverEditorState } from "./state.svelte";
+	import { ShiftHandoverEditorState } from "$features/oncall/components/shift-handover-content/state.svelte";
 
 	type Props = { 
-		shiftId: string;
-		handoverState: HandoverEditorState;
+		handoverState: ShiftHandoverEditorState;
 	};
-	const { shiftId, handoverState }: Props = $props();
+	const { handoverState }: Props = $props();
 
-	const nextShiftQuery = createQuery(() => getNextOncallShiftOptions({ path: { id: shiftId } }));
+	const shiftId = $derived(handoverState.handover?.attributes.shiftId || "");
+
+	const nextShiftQuery = createQuery(() => ({
+		...getNextOncallShiftOptions({ path: { id: shiftId } }),
+		enabled: !!shiftId,
+	}));
 	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);
 
 	const queryClient = useQueryClient();
-	const canSend = $derived(!handoverState.sent && !handoverState.isEmpty);
 
 	const toasts = getToastState();
 
 	const sendMutation = createMutation(() => ({
 		...sendOncallShiftHandoverMutation(),
 		onSuccess: () => {
-			handoverState.setSent();
+			// handoverState.setSent();
 			toasts.add("Handover Sent", "Sent oncall shift handover", mdiPhoneForward);
 			queryClient.invalidateQueries(getOncallShiftHandoverOptions({ path: { id: shiftId } }));
-			// showReviewDialog = true;
+			// showReviewDialog;
 		},
 	}));
 
@@ -44,15 +47,15 @@
 </script>
 
 <Button
-	variant={canSend ? "fill" : "fill-light"}
-	color={canSend ? "primary" : "default"}
-	disabled={!canSend}
+	variant={handoverState.canSend ? "fill" : "fill-light"}
+	color={handoverState.canSend ? "primary" : "default"}
+	disabled={!handoverState.canSend}
 	loading={sendMutation.isPending}
 	on:click={submitHandover}
 	classes={{ root: "gap-2 py-3" }}
 >
 	<span class="flex items-center gap-2 text-lg">
-		{#if handoverState.sent}
+		{#if handoverState.isSent}
 			Sent
 		{:else}
 			Send to

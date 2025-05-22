@@ -24,48 +24,44 @@ type HandoverAnnotationsSection = {
 
 export type HandoverSection = HandoverEditorSection | HandoverAnnotationsSection;
 
-export class HandoverEditorState {
-	sent = $state(false);
+export class ShiftHandoverEditorState {
+	handover = $state<OncallShiftHandover>();
+	private allowEditing = $state(false);
+	isSent = $derived(!!this.handover && (new Date(this.handover.attributes.sentAt).valueOf()) > 0);
+	editable = $derived(this.allowEditing && !this.isSent);
+
 	isEmpty = $state(true);
 	activeEditor = $state<Editor>();
 	sections = $state<HandoverSection[]>([]);
 
-	constructor(handoverFn: () => OncallShiftHandover) {
-		watch(handoverFn, h => this.setupHandover(h))
-		onMount(() => {
-			return () => this.destroyEditors();
-		})
+	canSend = $derived(!this.isSent && !this.isEmpty);
+
+	constructor(handoverFn: () => (OncallShiftHandover | undefined), allowEditing: boolean) {
+		this.allowEditing = allowEditing;
+
+		watch(handoverFn, h => {
+			if (this.handover?.id === h?.id) return;
+			this.handover = h;
+			this.setup();
+		});
 	}
 
-	reset() {
-		this.sent = false;
+	setup() {
 		this.isEmpty = true;
-		this.destroyEditors();
 		this.activeEditor = undefined;
-		this.sections = [];
-	};
 
-	setupHandover(handover: OncallShiftHandover) {
-		this.reset();
-		this.sent = (new Date(handover.attributes.sentAt).valueOf()) > 0;
-
-		this.sections = handover.attributes.content.map((sec, idx) => {
+		const handoverSections = this.handover?.attributes.content ?? [];
+		this.sections = handoverSections.map((sec, idx) => {
 			const { kind, header } = sec;
 			if (kind !== "regular") return { header, kind }
 
 			const content = !!sec.jsonContent ? JSON.parse(sec.jsonContent) : undefined;
 			const { editor, activeStatus, contentEmpty } = this.createEditor(idx, content);
-			if (this.sent && contentEmpty) {
+			if (this.isSent && contentEmpty) {
 				editor.destroy();
 				return { header, kind };
 			}
 			return { header, kind, editor, activeStatus };
-		});
-	};
-
-	destroyEditors() {
-		this.sections.forEach((s) => {
-			if (s.kind === "regular") s.editor?.destroy();
 		});
 	};
 
@@ -79,9 +75,9 @@ export class HandoverEditorState {
 
 		const editor = new SvelteEditor({
 			content,
-			editable: !this.sent,
+			editable: this.editable,
 			extensions: getHandoverExtensions(),
-			autofocus: (!this.sent && idx === 0) ? "end" : false,
+			autofocus: (this.editable && idx === 0) ? "end" : false,
 			editorProps: {
 				attributes: {
 					class: "max-w-none focus:outline-none list-disc",
@@ -101,14 +97,6 @@ export class HandoverEditorState {
 		const contentEmpty = editor.getText().trim() == "";
 
 		return { editor, activeStatus, contentEmpty };
-	};
-
-	setSent() {
-		this.sent = true;
-		this.sections.forEach((s) => {
-			if (s.kind === "regular") s.editor?.setEditable(false);
-		});
-		this.activeEditor = undefined;
 	};
 
 	setEditorFocus(i: number, focus: boolean) {
