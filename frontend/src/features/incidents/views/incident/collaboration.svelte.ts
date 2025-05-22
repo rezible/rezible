@@ -28,9 +28,11 @@ export class IncidentCollaborationState {
 		// if (collab.provider && collab.provider.isConnected) {}
 		try {
 			this.documentName = undefined;
-			if (this.provider?.isConnected) this.provider?.disconnect();
-			this.provider?.destroy();
-			this.provider = undefined;
+			if (this.provider) {
+				if (this.provider.isConnected) this.provider.disconnect();
+				this.provider.destroy();
+				this.provider = undefined;
+			}
 			this.awareness = [];
 			this.connectionStatus = WebSocketStatus.Disconnected;
 			this.error = undefined;
@@ -56,17 +58,12 @@ export class IncidentCollaborationState {
 	}
 
 	async connect(retrospectiveId?: string) {
-		if (!retrospectiveId) return;
 		if (this.documentName === retrospectiveId) return;
-		this.documentName = retrospectiveId;
 
 		this.cleanup();
-		/*
-		if (provider) {
-			collab.provider.setConfiguration(config);
-			collab.provider.forceSync();
-		}
-		*/
+
+		if (!retrospectiveId) return;
+		this.documentName = retrospectiveId;
 
 		const { data: body, error: reqErr } = await requestDocumentEditorSession({
 			body: { attributes: { documentName: retrospectiveId } },
@@ -85,6 +82,7 @@ export class IncidentCollaborationState {
 			url: sess.connectionUrl,
 			token: sess.token,
 			name: sess.documentName,
+			preserveConnection: false,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),
 			onStatus: (e) => this.onConnectionStatusChange(e),
 			onAuthenticated: () => this.onAuthenticated(),
