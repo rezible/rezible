@@ -78,8 +78,6 @@
 								<div class="text-md">{linked.incidentSummary}</div>
 							</div>
 						</a>
-					{:else}
-						<span>no linked incidents</span>
 					{/each}
 				</div>
 			</div>

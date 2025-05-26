@@ -45,7 +45,7 @@
 <div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">
 	<IncidentNavMenu {view} />
 
-	<div class="flex-1 min-h-0 overflow-y-auto border p-2">
+	<div class="flex-1 min-h-0 overflow-y-auto p-2">
 		{#if view === undefined}
 			<IncidentOverview />
 		{:else if view === "analysis"}

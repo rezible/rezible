@@ -60,8 +60,8 @@ class TimelineEventsState {
 		watch(() => this.events, evs => {this.onEventsDataUpdated(evs)});
 	}
 
-	setIncidentId(id: string) {
-		this.incidentId = id;
+	setIncident(inc: Incident) {
+		this.incidentId = inc.id;
 	}
 
 	setTimeline(t: Timeline) {
@@ -97,6 +97,7 @@ class TimelineEventsState {
 	}
 
 	onEventsDataUpdated(events: IncidentEvent[]) {
+		const wasEmpty = this.timelineElements.size === 0;
 		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
 		const removeIds: string[] = [];
 
@@ -110,7 +111,7 @@ class TimelineEventsState {
 		removeIds.forEach(id => {this.removeEvent(id)});
 		eventsMap.forEach(ev => {this.updateEvent(ev)});
 
-		flushItemsAndRedrawTimeline(this.items, this.timeline);
+		if (!wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
 	eventAdded(event: IncidentEvent) {
@@ -189,7 +190,7 @@ class TimelineMilestonesState {
 			this.setMilestone(ms, arr.at(idx + 1));
 		});
 
-		if (wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
+		if (!wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
 	};
 
 	getMilestoneIds(id: string) {
@@ -290,7 +291,7 @@ export class TimelineState {
 		watch(() => this.viewState.incident, inc => {
 			if (!inc) return;
 
-			this.events.setIncidentId(inc.id);
+			this.events.setIncident(inc);
 			this.milestones.setIncident(inc);
 			
 			this.setIncidentWindow($state.snapshot(inc));
@@ -302,6 +303,8 @@ export class TimelineState {
 	}
 
 	mountTimeline(ref: HTMLElement) {
+		if (this.timeline) this.timeline.destroy();
+
 		const timelineOpts: TimelineOptions = {
 			height: "100%",
 			zoomMin: 1000 * 60 * 60,
@@ -313,11 +316,7 @@ export class TimelineState {
 			{ id: "milestones", title: "Milestones", content: "" },
 		];
 
-		if (this.timeline) this.timeline.destroy();
-
 		this.timeline = new Timeline(ref, this.items as DataItemCollectionType, timelineGroups, timelineOpts);
-		this.events.setTimeline(this.timeline);
-		this.milestones.setTimeline(this.timeline);
 
 		this.timeline.on("select", e => {this.onTimelineSelect(e)});
 		this.timeline.on("rangechange", e => {
@@ -325,13 +324,15 @@ export class TimelineState {
 		});
 		this.items.on("*", () => {this.updateViewBounds()});
 
+		this.events.setTimeline(this.timeline);
+		this.milestones.setTimeline(this.timeline);
+
 		this.setIncidentWindow(this.viewState.incident);
 	}
 
 	updateViewBounds() {
 		if (!this.timeline || !this.incidentWindow) return;
 
-		const offset = 2 * OneHour;
 		let min = this.incidentWindow.start.valueOf();
 		let max = this.incidentWindow.end.valueOf();
 		this.items.forEach(item => {
@@ -339,6 +340,9 @@ export class TimelineState {
 			if (d < min) min = d;
 			if (d > max) max = d;
 		});
+
+		// TODO: offset as % of range?
+		const offset = 2 * OneHour;
 
 		const offsetMin = min - offset;
 		const offsetMax = max + offset;
@@ -357,17 +361,16 @@ export class TimelineState {
 
 		this.timeline.setWindow(start - OneHour, end + OneHour, {animation: false});
 
-		const windowKey = "incident-window-bg";
-		const windowBackgroundStyle = "background-color:rgba(74, 163, 144, 0.1);";
+		const windowKey = "incident-window";
 		const windowBg: TimelineItem = {
-			id: windowKey,
+			id: `${windowKey}-bg`,
 			start, end,
 			type: "background",
 			content: "",
-			style: windowBackgroundStyle,
+			style: "background-color:rgba(74, 163, 144, 0.1);",
 		};
 		const windowStartPoint: TimelineItem = {
-			id: "incident-window-start",
+			id: `${windowKey}-start`,
 			type: "point",
 			group: "milestones",
 			title: "",
@@ -377,7 +380,7 @@ export class TimelineState {
 			start,
 		};
 		const windowEndPoint: TimelineItem = {
-			id: "incident-window-end",
+			id: `${windowKey}-end`,
 			type: "point",
 			group: "milestones",
 			title: "",
