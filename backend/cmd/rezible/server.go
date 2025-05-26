@@ -132,7 +132,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
 
-	provs.Chat.SetMessageAnnotator(oncallEvents)
+	chat.SetMessageAnnotator(oncallEvents)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, ai, chat)
 	if debriefsErr != nil {
@@ -154,9 +154,9 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
 
-	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 
+	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, pl.WebhookHandler())
 	if httpErr != nil {
 		return nil, fmt.Errorf("http.NewServer: %w", httpErr)

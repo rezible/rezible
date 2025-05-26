@@ -3,19 +3,32 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/internal/river"
-	"github.com/rezible/rezible/jobs"
 
+	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
-
 	"github.com/rs/zerolog/log"
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/providers"
+	"github.com/rezible/rezible/internal/river"
+	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/openapi"
 )
+
+func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts *Options) error) *cobra.Command {
+	return &cobra.Command{
+		Use:   name,
+		Short: desc,
+		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
+			if cmdErr := cmdFn(cmd.Context(), o); cmdErr != nil {
+				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("Failed to execute command")
+			}
+		}),
+	}
+}
 
 func printSpecCmd(ctx context.Context, opts *Options) error {
 	spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}).OpenAPI())
