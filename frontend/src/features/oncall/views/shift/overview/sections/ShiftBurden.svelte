@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { OncallShiftMetrics } from "$lib/api";
 
-	import { formatDuration } from "date-fns";
 	import { Header } from "svelte-ux";
 
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
@@ -21,102 +20,167 @@
 		return "High";
 	};
 
-	const burdenStats = $derived<InlineStatProps[]>([
+	const burdenStatCategories = $derived<InlineStatProps[]>([
 		{
-			title: "High Severity Incidents",
-			subheading: "Incidents with a severity of 1 or 2",
-			value: metrics.incidents,
+			title: "Event Frequency",
+			subheading: `description`,
+			value: 0,
 		},
 		{
-			title: "Sleep Disruption",
-			subheading: `Based on ${metrics.nightAlerts} night alerts`,
-			value: metrics.nightAlerts,
+			title: "Life Impact",
+			subheading: `description`,
+			value: 0,
 		},
 		{
-			title: "KTLO Workload",
-			subheading: `Based on backlog and ongoing incidents`,
-			value: getScoreLabel(metrics.workloadScore),
+			title: "Response Requirements",
+			subheading: `description`,
+			value: 0,
 		},
 		{
-			title: "Off-Hours Activity",
-			subheading: `Time spent active outside of 8am-6pm`,
-			value: formatDuration({ minutes: metrics.offHoursActivityTime }, { zero: true }),
+			title: "Time Impact",
+			subheading: `description`,
+			value: 0,
+		},
+		{
+			title: "Support",
+			subheading: `description`,
+			value: 0,
 		},
 	]);
 
-	const burdenGaugeData = [
+	const burdenGaugeValues = [10, 10, 10, 10, 10];
+
+	const burdenGaugeData: echarts.GaugeSeriesOption["data"] = [
 		{
+			name: "Burden\nScore",
+			value: burdenGaugeValues.reduce((prev, curr) => (prev + curr)),
+			title: {
+				offsetCenter: ["0%", "-25%"],
+			},
+			detail: {
+				offsetCenter: ["0%", "-5%"],
+			},
+			progress: {
+				show: false,
+				width: 0,
+			}
+		},
+		{
+			name: "Event\nFrequency",
+			value: 10,
+			title: {
+				offsetCenter: ["-120%", "50%"],
+			},
+			detail: {
+				offsetCenter: ["-120%", "70%"],
+			},
+		},
+		{
+			name: "Life\nImpact",
 			value: 20,
-			name: "Metric 1",
 			title: {
-				offsetCenter: ["-75%", "85%"],
+				offsetCenter: ["-60%", "40%"],
 			},
 			detail: {
-				offsetCenter: ["-75%", "105%"],
+				offsetCenter: ["-60%", "60%"],
 			},
 		},
 		{
+			name: "Response\nRequirements",
+			value: 30,
+			title: {
+				offsetCenter: ["0%", "50%"],
+			},
+			detail: {
+				offsetCenter: ["0%", "70%"],
+			},
+		},
+		{
+			name: "Time\nImpact",
 			value: 40,
-			name: "Metric 2",
 			title: {
-				offsetCenter: ["0%", "85%"],
+				offsetCenter: ["60%", "40%"],
 			},
 			detail: {
-				offsetCenter: ["0%", "105%"],
+				offsetCenter: ["60%", "60%"],
+				formatter: "10",
 			},
 		},
 		{
-			value: 35,
-			name: "Metric 3",
+			name: "Support",
+			value: 50,
 			title: {
-				offsetCenter: ["75%", "85%"],
+				offsetCenter: ["110%", "55%"],
 			},
 			detail: {
-				offsetCenter: ["75%", "105%"],
+				offsetCenter: ["110%", "70%"],
 			},
 		},
 	];
 
 	const burdenChartOptions = $derived<ChartProps["options"]>({
-		tooltip: {
-			formatter: "{b} : {c}%",
-		},
 		series: [
 			{
 				type: "gauge",
 				name: "Burden Score",
-				anchor: { show: false },
-				pointer: {
-					icon: "path://M2.9,0.7L2.9,0.7c1.4,0,2.6,1.2,2.6,2.6v115c0,1.4-1.2,2.6-2.6,2.6l0,0c-1.4,0-2.6-1.2-2.6-2.6V3.3C0.3,1.9,1.4,0.7,2.9,0.7z",
-					width: 3,
-					length: "55%",
-				},
-				progress: { show: true, overlap: false, width: 6 },
-				axisLine: { show: false },
-				axisLabel: { color: "inherit" },
 				data: burdenGaugeData,
+				startAngle: 180,
+      			endAngle: 0,
+				min: 0,
+				max: 100,
+				pointer: {
+					show: false,
+				},
+				progress: {
+					show: true,
+					clip: true,
+					width: 20,
+					itemStyle: {
+						borderWidth: 0,
+					}
+				},
+				axisLine: {
+					show: false,
+					lineStyle: {
+						shadowBlur: 0,
+						width: 15,
+						opacity: .10,
+					}
+				},
+				tooltip: {
+					formatter: (p) => {
+						const val = burdenGaugeValues.at(p.dataIndex - 1);
+						return `${p.name}: ${val}`;
+					}
+				},
+				axisLabel: { color: "inherit" },
 				title: {
 					fontSize: 14,
 					color: "inherit",
+					show: true,
 				},
 				detail: {
 					width: 30,
 					height: 10,
-					fontSize: 12,
-					backgroundColor: "inherit",
+					fontSize: 14,
 					borderRadius: 3,
-					formatter: "{value}%",
+					backgroundColor: "inherit",
+					color: "black",
+					formatter: (val: number) => `${val}`
 				},
 			},
 		],
+		tooltip: {
+			formatter: "{b} : {c}%",
+		},
 	});
 </script>
 
 <div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
 	<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
-	<ChartWithStats stats={burdenStats}>
+	<ChartWithStats stats={burdenStatCategories}>
 		{#snippet chart()}
-			<div class="h-[300px] w-[300px] overflow-hidden grid place-self-center">
+			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
 				<EChart init={echarts.init} options={burdenChartOptions} />
 			</div>
 		{/snippet}

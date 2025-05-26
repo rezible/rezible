@@ -11,7 +11,7 @@
 	const { chart, stats, reverse }: Props = $props();
 </script>
 
-<div class="flex gap-4" class:flex-row-reverse={reverse}>
+<div class="flex gap-4 items-center" class:flex-row-reverse={reverse}>
 	<div class="w-1/3 grid place-items-center">
 		{@render chart()}
 	</div>

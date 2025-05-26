@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12, hour12Label } from "$lib/format.svelte";
 
-	import { Header } from "svelte-ux";
+	import { Button, Header } from "svelte-ux";
 
 	import { isBusinessHours } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
@@ -12,6 +12,7 @@
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
 
 	import { shiftViewStateCtx } from "../../context.svelte";
+	import { mdiFilter } from "@mdi/js";
 
 	type Props = {
 		metrics: OncallShiftMetrics;
@@ -19,6 +20,8 @@
 	let { metrics }: Props = $props();
 
 	const viewState = shiftViewStateCtx.get();
+
+	let showFilters = $state(false);
 
 	type HourEventDistribution = { hour: number; alerts: number; incidents: number };
 	const hourlyDistribution = $derived.by(() => {
@@ -59,18 +62,20 @@
 
 	const alertStats = $derived<InlineStatProps[]>([
 		{ title: "Peak Alert Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
-		// { title: "Stat 2", subheading: `desc`, value: "" },
-		// { title: "Stat 3", subheading: `desc`, value: "" },
-		// { title: "Stat 4", subheading: `desc`, value: "" },
+		{ title: "Percent Annotated", subheading: `desc`, value: "15%" },
+		{ title: "Actionability", subheading: `from feedback`, value: "" },
+		{ title: "Accuracy", subheading: `from feedback`, value: "" },
+		{ title: "Documentation", subheading: `from feedback`, value: "" },
 	]);
 
 	const MinRadius = 30;
+	// TODO: maybe https://echarts.apache.org/examples/en/editor.html?c=bar-polar-stack-radial
 	const alertHoursChartOptions = $derived<ChartProps["options"]>({
 		series: [
 			{
 				name: "Background",
 				type: "pie",
-				radius: [10, 150],
+				radius: [15, 150],
 				center: ["50%", "50%"],
 				label: { show: false },
 				emphasis: { scale: false },
@@ -79,13 +84,13 @@
 					borderWidth: 1,
 					borderColor: "rgba(180, 180, 180, 0.1)",
 				},
-				data: Array.from({ length: 24 }).map((_, hour) => ({ value: 1 })),
+				data: Array.from({ length: 24 }).map((_, hour) => ({ value: 0 })),
 				z: 0,
 			},
 			{
 				name: "Alerts in Hour",
 				type: "pie",
-				radius: [10, 150],
+				radius: [15, 150],
 				center: ["50%", "50%"],
 				roseType: "area",
 				itemStyle: {
@@ -100,7 +105,7 @@
 				data: Array.from({ length: 24 }).map((_, hour) => {
 					const alerts = hourAlertCounts[hour];
 					return {
-						value: alerts > 0 ? Math.round(MinRadius + 70 * (alerts / maxAlertCount)) / 100 : 0,
+						value: alerts > 0 ? Math.round(MinRadius + 70 * (alerts / maxAlertCount)) / 100 : "-",
 						name: `${hour12(hour)}${hour >= 12 ? "PM" : "AM"}`,
 					};
 				}),
@@ -121,7 +126,18 @@
 </script>
 
 <div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
-	<Header title="Alerts" subheading="Alerts by time of day" class="" />
+	<div class="h-fit flex flex-col gap-2">
+		<Header title="Alerts" subheading="Alerts by time of day" class="">
+			<svelte:fragment slot="actions">
+				<Button icon={mdiFilter} iconOnly on:click={() => (showFilters = !showFilters)} />
+			</svelte:fragment>
+		</Header>
+
+		{#if showFilters}
+			<div class="w-full h-12 border"></div>
+		{/if}
+	</div>
+
 	<ChartWithStats stats={alertStats} reverse>
 		{#snippet chart()}
 			<div class="h-[300px] w-[300px] overflow-hidden grid place-self-center">
