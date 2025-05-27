@@ -23,14 +23,9 @@ func (o operations) RegisterOncallMetrics(api huma.API) {
 
 type (
 	OncallRosterMetrics struct {
-		HealthScore        float32 `json:"healthScore"`
-		Incidents          int     `json:"incidents"`
-		Alerts             int     `json:"alerts"`
-		NightAlerts        int     `json:"nightAlerts"`
-		OutOfHoursAlerts   int     `json:"outOfHoursAlerts"`
-		AlertActionability float32 `json:"alertActionability"`
-		HandoverCompletion float32 `json:"handoverCompletion"`
-		BacklogBurnRate    float32 `json:"backlogBurnRate"`
+		ShiftMetrics       []OncallShiftMetrics `json:"shiftMetrics"`
+		HandoverCompletion float32              `json:"handoverCompletion"`
+		BacklogBurnRate    float32              `json:"backlogBurnRate"`
 	}
 
 	OncallShiftBurdenMetricWeights struct {
@@ -67,7 +62,7 @@ type (
 		DocumentationFeedback float32 `json:"documentationFeedback"`
 	}
 
-	OncallShiftMetricsAlert struct {
+	OncallShiftMetricsAlertInstance struct {
 		AlertId          uuid.UUID                      `json:"alertId"`
 		Timestamp        time.Time                      `json:"timestamp"`
 		ResponseMinutes  float32                        `json:"responseMinutes"`
