@@ -1750,14 +1750,9 @@ export type OncallRosterAttributes = {
 };
 
 export type OncallRosterMetrics = {
-    alertActionability: number;
-    alerts: number;
     backlogBurnRate: number;
     handoverCompletion: number;
-    healthScore: number;
-    incidents: number;
-    nightAlerts: number;
-    outOfHoursAlerts: number;
+    shiftMetrics: Array<OncallShiftMetrics>;
 };
 
 export type OncallSchedule = {
