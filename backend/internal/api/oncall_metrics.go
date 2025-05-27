@@ -21,10 +21,14 @@ func (h *oncallMetricsHandler) GetOncallRosterMetrics(ctx context.Context, reque
 func (h *oncallMetricsHandler) GetOncallShiftMetrics(ctx context.Context, request *oapi.GetOncallShiftMetricsRequest) (*oapi.GetOncallShiftMetricsResponse, error) {
 	var resp oapi.GetOncallShiftMetricsResponse
 
-	metrics := oapi.OncallShiftMetrics{
-		IncidentActivity: make([]oapi.OncallShiftIncidentResponseTime, 0),
-	}
+	metrics := oapi.OncallShiftMetrics{}
 	resp.Body.Data = metrics
+
+	return &resp, nil
+}
+
+func (h *oncallMetricsHandler) GetOncallShiftBurdenMetricWeights(context.Context, *oapi.GetOncallShiftBurdenMetricWeightsRequest) (*oapi.GetOncallShiftBurdenMetricWeightsResponse, error) {
+	var resp oapi.GetOncallShiftBurdenMetricWeightsResponse
 
 	return &resp, nil
 }

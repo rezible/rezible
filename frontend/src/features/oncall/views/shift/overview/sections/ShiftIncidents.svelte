@@ -22,16 +22,16 @@
 		'oklch(var(--color-info))',
 	];
 
-	const incidentSeries = $derived(metrics.incidentActivity?.map((v, i) => ({key: v.incidentId, value: v.minutes, color: colors[i % colors.length]})));
-	const totalMinutes = $derived(metrics.incidentActivity?.reduce((prev, val) => (prev + val.minutes), 0));
-	const totalTimeFormatted = $derived(formatDuration({minutes: totalMinutes}, {zero: true}));
+	// const incidentSeries = $derived(metrics.incidentActivity?.map((v, i) => ({key: v.incidentId, value: v.minutes, color: colors[i % colors.length]})));
+	// const totalMinutes = $derived(metrics.incidentActivity?.reduce((prev, val) => (prev + val.minutes), 0));
+	// const totalTimeFormatted = $derived(formatDuration({minutes: totalMinutes}, {zero: true}));
 
 	const incidentStats = $derived<InlineStatProps[]>([
 		{
 			title: "Alert to Incident Ratio",
 			subheading: `Alerts that became incidents`,
-			value: metrics.alertIncidentRate,
-			comparison: {value: comparison.alertIncidentRate, positive: true}
+			value: metrics.alerts.incidentRate,
+			comparison: {value: comparison.alerts.incidentRate, positive: true}
 		},
 		{title: "Incidents by Severity", subheading: `TODO`, value: 0},
 		// {title: "Stat 4", subheading: `desc`, value: 0},

@@ -511,7 +511,9 @@ export type CreateSystemComponentAttributes = {
     description: string;
     kindId: string;
     name: string;
-    properties: {};
+    properties: {
+        [key: string]: unknown;
+    };
     signals: Array<SystemComponentSignalAttributes>;
 };
 
@@ -912,6 +914,14 @@ export type GetOncallRosterResponseBody = {
      */
     readonly $schema?: string;
     data: OncallRoster;
+};
+
+export type GetOncallShiftBurdenMetricWeightsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallShiftBurdenMetricWeights;
 };
 
 export type GetOncallShiftHandoverResponseBody = {
@@ -1781,6 +1791,10 @@ export type OncallShiftAttributes = {
     user: User;
 };
 
+export type OncallShiftBurdenMetricWeights = {
+    [key: string]: never;
+};
+
 export type OncallShiftHandover = {
     attributes: OncallShiftHandoverAttributes;
     id: string;
@@ -1808,23 +1822,35 @@ export type OncallShiftHandoverTemplateAttributes = {
     sections: Array<OncallShiftHandoverSection>;
 };
 
-export type OncallShiftIncidentResponseTime = {
-    incidentId: string;
-    minutes: number;
+export type OncallShiftMetrics = {
+    alerts: OncallShiftMetricsAlerts;
+    burden: OncallShiftMetricsBurden;
+    incidents: OncallShiftMetricsIncidents;
 };
 
-export type OncallShiftMetrics = {
-    alertActionability: number;
-    alertIncidentRate: number;
-    alerts: number;
-    burdenScore: number;
-    incidentActivity: Array<OncallShiftIncidentResponseTime>;
-    incidents: number;
-    nightAlerts: number;
-    offHoursActivityTime: number;
-    offHoursAlerts: number;
-    sleepDisruptionScore: number;
-    workloadScore: number;
+export type OncallShiftMetricsAlerts = {
+    accuracyFeedback: number;
+    actionabilityFeedback: number;
+    countNight: number;
+    countOffHours: number;
+    documentationFeedback: number;
+    incidentRate: number;
+    total: number;
+    totalWithFeedback: number;
+};
+
+export type OncallShiftMetricsBurden = {
+    finalScore: number;
+    interruption: number;
+    lifeImpact: number;
+    responseRequirements: number;
+    support: number;
+    timeImpact: number;
+};
+
+export type OncallShiftMetricsIncidents = {
+    responseTimeMinutes: number;
+    total: number;
 };
 
 export type RemoveWatchedOncallRosterResponseBody = {
@@ -2001,7 +2027,9 @@ export type SystemComponentAttributes = {
     description: string;
     kindId: string;
     name: string;
-    properties: {};
+    properties: {
+        [key: string]: unknown;
+    };
     signals: Array<SystemComponentSignal>;
 };
 
@@ -2552,7 +2580,9 @@ export type UpdateSystemComponentAttributes = {
     description?: string;
     kindId?: string;
     name?: string;
-    properties?: {};
+    properties?: {
+        [key: string]: unknown;
+    };
 };
 
 export type UpdateSystemComponentConstraintAttributes = {
@@ -7647,6 +7677,47 @@ export type AddWatchedOncallRosterResponses = {
 };
 
 export type AddWatchedOncallRosterResponse = AddWatchedOncallRosterResponses[keyof AddWatchedOncallRosterResponses];
+
+export type GetOncallShiftBurdenMetricWeightsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/oncall_metrics/burden_weights';
+};
+
+export type GetOncallShiftBurdenMetricWeightsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallShiftBurdenMetricWeightsError = GetOncallShiftBurdenMetricWeightsErrors[keyof GetOncallShiftBurdenMetricWeightsErrors];
+
+export type GetOncallShiftBurdenMetricWeightsResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallShiftBurdenMetricWeightsResponseBody;
+};
+
+export type GetOncallShiftBurdenMetricWeightsResponse = GetOncallShiftBurdenMetricWeightsResponses[keyof GetOncallShiftBurdenMetricWeightsResponses];
 
 export type GetOncallRosterMetricsData = {
     body?: never;

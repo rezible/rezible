@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { getOncallShiftMetricsOptions } from "$lib/api";
+	import { getOncallShiftBurdenMetricWeightsOptions, getOncallShiftMetricsOptions } from "$lib/api";
 	import { shiftViewStateCtx } from "../context.svelte";
 
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
@@ -20,6 +20,9 @@
 	
 	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
 	const metrics = $derived(metricsQuery.data?.data);
+
+	const burdenWeightsQuery = createQuery(() => getOncallShiftBurdenMetricWeightsOptions());
+	const burdenWeights = $derived(burdenWeightsQuery.data?.data);
 </script>
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
@@ -30,7 +33,7 @@
 			</div>
 		{:else}
 			<ShiftEvents {metrics} {comparison} />
-			<ShiftBurden {metrics} />
+			<ShiftBurden {metrics} weights={burdenWeights} />
 			<ShiftAlerts {metrics} />
 			<ShiftIncidents {metrics} {comparison} />
 		{/if}

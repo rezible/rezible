@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OncallShiftMetrics } from "$lib/api";
+	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics } from "$lib/api";
 
 	import { Header } from "svelte-ux";
 
@@ -11,8 +11,9 @@
 
 	type Props = {
 		metrics: OncallShiftMetrics;
+		weights?: OncallShiftBurdenMetricWeights;
 	};
-	let { metrics }: Props = $props();
+	let { metrics, weights }: Props = $props();
 
 	const getScoreLabel = (score: number) => {
 		if (score < 30) return "Low";

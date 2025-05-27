@@ -3,6 +3,7 @@ package openapi
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -11,11 +12,13 @@ import (
 type OncallMetricsHandler interface {
 	GetOncallRosterMetrics(context.Context, *GetOncallRosterMetricsRequest) (*GetOncallRosterMetricsResponse, error)
 	GetOncallShiftMetrics(context.Context, *GetOncallShiftMetricsRequest) (*GetOncallShiftMetricsResponse, error)
+	GetOncallShiftBurdenMetricWeights(context.Context, *GetOncallShiftBurdenMetricWeightsRequest) (*GetOncallShiftBurdenMetricWeightsResponse, error)
 }
 
 func (o operations) RegisterOncallMetrics(api huma.API) {
 	huma.Register(api, GetOncallRosterMetrics, o.GetOncallRosterMetrics)
 	huma.Register(api, GetOncallShiftMetrics, o.GetOncallShiftMetrics)
+	huma.Register(api, GetOncallShiftBurdenMetricWeights, o.GetOncallShiftBurdenMetricWeights)
 }
 
 type (
@@ -30,23 +33,46 @@ type (
 		BacklogBurnRate    float32 `json:"backlogBurnRate"`
 	}
 
-	OncallShiftMetrics struct {
-		BurdenScore          float32                           `json:"burdenScore"`
-		Incidents            int                               `json:"incidents"`
-		IncidentActivity     []OncallShiftIncidentResponseTime `json:"incidentActivity"`
-		Alerts               int                               `json:"alerts"`
-		NightAlerts          int                               `json:"nightAlerts"`
-		AlertActionability   float32                           `json:"alertActionability"`
-		AlertIncidentRate    float32                           `json:"alertIncidentRate"`
-		OffHoursAlerts       int                               `json:"offHoursAlerts"`
-		OffHoursActivityTime float32                           `json:"offHoursActivityTime"`
-		SleepDisruptionScore float32                           `json:"sleepDisruptionScore"`
-		WorkloadScore        float32                           `json:"workloadScore"`
+	OncallShiftBurdenMetricWeights struct {
 	}
 
-	OncallShiftIncidentResponseTime struct {
-		IncidentId uuid.UUID `json:"incidentId"`
-		Minutes    float32   `json:"minutes"`
+	OncallShiftMetrics struct {
+		Burden    OncallShiftMetricsBurden    `json:"burden"`
+		Incidents OncallShiftMetricsIncidents `json:"incidents"`
+		Alerts    OncallShiftMetricsAlerts    `json:"alerts"`
+	}
+
+	OncallShiftMetricsBurden struct {
+		FinalScore           float32 `json:"finalScore"`
+		Interruption         float32 `json:"interruption"`
+		LifeImpact           float32 `json:"lifeImpact"`
+		TimeImpact           float32 `json:"timeImpact"`
+		ResponseRequirements float32 `json:"responseRequirements"`
+		Support              float32 `json:"support"`
+	}
+
+	OncallShiftMetricsIncidents struct {
+		Total               int     `json:"total"`
+		ResponseTimeMinutes float32 `json:"responseTimeMinutes"`
+	}
+
+	OncallShiftMetricsAlerts struct {
+		Total                 int     `json:"total"`
+		CountOffHours         int     `json:"countOffHours"`
+		CountNight            int     `json:"countNight"`
+		IncidentRate          float32 `json:"incidentRate"`
+		TotalWithFeedback     int     `json:"totalWithFeedback"`
+		ActionabilityFeedback float32 `json:"actionabilityFeedback"`
+		AccuracyFeedback      float32 `json:"accuracyFeedback"`
+		DocumentationFeedback float32 `json:"documentationFeedback"`
+	}
+
+	OncallShiftMetricsAlert struct {
+		AlertId          uuid.UUID                      `json:"alertId"`
+		Timestamp        time.Time                      `json:"timestamp"`
+		ResponseMinutes  float32                        `json:"responseMinutes"`
+		LinkedIncidentID *uuid.UUID                     `json:"linkedIncidentId,omitempty"`
+		Feedback         *OncallAnnotationAlertFeedback `json:"feedback"`
 	}
 )
 
@@ -79,3 +105,15 @@ type GetOncallShiftMetricsRequest struct {
 	ShiftId uuid.UUID `query:"shiftId"`
 }
 type GetOncallShiftMetricsResponse ItemResponse[OncallShiftMetrics]
+
+var GetOncallShiftBurdenMetricWeights = huma.Operation{
+	OperationID: "get-oncall-shift-burden-metric-weights",
+	Method:      http.MethodGet,
+	Path:        "/oncall_metrics/burden_weights",
+	Summary:     "Get Weights for Calculating Burden",
+	Tags:        oncallMetricsTags,
+	Errors:      errorCodes(),
+}
+
+type GetOncallShiftBurdenMetricWeightsRequest EmptyRequest
+type GetOncallShiftBurdenMetricWeightsResponse ItemResponse[OncallShiftBurdenMetricWeights]
