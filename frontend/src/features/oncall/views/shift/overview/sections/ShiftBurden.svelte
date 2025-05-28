@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics } from "$lib/api";
+	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics, OncallShiftMetricsBurden } from "$lib/api";
 
 	import { Header } from "svelte-ux";
 
@@ -8,12 +8,24 @@
 
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
+	import SectionCard from "./SectionCard.svelte";
+
+	const defaultBurden: OncallShiftMetricsBurden = {
+		finalScore: 0,
+		interruption: 0,
+		lifeImpact: 0,
+		responseRequirements: 0,
+		support: 0,
+		timeImpact: 0
+	};
 
 	type Props = {
-		metrics: OncallShiftMetrics;
+		metrics?: OncallShiftMetrics;
 		weights?: OncallShiftBurdenMetricWeights;
 	};
-	let { metrics, weights }: Props = $props();
+	const { metrics, weights }: Props = $props();
+
+	const burden = $derived(!!metrics ? metrics.burden : defaultBurden);
 
 	const getScoreLabel = (score: number) => {
 		if (score < 30) return "Low";
@@ -135,17 +147,17 @@
 				progress: {
 					show: true,
 					clip: true,
-					width: 20,
+					width: 18,
 					itemStyle: {
 						borderWidth: 0,
 					}
 				},
 				axisLine: {
-					show: false,
+					show: true,
 					lineStyle: {
 						shadowBlur: 0,
-						width: 15,
 						opacity: .10,
+						width: 18,
 					}
 				},
 				tooltip: {
@@ -177,8 +189,8 @@
 	});
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
-	<Header title="Burden Rating" subheading="Indicator of the human impact of this shift" />
+<SectionCard>
+	<Header title="Shift Burden" subheading="Indicator of the human impact of this shift" />
 	<ChartWithStats stats={burdenStatCategories}>
 		{#snippet chart()}
 			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
@@ -186,4 +198,4 @@
 			</div>
 		{/snippet}
 	</ChartWithStats>
-</div>
+</SectionCard>

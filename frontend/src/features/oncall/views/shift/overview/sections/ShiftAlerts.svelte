@@ -13,9 +13,10 @@
 
 	import { shiftViewStateCtx } from "../../context.svelte";
 	import { mdiFilter } from "@mdi/js";
+	import SectionCard from "./SectionCard.svelte";
 
 	type Props = {
-		metrics: OncallShiftMetrics;
+		metrics?: OncallShiftMetrics;
 	};
 	let { metrics }: Props = $props();
 
@@ -125,7 +126,7 @@
 	});
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 border border-surface-content/10 rounded">
+<SectionCard>
 	<div class="h-fit flex flex-col gap-2">
 		<Header title="Alerts" subheading="Alerts by time of day" class="">
 			<svelte:fragment slot="actions">
@@ -145,4 +146,4 @@
 			</div>
 		{/snippet}
 	</ChartWithStats>
-</div>
+</SectionCard>

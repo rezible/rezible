@@ -5,10 +5,11 @@
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import { mdiFilter } from "@mdi/js";
+	import SectionCard from "./SectionCard.svelte";
 
 	type Props = {
-		metrics: OncallShiftMetrics;
-		comparison: OncallShiftMetrics;
+		metrics?: OncallShiftMetrics;
+		comparison?: OncallShiftMetrics;
 	};
 
 	let { metrics, comparison }: Props = $props();
@@ -30,15 +31,15 @@
 		{
 			title: "Alert to Incident Ratio",
 			subheading: `Alerts that became incidents`,
-			value: metrics.alerts.incidentRate,
-			comparison: {value: comparison.alerts.incidentRate, positive: true}
+			value: metrics?.alerts.incidentRate || 0,
+			comparison: {value: comparison?.alerts.incidentRate || 0, positive: true}
 		},
 		{title: "Incidents by Severity", subheading: `TODO`, value: 0},
 		// {title: "Stat 4", subheading: `desc`, value: 0},
 	])
 </script>
 
-<div class="flex flex-col gap-2 w-full p-2 rounded border border-surface-content/10">
+<SectionCard>
 	<div class="h-fit flex flex-col gap-2">
 		<Header title="Incidents" subheading="Incidents opened during shift" class="">
 			<svelte:fragment slot="actions">
@@ -57,4 +58,4 @@
 			</div>
 		{/snippet}
 	</ChartWithStats>
-</div>
+</SectionCard>
