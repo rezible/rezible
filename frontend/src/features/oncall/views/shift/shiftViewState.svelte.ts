@@ -1,25 +1,24 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, listOncallEventsOptions, type OncallShift } from "$lib/api";
+import { getOncallShiftOptions, listOncallEventsOptions } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
 import { PeriodType } from "@layerstack/utils";
 
 export class ShiftViewState {
-	shiftId = $state("");
+	shiftId = $state<string>(null!);
 
 	constructor(idFn: () => string) {
+		this.shiftId = idFn();
 		watch(idFn, id => { this.shiftId = id });
 	}
 
 	useShiftTimezone = $state(false);
 	timezone = $derived(this.useShiftTimezone ? "" : getLocalTimeZone());
 
-	shiftQueryOpts = $derived(getOncallShiftOptions({ path: { id: (this.shiftId ?? "") } }))
-	shiftQuery = createQuery(() => ({ ...this.shiftQueryOpts, enabled: !!this.shiftId }))
+	shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: this.shiftId } }))
 	shift = $derived(this.shiftQuery.data?.data);
-
 	roster = $derived(this.shift?.attributes.roster);
 
 	shiftStart = $derived(this.shift && parseAbsolute(this.shift.attributes.startAt, this.timezone));
@@ -32,8 +31,7 @@ export class ShiftViewState {
 		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
 	})
 
-	shiftEventsQueryOpts = $derived(listOncallEventsOptions({ query: { shiftId: (this.shiftId ?? "") } }));
-	eventsQuery = createQuery(() => ({ ...this.shiftEventsQueryOpts, enabled: !!this.shift }))
+	eventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: this.shiftId } }))
 	events = $derived(this.eventsQuery.data?.data);
 
 	eventsFilter = $state<ShiftEventFilterKind>();
@@ -44,4 +42,6 @@ export class ShiftViewState {
 	});
 }
 
-export const shiftViewStateCtx = new Context<ShiftViewState>("shiftViewState");
+const shiftViewStateCtx = new Context<ShiftViewState>("shiftViewState");
+export const setShiftViewState = (s: ShiftViewState) => shiftViewStateCtx.set(s);
+export const useShiftViewState = () => shiftViewStateCtx.get();

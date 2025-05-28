@@ -11,7 +11,7 @@
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
 
-	import { shiftViewStateCtx } from "../../context.svelte";
+	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
 
@@ -20,7 +20,7 @@
 	};
 	let { metrics }: Props = $props();
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 
 	let showFilters = $state(false);
 
@@ -106,7 +106,7 @@
 				data: Array.from({ length: 24 }).map((_, hour) => {
 					const alerts = hourAlertCounts[hour];
 					return {
-						value: alerts > 0 ? Math.round(MinRadius + 70 * (alerts / maxAlertCount)) / 100 : "-",
+						value: alerts > 0 ? Math.round(MinRadius + 70 * (alerts / maxAlertCount)) / 100 : 0,
 						name: `${hour12(hour)}${hour >= 12 ? "PM" : "AM"}`,
 					};
 				}),

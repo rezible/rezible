@@ -1,17 +1,16 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftBurdenMetricWeightsOptions, getOncallShiftMetricsOptions } from "$lib/api";
-	import { shiftViewStateCtx } from "../context.svelte";
+	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	import ShiftEventsTotalCards from "./sections/ShiftEventsTotalCards.svelte";
 	import ShiftIncidents from "./sections/ShiftIncidents.svelte";
 	import ShiftBurden from "./sections/ShiftBurden.svelte";
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
 
-	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import ShiftEventsHeatmap from "./sections/ShiftEventsHeatmap.svelte";
+	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);
 
 	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
@@ -28,12 +27,11 @@
 	<div class="col-span-2 h-full w-full overflow-y-auto pr-1 space-y-2">
 		<ShiftEventsTotalCards {metrics} {comparison} />
 		<ShiftBurden {metrics} weights={burdenWeights} />
-		<ShiftEventsHeatmap onDayClicked={(d) => {}} />
 		<ShiftAlerts {metrics} />
 		<ShiftIncidents {metrics} {comparison} />
 	</div>
 
 	<div class="h-full flex flex-col overflow-y-auto">
-		<ShiftEventsList />
+		<ShiftEventsSidebar />
 	</div>
 </div>

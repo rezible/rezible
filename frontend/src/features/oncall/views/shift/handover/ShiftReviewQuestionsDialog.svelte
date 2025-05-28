@@ -5,9 +5,9 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
 	
-	import { shiftViewStateCtx } from "../context.svelte";
+	import { useShiftViewState } from "../shiftViewState.svelte";
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);
 
 	const reviewShiftMutation = createMutation(() => ({

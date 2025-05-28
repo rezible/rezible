@@ -6,21 +6,20 @@
 	import { GridComponent, TitleComponent, VisualMapComponent, TooltipComponent } from "echarts/components";
 	import { CanvasRenderer } from "echarts/renderers";
 	import EChart, { type ChartProps, type ECMouseEvent } from "$components/viz/echart/EChart.svelte";
-	import { Collapse, Header } from "svelte-ux";
-	import { shiftViewStateCtx } from "../../context.svelte";
+	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import type { ShiftEventFilterKind } from "$features/oncall/lib/utils";
 	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { settings } from "$lib/settings.svelte";
-	import SectionCard from "./SectionCard.svelte";
+	import type { YAXisOption, XAXisOption } from "echarts/types/dist/shared";
 
 	use([HeatmapChart, GridComponent, CanvasRenderer, TitleComponent, VisualMapComponent, TooltipComponent]);
 
 	type Props = {
-		onDayClicked: (idx: number) => void;
+		onHourClicked: (day: number, hour: number) => void;
 	};
-	const { onDayClicked }: Props = $props();
+	const { onHourClicked }: Props = $props();
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 
 	const onEventKindClicked = (kind: ShiftEventFilterKind) => {
 		if (viewState.eventsFilter === kind) {
@@ -41,7 +40,6 @@
 
 		const numEvents = new Map<string, number>();
 		viewState.filteredEvents.forEach((event) => {
-			// if (!!shiftState.eventsFilter && !shiftEventMatchesFilter(event, shiftState.eventsFilter)) return;
 			const eventDate = new Date(event.attributes.timestamp);
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, eventDate.getHours());
@@ -57,7 +55,7 @@
 		});
 	});
 	
-	const heatmapDayLabels = $derived.by(() => {
+	const weekdayLabels = $derived.by(() => {
 		return Array.from({ length: numDays }, (_, day) => {
 			const start = viewState.shiftStart;
 			if (!start) return "";
@@ -68,17 +66,41 @@
 		});
 	});
 
-	const onHeatmapHourClicked = (idx: number) => {
-		if (idx < 0 || idx > hourlyEventCount.length) return;
-		const [day, hour] = hourlyEventCount[idx];
-		console.log(day, hour);
-	};
+	const vertical = true;
 
-	const nonZeroData = $derived(hourlyEventCount.map(d => ([d[1], d[0], d[2] || "-"])));
+	type DayHourCountData = [number, number, number | string];
+	const mapDataHorizontalFn = (d: number[]): DayHourCountData => ([d[1], d[0], d[2] || "-"]);
+	const mapDataVerticalFn = (d: number[]): DayHourCountData => ([d[0], d[1], d[2] || "-"]);
+	const nonZeroData = $derived(hourlyEventCount.map(vertical ? mapDataVerticalFn : mapDataHorizontalFn));
+
+	const weekdaysXAxis = $derived<XAXisOption>({
+		position: "top",
+		axisLabel: {
+			fontSize: 16,
+		},
+		type: "category",
+		inverse: false,
+		data: weekdayLabels,
+		splitArea: {show: true},
+	});
+
+	const hoursYAxis = $derived<YAXisOption>({
+		position: "left",
+		type: "category",
+		data: DayHours,
+		inverse: true,
+		nameTextStyle: {
+			fontSize: 24,
+		},
+	})
 
 	const options = $derived<ChartProps["options"]>({
 		tooltip: {
-			position: "left",
+			position: "top",
+			formatter(params) {
+				// TODO
+				return "day hour - count"
+			},
 		},
 		grid: {
 			containLabel: true,
@@ -87,23 +109,8 @@
 			right: 0,
 			bottom: 0,
 		},
-		xAxis: {
-			position: "top",
-			type: "category",
-			data: DayHours,
-			nameTextStyle: {
-				fontSize: 24,
-			},
-		},
-		yAxis: {
-			axisLabel: {
-				fontSize: 16,
-			},
-			type: "category",
-			inverse: true,
-			data: heatmapDayLabels,
-			splitArea: {show: true},
-		},
+		yAxis: hoursYAxis,
+		xAxis: weekdaysXAxis,
 		visualMap: {
 			min: 0,
 			max: 10,
@@ -132,16 +139,12 @@
 		],
 	});
 
-	const onClicked = (e: ECMouseEvent) => (onDayClicked(e.dataIndex));
+	const onClicked = (e: ECMouseEvent) => {
+		const [day, hour] = nonZeroData[e.dataIndex];
+		onHourClicked(day, hour)
+	};
 </script>
 
-<SectionCard>
-	<Collapse classes={{ root: "", icon: "mr-2" }}>
-		<Header title="Event Heatmap" subheading="Alerts by time of day" slot="trigger" class="flex-1" />
-		<div class="border-surface-content/10">
-			<div class="w-full h-96 p-3 pl-10 rounded-lg block overflow-hidden">
-				<EChart {init} {options} onclick={onClicked} />
-			</div>
-		</div>
-	</Collapse>
-</SectionCard>
+<div class="w-full h-full p-3 pl-10 rounded-lg block overflow-hidden">
+	<EChart {init} {options} onclick={onClicked} />
+</div>

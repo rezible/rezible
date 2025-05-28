@@ -4,7 +4,7 @@
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
-	import { ShiftViewState, shiftViewStateCtx } from "./context.svelte";
+	import { setShiftViewState, ShiftViewState } from "./shiftViewState.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
@@ -16,10 +16,10 @@
 	};
 	const { shiftId, view }: Props = $props();
 
-	const state = new ShiftViewState(() => shiftId);
-	shiftViewStateCtx.set(state);
+	const viewState = new ShiftViewState(() => shiftId);
+	setShiftViewState(viewState);
 
-	const shiftBreadcrumb = $derived([{ label: state.shiftTitle, href: "/oncall/shifts/" + shiftId }]);
+	const shiftBreadcrumb = $derived([{ label: viewState.shiftTitle, href: "/oncall/shifts/" + shiftId }]);
 	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/oncall/shifts/${shiftId}/handover`}] : []);
 
 	appShell.setPageActions(PageActions, true);

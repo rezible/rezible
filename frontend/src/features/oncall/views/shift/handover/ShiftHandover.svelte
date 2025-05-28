@@ -5,13 +5,13 @@
 
 	import { ShiftHandoverContent, ShiftHandoverEditorState } from "$features/oncall/components/shift-handover-content";
 
-	import { shiftViewStateCtx } from "../context.svelte";
+	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	import AnnotatedEventsList from "./AnnotatedEventsList.svelte";
 	import ShiftReviewQuestionsDialog from "./ShiftReviewQuestionsDialog.svelte";
 	import SendHandoverButton from "./SendHandoverButton.svelte";
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);
 
 	const handoverQueryOpts = $derived(getOncallShiftHandoverOptions({ path: { id: shiftId } }));

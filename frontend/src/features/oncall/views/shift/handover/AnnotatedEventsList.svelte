@@ -9,7 +9,7 @@
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { Header } from "svelte-ux";
 	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
-	import { shiftViewStateCtx } from "../context.svelte";
+	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;
@@ -17,7 +17,7 @@
 	};
 	const { handover, onUpdated }: Props = $props();
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);
 
 	const shiftAnnoEventsQuery = createQuery(() => listOncallAnnotationsOptions({ query: { shiftId } }));

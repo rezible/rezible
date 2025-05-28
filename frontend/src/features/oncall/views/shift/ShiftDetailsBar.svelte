@@ -3,9 +3,9 @@
 	import { isFuture } from "date-fns";
 	import { settings } from "$lib/settings.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { shiftViewStateCtx } from "./context.svelte";
+	import { useShiftViewState } from "./shiftViewState.svelte";
 
-	const viewState = shiftViewStateCtx.get();
+	const viewState = useShiftViewState();
 	const attr = $derived(viewState.shift?.attributes);
 	const roster = $derived(attr?.roster);
 	const user = $derived(attr?.user);
