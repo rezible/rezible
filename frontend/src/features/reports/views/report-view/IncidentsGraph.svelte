@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { startOfMonth, endOfMonth } from "date-fns";
 	import { Button, Header } from "svelte-ux";
 	import { mdiDotsVertical } from "@mdi/js";
 

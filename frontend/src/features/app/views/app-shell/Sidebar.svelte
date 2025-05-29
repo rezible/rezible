@@ -2,21 +2,17 @@
 	import { page } from "$app/state";
 	import {
 		mdiAccountGroup,
-		mdiBookshelf,
 		mdiChartBox,
-		mdiCogBox,
 		mdiFire,
 		mdiHome,
 		mdiPhoneRing,
-		mdiVectorPolyline,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import { Icon, Collapse } from "svelte-ux";
+	import { session } from "$lib/auth.svelte";
 	import OmniSearch from "$features/app/components/omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "$features/app/components/user-profile-menu/UserProfileMenu.svelte";
-	import HeaderLogo from "./HeaderLogo.svelte";
-	import { session } from "$src/lib/auth.svelte";
 
 	type SidebarItem = {
 		path: string;
@@ -44,6 +40,8 @@
 
 	const currentPath = $derived(page.route.id);
 	const expandingHover = false;
+
+    const preloadHome = $derived(session.error ? "tap" : "hover");
 </script>
 
 {#snippet navItem(r: SidebarItem)}
@@ -68,7 +66,15 @@
 		expandingHover ? "w-fit hover:w-60" : "w-60"
 	)}
 >
-	<HeaderLogo {expandingHover} />
+	<div class="h-16 flex items-center px-4">
+		<a href="/" class="text-2xl flex items-center" 
+			data-sveltekit-preload-data={preloadHome} 
+			data-sveltekit-preload-code={preloadHome}
+		>
+			<img src="/images/logo.svg" alt="logo" class="h-10 w-10 fill-neutral" />
+			<span class="pl-3 {expandingHover ? 'hidden group-hover:inline' : ''}">Rezible</span>
+		</a>
+	</div>
 
 	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between">
 		<div class="flex flex-col gap-2 overflow-y-auto overflow-x-hidden">
