@@ -24,11 +24,10 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 	var resp oapi.ListOncallEventsResponse
 
 	params := rez.ListOncallEventsParams{
-		ListParams:      req.ListParams(),
-		From:            req.From,
-		To:              req.To,
-		RosterID:        req.RosterId,
-		WithAnnotations: req.WithAnnotations,
+		ListParams: req.ListParams(),
+		From:       req.From,
+		To:         req.To,
+		RosterID:   req.RosterId,
 	}
 
 	if req.ShiftId != uuid.Nil {

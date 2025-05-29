@@ -7,21 +7,19 @@
 
 	type Props = {
 		event: OncallEvent;
-		annotation?: OncallAnnotation;
-		annotationRosterIds?: string[];
+		annotations?: OncallAnnotation[];
+		annotatableRosterIds?: string[];
 		editAnnotation?: (anno?: OncallAnnotation) => void;
 		pinned?: boolean;
 		togglePinned?: () => void;
 		loadingId?: string;
 	}
-	const { event, annotation, annotationRosterIds, editAnnotation, pinned, togglePinned, loadingId }: Props = $props();
+	const { event, annotations = [], annotatableRosterIds = [], editAnnotation, pinned, togglePinned, loadingId }: Props = $props();
 
 	const attrs = $derived(event.attributes);
 
-	const annotations = $derived(annotationRosterIds ? event.attributes.annotations.filter(a => annotationRosterIds?.includes(a.id)) : []);
-
-	const rosterIdsWithAnnotations = $derived(new Set(event.attributes.annotations.map(a => a.attributes.roster.id)));
-	const showAnnotationButton = $derived(annotationRosterIds?.some(id => !rosterIdsWithAnnotations.has(id)));
+	const rosterIdsWithAnnotations = $derived(new Set(annotations.map(a => a.attributes.roster.id)));
+	const showAnnotationButton = $derived(annotatableRosterIds.some(id => !rosterIdsWithAnnotations.has(id)));
 	const loading = $derived(!!loadingId && loadingId === event.id);
 	const disabled = $derived(!!loadingId && loadingId !== event.id);
 </script>
@@ -43,21 +41,17 @@
 	</div>
 
 	<div class="flex items-center gap-4 w-full">
-		{#if annotation}
+		{#each annotations as anno}
 			<div class="overflow-y-auto w-full h-full border rounded p-2 bg-neutral-700/70 text-sm flex items-center">
-				<div class="text-neutral-content">{annotation.attributes.notes}</div>
+				<div class="text-neutral-content">{anno.attributes.notes}</div>
 			</div>
-		{:else}
-			{#each annotations as anno}
-				<span>roster annotation</span>
-			{/each}
-		{/if}
-		
-		{#if editAnnotation && showAnnotationButton}
-			<div class="hidden group-hover:inline w-full h-full">
-				<Button classes={{root: "w-full h-full"}} {loading} {disabled} on:click={() => editAnnotation()}>Add Annotation</Button>
-			</div>
-		{/if}
+		{:else} 
+			{#if editAnnotation && showAnnotationButton}
+				<div class="hidden group-hover:inline w-full h-full">
+					<Button classes={{root: "w-full h-full"}} {loading} {disabled} on:click={() => editAnnotation()}>Add Annotation</Button>
+				</div>
+			{/if}
+		{/each}
 
 		{#if !!togglePinned}
 			<div class="pl-4">

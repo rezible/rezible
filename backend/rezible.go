@@ -308,16 +308,18 @@ type (
 
 	ListOncallEventsParams struct {
 		ListParams
-		From            time.Time
-		To              time.Time
-		RosterID        uuid.UUID
-		WithAnnotations bool
+		From     time.Time
+		To       time.Time
+		RosterID uuid.UUID
 	}
 
 	ListOncallAnnotationsParams struct {
 		ListParams
-		RosterID uuid.UUID
-		ShiftID  uuid.UUID
+		RosterID          uuid.UUID
+		ShiftID           uuid.UUID
+		WithCreator       bool
+		WithRoster        bool
+		WithAlertFeedback bool
 	}
 
 	OncallEventsService interface {

@@ -40,10 +40,6 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 		query.Where(oncallevent.RosterID(params.RosterID))
 	}
 
-	if params.WithAnnotations {
-		query.WithAnnotations()
-	}
-
 	return query.All(params.GetQueryContext(ctx))
 }
 
@@ -75,11 +71,17 @@ func (s *OncallEventsService) QueryUserChatMessageEventDetails(ctx context.Conte
 func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
 	query := s.db.OncallAnnotation.Query().
 		Limit(params.GetLimit()).
-		Offset(params.Offset).
-		WithCreator().
-		WithEvent().
-		WithRoster().
-		WithAlertFeedback()
+		Offset(params.Offset)
+
+	if params.WithCreator {
+		query.WithCreator()
+	}
+	if params.WithRoster {
+		query.WithRoster()
+	}
+	if params.WithAlertFeedback {
+		query.WithAlertFeedback()
+	}
 
 	rosterId := params.RosterID
 	if params.ShiftID != uuid.Nil {

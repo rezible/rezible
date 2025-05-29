@@ -5,7 +5,7 @@
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
 	import { session } from "$lib/auth.svelte";
-	import { getUserOncallInformationOptions, listOncallEventsOptions, type ListOncallEventsData, type OncallAnnotation, type OncallEvent, type OncallShift } from "$lib/api";
+	import { getUserOncallInformationOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type ListOncallAnnotationsData, type ListOncallEventsData, type OncallAnnotation, type OncallEvent, type OncallShift } from "$lib/api";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventsFilters, { type DisabledFilters, type FilterOptions } from "$components/oncall-events/EventsFilters.svelte";
 	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
@@ -14,6 +14,7 @@
 	import { PeriodType } from "@layerstack/utils";
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
 	import { subDays } from "date-fns";
+	import { string } from "zod/v4";
 
 	type Props = {
 		shift?: OncallShift;
@@ -75,8 +76,7 @@
 		from: dateRange.from?.toISOString(),
 		to: dateRange.to?.toISOString(),
 		rosterId: filters.rosterId,
-		withAnnotations: true,
-	})
+	});
 	const eventsQuery = createQuery(() => ({
 		...listOncallEventsOptions({query: eventsQueryData}),
 		enabled: !!userOncallInfo,
@@ -86,11 +86,32 @@
 	watch(() => numEvents, num => {paginationStore.setTotal(num)});
 	const pageData = $derived(pagination.current.slice(eventsData));
 
-	let annotationEvent = $state<OncallEvent>();
-	let annotationCurrent = $state<OncallAnnotation>();
+	const annosQueryData = $derived<ListOncallAnnotationsData["query"]>({ 
+		// TODO: backend
+		// from: dateRange.from?.toISOString(),
+		// to: dateRange.to?.toISOString(),
+		rosterId: filters.rosterId,
+	});
+	const annosQuery = createQuery(() => ({
+		...listOncallAnnotationsOptions({query: annosQueryData}),
+		enabled: !!userOncallInfo,
+	}));
+	const annosData = $derived(annosQuery.data?.data ?? []);
+	const eventAnnotations = $derived.by(() => {
+		const annoMap = new Map<string, OncallAnnotation[]>();
+		// TODO: ugly and probably slow
+		annosData.forEach(ann => {
+			const eventId = ann.attributes.event.id;
+			annoMap.set(eventId, [...(annoMap.get(eventId) || []), ann]);
+		});
+		return annoMap;
+	});
+
+	let annoDialogEvent = $state<OncallEvent>();
+	let annoDialogAnno = $state<OncallAnnotation>();
 	const setAnnotationDialog = (ev?: OncallEvent, anno?: OncallAnnotation) => {
-		annotationEvent = ev;
-		annotationCurrent = anno;
+		annoDialogEvent = ev;
+		annoDialogAnno = anno;
 	};
 
 	const annotationRoster = $derived(defaultShift?.attributes.roster);
@@ -136,10 +157,11 @@
 		{#if loading}
 			<LoadingIndicator />
 		{:else}
-			{#each pageData ?? [] as event}
+			{#each pageData as event}
 				<EventRowItem 
 					{event}
-					annotationRosterIds={userRosterIds}
+					annotations={eventAnnotations.get(event.id)}
+					annotatableRosterIds={userRosterIds}
 					editAnnotation={(anno?: OncallAnnotation) => {setAnnotationDialog(event, anno)}}
 				/>
 			{:else}
@@ -167,8 +189,8 @@
 {#if annotationRoster}
 	<EventAnnotationDialog 
 		roster={annotationRoster}
-		event={annotationEvent} 
-		current={annotationCurrent} 
+		event={annoDialogEvent} 
+		current={annoDialogAnno} 
 		onClose={() => setAnnotationDialog()}
 	/>
 {/if}

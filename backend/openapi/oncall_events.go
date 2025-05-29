@@ -39,8 +39,6 @@ type (
 		Title       string    `json:"title"`
 		Description string    `json:"description"`
 		Timestamp   time.Time `json:"timestamp"`
-		// TODO: don't include annotations with the event
-		Annotations []OncallAnnotation `json:"annotations"`
 	}
 
 	OncallAnnotation struct {
@@ -49,13 +47,13 @@ type (
 	}
 
 	OncallAnnotationAttributes struct {
-		Event           OncallEvent                    `json:"event"`
-		Roster          OncallRoster                   `json:"roster"`
-		Creator         User                           `json:"creator"`
-		Notes           string                         `json:"notes"`
-		Tags            []string                       `json:"tags"`
-		MinutesOccupied int                            `json:"minutesOccupied"`
-		AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
+		Event           Expandable[OncallEventAttributes]  `json:"event"`
+		Roster          Expandable[OncallRosterAttributes] `json:"roster"`
+		Creator         Expandable[UserAttributes]         `json:"creator"`
+		Notes           string                             `json:"notes"`
+		Tags            []string                           `json:"tags"`
+		MinutesOccupied int                                `json:"minutesOccupied"`
+		AlertFeedback   *OncallAnnotationAlertFeedback     `json:"alertFeedback,omitempty"`
 	}
 
 	OncallAnnotationAlertFeedback struct {
@@ -73,11 +71,6 @@ func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 		Timestamp:   e.Timestamp,
 	}
 
-	attr.Annotations = make([]OncallAnnotation, len(e.Edges.Annotations))
-	for i, a := range e.Edges.Annotations {
-		attr.Annotations[i] = OncallAnnotationFromEnt(a)
-	}
-
 	return OncallEvent{
 		Id:         e.ID,
 		Attributes: attr,
@@ -89,14 +82,19 @@ func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
 		Notes:           e.Notes,
 		Tags:            nil,
 		MinutesOccupied: e.MinutesOccupied,
+		Roster:          Expandable[OncallRosterAttributes]{Id: e.RosterID},
+		Creator:         Expandable[UserAttributes]{Id: e.CreatorID},
+		Event:           Expandable[OncallEventAttributes]{Id: e.EventID},
 	}
 
 	if e.Edges.Roster != nil {
-		attr.Roster = OncallRosterFromEnt(e.Edges.Roster)
+		roster := OncallRosterFromEnt(e.Edges.Roster)
+		attr.Roster.Attributes = &roster.Attributes
 	}
 
 	if e.Edges.Creator != nil {
-		attr.Creator = UserFromEnt(e.Edges.Creator)
+		usr := UserFromEnt(e.Edges.Creator)
+		attr.Creator.Attributes = &usr.Attributes
 	}
 
 	if e.Edges.AlertFeedback != nil {
@@ -108,7 +106,8 @@ func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
 	}
 
 	if e.Edges.Event != nil {
-		attr.Event = OncallEventFromEnt(e.Edges.Event)
+		ev := OncallEventFromEnt(e.Edges.Event)
+		attr.Event.Attributes = &ev.Attributes
 	}
 
 	return OncallAnnotation{
@@ -132,11 +131,10 @@ var ListOncallEvents = huma.Operation{
 
 type ListOncallEventsRequest struct {
 	ListRequest
-	From            time.Time `query:"from"`
-	To              time.Time `query:"to"`
-	ShiftId         uuid.UUID `query:"shiftId"`
-	RosterId        uuid.UUID `query:"rosterId"`
-	WithAnnotations bool      `query:"withAnnotations"`
+	From     time.Time `query:"from"`
+	To       time.Time `query:"to"`
+	ShiftId  uuid.UUID `query:"shiftId"`
+	RosterId uuid.UUID `query:"rosterId"`
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 

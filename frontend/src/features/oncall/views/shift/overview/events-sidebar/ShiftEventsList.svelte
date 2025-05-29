@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { mdiFilter } from "@mdi/js";
-	import { Header, Button } from "svelte-ux";
 	import type { OncallEvent } from "$lib/api";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
@@ -14,27 +12,33 @@
 
 	let showFilters = $state(false);
 
-	let annoEvent = $state<OncallEvent>();
-	const annotationRosterIds = $derived(shiftRoster ? [shiftRoster.id] : []);
-	const currentAnnotation = $derived(annoEvent?.attributes.annotations.find(a => a.attributes.roster.id === shiftRoster?.id));
+	let annoDialogEvent = $state<OncallEvent>();
+	const annoDialogEventAnnotation = $derived(annoDialogEvent && viewState.eventAnnotationsMap.get(annoDialogEvent.id));
+	const annotatableRosterIds = $derived(shiftRoster ? [shiftRoster.id] : []);
+
+	const onEditAnnotation = (event: OncallEvent) => {
+		annoDialogEvent = event;
+
+	}
 </script>
 
 {#if shift && events && shiftRoster}
 	{#each events as event}
+		{@const annotation = viewState.eventAnnotationsMap.get(event.id)}
 		<EventRowItem 
 			{event}
-			{annotationRosterIds}
-			annotation={event.attributes.annotations?.at(0)}
-			editAnnotation={() => (annoEvent = event)}
+			{annotatableRosterIds}
+			annotations={annotation ? [annotation] : []}
+			editAnnotation={() => onEditAnnotation(event)}
 		/>
 	{/each}
 {/if}
 
 {#if shiftRoster}
 	<EventAnnotationDialog 
-		event={annoEvent}
-		current={currentAnnotation}
+		event={annoDialogEvent}
+		current={annoDialogEventAnnotation}
 		roster={shiftRoster}
-		onClose={() => (annoEvent = undefined)}
+		onClose={() => (annoDialogEvent = undefined)}
 	/>
 {/if}

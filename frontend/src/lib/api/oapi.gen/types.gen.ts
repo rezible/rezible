@@ -751,6 +751,21 @@ export type ErrorModel = {
     type?: string;
 };
 
+export type ExpandableOncallEventAttributes = {
+    attributes?: OncallEventAttributes;
+    id: string;
+};
+
+export type ExpandableOncallRosterAttributes = {
+    attributes?: OncallRosterAttributes;
+    id: string;
+};
+
+export type ExpandableUserAttributes = {
+    attributes?: UserAttributes;
+    id: string;
+};
+
 export type ExternalTicket = {
     provider: string;
 };
@@ -1716,11 +1731,11 @@ export type OncallAnnotationAlertFeedback = {
 
 export type OncallAnnotationAttributes = {
     alertFeedback?: OncallAnnotationAlertFeedback;
-    creator: User;
-    event: OncallEvent;
+    creator: ExpandableUserAttributes;
+    event: ExpandableOncallEventAttributes;
     minutesOccupied: number;
     notes: string;
-    roster: OncallRoster;
+    roster: ExpandableOncallRosterAttributes;
     tags: Array<string>;
 };
 
@@ -1730,7 +1745,6 @@ export type OncallEvent = {
 };
 
 export type OncallEventAttributes = {
-    annotations: Array<OncallAnnotation>;
     description: string;
     kind: string;
     timestamp: string;
@@ -6825,7 +6839,6 @@ export type ListOncallEventsData = {
         to?: string;
         shiftId?: string;
         rosterId?: string;
-        withAnnotations?: boolean;
     };
     url: '/oncall/events';
 };

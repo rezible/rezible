@@ -3,6 +3,7 @@
 		listOncallAnnotationsOptions,
 		updateOncallShiftHandoverMutation,
 		type OncallAnnotation,
+		type OncallEvent,
 		type OncallShiftHandover,
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
@@ -18,14 +19,9 @@
 	const { handover, onUpdated }: Props = $props();
 
 	const viewState = useShiftViewState();
-	const shiftId = $derived(viewState.shiftId);
-
-	const shiftAnnoEventsQuery = createQuery(() => listOncallAnnotationsOptions({ query: { shiftId } }));
-	const annos = $derived(shiftAnnoEventsQuery.data?.data ?? []);
 
 	const pinnedAnnos = $derived(handover.attributes.pinnedAnnotations ?? []);
 	const pinnedEventIds = $derived(new Set(pinnedAnnos.map(p => p.attributes.event.id)));
-	const unpinnedAnnos = $derived(annos.filter(a => !pinnedEventIds.has(a.attributes.event.id)));
 
 	let loadingId = $state<string>();
 	const updateHandoverMut = createMutation(() => ({
@@ -45,6 +41,22 @@
 		};
 		updateHandoverMut.mutate({ path: { id: handover.id }, body });
 	};
+
+	type EventAnnoListItem = {
+		event: OncallEvent;
+		annotation: OncallAnnotation;
+		pinned: boolean;
+	};
+	// TODO: do this in viewState?
+	const listItems = $derived.by(() => {
+		const items: EventAnnoListItem[] = [];
+		viewState.eventAnnotationsMap.forEach((annotation, eventId) => {
+			const event = viewState.eventIdMap.get(eventId);
+			const pinned = pinnedEventIds.has(eventId);
+			if (!!event) items.push({event, annotation, pinned});
+		});
+		return items;
+	})
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10">
@@ -53,20 +65,12 @@
 	</div>
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
-		{#each pinnedAnnos as annotation}
-			{@const event = annotation.attributes.event}
-			<EventRowItem {event} {annotation} pinned {loadingId} togglePinned={() => togglePinned(annotation)} />
-		{/each}
-
-		{#each unpinnedAnnos as annotation}
-			{@const event = annotation.attributes.event}
-			<EventRowItem {event} {annotation} {loadingId} togglePinned={() => togglePinned(annotation)} />
-		{/each}
-
-		{#if annos.length === 0}
+		{#each listItems as item}
+			<EventRowItem {...item} {loadingId} togglePinned={() => togglePinned(item.annotation)} />
+		{:else}
 			<div class="grid place-items-center p-4">
 				<span>No Events Annotated</span>
 			</div>
-		{/if}
+		{/each}
 	</div>
 </div>

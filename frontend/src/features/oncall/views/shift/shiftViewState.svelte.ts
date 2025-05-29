@@ -1,6 +1,6 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, listOncallEventsOptions } from "$lib/api";
+import { getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation, type OncallEvent } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
@@ -31,8 +31,13 @@ export class ShiftViewState {
 		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
 	})
 
-	eventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: this.shiftId, withAnnotations: true } }))
+	eventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: this.shiftId } }))
 	events = $derived(this.eventsQuery.data?.data);
+	eventIdMap = $derived(new Map(this.events?.map(e => ([e.id, e]))));
+
+	annotationsQuery = createQuery(() => listOncallAnnotationsOptions({ query: { shiftId: this.shiftId } }))
+	annotations = $derived(this.annotationsQuery.data?.data);
+	eventAnnotationsMap = $derived(new Map(this.annotations?.map(a => ([a.attributes.event.id, a]))));
 
 	eventsFilter = $state<ShiftEventFilterKind>();
 	filteredEvents = $derived.by(() => {

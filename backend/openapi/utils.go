@@ -15,6 +15,11 @@ const (
 	DefaultListLimit = 10
 )
 
+type Expandable[Attrs any] struct {
+	Id         uuid.UUID `json:"id"`
+	Attributes *Attrs    `json:"attributes,omitempty"`
+}
+
 // Requests
 type (
 	EmptyRequest struct{}
