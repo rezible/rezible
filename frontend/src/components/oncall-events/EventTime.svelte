@@ -10,7 +10,8 @@
 	const { timestamp }: Props = $props();
 
 	const date = $derived(new Date(timestamp));
-	const humanDate = $derived(formatDate(date, 'EEE, MMM d'))
+	// const humanDate = $derived(formatDate(date, 'EEE, MMM d'))
+	const humanDate = $derived(formatDate(date, 'MMM d'))
 	const humanTime = $derived(formatDate(date, 'h:mm a'));
 	const isOutsideBusinessHours = $derived(!isBusinessHours(date.getHours()));
 	const isNightTime = $derived(isNightHours(date.getHours()));

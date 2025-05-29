@@ -38,7 +38,11 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		}
 		params.From = shift.StartAt
 		params.To = shift.EndAt
-		//params.RosterID = shift.RosterID
+		params.RosterID = shift.RosterID
+	}
+
+	if rez.DebugMode {
+		params.RosterID = uuid.Nil
 	}
 
 	events, eventsErr := h.events.ListEvents(ctx, params)

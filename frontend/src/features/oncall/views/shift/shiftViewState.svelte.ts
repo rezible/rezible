@@ -31,7 +31,7 @@ export class ShiftViewState {
 		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
 	})
 
-	eventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: this.shiftId } }))
+	eventsQuery = createQuery(() => listOncallEventsOptions({ query: { shiftId: this.shiftId, withAnnotations: true } }))
 	events = $derived(this.eventsQuery.data?.data);
 
 	eventsFilter = $state<ShiftEventFilterKind>();
