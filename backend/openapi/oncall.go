@@ -232,9 +232,13 @@ func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHando
 		}
 	}
 	attr := OncallShiftHandoverAttributes{
-		ShiftId: p.ShiftID,
-		Content: content,
-		SentAt:  p.SentAt,
+		ShiftId:           p.ShiftID,
+		Content:           content,
+		SentAt:            p.SentAt,
+		PinnedAnnotations: make([]OncallAnnotation, len(p.Edges.PinnedAnnotations)),
+	}
+	for i, anno := range p.Edges.PinnedAnnotations {
+		attr.PinnedAnnotations[i] = OncallAnnotationFromEnt(anno)
 	}
 
 	return OncallShiftHandover{

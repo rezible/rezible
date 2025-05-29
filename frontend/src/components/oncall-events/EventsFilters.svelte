@@ -57,12 +57,8 @@
 	let rostersSearch = $state<string>();
 	const setRostersSearch = debounce((s?: string) => (rostersSearch = s), 500);
 
-	const placeholderRostersData = $derived({data: userRosters, pagination: {total: userRosters.length}});
-	const rostersQuery = createQuery(() => ({
-		placeholderData: placeholderRostersData,
-		...listOncallRostersOptions({query: {search: (!!rostersSearch ? rostersSearch : undefined)}}),
-	}));
-	const rosters = $derived(rostersQuery.data?.data ?? []);
+	const rostersQuery = createQuery(() => listOncallRostersOptions({query: {search: (!!rostersSearch ? rostersSearch : undefined)}}));
+	const rosters = $derived(rostersQuery.data?.data ?? userRosters);
 
 	const queryRosterOptions = $derived(rosters.map(r => ({value: r.id, label: r.attributes.name})));
 
@@ -83,10 +79,6 @@
 	});
 	
 	let rosterMenuOpen = $state(false);
-	let selectedRosterOption = $state<MenuOption<string>>();
-	watch(() => filters.rosterId, id => {
-		selectedRosterOption = id ? $state.snapshot(rosterOptions.find(o => (o.value === id))) : undefined;
-	});
 
 	const onRosterSelected = (value?: string | null) => {
 		filters.rosterId = !!value ? value : undefined;
@@ -109,8 +101,7 @@
 			classes={{ root: "w-28", field: { root: "gap-0", container: "h-8 flex items-center", input: "my-0" } }}
 			options={annoOptions}
 			clearable={false}
-			value={annoValue}
-			on:change={e => setAnnotated(e.detail.value)}
+			bind:value={() => annoValue, setAnnotated}
 		/>
 	{/if}
 
@@ -118,9 +109,9 @@
 		<SelectField 
 			label="Roster"
 			labelPlacement="top"
-			value={filters.rosterId}
+			loading={rostersQuery.isLoading}
 			bind:open={rosterMenuOpen}
-			on:change={e => onRosterSelected(e.detail.value)}
+			bind:value={() => filters.rosterId, onRosterSelected}
 			search={async (s, o) => {setRostersSearch(s); return o}}
 			maintainOrder
 			dense
@@ -128,20 +119,14 @@
 			options={rosterOptions}
 		>
 			<div slot="prepend" class:hidden={rosterMenuOpen} class="mr-2">
-				{#if !!selectedRosterOption}
-					<Avatar kind="roster" id={selectedRosterOption.value} size={18} />
+				{#if !!filters.rosterId}
+					<Avatar kind="roster" id={filters.rosterId} size={18} />
 				{:else}
 					<span>Any</span>
 				{/if}
 			</div>
 
-			<svelte:fragment
-				slot="option"
-				let:option
-				let:index
-				let:selected
-				let:highlightIndex
-			>
+			<svelte:fragment slot="option" let:option let:index let:selected let:highlightIndex>
 				<MenuItem
 					class={cls(
 						index === highlightIndex && "bg-surface-content/5",

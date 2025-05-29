@@ -14,7 +14,6 @@
 	import { PeriodType } from "@layerstack/utils";
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
 	import { subDays } from "date-fns";
-	import { string } from "zod/v4";
 
 	type Props = {
 		shift?: OncallShift;
@@ -32,7 +31,6 @@
 
 	const today = new Date();
 	const last7Days = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
-	let dateRange = $state<DateRangeType>(last7Days);
 
 	const defaultShift = $derived(shift || userActiveShift);
 
@@ -53,20 +51,16 @@
 		}
 		return last7Days;
 	});
-	watch(() => defaultDateRange, r => {dateRange = r});
 
-	const defaultFilters = $derived.by(() => {
-		let f: FilterOptions = {};
-		if (defaultShift) {
-			f.rosterId = defaultShift.attributes.roster.id;
-		} else if (userRosterIds.length > 0) {
-			f.rosterId = userRosterIds.at(0);
-		}
-		return f;
+	let dateRangeValue = $state<DateRangeType>();
+	const dateRange = $derived(dateRangeValue || defaultDateRange);
+
+	const defaultRosterId = $derived.by(() => {
+		if (defaultShift) return defaultShift.attributes.roster.id;
+		if (userRosterIds.length > 0) return userRosterIds.at(0);
 	});
-
 	let filters = $state<FilterOptions>({});
-	watch(() => defaultFilters, f => {filters = f});
+	watch(() => defaultRosterId, id => {filters.rosterId = id});
 	let filtersVisible = $state(false);
 
 	const paginationStore = createPaginationStore({ page: 0, perPage: 25, total: 0 });
@@ -83,7 +77,7 @@
 	}));
 	const eventsData = $derived(eventsQuery.data?.data ?? []);
 	const numEvents = $derived(eventsData.length);
-	watch(() => numEvents, num => {paginationStore.setTotal(num)});
+	watch(() => numEvents, paginationStore.setTotal);
 	const pageData = $derived(pagination.current.slice(eventsData));
 
 	const annosQueryData = $derived<ListOncallAnnotationsData["query"]>({ 
@@ -133,8 +127,7 @@
 							field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
 						}}
 						icon={mdiCalendarRange}
-						value={dateRange || defaultDateRange}
-						on:change={(e) => {dateRange = (e.detail as DateRangeType)}}
+						bind:value={() => dateRange, d => (dateRangeValue = d)}
 					/>
 
 					<Button icon={mdiFilter} iconOnly 

@@ -378,12 +378,16 @@ func (s *OncallService) getRosterHandoverTemplateContents(ctx context.Context, r
 }
 
 func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	return s.db.OncallUserShiftHandover.Query().Where(oncallusershifthandover.ID(id)).Only(ctx)
+	return s.db.OncallUserShiftHandover.Query().
+		Where(oncallusershifthandover.ID(id)).
+		WithPinnedAnnotations().
+		Only(ctx)
 }
 
 func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error) {
 	handover, queryErr := s.db.OncallUserShiftHandover.Query().
 		Where(oncallusershifthandover.ShiftID(shiftId)).
+		WithPinnedAnnotations().
 		Only(ctx)
 	if queryErr != nil {
 		if !create || !ent.IsNotFound(queryErr) {

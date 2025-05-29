@@ -40,21 +40,23 @@
 		</div>
 	</div>
 
-	<div class="flex items-center gap-4 w-full">
-		{#each annotations as anno}
-			<div class="overflow-y-auto w-full h-full border rounded p-2 bg-neutral-700/70 text-sm flex items-center">
-				<div class="text-neutral-content">{anno.attributes.notes}</div>
-			</div>
-		{:else} 
-			{#if editAnnotation && showAnnotationButton}
-				<div class="hidden group-hover:inline w-full h-full">
-					<Button classes={{root: "w-full h-full"}} {loading} {disabled} on:click={() => editAnnotation()}>Add Annotation</Button>
+	<div class="flex w-full items-center justify-between">
+		<div class="flex flex-1 gap-2">
+			{#each annotations as anno}
+				<div class="overflow-y-auto w-full h-full border rounded p-2 bg-neutral-700/70 text-sm flex items-center">
+					<div class="text-neutral-content">{anno.attributes.notes}</div>
 				</div>
-			{/if}
-		{/each}
+			{:else} 
+				{#if editAnnotation && showAnnotationButton}
+					<div class="hidden group-hover:inline w-full h-full">
+						<Button classes={{root: "w-full h-full"}} {loading} {disabled} on:click={() => editAnnotation()}>Add Annotation</Button>
+					</div>
+				{/if}
+			{/each}
+		</div>
 
 		{#if !!togglePinned}
-			<div class="pl-4">
+			<div class="self-end">
 				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {loading} {disabled} on:click={togglePinned} />
 			</div>
 		{/if}

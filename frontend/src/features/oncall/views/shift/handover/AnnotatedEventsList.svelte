@@ -35,28 +35,32 @@
 	}));
 	const togglePinned = (anno: OncallAnnotation) => {
 		loadingId = $state.snapshot(anno.attributes.event.id);
-		const ids = [...pinnedAnnos.map(a => a.id), anno.id];
+		const ids = new Set(pinnedAnnos.map(a => a.id));
+
+		// toggle in set
+		if (!ids.delete(anno.id)) ids.add(anno.id);
+
 		const body: UpdateOncallShiftHandoverRequestBody = {
-			attributes: {pinnedAnnotationIds: ids},
+			attributes: {pinnedAnnotationIds: ids.values().toArray()},
 		};
 		updateHandoverMut.mutate({ path: { id: handover.id }, body });
 	};
 
 	type EventAnnoListItem = {
 		event: OncallEvent;
-		annotation: OncallAnnotation;
+		anno: OncallAnnotation;
 		pinned: boolean;
 	};
 	// TODO: do this in viewState?
 	const listItems = $derived.by(() => {
 		const items: EventAnnoListItem[] = [];
-		viewState.eventAnnotationsMap.forEach((annotation, eventId) => {
+		viewState.eventAnnotationsMap.forEach((anno, eventId) => {
 			const event = viewState.eventIdMap.get(eventId);
-			const pinned = pinnedEventIds.has(eventId);
-			if (!!event) items.push({event, annotation, pinned});
+			if (!!event) items.push({event, anno, pinned: pinnedEventIds.has(eventId)});
 		});
 		return items;
-	})
+	});
+	$inspect(listItems);
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10">
@@ -66,7 +70,7 @@
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each listItems as item}
-			<EventRowItem {...item} {loadingId} togglePinned={() => togglePinned(item.annotation)} />
+			<EventRowItem event={item.event} annotations={[item.anno]} pinned={item.pinned} {loadingId} togglePinned={() => togglePinned(item.anno)} />
 		{:else}
 			<div class="grid place-items-center p-4">
 				<span>No Events Annotated</span>
