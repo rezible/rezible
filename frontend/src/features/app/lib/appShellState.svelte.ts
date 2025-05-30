@@ -1,5 +1,5 @@
 import { watch } from "runed";
-import type { AvatarProps } from "$components/avatar/Avatar.svelte";
+import type Avatar from "$components/avatar/Avatar.svelte";
 import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
 import { onNavigate } from "$app/navigation";
@@ -7,7 +7,7 @@ import { onNavigate } from "$app/navigation";
 export type PageBreadcrumb = {
 	label?: string;
 	href?: string;
-	avatar?: AvatarProps;
+	avatar?: ComponentProps<typeof Avatar>;
 };
 
 export type PageActions<PComponent extends Component<any>> = {
