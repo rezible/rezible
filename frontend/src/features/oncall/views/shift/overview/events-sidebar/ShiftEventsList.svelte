@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { OncallEvent } from "$lib/api";
+	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
 	import { useShiftViewState } from "../../shiftViewState.svelte";
 
 	const viewState = useShiftViewState();
@@ -25,7 +25,7 @@
 {#if shift && events && shiftRoster}
 	{#each events as event}
 		{@const annotation = viewState.eventAnnotationsMap.get(event.id)}
-		<EventRowItem 
+		<EventRow 
 			{event}
 			{annotatableRosterIds}
 			annotations={annotation ? [annotation] : []}

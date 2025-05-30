@@ -9,7 +9,7 @@
 	} from "$lib/api";
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { Header } from "svelte-ux";
-	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
+	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	type Props = {
@@ -70,7 +70,7 @@
 
 	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
 		{#each listItems as item}
-			<EventRowItem event={item.event} annotations={[item.anno]} pinned={item.pinned} {loadingId} togglePinned={() => togglePinned(item.anno)} />
+			<EventRow event={item.event} annotations={[item.anno]} pinned={item.pinned} {loadingId} togglePinned={() => togglePinned(item.anno)} />
 		{:else}
 			<div class="grid place-items-center p-4">
 				<span>No Events Annotated</span>

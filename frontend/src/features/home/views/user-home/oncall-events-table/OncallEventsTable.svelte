@@ -8,7 +8,7 @@
 	import { getUserOncallInformationOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type ListOncallAnnotationsData, type ListOncallEventsData, type OncallAnnotation, type OncallEvent, type OncallShift } from "$lib/api";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import EventsFilters, { type DisabledFilters, type FilterOptions } from "$components/oncall-events/EventsFilters.svelte";
-	import EventRowItem from "$components/oncall-events/EventRowItem.svelte";
+	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { PeriodType } from "@layerstack/utils";
@@ -151,11 +151,11 @@
 			<LoadingIndicator />
 		{:else}
 			{#each pageData as event}
-				<EventRowItem 
+				<EventRow 
 					{event}
 					annotations={eventAnnotations.get(event.id)}
 					annotatableRosterIds={userRosterIds}
-					editAnnotation={(anno?: OncallAnnotation) => {setAnnotationDialog(event, anno)}}
+					editAnnotation={anno => {setAnnotationDialog(event, anno)}}
 				/>
 			{:else}
 				<div class="grid place-items-center flex-1">
