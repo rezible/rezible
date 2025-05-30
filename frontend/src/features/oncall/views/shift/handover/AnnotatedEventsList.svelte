@@ -59,7 +59,6 @@
 		});
 		return items;
 	});
-	$inspect(listItems);
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10">
