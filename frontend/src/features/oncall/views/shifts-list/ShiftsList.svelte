@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Card, DateRangeField, TextField } from "svelte-ux";
-	import { PeriodType } from '@layerstack/utils';
+	import { DateRangeField, TextField } from "svelte-ux";
+	import { PeriodType } from "@layerstack/utils";
 	import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
 	import { formatDistanceToNow, subDays } from "date-fns";
@@ -8,6 +8,7 @@
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import Header from "$src/components/header/Header.svelte";
+	import Card from "$src/components/card/Card.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -66,12 +67,16 @@
 				{#each shifts as shift}
 					{@const attr = shift.attributes}
 					{@const roster = attr.roster.attributes}
-					<Card class="w-full" classes={{ headerContainer: "py-2" }}>
-						<Header title={roster.name} subheading={attr.role} slot="header" />
+					<Card classes={{ root: "w-full", headerContainer: "py-2" }}>
+						{#snippet header()}
+							<Header title={roster.name} subheading={attr.role} />
+						{/snippet}
 
-						<div slot="contents" class="pb-2">
-							<span>{formatDistanceToNow(attr.endAt)} ago</span>
-						</div>
+						{#snippet contents()}
+							<div class="pb-2">
+								<span>{formatDistanceToNow(attr.endAt)} ago</span>
+							</div>
+						{/snippet}
 					</Card>
 				{/each}
 			{/snippet}

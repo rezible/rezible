@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { MeetingSession } from "$lib/api";
-	import { addMinutes } from "date-fns";
-	import { Button, Card } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Card from "$components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		session: MeetingSession;
@@ -13,13 +14,19 @@
 </script>
 
 <a href="/meetings/{scheduleId}/{session.id}">
-	<Card title={session.attributes.title} class="w-full">
+	<Card classes={{root: "w-full"}}>
+		{#snippet header()}
+			<Header title={session.attributes.title} />
+		{/snippet}
+
 		<div class="px-4">
 			<span>{start.toLocaleString()}</span>
 		</div>
 
-		<div slot="actions" class="flex justify-end px-1">
-			<Button>View</Button>
-		</div>
+		{#snippet actions()}
+			<div class="flex justify-end px-1">
+				<Button>View</Button>
+			</div>
+		{/snippet}
 	</Card>
 </a>

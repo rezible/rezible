@@ -16,13 +16,15 @@
 		type MutationOptions,
 	} from "@tanstack/svelte-query";
 	import { type ColumnDef } from "@layerstack/svelte-table";
-	import { Button, Card, Pagination, Table } from "svelte-ux";
+	import { Button, Pagination, Table } from "svelte-ux";
 	import { paginationStore } from "@layerstack/svelte-stores";
 	import type { PaginatedResponse, ErrorModel, ListQueryOptionsFunc, ListFuncQueryOptions } from "$lib/api";
 	import { mdiArchive, mdiArchiveMinus, mdiPencil, mdiPlus } from "@mdi/js";
 	import type { FormFields } from "./fields.svelte";
 	import MutationForm from "./MutationForm.svelte";
 	import ConfirmationModal from "./ConfirmationModal.svelte";
+	import Card from "$components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type MutationOptionsFn = () => MutationOptions<any, ErrorModel, any>;
 	type ObjectQueryOptions = {
@@ -266,12 +268,10 @@
 	</td>
 {/snippet}
 
-<Card
-	title="{dataType}s"
-	subheading={description}
-	class="p-4"
-	classes={{ headerContainer: "px-0 pt-0", content: "bg-surface-200" }}
->
+<Card classes={{ root: "p-4", headerContainer: "px-0 pt-0", content: "bg-surface-200" }}>
+	{#snippet header()}
+		<Header title="{dataType}s" subheading={description} />
+	{/snippet}
 	{#if query.isLoading}
 		<span>Loading...</span>
 	{:else if query.isError}

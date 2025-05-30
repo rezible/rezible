@@ -2,33 +2,38 @@
 	import type { OncallRoster } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
 	import { mdiStar, mdiStarOutline, mdiArrowRight } from "@mdi/js";
-	import { Card, Button } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
+	import Card from "$components/card/Card.svelte";
 
-	interface Props {
+	type Props = {
 		roster: OncallRoster;
 		pinned?: boolean;
-	}
+	};
 	let { roster, pinned = false }: Props = $props();
 </script>
 
-<Card class="">
-	<div slot="header">
+<Card>
+	{#snippet header()}
 		<Header title={roster.attributes.name}></Header>
-	</div>
+	{/snippet}
 
-	<div slot="contents" class="flex flex-col">
+	{#snippet contents()}
 		<div class="flex flex-col">
-			<span></span>
-			<div class="flex items-center"></div>
+			<div class="flex flex-col">
+				<span></span>
+				<div class="flex items-center"></div>
+			</div>
 		</div>
-	</div>
+	{/snippet}
 
-	<div slot="actions" class="px-1 flex flex-row-reverse gap-2">
-		<Button href="/oncall/rosters/{roster.id}">
-			View
-			<Icon data={mdiArrowRight} />
-		</Button>
-		<Button iconOnly icon={pinned ? mdiStar : mdiStarOutline} />
-	</div>
+	{#snippet actions()}
+		<div class="px-1 flex flex-row-reverse gap-2">
+			<Button href="/oncall/rosters/{roster.id}">
+				View
+				<Icon data={mdiArrowRight} />
+			</Button>
+			<Button iconOnly icon={pinned ? mdiStar : mdiStarOutline} />
+		</div>
+	{/snippet}
 </Card>

@@ -3,7 +3,8 @@
 	import LoadingIndicator from "./LoadingIndicator.svelte";
 	import type { Snippet } from "svelte";
 	import { tryUnwrapApiError, type ErrorModel } from "$lib/api";
-	import { Card } from "svelte-ux";
+	import Card from "$components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	// dont use this
 
@@ -23,17 +24,22 @@
 
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
-		<Card title="Error {err.status} {err.title}" classes={{ header: { title: "text-danger text-xl" } }}>
-			<div slot="contents" class="pb-3 flex flex-col">
-				<span class="text-lg">{err.detail}</span>
-				{#each err.errors ?? [] as d}
-					<span
-						>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}<span
-							class="text-neutral-content">{d.message}</span
-						></span
-					>
-				{/each}
-			</div>
+		<Card>
+			{#snippet header()}
+				<Header title="Error {err.status} {err.title}" classes={{ title: "text-danger text-xl" }} />
+			{/snippet}
+			{#snippet contents()}
+				<div class="pb-3 flex flex-col">
+					<span class="text-lg">{err.detail}</span>
+					{#each err.errors ?? [] as d}
+						<span
+							>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}<span
+								class="text-neutral-content">{d.message}</span
+							></span
+						>
+					{/each}
+				</div>
+			{/snippet}
 		</Card>
 	{:else}
 		<span>error: {errors}</span>

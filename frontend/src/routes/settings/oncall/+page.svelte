@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { isBefore, isSameDay } from "date-fns";
-	import { Button, Card, Field, Month, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Button, Field, Month, NumberStepper, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { Weekdays, type Weekday } from "$lib/scheduling";
 	import Header from "$components/header/Header.svelte";
+	import Card from "$components/card/Card.svelte";
 
 	let repeats = $state<"weekly" | "monthly">("monthly");
 	let repetitionStep = $state(1);
@@ -22,12 +23,14 @@
 	};
 </script>
 
-<Card
-	title="Oncall Time Report"
-	subheading="Set up scheduled exporting of an oncall hours report"
-	class="p-4 w-full"
-	classes={{ headerContainer: "px-0 pt-0", content: "bg-surface-200" }}
->
+<Card classes={{ root: "p-4 w-full", headerContainer: "px-0 pt-0", content: "bg-surface-200" }}>
+	{#snippet header()}
+		<Header
+			title="Oncall Time Report"
+			subheading="Set up scheduled exporting of an oncall hours report"
+		/>
+	{/snippet}
+
 	<div class="flex flex-col border p-2 rounded-lg">
 		<Header title="Schedule" />
 
@@ -36,9 +39,10 @@
 				<Field label="Starting">
 					<div class="block w-full">
 						<Month
-							selected={starting} 
-							on:dateChange={e => (setStarting(e.detail))} 
-							disabledDates={(date) => (!isSameDay(date, today) && isBefore(date, today))} />
+							selected={starting}
+							on:dateChange={(e) => setStarting(e.detail)}
+							disabledDates={(date) => !isSameDay(date, today) && isBefore(date, today)}
+						/>
 					</div>
 				</Field>
 			</div>
@@ -65,7 +69,9 @@
 				{#if repeats === "monthly"}
 					<Field label="On the Same">
 						<ToggleGroup variant="fill" inset class="w-fit" bind:value={monthlyOn}>
-							<ToggleOption value="same_day">Day of the Month ({starting.getDate()})</ToggleOption>
+							<ToggleOption value="same_day"
+								>Day of the Month ({starting.getDate()})</ToggleOption
+							>
 							<ToggleOption value="same_weekday">Weekday ({selectedWeekday})</ToggleOption>
 						</ToggleGroup>
 					</Field>
@@ -74,9 +80,11 @@
 		</div>
 	</div>
 
-	<div slot="actions" class="pt-2 flex flex-row-reverse gap-2">
-		<Button variant="fill" color="primary" disabled>Save Schedule</Button>
+	{#snippet actions()}
+		<div class="pt-2 flex flex-row-reverse gap-2">
+			<Button variant="fill" color="primary" disabled>Save Schedule</Button>
 
-		<Button variant="fill" color="secondary">Export Now</Button>
-	</div>
+			<Button variant="fill" color="secondary">Export Now</Button>
+		</div>
+	{/snippet}
 </Card>

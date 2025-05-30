@@ -1,9 +1,10 @@
 <script lang="ts" generics="QueryResultData">
 	import type { Snippet } from "svelte";
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
-	import { Card } from "svelte-ux";
 	import { tryUnwrapApiError, type ErrorModel } from "$lib/api";
 	import LoadingIndicator from "./LoadingIndicator.svelte";
+	import Card from "$components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		query: CreateQueryResult<{ data: QueryResultData }, Error>;
@@ -16,16 +17,21 @@
 
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
-		<Card title="Error {err.status} {err.title}" classes={{ header: { title: "text-danger text-xl" }, root: "mb-2" }}>
-			<div slot="contents" class="pb-3 flex flex-col">
-				<span class="text-lg">{err.detail}</span>
-				{#each err.errors ?? [] as d}
-					<div>
-						<span>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}</span>
-						<span class="text-neutral-content">{d.message}</span>
-					</div>
-				{/each}
-			</div>
+		<Card classes={{ root: "mb-2" }}>
+			{#snippet header()}
+				<Header title="Error {err.status} {err.title}" classes={{ title: "text-danger text-xl" }} />
+			{/snippet}
+			{#snippet contents()}
+				<div class="pb-3 flex flex-col">
+					<span class="text-lg">{err.detail}</span>
+					{#each err.errors ?? [] as d}
+						<div>
+							<span>{d.location ? `[${d.location}: "${d.value}"]: ` : ""}</span>
+							<span class="text-neutral-content">{d.message}</span>
+						</div>
+					{/each}
+				</div>
+			{/snippet}
 		</Card>
 	{:else}
 		<span>error: {query.error}</span>
