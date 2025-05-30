@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Icon, Header } from "svelte-ux";
+	import { Icon } from "svelte-ux";
 	import { mdiGhostOutline } from "@mdi/js";
+	import Header from "$components/header/Header.svelte";
 </script>
 
 <div class="flex flex-col h-fit border rounded-lg overflow-y-auto">

@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiFire, mdiPhone } from "@mdi/js";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
-	import { Header, Icon, ListItem } from "svelte-ux";
-	import type { OncallShift, User } from "$lib/api";
+	import { Icon, ListItem } from "svelte-ux";
+	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		shifts: OncallShift[];

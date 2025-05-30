@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { Component } from "svelte";
-	import { Collapse, Header, ListItem } from "svelte-ux";
+	import { Collapse, ListItem } from "svelte-ux";
 	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
+	import Header from "$src/components/header/Header.svelte";
 
 	import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 	import EventDetailsPanel from "./attribute-panels/EventDetails.svelte";

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Button, Card, Header, Icon } from "svelte-ux";
+	import { Button, Card } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listUsersOptions } from "$src/lib/api";
+	import Header from "$src/components/header/Header.svelte";
 
 	const usersQuery = createQuery(() => listUsersOptions());
 	const users = $derived(usersQuery.data?.data ?? []);
@@ -21,12 +22,14 @@
 		>
 			<div slot="header" class="flex items-center gap-2 w-full">
 				<Header title={usr.attributes.name} classes={{ root: "w-full", title: "font-medium" }}>
-					<div slot="avatar">
+					{#snippet avatar()}
 						<Avatar kind="user" size={32} id={usr.id} />
-					</div>
-					<div slot="actions" class="flex flex-col text-surface-content">
-						<div class="">{userTz}</div>
-					</div>
+					{/snippet}
+					{#snippet actions()}
+						<div class="flex flex-col text-surface-content">
+							<div class="">{userTz}</div>
+						</div>
+					{/snippet}
 				</Header>
 			</div>
 

@@ -14,10 +14,11 @@
 
 <script lang="ts">
 	import { useEdges, useNodes } from "@xyflow/svelte";
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import { mdiPlusCircle, mdiTrashCan } from "@mdi/js";
 	
 	import { useSystemDiagram } from "./diagramState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	const diagram = useSystemDiagram();
 
@@ -43,7 +44,7 @@
 		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; max-height: {ContextMenuHeight}px"
 		class="absolute context-menu border bg-surface-200"
 	>
-		<Header title="Actions" class="px-2 py-1" />
+		<Header title="Actions" classes={{root: "px-2 py-1"}} />
 
 		{#if props.nodeId}
 			{@render nodeMenu(props.nodeId)}

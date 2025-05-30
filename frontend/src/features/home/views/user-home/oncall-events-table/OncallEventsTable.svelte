@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, DateRangeField, Header, Pagination } from "svelte-ux";
+	import Header from "$components/header/Header.svelte";
+	import { Button, DateRangeField, Pagination } from "svelte-ux";
 	import { watch } from "runed";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
@@ -115,7 +116,7 @@
 
 <div class="w-full h-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
 	<Header title="Oncall Events" subheading="Operational events during these dates" classes={{root: "p-2 w-full", title: "text-xl"}}>
-		<svelte:fragment slot="actions">
+		{#snippet actions()}
 			{#if disableFilters !== true}
 				<div class="justify-end flex gap-2 items-end">
 					<DateRangeField
@@ -137,7 +138,7 @@
 					/>
 				</div>
 			{/if}
-		</svelte:fragment>
+		{/snippet}
 	</Header>
 
 	{#if disableFilters !== true && filtersVisible}

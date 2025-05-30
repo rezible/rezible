@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { createOncallAnnotationMutation } from "$lib/api";
-	import { Header, Dialog } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
 	import { createMutation } from "@tanstack/svelte-query";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
 	
 	import { useShiftViewState } from "../shiftViewState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);

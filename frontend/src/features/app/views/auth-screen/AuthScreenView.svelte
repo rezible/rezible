@@ -3,7 +3,8 @@
 	import { dev } from "$app/environment";
 	import { getAuthSessionConfigOptions } from "$lib/api";
 	import { session, type SessionErrorCategory } from "$lib/auth.svelte";
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Header from "$components/header/Header.svelte";
 
 	// TODO: load this
 	const AUTH_URL_BASE = dev ? "http://localhost:8888/auth" : "/auth";
@@ -35,9 +36,9 @@
 <div class="grid h-full w-full place-items-center">
 	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3">
 		<Header title="Authentication Required" classes={{ root: "gap-2", title: "text-2xl" }}>
-			<div slot="avatar">
+			{#snippet avatar()}
 				<img src="/images/logo.svg" alt="logo" class="size-12 fill-neutral" />
-			</div>
+			{/snippet}
 		</Header>
 
 		{#if session.error && errorCategory !== "no_session"}

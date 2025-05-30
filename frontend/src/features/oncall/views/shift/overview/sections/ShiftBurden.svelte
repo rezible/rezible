@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics, OncallShiftMetricsBurden } from "$lib/api";
 
-	import { Header } from "svelte-ux";
-
+	import Header from "$components/header/Header.svelte";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
 	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
 

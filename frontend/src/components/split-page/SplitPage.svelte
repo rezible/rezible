@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { Header } from "svelte-ux";
 
 	type Props = {
 		nav: Snippet;

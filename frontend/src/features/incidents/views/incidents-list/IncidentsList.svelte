@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { mdiChevronRight, mdiMagnify, mdiFilter } from "@mdi/js";
-	import { Button, Card, Header, ListItem, TextField } from "svelte-ux";
+	import { Button, ListItem, TextField } from "svelte-ux";
 	import { listIncidentsOptions, type Incident } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 

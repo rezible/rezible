@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { SvelteSet } from "svelte/reactivity";
-	import { Button, Header, ListItem } from "svelte-ux";
-	import { mdiPencil, mdiPlus } from "@mdi/js";
+	import { Button, ListItem } from "svelte-ux";
+	import { mdiPlus } from "@mdi/js";
 	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { relationshipAttributes, relationshipTraits, type RelationshipTrait } from "./attributesState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = { component: SystemComponent };
 	const { component }: Props = $props();
@@ -47,13 +47,7 @@
 
 	<div class="flex flex-col flex-1 gap-2 p-1 overflow-y-auto min-h-0">
 		<div class="border p-2 flex flex-col gap-2 overflow-y-auto">
-			<Header title="Signals">
-				<!--svelte:fragment slot="actions">
-					{#if excludedSignals.length > 0 && !editingSignal}
-						<Button size="sm" on:click={() => setEditingSignal()}>Create New</Button>
-					{/if}
-				</svelte:fragment-->
-			</Header>
+			<Header title="Signals" />
 
 			<div class="flex flex-col gap-1 min-h-0 overflow-x-hidden overflow-y-auto">
 				{#if editingSignal}

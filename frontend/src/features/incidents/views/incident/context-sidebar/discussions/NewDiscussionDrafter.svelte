@@ -2,10 +2,10 @@
 	import { onMount } from "svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import { Header } from "svelte-ux";
 	import { createReplyEditor, draft } from "$features/incidents/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import { client, createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from "$lib/api";
+	import { createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from "$lib/api";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		retrospectiveId: string;

@@ -2,7 +2,7 @@
 	import type { OncallShiftMetrics } from "$lib/api";
 	import { hour12, hour12Label } from "$lib/format.svelte";
 
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 
 	import { isBusinessHours } from "$features/oncall/lib/utils";
 	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
@@ -14,6 +14,7 @@
 	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		metrics?: OncallShiftMetrics;
@@ -128,10 +129,10 @@
 
 <SectionCard>
 	<div class="h-fit flex flex-col gap-2">
-		<Header title="Alerts" subheading="Alerts by time of day" class="">
-			<svelte:fragment slot="actions">
+		<Header title="Alerts" subheading="Alerts by time of day">
+			{#snippet actions()}
 				<Button icon={mdiFilter} iconOnly on:click={() => (showFilters = !showFilters)} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 
 		{#if showFilters}

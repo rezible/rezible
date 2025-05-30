@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog, Header } from "svelte-ux";
+	import { Button, Dialog } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";
-	import { useSystemDiagram } from "../diagramState.svelte";
 	import { useComponentDialog } from "./dialogState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 	
 	const componentDialog = useComponentDialog();
 
@@ -33,9 +33,9 @@
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="{labels.action} System Component">
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 	</div>
 

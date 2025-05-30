@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { Header } from "svelte-ux";
 	import type { MeetingSession } from "$lib/api";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = { session: MeetingSession };
 	const { session }: Props = $props();

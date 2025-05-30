@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import { listMeetingSessionsOptions, type MeetingSchedule, type MeetingSession } from "$lib/api";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		schedule: MeetingSchedule;
@@ -26,9 +27,9 @@
 
 <div class="border p-2 flex-1 min-h-0 overflow-y-auto">
 	<Header title="Past Sessions" classes={{ title: "text-lg" }}>
-		<svelte:fragment slot="actions">
+		{#snippet actions()}
 			<Button>filter</Button>
-		</svelte:fragment>
+		{/snippet}
 	</Header>
 	<LoadingQueryWrapper {query}>
 		{#snippet view(sessions: MeetingSession[])}

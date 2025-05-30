@@ -11,9 +11,9 @@
 		ToggleOption,
 		DatePickerField,
 		Icon,
-		Header,
 	} from "svelte-ux";
 	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
+	import Header from "$components/header/Header.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 	import {

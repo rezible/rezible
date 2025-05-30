@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import type {
 		SystemAnalysisRelationshipControlAction,
 		SystemAnalysisRelationshipFeedbackSignal,
@@ -23,6 +23,7 @@
 	import { relationshipAttributes } from "./attributesState.svelte";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { mdiMinus, mdiPencil } from "@mdi/js";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		source: SystemComponent;
@@ -145,10 +146,10 @@
 {#snippet loopCard(label: string, description: string, onEdit: VoidFunction, onRemove: VoidFunction)}
 	<div class="border p-2">
 		<Header title={label} subheading={description}>
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button size="sm" iconOnly icon={mdiPencil} on:click={onEdit} />
 				<Button size="sm" iconOnly icon={mdiMinus} on:click={onRemove} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 	</div>
 {/snippet}

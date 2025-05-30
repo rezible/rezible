@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, Card, Collapse, Header, Icon, Month } from "svelte-ux";
+	import { Button, Icon, Month } from "svelte-ux";
 	import type { DateRange } from "@layerstack/utils/dateRange";
 	import { startOfWeek, endOfWeek } from "date-fns";
 	import { mdiChevronDown, mdiFilter } from "@mdi/js";
 	import { listMeetingSessionsOptions, type ListMeetingSessionsData, type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	let queryParams = $state<ListMeetingSessionsData["query"]>({});
 	const query = createQuery(() => listMeetingSessionsOptions({ query: queryParams }));
@@ -21,14 +22,14 @@
 
 <div class="flex flex-col gap-2 min-h-0 h-full">
 	<Header title="Upcoming" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
-		<div slot="actions" class="">
+		{#snippet actions()}
 			<Button icon={mdiFilter} iconOnly>
 				<span class="flex gap-1 items-center">
 					Filters
 					<Icon data={mdiChevronDown} />
 				</span>
 			</Button>
-		</div>
+		{/snippet}
 	</Header>
 
 	<div class="grid grid-cols-2 h-full gap-2">

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import type { ChainedCommands } from "@tiptap/core";
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import { ShiftHandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		handoverState: ShiftHandoverEditorState;

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import Header from "$src/components/header/Header.svelte";
 	import { mdiDotsGrid } from "@mdi/js";
-	import { Button, Card, Header, Icon } from "svelte-ux";
-	import { cls } from '@layerstack/tailwind';
+	import { Button, Card, Icon } from "svelte-ux";
 
 	type Props = {
 		title: string;
@@ -14,13 +14,13 @@
 <Button href="/teams/{teamId}" class="p-0">
 	<Card class={"hover:border-primary-600"} classes={{ headerContainer: "py-3 px-4" }}>
 		<Header {title} slot="header">
-			<div slot="avatar">
+			{#snippet avatar()}
 				{#if teamId}
 					<Avatar kind="team" id={teamId} size={32} />
 				{:else}
 					<Icon size={32} data={mdiDotsGrid} />
 				{/if}
-			</div>
+			{/snippet}
 		</Header>
 	</Card>
 </Button>

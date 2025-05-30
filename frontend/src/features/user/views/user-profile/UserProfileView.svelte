@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getLocalTimeZone } from "@internationalized/date";
-	import { Header } from "svelte-ux";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import { getUserOptions, listIncidentsOptions, listOncallRostersOptions, listOncallShiftsOptions, listTeamsOptions } from "$lib/api";
 
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import OncallStats from "./OncallStats.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		userId: string;

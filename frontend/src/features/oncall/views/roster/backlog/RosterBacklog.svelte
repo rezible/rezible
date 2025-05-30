@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
 	import { getLocalTimeZone, now } from "@internationalized/date";
-	
-	import { Header } from "svelte-ux";
 
 	import { rosterViewCtx } from "../context.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import Header from "$src/components/header/Header.svelte";
 	
 	type BacklogItem = {
 		id: string;
@@ -52,7 +51,7 @@
 
 <div class="grid grid-cols-2 gap-2 h-full">
 	<div class="flex flex-col">
-		<Header title="Tickets" class="text-lg font-medium" />
+		<Header title="Tickets" classes={{root: "text-lg font-medium"}} />
 
 		<div class="flex-1 flex flex-col gap-1 overflow-y-auto border">
 			<LoadingQueryWrapper query={backlogQuery}>
@@ -69,7 +68,7 @@
 	</div>
 
 	<div class="">
-		<Header title="Ticket Burndown" class="text-lg font-medium" />
+		<Header title="Ticket Burndown" classes={{root: "text-lg font-medium"}} />
 
 		<div class="h-[300px] p-4 border rounded">
 			<!--Chart

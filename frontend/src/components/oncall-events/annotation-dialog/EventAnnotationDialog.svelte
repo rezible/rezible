@@ -1,10 +1,11 @@
 <script lang="ts">
+	import { createMutation } from "@tanstack/svelte-query";
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog, Header } from "svelte-ux";
+	import { Button, Dialog } from "svelte-ux";
+	import Header from "$components/header/Header.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { createOncallAnnotationMutation, updateOncallAnnotationMutation, type CreateOncallAnnotationRequestAttributes, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallEvent, type OncallRoster } from "$src/lib/api";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
-	import { createMutation } from "@tanstack/svelte-query";
 	import { attributesState } from "./attributes.svelte";
 	
 	type Props = {
@@ -66,9 +67,9 @@
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="{formAction} Event Annotation" subheading="For {roster.attributes.name}">
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 	</div>
 

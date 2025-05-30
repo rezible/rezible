@@ -5,8 +5,9 @@
 	import { createRetrospectiveMutation } from "$lib/api";
 	import { useIncidentViewState } from "./viewState.svelte";
 
-	import { Dialog, Header } from "svelte-ux";
+	import { Dialog } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		isIncidentView: boolean;

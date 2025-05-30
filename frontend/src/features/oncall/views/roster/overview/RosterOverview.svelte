@@ -11,7 +11,7 @@
 		mdiArrowRight,
 		mdiHeartPulse,
 	} from "@mdi/js";
-	import { Button, Header, Icon, Badge, Progress } from "svelte-ux";
+	import { Button, Icon } from "svelte-ux";
 	import { formatDistanceToNow, formatRelative } from "date-fns";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import { rosterViewCtx } from "../context.svelte";
@@ -25,6 +25,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { cls } from "@layerstack/tailwind";
 	import { parseAbsoluteToLocal } from "@internationalized/date";
+	import Header from "$src/components/header/Header.svelte";
 
 	type ActivityItem = {
 		id: string;
@@ -150,27 +151,27 @@
 <div class="flex flex-col gap-4">
 	<div class="p-2 flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Key Metrics" subheading="Last 30 days" classes={{ root: "text-lg font-medium" }}>
-			<div slot="avatar">
+			{#snippet avatar()}
 				<Icon data={mdiChartBar} size={38} class="text-primary-300" />
-			</div>
+			{/snippet}
 		</Header>
 
 		{#if metrics}
-		<div class="flex gap-2 flex-wrap">
-			<MetricCard
-				title="Health Score"
-				icon={mdiHeartPulse}
-				metric={metrics.healthScore}
-				comparison={{ value: .44 }}
-			/>
-			<MetricCard title="Incidents" icon={mdiFire} metric={metrics.incidents} />
-			<MetricCard title="Alerts" icon={mdiBellAlert} metric={metrics.alerts} />
-			<MetricCard
-				title="Alert Actionability"
-				icon={mdiBellBadge}
-				metric="{metrics.alertActionability * 100}%"
-			/>
-		</div>
+			<div class="flex gap-2 flex-wrap">
+				<!-- <MetricCard
+					title="Health Score"
+					icon={mdiHeartPulse}
+					metric={metrics.healthScore}
+					comparison={{ value: .44 }}
+				/>
+				<MetricCard title="Incidents" icon={mdiFire} metric={metrics.incidents} />
+				<MetricCard title="Alerts" icon={mdiBellAlert} metric={metrics.alerts} />
+				<MetricCard
+					title="Alert Actionability"
+					icon={mdiBellBadge}
+					metric="{metrics.alertActionability * 100}%"
+				/> -->
+			</div>
 		{/if}
 	</div>
 
@@ -231,7 +232,7 @@
 
 	<div class="flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Recent Activity" classes={{ root: "text-lg font-medium" }}>
-			<svelte:fragment slot="actions"></svelte:fragment>
+			
 		</Header>
 
 		<div class="flex flex-col border rounded-md divide-y">

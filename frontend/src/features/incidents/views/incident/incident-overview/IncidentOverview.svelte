@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { mdiPencil } from "@mdi/js";
-	import { Header, Button, Icon } from "svelte-ux";
+	import { Button, Icon } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useIncidentViewState } from "../viewState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	const viewState = useIncidentViewState();
 
@@ -17,11 +18,11 @@
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">
 				<Header title="Responders" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
-					<div slot="actions">
+					{#snippet actions()}
 						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
-					</div>
+					{/snippet}
 				</Header>
 				
 				{#each roleAssignments as assignment}
@@ -39,11 +40,11 @@
 
 			<div class="border rounded-lg p-2 group">
 				<Header title="Teams" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
-					<div slot="actions">
+					{#snippet actions()}
 						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
-					</div>
+					{/snippet}
 				</Header>
 				
 				<div class="flex flex-col gap-2">
@@ -63,11 +64,11 @@
 
 			<div class="border rounded-lg p-2 group">
 				<Header title="Linked Incidents" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
-					<div slot="actions">
+					{#snippet actions()}
 						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
-					</div>
+					{/snippet}
 				</Header>
 				
 				<div class="flex flex-col gap-2">
@@ -86,22 +87,22 @@
 		<div class="flex flex-col gap-2">
 			<div class="border rounded-lg p-2 group">
 				<Header title="Incident Severity" classes={{ root: "h-8", title: "text-md text-neutral-100" }}>
-					<div slot="actions">
+					{#snippet actions()}
 						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
-					</div>
+					{/snippet}
 				</Header>
 				<span>{attrs?.severity.attributes.name ?? "severity"}</span>
 			</div>
 
 			<div class="border rounded-lg p-2 group">
 				<Header title="Incident Visibility" classes={{ root: "min-h-8", title: "text-md text-neutral-100" }}>
-					<div slot="actions">
+					{#snippet actions()}
 						<Button size="sm" classes={{ root: "h-8 text-neutral-200" }} on:click={() => {}}>
 							<Icon data={mdiPencil} />
 						</Button>
-					</div>
+					{/snippet}
 				</Header>
 				{#if attrs?.private}
 					<span class="text-neutral-content">Restricted</span>

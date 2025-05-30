@@ -1,16 +1,15 @@
 <script lang="ts">
 	import {
-		listOncallAnnotationsOptions,
 		updateOncallShiftHandoverMutation,
 		type OncallAnnotation,
 		type OncallEvent,
 		type OncallShiftHandover,
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
-	import { createMutation, createQuery } from "@tanstack/svelte-query";
-	import { Header } from "svelte-ux";
+	import { createMutation } from "@tanstack/svelte-query";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import { useShiftViewState } from "../shiftViewState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;

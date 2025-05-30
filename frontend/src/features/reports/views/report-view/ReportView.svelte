@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Button, ButtonGroup, Header, Icon } from "svelte-ux";
+	import { Button, ButtonGroup, Icon } from "svelte-ux";
 	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import IncidentsGraph from "./IncidentsGraph.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {id: string;}
 	const { id }: Props = $props();
@@ -19,7 +20,7 @@
 
 <div class="flex flex-col gap-2 overflow-y-auto">
 	<Header title={report.attributes.title} subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
-		<svelte:fragment slot="actions">
+		{#snippet actions()}
 			<ButtonGroup variant="fill-light">
 				<Button icon={starred ? mdiStar : mdiStarOutline} on:click={() => {starred = !starred}}>
 					{starred ? "Unstar" : "Star"}
@@ -27,7 +28,7 @@
 				<Button icon={mdiContentDuplicate}>Duplicate</Button>
 				<Button icon={mdiTrashCan}>Delete</Button>
 			</ButtonGroup>
-		</svelte:fragment>
+		{/snippet}
 	</Header>
 
 	<div class="flex-1 flex flex-col gap-2 max-h-full overflow-y-auto">

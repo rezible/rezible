@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Header, ListItem, Icon, Month, MonthList } from "svelte-ux";
+	import { ListItem, Icon } from "svelte-ux";
 	import type { DateRange } from "@layerstack/utils/dateRange";
 	import { startOfWeek, endOfWeek } from "date-fns";
 	import type { OncallShift, UserOncallInformation } from "$lib/api";
@@ -7,6 +7,7 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		info: UserOncallInformation;

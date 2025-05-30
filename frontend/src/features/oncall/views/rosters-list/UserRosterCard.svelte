@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Button, Card, Header, Icon } from "svelte-ux";
+	import { Button, Card, Icon } from "svelte-ux";
 	import { cls } from '@layerstack/tailwind';
 	import { page } from "$app/state";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		title: string;
@@ -23,13 +24,13 @@
 		classes={{ headerContainer: "py-3 px-4", root: "w-full" }}
 	>
 		<Header {title} slot="header">
-			<div slot="avatar">
+			{#snippet avatar()}
 				{#if icon}
 					<Icon data={icon} size={32} />
 				{:else if rosterId}
 					<Avatar kind="roster" id={rosterId} size={32} />
 				{/if}
-			</div>
+			{/snippet}
 		</Header>
 	</Card>
 </Button>

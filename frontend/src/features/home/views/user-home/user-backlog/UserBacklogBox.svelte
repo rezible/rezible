@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Icon, Header, Button } from "svelte-ux";
+	import { Icon, Button } from "svelte-ux";
 	import { mdiGhostOutline } from "@mdi/js";
+	import Header from "$src/components/header/Header.svelte";
 
 	// let params = $state<ListUserAssignmentsData["query"]>({});
 	// const query = createQuery(() => listUserAssignmentsOptions({ query: params }));
@@ -14,11 +15,11 @@
 
 <div class="flex flex-col h-fit border rounded-lg overflow-y-auto">
 	<Header title="Backlog Items" subheading="Items assigned to you" classes={{root: "p-2 w-full"}}>
-		<svelte:fragment slot="actions">
-				<div class="justify-end flex gap-2 items-end">
-					<Button>View All</Button>
-				</div>
-		</svelte:fragment>
+		{#snippet actions()}
+			<div class="justify-end flex gap-2 items-end">
+				<Button>View All</Button>
+			</div>
+		{/snippet}
 	</Header>
 
 	<div class="flex flex-col gap-2 overflow-y-auto border-t p-2">

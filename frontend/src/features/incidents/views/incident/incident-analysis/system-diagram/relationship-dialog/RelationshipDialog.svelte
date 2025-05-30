@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog, Header } from "svelte-ux";
+	import { Button, Dialog } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
 	import { useRelationshipDialog } from "./dialogState.svelte";
+	import Header from "$src/components/header/Header.svelte";
 	
 	const relationshipDialog = useRelationshipDialog();
 	const open = $derived(relationshipDialog.view !== "closed");
@@ -30,9 +31,9 @@
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="{labels.action} Relationship">
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 	</div>
 

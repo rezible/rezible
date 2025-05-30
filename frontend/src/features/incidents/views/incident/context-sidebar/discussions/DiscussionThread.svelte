@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { Button, Header, Tooltip } from "svelte-ux";
+	import { Button, Tooltip } from "svelte-ux";
 	import { onMount } from "svelte";
 	import type { RetrospectiveDiscussion } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
 	import { mdiCheck } from "@mdi/js";
 	import { activeDiscussion, createReplyEditor } from "$features/incidents/lib/discussions.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		discussion: RetrospectiveDiscussion;
@@ -32,11 +33,11 @@
 	onclick={setActiveDiscussion}
 >
 	<Header title="User Name" subheading="date/time">
-		<div slot="actions">
+		{#snippet actions()}
 			<Tooltip title="Mark Completed">
 				<Button iconOnly size="sm" icon={mdiCheck} />
 			</Tooltip>
-		</div>
+		{/snippet}
 	</Header>
 
 	<div class="border-b-2"></div>

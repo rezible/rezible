@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiFilter, mdiMagnify } from "@mdi/js";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, ListItem, TextField, Header, Collapse } from "svelte-ux";
+	import { Button, ListItem, TextField, Collapse } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import UserTeamsList from "./UserTeamsList.svelte";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type QueryParams = ListTeamsData["query"];
 	let params = $state<QueryParams>({});

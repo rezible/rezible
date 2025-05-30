@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { mdiClose } from "@mdi/js";
-	import { Button, Dialog, Header } from "svelte-ux";
+	import { Button, Dialog } from "svelte-ux";
 	import type { IncidentDebrief } from "$lib/api";
 	import IncidentDebriefView from "./IncidentDebriefView.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		debrief: IncidentDebrief;
@@ -22,9 +23,9 @@
 >
 	<div slot="header" class="border-b p-2" let:close>
 		<Header title="Debrief">
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 	</div>
 

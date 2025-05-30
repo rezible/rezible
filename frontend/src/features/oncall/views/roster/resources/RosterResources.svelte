@@ -1,6 +1,7 @@
 <script lang="ts">
+	import Header from "$src/components/header/Header.svelte";
 	import { mdiChevronRight, mdiPencil } from "@mdi/js";
-	import { Button, Header } from "svelte-ux";
+	import { Button } from "svelte-ux";
 
 </script>
 
@@ -17,9 +18,9 @@
 
 	<div class="flex flex-col h-full border">
 		<Header title="Links" classes={{title: "text-lg font-medium", root: "border-b h-10 px-1"}}>
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button>Add Link</Button>
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 
 
@@ -35,19 +36,19 @@ Recent meeting notes (ops reviews)</pre>
 
 	<div class="flex flex-col h-full border">
 		<Header title="Playbooks" classes={{title: "text-lg font-medium", root: "border-b h-10 px-1"}}>
-			<svelte:fragment slot="actions">
+			{#snippet actions()}
 				<Button>Add Playbook</Button>
-			</svelte:fragment>
+			{/snippet}
 		</Header>
 
 		<div class="flex-1 flex flex-col overflow-y-auto p-1">
 			<!-- playbook list item -->
 			<div class="flex flex-col w-full border p-1">
 				<Header title="Title">
-					<svelte:fragment slot="actions">
+					{#snippet actions()}
 						<Button icon={mdiPencil} iconOnly />
 						<Button icon={mdiChevronRight} iconOnly />
-					</svelte:fragment>
+					{/snippet}
 				</Header>
 				<div class="border">
 				<pre>Last updated date

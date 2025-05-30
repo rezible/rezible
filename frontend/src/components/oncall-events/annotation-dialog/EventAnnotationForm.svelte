@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { Button, Checkbox, Field, Header, Icon, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Button, Checkbox, Field, Icon, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { attributesState } from "./attributes.svelte";
-	import { mdiCalendar, mdiClose, mdiCross, mdiPlus } from "@mdi/js";
-	import { settings } from "$src/lib/settings.svelte";
+	import { mdiCalendar, mdiClose, mdiPlus } from "@mdi/js";
+	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiChevronRight } from "@mdi/js";
-	import { Button, Header, ListItem } from "svelte-ux";
+	import { Button, ListItem } from "svelte-ux";
+	import Header from "$components/header/Header.svelte";
 
 	const reports = [
 		{id: "foo", attributes: {title: "Test Report", author: "tex", slug: "test"}},

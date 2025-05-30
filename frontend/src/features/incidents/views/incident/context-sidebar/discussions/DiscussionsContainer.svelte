@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-	import { Button, Header } from "svelte-ux";
 	import { listRetrospectiveDiscussionsOptions, type RetrospectiveDiscussion } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { draft } from "$features/incidents/lib/discussions.svelte";
 	import DiscussionThread from "./DiscussionThread.svelte";
 	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {
 		retrospectiveId: string;

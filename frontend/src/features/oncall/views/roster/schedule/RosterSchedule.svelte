@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Header, Icon, Button, Month } from "svelte-ux";
+	import { Icon, Button, Month } from "svelte-ux";
 	import { mdiChevronRight } from "@mdi/js";
 	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
+	import Header from "$src/components/header/Header.svelte";
 
 	type Props = {};
 	const {}: Props = $props();
@@ -69,9 +70,9 @@
 	<div class="flex flex-col gap-2">
 		<div class="flex flex-col border p-2">
 			<Header title="Cover Requests" classes={{ root: "text-lg font-medium" }}>
-				<svelte:fragment slot="actions">
+				{#snippet actions()}
 					<Button variant="fill-light">Request Cover</Button>
-				</svelte:fragment>
+				{/snippet}
 			</Header>
 
 			{#each coverRequests as req}

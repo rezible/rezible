@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { Button, Checkbox, Header, Icon, ListItem } from "svelte-ux";
+	import { Button, Checkbox, Icon, ListItem } from "svelte-ux";
 	import { cls } from '@layerstack/tailwind';
 	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { mdiFilter, mdiPlus } from "@mdi/js";
+	import { mdiPlus } from "@mdi/js";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 
 	let showFilters = $state(false);
