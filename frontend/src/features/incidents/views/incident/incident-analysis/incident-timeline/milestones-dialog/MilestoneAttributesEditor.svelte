@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Field, Icon, Tooltip, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Field, Tooltip, ToggleGroup, ToggleOption } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiShape } from "@mdi/js";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { createMutation } from "@tanstack/svelte-query";

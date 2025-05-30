@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, ButtonGroup, Icon } from "svelte-ux";
+	import { Button, ButtonGroup } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import IncidentsGraph from "./IncidentsGraph.svelte";

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import {
 		getNextOncallShiftOptions,

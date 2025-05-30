@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Collapse, Icon, ListItem, SelectField, TextField, type MenuOption } from "svelte-ux";
+	import { Button, Collapse, ListItem, SelectField, TextField } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { type Snippet } from "svelte";
 	import { mdiBroadcast, mdiCheck, mdiClose, mdiPencil, mdiStateMachine, mdiTune } from "@mdi/js";
 	import { createQuery } from "@tanstack/svelte-query";

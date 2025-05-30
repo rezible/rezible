@@ -2,7 +2,8 @@
 	import { format as formatDate } from "date-fns";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { mdiAlert, mdiCalendarClock, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
-	import { Button, Icon, Tooltip } from "svelte-ux";
+	import { Tooltip } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
 		timestamp: string;

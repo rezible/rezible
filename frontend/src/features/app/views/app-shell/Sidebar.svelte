@@ -9,7 +9,8 @@
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
-	import { Icon, Collapse } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
+	import { Collapse } from "svelte-ux";
 	import { session } from "$lib/auth.svelte";
 	import OmniSearch from "$features/app/components/omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "$features/app/components/user-profile-menu/UserProfileMenu.svelte";

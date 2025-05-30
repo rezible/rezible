@@ -2,7 +2,8 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$src/components/header/Header.svelte";
 	import { mdiDotsGrid } from "@mdi/js";
-	import { Button, Card, Icon } from "svelte-ux";
+	import { Button, Card } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
 		title: string;

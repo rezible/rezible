@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiPlus } from "@mdi/js";
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	let createOpen = $state(false);
 </script>
 

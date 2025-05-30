@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { Popover, Button, Icon, ListItem, ThemeSwitch } from "svelte-ux";
-	import { mdiAccount, mdiChevronDown, mdiCog, mdiUnfoldMoreHorizontal, mdiUnfoldMoreVertical } from "@mdi/js";
-	import { session } from "$lib/auth.svelte";
+	import { Popover, Button, ListItem, ThemeSwitch } from "svelte-ux";
+	import { mdiAccount, mdiCog, mdiUnfoldMoreHorizontal } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { session } from "$lib/auth.svelte";
 
 	const accountLinks = [
 		{ href: "/profile", title: "Profile", icon: mdiAccount },

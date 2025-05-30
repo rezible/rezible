@@ -1,7 +1,5 @@
 <script lang="ts">
 	import {
-		mdiBellAlert,
-		mdiBellBadge,
 		mdiChartBar,
 		mdiFire,
 		mdiClipboardList,
@@ -9,9 +7,9 @@
 		mdiHandshake,
 		mdiAlertCircle,
 		mdiArrowRight,
-		mdiHeartPulse,
 	} from "@mdi/js";
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { formatDistanceToNow, formatRelative } from "date-fns";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import { rosterViewCtx } from "../context.svelte";
@@ -152,7 +150,7 @@
 	<div class="p-2 flex flex-col gap-2 border border-surface-content/10 rounded p-2">
 		<Header title="Key Metrics" subheading="Last 30 days" classes={{ root: "text-lg font-medium" }}>
 			{#snippet avatar()}
-				<Icon data={mdiChartBar} size={38} class="text-primary-300" />
+				<Icon data={mdiChartBar} size={38} classes={{root: "text-primary-300"}} />
 			{/snippet}
 		</Header>
 
@@ -241,7 +239,7 @@
 					<div class="mt-1">
 						<Icon
 							data={getActivityIcon(activity.type)}
-							class={`h-5 w-5 ${getActivityColor(activity.type)}`}
+							classes={{root: `h-5 w-5 ${getActivityColor(activity.type)}`}}
 						/>
 					</div>
 
@@ -274,7 +272,7 @@
 
 		<Button variant="fill-light" href={`/oncall/rosters/${rosterId}/activity`}>
 			View All Activity
-			<Icon data={mdiArrowRight} class="ml-1 h-4 w-4" />
+			<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
 		</Button>
 	</div>
 </div>

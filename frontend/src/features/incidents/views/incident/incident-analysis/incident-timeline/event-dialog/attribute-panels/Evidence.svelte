@@ -4,7 +4,8 @@
 	import type { IncidentEventEvidence, IncidentEventEvidenceAttributes } from "$lib/api";
 
 	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
-	import { Button, Icon, ListItem, SelectField, type MenuOption } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
+	import { Button, ListItem, SelectField, type MenuOption } from "svelte-ux";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";

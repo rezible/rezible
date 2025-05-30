@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Icon, Button } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import { mdiGhostOutline } from "@mdi/js";
-	import Header from "$src/components/header/Header.svelte";
+	import Icon from "$components/icon/Icon.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	// let params = $state<ListUserAssignmentsData["query"]>({});
 	// const query = createQuery(() => listUserAssignmentsOptions({ query: params }));

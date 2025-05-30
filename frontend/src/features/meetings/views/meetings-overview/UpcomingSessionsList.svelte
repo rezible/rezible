@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Button, Icon, Month } from "svelte-ux";
+	import { Button, Month } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import type { DateRange } from "@layerstack/utils/dateRange";
 	import { startOfWeek, endOfWeek } from "date-fns";
 	import { mdiChevronDown, mdiFilter } from "@mdi/js";

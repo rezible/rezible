@@ -2,9 +2,10 @@
 	import { differenceInHours } from "date-fns";
 	import { mdiArrowRight } from "@mdi/js";
 	import { type OncallShift } from "$lib/api";
-	import { Button, Icon, ProgressCircle } from "svelte-ux";
-	import Avatar from "$components/avatar/Avatar.svelte";
 	import { cls } from "@layerstack/tailwind";
+	import { Button, ProgressCircle } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
 
 	type Props = {

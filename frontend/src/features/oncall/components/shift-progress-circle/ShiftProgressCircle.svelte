@@ -2,7 +2,8 @@
 	import type { OncallShift } from "$lib/api";
 	import { mdiCircleMedium } from "@mdi/js";
 	import { formatDistance } from "date-fns";
-	import { Tooltip, ProgressCircle, Icon } from "svelte-ux";
+	import { Tooltip, ProgressCircle } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
 		shift: OncallShift;
@@ -25,7 +26,7 @@
 		class="text-success [--track-color:theme(colors.success/10%)]"
 	>
 		{#if pulse}
-			<Icon data={mdiCircleMedium} class="animate-pulse" />
+			<Icon data={mdiCircleMedium} classes={{root: "animate-pulse"}} />
 		{/if}
 	</ProgressCircle>
 	<div

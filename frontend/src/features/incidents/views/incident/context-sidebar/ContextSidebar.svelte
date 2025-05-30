@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
 	import { fly } from 'svelte/transition';
 	import { mdiChevronLeft, mdiChevronRight, mdiCircleMedium } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import { useIncidentCollaboration } from "../collaboration.svelte";
 	import { cls } from "@layerstack/tailwind";
 	import { WebSocketStatus } from "@hocuspocus/provider";
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	const collaboration = useIncidentCollaboration();
 

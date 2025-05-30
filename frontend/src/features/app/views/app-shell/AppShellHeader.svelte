@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Popover, Button, Badge, Icon } from "svelte-ux";
+	import { Popover, Button, Badge } from "svelte-ux";
 	import { mdiInbox } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import { notifications } from "$lib/auth.svelte";
 
 	import OmniSearch from "$features/app/components/omni-search/OmniSearch.svelte";

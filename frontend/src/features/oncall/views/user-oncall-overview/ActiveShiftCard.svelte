@@ -2,7 +2,8 @@
 	import type { OncallShift } from "$lib/api";
 	import { isFuture, formatDistanceToNowStrict, isPast } from "date-fns";
 
-	import { Card, Icon } from "svelte-ux";
+	import { Card } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import Avatar from "$src/components/avatar/Avatar.svelte";
 	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiGhostOutline } from "@mdi/js";
 	import Header from "$components/header/Header.svelte";
 </script>

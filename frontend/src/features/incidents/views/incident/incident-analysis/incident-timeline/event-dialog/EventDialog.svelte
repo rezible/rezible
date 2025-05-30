@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { useEventDialog } from "./dialogState.svelte";
-	
-	import { Button, Dialog, Icon } from "svelte-ux";
+	import { Button, Dialog } from "svelte-ux";
 	import { mdiMagicStaff } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
 	import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
+	import { useEventDialog } from "./dialogState.svelte";
 
 	const eventDialog = useEventDialog();
 

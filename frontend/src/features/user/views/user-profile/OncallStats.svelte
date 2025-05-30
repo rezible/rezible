@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiFire, mdiPhone } from "@mdi/js";
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
-	import { Icon, ListItem } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import Avatar from "$src/components/avatar/Avatar.svelte";

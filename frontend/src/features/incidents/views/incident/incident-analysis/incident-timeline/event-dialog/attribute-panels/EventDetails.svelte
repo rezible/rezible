@@ -5,11 +5,11 @@
 		ToggleGroup,
 		ToggleOption,
 		Tooltip,
-		Icon,
 		TextField,
 		Switch,
 	} from "svelte-ux";
 	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import { onMount } from "svelte";
 	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
 	import { eventAttributes } from "./eventAttributesState.svelte";

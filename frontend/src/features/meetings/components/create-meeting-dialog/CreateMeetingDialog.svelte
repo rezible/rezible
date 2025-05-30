@@ -10,8 +10,8 @@
 		ToggleGroup,
 		ToggleOption,
 		DatePickerField,
-		Icon,
 	} from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { createMeetingScheduleMutation, createMeetingSessionMutation, type ErrorModel } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";

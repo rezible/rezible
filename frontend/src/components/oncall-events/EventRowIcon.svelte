@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { OncallEventAttributes } from "$lib/api";
 	import { mdiPhoneAlert, mdiFire, mdiChatQuestion } from "@mdi/js";
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
 		kind: OncallEventAttributes["kind"];

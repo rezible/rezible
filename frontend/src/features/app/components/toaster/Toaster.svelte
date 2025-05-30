@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiCircleMedium } from "@mdi/js";
-	import { Icon, Notification } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
+	import { Notification } from "svelte-ux";
 	import { getToastState, type Toast } from "$features/app/lib/toasts.svelte";
 
 	const toastState = getToastState();
@@ -9,7 +10,7 @@
 {#snippet toast(t: Toast)}
 	<Notification open closeIcon on:close={() => toastState.remove(t.id)}>
 		<div slot="icon">
-			<Icon data={t.icon ?? mdiCircleMedium} class="text-success-500" />
+			<Icon data={t.icon ?? mdiCircleMedium} classes={{root: "text-success-500"}} />
 		</div>
 		<div slot="title">{t.title}</div>
 		<div slot="description" class="w-64">{t.message}</div>

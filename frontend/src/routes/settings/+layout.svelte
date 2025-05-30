@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { cls } from '@layerstack/tailwind';
-	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiLayers, mdiPuzzle } from "@mdi/js";
+	import { mdiAccount, mdiAccountGroup, mdiCog, mdiFire, mdiPuzzle } from "@mdi/js";
 	import SplitPage from "$src/components/split-page/SplitPage.svelte";
 
 	const { children } = $props();

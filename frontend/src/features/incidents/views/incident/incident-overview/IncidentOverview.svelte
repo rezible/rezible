@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { mdiPencil } from "@mdi/js";
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import Header from "$components/header/Header.svelte";
 	import { useIncidentViewState } from "../viewState.svelte";
-	import Header from "$src/components/header/Header.svelte";
 
 	const viewState = useIncidentViewState();
 

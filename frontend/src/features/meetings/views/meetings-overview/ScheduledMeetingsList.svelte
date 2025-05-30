@@ -7,9 +7,10 @@
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
-	import { Button, ListItem, Icon } from "svelte-ux";
+	import { Button, ListItem } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { mdiChevronDown, mdiChevronRight, mdiFilter } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import { addMinutes } from "date-fns";
 
 	let queryParams = $state<ListMeetingSchedulesData["query"]>({});

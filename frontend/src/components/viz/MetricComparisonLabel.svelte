@@ -10,8 +10,8 @@
 </script>
 
 <script lang="ts">
-	import { Icon } from "svelte-ux";
 	import { mdiCircleMedium } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
 		metricValue: MetricValue;

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
 	import { useIncidentViewState } from "../viewState.svelte";

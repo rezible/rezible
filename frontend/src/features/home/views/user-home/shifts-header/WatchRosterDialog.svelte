@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { mdiMagnify } from "@mdi/js";
-	import { Icon, SelectField, type MenuOption } from "svelte-ux";
+	import { SelectField, type MenuOption } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { addWatchedOncallRosterMutation, listOncallRostersOptions } from "$lib/api";
 	import { debounce } from "$lib/utils.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";

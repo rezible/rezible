@@ -8,7 +8,7 @@
 		updateIncidentRoleMutation,
 		type IncidentRole,
 	} from "$lib/api";
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiThumbDown, mdiThumbUp } from "@mdi/js";
 
 	const fields = {

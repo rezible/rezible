@@ -2,7 +2,8 @@
 	import type { OncallRoster } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
 	import { mdiStar, mdiStarOutline, mdiArrowRight } from "@mdi/js";
-	import { Card, Button, Icon } from "svelte-ux";
+	import { Card, Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 
 	interface Props {
 		roster: OncallRoster;

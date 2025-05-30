@@ -1,7 +1,8 @@
 <script lang="ts">
-	import ConfirmButtons from '$src/components/confirm-buttons/ConfirmButtons.svelte';
 	import { mdiCheck, mdiClose } from '@mdi/js';
-	import { Icon, TextField } from 'svelte-ux';
+	import { TextField } from 'svelte-ux';
+	import Icon from "$components/icon/Icon.svelte";
+	import ConfirmButtons from '$components/confirm-buttons/ConfirmButtons.svelte';
 
 	type Props = {
 		label?: string;

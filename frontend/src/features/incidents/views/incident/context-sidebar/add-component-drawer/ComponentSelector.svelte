@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Button, Checkbox, Icon, ListItem } from "svelte-ux";
+	import { Button, Checkbox, ListItem } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { cls } from '@layerstack/tailwind';
 	import { listSystemComponentsOptions, type SystemComponent } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";

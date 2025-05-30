@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { ListItem, Icon } from "svelte-ux";
+	import { ListItem } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import type { DateRange } from "@layerstack/utils/dateRange";
 	import { startOfWeek, endOfWeek } from "date-fns";
 	import type { OncallShift, UserOncallInformation } from "$lib/api";

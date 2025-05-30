@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { Button, Checkbox, Field, Icon, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Button, Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { attributesState } from "./attributes.svelte";
 	import { mdiCalendar, mdiClose, mdiPlus } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";

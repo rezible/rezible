@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiChevronDown, mdiCalendar, mdiPresentationPlay } from "@mdi/js";
-	import { Button, Icon } from "svelte-ux";
-
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
     
 </script>
 

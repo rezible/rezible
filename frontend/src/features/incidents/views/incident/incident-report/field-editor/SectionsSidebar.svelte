@@ -2,7 +2,7 @@
 	import type { RetrospectiveReportSection } from "$lib/api";
 	import { mdiCircleMedium } from "@mdi/js";
 	import { onMount } from "svelte";
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { cls } from '@layerstack/tailwind';
 
 	type Props = {

@@ -9,7 +9,8 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { getIconForComponentKind } from "$lib/systemComponents";
 	import { SvelteMap } from "svelte/reactivity";
-	import { Button, Icon, ListItem, State, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Button, ListItem, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiPencil, mdiPlus, mdiShapeSquareRoundedPlus, mdiTrashCan } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 

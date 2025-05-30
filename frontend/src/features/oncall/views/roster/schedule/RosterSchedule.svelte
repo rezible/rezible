@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { Icon, Button, Month } from "svelte-ux";
+	import { Button, Month } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";

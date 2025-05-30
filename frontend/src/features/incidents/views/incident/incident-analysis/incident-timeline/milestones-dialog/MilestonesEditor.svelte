@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Button, Icon, ListItem } from "svelte-ux";
+	import { Button, ListItem } from "svelte-ux";
 	import { mdiFlagPlus, mdiPencil, mdiTrashCan } from "@mdi/js";
+	import Icon from "$components/icon/Icon.svelte";
 	import {
 		deleteIncidentMilestoneMutation,
 		listIncidentMilestonesOptions,

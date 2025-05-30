@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Icon } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import MetricComparisonLabel, { type MetricComparison } from "./MetricComparisonLabel.svelte";
 
 	type Props = {

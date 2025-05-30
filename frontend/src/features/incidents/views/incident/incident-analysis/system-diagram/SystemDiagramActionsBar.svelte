@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { mdiShapeSquareRoundedPlus } from "@mdi/js";
-	import { Button, Icon } from "svelte-ux";
+	import { Button } from "svelte-ux";
+	import Icon from "$components/icon/Icon.svelte";
 	import { useComponentDialog } from "./component-dialog/dialogState.svelte";
 
 	const componentDialog = useComponentDialog();

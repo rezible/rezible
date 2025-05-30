@@ -16,11 +16,11 @@
 
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronDown } from "@mdi/js";
 	import {
 		Button,
 		Field,
-		Icon,
 		MenuItem,
 		MultiSelectMenu,
 		SelectField,
@@ -29,7 +29,6 @@
 	import { listOncallRostersOptions, type OncallEventAttributes, type OncallRoster } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { debounce } from "$lib/utils.svelte";
-	import { watch } from "runed";
 	import { cls } from "@layerstack/tailwind";
 
 	type Props = {
