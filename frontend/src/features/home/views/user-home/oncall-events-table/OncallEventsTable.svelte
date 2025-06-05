@@ -1,7 +1,8 @@
 <script lang="ts">
+	import { Field, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
-	import { Button, DateRangeField, Pagination } from "svelte-ux";
+	import { Button, ButtonGroup, DateRangeField, Pagination } from "svelte-ux";
 	import { watch } from "runed";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
@@ -14,7 +15,7 @@
 	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { PeriodType } from "@layerstack/utils";
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
-	import { subDays } from "date-fns";
+	import { subDays, subMonths, subWeeks } from "date-fns";
 
 	type Props = {
 		shift?: OncallShift;
@@ -30,31 +31,33 @@
 	const userActiveShifts = $derived(userOncallInfo?.activeShifts ?? []);
 	const userActiveShift = $derived(userActiveShifts.at(0));
 
-	const today = new Date();
-	const last7Days = {from: subDays(today, 7), to: today, periodType: PeriodType.Day};
-
 	const defaultShift = $derived(shift || userActiveShift);
 
-	const ONE_DAY = (1000 * 60 * 60 * 24);
-	const defaultDateRange = $derived.by<DateRangeType>(() => {
-		if (defaultShift) {
-			return {
-				from: new Date(defaultShift.attributes.startAt),
-				to: new Date(defaultShift.attributes.endAt),
-				periodType: PeriodType.Day,
-			}
-		} else if (userRosterIds.length > 0) {
-			return {
-				from: new Date(Date.now() - ONE_DAY),
-				to: new Date(),
-				periodType: PeriodType.Day,
-			}
-		}
-		return last7Days;
+	const today = new Date();
+	const shiftDateRange = $derived(defaultShift && {
+		from: new Date(defaultShift.attributes.startAt),
+		to: new Date(defaultShift.attributes.endAt),
+		periodType: PeriodType.Day,
 	});
+	const last7Days = {from: subWeeks(today, 1), to: today, periodType: PeriodType.Day};
+	const last14Days = {from: subWeeks(today, 2), to: today, periodType: PeriodType.Day};
+	const lastMonth = {from: subMonths(today, 1), to: today, periodType: PeriodType.Day};
 
-	let dateRangeValue = $state<DateRangeType>();
-	const dateRange = $derived(dateRangeValue || defaultDateRange);
+	const ONE_DAY = (1000 * 60 * 60 * 24);
+	const defaultDateRange = $derived<DateRangeType>(shiftDateRange || last7Days);
+
+	type DateRangeOption = "7d" | "14d" | "30d" | "Custom";
+	const dateRangeOptions: DateRangeOption[] = ["7d", "14d", "30d", "Custom"] as const;
+	let dateRangeOption = $state<DateRangeOption>("7d");
+	let customDateRangeValue = $state<DateRangeType>(last7Days);
+	const dateRange = $derived.by(() => {
+		switch (dateRangeOption) {
+			case "7d": return last7Days;
+			case "14d": return last14Days;
+			case "30d": return lastMonth;
+			case "Custom": return customDateRangeValue;
+		}
+	});
 
 	const defaultRosterId = $derived.by(() => {
 		if (defaultShift) return defaultShift.attributes.roster.id;
@@ -119,17 +122,28 @@
 		{#snippet actions()}
 			{#if disableFilters !== true}
 				<div class="justify-end flex gap-2 items-end">
-					<DateRangeField
-						label="Date Range"
-						labelPlacement="top"
-						periodTypes={[PeriodType.Day]}
-						dense
-						classes={{
-							field: { root: "gap-0", container: "pl-0 h-8 flex items-center", prepend: "[&>span]:mr-2" },
-						}}
-						icon={mdiCalendarRange}
-						bind:value={() => dateRange, d => (dateRangeValue = d)}
-					/>
+					<Field label="Date Range" labelPlacement="top" dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
+						<ToggleGroup variant="outline" inset bind:value={dateRangeOption} classes={{root: "bg-surface-100"}}>
+							{#each dateRangeOptions as value}
+								<ToggleOption {value}>{value}</ToggleOption>
+							{/each}
+						</ToggleGroup>
+
+						{#if dateRangeOption === "Custom"}
+							<DateRangeField
+								label=""
+								labelPlacement="top"
+								periodTypes={[PeriodType.Day]}
+  								getPeriodTypePresets={() => []}
+								dense
+								classes={{
+									field: { root: "gap-0", container: "pl-0 py-[2px] flex items-center", prepend: "[&>span]:mr-2" },
+								}}
+								icon={mdiCalendarRange}
+								bind:value={() => dateRange, d => (customDateRangeValue = d)}
+							/>
+						{/if}
+					</Field>
 
 					<Button icon={mdiFilter} iconOnly 
 						variant={filtersVisible ? "fill-light" : "default"}

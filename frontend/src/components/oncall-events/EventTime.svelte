@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { format as formatDate } from "date-fns";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
-	import { mdiAlert, mdiCalendarClock, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
+	import { mdiCalendar, mdiClock, mdiClockOutline, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Tooltip } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 
@@ -20,7 +20,7 @@
 
 <div class="flex flex-col items-start">
 	<span class="text-sm font-medium flex items-center gap-1">
-		<Icon data={mdiCalendarClock} size="14px" />
+		<Icon data={mdiCalendar} size="16px" />
 		{humanDate}
 	</span>
 	<div class="flex items-center gap-1">
@@ -36,9 +36,11 @@
 					<Icon data={mdiWeatherSunset} size="16px" />
 				</span>
 			</Tooltip>
+		{:else}
+			<span class="">
+				<Icon data={mdiClockOutline} size="16px" />
+			</span>
 		{/if}
-		<span class="text-sm text-surface-700 self-end">
-			{humanTime}
-		</span>
+		<span class="text-sm text-surface-700 self-end">{humanTime}</span>
 	</div>
 </div>
