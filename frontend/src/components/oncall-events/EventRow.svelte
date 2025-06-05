@@ -21,8 +21,8 @@
 	const attrs = $derived(event.attributes);
 
 	const date = $derived(new Date(attrs.timestamp));
-	// const humanDate = $derived(formatDate(date, 'EEE, MMM d'))
-	const humanDate = $derived(formatDate(date, 'MMM d'))
+	// const humanDate = $derived(formatDate(date, 'EEE, MMM d'));
+	const humanDate = $derived(formatDate(date, 'MMM d'));
 	const humanTime = $derived(formatDate(date, 'h:mm a'));
 	const isOutsideBusinessHours = $derived(!isBusinessHours(date.getHours()));
 	const isNightTime = $derived(isNightHours(date.getHours()));
@@ -32,12 +32,12 @@
 	const loading = $derived(!!loadingId && loadingId === event.id);
 	const disabled = $derived(!!loadingId && loadingId !== event.id);
 
-	const icon = $derived.by(() => {
+	const kindIcon = $derived.by(() => {
 		switch (attrs.kind) {
-		case "incident": return mdiFire;
-		case "alert": return mdiPhoneAlert;
+		case "incident": return {icon: mdiFire, color: "text-danger-900/50"};
+		case "alert": return {icon: mdiPhoneAlert, color: "text-warning-700/50"};
+		default: return {icon: mdiChatQuestion, color: "text-surface-content/40"};
 		}
-		return mdiChatQuestion;
 	});
 
 	const timeIcon = $derived.by(() => {
@@ -50,11 +50,8 @@
 <Lazy height="80px" class="group grid grid-cols-[80px_minmax(100px,.3fr)_minmax(0,1fr)] gap-2 place-items-center border p-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 	<div class="flex flex-col gap-1 justify-between w-full items-start">
 		<div class="flex gap-1 items-center">
-			<Icon
-				data={icon}
-				classes={{ root: `rounded-full size-4 w-auto ${attrs.kind === 'incident' ? 'text-danger-900/50' : 'text-warning-700/50'}` }}
-			/>
-			<span class="text-xs uppercase font-bol text-surface-content/30">{attrs.kind}</span>
+			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
+			<span class="text-xs uppercase font-bol text-surface-content/50">{attrs.kind}</span>
 		</div>
 
 		<span class="text-sm font-medium flex items-center gap-1">
@@ -71,13 +68,9 @@
 		</Tooltip>
 	</div>
 
-	<div class="flex flex-col gap-1 w-full h-full justify-center">
-		<div class="font-medium text-lg flex items-center leading-none">
-			{attrs.title || `${attrs.kind.charAt(0).toUpperCase() + attrs.kind.slice(1)} ${event.id.substring(0, 8)}`}
-		</div>
-		<div class="text-sm">
-			description
-		</div>
+	<div class="flex flex-col gap-1 w-full h-full">
+		<div class="font-medium text-lg flex items-center leading-none">{attrs.title}</div>
+		<div class="text-sm flex-1">{attrs.description}</div>
 	</div>
 
 	<div class="flex w-full items-center justify-between">
