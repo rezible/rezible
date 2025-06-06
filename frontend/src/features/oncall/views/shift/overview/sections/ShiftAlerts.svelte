@@ -49,21 +49,21 @@
 	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
 
 	const alertHourArcBackgroundColor = (hour: number) => {
-		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.25)";
-		if (hour > 5 && hour < 22) return "rgba(225, 230, 120, 0.25)";
-		return "rgba(70, 50, 120, 0.25)";
+		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.2)";
+		if (hour > 5 && hour < 22) return "rgba(225, 230, 120, 0.2)";
+		return "rgba(70, 50, 120, 0.2)";
 	};
 	const alertHourArcFillColor = (hour: number) => {
 		const count = hourAlertCounts[hour];
 		if (count === 0) return "rgba(100, 100, 100, .8)"
-		if (count === maxAlertCount) return "rgba(210, 110, 140, 1)";
+		if (count === maxAlertCount) return "rgba(140, 80, 10, 1)";
 		if (isBusinessHours(hour)) return "rgba(100, 110, 120, 1)";
 		if (hour > 5 && hour < 22) return "rgba(230, 230, 80, .6)"; // off-hours alert
 		return "rgba(200, 190, 100, 0.8)"; // night alert
 	};
 
 	const alertStats = $derived<InlineStatProps[]>([
-		{ title: "Peak Alert Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
+		{ title: "Peak Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
 		{ title: "Percent Annotated", subheading: `desc`, value: "15%" },
 		{ title: "Actionability", subheading: `from feedback`, value: "" },
 		{ title: "Accuracy", subheading: `from feedback`, value: "" },

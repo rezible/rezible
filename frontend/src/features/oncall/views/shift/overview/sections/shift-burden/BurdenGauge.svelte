@@ -1,64 +1,6 @@
 <script lang="ts">
-	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics, OncallShiftMetricsBurden } from "$lib/api";
-
-	import Header from "$components/header/Header.svelte";
-	import { type InlineStatProps } from "$components/viz/InlineStat.svelte";
-	import ChartWithStats from "$components/viz/ChartWithStats.svelte";
-
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
-	import SectionCard from "./SectionCard.svelte";
-
-	const defaultBurden: OncallShiftMetricsBurden = {
-		finalScore: 0,
-		interruption: 0,
-		lifeImpact: 0,
-		responseRequirements: 0,
-		support: 0,
-		timeImpact: 0
-	};
-
-	type Props = {
-		metrics?: OncallShiftMetrics;
-		weights?: OncallShiftBurdenMetricWeights;
-	};
-	const { metrics, weights }: Props = $props();
-
-	const burden = $derived(!!metrics ? metrics.burden : defaultBurden);
-
-	const getScoreLabel = (score: number) => {
-		if (score < 30) return "Low";
-		if (score < 70) return "Moderate";
-		return "High";
-	};
-
-	const burdenStatCategories = $derived<InlineStatProps[]>([
-		{
-			title: "Event Frequency",
-			subheading: `description`,
-			value: 0,
-		},
-		{
-			title: "Life Impact",
-			subheading: `description`,
-			value: 0,
-		},
-		{
-			title: "Response Requirements",
-			subheading: `description`,
-			value: 0,
-		},
-		{
-			title: "Time Impact",
-			subheading: `description`,
-			value: 0,
-		},
-		{
-			title: "Support",
-			subheading: `description`,
-			value: 0,
-		},
-	]);
 
 	const burdenGaugeValues = [10, 10, 10, 10, 10];
 
@@ -188,13 +130,4 @@
 	});
 </script>
 
-<SectionCard>
-	<Header title="Shift Burden" subheading="Indicator of the human impact of this shift" />
-	<ChartWithStats stats={burdenStatCategories}>
-		{#snippet chart()}
-			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
-				<EChart init={echarts.init} options={burdenChartOptions} />
-			</div>
-		{/snippet}
-	</ChartWithStats>
-</SectionCard>
+<EChart init={echarts.init} options={burdenChartOptions} />

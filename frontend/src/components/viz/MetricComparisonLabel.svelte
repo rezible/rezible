@@ -38,7 +38,7 @@
 	const deltaLabel = $derived(comparison.deltaLabel || defaultLabel);
 	const deltaText = $derived.by(() => {
 		if (delta === 1) return "Average";
-		return `${Math.round((delta * 100) - 100)}% ${deltaLabel}`
+		return `${Math.round(Math.abs((delta * 100) - 100))}% ${deltaLabel}`
 	});
 </script>
 

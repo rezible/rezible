@@ -5,7 +5,7 @@
 
 	import ShiftEventsTotalCards from "./sections/ShiftEventsTotalCards.svelte";
 	import ShiftIncidents from "./sections/ShiftIncidents.svelte";
-	import ShiftBurden from "./sections/ShiftBurden.svelte";
+	import ShiftBurden from "./sections/shift-burden/ShiftBurden.svelte";
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
 
 	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";

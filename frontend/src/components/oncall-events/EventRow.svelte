@@ -68,9 +68,9 @@
 		</Tooltip>
 	</div>
 
-	<div class="flex flex-col gap-1 w-full h-full">
+	<div class="flex flex-col gap-1 w-full h-full justify-center">
 		<div class="font-medium text-lg flex items-center leading-none">{attrs.title}</div>
-		<div class="text-sm flex-1">{attrs.description}</div>
+		<div class="text-sm">{attrs.description}</div>
 	</div>
 
 	<div class="flex w-full items-center justify-between">
