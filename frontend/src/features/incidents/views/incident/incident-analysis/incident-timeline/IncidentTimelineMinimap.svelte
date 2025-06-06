@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { SvelteMap } from "svelte/reactivity";
 	import { ElementSize } from "runed";
-	import type { TimelineState } from "./timelineState.svelte";
+	import { isEventItem, isMilestoneItem, type TimelineState } from "./timelineState.svelte";
 
 	type Props = {
 		timelineState: TimelineState;
@@ -14,14 +14,15 @@
 			const sId = id.toString();
 			if (ev === "remove") {
 				eventItems.delete(sId);
-			} else {
+				return;
+			}
 			const item = timelineState.items.get(id);
-				if (!item) return; 
-				if (item.subgroup === "events") {
-					eventItems.set(sId, new Date(item.start).valueOf());
-				} else if (item.subgroup === "milestones") {
+			if (!item) return;
 
-				}
+			if (isEventItem(item)) {
+				eventItems.set(sId, new Date(item.start).valueOf());
+			} else if (isMilestoneItem(item)) {
+
 			}
 		});
 	});

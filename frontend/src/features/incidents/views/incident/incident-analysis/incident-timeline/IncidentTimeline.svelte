@@ -12,6 +12,7 @@
 	import { MilestonesDialogState, setMilestonesDialog } from "./milestones-dialog/dialogState.svelte";
 	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	import IncidentTimelineContextMenu from "./IncidentTimelineContextMenu.svelte";
+	import type { ComponentProps } from "svelte";
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
@@ -21,14 +22,19 @@
 	let containerRef = $state<HTMLElement>(null!);
 	watch(() => containerRef, ref => {timelineState.mountTimeline(ref)});
 
-	type XYPosition = {x: number, y: number};
-	type ContextMenuState = {pos: XYPosition}
-	let ctxMenu = $state<ContextMenuState>();
+	const minimapContainerId = "timeline-minimap-container";
+
+	const closeContextMenu = () => {ctxMenu = undefined};
+	let ctxMenu = $state<ComponentProps<typeof IncidentTimelineContextMenu>>();
 	const onContextMenu = (e: MouseEvent | PointerEvent) => {
 		e.preventDefault();
 
+		let wasTimeline = true;
 		if (e.target && "parentNode" in e.target) {
-			const node = e.target.parentNode as Record<string, any>;
+			const ref = e.target as HTMLElement;
+			wasTimeline = ref.classList.value.includes("vis-");
+
+			const node = ref.parentNode as Record<string, any>;
 			if ("vis-item" in node) {
 				const timelineItem = node["vis-item"];
 				console.log(timelineItem);
@@ -37,12 +43,19 @@
 		}
 
 		const rec = containerRef.getBoundingClientRect();
-		const pos = {x: Math.round(e.x - rec.x), y: Math.round(e.y - rec.y)};
-		ctxMenu = {pos};
-	}
 
-	const closeContextMenu = () => {ctxMenu = undefined};
-	const onContextMenuClicked = (e: MouseEvent) => {e.stopPropagation()};
+		const pct = (e.x - rec.x) / rec.width;
+
+		const timeRange = (wasTimeline && timelineState.timeline) ? timelineState.viewWindow : timelineState.viewBounds;
+		const timestamp = timeRange.start + (timeRange.end - timeRange.start) * pct;
+
+		ctxMenu = {
+			clickPos: {x: e.x, y: e.y},
+			timestamp,
+			containerRect: rec,
+			close: closeContextMenu,
+		};
+	}
 </script>
 
 <div class="w-full h-full overflow-hidden border relative" role="presentation" 
@@ -54,6 +67,7 @@
 		style="height: 90%"
 		bind:this={containerRef}></div>
 	<div
+		id={minimapContainerId}
 		class="w-full border-t"
 		style="height: 10%">
 		<IncidentTimelineMinimap {timelineState} />
@@ -65,15 +79,7 @@
 </div>
 
 {#if ctxMenu}
-	<div 
-		id="timeline-ctx-container"
-		class="w-fit"
-		style="position: absolute; left: {ctxMenu.pos.x}px; top: {ctxMenu.pos.y}px"
-		role="presentation"
-		onclick={onContextMenuClicked}
-	>
-		<IncidentTimelineContextMenu />
-	</div>
+	<IncidentTimelineContextMenu {...ctxMenu} />
 {/if}
 
 <EventDialog />
