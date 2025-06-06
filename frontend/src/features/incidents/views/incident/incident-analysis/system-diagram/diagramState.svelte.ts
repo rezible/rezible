@@ -16,7 +16,8 @@ import { createMutation } from "@tanstack/svelte-query";
 import { useIncidentAnalysis } from "../analysisState.svelte";
 import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 import { useComponentDialog } from "./component-dialog/dialogState.svelte";
-import { type ContextMenuProps } from "./ContextMenu.svelte";
+import ContextMenu from "./ContextMenu.svelte";
+import type { ComponentProps } from "svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -136,7 +137,7 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state<HTMLElement>();
-	ctxMenuProps = $state.raw<ContextMenuProps>();
+	ctxMenuProps = $state.raw<ComponentProps<typeof ContextMenu>>();
 	addingComponent = $state<SystemComponent>();
 
 	nodes = $state.raw<Node[]>([]);
@@ -245,8 +246,6 @@ export class SystemDiagramState {
 		if (!this.containerEl) return;
 
 		e.event.preventDefault();
-
-		// console.log("todo: nodes");
 
 		if (!("pageX" in e.event)) return;
 

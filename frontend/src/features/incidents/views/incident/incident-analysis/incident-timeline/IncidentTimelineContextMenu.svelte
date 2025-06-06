@@ -50,7 +50,7 @@
 
 <div 
 	id="timeline-ctx-container"
-	class="w-48 border bg-surface-200 flex flex-col h-fit"
+	class="w-48 border bg-surface-200 flex flex-col h-fit z-10"
 	style="position: absolute; left: {posX}px; top: {posY}px"
 	role="presentation"
 	onclick={onClicked}

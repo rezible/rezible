@@ -1,14 +1,5 @@
-<script lang="ts" module>
-	export type ContextMenuProps = {
-		nodeId?: string;
-		edgeId?: string;
-		containerRect: DOMRect;
-		clickPos: {x: number, y: number};
-	};
-</script>
-
 <script lang="ts">
-	import { useEdges, useNodes } from "@xyflow/svelte";
+	import { useEdges, useNodes, useSvelteFlow } from "@xyflow/svelte";
 	import { Button } from "svelte-ux";
 	import { mdiPlusCircle, mdiTrashCan } from "@mdi/js";
 	
@@ -16,9 +7,16 @@
 	import Header from "$src/components/header/Header.svelte";
 	import { ElementSize } from "runed";
 
-	const diagram = useSystemDiagram();
+	type Props = {
+		nodeId?: string;
+		edgeId?: string;
+		containerRect: DOMRect;
+		clickPos: {x: number, y: number};
+	};
+	const { nodeId, edgeId, containerRect, clickPos }: Props = $props();
 
-	const props = $derived(diagram.ctxMenuProps);
+	const { screenToFlowPosition } = useSvelteFlow();
+	const diagram = useSystemDiagram();
 	const nodes = useNodes();
 	const edges = useEdges();
 
@@ -31,9 +29,6 @@
 	const size = new ElementSize(() => ref);
 
 	const pos = $derived.by(() => {
-		if (!props) return;
-		const {clickPos, containerRect} = props;
-
 		const xOverflows = (clickPos.x + size.width) > containerRect.right;
 		const naiveX = Math.round(clickPos.x - containerRect.x);
 
@@ -47,30 +42,27 @@
 	});
 
 	const addComponent = () => {
-		if (!props) return;
-		const {x, y} = $state.snapshot(props.clickPos);
-		diagram.componentDialog.setAdding({x, y});
+		const flowPos = screenToFlowPosition(clickPos, {snapToGrid: true});
+		diagram.componentDialog.setAdding(flowPos);
 		diagram.closeContextMenu();
 	}
 </script>
 
-{#if !!props && !!pos}
-	<div
-		style="left: {pos.left}px; top: {pos.top}px;"
-		class="absolute context-menu border bg-surface-200 w-48 h-fit"
-		bind:this={ref}
-	>
-		<Header title="Diagram Actions" classes={{root: "px-2 py-1"}} />
+<div
+	style="left: {pos.left}px; top: {pos.top}px;"
+	class="absolute context-menu border bg-surface-200 w-48 h-fit"
+	bind:this={ref}
+>
+	<Header title="Diagram Actions" classes={{root: "px-2 py-1"}} />
 
-		{#if props.nodeId}
-			{@render nodeMenu(props.nodeId)}
-		{:else if props.edgeId}
-			{@render edgeMenu(props.edgeId)}
-		{:else}
-			{@render paneMenu()}
-		{/if}
-	</div>
-{/if}
+	{#if nodeId}
+		{@render nodeMenu(nodeId)}
+	{:else if edgeId}
+		{@render edgeMenu(edgeId)}
+	{:else}
+		{@render paneMenu()}
+	{/if}
+</div>
 
 {#snippet nodeMenu(id: string)}
 	<Button variant="fill-light" icon={mdiTrashCan} rounded={false} classes={{root: "w-full gap-2"}} on:click={() => {deleteNode(id)}}>

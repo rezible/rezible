@@ -12,6 +12,7 @@ import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentP
 import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneComponentProps } from "./IncidentTimelineMilestoneItemContent.svelte";
 import { SvelteSet } from "svelte/reactivity";
 
+const IncidentGroup = "incident";
 const EventsGroup = "events";
 const MilestonesGroup = "milestones";
 
@@ -117,6 +118,7 @@ const createIncidentWindowTimelineItems = (r: TimelineRange) => {
 		id: `${windowKey}-start`,
 		type: "point",
 		title: "",
+		group: IncidentGroup,
 		content: "Incident Opened",
 		align: "left",
 		selectable: false,
@@ -126,6 +128,7 @@ const createIncidentWindowTimelineItems = (r: TimelineRange) => {
 		id: `${windowKey}-end`,
 		type: "point",
 		title: "",
+		group: IncidentGroup,
 		content: "Incident Closed",
 		align: "left",
 		selectable: false,
@@ -342,10 +345,7 @@ export class TimelineState {
 	}
 
 	mountTimeline(ref: HTMLElement) {
-		if (this.timeline) {
-			console.log("mounting timeline - destroy existing");
-			this.timeline.destroy();
-		};
+		if (this.timeline) {this.timeline.destroy()};
 
 		this.timeline = this.createTimeline(ref, this.items as DataItemCollectionType);
 
@@ -364,13 +364,13 @@ export class TimelineState {
 	createTimeline(ref: HTMLElement, items: DataItemCollectionType) {
 		const timelineOpts: TimelineOptions = {
 			height: "100%",
-			zoomMin: 1000 * 60 * 60,
+			zoomMin: 1000 * 60,
 			zoomMax: 1000 * 60 * 60 * 24 * 7,
 			showCurrentTime: false,
 		};
 
 		const timelineGroups: DataGroup[] = [
-			{ id: "default", title: "Default", content: "" },
+			{ id: IncidentGroup, title: "Incident", content: "" },
 			{ id: EventsGroup, title: "Events", content: "" },
 			{ id: MilestonesGroup, title: "Milestones", content: "" },
 		];
