@@ -102,7 +102,9 @@
 			<Background {...backgroundSettings} />
 			<Controls {...controlsSettings} />
 			<MiniMap {...minimapSettings} />
-			<ContextMenu />
+			{#if diagram.ctxMenuProps}
+				<ContextMenu />
+			{/if}
 			<EditToolbar />
 			<AddingComponentGhostNode />
 

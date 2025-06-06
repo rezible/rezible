@@ -12,11 +12,11 @@ import {
 
 import { updateSystemAnalysisComponentMutation, type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
 
-import { ContextMenuWidth, ContextMenuHeight, type ContextMenuProps } from "./ContextMenu.svelte";
 import { createMutation } from "@tanstack/svelte-query";
 import { useIncidentAnalysis } from "../analysisState.svelte";
 import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 import { useComponentDialog } from "./component-dialog/dialogState.svelte";
+import { type ContextMenuProps } from "./ContextMenu.svelte";
 
 /*
 const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
@@ -136,7 +136,7 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state<HTMLElement>();
-	ctxMenuProps = $state<ContextMenuProps>();
+	ctxMenuProps = $state.raw<ContextMenuProps>();
 	addingComponent = $state<SystemComponent>();
 
 	nodes = $state.raw<Node[]>([]);
@@ -250,24 +250,13 @@ export class SystemDiagramState {
 
 		if (!("pageX" in e.event)) return;
 
-		const { x, y, width, height } = this.containerEl.getBoundingClientRect();
-
-		const posX = e.event.pageX - x;
-		const posY = e.event.pageY - y;
-
-		const boundLeft = Math.max(width - ContextMenuWidth, x);
-		const boundTop = Math.max(height - ContextMenuHeight, y);
-
-		const left = posX > boundLeft ? posX - ContextMenuWidth : posX;
-		const top = posY;//posY > boundTop ? height - ContextMenuHeight : posY;
+		const containerRect = this.containerEl.getBoundingClientRect();
 
 		this.ctxMenuProps = {
 			nodeId: e.node?.id,
 			edgeId: e.edge?.id,
-			top,
-			left,
-			x: posX,
-			y: posY,
+			clickPos: {x: e.event.pageX, y: e.event.pageY},
+			containerRect,
 		};
 	};
 

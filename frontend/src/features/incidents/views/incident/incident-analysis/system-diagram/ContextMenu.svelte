@@ -2,14 +2,9 @@
 	export type ContextMenuProps = {
 		nodeId?: string;
 		edgeId?: string;
-		top: number;
-		left: number;
-		x: number;
-		y: number;
+		containerRect: DOMRect;
+		clickPos: {x: number, y: number};
 	};
-
-	export const ContextMenuWidth = 180;
-	export const ContextMenuHeight = 250;
 </script>
 
 <script lang="ts">
@@ -19,6 +14,7 @@
 	
 	import { useSystemDiagram } from "./diagramState.svelte";
 	import Header from "$src/components/header/Header.svelte";
+	import { ElementSize } from "runed";
 
 	const diagram = useSystemDiagram();
 
@@ -31,18 +27,38 @@
 		edges.set(edges.current.filter(({ source, target }) => source !== nodeId && target !== nodeId));
 	};
 
+	let ref = $state<HTMLElement>(null!);
+	const size = new ElementSize(() => ref);
+
+	const pos = $derived.by(() => {
+		if (!props) return;
+		const {clickPos, containerRect} = props;
+
+		const xOverflows = (clickPos.x + size.width) > containerRect.right;
+		const naiveX = Math.round(clickPos.x - containerRect.x);
+
+		const yOverflows = (clickPos.y + size.height) > containerRect.bottom;
+		const naiveY = Math.round(clickPos.y - containerRect.y);
+		
+		return {
+			left: xOverflows ? (naiveX - size.width) : naiveX,
+			top: yOverflows ? (naiveY - size.height) : naiveY,
+		};
+	});
+
 	const addComponent = () => {
 		if (!props) return;
-		const {x, y} = $state.snapshot(props);
+		const {x, y} = $state.snapshot(props.clickPos);
 		diagram.componentDialog.setAdding({x, y});
 		diagram.closeContextMenu();
 	}
 </script>
 
-{#if !!props}
+{#if !!props && !!pos}
 	<div
-		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; max-height: {ContextMenuHeight}px"
-		class="absolute context-menu border bg-surface-200"
+		style="left: {pos.left}px; top: {pos.top}px;"
+		class="absolute context-menu border bg-surface-200 w-48 h-fit"
+		bind:this={ref}
 	>
 		<Header title="Diagram Actions" classes={{root: "px-2 py-1"}} />
 
