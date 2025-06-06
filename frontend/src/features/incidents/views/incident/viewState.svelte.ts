@@ -1,4 +1,5 @@
 import { getIncidentOptions, getRetrospectiveForIncidentOptions, type Retrospective } from "$lib/api";
+import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
@@ -15,6 +16,9 @@ export class IncidentViewState {
 	}));
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
+
+	// TODO: derive from incident?
+	timezone = $derived(getLocalTimeZone());
 
 	private retroQuery = createQuery(() => ({
 		...getRetrospectiveForIncidentOptions({ path: { id: this.incidentId } }),

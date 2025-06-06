@@ -44,7 +44,7 @@
 		style="top: {props.top}px; left: {props.left}px; width: {ContextMenuWidth}px; max-height: {ContextMenuHeight}px"
 		class="absolute context-menu border bg-surface-200"
 	>
-		<Header title="Actions" classes={{root: "px-2 py-1"}} />
+		<Header title="Diagram Actions" classes={{root: "px-2 py-1"}} />
 
 		{#if props.nodeId}
 			{@render nodeMenu(props.nodeId)}

@@ -50,8 +50,8 @@ const createTimelineEventItem = (e: IncidentEvent, ref: HTMLElement): TimelineIt
 		id: e.id, 
 		start: new Date(e.attributes.timestamp),
 		type: "box",
-		//group: EventsGroup,
-		subgroup: "foo",
+		group: EventsGroup,
+		// subgroup: "foo",
 		content: ref,
 	}
 }
@@ -171,7 +171,6 @@ class TimelineEventsState {
 	}
 
 	onEventsDataUpdated(events: IncidentEvent[]) {
-		const wasEmpty = this.timelineElements.size === 0;
 		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
 		const removeIds: string[] = [];
 
@@ -184,7 +183,7 @@ class TimelineEventsState {
 		this.removeEventIds(removeIds)
 		eventsMap.forEach(ev => {this.updateEvent(ev)});
 
-		if (!wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
+		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
 	updateEvent(event: IncidentEvent) {
@@ -265,7 +264,6 @@ class TimelineMilestonesState {
 	}
 
 	onMilestonesDataUpdated() {
-		const wasEmpty = this.timelineElements.size === 0;
 		const dataMap = new Map(this.milestones.map(m => [m.id, m]));
 		const removeIds: string[] = [];
 
@@ -284,7 +282,7 @@ class TimelineMilestonesState {
 			this.setMilestone(ms, arr.at(idx + 1));
 		});
 
-		if (!wasEmpty) flushItemsAndRedrawTimeline(this.items, this.timeline);
+		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	};
 
 	setMilestone(ms: IncidentMilestone, nextMs?: IncidentMilestone) {
@@ -368,6 +366,7 @@ export class TimelineState {
 			height: "100%",
 			zoomMin: 1000 * 60 * 60,
 			zoomMax: 1000 * 60 * 60 * 24 * 7,
+			showCurrentTime: false,
 		};
 
 		const timelineGroups: DataGroup[] = [

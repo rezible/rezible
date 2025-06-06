@@ -49,6 +49,13 @@
 <div class="flex flex-col gap-2 flex-1">
 	<TextField label="Title" bind:value={eventAttributes.title} />
 
+	<DateTimePickerField
+		label="Time"
+		current={eventAttributes.timestamp}
+		onChange={ts => (eventAttributes.timestamp = ts)}
+		exactTime
+	/>
+
 	<Field label="Event Kind">
 		<ToggleGroup bind:value={eventAttributes.kind} variant="fill" inset class="w-full">
 			{#each eventKindOptions as opt}
@@ -67,13 +74,6 @@
 	<Field label="Key Event" let:id icon={mdiFlag}>
 		<Switch {id} bind:value={eventAttributes.isKey} />
 	</Field>
-
-	<DateTimePickerField
-		label="Time"
-		current={eventAttributes.timestamp}
-		onChange={ts => (eventAttributes.timestamp = ts)}
-		exactTime
-	/>
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if eventAttributes.descriptionEditor}

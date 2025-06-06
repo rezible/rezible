@@ -84,7 +84,7 @@
 	});
 	let descriptionEditor = $state<DescriptionEditor>(null);
 
-	const timezone = getLocalTimeZone();
+	const timezone = $derived(incidentViewState.timezone);
 
 	const incidentStart = $derived(fromAbsolute(incidentTimeBounds.start, timezone));
 
@@ -94,8 +94,9 @@
 	const timeMax = $derived(nextMs ? parseAbsolute(nextMs.attributes.timestamp, timezone) : undefined);
 
 	const msTimestamp = milestone?.attributes.timestamp;
-	let timestamp = $state<ZonedDateTime | undefined>(msTimestamp ? parseAbsolute(msTimestamp, timezone) : undefined);
-	const timestampValue = $derived((timestamp || incidentStart).toAbsoluteString());
+	const defaultTimestamp = $derived(msTimestamp ? parseAbsolute(msTimestamp, timezone) : incidentStart);
+	let timestamp = $state<ZonedDateTime>();
+	const timestampValue = $derived((timestamp || defaultTimestamp).toAbsoluteString());
 
 	const saveEnabled = $derived(true);
 
@@ -149,6 +150,15 @@
 </script>
 
 <div class="flex flex-col min-h-0 max-h-full flex-1 gap-2 p-2">
+	<DateTimePickerField 
+		label="Time"
+		current={timestamp || incidentStart}
+		onChange={(ts) => (timestamp = ts)}
+		exactTime
+		rangeMin={timeMin}
+		rangeMax={timeMax}
+	/>
+
 	<Field label="Kind" icon={mdiShape}>
 		<ToggleGroup bind:value={kind} variant="fill" inset class="w-full">
 			{#each milestoneKindOptions as opt}
@@ -165,8 +175,6 @@
 			{/each}
 		</ToggleGroup>
 	</Field>
-
-	<DateTimePickerField label="Time" current={timestamp || incidentStart} onChange={(ts) => (timestamp = ts)} exactTime rangeMin={timeMin} rangeMax={timeMax} />
 
 	<Field label="Description" classes={{ root: "grow", container: "h-full", input: "block" }}>
 		{#if descriptionEditor}

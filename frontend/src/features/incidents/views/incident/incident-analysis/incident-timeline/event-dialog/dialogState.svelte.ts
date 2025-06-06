@@ -4,6 +4,7 @@ import {
 	type CreateIncidentEventAttributes,
 	type Incident,
 	type IncidentEvent,
+	type IncidentEventAttributes,
 	type UpdateIncidentEventAttributes,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
@@ -45,8 +46,8 @@ export class EventDialogState {
 		this.clear();
 	}
 
-	createEventMut = createMutation(() => ({ ...createIncidentEventMutation(), onSuccess: e => this.onSuccess(e) }));
-	updateEventMut = createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess: e => this.onSuccess(e) }));
+	createEventMut = createMutation(() => ({ ...createIncidentEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
+	updateEventMut = createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
 	
 	loading = $derived(this.createEventMut.isPending || this.updateEventMut.isPending);
 
@@ -75,9 +76,9 @@ export class EventDialogState {
 		this.updateEventMut.mutate({ path, body: { attributes } });
 	}
 
-	setCreating() {
+	setCreating(attrs?: Partial<IncidentEventAttributes>) {
 		this.setView("create");
-		eventAttributes.init(this.incident);
+		eventAttributes.init(this.incident, attrs);
 	}
 
 	setEditing(ev: IncidentEvent) {

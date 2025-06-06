@@ -29,7 +29,7 @@ export class TimelineEventDialogAttributesState {
 	evidence = $state<IncidentEventEvidence[]>([]);
 	systemContext = $state<IncidentEventSystemComponent[]>([]);
 
-	init(inc?: Incident, e?: IncidentEventAttributes) {
+	init(inc?: Incident, e?: Partial<IncidentEventAttributes>) {
 		this.kind = $state.snapshot(e?.kind) ?? "observation";
 		this.title = $state.snapshot(e?.title) ?? "";
 		this.descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;

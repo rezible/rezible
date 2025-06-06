@@ -13,6 +13,8 @@
 	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	import IncidentTimelineContextMenu from "./IncidentTimelineContextMenu.svelte";
 	import type { ComponentProps } from "svelte";
+	import { fromAbsolute } from "@internationalized/date";
+	import type { TimelineItem } from "vis-timeline";
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
@@ -22,43 +24,57 @@
 	let containerRef = $state<HTMLElement>(null!);
 	watch(() => containerRef, ref => {timelineState.mountTimeline(ref)});
 
-	const minimapContainerId = "timeline-minimap-container";
+	let ctxMenuProps = $state<ComponentProps<typeof IncidentTimelineContextMenu>>();
 
-	const closeContextMenu = () => {ctxMenu = undefined};
-	let ctxMenu = $state<ComponentProps<typeof IncidentTimelineContextMenu>>();
+	const closeContextMenu = () => {
+		ctxMenuProps = undefined;
+	};
+
 	const onContextMenu = (e: MouseEvent | PointerEvent) => {
 		e.preventDefault();
 
+		const clickPos = {x: e.x, y: e.y};
+
+		let item: TimelineItem | undefined = undefined;
 		let wasTimeline = true;
 		if (e.target && "parentNode" in e.target) {
-			const ref = e.target as HTMLElement;
-			wasTimeline = ref.classList.value.includes("vis-");
+			const ref = e.target as HTMLElement | null;
+			wasTimeline = !!ref?.classList.value.includes("vis-");
 
-			const node = ref.parentNode as Record<string, any>;
-			if ("vis-item" in node) {
-				const timelineItem = node["vis-item"];
-				console.log(timelineItem);
-				// TODO
+			let el = ref;
+			while (!!el && el !== containerRef) {
+				if ("vis-item" in el) {
+					item = el["vis-item"] as TimelineItem;
+					timelineState.timeline?.setSelection(item.id);
+					// TODO
+				}
+				el = el.parentElement;
 			}
 		}
 
-		const rec = containerRef.getBoundingClientRect();
+		const containerRect = containerRef.getBoundingClientRect();
 
-		const pct = (e.x - rec.x) / rec.width;
+		const pct = (e.x - containerRect.x) / containerRect.width;
 
 		const timeRange = (wasTimeline && timelineState.timeline) ? timelineState.viewWindow : timelineState.viewBounds;
-		const timestamp = timeRange.start + (timeRange.end - timeRange.start) * pct;
+		const timestampMs = timeRange.start + (timeRange.end - timeRange.start) * pct;
 
-		ctxMenu = {
-			clickPos: {x: e.x, y: e.y},
+		const timestamp = fromAbsolute(timestampMs, timelineState.viewState.timezone);
+
+		ctxMenuProps = {
+			clickPos,
 			timestamp,
-			containerRect: rec,
+			item,
+			containerRect,
 			close: closeContextMenu,
 		};
 	}
 </script>
 
-<div class="w-full h-full overflow-hidden border relative" role="presentation" 
+<div
+	id="timeline-minimap-container"
+	class="w-full h-full overflow-hidden border relative"
+	role="presentation" 
 	oncontextmenu={onContextMenu}
 	onclickcapture={closeContextMenu}
 >
@@ -67,7 +83,6 @@
 		style="height: 90%"
 		bind:this={containerRef}></div>
 	<div
-		id={minimapContainerId}
 		class="w-full border-t"
 		style="height: 10%">
 		<IncidentTimelineMinimap {timelineState} />
@@ -78,8 +93,8 @@
 	<IncidentTimelineActionsBar />
 </div>
 
-{#if ctxMenu}
-	<IncidentTimelineContextMenu {...ctxMenu} />
+{#if !!ctxMenuProps}
+	<IncidentTimelineContextMenu {...ctxMenuProps} />
 {/if}
 
 <EventDialog />
