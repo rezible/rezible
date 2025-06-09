@@ -12,14 +12,14 @@
 	const indicators = burdenStats.map(v => ({
 		text: v.title.replaceAll(" ", "\n"),
 		min: 0,
-		max: 100,
+		max: 10,
 	}));
 
 	const comparisonStats = burdenStats.map(v => (v.comparison?.value || 0))
 	const shiftStats = burdenStats.map(v => (v.value || 0))
 
 	const burdenRadarOptions = $derived<echarts.EChartsOption>({
-		color: ["rgba(100, 10, 120, 1)", "#FFE434"],
+		color: ["rgba(90, 100, 190, 1)", "rgba(170, 110, 20, 1)"],
 		title: {show: false},
 		legend: {
 			show: true,
@@ -34,14 +34,13 @@
 				radius: 110,
 				axisName: {
 					color: "#fff",
-					backgroundColor: "rgb(10, 10, 10)",
 					borderRadius: 3,
 					padding: [4, 4],
 				},
 				splitArea: {
 					interval: 20,
 					areaStyle: {
-						color: ["rgba(130, 130, 160, .9)", "rgba(30, 100, 30, 1)", 'rgba(160, 130, 50, 1)', 'rgba(140, 50, 20, .2)', 'rgba(180, 30, 40, .2)'],
+						color: ["rgba(150, 150, 190, .3)", "rgba(30, 250, 30, .2)", 'rgba(230, 210, 50, .2)', 'rgba(150, 90, 20, .3)', 'rgba(180, 30, 40, .2)'],
 						shadowColor: 'rgba(0, 0, 0, 0.2)',
 						shadowBlur: 10
 					}
@@ -69,16 +68,7 @@
 						value: shiftStats,
 						name: "This Shift",
 						areaStyle: {
-							color: new echarts.graphic.RadialGradient(0.1, 0.6, 1, [
-								{
-									color: "rgba(255, 145, 124, 0.1)",
-									offset: 0,
-								},
-								{
-									color: "rgba(255, 145, 124, 0.9)",
-									offset: 1,
-								},
-							]),
+							
 						},
 					},
 				],

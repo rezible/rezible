@@ -18,43 +18,43 @@
 	const burdenStats = $derived([
 		{
 			title: "Event Frequency",
-			subheading: `description`,
-			value: 22,
-			comparison: {value: 43},
+			subheading: `How often interruptions occur during your shift.`,
+			value: 2.2,
+			comparison: {value: 4.3},
 		},
 		{
 			title: "Life Impact",
-			subheading: `description`,
-			value: 50,
-			comparison: {value: 40},
+			subheading: `Disruption to personal time and sleep.`,
+			value: 7.8,
+			comparison: {value: 4.5},
 		},
 		{
 			title: "Response Requirements",
-			subheading: `description`,
-			value: 40,
-			comparison: {value: 40},
+			subheading: `Complexity and urgency of responses.`,
+			value: 7.1,
+			comparison: {value: 3.0},
 		},
 		{
 			title: "Time Impact",
-			subheading: `description`,
-			value: 20,
-			comparison: {value: 40},
+			subheading: `Total time spent actively working on operational toil.`,
+			value: 6.4,
+			comparison: {value: 4.2},
 		},
 		{
 			title: "Isolation",
-			subheading: `description`,
-			value: 30,
-			comparison: {value: 40},
+			subheading: `Availability of support and documentation available.`,
+			value: 4.4,
+			comparison: {value: 3.4},
 		},
 	]);
 	
 	const weight = .2;
-	const score = $derived(burdenStats.reduce((prev, s) => (prev + (s.value * weight)), 0));
-	const compScore = $derived(burdenStats.reduce((prev, s) => (prev + (s.comparison.value * weight)), 0));
+	const burdenValue = $derived(burdenStats.reduce((prev, s) => (prev + (s.value * weight)), 0));
+	const compValue = $derived(burdenStats.reduce((prev, s) => (prev + (s.comparison.value * weight)), 0));
 </script>
 
 <SectionCard>
-	<Header title="Workload" subheading="Indications of the human impact of this shift" />
+	<Header title="Workload" subheading="Indicators of the human impact of this shift" />
 
 	<div class="flex gap-4 items-center">
 		<div class="w-1/3 grid place-items-center">
@@ -65,7 +65,12 @@
 
 		<div class="flex flex-col w-full gap-2">
 			<div class="border rounded-lg flex-1">
-				<InlineStat title="Burden Score" subheading="" value={score} comparison={{value: compScore}} />
+				<InlineStat 
+					title="Burden Score" 
+					subheading="Overall workload and stress level of the shift, derived from the below categories." 
+					value={burdenValue.toFixed(2)}
+					outOf="10"
+					comparison={{value: compValue}} />
 			</div>
 			<div class="flex flex-col h-fit w-full place-self-start divide-y border rounded-lg">
 				{#each burdenStats as stat}
@@ -73,7 +78,10 @@
 						<Header slot="trigger" title={stat.title} subheading={stat.subheading} classes={{root: "p-2 px-4 flex-1", title: "text-lg"}}>
 							{#snippet actions()}
 								<div class="ml-4 flex flex-col">
-									<span class="text-lg font-semibold self-end">{stat.value}</span>
+									<span class="text-lg font-semibold self-end">
+										{stat.value}
+										<span class="text-xs text-surface-content/50">/ 10</span>
+									</span>
 									{#if stat.comparison}
 										<MetricComparisonLabel comparison={stat.comparison} metricValue={stat.value} />
 									{/if}

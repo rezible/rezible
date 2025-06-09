@@ -63,11 +63,11 @@
 	};
 
 	const alertStats = $derived<InlineStatProps[]>([
-		{ title: "Peak Hour", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
-		{ title: "Percent Annotated", subheading: `desc`, value: "15%" },
-		{ title: "Actionability", subheading: `from feedback`, value: "" },
-		{ title: "Accuracy", subheading: `from feedback`, value: "" },
-		{ title: "Documentation", subheading: `from feedback`, value: "" },
+		{ title: "Peak Hours", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
+		{ title: "Percent Annotated", subheading: `Number of alerts annotated with feedback`, value: "15%" },
+		{ title: "Actionability", subheading: `Alerts that required human intervention`, value: "" },
+		{ title: "Accuracy", subheading: `Alerts that correctly indicated an issue`, value: "" },
+		{ title: "Documentation", subheading: `Alerts that had sufficient accompanying information`, value: "" },
 	]);
 
 	const MinRadius = 30;
