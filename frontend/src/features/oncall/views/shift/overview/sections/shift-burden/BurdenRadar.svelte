@@ -4,25 +4,40 @@
 	import type { InlineStatProps } from "$components/viz/InlineStat.svelte";
 
 	type Props = {
+		burdenValue: number;
 		burdenStats: InlineStatProps[];
 		comparisonSetName?: string;
 	};
-	const { burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
+	const { burdenValue, burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
 
 	const indicators = burdenStats.map(v => ({
-		text: v.title.replaceAll(" ", "\n"),
+		name: v.title.replaceAll(" ", "\n"),
 		min: 0,
 		max: 10,
 	}));
 
-	const comparisonStats = burdenStats.map(v => (v.comparison?.value || 0))
-	const shiftStats = burdenStats.map(v => (v.value || 0))
+	const comparisonStats = burdenStats.map(v => (v.comparison?.value || 0));
+	const shiftStats = burdenStats.map(v => (v.value || 0));
+
+	const radarAreaSplitColors = [
+		"rgb(30, 250, 30)",
+		"rgb(230, 210, 50)",
+		"rgb(150, 60, 30)",
+		"rgb(70, 10, 20)",
+	];
+	const radarTicks = [0, 2.5, 5, 7.5, 10];
+
+	const comparisonColor = "rgba(10, 90, 190, 1)";
+	const shiftColor = radarAreaSplitColors[Math.max(0, radarTicks.findLastIndex(v => (v < burdenValue)))];
 
 	const burdenRadarOptions = $derived<echarts.EChartsOption>({
-		color: ["rgba(90, 100, 190, 1)", "rgba(170, 110, 20, 1)"],
+		color: [comparisonColor, shiftColor],
 		title: {show: false},
 		legend: {
 			show: true,
+			orient: "vertical",
+			align: "left",
+			left: 0,
 			textStyle: {
 				color: "white",
 			}
@@ -30,19 +45,24 @@
 		radar: [
 			{
 				indicator: indicators,
-				center: ["50%", "60%"],
+				center: ["50%", "50%"],
 				radius: 110,
+				shape: "circle",
 				axisName: {
-					color: "#fff",
+					color: "rgb(220, 220, 220)",
+					fontSize: 14,
+					fontWeight: "normal",
 					borderRadius: 3,
 					padding: [4, 4],
 				},
+				axisTick: {
+					show: false,
+					customValues: radarTicks,
+				},
 				splitArea: {
-					interval: 20,
 					areaStyle: {
-						color: ["rgba(150, 150, 190, .3)", "rgba(30, 250, 30, .2)", 'rgba(230, 210, 50, .2)', 'rgba(150, 90, 20, .3)', 'rgba(180, 30, 40, .2)'],
-						shadowColor: 'rgba(0, 0, 0, 0.2)',
-						shadowBlur: 10
+						// color: radarAreaSplitColors,
+						opacity: 0.6,
 					}
 				},
 			},

@@ -10,7 +10,7 @@
 </script>
 
 <script lang="ts">
-	import { mdiCircleMedium } from "@mdi/js";
+	import { mdiArrowBottomRight, mdiArrowBottomRightThin, mdiArrowDownRight, mdiArrowTopRight, mdiArrowTopRightThin, mdiArrowUpRight, mdiArrowUUpRight, mdiCircleMedium, mdiDecimalIncrease } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
@@ -36,14 +36,22 @@
 	const delta = $derived(getComparisonDelta(metricValue, comparison.value));
 	const defaultLabel = $derived(delta > 1 ? "above average" : "below average");
 	const deltaLabel = $derived(comparison.deltaLabel || defaultLabel);
+	const deltaIcon = $derived.by(() => {
+		if (delta === 1) return;
+		if (delta > 1) return mdiArrowTopRightThin;
+		return mdiArrowBottomRightThin;
+	})
 	const deltaText = $derived.by(() => {
 		if (delta === 1) return "Average";
-		return `${Math.round(Math.abs((delta * 100) - 100))}% ${deltaLabel}`
+		return `${Math.round(Math.abs((delta * 100) - 100))}%`
 	});
 </script>
 
 <div class="{comparisonClass(delta, !!comparison.positive)} flex flex-col items-end gap-2">
-	<span>{deltaText}</span>
+	<div class="flex gap-1 text-sm items-center">
+		{#if deltaIcon}<Icon data={deltaIcon} size={18} />{/if}
+		<span>{deltaText}</span>
+	</div>
 
 	{#if comparison.hint}
 		<div class="text-warning">

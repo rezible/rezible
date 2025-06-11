@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { mdiPin, mdiPinOutline, mdiPhoneAlert, mdiFire, mdiChatQuestion } from "@mdi/js";
+	import { mdiPin, mdiPinOutline, mdiPhoneAlert, mdiFire, mdiChatQuestion, mdiChatPlus } from "@mdi/js";
 	import { mdiCalendar, mdiClockOutline, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
 	import { Button, Lazy, Tooltip } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
@@ -47,14 +47,9 @@
 	});
 </script>
 
-<Lazy height="80px" class="group grid grid-cols-[80px_minmax(100px,.3fr)_minmax(0,1fr)] gap-2 place-items-center border p-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
+<Lazy height="70px" class="group grid grid-cols-[80px_auto_auto] gap-2 place-items-center border p-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 	<div class="flex flex-col gap-1 justify-between w-full items-start">
-		<div class="flex gap-1 items-center">
-			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
-			<span class="text-xs uppercase font-bol text-surface-content/50">{attrs.kind}</span>
-		</div>
-
-		<span class="text-sm font-medium flex items-center gap-1">
+		<span class="text-sm font- flex items-center gap-1">
 			<Icon data={mdiCalendar} size="16px" />
 			{humanDate}
 		</span>
@@ -68,21 +63,27 @@
 		</Tooltip>
 	</div>
 
-	<div class="flex flex-col gap-1 w-full h-full justify-center">
-		<div class="font-medium text-lg flex items-center leading-none">{attrs.title}</div>
-		<div class="text-sm">{attrs.description}</div>
+	<div class="flex flex-col gap-1 w-full h-full justify-center items-start">
+		<div class="flex gap-1 items-center">
+			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
+			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
+		</div>
+		<div class="font- flex items-center leading-none">{attrs.title}</div>
 	</div>
 
-	<div class="flex w-full items-center justify-between">
-		<div class="flex flex-1 gap-2">
+	<div class="flex w-full items-center justify-end">
+		<div class="flex flex-1 justify-end gap-2">
 			{#each annotations as anno}
 				<div class="overflow-y-auto w-full h-full border rounded p-2 bg-neutral-700/70 text-sm flex items-center">
 					<div class="text-neutral-content">{anno.attributes.notes}</div>
 				</div>
 			{:else} 
 				{#if editAnnotation && showAnnotationButton}
-					<div class="hidden group-hover:inline w-full h-full">
-						<Button classes={{root: "w-full h-full"}} {loading} {disabled} on:click={() => editAnnotation()}>Add Annotation</Button>
+					<div class="hidden group-hover:inline w-fit h-full">
+						<Button classes={{root: "w-full h-full items-center"}} {loading} {disabled} on:click={() => editAnnotation()}>
+							Annotate
+							<Icon data={mdiChatPlus} />
+						</Button>
 					</div>
 				{/if}
 			{/each}

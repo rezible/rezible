@@ -66,7 +66,7 @@
 	}}
 >
 	<div slot="header" class="border-b p-2" let:close>
-		<Header title="{formAction} Event Annotation" subheading="For {roster.attributes.name}">
+		<Header title="{formAction} Annotation" subheading="For {roster.attributes.name}">
 			{#snippet actions()}
 				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
 			{/snippet}

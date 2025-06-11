@@ -59,7 +59,7 @@
 	<div class="flex gap-4 items-center">
 		<div class="w-1/3 grid place-items-center">
 			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
-				<BurdenRadar {burdenStats} />
+				<BurdenRadar {burdenValue} {burdenStats} />
 			</div>
 		</div>
 
