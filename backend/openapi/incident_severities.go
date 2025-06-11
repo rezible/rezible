@@ -33,6 +33,7 @@ type (
 
 	IncidentSeverityAttributes struct {
 		Name        string `json:"name"`
+		Rank        int    `json:"rank"`
 		Archived    bool   `json:"archived"`
 		Description string `json:"description"`
 	}
@@ -43,6 +44,7 @@ func IncidentSeverityFromEnt(sev *ent.IncidentSeverity) IncidentSeverity {
 		Id: sev.ID,
 		Attributes: IncidentSeverityAttributes{
 			Name:        sev.Name,
+			Rank:        sev.Rank,
 			Description: sev.Description,
 			Archived:    !sev.ArchiveTime.IsZero(),
 		},
@@ -88,6 +90,7 @@ var CreateIncidentSeverity = huma.Operation{
 
 type CreateIncidentSeverityAttributes struct {
 	Name string `json:"title"`
+	Rank int    `json:"rank"`
 }
 type CreateIncidentSeverityRequest RequestWithBodyAttributes[CreateIncidentSeverityAttributes]
 type CreateIncidentSeverityResponse ItemResponse[IncidentSeverity]
@@ -103,6 +106,7 @@ var UpdateIncidentSeverity = huma.Operation{
 
 type UpdateIncidentSeverityAttributes struct {
 	Name     *string `json:"name,omitempty"`
+	Rank     *int    `json:"rank,omitempty"`
 	Archived *bool   `json:"archived,omitempty"`
 }
 type UpdateIncidentSeverityRequest UpdateIdRequest[UpdateIncidentSeverityAttributes]

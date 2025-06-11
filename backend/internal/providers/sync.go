@@ -167,43 +167,38 @@ func applySyncMutations(ctx context.Context, client *ent.Client, mutations []ent
 
 // TODO: just do this in postgres
 type slugTracker struct {
-	existingSlugs map[string]int
-	newSlugs      map[string]int
+	prefixCount map[string]int
 }
 
 func newSlugTracker() *slugTracker {
 	return &slugTracker{
-		newSlugs:      make(map[string]int),
-		existingSlugs: make(map[string]int),
+		prefixCount: make(map[string]int),
 	}
 }
 
 func (s *slugTracker) reset() {
-	s.newSlugs = make(map[string]int)
-	s.existingSlugs = make(map[string]int)
+	s.prefixCount = make(map[string]int)
 }
 
-func (s *slugTracker) generateUnique(base string, countFn func(string) (int, error)) (string, error) {
-	tmp := slug.MakeLang(base, "en")
+func (s *slugTracker) generateUnique(title string, initialCountFn func(string) (int, error)) (string, error) {
+	base := slug.MakeLang(title, "en")
 
-	numExisting := s.existingSlugs[tmp]
-	if numExisting == 0 {
+	numExisting, ok := s.prefixCount[base]
+	if !ok || numExisting == 0 {
 		var countErr error
-		numExisting, countErr = countFn(tmp)
+		numExisting, countErr = initialCountFn(base)
 		if countErr != nil {
 			return "", countErr
 		}
-		s.existingSlugs[tmp] = numExisting
 	}
-	numNew := s.newSlugs[tmp]
 
-	slugCount := numExisting + numNew + 1
-	if slugCount > 1 {
-		tmp = fmt.Sprintf("%s-%d", tmp, slugCount)
+	count := numExisting + 1
+	s.prefixCount[base] = count
+
+	if count > 1 {
+		return fmt.Sprintf("%s-%d", base, count), nil
 	}
-	s.newSlugs[tmp] = slugCount
-
-	return tmp, nil
+	return base, nil
 }
 
 // TODO: userTracker ?

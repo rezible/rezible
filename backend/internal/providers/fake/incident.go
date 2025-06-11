@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"math/rand"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -14,8 +15,14 @@ import (
 
 type IncidentDataProvider struct {
 	onIncidentUpdatedFn rez.DataProviderResourceUpdatedCallback
-	fakeRoles           []*ent.IncidentRole
-	fakeIncidents       []*ent.Incident
+
+	roles      []*ent.IncidentRole
+	severities []*ent.IncidentSeverity
+	types      []*ent.IncidentType
+	tags       []*ent.IncidentTag
+	users      []*ent.User
+
+	incidents []*ent.Incident
 }
 
 type IncidentDataProviderConfig struct {
@@ -28,90 +35,86 @@ func NewIncidentDataProvider(cfg IncidentDataProviderConfig) (*IncidentDataProvi
 		},
 	}
 
-	p.makeFakeIncidentRoles()
+	p.makeFakeData()
 	p.makeFakeIncidents()
 
 	return p, nil
 }
 
-func (p *IncidentDataProvider) makeFakeIncidentRoles() {
-	role := &ent.IncidentRole{Name: "Role 1"}
-
-	p.fakeRoles = []*ent.IncidentRole{role}
+func (p *IncidentDataProvider) makeFakeData() {
+	p.roles = []*ent.IncidentRole{
+		{
+			Name: "Incident Commander",
+		},
+	}
+	p.severities = []*ent.IncidentSeverity{
+		{
+			Name:        "Severity 1",
+			Description: "highest severity",
+		},
+	}
+	p.types = []*ent.IncidentType{
+		{
+			Name: "Default",
+		},
+	}
+	p.tags = []*ent.IncidentTag{
+		{Key: "foo", Value: "bar"},
+	}
+	p.users = []*ent.User{
+		{
+			Name:   "User 1",
+			Email:  "user@example.com",
+			ChatID: "foo",
+		},
+	}
 }
 
-func (p *IncidentDataProvider) makeFakeIncidents() {
-	severity := &ent.IncidentSeverity{
-		Name:        "Severity 1",
-		Description: "a severity",
+func (p *IncidentDataProvider) makeFakeRoleAssignments() []*ent.IncidentRoleAssignment {
+	return []*ent.IncidentRoleAssignment{
+		{
+			Edges: ent.IncidentRoleAssignmentEdges{
+				Role: p.roles[0],
+				User: p.users[0],
+			},
+		},
 	}
-	incType := &ent.IncidentType{Name: "Default"}
-	tasks := []*ent.Task{{Title: "A Task"}}
+}
 
-	tags := []*ent.IncidentTag{{Key: "foo", Value: "bar"}}
-
-	user := &ent.User{
-		Name:   "User 1",
-		Email:  "user@example.com",
-		ChatID: "foo",
-	}
-
-	roles := []*ent.IncidentRoleAssignment{
-		{Edges: ent.IncidentRoleAssignmentEdges{
-			Role: p.fakeRoles[0],
-			User: user,
-		}},
-	}
-
-	milestones := []*ent.IncidentMilestone{
+func (p *IncidentDataProvider) makeIncidentMilestones(start, end time.Time) []*ent.IncidentMilestone {
+	return []*ent.IncidentMilestone{
 		{
 			Kind:  "",
 			Time:  time.Now().Add(-8 * time.Hour),
 			Edges: ent.IncidentMilestoneEdges{},
 		},
 	}
+}
 
-	inc1 := &ent.Incident{
-		ProviderID:    "test-incident",
-		Slug:          "test-incident",
-		Title:         "Test Incident",
-		Private:       false,
-		Summary:       "a test incident",
-		OpenedAt:      time.Now().Add(-8 * time.Hour),
-		ModifiedAt:    time.Now().Add(-7 * time.Hour),
-		ClosedAt:      time.Now().Add(-7 * time.Hour),
-		ChatChannelID: "",
-		Edges: ent.IncidentEdges{
-			Severity:        severity,
-			Type:            incType,
-			Tasks:           tasks,
-			RoleAssignments: roles,
-			TagAssignments:  tags,
-			Milestones:      milestones,
-		},
+func (p *IncidentDataProvider) makeFakeIncidents() {
+	numIncidents := rand.Intn(10)
+	p.incidents = make([]*ent.Incident, numIncidents)
+	for i := 0; i < numIncidents; i++ {
+		openedAt := time.Now().Add(-8 * time.Hour)
+		closedAt := time.Now().Add(-7 * time.Hour)
+
+		p.incidents[i] = &ent.Incident{
+			ProviderID: "test-incident",
+			Slug:       "test-incident",
+			Title:      "Test Incident",
+			Summary:    "a test incident",
+			OpenedAt:   openedAt,
+			ModifiedAt: openedAt.Add(time.Minute * 30),
+			ClosedAt:   closedAt,
+			Edges: ent.IncidentEdges{
+				Severity:        p.severities[rand.Intn(len(p.severities))],
+				Type:            p.types[rand.Intn(len(p.types))],
+				TagAssignments:  p.tags,
+				RoleAssignments: p.makeFakeRoleAssignments(),
+				Milestones:      p.makeIncidentMilestones(openedAt, closedAt),
+			},
+		}
 	}
-
-	inc2 := &ent.Incident{
-		ProviderID:    "test-incident-two",
-		Slug:          "test-incident-2",
-		Title:         "Test Incident 2",
-		Private:       false,
-		Summary:       "a second test incident",
-		OpenedAt:      time.Now().Add(-8 * time.Hour),
-		ModifiedAt:    time.Now().Add(-7 * time.Hour),
-		ClosedAt:      time.Now().Add(-7 * time.Hour),
-		ChatChannelID: "",
-		Edges: ent.IncidentEdges{
-			Severity:        severity,
-			Type:            incType,
-			Tasks:           tasks,
-			RoleAssignments: roles,
-			TagAssignments:  tags,
-			Milestones:      milestones,
-		},
-	}
-
-	p.fakeIncidents = []*ent.Incident{inc1, inc2}
 }
 
 func (p *IncidentDataProvider) GetWebhooks() rez.Webhooks {
@@ -132,14 +135,14 @@ func (p *IncidentDataProvider) IncidentRoleDataMapping() *ent.IncidentRole {
 
 func (p *IncidentDataProvider) PullIncidents(ctx context.Context) iter.Seq2[*ent.Incident, error] {
 	return func(yield func(i *ent.Incident, err error) bool) {
-		for _, inc := range p.fakeIncidents {
+		for _, inc := range p.incidents {
 			yield(inc, nil)
 		}
 	}
 }
 
 func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (*ent.Incident, error) {
-	for _, inc := range p.fakeIncidents {
+	for _, inc := range p.incidents {
 		if inc.ProviderID == id {
 			return inc, nil
 		}
@@ -148,5 +151,5 @@ func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (
 }
 
 func (p *IncidentDataProvider) GetRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
-	return p.fakeRoles, nil
+	return p.roles, nil
 }

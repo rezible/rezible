@@ -20,22 +20,15 @@ type incidentDataSyncer struct {
 	db       *ent.Client
 	provider rez.IncidentDataProvider
 
-	slugs         *slugTracker
-	roleProvIdMap map[string]uuid.UUID
+	slugs             *slugTracker
+	provIdRoleMap     map[string]*ent.IncidentRole
+	provIdSeverityMap map[string]*ent.IncidentSeverity
 
 	mutations []ent.Mutation
 }
 
 func newIncidentDataSyncer(db *ent.Client, prov rez.IncidentDataProvider) *incidentDataSyncer {
-	ds := &incidentDataSyncer{db: db, provider: prov, slugs: newSlugTracker()}
-	ds.resetState()
-	return ds
-}
-
-func (ds *incidentDataSyncer) resetState() {
-	ds.mutations = make([]ent.Mutation, 0)
-	ds.slugs.reset()
-	ds.roleProvIdMap = make(map[string]uuid.UUID)
+	return &incidentDataSyncer{db: db, provider: prov, slugs: newSlugTracker()}
 }
 
 func (ds *incidentDataSyncer) SyncProviderData(ctx context.Context) error {
@@ -50,6 +43,7 @@ func (ds *incidentDataSyncer) SyncProviderData(ctx context.Context) error {
 		return fmt.Errorf("incident roles: %w", rolesErr)
 	}
 	rolesEnd := time.Now()
+
 	if incidentsErr := ds.syncAllProviderIncidents(ctx); incidentsErr != nil {
 		return fmt.Errorf("incidents: %w", incidentsErr)
 	}
@@ -91,8 +85,19 @@ func (ds *incidentDataSyncer) syncAllProviderIncidentRoles(ctx context.Context) 
 			deletedIds.Remove(db.ID)
 		}
 
-		mut, needsUpdate := ds.syncIncidentRole(db, prov)
-		if needsUpdate {
+		var mut *ent.IncidentRoleMutation
+		needsSync := true
+		if db == nil {
+			mut = ds.db.IncidentRole.Create().SetID(uuid.New()).Mutation()
+		} else {
+			mut = ds.db.IncidentRole.UpdateOneID(db.ID).Mutation()
+			// TODO: get provider mapping support for fields
+			needsSync = db.Name != prov.Name || db.Required != prov.Required
+		}
+		mut.SetProviderID(prov.ProviderID)
+		mut.SetName(prov.Name)
+		mut.SetRequired(prov.Required)
+		if needsSync {
 			mutations = append(mutations, mut)
 		}
 	}
@@ -116,53 +121,81 @@ func (ds *incidentDataSyncer) syncAllProviderIncidentRoles(ctx context.Context) 
 	return nil
 }
 
-func (ds *incidentDataSyncer) syncIncidentRole(db, prov *ent.IncidentRole) (*ent.IncidentRoleMutation, bool) {
-	var m *ent.IncidentRoleMutation
+func (ds *incidentDataSyncer) resetState() {
+	ds.provIdRoleMap = make(map[string]*ent.IncidentRole)
+	ds.provIdSeverityMap = make(map[string]*ent.IncidentSeverity)
+	ds.slugs.reset()
+	ds.mutations = make([]ent.Mutation, 0)
+}
 
-	needsSync := true
-	if db == nil {
-		m = ds.db.IncidentRole.Create().SetID(uuid.New()).Mutation()
-	} else {
-		m = ds.db.IncidentRole.UpdateOneID(db.ID).Mutation()
-		// TODO: get provider mapping support for fields
-		needsSync = db.Name != prov.Name || db.Required != prov.Required
+func (ds *incidentDataSyncer) loadFieldMaps(ctx context.Context) error {
+	ds.resetState()
+
+	roles, rolesErr := ds.db.IncidentRole.Query().All(ctx)
+	if rolesErr != nil {
+		return fmt.Errorf("incident roles: %w", rolesErr)
 	}
-	m.SetProviderID(prov.ProviderID)
-	m.SetName(prov.Name)
-	m.SetRequired(prov.Required)
+	for _, r := range roles {
+		role := r
+		ds.provIdRoleMap[role.ProviderID] = role
+	}
 
-	return m, needsSync
+	severities, sevsErr := ds.db.IncidentSeverity.Query().All(ctx)
+	if sevsErr != nil {
+		return fmt.Errorf("incident severities: %w", rolesErr)
+	}
+	for _, s := range severities {
+		sev := s
+		ds.provIdSeverityMap[sev.ProviderID] = sev
+	}
+
+	return nil
 }
 
 func (ds *incidentDataSyncer) syncAllProviderIncidents(ctx context.Context) error {
-	var providerIdsBatch []string
+	defer ds.resetState()
+	if fieldsErr := ds.loadFieldMaps(ctx); fieldsErr != nil {
+		return fmt.Errorf("loading incident fields: %w", fieldsErr)
+	}
+
+	var numMutations int
+	syncBatch := func(batch []*ent.Incident) error {
+		if len(batch) == 0 {
+			return nil
+		}
+		syncErr := ds.createIncidentSyncMutations(ctx, batch)
+		if syncErr != nil {
+			return fmt.Errorf("building mutations: %w", syncErr)
+		}
+
+		if applyErr := applySyncMutations(ctx, ds.db, ds.mutations); applyErr != nil {
+			return fmt.Errorf("applying mutations: %w", applyErr)
+		}
+		numMutations += len(ds.mutations)
+		ds.mutations = make([]ent.Mutation, 0)
+
+		return nil
+	}
 
 	start := time.Now()
-	var numMutations int
-
-	batchSize := 10
+	const BatchSize = 10
+	var batch []*ent.Incident
 	for inc, pullErr := range ds.provider.PullIncidents(ctx) {
 		if pullErr != nil {
 			return fmt.Errorf("pull: %w", pullErr)
 		}
 
-		providerIdsBatch = append(providerIdsBatch, inc.ProviderID)
-
-		if len(providerIdsBatch) >= batchSize {
-			batchMuts, syncErr := ds.syncProviderIncidentIds(ctx, providerIdsBatch)
-			if syncErr != nil {
-				return syncErr
+		batch = append(batch, inc)
+		if len(batch) >= BatchSize {
+			if syncErr := syncBatch(batch); syncErr != nil {
+				return fmt.Errorf("sync: %w", syncErr)
 			}
-			numMutations += batchMuts
-			providerIdsBatch = make([]string, 0)
+			batch = make([]*ent.Incident, 0)
 		}
 	}
-
-	lastBatchMuts, batchErr := ds.syncProviderIncidentIds(ctx, providerIdsBatch)
-	if batchErr != nil {
-		return batchErr
+	if syncErr := syncBatch(batch); syncErr != nil {
+		return fmt.Errorf("sync: %w", syncErr)
 	}
-	numMutations += lastBatchMuts
 
 	if saveErr := saveSyncHistory(ctx, ds.db, start, numMutations, "incidents"); saveErr != nil {
 		log.Error().Err(saveErr).Msg("failed to save incidents data sync history")
@@ -171,34 +204,29 @@ func (ds *incidentDataSyncer) syncAllProviderIncidents(ctx context.Context) erro
 	return nil
 }
 
-func (ds *incidentDataSyncer) syncProviderIncidentIds(ctx context.Context, provIds []string) (int, error) {
-	if len(provIds) == 0 {
-		return 0, nil
+func (ds *incidentDataSyncer) queryDbIncidents(ctx context.Context, provIds []string) ([]*ent.Incident, error) {
+	dbIncidents, incErr := ds.db.Incident.Query().
+		Where(incident.ProviderIDIn(provIds...)).
+		All(ctx)
+	if incErr != nil && !ent.IsNotFound(incErr) {
+		return nil, incErr
 	}
-
-	ds.resetState()
-	syncErr := ds.createIncidentBatchSyncMutations(ctx, provIds)
-	if syncErr != nil {
-		return 0, fmt.Errorf("building mutations: %w", syncErr)
-	}
-
-	if applyErr := applySyncMutations(ctx, ds.db, ds.mutations); applyErr != nil {
-		return 0, fmt.Errorf("applying mutations: %w", applyErr)
-	}
-	numMutations := len(ds.mutations)
-	ds.resetState()
-
-	return numMutations, nil
+	return dbIncidents, nil
 }
 
-func (ds *incidentDataSyncer) createIncidentBatchSyncMutations(ctx context.Context, provIds []string) error {
-	dbIncidents, incErr := ds.db.Incident.Query().Where(incident.ProviderIDIn(provIds...)).All(ctx)
-	if incErr != nil && !ent.IsNotFound(incErr) {
-		return fmt.Errorf("querying db incidents: %w", incErr)
+func (ds *incidentDataSyncer) createIncidentSyncMutations(ctx context.Context, provIncs []*ent.Incident) error {
+	provIds := make([]string, len(provIncs))
+	for i, p := range provIncs {
+		provIds[i] = p.ProviderID
 	}
 
-	syncIds := mapset.NewSet(provIds...)
-	incidentProvIdMap := make(map[string]*ent.Incident)
+	dbIncidents, dbIncErr := ds.queryDbIncidents(ctx, provIds)
+	if dbIncErr != nil {
+		return fmt.Errorf("querying db incidents: %w", dbIncErr)
+	}
+
+	provIdIncidentMap := make(map[string]*ent.Incident)
+	syncIds := mapset.NewSet[string](provIds...)
 	deletedIncidentIds := mapset.NewSet[uuid.UUID]()
 
 	lastSyncTime := time.Time{}
@@ -209,36 +237,22 @@ func (ds *incidentDataSyncer) createIncidentBatchSyncMutations(ctx context.Conte
 			syncIds.Remove(inc.ProviderID)
 		} else {
 			deletedIncidentIds.Add(inc.ID)
-			incidentProvIdMap[inc.ProviderID] = inc
+			provIdIncidentMap[inc.ProviderID] = inc
 		}
 	}
-
 	if syncIds.IsEmpty() {
 		return nil
 	}
 
-	dbRoles, rolesErr := ds.db.IncidentRole.Query().All(ctx)
-	if rolesErr != nil {
-		return fmt.Errorf("db incident roles: %w", rolesErr)
-	}
-	for _, dbRole := range dbRoles {
-		ds.roleProvIdMap[dbRole.ProviderID] = dbRole.ID
-	}
-
-	for _, provId := range provIds {
-		provInc, fetchIncErr := ds.provider.GetIncidentByID(ctx, provId)
-		if fetchIncErr != nil {
-			return fmt.Errorf("fetching provider incident: %w", fetchIncErr)
-		}
-
-		dbInc, incExists := incidentProvIdMap[provId]
+	for _, provInc := range provIncs {
+		dbInc, incExists := provIdIncidentMap[provInc.ProviderID]
 		if incExists {
 			deletedIncidentIds.Remove(dbInc.ID)
 		}
 
 		incId, incSyncErr := ds.syncIncident(ctx, dbInc, provInc)
 		if incSyncErr != nil {
-			return fmt.Errorf("syncing incident: %w", incSyncErr)
+			return fmt.Errorf("incident: %w", incSyncErr)
 		}
 		provInc.ID = incId
 
@@ -259,7 +273,7 @@ func (ds *incidentDataSyncer) createIncidentBatchSyncMutations(ctx context.Conte
 
 		eventsErr := ds.syncIncidentEvents(ctx, dbInc, provInc)
 		if eventsErr != nil {
-			return fmt.Errorf("events: %w", eventsErr)
+			return fmt.Errorf("incident events: %w", eventsErr)
 		}
 	}
 
@@ -331,7 +345,7 @@ func (ds *incidentDataSyncer) syncIncidentRoleAssignments(ctx context.Context, d
 		provRole := a.Edges.Role
 		provUser := a.Edges.User
 
-		roleId, roleExists := ds.roleProvIdMap[provRole.ProviderID]
+		role, roleExists := ds.provIdRoleMap[provRole.ProviderID]
 		if !roleExists {
 			log.Warn().Str("id", provRole.ProviderID).Msg("failed to lookup incident role")
 			return fmt.Errorf("missing db role for id: %s", provRole.ProviderID)
@@ -344,14 +358,14 @@ func (ds *incidentDataSyncer) syncIncidentRoleAssignments(ctx context.Context, d
 			continue
 		}
 
-		dbAssn, exists := dbAssns[userRoleAssignmentKey(usr.ID, roleId)]
+		dbAssn, exists := dbAssns[userRoleAssignmentKey(usr.ID, role.ID)]
 		if exists {
 			deletedIds.Remove(dbAssn.ID)
 		} else {
 			create := ds.db.IncidentRoleAssignment.Create().
 				SetIncidentID(provInc.ID).
 				SetUserID(usr.ID).
-				SetRoleID(roleId)
+				SetRoleID(role.ID)
 			ds.mutations = append(ds.mutations, create.Mutation())
 		}
 	}
@@ -368,6 +382,7 @@ func (ds *incidentDataSyncer) syncIncidentRoleAssignments(ctx context.Context, d
 
 func (ds *incidentDataSyncer) syncIncidentSeverity(ctx context.Context, dbInc, provInc *ent.Incident) error {
 	var mutations []*ent.IncidentSeverityMutation
+
 	// TODO: sync severity
 	for _, m := range mutations {
 		ds.mutations = append(ds.mutations, m)
