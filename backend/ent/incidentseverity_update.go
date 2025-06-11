@@ -52,6 +52,26 @@ func (isu *IncidentSeverityUpdate) ClearArchiveTime() *IncidentSeverityUpdate {
 	return isu
 }
 
+// SetProviderID sets the "provider_id" field.
+func (isu *IncidentSeverityUpdate) SetProviderID(s string) *IncidentSeverityUpdate {
+	isu.mutation.SetProviderID(s)
+	return isu
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (isu *IncidentSeverityUpdate) SetNillableProviderID(s *string) *IncidentSeverityUpdate {
+	if s != nil {
+		isu.SetProviderID(*s)
+	}
+	return isu
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (isu *IncidentSeverityUpdate) ClearProviderID() *IncidentSeverityUpdate {
+	isu.mutation.ClearProviderID()
+	return isu
+}
+
 // SetName sets the "name" field.
 func (isu *IncidentSeverityUpdate) SetName(s string) *IncidentSeverityUpdate {
 	isu.mutation.SetName(s)
@@ -252,6 +272,12 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if isu.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
+	if value, ok := isu.mutation.ProviderID(); ok {
+		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
+	}
+	if isu.mutation.ProviderIDCleared() {
+		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
+	}
 	if value, ok := isu.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
@@ -402,6 +428,26 @@ func (isuo *IncidentSeverityUpdateOne) SetNillableArchiveTime(t *time.Time) *Inc
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (isuo *IncidentSeverityUpdateOne) ClearArchiveTime() *IncidentSeverityUpdateOne {
 	isuo.mutation.ClearArchiveTime()
+	return isuo
+}
+
+// SetProviderID sets the "provider_id" field.
+func (isuo *IncidentSeverityUpdateOne) SetProviderID(s string) *IncidentSeverityUpdateOne {
+	isuo.mutation.SetProviderID(s)
+	return isuo
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (isuo *IncidentSeverityUpdateOne) SetNillableProviderID(s *string) *IncidentSeverityUpdateOne {
+	if s != nil {
+		isuo.SetProviderID(*s)
+	}
+	return isuo
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (isuo *IncidentSeverityUpdateOne) ClearProviderID() *IncidentSeverityUpdateOne {
+	isuo.mutation.ClearProviderID()
 	return isuo
 }
 
@@ -634,6 +680,12 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 	}
 	if isuo.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
+	}
+	if value, ok := isuo.mutation.ProviderID(); ok {
+		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
+	}
+	if isuo.mutation.ProviderIDCleared() {
+		_spec.ClearField(incidentseverity.FieldProviderID, field.TypeString)
 	}
 	if value, ok := isuo.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)

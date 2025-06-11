@@ -16,6 +16,7 @@ type IncidentSeverity struct {
 func (IncidentSeverity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.String("provider_id").Optional(),
 		field.String("name"),
 		field.Int("rank"),
 		field.String("color").Optional(),

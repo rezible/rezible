@@ -40,6 +40,20 @@ func (isc *IncidentSeverityCreate) SetNillableArchiveTime(t *time.Time) *Inciden
 	return isc
 }
 
+// SetProviderID sets the "provider_id" field.
+func (isc *IncidentSeverityCreate) SetProviderID(s string) *IncidentSeverityCreate {
+	isc.mutation.SetProviderID(s)
+	return isc
+}
+
+// SetNillableProviderID sets the "provider_id" field if the given value is not nil.
+func (isc *IncidentSeverityCreate) SetNillableProviderID(s *string) *IncidentSeverityCreate {
+	if s != nil {
+		isc.SetProviderID(*s)
+	}
+	return isc
+}
+
 // SetName sets the "name" field.
 func (isc *IncidentSeverityCreate) SetName(s string) *IncidentSeverityCreate {
 	isc.mutation.SetName(s)
@@ -219,6 +233,10 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 		_spec.SetField(incidentseverity.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
+	if value, ok := isc.mutation.ProviderID(); ok {
+		_spec.SetField(incidentseverity.FieldProviderID, field.TypeString, value)
+		_node.ProviderID = value
+	}
 	if value, ok := isc.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -334,6 +352,24 @@ func (u *IncidentSeverityUpsert) UpdateArchiveTime() *IncidentSeverityUpsert {
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (u *IncidentSeverityUpsert) ClearArchiveTime() *IncidentSeverityUpsert {
 	u.SetNull(incidentseverity.FieldArchiveTime)
+	return u
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *IncidentSeverityUpsert) SetProviderID(v string) *IncidentSeverityUpsert {
+	u.Set(incidentseverity.FieldProviderID, v)
+	return u
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsert) UpdateProviderID() *IncidentSeverityUpsert {
+	u.SetExcluded(incidentseverity.FieldProviderID)
+	return u
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentSeverityUpsert) ClearProviderID() *IncidentSeverityUpsert {
+	u.SetNull(incidentseverity.FieldProviderID)
 	return u
 }
 
@@ -469,6 +505,27 @@ func (u *IncidentSeverityUpsertOne) UpdateArchiveTime() *IncidentSeverityUpsertO
 func (u *IncidentSeverityUpsertOne) ClearArchiveTime() *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.ClearArchiveTime()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *IncidentSeverityUpsertOne) SetProviderID(v string) *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertOne) UpdateProviderID() *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentSeverityUpsertOne) ClearProviderID() *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.ClearProviderID()
 	})
 }
 
@@ -782,6 +839,27 @@ func (u *IncidentSeverityUpsertBulk) UpdateArchiveTime() *IncidentSeverityUpsert
 func (u *IncidentSeverityUpsertBulk) ClearArchiveTime() *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.ClearArchiveTime()
+	})
+}
+
+// SetProviderID sets the "provider_id" field.
+func (u *IncidentSeverityUpsertBulk) SetProviderID(v string) *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.SetProviderID(v)
+	})
+}
+
+// UpdateProviderID sets the "provider_id" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertBulk) UpdateProviderID() *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.UpdateProviderID()
+	})
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (u *IncidentSeverityUpsertBulk) ClearProviderID() *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.ClearProviderID()
 	})
 }
 

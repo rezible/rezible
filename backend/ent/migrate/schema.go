@@ -443,6 +443,7 @@ var (
 	IncidentSeveritiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
+		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "rank", Type: field.TypeInt},
 		{Name: "color", Type: field.TypeString, Nullable: true},

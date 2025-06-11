@@ -13421,6 +13421,7 @@ type IncidentSeverityMutation struct {
 	typ                      string
 	id                       *uuid.UUID
 	archive_time             *time.Time
+	provider_id              *string
 	name                     *string
 	rank                     *int
 	addrank                  *int
@@ -13589,6 +13590,55 @@ func (m *IncidentSeverityMutation) ArchiveTimeCleared() bool {
 func (m *IncidentSeverityMutation) ResetArchiveTime() {
 	m.archive_time = nil
 	delete(m.clearedFields, incidentseverity.FieldArchiveTime)
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *IncidentSeverityMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *IncidentSeverityMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the IncidentSeverity entity.
+// If the IncidentSeverity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSeverityMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ClearProviderID clears the value of the "provider_id" field.
+func (m *IncidentSeverityMutation) ClearProviderID() {
+	m.provider_id = nil
+	m.clearedFields[incidentseverity.FieldProviderID] = struct{}{}
+}
+
+// ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
+func (m *IncidentSeverityMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[incidentseverity.FieldProviderID]
+	return ok
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *IncidentSeverityMutation) ResetProviderID() {
+	m.provider_id = nil
+	delete(m.clearedFields, incidentseverity.FieldProviderID)
 }
 
 // SetName sets the "name" field.
@@ -13923,9 +13973,12 @@ func (m *IncidentSeverityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentSeverityMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.archive_time != nil {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, incidentseverity.FieldProviderID)
 	}
 	if m.name != nil {
 		fields = append(fields, incidentseverity.FieldName)
@@ -13949,6 +14002,8 @@ func (m *IncidentSeverityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case incidentseverity.FieldArchiveTime:
 		return m.ArchiveTime()
+	case incidentseverity.FieldProviderID:
+		return m.ProviderID()
 	case incidentseverity.FieldName:
 		return m.Name()
 	case incidentseverity.FieldRank:
@@ -13968,6 +14023,8 @@ func (m *IncidentSeverityMutation) OldField(ctx context.Context, name string) (e
 	switch name {
 	case incidentseverity.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
+	case incidentseverity.FieldProviderID:
+		return m.OldProviderID(ctx)
 	case incidentseverity.FieldName:
 		return m.OldName(ctx)
 	case incidentseverity.FieldRank:
@@ -13991,6 +14048,13 @@ func (m *IncidentSeverityMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetArchiveTime(v)
+		return nil
+	case incidentseverity.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
 		return nil
 	case incidentseverity.FieldName:
 		v, ok := value.(string)
@@ -14068,6 +14132,9 @@ func (m *IncidentSeverityMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentseverity.FieldArchiveTime) {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
 	}
+	if m.FieldCleared(incidentseverity.FieldProviderID) {
+		fields = append(fields, incidentseverity.FieldProviderID)
+	}
 	if m.FieldCleared(incidentseverity.FieldColor) {
 		fields = append(fields, incidentseverity.FieldColor)
 	}
@@ -14091,6 +14158,9 @@ func (m *IncidentSeverityMutation) ClearField(name string) error {
 	case incidentseverity.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
+	case incidentseverity.FieldProviderID:
+		m.ClearProviderID()
+		return nil
 	case incidentseverity.FieldColor:
 		m.ClearColor()
 		return nil
@@ -14107,6 +14177,9 @@ func (m *IncidentSeverityMutation) ResetField(name string) error {
 	switch name {
 	case incidentseverity.FieldArchiveTime:
 		m.ResetArchiveTime()
+		return nil
+	case incidentseverity.FieldProviderID:
+		m.ResetProviderID()
 		return nil
 	case incidentseverity.FieldName:
 		m.ResetName()
