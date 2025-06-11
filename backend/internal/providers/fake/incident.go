@@ -3,6 +3,8 @@ package fakeprovider
 import (
 	"context"
 	"fmt"
+	"github.com/go-faker/faker/v4"
+	"github.com/gosimple/slug"
 	"iter"
 	"math/rand"
 	"time"
@@ -59,13 +61,13 @@ func (p *IncidentDataProvider) makeFakeData() {
 		},
 	}
 	p.tags = []*ent.IncidentTag{
-		{Key: "foo", Value: "bar"},
+		{Key: faker.Word(), Value: faker.Word()},
 	}
 	p.users = []*ent.User{
 		{
-			Name:   "User 1",
-			Email:  "user@example.com",
-			ChatID: "foo",
+			Name:   faker.Name(),
+			Email:  faker.Email(),
+			ChatID: faker.Username(),
 		},
 	}
 }
@@ -98,11 +100,14 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 		openedAt := time.Now().Add(-8 * time.Hour)
 		closedAt := time.Now().Add(-7 * time.Hour)
 
+		title := faker.Word() + "-rpc outage"
+		incSlug := slug.MakeLang(title, "en")
+
 		p.incidents[i] = &ent.Incident{
-			ProviderID: "test-incident",
-			Slug:       "test-incident",
-			Title:      "Test Incident",
-			Summary:    "a test incident",
+			Title:      title,
+			ProviderID: fmt.Sprintf("fake-%d", i+1),
+			Slug:       incSlug,
+			Summary:    faker.Sentence(),
 			OpenedAt:   openedAt,
 			ModifiedAt: openedAt.Add(time.Minute * 30),
 			ClosedAt:   closedAt,
