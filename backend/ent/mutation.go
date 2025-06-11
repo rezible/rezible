@@ -13422,6 +13422,8 @@ type IncidentSeverityMutation struct {
 	id                       *uuid.UUID
 	archive_time             *time.Time
 	name                     *string
+	rank                     *int
+	addrank                  *int
 	color                    *string
 	description              *string
 	clearedFields            map[string]struct{}
@@ -13623,6 +13625,62 @@ func (m *IncidentSeverityMutation) OldName(ctx context.Context) (v string, err e
 // ResetName resets all changes to the "name" field.
 func (m *IncidentSeverityMutation) ResetName() {
 	m.name = nil
+}
+
+// SetRank sets the "rank" field.
+func (m *IncidentSeverityMutation) SetRank(i int) {
+	m.rank = &i
+	m.addrank = nil
+}
+
+// Rank returns the value of the "rank" field in the mutation.
+func (m *IncidentSeverityMutation) Rank() (r int, exists bool) {
+	v := m.rank
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRank returns the old "rank" field's value of the IncidentSeverity entity.
+// If the IncidentSeverity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentSeverityMutation) OldRank(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRank is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRank requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRank: %w", err)
+	}
+	return oldValue.Rank, nil
+}
+
+// AddRank adds i to the "rank" field.
+func (m *IncidentSeverityMutation) AddRank(i int) {
+	if m.addrank != nil {
+		*m.addrank += i
+	} else {
+		m.addrank = &i
+	}
+}
+
+// AddedRank returns the value that was added to the "rank" field in this mutation.
+func (m *IncidentSeverityMutation) AddedRank() (r int, exists bool) {
+	v := m.addrank
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetRank resets all changes to the "rank" field.
+func (m *IncidentSeverityMutation) ResetRank() {
+	m.rank = nil
+	m.addrank = nil
 }
 
 // SetColor sets the "color" field.
@@ -13865,12 +13923,15 @@ func (m *IncidentSeverityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentSeverityMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.archive_time != nil {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
 	}
 	if m.name != nil {
 		fields = append(fields, incidentseverity.FieldName)
+	}
+	if m.rank != nil {
+		fields = append(fields, incidentseverity.FieldRank)
 	}
 	if m.color != nil {
 		fields = append(fields, incidentseverity.FieldColor)
@@ -13890,6 +13951,8 @@ func (m *IncidentSeverityMutation) Field(name string) (ent.Value, bool) {
 		return m.ArchiveTime()
 	case incidentseverity.FieldName:
 		return m.Name()
+	case incidentseverity.FieldRank:
+		return m.Rank()
 	case incidentseverity.FieldColor:
 		return m.Color()
 	case incidentseverity.FieldDescription:
@@ -13907,6 +13970,8 @@ func (m *IncidentSeverityMutation) OldField(ctx context.Context, name string) (e
 		return m.OldArchiveTime(ctx)
 	case incidentseverity.FieldName:
 		return m.OldName(ctx)
+	case incidentseverity.FieldRank:
+		return m.OldRank(ctx)
 	case incidentseverity.FieldColor:
 		return m.OldColor(ctx)
 	case incidentseverity.FieldDescription:
@@ -13934,6 +13999,13 @@ func (m *IncidentSeverityMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetName(v)
 		return nil
+	case incidentseverity.FieldRank:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRank(v)
+		return nil
 	case incidentseverity.FieldColor:
 		v, ok := value.(string)
 		if !ok {
@@ -13955,13 +14027,21 @@ func (m *IncidentSeverityMutation) SetField(name string, value ent.Value) error 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *IncidentSeverityMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addrank != nil {
+		fields = append(fields, incidentseverity.FieldRank)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *IncidentSeverityMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case incidentseverity.FieldRank:
+		return m.AddedRank()
+	}
 	return nil, false
 }
 
@@ -13970,6 +14050,13 @@ func (m *IncidentSeverityMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *IncidentSeverityMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case incidentseverity.FieldRank:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddRank(v)
+		return nil
 	}
 	return fmt.Errorf("unknown IncidentSeverity numeric field %s", name)
 }
@@ -14023,6 +14110,9 @@ func (m *IncidentSeverityMutation) ResetField(name string) error {
 		return nil
 	case incidentseverity.FieldName:
 		m.ResetName()
+		return nil
+	case incidentseverity.FieldRank:
+		m.ResetRank()
 		return nil
 	case incidentseverity.FieldColor:
 		m.ResetColor()

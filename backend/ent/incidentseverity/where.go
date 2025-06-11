@@ -66,6 +66,11 @@ func Name(v string) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldName, v))
 }
 
+// Rank applies equality check predicate on the "rank" field. It's identical to RankEQ.
+func Rank(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldRank, v))
+}
+
 // Color applies equality check predicate on the "color" field. It's identical to ColorEQ.
 func Color(v string) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldColor, v))
@@ -189,6 +194,46 @@ func NameEqualFold(v string) predicate.IncidentSeverity {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldContainsFold(FieldName, v))
+}
+
+// RankEQ applies the EQ predicate on the "rank" field.
+func RankEQ(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldRank, v))
+}
+
+// RankNEQ applies the NEQ predicate on the "rank" field.
+func RankNEQ(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNEQ(FieldRank, v))
+}
+
+// RankIn applies the In predicate on the "rank" field.
+func RankIn(vs ...int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIn(FieldRank, vs...))
+}
+
+// RankNotIn applies the NotIn predicate on the "rank" field.
+func RankNotIn(vs ...int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotIn(FieldRank, vs...))
+}
+
+// RankGT applies the GT predicate on the "rank" field.
+func RankGT(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldGT(FieldRank, v))
+}
+
+// RankGTE applies the GTE predicate on the "rank" field.
+func RankGTE(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldGTE(FieldRank, v))
+}
+
+// RankLT applies the LT predicate on the "rank" field.
+func RankLT(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldLT(FieldRank, v))
+}
+
+// RankLTE applies the LTE predicate on the "rank" field.
+func RankLTE(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldLTE(FieldRank, v))
 }
 
 // ColorEQ applies the EQ predicate on the "color" field.

@@ -66,6 +66,27 @@ func (isu *IncidentSeverityUpdate) SetNillableName(s *string) *IncidentSeverityU
 	return isu
 }
 
+// SetRank sets the "rank" field.
+func (isu *IncidentSeverityUpdate) SetRank(i int) *IncidentSeverityUpdate {
+	isu.mutation.ResetRank()
+	isu.mutation.SetRank(i)
+	return isu
+}
+
+// SetNillableRank sets the "rank" field if the given value is not nil.
+func (isu *IncidentSeverityUpdate) SetNillableRank(i *int) *IncidentSeverityUpdate {
+	if i != nil {
+		isu.SetRank(*i)
+	}
+	return isu
+}
+
+// AddRank adds i to the "rank" field.
+func (isu *IncidentSeverityUpdate) AddRank(i int) *IncidentSeverityUpdate {
+	isu.mutation.AddRank(i)
+	return isu
+}
+
 // SetColor sets the "color" field.
 func (isu *IncidentSeverityUpdate) SetColor(s string) *IncidentSeverityUpdate {
 	isu.mutation.SetColor(s)
@@ -234,6 +255,12 @@ func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err erro
 	if value, ok := isu.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
+	if value, ok := isu.mutation.Rank(); ok {
+		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
+	}
+	if value, ok := isu.mutation.AddedRank(); ok {
+		_spec.AddField(incidentseverity.FieldRank, field.TypeInt, value)
+	}
 	if value, ok := isu.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)
 	}
@@ -389,6 +416,27 @@ func (isuo *IncidentSeverityUpdateOne) SetNillableName(s *string) *IncidentSever
 	if s != nil {
 		isuo.SetName(*s)
 	}
+	return isuo
+}
+
+// SetRank sets the "rank" field.
+func (isuo *IncidentSeverityUpdateOne) SetRank(i int) *IncidentSeverityUpdateOne {
+	isuo.mutation.ResetRank()
+	isuo.mutation.SetRank(i)
+	return isuo
+}
+
+// SetNillableRank sets the "rank" field if the given value is not nil.
+func (isuo *IncidentSeverityUpdateOne) SetNillableRank(i *int) *IncidentSeverityUpdateOne {
+	if i != nil {
+		isuo.SetRank(*i)
+	}
+	return isuo
+}
+
+// AddRank adds i to the "rank" field.
+func (isuo *IncidentSeverityUpdateOne) AddRank(i int) *IncidentSeverityUpdateOne {
+	isuo.mutation.AddRank(i)
 	return isuo
 }
 
@@ -589,6 +637,12 @@ func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Inci
 	}
 	if value, ok := isuo.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
+	}
+	if value, ok := isuo.mutation.Rank(); ok {
+		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
+	}
+	if value, ok := isuo.mutation.AddedRank(); ok {
+		_spec.AddField(incidentseverity.FieldRank, field.TypeInt, value)
 	}
 	if value, ok := isuo.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)

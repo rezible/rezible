@@ -18,6 +18,8 @@ const (
 	FieldArchiveTime = "archive_time"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldRank holds the string denoting the rank field in the database.
+	FieldRank = "rank"
 	// FieldColor holds the string denoting the color field in the database.
 	FieldColor = "color"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -47,6 +49,7 @@ var Columns = []string{
 	FieldID,
 	FieldArchiveTime,
 	FieldName,
+	FieldRank,
 	FieldColor,
 	FieldDescription,
 }
@@ -95,6 +98,11 @@ func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByRank orders the results by the rank field.
+func ByRank(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRank, opts...).ToFunc()
 }
 
 // ByColor orders the results by the color field.

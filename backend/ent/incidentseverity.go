@@ -22,6 +22,8 @@ type IncidentSeverity struct {
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Rank holds the value of the "rank" field.
+	Rank int `json:"rank,omitempty"`
 	// Color holds the value of the "color" field.
 	Color string `json:"color,omitempty"`
 	// Description holds the value of the "description" field.
@@ -66,6 +68,8 @@ func (*IncidentSeverity) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentseverity.FieldRank:
+			values[i] = new(sql.NullInt64)
 		case incidentseverity.FieldName, incidentseverity.FieldColor, incidentseverity.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentseverity.FieldArchiveTime:
@@ -104,6 +108,12 @@ func (is *IncidentSeverity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				is.Name = value.String
+			}
+		case incidentseverity.FieldRank:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field rank", values[i])
+			} else if value.Valid {
+				is.Rank = int(value.Int64)
 			}
 		case incidentseverity.FieldColor:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -168,6 +178,9 @@ func (is *IncidentSeverity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(is.Name)
+	builder.WriteString(", ")
+	builder.WriteString("rank=")
+	builder.WriteString(fmt.Sprintf("%v", is.Rank))
 	builder.WriteString(", ")
 	builder.WriteString("color=")
 	builder.WriteString(is.Color)

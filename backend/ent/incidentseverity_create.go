@@ -46,6 +46,12 @@ func (isc *IncidentSeverityCreate) SetName(s string) *IncidentSeverityCreate {
 	return isc
 }
 
+// SetRank sets the "rank" field.
+func (isc *IncidentSeverityCreate) SetRank(i int) *IncidentSeverityCreate {
+	isc.mutation.SetRank(i)
+	return isc
+}
+
 // SetColor sets the "color" field.
 func (isc *IncidentSeverityCreate) SetColor(s string) *IncidentSeverityCreate {
 	isc.mutation.SetColor(s)
@@ -170,6 +176,9 @@ func (isc *IncidentSeverityCreate) check() error {
 	if _, ok := isc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentSeverity.name"`)}
 	}
+	if _, ok := isc.mutation.Rank(); !ok {
+		return &ValidationError{Name: "rank", err: errors.New(`ent: missing required field "IncidentSeverity.rank"`)}
+	}
 	return nil
 }
 
@@ -213,6 +222,10 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 	if value, ok := isc.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := isc.mutation.Rank(); ok {
+		_spec.SetField(incidentseverity.FieldRank, field.TypeInt, value)
+		_node.Rank = value
 	}
 	if value, ok := isc.mutation.Color(); ok {
 		_spec.SetField(incidentseverity.FieldColor, field.TypeString, value)
@@ -336,6 +349,24 @@ func (u *IncidentSeverityUpsert) UpdateName() *IncidentSeverityUpsert {
 	return u
 }
 
+// SetRank sets the "rank" field.
+func (u *IncidentSeverityUpsert) SetRank(v int) *IncidentSeverityUpsert {
+	u.Set(incidentseverity.FieldRank, v)
+	return u
+}
+
+// UpdateRank sets the "rank" field to the value that was provided on create.
+func (u *IncidentSeverityUpsert) UpdateRank() *IncidentSeverityUpsert {
+	u.SetExcluded(incidentseverity.FieldRank)
+	return u
+}
+
+// AddRank adds v to the "rank" field.
+func (u *IncidentSeverityUpsert) AddRank(v int) *IncidentSeverityUpsert {
+	u.Add(incidentseverity.FieldRank, v)
+	return u
+}
+
 // SetColor sets the "color" field.
 func (u *IncidentSeverityUpsert) SetColor(v string) *IncidentSeverityUpsert {
 	u.Set(incidentseverity.FieldColor, v)
@@ -452,6 +483,27 @@ func (u *IncidentSeverityUpsertOne) SetName(v string) *IncidentSeverityUpsertOne
 func (u *IncidentSeverityUpsertOne) UpdateName() *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetRank sets the "rank" field.
+func (u *IncidentSeverityUpsertOne) SetRank(v int) *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.SetRank(v)
+	})
+}
+
+// AddRank adds v to the "rank" field.
+func (u *IncidentSeverityUpsertOne) AddRank(v int) *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.AddRank(v)
+	})
+}
+
+// UpdateRank sets the "rank" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertOne) UpdateRank() *IncidentSeverityUpsertOne {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.UpdateRank()
 	})
 }
 
@@ -744,6 +796,27 @@ func (u *IncidentSeverityUpsertBulk) SetName(v string) *IncidentSeverityUpsertBu
 func (u *IncidentSeverityUpsertBulk) UpdateName() *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetRank sets the "rank" field.
+func (u *IncidentSeverityUpsertBulk) SetRank(v int) *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.SetRank(v)
+	})
+}
+
+// AddRank adds v to the "rank" field.
+func (u *IncidentSeverityUpsertBulk) AddRank(v int) *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.AddRank(v)
+	})
+}
+
+// UpdateRank sets the "rank" field to the value that was provided on create.
+func (u *IncidentSeverityUpsertBulk) UpdateRank() *IncidentSeverityUpsertBulk {
+	return u.Update(func(s *IncidentSeverityUpsert) {
+		s.UpdateRank()
 	})
 }
 

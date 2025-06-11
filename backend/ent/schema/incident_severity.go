@@ -17,6 +17,7 @@ func (IncidentSeverity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
+		field.Int("rank"),
 		field.String("color").Optional(),
 		field.String("description").Optional(),
 	}
