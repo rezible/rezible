@@ -2,7 +2,7 @@
 	import { Field, ToggleGroup, ToggleOption } from "svelte-ux";
 	import { createQuery } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
-	import { Button, ButtonGroup, DateRangeField, Pagination } from "svelte-ux";
+	import { Button, DateRangeField, Pagination } from "svelte-ux";
 	import { watch } from "runed";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { fromStore } from "svelte/store";
@@ -15,7 +15,7 @@
 	import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 	import { PeriodType } from "@layerstack/utils";
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
-	import { subDays, subMonths, subWeeks } from "date-fns";
+	import { subMonths, subWeeks } from "date-fns";
 
 	type Props = {
 		shift?: OncallShift;
@@ -40,35 +40,33 @@
 		periodType: PeriodType.Day,
 	});
 	const last7Days = {from: subWeeks(today, 1), to: today, periodType: PeriodType.Day};
-	const last14Days = {from: subWeeks(today, 2), to: today, periodType: PeriodType.Day};
 	const lastMonth = {from: subMonths(today, 1), to: today, periodType: PeriodType.Day};
 
-	const ONE_DAY = (1000 * 60 * 60 * 24);
-	const defaultDateRange = $derived<DateRangeType>(shiftDateRange || last7Days);
-
-	type DateRangeOption = "7d" | "14d" | "30d" | "Custom";
-	const dateRangeOptions: DateRangeOption[] = ["7d", "14d", "30d", "Custom"] as const;
-	let dateRangeOption = $state<DateRangeOption>("7d");
+	type DateRangeOption = {label: string, value: "shift" | "7d" | "30d" | "custom"};
+	const dateRangeOptions = [
+		{label: "Last 7 Days", value: "7d"},
+		{label: "Last Month", value: "30d"}, 
+		{label: "Custom", value: "custom"},
+	];
+	let dateRangeOption = $state<DateRangeOption["value"]>("7d");
 	let customDateRangeValue = $state<DateRangeType>(last7Days);
 	const dateRange = $derived.by(() => {
 		switch (dateRangeOption) {
 			case "7d": return last7Days;
-			case "14d": return last14Days;
 			case "30d": return lastMonth;
-			case "Custom": return customDateRangeValue;
+			case "shift": return (!!shiftDateRange ? shiftDateRange : customDateRangeValue);
+			case "custom": return customDateRangeValue;
 		}
 	});
+
+	let filters = $state<FilterOptions>({});
+	let filtersVisible = $state(false);
 
 	const defaultRosterId = $derived.by(() => {
 		if (defaultShift) return defaultShift.attributes.roster.id;
 		if (userRosterIds.length > 0) return userRosterIds.at(0);
 	});
-	let filters = $state<FilterOptions>({});
 	watch(() => defaultRosterId, id => {filters.rosterId = id});
-	let filtersVisible = $state(false);
-
-	const paginationStore = createPaginationStore({ page: 0, perPage: 25, total: 0 });
-	const pagination = fromStore(paginationStore);
 
 	const eventsQueryData = $derived<ListOncallEventsData["query"]>({ 
 		from: dateRange.from?.toISOString(),
@@ -80,9 +78,13 @@
 		enabled: !!userOncallInfo,
 	}));
 	const eventsData = $derived(eventsQuery.data?.data ?? []);
+
+	const paginationStore = createPaginationStore({ page: 0, perPage: 25, total: 0 });
+	const pagination = fromStore(paginationStore);
+	const pageData = $derived(pagination.current.slice(eventsData));
+
 	const numEvents = $derived(eventsData.length);
 	watch(() => numEvents, paginationStore.setTotal);
-	const pageData = $derived(pagination.current.slice(eventsData));
 
 	const annosQueryData = $derived<ListOncallAnnotationsData["query"]>({ 
 		// TODO: backend
@@ -123,13 +125,17 @@
 			{#if disableFilters !== true}
 				<div class="justify-end flex gap-2 items-end">
 					<Field label="Date Range" labelPlacement="top" dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
-						<ToggleGroup variant="outline" inset bind:value={dateRangeOption} classes={{root: "bg-surface-100"}}>
-							{#each dateRangeOptions as value}
-								<ToggleOption {value}>{value}</ToggleOption>
+						<ToggleGroup bind:value={dateRangeOption} variant="outline" inset classes={{root: "bg-surface-100"}}>
+							{#if !!defaultShift}
+								<ToggleOption value="shift">Active Shift</ToggleOption>
+							{/if}
+
+							{#each dateRangeOptions as opt}
+								<ToggleOption value={opt.value}>{opt.label}</ToggleOption>
 							{/each}
 						</ToggleGroup>
 
-						{#if dateRangeOption === "Custom"}
+						{#if dateRangeOption === "custom"}
 							<DateRangeField
 								label=""
 								labelPlacement="top"
