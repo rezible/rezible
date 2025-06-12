@@ -57,7 +57,7 @@
 				<Avatar kind="user" id={anno.attributes.creator.id} size={14} />
 				<Icon data={mdiMenuDown} size={14} />
 			</div>
-			<div class="text-neutral-content/80 leading-none text-center truncate w-full">{anno.attributes.notes}</div>
+			<div class="text-neutral-content/80 leading-none text-start truncate w-full">{anno.attributes.notes}</div>
 		</button>
 	</div>
 {/snippet}
@@ -83,7 +83,7 @@
 			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
-		<span class="w-full leading-none truncate">{attrs.title}</span>
+		<span class="w-full leading-none truncate text-left">{attrs.title}</span>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end">

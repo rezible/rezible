@@ -1,25 +1,33 @@
 import { createMutation, createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import {
 	addSystemAnalysisComponentMutation,
+	createSystemAnalysisRelationshipMutation,
+	deleteSystemAnalysisComponentMutation,
+	deleteSystemAnalysisRelationshipMutation,
 	getSystemAnalysisOptions,
+	updateSystemAnalysisComponentMutation,
+	updateSystemAnalysisRelationshipMutation,
+	type AddSystemAnalysisComponentAttributes,
+	type CreateSystemAnalysisRelationshipAttributes,
 	type SystemAnalysisRelationship,
-	type SystemComponent,
+	type UpdateSystemAnalysisComponentAttributes,
+	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
-import type { XYPosition } from "@xyflow/svelte";
 import { Context, watch } from "runed";
 
 export class IncidentAnalysisState {
 	analysisId = $state("");
 
-	queryClient = $state<QueryClient>();
+	queryClient = $state.raw<QueryClient>();
 
 	constructor(idFn: () => (string | undefined)) {
-		watch(idFn, id => {this.analysisId = id ?? ""});
+		watch(idFn, id => {this.analysisId = id || ""});
 		this.queryClient = useQueryClient();
 	}
 
+	private analysisQueryOptions = $derived(getSystemAnalysisOptions({ path: { id: this.analysisId } }));
 	private analysisQuery = createQuery(() => ({
-		...getSystemAnalysisOptions({ path: { id: this.analysisId } }),
+		...this.analysisQueryOptions,
 		enabled: !!this.analysisId,
 	}));
 	analysisData = $derived(this.analysisQuery.data?.data);
@@ -28,40 +36,74 @@ export class IncidentAnalysisState {
 		this.analysisQuery.refetch();
 	}
 
-	private addComponentMutation = createMutation(() => ({
+	private addAnalysisComponentMutation = createMutation(() => ({
 		...addSystemAnalysisComponentMutation(),
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		},
 	}));
 
-	async addComponent(component: SystemComponent, pos: XYPosition) {
-		if (!this.analysisId) return false;
-
-		try {
-			const resp = await this.addComponentMutation.mutateAsync({
-				path: { id: this.analysisId },
-				body: { 
-					attributes: {
-						componentId: component.id,
-						position: pos,
-					}
-				}
-			});
-			return resp.data;
-		} catch (e) {
-			console.error(e);
-			return false;
-		}
+	addComponent(attributes: AddSystemAnalysisComponentAttributes) {
+		return this.addAnalysisComponentMutation.mutateAsync({
+			path: { id: this.analysisId },
+			body: { attributes }
+		});
 	}
 
-	relationshipDialogOpen = $state(false);
-	editingRelationship = $state<SystemAnalysisRelationship>();
+	private updateAnalysisComponentMut = createMutation(() => ({
+		...updateSystemAnalysisComponentMutation(),
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		},
+	}));
 
-	setRelationshipDialogOpen(open: boolean, editRel?: SystemAnalysisRelationship) {
-		this.relationshipDialogOpen = open;
-		this.editingRelationship = editRel;
-	};
+	updateComponent(id: string, attributes: UpdateSystemAnalysisComponentAttributes) {
+		return this.updateAnalysisComponentMut.mutate({ path: { id }, body: { attributes } });
+	}
+
+	private removeAnalysisComponentMut = createMutation(() => ({
+		...deleteSystemAnalysisComponentMutation(),
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		},
+	}));
+
+	async removeComponent(id: string) {
+		return this.removeAnalysisComponentMut.mutate({ path: { id } })
+	}
+
+	private createRelationshipMut = createMutation(() => ({ 
+		...createSystemAnalysisRelationshipMutation(), 
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		}, 
+	}));
+
+	async createRelationship(attributes: CreateSystemAnalysisRelationshipAttributes) {
+		return this.createRelationshipMut.mutate({ path: { id: this.analysisId }, body: { attributes } });
+	}
+
+	private updateRelationshipMut = createMutation(() => ({
+		...updateSystemAnalysisRelationshipMutation(), 
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		}, 
+	}));
+
+	async updateRelationship(id: string, attributes: UpdateSystemAnalysisRelationshipAttributes) {
+		return this.updateRelationshipMut.mutate({ path: { id }, body: { attributes } });
+	}
+
+	private removeRelationshipMut = createMutation(() => ({
+		...deleteSystemAnalysisRelationshipMutation(), 
+		onSuccess: () => {
+			this.invalidateAnalysisQuery();
+		}, 
+	}));
+
+	async removeRelationship(c: SystemAnalysisRelationship) {
+
+	}
 }
 
 const analysisCtx = new Context<IncidentAnalysisState>("incidentAnalysis");

@@ -91,34 +91,25 @@ export type SystemRelationshipEdgeData = {
 
 const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
-	let edges: Edge[] = [];
-
 	an.attributes.components.forEach(analysisComponent => {
 		const { position, component } = analysisComponent.attributes;
-
-		const data: SystemComponentNodeData = {analysisComponent};
-
 		nodes.push({
 			id: component.id,
 			type: "component",
-			data,
 			position,
+			data: { analysisComponent } as SystemComponentNodeData,
 		});
 	});
 
-	an.attributes.relationships.forEach((relationship) => {
+	let edges: Edge[] = [];
+	an.attributes.relationships.forEach(relationship => {
 		const { id, attributes } = relationship;
-
-		const data: SystemRelationshipEdgeData = {
-			relationship,
-		};
-
 		edges.push({
 			id,
 			type: "relationship",
 			source: attributes.sourceId,
 			target: attributes.targetId,
-			data,
+			data: { relationship } as SystemRelationshipEdgeData,
 		});
 	});
 
@@ -130,41 +121,30 @@ type DiagramSelectionState = { node?: Node; edge?: Edge };
 export class SystemDiagramState {
 	analysis = useIncidentAnalysis();
 
-	relationshipDialog = useRelationshipDialog();
-	componentDialog = useComponentDialog();
-
 	selected = $state<DiagramSelectionState>({});
 	selectedLivePosition = $state<XYPosition>();
 
-	containerEl = $state<HTMLElement>();
+	containerEl = $state.raw<HTMLElement>(null!);
 	ctxMenuProps = $state.raw<ComponentProps<typeof ContextMenu>>();
-	addingComponent = $state<SystemComponent>();
+	addingComponentGhost = $state.raw<SystemComponent>();
+
+	constructor(containerElFn: () => HTMLElement) {
+		watch(containerElFn, ref => { this.containerEl = ref });
+		watch(() => this.analysis.analysisData, data => { this.onAnalysisDataUpdate(data) });
+	}
 
 	nodes = $state.raw<Node[]>([]);
 	edges = $state.raw<Edge[]>([]);
 
-	updateAnalysisComponentMut = createMutation(() => updateSystemAnalysisComponentMutation());
-
-	constructor(containerElFn: () => HTMLElement | undefined) {
-		this.componentDialog.onAddComponent = this.setAddingComponent;
-
-		watch(containerElFn, ref => {
-			this.containerEl = ref;
-		});
-
-		watch(
-			() => this.analysis.analysisData,
-			(data) => {
-				if (!data) return;
-				const translated = translateSystemAnalysis($state.snapshot(data));
-				this.nodes = translated.nodes;
-				this.edges = translated.edges;
-			}
-		);
+	onAnalysisDataUpdate(data?: SystemAnalysis) {
+		if (!data) return;
+		const translated = translateSystemAnalysis($state.snapshot(data));
+		this.nodes = translated.nodes;
+		this.edges = translated.edges;
 	}
 
-	flow = $state<ReturnType<typeof useSvelteFlow>>();
-	flowStore = $state<ReturnType<typeof useSvelteFlowStore>>();
+	flow = $state.raw<ReturnType<typeof useSvelteFlow>>();
+	flowStore = $state.raw<ReturnType<typeof useSvelteFlowStore>>();
 
 	onFlowInit() {
 		this.flow = useSvelteFlow();
@@ -175,7 +155,7 @@ export class SystemDiagramState {
 		return this.flowStore && !this.flowStore.elementsSelectable;
 	}
 
-	updateSelectedPosition({node, edge}: {node?: Node, edge?: Edge}) {
+	updateSelectedPosition({ node, edge }: { node?: Node, edge?: Edge }) {
 		if (this.flow && edge) {
 			this.selectedLivePosition = this.flow.getNodesBounds([edge.source, edge.target]);
 		} else if (node) {
@@ -191,57 +171,60 @@ export class SystemDiagramState {
 		this.updateSelectedPosition(state);
 	};
 
-	handleNodeClicked(e: {node: Node, event: MouseEvent | TouchEvent}) {
+	handleNodeClicked(e: { node: Node, event: MouseEvent | TouchEvent }) {
 		if (this.interactionLocked()) return;
 		this.setSelected({ node: e.node });
 	};
 
-	handleNodeDragStart(e: {targetNode?: Node | null}) {
+	handleNodeDragStart(e: { targetNode?: Node | null }) {
 		const node = !!e.targetNode ? e.targetNode : undefined;
 		this.setSelected({ node });
 	};
 
-	handleNodeDrag(e: {targetNode?: Node | null}) {
+	handleNodeDrag(e: { targetNode?: Node | null }) {
 		if (this.selected.node?.id === e.targetNode?.id && e.targetNode) {
-			this.updateSelectedPosition({node: e.targetNode});
+			this.updateSelectedPosition({ node: e.targetNode });
 		}
 	};
 
-	handleNodeDragStop(e: {targetNode?: Node | null}) {
+	handleNodeDragStop(e: { targetNode?: Node | null }) {
 		if (!e.targetNode) return;
-		const {analysisComponent} = e.targetNode.data as SystemComponentNodeData;
-		const attributes = {position: e.targetNode.position};
-		this.updateAnalysisComponentMut.mutate({path: {id: analysisComponent.id}, body: {attributes}});
+		const { analysisComponent } = e.targetNode.data as SystemComponentNodeData;
+		if (!analysisComponent) return;
+
+		this.analysis.updateComponent(analysisComponent.id, {
+			position: e.targetNode.position,
+		});		
 	};
 
-	setAddingComponent(c?: SystemComponent) {
-		this.addingComponent = c;
+	setAddingComponentGhost(c?: SystemComponent) {
+		this.addingComponentGhost = c;
 	};
 
-	handlePaneClicked({event}: {event: MouseEvent}) {
+	handlePaneClicked({ event }: { event: MouseEvent }) {
 		this.setSelected({});
 
-		if (this.addingComponent) {
+		if (this.addingComponentGhost) {
 			event.preventDefault();
 
 			if (!this.containerEl || !("pageX" in event)) return;
 
 			const { x, y } = this.containerEl.getBoundingClientRect();
 
-			const pos = {x: event.pageX - x, y: event.pageY - y};
-			const component = $state.snapshot(this.addingComponent);
-			this.analysis?.addComponent(component, pos);
+			const position = { x: event.pageX - x, y: event.pageY - y };
+			const componentId = $state.snapshot(this.addingComponentGhost.id);
+			this.analysis.addComponent({componentId, position});
 			// TODO: check if success? show pending state?
-			this.setAddingComponent();
+			this.setAddingComponentGhost();
 		}
 	};
 
-	handleEdgeClicked({edge}: {edge: Edge}) {
+	handleEdgeClicked({ edge }: { edge: Edge }) {
 		if (this.interactionLocked()) return;
 		this.setSelected({ edge });
 	};
 
-	handleContextMenuEvent(e: {event: MouseEvent, node?: Node, edge?: Edge, nodes?: Node[]}) {
+	handleContextMenuEvent(e: { event: MouseEvent, node?: Node, edge?: Edge, nodes?: Node[] }) {
 		if (this.interactionLocked()) return;
 		if (!this.containerEl) return;
 
@@ -254,7 +237,7 @@ export class SystemDiagramState {
 		this.ctxMenuProps = {
 			nodeId: e.node?.id,
 			edgeId: e.edge?.id,
-			clickPos: {x: e.event.pageX, y: e.event.pageY},
+			clickPos: { x: e.event.pageX, y: e.event.pageY },
 			containerRect,
 		};
 	};
@@ -263,9 +246,9 @@ export class SystemDiagramState {
 		this.ctxMenuProps = undefined;
 	}
 
-	onEdgeConnect({source, target}: Connection) {
+	onEdgeConnect({ source, target }: Connection) {
+		// undo auto-created edge, need to confirm via dialog
 		this.edges = this.edges.filter(e => (!(e.source === source && e.target === target)));
-		this.relationshipDialog.setCreating(source, target);
 	}
 };
 

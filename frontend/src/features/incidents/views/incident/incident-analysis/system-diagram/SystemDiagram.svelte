@@ -19,7 +19,7 @@
 
 	import { settings } from "$lib/settings.svelte";
 
-	import { SystemDiagramState, setSystemDiagram } from "./diagramState.svelte";
+	import { useSystemDiagram } from "./diagramState.svelte";
 
 	import ContextMenu from "./ContextMenu.svelte";
 	import ConnectionLine from "./ConnectionLine.svelte";
@@ -33,12 +33,13 @@
 	import { ComponentDialogState, setComponentDialog } from "./component-dialog/dialogState.svelte";
 	import { RelationshipDialogState, setRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 
-	setComponentDialog(new ComponentDialogState());
-	setRelationshipDialog(new RelationshipDialogState());
+	const diagram = useSystemDiagram();
 
-	let containerEl = $state<HTMLElement>();
-	const diagram = new SystemDiagramState(() => containerEl);
-	setSystemDiagram(diagram);
+	const componentDialog = new ComponentDialogState();
+	setComponentDialog(componentDialog);
+
+	const relationshipDialog = new RelationshipDialogState();
+	setRelationshipDialog(relationshipDialog);
 
 	const colorMode = $derived<ColorMode>(settings.theme.dark ? "dark" : "light");
 
@@ -73,47 +74,38 @@
 	let viewport = $state<Viewport>({ x: 100, y: 100, zoom: 1.25 });
 </script>
 
-<SvelteFlowProvider>
-	<div
-		class="h-full w-full overflow-hidden relative"
-		role="presentation"
-		bind:this={containerEl}
-		oncontextmenu={(e) => e.preventDefault()}
-	>
-		<SvelteFlow
-			{...flowSettings}
-			{colorMode}
-			bind:nodes={diagram.nodes}
-			bind:edges={diagram.edges}
-			bind:viewport
-			oninit={() => diagram.onFlowInit()}
-			onconnect={e => diagram.onEdgeConnect(e)}
-			onpanecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			onedgecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			onnodecontextmenu={e => diagram.handleContextMenuEvent(e)}
-			onselectioncontextmenu={e => diagram.handleContextMenuEvent(e)}
-			onnodeclick={e => diagram.handleNodeClicked(e)}
-			onnodedragstart={e => diagram.handleNodeDragStart(e)}
-			onnodedrag={e => diagram.handleNodeDrag(e)}
-			onnodedragstop={e => diagram.handleNodeDragStop(e)}
-			onpaneclick={e => diagram.handlePaneClicked(e)}
-			onedgeclick={e => diagram.handleEdgeClicked(e)}
-		>
-			<Background {...backgroundSettings} />
-			<Controls {...controlsSettings} />
-			<MiniMap {...minimapSettings} />
-			{#if diagram.ctxMenuProps}
-				<ContextMenu {...diagram.ctxMenuProps} />
-			{/if}
-			<EditToolbar />
-			<AddingComponentGhostNode />
+<SvelteFlow
+	{...flowSettings}
+	{colorMode}
+	bind:nodes={diagram.nodes}
+	bind:edges={diagram.edges}
+	bind:viewport
+	oninit={() => diagram.onFlowInit()}
+	onconnect={e => {diagram.onEdgeConnect(e); relationshipDialog.setCreating(e.source, e.target)}}
+	onpanecontextmenu={e => diagram.handleContextMenuEvent(e)}
+	onedgecontextmenu={e => diagram.handleContextMenuEvent(e)}
+	onnodecontextmenu={e => diagram.handleContextMenuEvent(e)}
+	onselectioncontextmenu={e => diagram.handleContextMenuEvent(e)}
+	onnodeclick={e => diagram.handleNodeClicked(e)}
+	onnodedragstart={e => diagram.handleNodeDragStart(e)}
+	onnodedrag={e => diagram.handleNodeDrag(e)}
+	onnodedragstop={e => diagram.handleNodeDragStop(e)}
+	onpaneclick={e => diagram.handlePaneClicked(e)}
+	onedgeclick={e => diagram.handleEdgeClicked(e)}
+>
+	<Background {...backgroundSettings} />
+	<Controls {...controlsSettings} />
+	<MiniMap {...minimapSettings} />
+	{#if diagram.ctxMenuProps}
+		<ContextMenu {...diagram.ctxMenuProps} />
+	{/if}
+	<EditToolbar />
+	<AddingComponentGhostNode />
 
-			<Panel position="bottom-right">
-				<ActionsBar />
-			</Panel>
-		</SvelteFlow>
-	</div>
+	<Panel position="bottom-right">
+		<ActionsBar />
+	</Panel>
+</SvelteFlow>
 
-	<ComponentDialog />
-	<RelationshipDialog />
-</SvelteFlowProvider>
+<ComponentDialog />
+<RelationshipDialog />

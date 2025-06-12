@@ -102,20 +102,19 @@ const createComponentAttributesState = () => {
 export const componentAttributes = createComponentAttributesState();
 
 export class ComponentDialogState {
-	editingComponent = $state<SystemAnalysisComponent>();
-	selectedAddComponent = $state<SystemComponent>();
-	addingPosition = $state<XYPosition>();
-
 	analysis = useIncidentAnalysis();
+	diagram = useSystemDiagram();
 
-	view = $state<ComponentDialogView>("closed");
-	previousView = $state<ComponentDialogView>("closed");
+	editingComponent = $state.raw<SystemAnalysisComponent>();
+	selectedAddComponent = $state.raw<SystemComponent>();
+	addingPosition = $state.raw<XYPosition>();
+
+	view = $state.raw<ComponentDialogView>("closed");
+	previousView = $state.raw<ComponentDialogView>("closed");
 
 	open = $derived(this.view !== "closed");
 
 	creatingToAdd = $derived(this.view === "create" && this.previousView === "add");
-
-	onAddComponent = (c: SystemComponent) => {};
 
 	setView(v: ComponentDialogView) {
 		this.previousView = $state.snapshot(this.view);
@@ -156,6 +155,12 @@ export class ComponentDialogState {
 	updateComponentMut = createMutation(() => ({ ...updateSystemComponentMutation(), onSuccess: this.onSuccess }));
 	
 	loading = $derived(this.createComponentMut.isPending || this.updateComponentMut.isPending);
+	private setLoading(p: Promise<any>) {
+		this.loading = true;
+		p.finally(() => {
+			this.loading = false;
+		});
+	}
 
 	setAdding(pos?: XYPosition) {
 		this.setView("add");
@@ -171,7 +176,6 @@ export class ComponentDialogState {
 	setEditing(sc: SystemAnalysisComponent) {
 		this.setView("edit");
 		this.editingComponent = sc;
-
 		componentAttributes.init($state.snapshot(sc.attributes.component));
 	};
 
@@ -186,7 +190,8 @@ export class ComponentDialogState {
 			controls: attr.controls.map(c => c.attributes),
 			signals: attr.signals.map(s => s.attributes),
 		};
-		this.createComponentMut.mutate({ body: { attributes } });
+		const res = this.createComponentMut.mutateAsync({ body: { attributes } });
+		this.setLoading(res);
 	}
 
 	doUpdate() {
@@ -199,22 +204,21 @@ export class ComponentDialogState {
 			description: attr.description,
 			properties: attr.properties,
 		};
-		this.updateComponentMut.mutate({ path: { id }, body: { attributes } });
+		const res = this.updateComponentMut.mutateAsync({ path: { id }, body: { attributes } });
+		this.setLoading(res);
 	}
 
-	async doAdd() {
+	doAdd() {
 		if (!this.selectedAddComponent) return;
 		const component = $state.snapshot(this.selectedAddComponent);
-		const pos = $state.snapshot(this.addingPosition);
-		if (pos) {
-			const added = await this.analysis.addComponent(component, pos);
-			if (added) {
-				this.clear();
-			} else {
-				console.log("failed to add");
-			}
+		const componentId = component.id;
+		const position = $state.snapshot(this.addingPosition);
+		if (position) {
+			const res = this.analysis.addComponent({componentId, position});
+			this.setLoading(res);
+			res.finally(() => {this.clear()});
 		} else {
-			this.onAddComponent(component);
+			this.diagram.setAddingComponentGhost(component);
 			this.clear();
 		}
 	}

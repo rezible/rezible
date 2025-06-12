@@ -4,16 +4,14 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 export class IncidentViewState {
-	incidentIdParam = $state("");
+	incidentIdParam = $state<string>(null!);
 
-	constructor(idFn: () => string) {
-		watch(idFn, id => {this.incidentIdParam = id});
+	constructor(idParamFn: () => string) {
+		this.incidentIdParam = idParamFn();
+		watch(idParamFn, id => {this.incidentIdParam = id});
 	}
 
-	private incidentQuery = createQuery(() => ({
-		...getIncidentOptions({ path: { id: this.incidentIdParam } }),
-		enabled: !!this.incidentIdParam,
-	}));
+	private incidentQuery = createQuery(() => getIncidentOptions({ path: { id: this.incidentIdParam } }));
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
 

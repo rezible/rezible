@@ -29,6 +29,7 @@ export class RelationshipDialogState {
 	saveEnabled = $derived(relationshipAttributes.valid && (this.view === "create" || relationshipAttributes.changed));
 
 	setCreating(sourceId: string, targetId: string) {
+		console.log("create", sourceId, targetId);
 		this.view = "create";
 		this.relationshipId = undefined;
 		relationshipAttributes.initNew(sourceId, targetId);
@@ -52,34 +53,36 @@ export class RelationshipDialogState {
 		// this.analysis.invalidateQueryData();
 	}
 
-	createRelationshipMut = createMutation(() => ({ ...createSystemAnalysisRelationshipMutation(), onSuccess: this.onSuccess }))
-	updateRelationshipMut = createMutation(() => ({ ...updateSystemAnalysisRelationshipMutation(), onSuccess: this.onSuccess }))
-
-	loading = $derived(this.createRelationshipMut.isPending || this.updateRelationshipMut.isPending);
+	loading = $state(false);
+	private setLoading(p: Promise<void>) {
+		this.loading = true;
+		p.finally(() => {
+			this.loading = false;
+		});
+	}
 
 	doCreate() {
-		const analysisId = $state.snapshot(this.analysis.analysisId);
-		if (!analysisId) return;
 		const attr = relationshipAttributes.snapshot();
-		const attributes: CreateSystemAnalysisRelationshipAttributes = {
+		const res = this.analysis.createRelationship({
 			sourceId: attr.sourceId,
 			targetId: attr.targetId,
 			description: attr.description,
 			controlActions: attr.controlActions.map(a => a.attributes),
 			feedbackSignals: attr.feedbackSignals.map(a => a.attributes),
-		};
-		this.createRelationshipMut.mutate({ path: { id: analysisId }, body: { attributes } });
+		});
+		this.setLoading(res);
 	}
 
 	doEdit() {
 		if (!this.relationshipId) return;
+		const id = $state.snapshot(this.relationshipId);
 		const attr = relationshipAttributes.snapshot();
-		const attributes: UpdateSystemAnalysisRelationshipAttributes = {
+		const res = this.analysis.updateRelationship(id, {
 			description: attr.description,
 			controlActions: attr.controlActions.map(a => a.attributes),
 			feedbackSignals: attr.feedbackSignals.map(s => s.attributes),
-		};
-		this.updateRelationshipMut.mutate({ path: { id: $state.snapshot(this.relationshipId) }, body: { attributes } });
+		});
+		this.setLoading(res);
 	}
 
 	onConfirm() {

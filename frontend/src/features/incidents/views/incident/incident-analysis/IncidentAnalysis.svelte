@@ -6,7 +6,7 @@
 	import { useIncidentViewState } from "../viewState.svelte";
 	import { IncidentAnalysisState, setIncidentAnalysis } from "./analysisState.svelte";
 
-	import SystemDiagram from "./system-diagram/SystemDiagram.svelte";
+	import SystemDiagramWrapper from "./system-diagram/SystemDiagramWrapper.svelte";
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
 
 	const viewState = useIncidentViewState();
@@ -20,7 +20,7 @@
 
 <div class="flex flex-col gap-2 h-full max-h-full overflow-hidden">
 	<div class="relative grow">
-		<SystemDiagram />
+		<SystemDiagramWrapper />
 		{@render floatingTimelineToggleButton(false)}
 	</div>
 

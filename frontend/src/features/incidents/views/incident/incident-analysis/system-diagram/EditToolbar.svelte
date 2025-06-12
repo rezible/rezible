@@ -2,23 +2,27 @@
 	import type { SystemAnalysisComponent, SystemAnalysisRelationship } from "$lib/api";
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button, ButtonGroup } from "svelte-ux";
-	import { useSystemDiagram } from "./diagramState.svelte";
+	import { useSystemDiagram, type SystemComponentNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
 	import { IsMounted } from "runed";
+	import { mdiPencil, mdiTrashCan } from "@mdi/js";
+	import { useIncidentAnalysis } from "../analysisState.svelte";
 
-	const { getNodesBounds } = useSvelteFlow();
+	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();
+	const { getNodesBounds } = useSvelteFlow();
 
 	const { node, edge } = $derived(diagram.selected);
-	const component = $derived(node?.data?.component as SystemAnalysisComponent | undefined);
-	const relationship = $derived(edge?.data?.relationship as SystemAnalysisRelationship | undefined);
+
+	const nodeData = $derived(node?.data as SystemComponentNodeData | undefined);
+	const component = $derived(nodeData?.analysisComponent);
+
+	const edgeData = $derived(edge?.data as SystemRelationshipEdgeData | undefined);
+	const relationship = $derived(edgeData?.relationship);
 
 	const rect = $derived.by(() => {
 		if (!diagram.flow) return;
-		if (node) {
-			return getNodesBounds([node]);
-		} else if (edge) {
-			return getNodesBounds([edge.source, edge.target]);
-		}
+		if (node) return getNodesBounds([node]);
+		if (edge) return getNodesBounds([edge.source, edge.target]);
 	});
 
 	const transform = $derived.by(() => {
@@ -30,12 +34,17 @@
 		return `translate(${posX}px, ${posY}px) translate(-50%, 0%)`
 	});
 
-	const openEditComponentDialog = () => {
-		if (component) diagram.componentDialog.setEditing(component);
+	const openEditDialog = () => {
+		if (!!component) diagram.componentDialog.setEditing(component);
+		if (!!relationship) diagram.relationshipDialog.setEditing(relationship);
 	};
+	
+	const confirmDelete = () => {
+		if (component && confirm("Remove this component?")) {
+			analysis.removeComponent(component)
+		} else if (edge && confirm("Remove this relationship?")) {
 
-	const openEditRelationshipDialog = () => {
-		if (relationship) diagram.relationshipDialog.setEditing(relationship);
+		}
 	};
 
 	const mounted = new IsMounted();
@@ -48,13 +57,8 @@
 				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
 				style:transform
 			>
-				<ButtonGroup variant="fill-light" color="accent" size="sm">
-					{#if node}
-						<Button on:click={openEditComponentDialog}>Edit Component</Button>
-					{:else if edge}
-						<Button on:click={openEditRelationshipDialog}>Edit Relationship</Button>
-					{/if}
-				</ButtonGroup>
+				<Button on:click={openEditDialog} icon={mdiPencil}></Button>
+				<Button on:click={confirmDelete} icon={mdiTrashCan}></Button>
 			</div>
 		{/if}
 	</ViewportPortal>
