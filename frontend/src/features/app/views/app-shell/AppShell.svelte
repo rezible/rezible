@@ -3,7 +3,7 @@
 	import { setToastState } from "$features/app/lib/toasts.svelte";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import Toaster from "$features/app/components/toaster/Toaster.svelte";
-	import Sidebar from "./Sidebar.svelte";
+	import Sidebar from "./sidebar/Sidebar.svelte";
 	import PageContainer from "./PageContainer.svelte";
 
 	const { children } = $props();

@@ -12,8 +12,8 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import { Collapse } from "svelte-ux";
 	import { session } from "$lib/auth.svelte";
-	import OmniSearch from "$features/app/components/omni-search/OmniSearch.svelte";
-	import UserProfileMenu from "$features/app/components/user-profile-menu/UserProfileMenu.svelte";
+	import OmniSearch from "./omni-search/OmniSearch.svelte";
+	import UserProfileMenu from "./UserProfileMenu.svelte";
 
 	type SidebarItem = {
 		path: string;
@@ -21,13 +21,7 @@
 		label: string;
 		icon: string;
 	};
-	type SidebarNavItem =
-		| SidebarItem
-		| {
-				label: string;
-				icon: string;
-				children: SidebarItem[];
-		  };
+	type SidebarNavItem = SidebarItem | SidebarItem & { children: SidebarItem[] };
 	const routes: SidebarNavItem[] = [
 		{ path: "/", route: "/(index)", label: "Home", icon: mdiHome },
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
@@ -105,14 +99,6 @@
 				{/if}
 			{/each}
 		</div>
-
-		<!--div class="">
-			{@render navItem({
-				label: "Settings",
-				path: "/settings",
-				icon: mdiCogBox,
-			})}
-		</div-->
 	</div>
 
 	<div class="my-2">

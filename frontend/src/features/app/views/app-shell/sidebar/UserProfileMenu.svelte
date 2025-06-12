@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Popover, Button, ListItem, ThemeSwitch } from "svelte-ux";
+	import { Popover, Button, ThemeSwitch } from "svelte-ux";
 	import { mdiAccount, mdiCog, mdiUnfoldMoreHorizontal } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
@@ -13,13 +13,15 @@
 </script>
 
 <Popover bind:open={accountMenuOpen}>
-	<div class="bg-surface-100 border shadow flex flex-col gap-1 p-2">
+	<div class="bg-surface-100 border shadow flex flex-col gap-1 p-2 items-center">
 		{#each accountLinks as l}
-			<a href={l.href} class="w-full">
-				<ListItem title={l.title} icon={l.icon} classes={{ root: "hover:bg-accent" }} />
-			</a>
+			<Button href={l.href} icon={l.icon} classes={{root: "w-full"}}>
+				{l.title}
+			</Button>
 		{/each}
-		<ThemeSwitch />
+		<div class="w-full flex justify-center">
+			<ThemeSwitch />
+		</div>
 	</div>
 </Popover>
 
