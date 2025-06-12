@@ -12,9 +12,11 @@
 	import { MilestonesDialogState, setMilestonesDialog } from "./milestones-dialog/dialogState.svelte";
 	import IncidentTimelineMinimap from "./IncidentTimelineMinimap.svelte";
 	import IncidentTimelineContextMenu from "./IncidentTimelineContextMenu.svelte";
-	import type { ComponentProps } from "svelte";
 	import { fromAbsolute } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";
+	import { useIncidentAnalysis } from "../analysisState.svelte";
+
+	const analysis = useIncidentAnalysis();
 	
 	const timelineState = new TimelineState();
 	setIncidentTimeline(timelineState);
@@ -24,10 +26,8 @@
 	let containerRef = $state<HTMLElement>(null!);
 	watch(() => containerRef, ref => {timelineState.mountTimeline(ref)});
 
-	let ctxMenuProps = $state<ComponentProps<typeof IncidentTimelineContextMenu>>();
-
 	const closeContextMenu = () => {
-		ctxMenuProps = undefined;
+		analysis.contextMenu = {};
 	};
 
 	const onContextMenu = (e: MouseEvent | PointerEvent) => {
@@ -61,12 +61,14 @@
 
 		const timestamp = fromAbsolute(timestampMs, timelineState.viewState.timezone);
 
-		ctxMenuProps = {
-			clickPos,
-			timestamp,
-			item,
-			containerRect,
-			close: closeContextMenu,
+		analysis.contextMenu = {
+			timeline: {
+				clickPos,
+				timestamp,
+				item,
+				containerRect,
+				close: closeContextMenu,
+			}
 		};
 	}
 </script>
@@ -93,8 +95,8 @@
 	<IncidentTimelineActionsBar />
 </div>
 
-{#if !!ctxMenuProps}
-	<IncidentTimelineContextMenu {...ctxMenuProps} />
+{#if !!analysis.contextMenu.timeline}
+	<IncidentTimelineContextMenu {...analysis.contextMenu.timeline} />
 {/if}
 
 <EventDialog />

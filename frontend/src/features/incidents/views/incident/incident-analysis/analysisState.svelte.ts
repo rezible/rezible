@@ -12,12 +12,23 @@ import {
 	type UpdateSystemAnalysisComponentAttributes,
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
-import { Context, watch } from "runed";
+import { Context } from "runed";
 import { useIncidentViewState } from "../viewState.svelte";
+import type { ComponentProps } from "svelte";
+
+import IncidentTimelineContextMenu from "./incident-timeline/IncidentTimelineContextMenu.svelte";
+import SystemDiagramContextMenu from "./system-diagram/SystemDiagramContextMenu.svelte";
+
+type ContextMenuProps = {
+	timeline?: ComponentProps<typeof IncidentTimelineContextMenu>;
+	diagram?: ComponentProps<typeof SystemDiagramContextMenu>;
+}
 
 export class IncidentAnalysisState {
 	viewState = useIncidentViewState();
 	analysisId = $derived(this.viewState.systemAnalysisId || "");
+
+	contextMenu = $state<ContextMenuProps>({});
 
 	queryClient = $state.raw<QueryClient>();
 

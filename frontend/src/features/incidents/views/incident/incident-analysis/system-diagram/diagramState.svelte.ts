@@ -12,7 +12,7 @@ import {
 import { type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
 
 import { useIncidentAnalysis } from "../analysisState.svelte";
-import ContextMenu from "./ContextMenu.svelte";
+import ContextMenu from "./SystemDiagramContextMenu.svelte";
 import type { ComponentProps } from "svelte";
 
 /*
@@ -121,7 +121,6 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state.raw<HTMLElement>(null!);
-	ctxMenuProps = $state.raw<ComponentProps<typeof ContextMenu>>();
 	addingComponentGhost = $state.raw<SystemComponent>();
 
 	constructor(containerElFn: () => HTMLElement) {
@@ -162,7 +161,7 @@ export class SystemDiagramState {
 	}
 
 	setSelected(state: DiagramSelectionState) {
-		this.ctxMenuProps = undefined;
+		this.analysis.contextMenu = {};
 		this.selected = state;
 		this.updateSelectedPosition(state);
 	};
@@ -230,16 +229,18 @@ export class SystemDiagramState {
 
 		const containerRect = this.containerEl.getBoundingClientRect();
 
-		this.ctxMenuProps = {
-			nodeId: e.node?.id,
-			edgeId: e.edge?.id,
-			clickPos: { x: e.event.pageX, y: e.event.pageY },
-			containerRect,
-		};
+		this.analysis.contextMenu = {
+			diagram: {
+				nodeId: e.node?.id,
+				edgeId: e.edge?.id,
+				clickPos: { x: e.event.pageX, y: e.event.pageY },
+				containerRect,
+			}
+		}
 	};
 
 	closeContextMenu() {
-		this.ctxMenuProps = undefined;
+		this.analysis.contextMenu = {};
 	}
 
 	onEdgeConnect({ source, target }: Connection) {

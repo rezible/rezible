@@ -21,7 +21,7 @@
 
 	import { useSystemDiagram } from "./diagramState.svelte";
 
-	import ContextMenu from "./ContextMenu.svelte";
+	import SystemDiagramContextMenu from "./SystemDiagramContextMenu.svelte";
 	import ConnectionLine from "./ConnectionLine.svelte";
 	import ActionsBar from "./SystemDiagramActionsBar.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
@@ -32,7 +32,9 @@
 	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
 	import { ComponentDialogState, setComponentDialog } from "./component-dialog/dialogState.svelte";
 	import { RelationshipDialogState, setRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
+	import { useIncidentAnalysis } from "../analysisState.svelte";
 
+	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();
 
 	const componentDialog = new ComponentDialogState();
@@ -96,8 +98,8 @@
 	<Background {...backgroundSettings} />
 	<Controls {...controlsSettings} />
 	<MiniMap {...minimapSettings} />
-	{#if diagram.ctxMenuProps}
-		<ContextMenu {...diagram.ctxMenuProps} />
+	{#if !!analysis.contextMenu.diagram}
+		<SystemDiagramContextMenu {...analysis.contextMenu.diagram} />
 	{/if}
 	<EditToolbar />
 	<AddingComponentGhostNode />
