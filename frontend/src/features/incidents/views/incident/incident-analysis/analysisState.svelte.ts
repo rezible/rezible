@@ -9,19 +9,19 @@ import {
 	updateSystemAnalysisRelationshipMutation,
 	type AddSystemAnalysisComponentAttributes,
 	type CreateSystemAnalysisRelationshipAttributes,
-	type SystemAnalysisRelationship,
 	type UpdateSystemAnalysisComponentAttributes,
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
 import { Context, watch } from "runed";
+import { useIncidentViewState } from "../viewState.svelte";
 
 export class IncidentAnalysisState {
-	analysisId = $state("");
+	viewState = useIncidentViewState();
+	analysisId = $derived(this.viewState.systemAnalysisId || "");
 
 	queryClient = $state.raw<QueryClient>();
 
-	constructor(idFn: () => (string | undefined)) {
-		watch(idFn, id => {this.analysisId = id || ""});
+	constructor() {
 		this.queryClient = useQueryClient();
 	}
 
@@ -67,7 +67,6 @@ export class IncidentAnalysisState {
 			this.invalidateAnalysisQuery();
 		},
 	}));
-
 	async removeComponent(id: string) {
 		return this.removeAnalysisComponentMut.mutate({ path: { id } })
 	}
@@ -78,7 +77,6 @@ export class IncidentAnalysisState {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-
 	async createRelationship(attributes: CreateSystemAnalysisRelationshipAttributes) {
 		return this.createRelationshipMut.mutate({ path: { id: this.analysisId }, body: { attributes } });
 	}
@@ -89,7 +87,6 @@ export class IncidentAnalysisState {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-
 	async updateRelationship(id: string, attributes: UpdateSystemAnalysisRelationshipAttributes) {
 		return this.updateRelationshipMut.mutate({ path: { id }, body: { attributes } });
 	}
@@ -100,9 +97,8 @@ export class IncidentAnalysisState {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-
-	async removeRelationship(c: SystemAnalysisRelationship) {
-
+	async removeRelationship(id: string) {
+		return this.removeRelationshipMut.mutate({ path: { id }});
 	}
 }
 

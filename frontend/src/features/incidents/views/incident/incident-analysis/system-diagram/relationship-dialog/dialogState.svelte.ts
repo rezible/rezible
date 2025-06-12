@@ -29,7 +29,6 @@ export class RelationshipDialogState {
 	saveEnabled = $derived(relationshipAttributes.valid && (this.view === "create" || relationshipAttributes.changed));
 
 	setCreating(sourceId: string, targetId: string) {
-		console.log("create", sourceId, targetId);
 		this.view = "create";
 		this.relationshipId = undefined;
 		relationshipAttributes.initNew(sourceId, targetId);
@@ -58,6 +57,7 @@ export class RelationshipDialogState {
 		this.loading = true;
 		p.finally(() => {
 			this.loading = false;
+			this.clear();
 		});
 	}
 

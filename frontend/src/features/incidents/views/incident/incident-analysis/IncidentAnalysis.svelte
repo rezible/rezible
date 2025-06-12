@@ -3,16 +3,12 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
-	import { useIncidentViewState } from "../viewState.svelte";
 	import { IncidentAnalysisState, setIncidentAnalysis } from "./analysisState.svelte";
 
 	import SystemDiagramWrapper from "./system-diagram/SystemDiagramWrapper.svelte";
 	import IncidentTimeline from "./incident-timeline/IncidentTimeline.svelte";
 
-	const viewState = useIncidentViewState();
-
-	const analysisId = $derived(viewState.systemAnalysisId);
-	const analysis = new IncidentAnalysisState(() => analysisId);
+	const analysis = new IncidentAnalysisState();
 	setIncidentAnalysis(analysis)
 
 	let hideTimeline = $state(false);

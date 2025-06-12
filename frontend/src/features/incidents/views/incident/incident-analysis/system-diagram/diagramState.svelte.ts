@@ -7,15 +7,11 @@ import {
 	type Edge,
 	type XYPosition,
 	type Connection,
-	type Rect as BoundsRect
 } from "@xyflow/svelte";
 
-import { updateSystemAnalysisComponentMutation, type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
+import { type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
 
-import { createMutation } from "@tanstack/svelte-query";
 import { useIncidentAnalysis } from "../analysisState.svelte";
-import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
-import { useComponentDialog } from "./component-dialog/dialogState.svelte";
 import ContextMenu from "./ContextMenu.svelte";
 import type { ComponentProps } from "svelte";
 

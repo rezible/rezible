@@ -6,9 +6,13 @@
 	import { IsMounted } from "runed";
 	import { mdiPencil, mdiTrashCan } from "@mdi/js";
 	import { useIncidentAnalysis } from "../analysisState.svelte";
+	import { useComponentDialog } from "./component-dialog/dialogState.svelte";
+	import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 
 	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();
+	const componentDialog = useComponentDialog();
+	const relationshipDialog = useRelationshipDialog();
 	const { getNodesBounds } = useSvelteFlow();
 
 	const { node, edge } = $derived(diagram.selected);
@@ -20,7 +24,6 @@
 	const relationship = $derived(edgeData?.relationship);
 
 	const rect = $derived.by(() => {
-		if (!diagram.flow) return;
 		if (node) return getNodesBounds([node]);
 		if (edge) return getNodesBounds([edge.source, edge.target]);
 	});
@@ -35,16 +38,18 @@
 	});
 
 	const openEditDialog = () => {
-		if (!!component) diagram.componentDialog.setEditing(component);
-		if (!!relationship) diagram.relationshipDialog.setEditing(relationship);
+		if (!!component) componentDialog.setEditing(component);
+		if (!!relationship) relationshipDialog.setEditing(relationship);
+		diagram.setSelected({});
 	};
 	
 	const confirmDelete = () => {
 		if (component && confirm("Remove this component?")) {
-			analysis.removeComponent(component)
-		} else if (edge && confirm("Remove this relationship?")) {
-
+			analysis.removeComponent(component.id);
+		} else if (relationship && confirm("Remove this relationship?")) {
+			analysis.removeRelationship(relationship.id);
 		}
+		diagram.setSelected({});
 	};
 
 	const mounted = new IsMounted();
