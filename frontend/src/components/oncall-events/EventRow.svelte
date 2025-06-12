@@ -1,22 +1,26 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { mdiPin, mdiPinOutline, mdiPhoneAlert, mdiFire, mdiChatQuestion, mdiChatPlus } from "@mdi/js";
+	import { mdiPin, mdiPinOutline, mdiPhoneAlert, mdiFire, mdiChatQuestion, mdiChatPlus, mdiArrowDown, mdiMenuDown, mdiPencil } from "@mdi/js";
 	import { mdiCalendar, mdiClockOutline, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
-	import { Button, Lazy, Tooltip } from "svelte-ux";
+	import { Button, Lazy, Popover, Tooltip } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
 	import { formatDate } from "date-fns";
+	import Avatar from "../avatar/Avatar.svelte";
+	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
 
 	type Props = {
 		event: OncallEvent;
 		annotations?: OncallAnnotation[];
-		annotatableRosterIds?: string[];
-		editAnnotation?: (anno?: OncallAnnotation) => void;
 		pinned?: boolean;
 		togglePinned?: () => void;
 		loadingId?: string;
 	}
-	const { event, annotations = [], annotatableRosterIds = [], editAnnotation, pinned, togglePinned, loadingId }: Props = $props();
+	const { event, annotations = [], pinned, togglePinned, loadingId }: Props = $props();
+
+	const annoDialog = useAnnotationDialogState();
+
+	const canCreate = $derived(annoDialog.allowCreating && annoDialog.canCreate(annotations));
 
 	const attrs = $derived(event.attributes);
 
@@ -27,8 +31,6 @@
 	const isOutsideBusinessHours = $derived(!isBusinessHours(date.getHours()));
 	const isNightTime = $derived(isNightHours(date.getHours()));
 
-	const rosterIdsWithAnnotations = $derived(new Set(annotations.map(a => a.attributes.roster.id)));
-	const showAnnotationButton = $derived(annotatableRosterIds.some(id => !rosterIdsWithAnnotations.has(id)));
 	const loading = $derived(!!loadingId && loadingId === event.id);
 	const disabled = $derived(!!loadingId && loadingId !== event.id);
 
@@ -47,7 +49,20 @@
 	});
 </script>
 
-<Lazy height="70px" class="group grid grid-cols-[80px_auto_auto] gap-2 place-items-center border p-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
+{#snippet annotationBox(anno: OncallAnnotation)}
+	<div class="inline-block">
+		<button onclick={() => annoDialog.setOpen(event, anno)} 
+			class="max-w-32 min-w-12 h-fit border hover:border-neutral rounded p-1 bg-neutral-700/70 hover:bg-neutral-700/60 text-sm flex gap-2 flex-col cursor-pointer">
+			<div class="flex gap-1 justify-between">
+				<Avatar kind="user" id={anno.attributes.creator.id} size={14} />
+				<Icon data={mdiMenuDown} size={14} />
+			</div>
+			<div class="text-neutral-content/80 leading-none text-center truncate w-full">{anno.attributes.notes}</div>
+		</button>
+	</div>
+{/snippet}
+
+<Lazy height="70px" class="group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
 	<div class="flex flex-col gap-1 justify-between w-full items-start">
 		<span class="text-sm font- flex items-center gap-1">
 			<Icon data={mdiCalendar} size="16px" />
@@ -68,25 +83,23 @@
 			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
-		<div class="font- flex items-center leading-none">{attrs.title}</div>
+		<span class="w-full leading-none truncate">{attrs.title}</span>
 	</div>
 
-	<div class="flex w-full items-center justify-end">
-		<div class="flex flex-1 justify-end gap-2">
+	<div class="flex w-full h-full items-center justify-end">
+		<div class="flex-1 h-full items-center justify-end flex gap-2">
 			{#each annotations as anno}
-				<div class="overflow-y-auto w-full h-full border rounded p-2 bg-neutral-700/70 text-sm flex items-center">
-					<div class="text-neutral-content">{anno.attributes.notes}</div>
-				</div>
-			{:else} 
-				{#if editAnnotation && showAnnotationButton}
-					<div class="hidden group-hover:inline w-fit h-full">
-						<Button classes={{root: "w-full h-full items-center"}} {loading} {disabled} on:click={() => editAnnotation()}>
-							Annotate
-							<Icon data={mdiChatPlus} />
-						</Button>
-					</div>
-				{/if}
+				{@render annotationBox(anno)}
 			{/each}
+
+			{#if canCreate}
+				<div class="hidden group-hover:inline w-fit h-full">
+					<Button classes={{root: "w-full h-full items-center"}} {loading} {disabled} on:click={() => annoDialog.setOpen(event)}>
+						Annotate
+						<Icon data={mdiChatPlus} />
+					</Button>
+				</div>
+			{/if}
 		</div>
 
 		{#if !!togglePinned}

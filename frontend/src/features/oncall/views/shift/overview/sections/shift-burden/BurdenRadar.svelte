@@ -27,8 +27,8 @@
 	];
 	const radarTicks = [0, 2.5, 5, 7.5, 10];
 
-	const comparisonColor = "rgba(10, 90, 190, 1)";
-	const shiftColor = radarAreaSplitColors[Math.max(0, radarTicks.findLastIndex(v => (v < burdenValue)))];
+	const comparisonColor = "rgb(0 145 213)";
+	const shiftColor = "rgb(234 105 71)"; // radarAreaSplitColors[Math.max(0, radarTicks.findLastIndex(v => (v < burdenValue)))];
 
 	const burdenRadarOptions = $derived<echarts.EChartsOption>({
 		color: [comparisonColor, shiftColor],
@@ -59,9 +59,19 @@
 					show: false,
 					customValues: radarTicks,
 				},
+				axisLine: {
+					lineStyle: {
+						color: "rgb(124 144 154)",
+					}
+				},
+				splitLine: {
+					lineStyle: {
+						color: "rgb(124 144 154)",
+					}
+				},
 				splitArea: {
 					areaStyle: {
-						// color: radarAreaSplitColors,
+						color: ["rgb(35 40 46)"],
 						opacity: 0.6,
 					}
 				},

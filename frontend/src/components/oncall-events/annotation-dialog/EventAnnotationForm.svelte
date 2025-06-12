@@ -2,10 +2,10 @@
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	import { Button, Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
-	import { attributesState } from "./attributes.svelte";
 	import { mdiCalendar, mdiClose, mdiPlus } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
+	import { useAnnotationDialogState } from "./dialogState.svelte";
 
 	type Props = {
 		event: OncallEvent;
@@ -13,7 +13,7 @@
 	};
 	const { event, current }: Props = $props();
 
-	attributesState.setup(event, current);
+	const dialog = useAnnotationDialogState();
 
 	const eventTimeFmt = $derived(settings.format(event.attributes.timestamp, PeriodType.DayTime));
 
@@ -21,11 +21,11 @@
 
 	const onTagsInputKeypress = (e: KeyboardEvent) => {
 		if (e.key === "Enter") {
-			attributesState.addDraftTag();
+			dialog.attributes.addDraftTag();
 		}
 	};
 
-	const addTagButtonDisabled = $derived(attributesState.tags.has(attributesState.draftTag));
+	const addTagButtonDisabled = $derived(dialog.attributes.tags.has(dialog.attributes.draftTag));
 </script>
 
 <div class="flex flex-col gap-2">
@@ -40,7 +40,7 @@
 
 	{#if kind === "alert"}
 		<Field label="Did this alert indicate a real issue?">
-			<ToggleGroup inset variant="fill" size="lg" bind:value={attributesState.alertAccuracy}>
+			<ToggleGroup inset variant="fill" size="lg" bind:value={dialog.attributes.alertAccuracy}>
 				<ToggleOption value="yes">Yes</ToggleOption>
 				<ToggleOption value="no">No</ToggleOption>
 				<ToggleOption value="unknown">Unknown</ToggleOption>
@@ -48,7 +48,7 @@
 		</Field>
 
 		<Field label="Did this alert require action to be taken?">
-			<ToggleGroup inset variant="fill" size="lg" bind:value={attributesState.alertRequiredAction}>
+			<ToggleGroup inset variant="fill" size="lg" bind:value={dialog.attributes.alertRequiredAction}>
 				<ToggleOption value={true}>Yes</ToggleOption>
 				<ToggleOption value={false}>No</ToggleOption>
 			</ToggleGroup>
@@ -59,24 +59,24 @@
 				inset
 				variant="fill"
 				size="lg"
-				value={attributesState.alertDocs}
+				value={dialog.attributes.alertDocs}
 				on:change={(e) => {
-					attributesState.alertDocs = !!e.detail.value;
+					dialog.attributes.alertDocs = !!e.detail.value;
 				}}
 			>
 				<ToggleOption value={true}>Yes</ToggleOption>
 				<ToggleOption value={false}>No</ToggleOption>
 			</ToggleGroup>
 
-			{#if attributesState.alertDocs}
-				<Checkbox bind:value={attributesState.alertDocsNeedUpdate}>Needs Update?</Checkbox>
+			{#if dialog.attributes.alertDocs}
+				<Checkbox bind:value={dialog.attributes.alertDocsNeedUpdate}>Needs Update?</Checkbox>
 			{/if}
 		</Field>
 	{/if}
 
 	<Field label="Tags">
-		<div class="flex gap-2" class:mr-2={attributesState.tags.size > 0}>
-			{#each attributesState.tags as tag}
+		<div class="flex gap-2" class:mr-2={dialog.attributes.tags.size > 0}>
+			{#each dialog.attributes.tags as tag}
 				<div class="flex items-center gap-1 border rounded-lg p-1 px-2">
 					<span class="leading-4">{tag}</span>
 					<Button
@@ -84,7 +84,7 @@
 						icon={mdiClose}
 						iconOnly
 						on:click={() => {
-							attributesState.removeTag(tag);
+							dialog.attributes.removeTag(tag);
 						}}
 					/>
 				</div>
@@ -93,7 +93,7 @@
 		<TextField
 			placeholder="Add Tag"
 			on:keydown={onTagsInputKeypress}
-			bind:value={attributesState.draftTag}
+			bind:value={dialog.attributes.draftTag}
 		>
 			<span slot="append">
 				<Button
@@ -102,12 +102,12 @@
 					disabled={addTagButtonDisabled}
 					class="text-surface-content/50 p-2"
 					on:click={() => {
-						attributesState.addDraftTag();
+						dialog.attributes.addDraftTag();
 					}}
 				/>
 			</span>
 		</TextField>
 	</Field>
 
-	<TextField label="Notes" multiline bind:value={attributesState.notes} classes={{ input: "h-28" }} />
+	<TextField label="Notes" multiline bind:value={dialog.attributes.notes} classes={{ input: "h-28" }} />
 </div>

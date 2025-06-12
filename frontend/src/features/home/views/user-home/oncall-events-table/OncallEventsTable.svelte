@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Field, ToggleGroup, ToggleOption } from "svelte-ux";
-	import { createQuery } from "@tanstack/svelte-query";
+	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import Header from "$components/header/Header.svelte";
 	import { Button, DateRangeField, Pagination } from "svelte-ux";
 	import { watch } from "runed";
@@ -16,6 +16,7 @@
 	import { PeriodType } from "@layerstack/utils";
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
 	import { subMonths, subWeeks } from "date-fns";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/oncall-events/annotation-dialog/dialogState.svelte";
 
 	type Props = {
 		shift?: OncallShift;
@@ -23,10 +24,11 @@
 	};
 	const { shift, disableFilters = {} }: Props = $props();
 
+	const queryClient = useQueryClient();
+
 	const oncallInfoQueryOpts = $derived(getUserOncallInformationOptions({query: { userId: session.userId }}));
 	const oncallInfoQuery = createQuery(() => oncallInfoQueryOpts);
 	const userOncallInfo = $derived(oncallInfoQuery.data?.data);
-
 	const userRosterIds = $derived(userOncallInfo?.rosters.map(r => r.id) ?? []);
 	const userActiveShifts = $derived(userOncallInfo?.activeShifts ?? []);
 	const userActiveShift = $derived(userActiveShifts.at(0));
@@ -49,6 +51,8 @@
 		{label: "Custom", value: "custom"},
 	];
 	let dateRangeOption = $state<DateRangeOption["value"]>("7d");
+	watch(() => defaultShift, s => {dateRangeOption = (!!s) ? "shift" : dateRangeOption});
+
 	let customDateRangeValue = $state<DateRangeType>(last7Days);
 	const dateRange = $derived.by(() => {
 		switch (dateRangeOption) {
@@ -92,32 +96,32 @@
 		// to: dateRange.to?.toISOString(),
 		rosterId: filters.rosterId,
 	});
-	const annosQuery = createQuery(() => ({
-		...listOncallAnnotationsOptions({query: annosQueryData}),
-		enabled: !!userOncallInfo,
-	}));
-	const annosData = $derived(annosQuery.data?.data ?? []);
+	const annosQueryOptions = $derived(listOncallAnnotationsOptions({query: annosQueryData}));
+	const annosQuery = createQuery(() => ({...annosQueryOptions, enabled: !!userOncallInfo}));
+	const annotations = $derived(annosQuery.data?.data ?? []);
+
 	const eventAnnotations = $derived.by(() => {
 		const annoMap = new Map<string, OncallAnnotation[]>();
 		// TODO: ugly and probably slow
-		annosData.forEach(ann => {
+		annotations.forEach(ann => {
 			const eventId = ann.attributes.event.id;
-			annoMap.set(eventId, [...(annoMap.get(eventId) || []), ann]);
+			const curr = annoMap.get(eventId) || [];
+			annoMap.set(eventId, [...curr, ann]);
 		});
 		return annoMap;
 	});
 
-	let annoDialogEvent = $state<OncallEvent>();
-	let annoDialogAnno = $state<OncallAnnotation>();
-	const setAnnotationDialog = (ev?: OncallEvent, anno?: OncallAnnotation) => {
-		annoDialogEvent = ev;
-		annoDialogAnno = anno;
-	};
-
-	const annotationRoster = $derived(defaultShift?.attributes.roster);
+	const annoDialog = new AnnotationDialogState({
+		onClosed: (updated?: OncallAnnotation) => {
+			if (updated) queryClient.invalidateQueries(annosQueryOptions);
+		}
+	});
+	setAnnotationDialogState(annoDialog);
 
 	const loading = $derived(eventsQuery.isLoading || !userOncallInfo);
 </script>
+
+<EventAnnotationDialog />
 
 <div class="w-full h-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
 	<Header title="Oncall Events" subheading="Operational events during these dates" classes={{root: "p-2 w-full", title: "text-xl"}}>
@@ -172,12 +176,7 @@
 			<LoadingIndicator />
 		{:else}
 			{#each pageData as event}
-				<EventRow 
-					{event}
-					annotations={eventAnnotations.get(event.id)}
-					annotatableRosterIds={userRosterIds}
-					editAnnotation={anno => {setAnnotationDialog(event, anno)}}
-				/>
+				<EventRow {event} annotations={eventAnnotations.get(event.id)} />
 			{:else}
 				<div class="grid place-items-center flex-1">
 					<span class="text-surface-content/80">No Events</span>
@@ -199,12 +198,3 @@
 		/>
 	{/if}
 </div>
-
-{#if annotationRoster}
-	<EventAnnotationDialog 
-		roster={annotationRoster}
-		event={annoDialogEvent} 
-		current={annoDialogAnno} 
-		onClose={() => setAnnotationDialog()}
-	/>
-{/if}
