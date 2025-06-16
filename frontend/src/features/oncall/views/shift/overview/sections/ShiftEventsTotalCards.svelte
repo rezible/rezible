@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { mdiBellAlert, mdiBellSleep, mdiFire } from "@mdi/js";
+	import { mdiBellAlert, mdiBellSleep, mdiClockTimeFive, mdiFire } from "@mdi/js";
 
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import type { OncallShiftMetrics } from "$lib/api";
@@ -10,14 +10,23 @@
 	};
 
 	let { metrics, comparison }: Props = $props();
+
+	$inspect(metrics, comparison);
 </script>
 
-<div class="grid grid-cols-3 gap-2">
+<div class="grid grid-flow-col gap-2">
 	<MetricCard
 		title="Incidents"
 		icon={mdiFire}
 		metric={metrics?.incidents.total || 0}
 		comparison={{value: comparison?.incidents.total || 0}}
+	/>
+	<MetricCard
+		title="Time in Incidents"
+		icon={mdiClockTimeFive}
+		metric={metrics?.incidents.responseTimeMinutes || 0}
+		format="duration"
+		comparison={{value: comparison?.incidents.responseTimeMinutes || 0}}
 	/>
 	<MetricCard
 		title="Alerts"

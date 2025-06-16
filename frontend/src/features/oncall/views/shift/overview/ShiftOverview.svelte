@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { getOncallShiftBurdenMetricWeightsOptions, getOncallShiftMetricsOptions } from "$lib/api";
+	import { getOncallShiftMetricsOptions } from "$lib/api";
 	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	import ShiftEventsTotalCards from "./sections/ShiftEventsTotalCards.svelte";
@@ -18,15 +18,12 @@
 	
 	const metricsQuery = createQuery(() => getOncallShiftMetricsOptions({query: {shiftId}}));
 	const metrics = $derived(metricsQuery.data?.data);
-
-	const burdenWeightsQuery = createQuery(() => getOncallShiftBurdenMetricWeightsOptions());
-	const burdenWeights = $derived(burdenWeightsQuery.data?.data);
 </script>
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
 	<div class="col-span-2 h-full w-full overflow-y-auto pr-1 space-y-2">
 		<ShiftEventsTotalCards {metrics} {comparison} />
-		<ShiftBurden {metrics} weights={burdenWeights} />
+		<ShiftBurden {metrics} {comparison} />
 		<ShiftAlerts {metrics} />
 		<ShiftIncidents {metrics} {comparison} />
 	</div>

@@ -162,7 +162,8 @@ func (p *OncallEventsDataProvider) Source() string {
 }
 
 func (p *OncallEventsDataProvider) PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error] {
-	fakeEvents := makeFakeOncallEvents(time.Now().Add(-7*time.Hour*24), time.Now())
+	oneWeek := 7 * 24 * time.Hour
+	fakeEvents := makeFakeOncallEvents(time.Now().Add(-oneWeek), time.Now().Add(oneWeek))
 	return func(yield func(*ent.OncallEvent, error) bool) {
 		for _, event := range fakeEvents {
 			if !yield(event, nil) {

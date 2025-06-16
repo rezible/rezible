@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { OncallShiftBurdenMetricWeights, OncallShiftMetrics, OncallShiftMetricsBurden } from "$lib/api";
+	import type { OncallShiftMetrics } from "$lib/api";
 
 	import Header from "$components/header/Header.svelte";
-	import InlineStat, { type InlineStatProps } from "$components/viz/InlineStat.svelte";
+	import InlineStat from "$components/viz/InlineStat.svelte";
 	
 	import SectionCard from "../SectionCard.svelte";
 	import BurdenRadar from "./BurdenRadar.svelte";
@@ -11,46 +11,48 @@
 
 	type Props = {
 		metrics?: OncallShiftMetrics;
-		weights?: OncallShiftBurdenMetricWeights;
+		comparison?: OncallShiftMetrics;
 	};
-	const { metrics, weights }: Props = $props();
+	const { metrics, comparison }: Props = $props();
 
-	const burdenStats = $derived([
+	const burden = $derived(metrics?.burden);
+	const comp = $derived(comparison?.burden);
+
+	const burdenStats = $derived((!!burden && !!comp) ? [
 		{
 			title: "Event Frequency",
 			subheading: `How often interruptions occur during your shift.`,
-			value: 2.2,
-			comparison: {value: 4.3},
+			value: burden.eventFrequency,
+			comparison: {value: comp.eventFrequency},
 		},
 		{
 			title: "Life Impact",
 			subheading: `Disruption to personal time and sleep.`,
-			value: 7.8,
-			comparison: {value: 4.5},
-		},
-		{
-			title: "Response Requirements",
-			subheading: `Complexity and urgency of responses.`,
-			value: 7.1,
-			comparison: {value: 3.0},
+			value: burden.lifeImpact,
+			comparison: {value: comp.lifeImpact},
 		},
 		{
 			title: "Time Impact",
 			subheading: `Total time spent actively working on operational toil.`,
-			value: 6.4,
-			comparison: {value: 4.2},
+			value: burden.timeImpact,
+			comparison: {value: comp.timeImpact},
+		},
+		{
+			title: "Response Requirements",
+			subheading: `Complexity and urgency of responses.`,
+			value: burden.responseRequirements,
+			comparison: {value: comp.responseRequirements},
 		},
 		{
 			title: "Isolation",
 			subheading: `Availability of support and documentation available.`,
-			value: 4.4,
-			comparison: {value: 3.4},
+			value: burden.isolation,
+			comparison: {value: comp.isolation},
 		},
-	]);
+	] : []);
 	
-	const weight = .2;
-	const burdenValue = $derived(burdenStats.reduce((prev, s) => (prev + (s.value * weight)), 0));
-	const compValue = $derived(burdenStats.reduce((prev, s) => (prev + (s.comparison.value * weight)), 0));
+	const burdenValue = $derived(burden ? burden.finalScore : 0);
+	const compValue = $derived(comp ? comp.finalScore : 0);
 </script>
 
 <SectionCard>
@@ -59,7 +61,9 @@
 	<div class="flex gap-4 items-center">
 		<div class="w-1/3 grid place-items-center">
 			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
-				<BurdenRadar {burdenValue} {burdenStats} />
+				{#if burdenValue && burdenStats}
+					<BurdenRadar {burdenValue} {burdenStats} />
+				{/if}
 			</div>
 		</div>
 
@@ -68,7 +72,7 @@
 				<InlineStat 
 					title="Burden Score" 
 					subheading="Overall workload and stress level of the shift, derived from the below categories." 
-					value={burdenValue.toFixed(2)}
+					value={burdenValue}
 					outOf="10"
 					comparison={{value: compValue}} />
 			</div>

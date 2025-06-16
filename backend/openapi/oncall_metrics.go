@@ -39,24 +39,24 @@ type (
 
 	OncallShiftMetricsBurden struct {
 		FinalScore           float32 `json:"finalScore"`
-		Interruption         float32 `json:"interruption"`
+		EventFrequency       float32 `json:"eventFrequency"`
 		LifeImpact           float32 `json:"lifeImpact"`
 		TimeImpact           float32 `json:"timeImpact"`
 		ResponseRequirements float32 `json:"responseRequirements"`
-		Support              float32 `json:"support"`
+		Isolation            float32 `json:"isolation"`
 	}
 
 	OncallShiftMetricsIncidents struct {
-		Total               int     `json:"total"`
+		Total               float32 `json:"total"`
 		ResponseTimeMinutes float32 `json:"responseTimeMinutes"`
 	}
 
 	OncallShiftMetricsAlerts struct {
-		Total                 int     `json:"total"`
-		CountOffHours         int     `json:"countOffHours"`
-		CountNight            int     `json:"countNight"`
+		Total                 float32 `json:"total"`
+		CountOffHours         float32 `json:"countOffHours"`
+		CountNight            float32 `json:"countNight"`
 		IncidentRate          float32 `json:"incidentRate"`
-		TotalWithFeedback     int     `json:"totalWithFeedback"`
+		TotalWithFeedback     float32 `json:"totalWithFeedback"`
 		ActionabilityFeedback float32 `json:"actionabilityFeedback"`
 		AccuracyFeedback      float32 `json:"accuracyFeedback"`
 		DocumentationFeedback float32 `json:"documentationFeedback"`

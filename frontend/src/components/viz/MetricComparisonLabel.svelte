@@ -1,7 +1,7 @@
 <script lang="ts" module>
-	type MetricValue = number | string;
 	export type MetricComparison = {
-		value: MetricValue;
+		value: number;
+		averageMargin?: number;
 		positive?: boolean;
 		icon?: string;
 		deltaLabel?: string;
@@ -10,44 +10,58 @@
 </script>
 
 <script lang="ts">
-	import { mdiArrowBottomRight, mdiArrowBottomRightThin, mdiArrowDownRight, mdiArrowTopRight, mdiArrowTopRightThin, mdiArrowUpRight, mdiArrowUUpRight, mdiCircleMedium, mdiDecimalIncrease } from "@mdi/js";
+	import { mdiArrowBottomRightThin, mdiArrowTopRightThin, mdiCircleMedium } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 
 	type Props = {
-		metricValue: MetricValue;
+		metricValue: number;
 		comparison: MetricComparison;
+		format: "percentage" | "duration" | "raw";
 	}
-	const { metricValue, comparison }: Props = $props();
+	const { metricValue, comparison, format }: Props = $props();
 
-	const comparisonClass = (delta: number, positive: boolean) => {
-		const low = (positive ? 1 : delta);
-		const high = (positive ? delta : 1);
-		if (low > high) return "text-danger-500";
-		if (low < high) return "text-success-500";
-		return "text-neutral-content/40";
-	};
-
-	const getComparisonDelta = (value: MetricValue, comp: MetricValue) => {
-		if (typeof comp === "string" || typeof value === "string") return 1;
-		if (comp === 0) return 1;
+	const getComparisonDelta = (value: number, comp: number) => {
+		if (comp === 0) {
+			if (value === 0) return 1;
+			return value;
+		};
 		return value / comp;
 	};
 
 	const delta = $derived(getComparisonDelta(metricValue, comparison.value));
-	const defaultLabel = $derived(delta > 1 ? "above average" : "below average");
-	const deltaLabel = $derived(comparison.deltaLabel || defaultLabel);
-	const deltaIcon = $derived.by(() => {
-		if (delta === 1) return;
-		if (delta > 1) return mdiArrowTopRightThin;
-		return mdiArrowBottomRightThin;
-	})
-	const deltaText = $derived.by(() => {
-		if (delta === 1) return "Average";
-		return `${Math.round(Math.abs((delta * 100) - 100))}%`
+	const margin = $derived(comparison.averageMargin ?? .05);
+	type DeltaCategory = "avg" | "above" | "below";
+	const category = $derived.by<DeltaCategory>(() => {
+		if (delta > (1 + margin)) return "above";
+		if (delta < (1 - margin)) return "below";
+		return "avg";
 	});
+
+	const deltaIcons: Record<DeltaCategory, string> = {
+		"above": mdiArrowTopRightThin,
+		"below": mdiArrowBottomRightThin,
+		"avg": "",
+	};
+	const deltaIcon = $derived(deltaIcons[category]);
+	const deltaText = $derived.by(() => {
+		if (category === "avg") return "Average";
+		if (comparison.value === 0 || format === "raw") return `${metricValue}`;
+		return `${Math.round(Math.abs((delta * 100) - 100))}%`;
+	});
+
+	const aboveClasses = "text-danger-500 border-danger-900/70";
+	const belowClasses = "text-success-500 border-success-900";
+	const averageClasses = "text-neutral-content/40 border-neutral-content/20";
+	const categoryClasses = $derived.by(() => {
+		if (category === "above") return !!comparison.positive ? belowClasses : aboveClasses;
+		if (category === "below") return !!comparison.positive ? aboveClasses : belowClasses;
+		return averageClasses;
+	})
 </script>
 
-<div class="{comparisonClass(delta, !!comparison.positive)} flex flex-col items-end gap-2">
+<div 
+	class="flex flex-col items-center gap-2 py-1 px-2 border rounded-full {categoryClasses}"
+>
 	<div class="flex gap-1 text-sm items-center">
 		{#if deltaIcon}<Icon data={deltaIcon} size={18} />{/if}
 		<span>{deltaText}</span>

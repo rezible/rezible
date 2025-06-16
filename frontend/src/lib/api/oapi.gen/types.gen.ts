@@ -250,6 +250,7 @@ export type CreateIncidentRoleResponseBody = {
 };
 
 export type CreateIncidentSeverityAttributes = {
+    rank: number;
     title: string;
 };
 
@@ -1335,6 +1336,7 @@ export type IncidentSeverityAttributes = {
     archived: boolean;
     description: string;
     name: string;
+    rank: number;
 };
 
 export type IncidentTag = {
@@ -1849,11 +1851,11 @@ export type OncallShiftMetricsAlerts = {
 };
 
 export type OncallShiftMetricsBurden = {
+    eventFrequency: number;
     finalScore: number;
-    interruption: number;
+    isolation: number;
     lifeImpact: number;
     responseRequirements: number;
-    support: number;
     timeImpact: number;
 };
 
@@ -2319,6 +2321,7 @@ export type UpdateIncidentRoleResponseBody = {
 export type UpdateIncidentSeverityAttributes = {
     archived?: boolean;
     name?: string;
+    rank?: number;
 };
 
 export type UpdateIncidentSeverityRequestBody = {
