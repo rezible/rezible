@@ -19,15 +19,15 @@ import (
 type DebriefService struct {
 	db   *ent.Client
 	jobs rez.JobsService
-	ai   rez.AiService
+	llm  rez.LanguageModelService
 	chat rez.ChatProvider
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.JobsService, ai rez.AiService, chat rez.ChatProvider) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobs rez.JobsService, llm rez.LanguageModelService, chat rez.ChatProvider) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
 		jobs: jobs,
-		ai:   ai,
+		llm:  llm,
 		chat: chat,
 	}
 
@@ -275,7 +275,7 @@ func (s *DebriefService) HandleGenerateResponseJob(ctx context.Context, args job
 		msg = questionMsg
 		questionId = &question.ID
 	} else {
-		assistantMsg, responseErr := s.ai.GenerateDebriefResponse(ctx, debrief)
+		assistantMsg, responseErr := s.llm.GenerateDebriefResponse(ctx, debrief)
 		if responseErr != nil {
 			return fmt.Errorf("failed to generate debrief message: %w", responseErr)
 		}

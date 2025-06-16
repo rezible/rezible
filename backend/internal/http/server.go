@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/mcp"
 	"net"
 	"net/http"
 
@@ -24,7 +25,7 @@ func mount(r chi.Router, prefix string, h http.Handler) {
 	r.Mount(prefix, http.StripPrefix(prefix, h))
 }
 
-func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handler, webhookHandler http.Handler) (*Server, error) {
+func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handler, webhookHandler http.Handler, mcpHandler mcp.Handler) (*Server, error) {
 	var s Server
 
 	router := chi.NewRouter()
@@ -35,21 +36,17 @@ func NewServer(addr string, auth rez.AuthSessionService, oapiHandler oapi.Handle
 		return nil, fmt.Errorf("failed to make frontend handler: %w", frontendErr)
 	}
 
-	/* /api/ - API Routing Group */
-	apiGroup := router.Group(func(r chi.Router) {
-		/* /api/v1/ - OpenAPI Operations */
-		mount(r, "/v1", makeApiHandler(oapiHandler, auth))
-
-		/* /api/webhooks/ - Webhook routes */
-		mount(r, "/webhooks", webhookHandler)
-
-		/* /api/docs/ - OpenAPI Docs */
-		r.Handle("/docs", makeApiDocsHandler())
-	})
-	mount(router, "/api", apiGroup)
+	router.Mount("/api/v1", makeApiHandler("/api/v1", oapiHandler, auth))
+	router.Handle("/api/docs", makeApiDocsHandler())
+	router.Mount("/api/webhooks", webhookHandler)
+	router.Mount("/api/mcp", makeMCPHandler(mcpHandler, auth))
 
 	/* /auth/ - Auth Service Routing */
 	router.Mount("/auth", auth.MakeUserAuthHandler())
+
+	router.Mount("/.well-known", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO: serve well known files (eg oauth2 configuration)
+	}))
 
 	/* Serve static files for any other route */
 	router.Handle("/*", frontendHandler)
@@ -88,30 +85,22 @@ func (s *Server) Stop(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
-func makeFrontendHandler(s rez.AuthSessionService) (http.Handler, error) {
+func makeFrontendHandler(auth rez.AuthSessionService) (http.Handler, error) {
 	serveEmbeddedFiles, feErr := makeEmbeddedFrontendServer()
 	if feErr != nil {
 		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feErr)
 	}
 
-	requireAuth := s.MakeFrontendAuthMiddleware()
-	authMw := func(next http.Handler) http.Handler {
-		withAuth := requireAuth(next)
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path == "/favicon.ico" {
-				next.ServeHTTP(w, r)
-			} else {
-				withAuth.ServeHTTP(w, r)
-			}
-		})
-	}
-
-	return chi.Chain(authMw).Handler(serveEmbeddedFiles), nil
+	return chi.Chain(auth.MakeFrontendAuthMiddleware()).Handler(serveEmbeddedFiles), nil
 }
 
-func makeApiHandler(oapiHandler oapi.Handler, auth rez.AuthSessionService) http.Handler {
+func makeMCPHandler(mcpHandler mcp.Handler, auth rez.AuthSessionService) http.Handler {
+	return chi.Chain(auth.MakeMCPAuthMiddleware()).Handler(mcp.NewStreamableHTTPServer(mcpHandler))
+}
+
+func makeApiHandler(prefix string, handler oapi.Handler, auth rez.AuthSessionService) http.Handler {
 	authMw := makeApiAuthMiddleware(auth)
-	serveApi := oapi.MakeApi(oapiHandler, authMw).Adapter()
+	serveApi := oapi.MakeApi(handler, prefix, authMw).Adapter()
 	return chi.Chain(middleware.Logger).Handler(serveApi)
 }
 
@@ -143,22 +132,4 @@ func makeApiAuthMiddleware(auth rez.AuthSessionService) func(oapi.Context, func(
 		authCtx := auth.CreateSessionContext(r.Context(), sess)
 		next(oapi.WithContext(c, authCtx))
 	}
-}
-
-func getRequestTokenValue(r *http.Request) (string, error) {
-	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
-	if cookieErr != nil {
-		return "", fmt.Errorf("error getting token from cookie: %w", cookieErr)
-	} else if cookieToken != "" {
-		return cookieToken, nil
-	}
-
-	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
-	if bearerErr != nil {
-		return "", fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
-	} else if bearerToken != "" {
-		return bearerToken, nil
-	}
-
-	return "", rez.ErrNoAuthSession
 }

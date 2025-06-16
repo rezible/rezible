@@ -12,9 +12,9 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/ai"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/http"
-	"github.com/rezible/rezible/internal/langchain"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
@@ -97,9 +97,9 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
 	}
 
-	ai, aiErr := langchain.NewAiService(ctx, provs.AiModel)
-	if aiErr != nil {
-		return nil, fmt.Errorf("failed to create AI service: %w", aiErr)
+	llm, llmErr := ai.NewLanguageModelService(ctx, provs.AiModel)
+	if llmErr != nil {
+		return nil, fmt.Errorf("failed to create language model service: %w", llmErr)
 	}
 
 	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
@@ -107,7 +107,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, ai, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, llm, chat, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
@@ -124,7 +124,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 
 	chat.SetMessageAnnotator(oncallEvents)
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, ai, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, llm, chat)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
@@ -145,9 +145,11 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	}
 
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
+	webhookHandler := pl.WebhookHandler()
+	mcpHandler := ai.NewMCPHandler()
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, pl.WebhookHandler())
+	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, webhookHandler, mcpHandler)
 	if httpErr != nil {
 		return nil, fmt.Errorf("http.NewServer: %w", httpErr)
 	}

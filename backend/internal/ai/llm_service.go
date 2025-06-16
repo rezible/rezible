@@ -1,25 +1,26 @@
-package langchain
+package ai
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rs/zerolog/log"
 	"github.com/tmc/langchaingo/llms"
-	"strings"
-	"time"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 )
 
-type AiService struct {
+type LanguageModelService struct {
 	prov rez.AiModelProvider
 }
 
-func NewAiService(ctx context.Context, prov rez.AiModelProvider) (*AiService, error) {
-	return &AiService{prov: prov}, nil
+func NewLanguageModelService(ctx context.Context, prov rez.AiModelProvider) (*LanguageModelService, error) {
+	return &LanguageModelService{prov: prov}, nil
 }
 
 var (
@@ -38,7 +39,7 @@ var (
 	}
 )
 
-func (s *AiService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
+func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debrief *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error) {
 	if rez.DebugMode {
 		log.Debug().Msg("TODO: faking ai response")
 		return &ent.IncidentDebriefMessage{

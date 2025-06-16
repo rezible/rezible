@@ -31,7 +31,7 @@ func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts 
 }
 
 func printSpecCmd(ctx context.Context, opts *Options) error {
-	spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}).OpenAPI())
+	spec, yamlErr := yaml.Marshal(openapi.MakeApi(&api.Handler{}, "").OpenAPI())
 	if yamlErr != nil {
 		return yamlErr
 	}

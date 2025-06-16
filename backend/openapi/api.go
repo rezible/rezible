@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -65,7 +64,7 @@ func MakeConfig() huma.Config {
 	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
 	cfg.DocsPath = ""
 	cfg.Servers = []*huma.Server{
-		{URL: fmt.Sprintf("%s/api/v1", rez.BackendUrl)},
+		{URL: rez.BackendUrl},
 	}
 	cfg.Info.Description = "Rezible API Specification"
 
@@ -98,7 +97,7 @@ func RegisterRoutes(api huma.API, handler Handler) {
 	huma.AutoRegister(api, operations{handler})
 }
 
-func MakeApi(s Handler, mw ...Middleware) huma.API {
+func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	cfg := MakeConfig()
 	/*
 		cfg.Transformers = append([]huma.Transformer{
@@ -107,7 +106,7 @@ func MakeApi(s Handler, mw ...Middleware) huma.API {
 		)
 	*/
 
-	adapter := humago.NewAdapter(http.NewServeMux(), "")
+	adapter := humago.NewAdapter(http.NewServeMux(), prefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(mw...)
 	RegisterRoutes(api, s)

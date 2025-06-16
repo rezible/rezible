@@ -64,6 +64,11 @@ func isRedirectableError(err error) bool {
 func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path == "/favicon.ico" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			sess, sessErr := s.verifyRequestAuthSessionTokenCookie(r)
 			if sessErr == nil {
 				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
@@ -72,9 +77,26 @@ func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) htt
 
 			if isRedirectableError(sessErr) {
 				s.sessProvider.StartAuthFlow(w, r)
-			} else {
-				http.Error(w, sessErr.Error(), http.StatusInternalServerError)
+				return
 			}
+			http.Error(w, sessErr.Error(), http.StatusInternalServerError)
+		})
+	}
+}
+
+func (s *AuthSessionService) MakeMCPAuthMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			sess, sessErr := s.verifyRequestAuthSessionBearerToken(r)
+			if sessErr == nil {
+				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
+				return
+			}
+
+			if isRedirectableError(sessErr) {
+				log.Error().Msg("TODO: MCP OAuth flow")
+			}
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		})
 	}
 }
@@ -202,6 +224,34 @@ func (s *AuthSessionService) verifyRequestAuthSessionTokenCookie(r *http.Request
 		return nil, rez.ErrNoAuthSession
 	}
 	return s.VerifySessionToken(cookieToken)
+}
+
+func (s *AuthSessionService) verifyRequestAuthSessionBearerToken(r *http.Request) (*rez.AuthSession, error) {
+	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
+	if bearerErr != nil {
+		return nil, fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
+	} else if bearerToken != "" {
+		return nil, rez.ErrNoAuthSession
+	}
+	return s.VerifySessionToken(bearerToken)
+}
+
+func getRequestTokenValue(r *http.Request) (string, error) {
+	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
+	if cookieErr != nil {
+		return "", fmt.Errorf("error getting token from cookie: %w", cookieErr)
+	} else if cookieToken != "" {
+		return cookieToken, nil
+	}
+
+	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
+	if bearerErr != nil {
+		return "", fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
+	} else if bearerToken != "" {
+		return bearerToken, nil
+	}
+
+	return "", rez.ErrNoAuthSession
 }
 
 func getRequestAuthSessionTokenCookie(r *http.Request) (string, error) {
