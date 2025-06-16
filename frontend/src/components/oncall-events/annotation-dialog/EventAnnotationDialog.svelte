@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { mdiClose } from "@mdi/js";
 	import { Button, Dialog } from "svelte-ux";
-	import Header from "$components/header/Header.svelte";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
+	import DialogTitle from "./DialogTitle.svelte";
 
 	const dialog = useAnnotationDialogState();
 
@@ -21,12 +20,10 @@
 		root: "p-2",
 	}}
 >
-	<div slot="header" class="border-b p-2" let:close>
-		<Header title="{dialog.view === "view" ? "View" : formAction} Annotation">
-			{#snippet actions()}
-				<Button on:click={() => close({ force: true })} iconOnly icon={mdiClose} />
-			{/snippet}
-		</Header>
+	<div slot="header" let:close>
+		{#if !!dialog.event}
+			<DialogTitle event={dialog.event} close={() => close({ force: true })} />
+		{/if}
 	</div>
 
 	<div slot="default" class="p-2 flex-1 min-h-0 max-h-full grid overflow-y-auto">

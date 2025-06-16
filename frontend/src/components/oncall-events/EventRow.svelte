@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
-	import { mdiPin, mdiPinOutline, mdiPhoneAlert, mdiFire, mdiChatQuestion, mdiChatPlus, mdiArrowDown, mdiMenuDown, mdiPencil } from "@mdi/js";
-	import { mdiCalendar, mdiClockOutline, mdiSleepOff, mdiWeatherSunset } from "@mdi/js";
-	import { Button, Lazy, Popover, Tooltip } from "svelte-ux";
+	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
+	import { Button, Lazy } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
-	import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
-	import { formatDate } from "date-fns";
 	import Avatar from "../avatar/Avatar.svelte";
 	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
+	import { getEventKindIcon } from "./events";
+	import EventTimeDate from "./EventTimeDate.svelte";
 
 	type Props = {
 		event: OncallEvent;
@@ -24,29 +23,10 @@
 
 	const attrs = $derived(event.attributes);
 
-	const date = $derived(new Date(attrs.timestamp));
-	// const humanDate = $derived(formatDate(date, 'EEE, MMM d'));
-	const humanDate = $derived(formatDate(date, 'MMM d'));
-	const humanTime = $derived(formatDate(date, 'h:mm a'));
-	const isOutsideBusinessHours = $derived(!isBusinessHours(date.getHours()));
-	const isNightTime = $derived(isNightHours(date.getHours()));
-
 	const loading = $derived(!!loadingId && loadingId === event.id);
 	const disabled = $derived(!!loadingId && loadingId !== event.id);
 
-	const kindIcon = $derived.by(() => {
-		switch (attrs.kind) {
-		case "incident": return {icon: mdiFire, color: "text-danger-900/50"};
-		case "alert": return {icon: mdiPhoneAlert, color: "text-warning-700/50"};
-		default: return {icon: mdiChatQuestion, color: "text-surface-content/40"};
-		}
-	});
-
-	const timeIcon = $derived.by(() => {
-		if (isNightTime) return {tooltip: "Night hours (10pm-6am)", icon: mdiSleepOff, color: "text-danger-600"};
-		if (isOutsideBusinessHours) return {tooltip: "Outside business hours (9am-5pm)", icon: mdiWeatherSunset, color: "text-warning-500"};
-		return {tooltip: "", icon: mdiClockOutline, color: "text-surface-content/70"};
-	});
+	const kindIcon = $derived(getEventKindIcon(attrs.kind));
 </script>
 
 {#snippet annotationBox(anno: OncallAnnotation)}
@@ -63,20 +43,7 @@
 {/snippet}
 
 <Lazy height="70px" class="group grid grid-cols-[80px_minmax(100px,1fr)_minmax(0,.4fr)] gap-2 place-items-center border py-1 px-2 bg-neutral-900/40 border-neutral-content/10 shadow-sm hover:shadow-md transition-shadow">
-	<div class="flex flex-col gap-1 justify-between w-full items-start">
-		<span class="text-sm font- flex items-center gap-1">
-			<Icon data={mdiCalendar} size="16px" />
-			{humanDate}
-		</span>
-
-		<Tooltip title={timeIcon.tooltip} placement="right" classes={{content: "flex items-center gap-1"}}>
-			<span class="{timeIcon.color} leading-none">
-				<Icon data={timeIcon.icon} size="16px" />
-			</span>
-					
-			<span class="text-sm text-surface-700 inline-block align-middle">{humanTime}</span>
-		</Tooltip>
-	</div>
+	<EventTimeDate timestamp={attrs.timestamp} />
 
 	<div class="flex flex-col gap-1 w-full h-full justify-center items-start">
 		<div class="flex gap-1 items-center">

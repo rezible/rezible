@@ -1,10 +1,7 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	import { Button, Checkbox, Field, TextField, ToggleGroup, ToggleOption } from "svelte-ux";
-	import Icon from "$components/icon/Icon.svelte";
 	import { mdiCalendar, mdiClose, mdiPlus } from "@mdi/js";
-	import { settings } from "$lib/settings.svelte";
-	import { PeriodType } from "@layerstack/utils";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
 
 	type Props = {
@@ -14,8 +11,6 @@
 	const { event, current }: Props = $props();
 
 	const dialog = useAnnotationDialogState();
-
-	const eventTimeFmt = $derived(settings.format(event.attributes.timestamp, PeriodType.DayTime));
 
 	const kind = $derived(event.attributes.kind);
 
@@ -29,15 +24,6 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<div class="flex flex-col">
-		<span class="text-lg">{event.attributes.title}</span>
-		<span class="flex items-center gap-1 text-surface-content/70">
-			<Icon data={mdiCalendar} size={20} />
-			{eventTimeFmt}
-		</span>
-		<span class="text-surface-content/50">{event.attributes.description}</span>
-	</div>
-
 	{#if kind === "alert"}
 		<Field label="Did this alert indicate a real issue?">
 			<ToggleGroup inset variant="fill" size="lg" bind:value={dialog.attributes.alertAccuracy}>
