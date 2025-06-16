@@ -7,8 +7,9 @@
 	import { mdiPlus } from "@mdi/js";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { useSystemDiagram } from "../diagramState.svelte";
+	import { useComponentDialog } from "./dialogState.svelte";
 
-	const diagram = useSystemDiagram();
+	const dialog = useComponentDialog();
 
 	let showFilters = $state(false);
 
@@ -19,7 +20,7 @@
 	);
 	const components = $derived(componentsQuery.data?.data ?? []);
 
-	const selectedId = $derived(diagram.componentDialog.selectedAddComponent?.id);
+	const selectedId = $derived(dialog.selectedAddComponent?.id);
 </script>
 
 <div class="flex flex-col gap-2">
@@ -27,7 +28,7 @@
 		<div class="">filters</div>
 
 		{#if components.length > 0}
-			<Button on:click={() => diagram.componentDialog.setCreating()} color="secondary">
+			<Button on:click={() => dialog.setCreating()} color="secondary">
 				Create New
 				<Icon data={mdiPlus} />
 			</Button>
@@ -41,7 +42,7 @@
 	{#if components.length === 0}
 		<div class="flex flex-col gap-2 py-4 rounded w-fit mx-auto">
 			<span>No Components Found</span>
-			<Button on:click={() => diagram.componentDialog.setCreating()} color="secondary">
+			<Button on:click={() => dialog.setCreating()} color="secondary">
 				Create Component
 				<Icon data={mdiPlus} />
 			</Button>
@@ -54,7 +55,7 @@
 				<ListItem
 					title={cmp.attributes.name}
 					subheading={cmp.attributes.description}
-					on:click={() => {diagram.componentDialog.setSelectedAddComponent(cmp)}}
+					on:click={() => {dialog.setSelectedAddComponent(cmp)}}
 					class={cls(
 						"px-8 py-4",
 						"cursor-pointer transition-shadow duration-100",

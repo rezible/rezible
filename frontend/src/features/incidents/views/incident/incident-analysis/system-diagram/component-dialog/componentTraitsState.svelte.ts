@@ -1,14 +1,14 @@
 import { type SystemComponentConstraint, createSystemComponentConstraintMutation, updateSystemComponentConstraintMutation, type SystemComponentSignal, createSystemComponentSignalMutation, updateSystemComponentSignalMutation, type SystemComponentControl, createSystemComponentControlMutation, updateSystemComponentControlMutation } from "$src/lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { useSystemDiagram } from "../diagramState.svelte";
-import { componentAttributes } from "./dialogState.svelte";
+import { componentAttributes, useComponentDialog } from "./dialogState.svelte";
 
 const emptyTrait = () => ({ id: "", attributes: { label: "", description: "" } });
 
 export class ComponentTraitsState {
-	diagram = useSystemDiagram();
+	dialog = useComponentDialog();
 
-	componentId = $derived(this.diagram.componentDialog.editingComponent?.id);
+	componentId = $derived(this.dialog.editingComponent?.id);
 
 	// Constraints
 	constraint = $state<SystemComponentConstraint>();
