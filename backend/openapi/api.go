@@ -1,9 +1,6 @@
 package openapi
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -58,8 +55,6 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-const SessionCookieName = "rez_session"
-
 func MakeConfig() huma.Config {
 	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
 	cfg.DocsPath = ""
@@ -68,27 +63,8 @@ func MakeConfig() huma.Config {
 	}
 	cfg.Info.Description = "Rezible API Specification"
 
-	cfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{
-		"session-cookie": {
-			Type: "apiKey",
-			In:   "cookie",
-			Name: SessionCookieName,
-		},
-		"api-token": {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "JWT",
-		},
-		"session-token": {
-			Type:         "http",
-			Scheme:       "bearer",
-			BearerFormat: "JWT",
-		},
-	}
-	cfg.Security = []map[string][]string{
-		{"session-cookie": {}},
-		{"api-token": {}},
-	}
+	cfg.Security = DefaultSecurity
+	cfg.Components.SecuritySchemes = DefaultSecuritySchemes
 
 	return cfg
 }
@@ -112,34 +88,4 @@ func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	RegisterRoutes(api, s)
 
 	return api
-}
-
-func Unwrap(c Context) (*http.Request, http.ResponseWriter) {
-	return humago.Unwrap(c)
-}
-
-func WithContext(c Context, ctx context.Context) Context {
-	return huma.WithContext(c, ctx)
-}
-
-func WriteAuthError(w http.ResponseWriter, authErr error) error {
-	var resp StatusError
-	if errors.Is(authErr, rez.ErrNoAuthSession) {
-		resp = ErrorUnauthorized("no_session")
-	} else if errors.Is(authErr, rez.ErrAuthSessionExpired) {
-		resp = ErrorUnauthorized("session_expired")
-	} else if errors.Is(authErr, rez.ErrAuthSessionUserMissing) {
-		resp = ErrorUnauthorized("missing_user")
-	} else {
-		resp = ErrorUnauthorized("unknown")
-	}
-	respBody, jsonErr := json.Marshal(resp)
-	if jsonErr != nil {
-		http.Error(w, jsonErr.Error(), http.StatusInternalServerError)
-		return nil
-	}
-
-	w.WriteHeader(resp.GetStatus())
-	_, writeErr := w.Write(respBody)
-	return writeErr
 }

@@ -1,7 +1,7 @@
 set shell := ["bash", "-uc"]
 set dotenv-load
 
-frontend_dist_dir := "./backend/internal/http/dist"
+frontend_dist_dir := "./backend/internal/http/frontend-dist"
 saml_cert_dir := "./backend/internal/providers/saml/testdata"
 
 _default:

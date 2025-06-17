@@ -10815,5 +10815,5 @@ export type GetUserResponses = {
 export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
 
 export type ClientOptions = {
-    baseUrl: 'http://localhost:8888/api/v1' | (string & {});
+    baseUrl: 'http://localhost:8888' | (string & {});
 };

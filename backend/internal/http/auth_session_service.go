@@ -4,10 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -69,7 +67,7 @@ func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) htt
 				return
 			}
 
-			sess, sessErr := s.verifyRequestAuthSessionTokenCookie(r)
+			sess, sessErr := s.getVerifiedSessionFromRequestCookieToken(r)
 			if sessErr == nil {
 				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
 				return
@@ -80,23 +78,6 @@ func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) htt
 				return
 			}
 			http.Error(w, sessErr.Error(), http.StatusInternalServerError)
-		})
-	}
-}
-
-func (s *AuthSessionService) MakeMCPAuthMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sess, sessErr := s.verifyRequestAuthSessionBearerToken(r)
-			if sessErr == nil {
-				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
-				return
-			}
-
-			if isRedirectableError(sessErr) {
-				log.Error().Msg("TODO: MCP OAuth flow")
-			}
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		})
 	}
 }
@@ -113,13 +94,21 @@ func (s *AuthSessionService) MakeUserAuthHandler() http.Handler {
 			return
 		}
 
-		_, sessErr := s.verifyRequestAuthSessionTokenCookie(r)
+		_, sessErr := s.getVerifiedSessionFromRequestCookieToken(r)
 		if sessErr != nil && isRedirectableError(sessErr) {
 			s.sessProvider.StartAuthFlow(w, r)
 		} else {
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 		}
 	})
+}
+
+func (s *AuthSessionService) MakeMCPAuthMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		})
+	}
 }
 
 func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
@@ -180,106 +169,28 @@ func (s *AuthSessionService) matchUserIdFromProvider(ctx context.Context, provUs
 	return user.ID, nil
 }
 
-func (s *AuthSessionService) makeSessionCookie(r *http.Request, value string, expires time.Time) *http.Cookie {
-	cookie := &http.Cookie{
-		Name:     oapi.SessionCookieName,
-		Value:    value,
-		Domain:   r.Host,
-		Path:     "/",
-		Expires:  expires,
-		Secure:   r.URL.Scheme == "https",
-		HttpOnly: true,
-		// SameSite: http.SameSiteLaxMode,
-	}
-	if domain, _, splitErr := net.SplitHostPort(r.Host); splitErr == nil {
-		cookie.Domain = domain
-	}
-	return cookie
-}
-
 func (s *AuthSessionService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
 	token, tokenErr := s.IssueSessionToken(sess)
 	if tokenErr != nil {
 		return tokenErr
 	}
 
-	cookie := s.makeSessionCookie(r, token, sess.ExpiresAt)
-	http.SetCookie(w, cookie)
+	http.SetCookie(w, oapi.MakeSessionCookie(r, token, sess.ExpiresAt, 0))
 
 	return nil
 }
 
 func (s *AuthSessionService) clearAuthSession(w http.ResponseWriter, r *http.Request) {
-	clearCookie := s.makeSessionCookie(r, "", time.Now())
-	clearCookie.MaxAge = -1
-	http.SetCookie(w, clearCookie)
+	http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
 	s.sessProvider.ClearSession(w, r)
 }
 
-func (s *AuthSessionService) verifyRequestAuthSessionTokenCookie(r *http.Request) (*rez.AuthSession, error) {
-	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
+func (s *AuthSessionService) getVerifiedSessionFromRequestCookieToken(req *http.Request) (*rez.AuthSession, error) {
+	cookieToken, cookieErr := oapi.GetRequestSessionCookieToken(req)
 	if cookieErr != nil {
 		return nil, fmt.Errorf("error getting token from cookie: %w", cookieErr)
-	} else if cookieToken == "" {
-		return nil, rez.ErrNoAuthSession
 	}
 	return s.VerifySessionToken(cookieToken)
-}
-
-func (s *AuthSessionService) verifyRequestAuthSessionBearerToken(r *http.Request) (*rez.AuthSession, error) {
-	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
-	if bearerErr != nil {
-		return nil, fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
-	} else if bearerToken != "" {
-		return nil, rez.ErrNoAuthSession
-	}
-	return s.VerifySessionToken(bearerToken)
-}
-
-func getRequestTokenValue(r *http.Request) (string, error) {
-	cookieToken, cookieErr := getRequestAuthSessionTokenCookie(r)
-	if cookieErr != nil {
-		return "", fmt.Errorf("error getting token from cookie: %w", cookieErr)
-	} else if cookieToken != "" {
-		return cookieToken, nil
-	}
-
-	bearerToken, bearerErr := getRequestAuthorizationBearerToken(r)
-	if bearerErr != nil {
-		return "", fmt.Errorf("error getting bearer token from authorization header: %w", bearerErr)
-	} else if bearerToken != "" {
-		return bearerToken, nil
-	}
-
-	return "", rez.ErrNoAuthSession
-}
-
-func getRequestAuthSessionTokenCookie(r *http.Request) (string, error) {
-	authCookie, cookieErr := r.Cookie(oapi.SessionCookieName)
-	if cookieErr != nil {
-		if errors.Is(cookieErr, http.ErrNoCookie) {
-			return "", nil
-		}
-		return "", cookieErr
-	}
-	return authCookie.Value, nil
-}
-
-func getRequestAuthorizationBearerToken(r *http.Request) (string, error) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		return "", nil
-	}
-	split := strings.Split(authHeader, " ")
-	if len(split) != 2 {
-		return "", nil
-	}
-	authType := split[0]
-	token := split[1]
-	if authType != "Bearer" {
-		return "", fmt.Errorf("invalid Authorization type %s", authType)
-	}
-	return token, nil
 }
 
 type authSessionTokenClaims struct {
@@ -306,6 +217,10 @@ func (s *AuthSessionService) IssueSessionToken(session *rez.AuthSession) (string
 }
 
 func (s *AuthSessionService) VerifySessionToken(tokenStr string) (*rez.AuthSession, error) {
+	if tokenStr == "" {
+		return nil, rez.ErrNoAuthSession
+	}
+
 	claims, parseErr := s.parseSessionTokenClaims(tokenStr)
 	if parseErr != nil {
 		return nil, fmt.Errorf("failed to parse token: %w", parseErr)

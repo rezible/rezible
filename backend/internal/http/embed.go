@@ -3,40 +3,32 @@ package http
 import (
 	"embed"
 	"fmt"
-	rez "github.com/rezible/rezible"
-	"github.com/rs/zerolog/log"
 	"io/fs"
 	"net/http"
 	"os"
 	"path"
 	"strings"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rs/zerolog/log"
 )
 
-//go:embed all:dist/*
-var frontendFiles embed.FS
+var (
+	//go:embed all:frontend-dist/*
+	frontendFiles    embed.FS
+	frontendFilesDir = "frontend-dist"
+)
 
-const frontendDir = "dist"
-
-func makeApiDocsHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		if _, wErr := w.Write(docsBodyScalar); wErr != nil {
-			log.Error().Err(wErr).Msg("failed to write embedded docs body")
-		}
-	})
-}
-
-func makeEmbeddedFrontendServer() (http.Handler, error) {
+func makeEmbeddedFrontendFilesServer() (http.Handler, error) {
 	if rez.DebugMode {
 		// redirect to frontend vite dev server
 		return http.RedirectHandler(rez.FrontendUrl, http.StatusFound), nil
 	}
 
-	files, filesErr := fs.Sub(frontendFiles, frontendDir)
+	files, filesErr := fs.Sub(frontendFiles, frontendFilesDir)
 	if filesErr != nil {
 		return nil, fmt.Errorf("failed to open embedded frontend files: %w", filesErr)
 	}
-
 	// TODO: check frontend files dir is not empty
 
 	fileServer := http.FileServer(http.FS(files))
@@ -99,3 +91,12 @@ var (
   </body>
 </html>`)
 )
+
+func makeApiDocsHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		if _, wErr := w.Write(docsBodyScalar); wErr != nil {
+			log.Error().Err(wErr).Msg("failed to write embedded docs body")
+		}
+	})
+}
