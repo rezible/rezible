@@ -17,8 +17,10 @@ import (
 	oapi "github.com/rezible/rezible/openapi"
 )
 
+type authContextKey struct{}
+
 var (
-	authSessionContextKey = "auth_session"
+	authSessionContextKey = authContextKey{}
 )
 
 const (
@@ -103,14 +105,6 @@ func (s *AuthSessionService) MakeUserAuthHandler() http.Handler {
 	})
 }
 
-func (s *AuthSessionService) MakeMCPAuthMiddleware() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
-		})
-	}
-}
-
 func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
 	var redirectUrl string
 	var createSessionErr error
@@ -141,9 +135,6 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	if createSessionErr != nil {
 		log.Error().Err(createSessionErr).Msg("failed to create session")
 		http.Error(w, createSessionErr.Error(), http.StatusInternalServerError)
-		//if writeErr := writeAuthError(w, createSessionErr); writeErr != nil {
-		//	log.Warn().Err(writeErr).Msg("failed to write auth create session error response")
-		//}
 	} else if redirectUrl != "" {
 		http.Redirect(w, r, redirectUrl, http.StatusFound)
 	}

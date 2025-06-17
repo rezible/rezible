@@ -146,7 +146,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 	webhookHandler := pl.WebhookHandler()
-	mcpHandler := ai.NewMCPHandler()
+	mcpHandler := ai.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, webhookHandler, mcpHandler)

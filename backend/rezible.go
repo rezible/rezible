@@ -106,7 +106,6 @@ type (
 		ProviderName() string
 		MakeUserAuthHandler() http.Handler
 		MakeFrontendAuthMiddleware() func(http.Handler) http.Handler
-		MakeMCPAuthMiddleware() func(http.Handler) http.Handler
 		CreateSessionContext(context.Context, *AuthSession) context.Context
 		GetSession(context.Context) (*AuthSession, error)
 		IssueSessionToken(*AuthSession) (string, error)

@@ -2,8 +2,15 @@ package mcp
 
 import (
 	"context"
-	"github.com/mark3labs/mcp-go/server"
 	"net/http"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+
+	"github.com/mark3labs/mcp-go/server"
+
+	rez "github.com/rezible/rezible"
 )
 
 type Handler interface {
@@ -29,13 +36,30 @@ func NewServer(h Handler) *server.MCPServer {
 	return s
 }
 
-func NewStreamableHTTPServer(h Handler) *server.StreamableHTTPServer {
+func NewHTTPServer(h Handler, auth rez.AuthSessionService) http.Handler {
+	authMw := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			header := r.Header.Get("Authorization")
+			if header == "" {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			fakeSess := &rez.AuthSession{
+				ExpiresAt: time.Now().Add(time.Hour),
+				UserId:    uuid.New(),
+			}
+			next.ServeHTTP(w, r.WithContext(auth.CreateSessionContext(r.Context(), fakeSess)))
+		})
+	}
+
 	ctxFn := func(ctx context.Context, r *http.Request) context.Context {
 		return ctx
 	}
 
-	return server.NewStreamableHTTPServer(NewServer(h),
+	srv := server.NewStreamableHTTPServer(NewServer(h),
 		server.WithEndpointPath("/mcp"),
 		server.WithStateLess(true),
 		server.WithHTTPContextFunc(ctxFn))
+
+	return chi.Chain(authMw).Handler(srv)
 }

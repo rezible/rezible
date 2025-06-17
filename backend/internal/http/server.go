@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/mcp"
 	"net"
 	"net/http"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/mcp"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -43,7 +43,6 @@ func NewServer(
 	router.Mount("/api/webhooks", webhooksHandler)
 	router.Mount("/api/mcp", makeMCPHandler(mcpHandler, auth))
 	router.Mount("/auth", auth.MakeUserAuthHandler())
-	router.Mount("/.well-known", makeWellKnownHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
 	// Serve static files for any other route
@@ -82,20 +81,12 @@ func makeFrontendHandler(feFilesHandler http.Handler, auth rez.AuthSessionServic
 }
 
 func makeMCPHandler(h mcp.Handler, auth rez.AuthSessionService) http.Handler {
-	return chi.Chain(auth.MakeMCPAuthMiddleware()).Handler(mcp.NewStreamableHTTPServer(h))
+	return chi.Chain().Handler(mcp.NewHTTPServer(h, auth))
 }
 
 func makeOApiHandler(h oapi.Handler, prefix string, auth rez.AuthSessionService) http.Handler {
 	api := oapi.MakeApi(h, prefix, oapi.MakeSecurityMiddleware(auth))
 	return chi.Chain(middleware.Logger).Handler(api.Adapter())
-}
-
-func makeWellKnownHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO: serve well known files (eg oauth2 configuration)
-		log.Debug().Str("path", r.URL.Path).Msg("Handling Well-Known Request")
-		http.NotFound(w, r)
-	})
 }
 
 func makeHealthCheckHandler() http.HandlerFunc {

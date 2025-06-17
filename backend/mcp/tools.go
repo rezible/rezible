@@ -3,6 +3,8 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -35,11 +37,12 @@ func makeCalculateTool(h ToolsHandler) (mcp.Tool, server.ToolHandlerFunc) {
 		mcp.WithNumber("y", mcp.Required(), mcp.Description("Second number")),
 	)
 	handler := func(ctx context.Context, r mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-		var calc *CalculateRequest
-		if err := r.BindArguments(calc); err != nil {
-			return mcp.NewToolResultError(err.Error()), nil
+		var calc CalculateRequest
+		if bindErr := r.BindArguments(&calc); bindErr != nil {
+			log.Debug().Err(bindErr).Msg("failed to bind arguments")
+			return mcp.NewToolResultError("invalid arguments"), nil
 		}
-		res, resErr := h.Calculate(ctx, calc)
+		res, resErr := h.Calculate(ctx, &calc)
 		if resErr != nil {
 			return nil, resErr
 		}

@@ -118,7 +118,6 @@ func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string
 
 func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 	return func(c Context, next func(Context)) {
-		// var requireScopes []string
 		security := c.Operation().Security
 		explicitNoAuth := security != nil && len(security) == 0
 		if explicitNoAuth {
