@@ -41,6 +41,7 @@ func NewHTTPServer(h Handler, auth rez.AuthSessionService) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			header := r.Header.Get("Authorization")
 			if header == "" {
+				w.Header().Add("WWW-Authenticate", `Bearer resource_metadata="http://localhost:8888/.well-known/oauth-protected-resource"`)
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
