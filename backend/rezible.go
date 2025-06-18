@@ -3,6 +3,7 @@ package rez
 import (
 	"context"
 	"errors"
+	"github.com/cloudwego/eino/components/model"
 	"iter"
 	"net/http"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
 	"github.com/texm/prosemirror-go"
-	"github.com/tmc/langchaingo/llms"
 )
 
 var (
@@ -46,7 +46,7 @@ type (
 
 		LoadProviders(context.Context) (*Providers, error)
 
-		LoadAiModelProvider(context.Context) (AiModelProvider, error)
+		LoadAiModelProvider(context.Context) (LanguageModelProvider, error)
 		LoadChatProvider(context.Context) (ChatProvider, error)
 		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 
@@ -59,7 +59,7 @@ type (
 	}
 
 	Providers struct {
-		AiModel     AiModelProvider
+		AiModel     LanguageModelProvider
 		AuthSession AuthSessionProvider
 		Chat        ChatProvider
 
@@ -215,18 +215,14 @@ type (
 )
 
 type (
-	AiModel = llms.Model
+	AiLanguageModel = model.ToolCallingChatModel
 
-	AiModelProvider interface {
-		Model() AiModel
+	LanguageModelProvider interface {
+		Model() AiLanguageModel
 	}
 
 	LanguageModelService interface {
 		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
-	}
-
-	McpService interface {
-		GetServer()
 	}
 )
 

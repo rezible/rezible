@@ -118,7 +118,7 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 	var provs rez.Providers
 	var loadErr error
 
-	provs.AiModel, loadErr = l.LoadAiModelProvider(ctx)
+	provs.AiModel, loadErr = l.LoadLanguageModelProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("ai model: %w", loadErr)
 	}
@@ -210,14 +210,14 @@ func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) 
 	return cfg, nil
 }
 
-func (l *Loader) LoadAiModelProvider(ctx context.Context) (rez.AiModelProvider, error) {
+func (l *Loader) LoadLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 	switch pCfg.Name {
 	case "anthropic":
-		return loadProvider(anthropic.NewClaudeAiModelProvider, pCfg)
+		return loadProviderCtx(ctx, anthropic.NewClaudeLanguageModelProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid ai model provider config: %s", pCfg.Name)
 	}

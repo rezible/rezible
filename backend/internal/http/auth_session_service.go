@@ -27,6 +27,8 @@ const (
 	defaultSessionDuration = time.Hour
 )
 
+// TODO: this should eventually be backed by some kind of storage
+
 type AuthSessionService struct {
 	users         rez.UserService
 	sessProvider  rez.AuthSessionProvider

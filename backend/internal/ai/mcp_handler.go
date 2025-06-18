@@ -2,7 +2,9 @@ package ai
 
 import (
 	"context"
+
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/mcp"
 )
@@ -17,14 +19,14 @@ func NewMCPHandler(auth rez.AuthSessionService) *MCPHandler {
 	return &MCPHandler{auth: auth}
 }
 
-func (m *MCPHandler) ListActiveIncidents(ctx context.Context) ([]string, error) {
-	incs := []string{
-		"Example Incident",
+func (m *MCPHandler) ListActiveIncidents(ctx context.Context) ([]mcp.ResourceContents, error) {
+	incs := []mcp.ResourceContents{
+		mcp.NewMarkdownResource("incidents://foo", "Example Incident"),
 	}
 	return incs, nil
 }
 
-func (m *MCPHandler) GetOncallShift(ctx context.Context, id uuid.UUID) ([]mcp.ResourceContents, error) {
+func (m *MCPHandler) GetOncallShift(ctx context.Context, id uuid.UUID) (mcp.ResourceContents, error) {
 	//TODO implement me
 	panic("implement me")
 }

@@ -2,23 +2,36 @@ package mcp
 
 import (
 	"context"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
-type ReadResourceResult = mcp.ReadResourceResult
-type ResourceContents = mcp.ResourceContents
+type (
+	ResourceContents = mcp.ResourceContents
+	TextResource     = mcp.TextResourceContents
 
-type ResourcesHandler interface {
-	ListActiveIncidents(ctx context.Context) ([]string, error)
-	GetOncallShift(ctx context.Context, id uuid.UUID) ([]ResourceContents, error)
-}
+	ResourcesHandler interface {
+		ListActiveIncidents(ctx context.Context) ([]ResourceContents, error)
+		GetOncallShift(ctx context.Context, id uuid.UUID) (ResourceContents, error)
+	}
+)
 
 func addResources(s *server.MCPServer, h ResourcesHandler) {
 	s.AddResource(getOncallShiftResource(h))
 	s.AddResource(listActiveIncidentsResource(h))
+}
+
+func NewMarkdownResource(uri string, content string) mcp.ResourceContents {
+	return &TextResource{
+		URI:      uri,
+		MIMEType: "text/markdown",
+		Text:     content,
+	}
+}
+
+func wrapSingleResource(c mcp.ResourceContents, err error) ([]mcp.ResourceContents, error) {
+	return []mcp.ResourceContents{c}, err
 }
 
 func getOncallShiftResource(h ResourcesHandler) (mcp.Resource, server.ResourceHandlerFunc) {
@@ -33,10 +46,11 @@ func getOncallShiftResource(h ResourcesHandler) (mcp.Resource, server.ResourceHa
 		if idErr != nil {
 			return nil, idErr
 		}
-		return h.GetOncallShift(ctx, id)
+		return wrapSingleResource(h.GetOncallShift(ctx, id))
 	}
 	return res, handler
 }
+
 func listActiveIncidentsResource(h ResourcesHandler) (mcp.Resource, server.ResourceHandlerFunc) {
 	res := mcp.NewResource(
 		"incidents://list",
@@ -45,19 +59,7 @@ func listActiveIncidentsResource(h ResourcesHandler) (mcp.Resource, server.Resou
 		mcp.WithMIMEType("application/json"),
 	)
 	handler := func(ctx context.Context, r mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
-		incs, incsErr := h.ListActiveIncidents(ctx)
-		if incsErr != nil {
-			return nil, incsErr
-		}
-		resp := make([]mcp.ResourceContents, len(incs))
-		for i, inc := range incs {
-			resp[i] = mcp.TextResourceContents{
-				URI:      fmt.Sprintf("incidents://%s", uuid.New().String()),
-				MIMEType: "text/markdown",
-				Text:     inc,
-			}
-		}
-		return resp, nil
+		return h.ListActiveIncidents(ctx)
 	}
 	return res, handler
 }

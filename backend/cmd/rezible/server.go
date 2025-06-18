@@ -96,9 +96,9 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
 	}
 
-	llm, llmErr := ai.NewLanguageModelService(ctx, provs.AiModel)
-	if llmErr != nil {
-		return nil, fmt.Errorf("failed to create language model service: %w", llmErr)
+	lms, lmsErr := ai.NewLanguageModelService(ctx, provs.AiModel)
+	if lmsErr != nil {
+		return nil, fmt.Errorf("failed to create language model service: %w", lmsErr)
 	}
 
 	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
@@ -106,7 +106,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, llm, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, lms, chat, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
@@ -123,7 +123,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 
 	chat.SetMessageAnnotator(oncallEvents)
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, llm, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
