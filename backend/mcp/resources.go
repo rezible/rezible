@@ -41,14 +41,14 @@ func extractIdParam(uri string) (uuid.UUID, error) {
 	return uuid.Parse(parts[1])
 }
 
-var OncallShiftResource = mcp.NewResource(
+var OncallShiftResource = mcp.NewResourceTemplate(
 	"shift://{shift_id}",
 	"Oncall Shift",
-	mcp.WithResourceDescription("Information about a specific oncall shift"),
-	mcp.WithMIMEType("application/json"),
+	mcp.WithTemplateDescription("Information about a specific oncall shift"),
+	mcp.WithTemplateMIMEType("application/json"),
 )
 
-func makeOncallShiftResourceHandler(h ResourcesHandler) server.ResourceHandlerFunc {
+func makeOncallShiftResourceHandler(h ResourcesHandler) server.ResourceTemplateHandlerFunc {
 	return func(ctx context.Context, r mcp.ReadResourceRequest) ([]mcp.ResourceContents, error) {
 		id, idErr := extractIdParam(r.Params.URI)
 		if idErr != nil {
@@ -59,7 +59,7 @@ func makeOncallShiftResourceHandler(h ResourcesHandler) server.ResourceHandlerFu
 }
 
 var ActiveIncidentsResource = mcp.NewResource(
-	"incidents://list",
+	"incidents://active",
 	"List Incidents",
 	mcp.WithResourceDescription("Provides a list of recent incidents"),
 	mcp.WithMIMEType("application/json"),

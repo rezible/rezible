@@ -38,7 +38,7 @@ func NewServer(h Handler) *server.MCPServer {
 
 	s := server.NewMCPServer("Rezible MCP", "0.0.1",
 		server.WithToolCapabilities(true),
-		server.WithResourceCapabilities(true, false),
+		server.WithResourceCapabilities(false, false),
 		server.WithPromptCapabilities(true),
 		server.WithRecovery(),
 		server.WithHooks(hooks))
@@ -51,7 +51,7 @@ func NewServer(h Handler) *server.MCPServer {
 }
 
 func addResources(s *server.MCPServer, h ResourcesHandler) {
-	s.AddResource(OncallShiftResource, makeOncallShiftResourceHandler(h))
+	s.AddResourceTemplate(OncallShiftResource, makeOncallShiftResourceHandler(h))
 	s.AddResource(ActiveIncidentsResource, makeActiveIncidentsResourceHandler(h))
 }
 
