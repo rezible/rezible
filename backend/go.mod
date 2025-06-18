@@ -1,6 +1,6 @@
 module github.com/rezible/rezible
 
-go 1.24.0
+go 1.24.1
 
 require (
 	entgo.io/ent v0.14.4
@@ -51,7 +51,7 @@ require (
 	github.com/aws/smithy-go v1.22.1 // indirect
 	github.com/beevik/etree v1.5.0 // indirect
 	github.com/bmatcuk/doublestar v1.3.4 // indirect
-	github.com/bytedance/sonic v1.13.2 // indirect
+	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/crewjam/httperr v0.2.0 // indirect
@@ -59,11 +59,11 @@ require (
 	github.com/di-wu/parser v0.3.0 // indirect
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/getkin/kin-openapi v0.118.0 // indirect
+	github.com/getkin/kin-openapi v0.132.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250517221953-25912455fbc8 // indirect
 	github.com/go-openapi/inflect v0.21.2 // indirect
-	github.com/go-openapi/jsonpointer v0.19.6 // indirect
-	github.com/go-openapi/swag v0.22.4 // indirect
+	github.com/go-openapi/jsonpointer v0.21.1 // indirect
+	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
@@ -74,15 +74,15 @@ require (
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/hcl/v2 v2.23.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/invopop/yaml v0.1.0 // indirect
+	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
+	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -92,8 +92,8 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/nikolalohinski/gonja v1.5.3 // indirect
-	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/perimeterx/marshmallow v1.1.4 // indirect
+	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
+	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/riverqueue/river/rivershared v0.23.1 // indirect
@@ -116,9 +116,9 @@ require (
 	github.com/zclconf/go-cty v1.16.3 // indirect
 	github.com/zclconf/go-cty-yaml v1.1.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
-	golang.org/x/arch v0.11.0 // indirect
+	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/crypto v0.39.0 // indirect
-	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
+	golang.org/x/exp v0.0.0-20250606033433-dcc06ee1d476 // indirect
 	golang.org/x/mod v0.25.0 // indirect
 	golang.org/x/oauth2 v0.29.0 // indirect
 	golang.org/x/sync v0.15.0 // indirect
@@ -126,3 +126,5 @@ require (
 	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/tools v0.34.0 // indirect
 )
+
+replace github.com/getkin/kin-openapi v0.132.0 => github.com/getkin/kin-openapi v0.118.0
