@@ -39,20 +39,14 @@ func newRezServer(opts *Options) *rezServer {
 	return &rezServer{opts: opts}
 }
 
-func (s *rezServer) Start() {
-	ctx := context.Background()
-
+func (s *rezServer) Start(ctx context.Context) {
 	if setupErr := s.setup(ctx); setupErr != nil {
-		s.Stop()
+		s.Stop(ctx)
 		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
 	}
 
-	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
-		log.Fatal().Err(jobsErr).Msg("failed to start background jobs client")
-	}
-
-	if serverErr := s.httpServer.Start(ctx); serverErr != nil {
-		log.Fatal().Err(serverErr).Msg("server error")
+	if startErr := s.start(ctx); startErr != nil {
+		log.Fatal().Err(startErr).Msg("rezServer.start")
 	}
 }
 
@@ -79,6 +73,11 @@ func (s *rezServer) setup(ctx context.Context) error {
 }
 
 func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.JobsService) (*http.Server, error) {
+	frontendFiles, feFilesErr := http.GetEmbeddedFrontendFiles()
+	if feFilesErr != nil {
+		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
+	}
+
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 	provs, provsErr := pl.LoadProviders(ctx)
 	if provsErr != nil {
@@ -144,37 +143,42 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
 
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
-	webhookHandler := pl.WebhookHandler()
-	mcpHandler := ai.NewMCPHandler(auth)
-
-	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	httpServer, httpErr := http.NewServer(listenAddr, auth, apiHandler, webhookHandler, mcpHandler)
-	if httpErr != nil {
-		return nil, fmt.Errorf("http.NewServer: %w", httpErr)
-	}
-
 	syncer := providers.NewDataSyncer(dbc, pl)
 	if syncErr := syncer.RegisterPeriodicSyncJob(j, time.Hour); syncErr != nil {
 		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
 	}
 
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
+	webhookHandler := pl.WebhookHandler()
+	mcpHandler := ai.NewMCPHandler(auth)
+
+	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
+	httpServer := http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
+
 	return httpServer, nil
 }
 
-func (s *rezServer) Stop() {
-	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
-	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
-	defer cancelStopCtx()
+func (s *rezServer) start(ctx context.Context) error {
+	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
+		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
+	}
 
+	if serverErr := s.httpServer.Start(ctx); serverErr != nil {
+		return fmt.Errorf("http Server error: %w", serverErr)
+	}
+
+	return nil
+}
+
+func (s *rezServer) Stop(ctx context.Context) {
 	if s.httpServer != nil {
-		if dbErr := s.httpServer.Stop(timeoutCtx); dbErr != nil {
+		if dbErr := s.httpServer.Stop(ctx); dbErr != nil {
 			log.Error().Err(dbErr).Msg("failed to stop http server")
 		}
 	}
 
 	if s.jobs != nil {
-		if dbErr := s.jobs.Stop(timeoutCtx); dbErr != nil {
+		if dbErr := s.jobs.Stop(ctx); dbErr != nil {
 			log.Error().Err(dbErr).Msg("failed to stop jobs client")
 		}
 	}

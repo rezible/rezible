@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net"
 	"net/http"
 
@@ -25,36 +26,44 @@ func NewServer(
 	addr string,
 	auth rez.AuthSessionService,
 	oapiHandler oapi.Handler,
-	webhooksHandler http.Handler,
+	feFiles fs.FS,
+	webhooksRouter http.Handler,
 	mcpHandler mcp.Handler,
-) (*Server, error) {
+) *Server {
 	var s Server
 
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
 
-	serveFrontendFiles, feFilesErr := makeEmbeddedFrontendFilesServer()
-	if feFilesErr != nil {
-		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
-	}
+	apiV1Router := chi.
+		Chain(middleware.Logger).
+		Handler(oapi.MakeApi(oapiHandler, "/api/v1", oapi.MakeSecurityMiddleware(auth)).Adapter())
+	router.Mount("/api/v1", apiV1Router)
 
-	router.Mount("/api/v1", makeOApiHandler(oapiHandler, "/api/v1", auth))
 	router.Handle("/api/docs", makeApiDocsHandler())
-	router.Mount("/api/webhooks", webhooksHandler)
-	router.Mount("/mcp", makeMCPHandler(mcpHandler, auth))
+
+	router.Mount("/api/webhooks", webhooksRouter)
+
+	mcpRouter := chi.
+		Chain(auth.MakeMCPServerAuthMiddleware()).
+		Handler(mcp.NewHTTPServer(mcpHandler))
+	router.Mount("/mcp", mcpRouter)
 
 	router.Mount("/auth", auth.MakeUserAuthHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
+	frontendRouter := chi.
+		Chain(auth.MakeFrontendAuthMiddleware()).
+		Handler(makeEmbeddedFrontendFilesServer(feFiles))
 	// Serve static files for any other route
-	router.Handle("/*", makeFrontendHandler(serveFrontendFiles, auth))
+	router.Handle("/*", frontendRouter)
 
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: router,
 	}
 
-	return &s, nil
+	return &s
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -75,19 +84,6 @@ func (s *Server) Stop(ctx context.Context) error {
 		return nil
 	}
 	return s.httpServer.Shutdown(ctx)
-}
-
-func makeFrontendHandler(feFilesHandler http.Handler, auth rez.AuthSessionService) http.Handler {
-	return chi.Chain(auth.MakeFrontendAuthMiddleware()).Handler(feFilesHandler)
-}
-
-func makeMCPHandler(h mcp.Handler, auth rez.AuthSessionService) http.Handler {
-	return chi.Chain().Handler(mcp.NewHTTPServer(h, auth))
-}
-
-func makeOApiHandler(h oapi.Handler, prefix string, auth rez.AuthSessionService) http.Handler {
-	api := oapi.MakeApi(h, prefix, oapi.MakeSecurityMiddleware(auth))
-	return chi.Chain(middleware.Logger).Handler(api.Adapter())
 }
 
 func makeHealthCheckHandler() http.HandlerFunc {
