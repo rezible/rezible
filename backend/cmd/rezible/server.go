@@ -12,8 +12,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/ai"
 	"github.com/rezible/rezible/internal/api"
+	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/prosemirror"
@@ -96,7 +96,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
 	}
 
-	lms, lmsErr := ai.NewLanguageModelService(ctx, provs.AiModel)
+	lms, lmsErr := eino.NewLanguageModelService(ctx, provs.AiModel)
 	if lmsErr != nil {
 		return nil, fmt.Errorf("failed to create language model service: %w", lmsErr)
 	}
@@ -150,7 +150,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 	webhookHandler := pl.WebhookHandler()
-	mcpHandler := ai.NewMCPHandler(auth)
+	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	httpServer := http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)

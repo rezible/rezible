@@ -3,7 +3,9 @@ package mcp
 import (
 	"context"
 	"fmt"
+
 	"github.com/google/uuid"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )

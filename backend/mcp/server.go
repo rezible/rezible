@@ -2,8 +2,9 @@ package mcp
 
 import (
 	"context"
-	"github.com/mark3labs/mcp-go/server"
 	"net/http"
+
+	"github.com/mark3labs/mcp-go/server"
 )
 
 type Handler interface {
@@ -34,10 +35,8 @@ func NewHTTPServer(h Handler) http.Handler {
 		return ctx
 	}
 
-	srv := server.NewStreamableHTTPServer(NewServer(h),
+	return server.NewStreamableHTTPServer(NewServer(h),
 		server.WithEndpointPath("/mcp"),
 		server.WithStateLess(true),
 		server.WithHTTPContextFunc(ctxFn))
-
-	return srv
 }

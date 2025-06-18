@@ -2,7 +2,11 @@ package mcp
 
 import (
 	"context"
+	"fmt"
+	"strings"
+
 	"github.com/google/uuid"
+
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
@@ -32,6 +36,14 @@ func NewMarkdownResource(uri string, content string) mcp.ResourceContents {
 
 func wrapSingleResource(c mcp.ResourceContents, err error) ([]mcp.ResourceContents, error) {
 	return []mcp.ResourceContents{c}, err
+}
+
+func extractIdParam(uri string) (uuid.UUID, error) {
+	parts := strings.Split(uri, "://")
+	if len(parts) < 2 {
+		return uuid.Nil, fmt.Errorf("mcp: invalid URI: %s", uri)
+	}
+	return uuid.Parse(parts[1])
 }
 
 func getOncallShiftResource(h ResourcesHandler) (mcp.Resource, server.ResourceHandlerFunc) {
