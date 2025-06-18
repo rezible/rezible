@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/go-chi/cors"
 	"net"
 	"net/http"
 
@@ -43,26 +42,6 @@ func NewServer(
 	router.Handle("/api/docs", makeApiDocsHandler())
 	router.Mount("/api/webhooks", webhooksHandler)
 	router.Mount("/mcp", makeMCPHandler(mcpHandler, auth))
-
-	o2p, o2pErr := mcp.NewOAuth2Provider("/oauth2")
-	if o2pErr != nil {
-		return nil, fmt.Errorf("failed to make mcp oauth2 provider: %w", o2pErr)
-	}
-	router.Mount("/oauth2", o2p.MakeHandler())
-	wk := router.Group(func(r chi.Router) {
-		r.Use(cors.Handler(cors.Options{
-			AllowedOrigins: []string{"https://*", "http://*", "http://localhost:6274"},
-			AllowedMethods: []string{"GET", "OPTIONS"},
-			AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-			ExposedHeaders: []string{"Link"},
-
-			AllowCredentials: false,
-			MaxAge:           300,
-		}))
-		r.Get("/oauth-authorization-server", o2p.AuthorizationServerMetadataDiscoveryHandler)
-		r.Get("/oauth-protected-resource", o2p.ProtectedResourceMetadataDiscoveryHandler)
-	})
-	router.Mount("/.well-known", wk)
 
 	router.Mount("/auth", auth.MakeUserAuthHandler())
 	router.Get("/health", makeHealthCheckHandler())

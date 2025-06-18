@@ -84,6 +84,35 @@ func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) htt
 	}
 }
 
+func (s *AuthSessionService) getMCPAuthSession(r *http.Request) (*rez.AuthSession, error) {
+	token, tokenErr := oapi.GetRequestApiBearerToken(r)
+	if tokenErr != nil {
+		return nil, tokenErr
+	} else if token == "" {
+		return nil, rez.ErrNoAuthSession
+	}
+	// TODO: a lot
+	fakeSess := &rez.AuthSession{
+		ExpiresAt: time.Now().Add(time.Hour),
+		UserId:    uuid.New(),
+	}
+	return fakeSess, nil
+}
+
+func (s *AuthSessionService) MakeMCPServerAuthMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			sess, authErr := s.getMCPAuthSession(r)
+			if authErr != nil {
+				// w.Header().Add("WWW-Authenticate", `Bearer resource_metadata="/.well-known/oauth-protected-resource"`)
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
+		})
+	}
+}
+
 func (s *AuthSessionService) MakeUserAuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if providerHandled := s.providerAuthFlow(w, r); providerHandled {

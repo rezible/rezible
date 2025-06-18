@@ -2,15 +2,8 @@ package mcp
 
 import (
 	"context"
-	"net/http"
-	"time"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
-
 	"github.com/mark3labs/mcp-go/server"
-
-	rez "github.com/rezible/rezible"
+	"net/http"
 )
 
 type Handler interface {
@@ -36,23 +29,7 @@ func NewServer(h Handler) *server.MCPServer {
 	return s
 }
 
-func NewHTTPServer(h Handler, auth rez.AuthSessionService) http.Handler {
-	authMw := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			header := r.Header.Get("Authorization")
-			if header == "" {
-				w.Header().Add("WWW-Authenticate", `Bearer resource_metadata="http://localhost:8888/.well-known/oauth-protected-resource"`)
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			fakeSess := &rez.AuthSession{
-				ExpiresAt: time.Now().Add(time.Hour),
-				UserId:    uuid.New(),
-			}
-			next.ServeHTTP(w, r.WithContext(auth.CreateSessionContext(r.Context(), fakeSess)))
-		})
-	}
-
+func NewHTTPServer(h Handler) http.Handler {
 	ctxFn := func(ctx context.Context, r *http.Request) context.Context {
 		return ctx
 	}
@@ -62,5 +39,5 @@ func NewHTTPServer(h Handler, auth rez.AuthSessionService) http.Handler {
 		server.WithStateLess(true),
 		server.WithHTTPContextFunc(ctxFn))
 
-	return chi.Chain(authMw).Handler(srv)
+	return srv
 }
