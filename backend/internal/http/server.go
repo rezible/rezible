@@ -46,7 +46,7 @@ func NewServer(
 
 	mcpRouter := chi.
 		Chain(auth.MakeMCPServerAuthMiddleware()).
-		Handler(mcp.NewHTTPServer(mcpHandler))
+		Handler(mcp.NewHTTPServer(mcpHandler, "/mcp"))
 	router.Mount("/mcp", mcpRouter)
 
 	router.Mount("/auth", auth.MakeUserAuthHandler())

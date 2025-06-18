@@ -30,13 +30,13 @@ func NewServer(h Handler) *server.MCPServer {
 	return s
 }
 
-func NewHTTPServer(h Handler) http.Handler {
+func NewHTTPServer(h Handler, path string) http.Handler {
 	ctxFn := func(ctx context.Context, r *http.Request) context.Context {
 		return ctx
 	}
 
 	return server.NewStreamableHTTPServer(NewServer(h),
-		server.WithEndpointPath("/mcp"),
+		server.WithEndpointPath(path),
 		server.WithStateLess(true),
 		server.WithHTTPContextFunc(ctxFn))
 }
