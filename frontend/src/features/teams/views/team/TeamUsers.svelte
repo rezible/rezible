@@ -10,8 +10,8 @@
 
 <div class="flex flex-col gap-2 w-fit">
 	{#each users as user (user.id)}
-		<a href="/users/{user.id}">
-			<div class="flex items-center gap-2 px-2 hover:bg-surface-200 p-1 rounded-lg">
+		<a href="/users/{user.id}" class="">
+			<div class="flex items-center gap-2 px-2 hover:bg-surface-200 p-1 rounded-lg w-full">
 				<Avatar kind="user" id={user.id} size={32} />
 				<span>{user.attributes.name}</span>
 			</div>

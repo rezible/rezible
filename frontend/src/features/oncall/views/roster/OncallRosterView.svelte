@@ -43,10 +43,10 @@
 	infoBar={RosterDetailsBar}
 	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },
-		{ label: "Metrics", path: "metrics", component: RosterMetrics },
-		{ label: "Shifts", path: "schedule", component: RosterSchedule },
+		// { label: "Metrics", path: "metrics", component: RosterMetrics },
 		{ label: "Members", path: "members", component: RosterMembers },
-		{ label: "Backlog", path: "backlog", component: RosterBacklog },
+		{ label: "Schedule", path: "schedule", component: RosterSchedule },
+		{ label: "Task Backlog", path: "backlog", component: RosterBacklog },
 		{ label: "Resources", path: "resources", component: RosterResources },
 	]}
 />

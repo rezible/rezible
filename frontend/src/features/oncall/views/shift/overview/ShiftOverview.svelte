@@ -3,7 +3,7 @@
 	import { getOncallShiftMetricsOptions } from "$lib/api";
 	import { useShiftViewState } from "../shiftViewState.svelte";
 
-	import ShiftEventsTotalCards from "./sections/ShiftEventsTotalCards.svelte";
+	import ShiftSummaryCards from "./sections/ShiftSummaryCards.svelte";
 	import ShiftIncidents from "./sections/ShiftIncidents.svelte";
 	import ShiftBurden from "./sections/shift-burden/ShiftBurden.svelte";
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
@@ -22,7 +22,7 @@
 
 <div class="w-full h-full grid grid-cols-3 gap-2">
 	<div class="col-span-2 h-full w-full overflow-y-auto pr-1 space-y-2">
-		<ShiftEventsTotalCards {metrics} {comparison} />
+		<ShiftSummaryCards {metrics} {comparison} />
 		<ShiftBurden {metrics} {comparison} />
 		<ShiftAlerts {metrics} />
 		<ShiftIncidents {metrics} {comparison} />

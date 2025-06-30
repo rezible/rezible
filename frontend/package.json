@@ -2,6 +2,7 @@
 	"name": "frontend",
 	"version": "0.0.1",
 	"private": true,
+	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
@@ -38,7 +39,6 @@
 		"typescript": "^5.8.3",
 		"vite": "^6.3.5"
 	},
-	"type": "module",
 	"dependencies": {
 		"@hey-api/client-fetch": "^0.10.2",
 		"@hocuspocus/provider": "^2.15.2",

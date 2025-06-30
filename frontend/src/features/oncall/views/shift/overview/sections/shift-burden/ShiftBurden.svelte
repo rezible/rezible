@@ -50,9 +50,6 @@
 			comparison: {value: comp.isolation},
 		},
 	] : []);
-	
-	const burdenValue = $derived(burden ? burden.finalScore : 0);
-	const compValue = $derived(comp ? comp.finalScore : 0);
 </script>
 
 <SectionCard>
@@ -61,43 +58,33 @@
 	<div class="flex gap-4 items-center">
 		<div class="w-1/3 grid place-items-center">
 			<div class="h-[350px] w-[400px] overflow-hidden grid place-self-center">
-				{#if burdenValue && burdenStats}
-					<BurdenRadar {burdenValue} {burdenStats} />
+				{#if burdenStats.length > 0}
+					<BurdenRadar {burdenStats} />
 				{/if}
 			</div>
 		</div>
 
-		<div class="flex flex-col w-full gap-2">
-			<div class="border rounded-lg flex-1">
-				<InlineStat 
-					title="Burden Score" 
-					subheading="Overall workload and stress level of the shift, derived from the below categories." 
-					value={burdenValue}
-					outOf="10"
-					comparison={{value: compValue}} />
-			</div>
-			<div class="flex flex-col h-fit w-full place-self-start divide-y border rounded-lg">
-				{#each burdenStats as stat}
-					<Collapse classes={{icon: "mr-2"}}>
-						<Header slot="trigger" title={stat.title} subheading={stat.subheading} classes={{root: "p-2 px-4 flex-1", title: "text-lg"}}>
-							{#snippet actions()}
-								<div class="ml-4 flex flex-col">
-									<span class="text-lg font-semibold self-end">
-										{stat.value}
-										<span class="text-xs text-surface-content/50">/ 10</span>
-									</span>
-									{#if stat.comparison}
-										<MetricComparisonLabel comparison={stat.comparison} metricValue={stat.value} />
-									{/if}
-								</div>
-							{/snippet}
-						</Header>
-						<div class="p-3">
-							TODO
-						</div>
-					</Collapse>
-				{/each}
-			</div>
+		<div class="flex flex-col h-fit w-full place-self-start divide-y border rounded-lg">
+			{#each burdenStats as stat}
+				<Collapse classes={{icon: "mr-2"}}>
+					<Header slot="trigger" title={stat.title} subheading={stat.subheading} classes={{root: "p-2 px-4 flex-1", title: "text-lg"}}>
+						{#snippet actions()}
+							<div class="ml-4 flex flex-col">
+								<span class="text-lg font-semibold self-end">
+									{stat.value}
+									<span class="text-xs text-surface-content/50">/ 10</span>
+								</span>
+								{#if stat.comparison}
+									<MetricComparisonLabel comparison={stat.comparison} metricValue={stat.value} format="raw" />
+								{/if}
+							</div>
+						{/snippet}
+					</Header>
+					<div class="p-3">
+						TODO
+					</div>
+				</Collapse>
+			{/each}
 		</div>
 	</div>
 </SectionCard>

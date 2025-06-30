@@ -102,6 +102,6 @@
 			</Chart-->
 		</div>
 		
-		<pre>Time spent on toil work (by category/label/service?)</pre>
+		<!-- <pre>Time spent on toil work (by category/label/service?)</pre> -->
 	</div>
 </div>

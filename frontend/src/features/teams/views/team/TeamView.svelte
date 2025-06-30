@@ -36,7 +36,7 @@
 </script>
 
 <div class="flex gap-2">
-	<Card classes={{ root: "max-w-lg", headerContainer: "p-3" }}>
+	<Card classes={{ root: "max-w-lg pb-3", headerContainer: "p-3" }}>
 		{#snippet header()}
 			<Header title="Users" classes={{title: "text-xl"}} />
 		{/snippet}
@@ -49,7 +49,7 @@
 		{/snippet}
 	</Card>
 
-	<Card classes={{ root: "max-w-lg", headerContainer: "p-3" }}>
+	<Card classes={{ root: "max-w-lg pb-3", headerContainer: "p-3" }}>
 		{#snippet header()}
 			<Header title="Oncall Rosters" classes={{title: "text-xl"}} />
 		{/snippet}

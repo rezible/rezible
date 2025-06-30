@@ -39,7 +39,6 @@
 				<span class="text-xs text-surface-content/60">{label}</span>
 				<span class="">
 					{settings.format(d, PeriodType.Custom, {custom: timeFmt})}
-					<span>{settings.format(d, PeriodType.Custom, {custom: DateToken.DayOfWeek_short})}</span>
 					<span>{settings.format(d, PeriodType.Day)}</span>
 				</span>
 			</div>

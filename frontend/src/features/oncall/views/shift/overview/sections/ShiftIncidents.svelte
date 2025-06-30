@@ -27,15 +27,25 @@
 	// const totalMinutes = $derived(metrics.incidentActivity?.reduce((prev, val) => (prev + val.minutes), 0));
 	// const totalTimeFormatted = $derived(formatDuration({minutes: totalMinutes}, {zero: true}));
 
-	const incidentStats = $derived<InlineStatProps[]>([
+	const stats = $derived<InlineStatProps[]>([
 		{
-			title: "Alert to Incident Ratio",
+			title: "Average Incident Severity",
+			subheading: `Highest severity is 0`,
+			value: 0,
+			comparison: {value: 0, positive: true}
+		},
+		{
+			title: "Alert to Incident Rate",
 			subheading: `Alerts that became incidents`,
 			value: metrics?.alerts.incidentRate || 0,
 			comparison: {value: comparison?.alerts.incidentRate || 0, positive: true}
 		},
-		{title: "Incidents by Severity", subheading: `TODO`, value: 0},
-		// {title: "Stat 4", subheading: `desc`, value: 0},
+		{
+			title: "Incidents Reviewed",
+			subheading: `From incident review meetings`,
+			value: 0,
+			comparison: {value: 0, positive: true}
+		},
 	])
 </script>
 
@@ -52,9 +62,10 @@
 		{/if}
 	</div>
 
-	<ChartWithStats stats={incidentStats}>
+	<ChartWithStats {stats}>
 		{#snippet chart()}
-			<div class="h-[250px] w-[300px] overflow-auto">
+			<div class="h-[250px] w-[300px] overflow-auto border">
+				incident bar chart
 			</div>
 		{/snippet}
 	</ChartWithStats>

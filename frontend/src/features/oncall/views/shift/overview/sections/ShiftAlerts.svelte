@@ -46,7 +46,8 @@
 	});
 	const maxAlertCount = $derived(Math.max(...hourAlertCounts));
 	const peakAlertHours = $derived(hourlyDistribution.filter((d) => (d.alerts > 0 && d.alerts === maxAlertCount)));
-	const peakHourLabel = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
+	const peakHoursText = $derived(peakAlertHours.map((v, hour) => hour12Label(v.hour)).join(", "));
+	const peakHourValueLabel = $derived(!!peakHoursText ? peakHoursText : "N/A");
 
 	const alertHourArcBackgroundColor = (hour: number) => {
 		if (isBusinessHours(hour)) return "rgba(135, 206, 250, 0.2)";
@@ -62,8 +63,8 @@
 		return "rgba(200, 190, 100, 0.8)"; // night alert
 	};
 
-	const alertStats = $derived<InlineStatProps[]>([
-		{ title: "Peak Hours", subheading: `${maxAlertCount} alerts fired`, value: peakHourLabel },
+	const stats = $derived<InlineStatProps[]>([
+		{ title: "Peak Hours", subheading: `${maxAlertCount} alerts fired`, value: peakHourValueLabel },
 		{ title: "Percent Annotated", subheading: `Number of alerts annotated with feedback`, value: "15%" },
 		{ title: "Actionability", subheading: `Alerts that required human intervention`, value: "" },
 		{ title: "Accuracy", subheading: `Alerts that correctly indicated an issue`, value: "" },
@@ -129,7 +130,7 @@
 
 <SectionCard>
 	<div class="h-fit flex flex-col gap-2">
-		<Header title="Alerts" subheading="Alerts by time of day">
+		<Header title="Alerts" subheading="Alerts fired during this shift">
 			{#snippet actions()}
 				<Button icon={mdiFilter} iconOnly on:click={() => (showFilters = !showFilters)} />
 			{/snippet}
@@ -140,7 +141,7 @@
 		{/if}
 	</div>
 
-	<ChartWithStats stats={alertStats} reverse>
+	<ChartWithStats {stats} reverse>
 		{#snippet chart()}
 			<div class="h-[300px] w-[300px] overflow-hidden grid place-self-center">
 				<EChart init={echarts.init} options={alertHoursChartOptions} />

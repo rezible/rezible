@@ -29,6 +29,8 @@
 {#if shift && events && roster}
 	{#each listEvents as [event, annotations]}
 		<EventRow {event} {annotations} />
+	{:else}
+		<span class="w-full text-center py-8">No Events</span>
 	{/each}
 {/if}
 

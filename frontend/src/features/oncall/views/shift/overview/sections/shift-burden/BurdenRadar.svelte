@@ -4,11 +4,10 @@
 	import type { InlineStatProps } from "$components/viz/InlineStat.svelte";
 
 	type Props = {
-		burdenValue: number;
 		burdenStats: InlineStatProps[];
 		comparisonSetName?: string;
 	};
-	const { burdenValue, burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
+	const { burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
 
 	const indicators = burdenStats.map(v => ({
 		name: v.title.replaceAll(" ", "\n"),
