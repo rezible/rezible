@@ -20,10 +20,10 @@ type DebriefService struct {
 	db   *ent.Client
 	jobs rez.JobsService
 	lms  rez.LanguageModelService
-	chat rez.ChatProvider
+	chat rez.ChatService
 }
 
-func NewDebriefService(db *ent.Client, jobs rez.JobsService, lms rez.LanguageModelService, chat rez.ChatProvider) (*DebriefService, error) {
+func NewDebriefService(db *ent.Client, jobs rez.JobsService, lms rez.LanguageModelService, chat rez.ChatService) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   db,
 		jobs: jobs,

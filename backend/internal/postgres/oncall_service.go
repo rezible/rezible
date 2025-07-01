@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -16,6 +15,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -29,12 +29,12 @@ type OncallService struct {
 	db        *ent.Client
 	jobs      rez.JobsService
 	docs      rez.DocumentsService
-	chat      rez.ChatProvider
+	chat      rez.ChatService
 	users     rez.UserService
 	incidents rez.IncidentService
 }
 
-func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatProvider, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
+func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
 	s := &OncallService{
 		db:        db,
 		jobs:      jobs,
@@ -326,19 +326,19 @@ func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *en
 		return nil
 	}
 
-	user, userErr := s.users.GetById(ctx, shift.UserID)
-	if userErr != nil {
-		return fmt.Errorf("failed to get shift user: %w", userErr)
-	}
+	//user, userErr := s.users.GetById(ctx, shift.UserID)
+	//if userErr != nil {
+	//	return fmt.Errorf("failed to get shift user: %w", userErr)
+	//}
 
 	//roster, rosterErr := s.GetRosterByID(ctx, shift.RosterID)
 	//if rosterErr != nil {
 	//	return fmt.Errorf("failed to get roster: %w", rosterErr)
 	//}
 
-	if msgErr := s.chat.SendTextMessage(ctx, user.ChatID, "TODO: complete handover message"); msgErr != nil {
-		return fmt.Errorf("failed to send message: %w", msgErr)
-	}
+	//if msgErr := s.chat.SendTextMessage(ctx, user.ChatID, "handover message"); msgErr != nil {
+	//	return fmt.Errorf("failed to send message: %w", msgErr)
+	//}
 	//msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
 	//	roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
 	//msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shift.ID)
@@ -508,11 +508,13 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 
 		return s.chat.SendMessage(ctx, roster.ChatChannelID, msgContent)
 	*/
-
-	return s.chat.SendOncallHandover(ctx, rez.SendOncallHandoverParams{
+	params := rez.SendOncallHandoverParams{
 		Content:           sections,
 		EndingShift:       shift,
 		StartingShift:     nextShift,
 		PinnedAnnotations: annos,
-	})
+	}
+	log.Debug().Interface("params", params).Msg("sending oncall handover")
+
+	return nil // s.chat.SendOncallHandover(ctx, )
 }

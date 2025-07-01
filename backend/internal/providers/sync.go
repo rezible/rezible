@@ -16,13 +16,13 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-func NewDataSyncer(db *ent.Client, loader *Loader) *DataSyncer {
-	return &DataSyncer{db: db, l: loader}
-}
-
 type DataSyncer struct {
 	db *ent.Client
-	l  *Loader
+	pl *Loader
+}
+
+func NewDataSyncer(db *ent.Client, loader *Loader) *DataSyncer {
+	return &DataSyncer{db: db, pl: loader}
 }
 
 func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Duration) error {
@@ -62,7 +62,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.Teams {
-		teamsProv, provErr := s.l.LoadTeamDataProvider(ctx)
+		teamsProv, provErr := s.pl.LoadTeamDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load teams data provider: %w", provErr)
 		}
@@ -73,7 +73,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.Users {
-		usersProv, provErr := s.l.LoadUserDataProvider(ctx)
+		usersProv, provErr := s.pl.LoadUserDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load users data provider: %w", provErr)
 		}
@@ -84,7 +84,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.Oncall {
-		oncallProv, provErr := s.l.LoadOncallDataProvider(ctx)
+		oncallProv, provErr := s.pl.LoadOncallDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}
@@ -95,7 +95,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.OncallEvents {
-		oncallEventsProv, provErr := s.l.LoadOncallEventsDataProvider(ctx)
+		oncallEventsProv, provErr := s.pl.LoadOncallEventsDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall events data provider: %w", provErr)
 		}
@@ -106,7 +106,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.Incidents {
-		incProv, provErr := s.l.LoadIncidentDataProvider(ctx)
+		incProv, provErr := s.pl.LoadIncidentDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}
@@ -117,7 +117,7 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.SystemComponents {
-		cmpProv, provErr := s.l.LoadSystemComponentsDataProvider(ctx)
+		cmpProv, provErr := s.pl.LoadSystemComponentsDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall data provider: %w", provErr)
 		}

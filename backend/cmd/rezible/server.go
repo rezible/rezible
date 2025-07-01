@@ -84,8 +84,6 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
-	chat := provs.Chat
-
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
@@ -106,6 +104,11 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
+	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
+	if chatErr != nil {
+		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
+	}
+
 	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, lms, chat, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
@@ -120,8 +123,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if eventsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
-
-	chat.SetMessageAnnotator(oncallEvents)
+	chat.Provider().SetMessageAnnotator(oncallEvents)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)
 	if debriefsErr != nil {

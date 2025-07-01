@@ -314,8 +314,6 @@ func (l *Loader) LoadIncidentDataProvider(ctx context.Context) (rez.IncidentData
 	return prov, provErr
 }
 
-// TODO: use one instance of DataProvider (eg slack)
-
 func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
@@ -324,7 +322,7 @@ func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider
 
 	switch pCfg.Name {
 	case "slack":
-		return loadProvider(slack.NewDataProvider, pCfg)
+		return loadProvider(slack.NewUserDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid user data provider: %s", pCfg.Name)
 	}
@@ -338,7 +336,7 @@ func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider
 
 	switch pCfg.Name {
 	case "slack":
-		return loadProvider(slack.NewDataProvider, pCfg)
+		return loadProvider(slack.NewTeamDataProvider, pCfg)
 	case "fake":
 		return loadProvider(fakeprovider.NewTeamsDataProvider, pCfg)
 	default:

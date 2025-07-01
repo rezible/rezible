@@ -27,14 +27,14 @@ type (
 	}
 )
 
-func plainText(text string) *slack.TextBlockObject {
+func plainTextBlock(text string) *slack.TextBlockObject {
 	return slack.NewTextBlockObject("plain_text", text, false, false)
 }
 
-func convertContentToBlocks(content *rez.ContentNode, prefix *string) []slack.Block {
+func convertContentToBlocks(content *rez.ContentNode, prefix string) []slack.Block {
 	c := &blockConverter{}
-	if prefix != nil {
-		c.prefix = *prefix
+	if prefix != "" {
+		c.prefix = prefix + "_"
 	}
 	return c.convertContent(content)
 }
@@ -48,7 +48,7 @@ func (c *blockConverter) convertContent(doc *rez.ContentNode) []slack.Block {
 
 	blocks := make([]slack.Block, len(c.sections))
 	for i, s := range c.sections {
-		blockId := fmt.Sprintf("%s_block_%d", c.prefix, i)
+		blockId := fmt.Sprintf("%sblock_%d", c.prefix, i)
 		blocks[i] = slack.NewRichTextBlock(blockId, s)
 	}
 

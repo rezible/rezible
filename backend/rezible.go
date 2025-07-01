@@ -201,16 +201,20 @@ type (
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendTextMessage(ctx context.Context, id string, text string) error
 
-		// TODO: this should just be converted to *ContentNode by DocumentsService
+		// TODO: this should just be converted to msg *ContentNode by ChatService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 
 	SendOncallHandoverParams struct {
-		Content []OncallShiftHandoverSection
-
+		Content           []OncallShiftHandoverSection
 		EndingShift       *ent.OncallUserShift
 		StartingShift     *ent.OncallUserShift
 		PinnedAnnotations []*ent.OncallAnnotation
+	}
+
+	ChatService interface {
+		Provider() ChatProvider
+		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 )
 

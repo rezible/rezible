@@ -1,10 +1,12 @@
 package slack
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	rez "github.com/rezible/rezible"
+	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -13,17 +15,134 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallannotation"
 )
 
 var (
+	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
+
 	createAnnotationCallbackID        = "create_annotation"
 	createAnnotationConfirmCallbackID = "create_annotation_confirm"
 )
 
-func (p *ChatProvider) handleInteractionWebhook(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := p.verifyWebhook(w, r); verifyErr != nil {
+type webhookHandler struct {
+	signingSecret    string
+	client           *slack.Client
+	messageAnnotator rez.ChatMessageAnnotator
+}
+
+func newWebhookHandler(signingSecret string, client *slack.Client) *webhookHandler {
+	return &webhookHandler{
+		signingSecret: signingSecret,
+		client:        client,
+	}
+}
+
+func (h *webhookHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
+	bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
+	body, bodyErr := io.ReadAll(bodyReader)
+	if bodyErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return bodyErr
+	}
+
+	sv, svErr := slack.NewSecretsVerifier(r.Header, h.signingSecret)
+	if svErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return svErr
+	}
+
+	if _, writeErr := sv.Write(body); writeErr != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return writeErr
+	}
+
+	if verificationErr := sv.Ensure(); verificationErr != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return verificationErr
+	}
+
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+	return nil
+}
+
+func (h *webhookHandler) handleOptions(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
+		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
+		return
+	}
+
+	log.Debug().Msg("get options")
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *webhookHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
+		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
+		return
+	}
+
+	body, readErr := io.ReadAll(r.Body)
+	if readErr != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	ev, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
+	if evErr != nil {
+		log.Error().Err(evErr).Msg("failed to parse event")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if ev.Type == slackevents.URLVerification {
+		var res *slackevents.ChallengeResponse
+		if jsonErr := json.Unmarshal(body, &res); jsonErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "text")
+		if _, writeErr := w.Write([]byte(res.Challenge)); writeErr != nil {
+			log.Error().Err(writeErr).Msg("failed to write challenge response")
+		}
+	} else if ev.Type == slackevents.AppRateLimited {
+		log.Warn().Msg("slack app rate limited")
+		w.WriteHeader(http.StatusOK)
+	} else if ev.Type == slackevents.CallbackEvent {
+		// TODO: queue processing of this
+		go h.handleCallbackEvent(ev)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		log.Warn().Str("type", ev.Type).Msg("failed to handle event")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+}
+
+func (h *webhookHandler) handleCallbackEvent(ev slackevents.EventsAPIEvent) {
+	if ev.Type == slackevents.CallbackEvent {
+		innerEvent := ev.InnerEvent
+		switch data := innerEvent.Data.(type) {
+		case *slackevents.AppMentionEvent:
+			h.handleAppMentionEvent(ev, data)
+		}
+	}
+}
+
+func (h *webhookHandler) handleAppMentionEvent(e slackevents.EventsAPIEvent, data *slackevents.AppMentionEvent) {
+	fmt.Printf("mention event: %+v\n", data)
+	_, _, msgErr := h.client.PostMessage(data.Channel, slack.MsgOptionText("hello", false))
+	if msgErr != nil {
+		log.Warn().Err(msgErr).Msg("failed to message")
+	}
+}
+
+func (h *webhookHandler) handleInteractions(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -47,11 +166,11 @@ func (p *ChatProvider) handleInteractionWebhook(w http.ResponseWriter, r *http.R
 	var handlerErr error
 	switch ic.Type {
 	case slack.InteractionTypeMessageAction:
-		handlerErr = p.handleMessageAction(ctx, &ic)
+		handlerErr = h.handleMessageAction(ctx, &ic)
 	case slack.InteractionTypeBlockActions:
-		handlerErr = p.handleBlockActions(ctx, &ic)
+		handlerErr = h.handleBlockActions(ctx, &ic)
 	case slack.InteractionTypeViewSubmission:
-		handlerErr = p.handleViewSubmission(ctx, &ic)
+		handlerErr = h.handleViewSubmission(ctx, &ic)
 	default:
 		log.Warn().Str("type", string(ic.Type)).Msg("unknown interaction type")
 		w.WriteHeader(http.StatusBadRequest)
@@ -65,37 +184,37 @@ func (p *ChatProvider) handleInteractionWebhook(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 }
 
-func (p *ChatProvider) handleMessageAction(ctx context.Context, ic *slack.InteractionCallback) error {
+func (h *webhookHandler) handleMessageAction(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.CallbackID {
 	case createAnnotationCallbackID:
-		return p.handleCreateAnnotationAction(ctx, ic)
+		return h.handleCreateAnnotationAction(ctx, ic)
 	}
 	return fmt.Errorf("unknown message action: %s", ic.CallbackID)
 }
 
-func (p *ChatProvider) handleBlockActions(ctx context.Context, ic *slack.InteractionCallback) error {
+func (h *webhookHandler) handleBlockActions(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.CallbackID {
 	case createAnnotationConfirmCallbackID:
-		return p.handleCreateAnnotationModalBlockAction(ctx, ic)
+		return h.handleCreateAnnotationModalBlockAction(ctx, ic)
 	}
 	return nil
 }
 
-func (p *ChatProvider) handleViewSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+func (h *webhookHandler) handleViewSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.View.CallbackID {
 	case createAnnotationConfirmCallbackID:
-		return p.handleCreateAnnotationModalSubmission(ctx, ic)
+		return h.handleCreateAnnotationModalSubmission(ctx, ic)
 	}
 	return nil
 }
 
-func (p *ChatProvider) handleCreateAnnotationAction(ctx context.Context, ic *slack.InteractionCallback) error {
-	view, viewErr := p.createAnnotationModalView(ctx, ic)
+func (h *webhookHandler) handleCreateAnnotationAction(ctx context.Context, ic *slack.InteractionCallback) error {
+	view, viewErr := h.createAnnotationModalView(ctx, ic)
 	if viewErr != nil || view == nil {
 		return fmt.Errorf("failed to create annotation view: %w", viewErr)
 	}
 
-	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, *view)
+	resp, respErr := h.client.OpenViewContext(ctx, ic.TriggerID, *view)
 	if respErr != nil {
 		if resp != nil && !resp.Ok && len(resp.ResponseMetadata.Messages) > 0 {
 			log.Debug().
@@ -119,22 +238,6 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
-/*
-func (p *ChatProvider) getUserOncallRosters(ctx context.Context, id string) ([]*ent.OncallRoster, error) {
-	user, userErr := p.lookupUserFn(ctx, id)
-	if userErr != nil {
-		return nil, fmt.Errorf("failed to get user: %w", userErr)
-	}
-
-	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
-	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
-		return nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
-	}
-
-	return rosters, nil
-}
-*/
-
 type createAnnotationMetadata struct {
 	MsgId        string    `json:"mid"`
 	MsgTimestamp time.Time `json:"mts"`
@@ -142,10 +245,10 @@ type createAnnotationMetadata struct {
 	AnnotationId uuid.UUID `json:"aid"`
 }
 
-func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+func (h *webhookHandler) createAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
 	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
 
-	rosters, event, infoErr := p.annos.QueryUserChatMessageEventDetails(ctx, ic.User.ID, msgId)
+	rosters, event, infoErr := h.messageAnnotator.QueryUserChatMessageEventDetails(ctx, ic.User.ID, msgId)
 	if infoErr != nil {
 		return nil, fmt.Errorf("failed to get annotation information: %w", infoErr)
 	}
@@ -153,11 +256,11 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 	if len(rosters) == 0 {
 		return &slack.ModalViewRequest{
 			Type:  "modal",
-			Title: plainText("No Oncall Rosters"),
+			Title: plainTextBlock("No Oncall Rosters"),
 			Blocks: slack.Blocks{BlockSet: []slack.Block{
-				slack.NewSectionBlock(plainText("You are not a member of any oncall rosters"), nil, nil),
+				slack.NewSectionBlock(plainTextBlock("You are not a member of any oncall rosters"), nil, nil),
 			}},
-			Close:      plainText("Close"),
+			Close:      plainTextBlock("Close"),
 			CallbackID: createAnnotationConfirmCallbackID,
 		}, nil
 	}
@@ -183,16 +286,16 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 			shiftOptions := make([]*slack.OptionBlockObject, len(shifts))
 			for i, sh := range shifts {
 				rosterName := sh.Edges.Roster.Name
-				shiftOptions[i] = slack.NewOptionBlockObject(sh.ID.String(), plainText(rosterName), nil)
+				shiftOptions[i] = slack.NewOptionBlockObject(sh.ID.String(), plainTextBlock(rosterName), nil)
 			}
 
 			shiftSelectElement := slack.NewOptionsSelectBlockElement(
 				slack.OptTypeStatic,
-				plainText("Select the roster shift to annotate"),
+				plainTextBlock("Select the roster shift to annotate"),
 				"shift_roster_select",
 				shiftOptions...)
 
-			shiftBlock = slack.NewSectionBlock(plainText("Oncall Shift Rosters"), nil,
+			shiftBlock = slack.NewSectionBlock(plainTextBlock("Oncall Shift Rosters"), nil,
 				slack.NewAccessory(shiftSelectElement),
 				slack.SectionBlockOptionBlockID("shift_select"))
 		}
@@ -218,7 +321,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		slack.NewRichTextSectionTextElement(ic.Message.Text, &slack.RichTextSectionTextStyle{Italic: true}))
 
 	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
-	inputHint := plainText("You can edit this later")
+	inputHint := plainTextBlock("You can edit this later")
 
 	titleText := "Create Annotation"
 	submitText := "Create"
@@ -236,7 +339,7 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		slack.NewDividerBlock(),
 		slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails),
 		slack.NewDividerBlock(),
-		slack.NewInputBlock("notes_input", plainText("Notes"), inputHint, inputBlock),
+		slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock),
 	}
 
 	jsonMetadata, jsonErr := json.Marshal(metadata)
@@ -248,18 +351,18 @@ func (p *ChatProvider) createAnnotationModalView(ctx context.Context, ic *slack.
 		Type:            "modal",
 		CallbackID:      createAnnotationConfirmCallbackID,
 		PrivateMetadata: string(jsonMetadata),
-		Title:           plainText(titleText),
-		Close:           plainText("Cancel"),
-		Submit:          plainText(submitText),
+		Title:           plainTextBlock(titleText),
+		Close:           plainTextBlock("Cancel"),
+		Submit:          plainTextBlock(submitText),
 		Blocks:          slack.Blocks{BlockSet: blockSet},
 	}, nil
 }
 
-func (p *ChatProvider) handleCreateAnnotationModalBlockAction(ctx context.Context, ic *slack.InteractionCallback) error {
+func (h *webhookHandler) handleCreateAnnotationModalBlockAction(ctx context.Context, ic *slack.InteractionCallback) error {
 	return nil
 }
 
-func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+func (h *webhookHandler) handleCreateAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	var meta createAnnotationMetadata
 	if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
 		return fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
@@ -300,7 +403,7 @@ func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context
 		Notes:    notes,
 		Edges:    ent.OncallAnnotationEdges{Event: msgEvent},
 	}
-	_, createErr := p.annos.CreateAnnotation(ctx, msgAnno)
+	_, createErr := h.messageAnnotator.CreateAnnotation(ctx, msgAnno)
 	if createErr != nil {
 		return fmt.Errorf("failed to create annotation: %w", createErr)
 	}
