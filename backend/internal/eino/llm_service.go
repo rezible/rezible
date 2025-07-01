@@ -43,16 +43,18 @@ func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debr
 		return nil, msgErr
 	}
 
-	thread := createDebriefThread(debriefMessages)
-
-	//model, modelErr := s.prov.Model().WithTools(debriefResponseTools)
 	model := s.prov.Model()
-	resp, genErr := model.Generate(ctx, thread)
+	resp, genErr := model.Generate(ctx, createDebriefThread(debriefMessages))
 	if genErr != nil {
 		return nil, fmt.Errorf("generate content: %w", genErr)
 	}
 
-	return convertDebriefResponseToMessage(resp)
+	respMsg := &ent.IncidentDebriefMessage{
+		Type: incidentdebriefmessage.TypeAssistant,
+		Body: resp.Content,
+	}
+
+	return respMsg, nil
 }
 
 func createDebriefThread(messages []*ent.IncidentDebriefMessage) []*schema.Message {
@@ -75,12 +77,4 @@ func createDebriefThread(messages []*ent.IncidentDebriefMessage) []*schema.Messa
 	}
 
 	return thread
-}
-
-func convertDebriefResponseToMessage(resp *schema.Message) (*ent.IncidentDebriefMessage, error) {
-	msg := &ent.IncidentDebriefMessage{
-		Type: incidentdebriefmessage.TypeAssistant,
-		Body: resp.Content,
-	}
-	return msg, nil
 }

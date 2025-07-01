@@ -224,6 +224,9 @@ type (
 	LanguageModelService interface {
 		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
 	}
+
+	AiAgentService interface {
+	}
 )
 
 type (
