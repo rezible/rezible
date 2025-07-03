@@ -43,29 +43,8 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 	return query.All(params.GetQueryContext(ctx))
 }
 
-func (s *OncallEventsService) QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error) {
-	user, userErr := s.users.GetByChatId(ctx, userChatId)
-	if userErr != nil {
-		return nil, nil, userErr
-	}
-
-	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
-	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
-		return nil, nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
-	}
-
-	rosterIds := make([]uuid.UUID, len(rosters))
-	for i, r := range rosters {
-		rosterIds[i] = r.ID
-	}
-
-	// Get event by message id
-	event, eventErr := s.db.OncallEvent.Query().Where(oncallevent.ProviderID(msgId)).Only(ctx)
-	if eventErr != nil && !ent.IsNotFound(eventErr) {
-		return nil, nil, fmt.Errorf("failed to query oncall event for msg: %w", eventErr)
-	}
-
-	return rosters, event, nil
+func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
+	return s.db.OncallEvent.Query().Where(oncallevent.ProviderID(providerId)).First(ctx)
 }
 
 func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
@@ -116,10 +95,33 @@ func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (
 func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
 	var created *ent.OncallAnnotation
 	createFn := func(tx *ent.Tx) error {
-		// TODO: create event if it is a message event
+		eventId := anno.EventID
+		if eventId == uuid.Nil {
+			event := anno.Edges.Event
+			if event == nil {
+				return fmt.Errorf("no event supplied")
+			}
+			createEvent := tx.OncallEvent.Create().
+				SetProviderID(event.ProviderID).
+				SetSource(event.Source).
+				SetKind(event.Kind).
+				SetTitle(event.Title).
+				SetDescription(event.Description).
+				SetTimestamp(event.Timestamp)
+
+			// TODO: handle event existing
+			//OnConflictColumns(oncallevent.FieldProviderID, oncallevent.FieldSource).
+			//UpdateNewValues()
+
+			createdEvent, eventErr := createEvent.Save(ctx)
+			if eventErr != nil {
+				return fmt.Errorf("create event: %w", eventErr)
+			}
+			eventId = createdEvent.ID
+		}
 
 		createdAnno, annoErr := tx.OncallAnnotation.Create().
-			SetEventID(anno.EventID).
+			SetEventID(eventId).
 			SetRosterID(anno.RosterID).
 			SetCreatorID(anno.CreatorID).
 			SetMinutesOccupied(anno.MinutesOccupied).
@@ -127,9 +129,11 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 			SetTags(anno.Tags).
 			Save(ctx)
 		if annoErr != nil {
-			return fmt.Errorf("failed to create annotation: %w", annoErr)
+			return fmt.Errorf("create annotation: %w", annoErr)
 		}
-		if alertFb := anno.Edges.AlertFeedback; alertFb != nil {
+
+		alertFb := anno.Edges.AlertFeedback
+		if alertFb != nil {
 			createdFb, fbErr := tx.OncallAnnotationAlertFeedback.Create().
 				SetDocumentationAvailable(alertFb.DocumentationAvailable).
 				SetActionable(alertFb.Actionable).
@@ -137,7 +141,7 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 				SetAnnotation(createdAnno).
 				Save(ctx)
 			if fbErr != nil {
-				return fmt.Errorf("failed to create alert feedback: %w", fbErr)
+				return fmt.Errorf("create alert feedback: %w", fbErr)
 			}
 			createdAnno.Edges.AlertFeedback = createdFb
 		}
@@ -145,7 +149,7 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 		return nil
 	}
 	if txErr := ent.WithTx(ctx, s.db, createFn); txErr != nil {
-		return nil, fmt.Errorf("failed to create annotation: %w", txErr)
+		return nil, fmt.Errorf("creating annotation: %w", txErr)
 	}
 	return created, nil
 }
@@ -157,7 +161,7 @@ func (s *OncallEventsService) UpdateAnnotation(ctx context.Context, anno *ent.On
 		WithEvent().
 		Only(ctx)
 	if currErr != nil {
-		return nil, fmt.Errorf("failed to query current annotation: %w", currErr)
+		return nil, fmt.Errorf("querying current annotation: %w", currErr)
 	}
 	dbAlertFb := dbAnno.Edges.AlertFeedback
 	updated := dbAnno

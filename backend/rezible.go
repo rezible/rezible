@@ -190,14 +190,16 @@ type (
 )
 
 type (
-	ChatMessageAnnotator interface {
-		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
-		QueryUserChatMessageEventDetails(ctx context.Context, userChatId string, msgId string) ([]*ent.OncallRoster, *ent.OncallEvent, error)
-	}
+	AnnotateMessageFn        = func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
+	LookupChatUserFn         = func(ctx context.Context, chatId string) (*ent.User, error)
+	LookupChatMessageEventFn = func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
-		SetMessageAnnotator(ChatMessageAnnotator)
+
+		SetAnnotateMessageFn(AnnotateMessageFn)
+		SetUserLookupFn(LookupChatUserFn)
+		SetMessageEventLookupFn(LookupChatMessageEventFn)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendTextMessage(ctx context.Context, id string, text string) error
@@ -332,6 +334,7 @@ type (
 	}
 
 	OncallEventsService interface {
+		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
 		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, error)
 
 		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)

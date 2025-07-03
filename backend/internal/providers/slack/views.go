@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rezible/rezible/ent/oncallannotation"
 	"strconv"
 	"strings"
 	"time"
@@ -30,14 +29,16 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
-type createAnnotationMetadata struct {
+type createAnnotationMessageMetadata struct {
+	UserId       string    `json:"uid"`
 	MsgId        string    `json:"mid"`
 	MsgTimestamp time.Time `json:"mts"`
+	MsgText      string    `json:"mtx"`
 	AnnotationId uuid.UUID `json:"aid"`
 }
 
 func getCreateAnnotationModalViewAnnotation(view slack.View) (*ent.OncallAnnotation, error) {
-	var meta createAnnotationMetadata
+	var meta createAnnotationMessageMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
@@ -49,10 +50,9 @@ func getCreateAnnotationModalViewAnnotation(view slack.View) (*ent.OncallAnnotat
 				notes = noteBlock.Value
 			}
 		}
-
 	}
 
-	_, rosterId := getAnnotationSelectedRoster(view.State)
+	_, rosterId := getSelectedRoster(view.State)
 	if rosterId == uuid.Nil {
 		return nil, fmt.Errorf("no roster id selected")
 	}
@@ -63,10 +63,12 @@ func getCreateAnnotationModalViewAnnotation(view slack.View) (*ent.OncallAnnotat
 		Notes:    notes,
 		Edges: ent.OncallAnnotationEdges{
 			Event: &ent.OncallEvent{
-				ProviderID: meta.MsgId,
-				Kind:       "message",
-				Timestamp:  meta.MsgTimestamp,
-				// TODO: add more message details
+				ProviderID:  meta.MsgId,
+				Kind:        "message",
+				Timestamp:   meta.MsgTimestamp,
+				Source:      "slack",
+				Title:       "message",
+				Description: "",
 			},
 		},
 	}
@@ -74,20 +76,29 @@ func getCreateAnnotationModalViewAnnotation(view slack.View) (*ent.OncallAnnotat
 	return anno, nil
 }
 
-func getAnnotationSelectedRoster(state *slack.ViewState) (string, uuid.UUID) {
-	if optionsBlock, ok := state.Values["roster_select_block"]; ok {
-		if selectBlock, optOk := optionsBlock["roster_select"]; optOk {
-			id, uuidErr := uuid.Parse(selectBlock.SelectedOption.Value)
-			if uuidErr == nil {
-				return selectBlock.SelectedOption.Text.Text, id
+func getSelectedRoster(state *slack.ViewState) (string, uuid.UUID) {
+	if state != nil {
+		if optionsBlock, ok := state.Values["roster_select_block"]; ok {
+			if selectBlock, optOk := optionsBlock["roster_select"]; optOk {
+				id, uuidErr := uuid.Parse(selectBlock.SelectedOption.Value)
+				if uuidErr == nil {
+					return selectBlock.SelectedOption.Text.Text, id
+				}
 			}
 		}
 	}
 	return "", uuid.Nil
 }
 
-func makeCreateAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback, msgId string, rosters []*ent.OncallRoster, event *ent.OncallEvent) (*slack.ModalViewRequest, error) {
-	if len(rosters) == 0 {
+type createAnnotationModalDetails struct {
+	metadata       createAnnotationMessageMetadata
+	rosters        []*ent.OncallRoster
+	selectedRoster *ent.OncallRoster
+	currAnnotation *ent.OncallAnnotation
+}
+
+func makeCreateAnnotationModalView(details *createAnnotationModalDetails) (*slack.ModalViewRequest, error) {
+	if len(details.rosters) == 0 {
 		return &slack.ModalViewRequest{
 			Type:  "modal",
 			Title: plainTextBlock("No Oncall Rosters"),
@@ -99,74 +110,77 @@ func makeCreateAnnotationModalView(ctx context.Context, ic *slack.InteractionCal
 		}, nil
 	}
 
-	msgTime := convertSlackTs(ic.MessageTs)
+	var blockSet []slack.Block
 
-	metadata := createAnnotationMetadata{
-		MsgId:        msgId,
-		MsgTimestamp: msgTime,
+	messageUserDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionUserElement(details.metadata.UserId, nil),
+		slack.NewRichTextSectionDateElement(details.metadata.MsgTimestamp.Unix(), " - {date_short_pretty} at {time}", nil, nil))
+	messageContentsDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionTextElement(details.metadata.MsgText, &slack.RichTextSectionTextStyle{Italic: true}))
+
+	blockSet = append(blockSet, slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails))
+
+	var selectedRoster *ent.OncallRoster
+	if details.selectedRoster != nil {
+		selectedRoster = details.selectedRoster
+	} else if len(details.rosters) == 1 {
+		selectedRoster = details.rosters[0]
 	}
 
-	// TODO: allow selecting roster
-	roster := rosters[0]
-
-	var curr *ent.OncallAnnotation
-	if event != nil {
-		rosterAnno, annoErr := event.QueryAnnotations().
-			Where(oncallannotation.RosterID(roster.ID)).
-			Only(ctx)
-		if annoErr != nil && !ent.IsNotFound(annoErr) {
-			return nil, fmt.Errorf("failed to query existing event annotation: %w", annoErr)
-		}
-		curr = rosterAnno
-	}
-
-	rosterOptions := make([]*slack.OptionBlockObject, len(rosters))
-	for i, r := range rosters {
+	selectedOptIdx := -1
+	rosterOptions := make([]*slack.OptionBlockObject, len(details.rosters))
+	for i, r := range details.rosters {
 		rosterOptions[i] = slack.NewOptionBlockObject(r.ID.String(), plainTextBlock(r.Name), nil)
+		if selectedRoster != nil && r.ID == selectedRoster.ID {
+			selectedOptIdx = i
+		}
 	}
 
 	rosterSelectElement := slack.NewOptionsSelectBlockElement(
 		slack.OptTypeStatic,
 		plainTextBlock("Roster Name"),
 		"roster_select",
-		rosterOptions...).
-		WithInitialOption(rosterOptions[0])
+		rosterOptions...)
 
+	if selectedOptIdx >= 0 {
+		rosterSelectElement.WithInitialOption(rosterOptions[selectedOptIdx])
+	}
+
+	rosterText := "Select a Roster to annotate"
+	if selectedRoster != nil {
+		rosterText = "Annotating roster: " + selectedRoster.Name
+	}
 	rosterBlock := slack.NewSectionBlock(
-		plainTextBlock("Annotating roster: "+roster.Name), nil,
+		plainTextBlock(rosterText), nil,
 		slack.NewAccessory(rosterSelectElement),
 		slack.SectionBlockOptionBlockID("roster_select_block"))
 
-	messageUserDetails := slack.NewRichTextSection(
-		slack.NewRichTextSectionUserElement(ic.Message.User, nil),
-		slack.NewRichTextSectionDateElement(msgTime.Unix(), " - {date_short_pretty} at {time}", nil, nil))
-	messageContentsDetails := slack.NewRichTextSection(
-		slack.NewRichTextSectionTextElement(ic.Message.Text, &slack.RichTextSectionTextStyle{Italic: true}))
+	blockSet = append(blockSet, slack.NewDividerBlock(), rosterBlock)
 
-	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text").
-		WithMinLength(1)
-	inputHint := plainTextBlock("You can edit this later")
+	if selectedRoster != nil {
+		inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
+		//inputBlock.WithMinLength(1)
+		inputHint := plainTextBlock("You can edit this later")
+		if details.currAnnotation != nil {
+			inputBlock.WithInitialValue(details.currAnnotation.Notes)
+			inputHint = nil
+		}
+
+		blockSet = append(blockSet,
+			slack.NewDividerBlock(),
+			slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock))
+	}
 
 	titleText := "Create Annotation"
 	submitText := "Create"
 
-	if curr != nil {
-		inputBlock.WithInitialValue(curr.Notes)
-		metadata.AnnotationId = curr.ID
-		inputHint = nil
+	if details.currAnnotation != nil {
+		details.metadata.AnnotationId = details.currAnnotation.ID
 		titleText = "Update Annotation"
 		submitText = "Update"
 	}
 
-	blockSet := []slack.Block{
-		rosterBlock,
-		slack.NewDividerBlock(),
-		slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails),
-		slack.NewDividerBlock(),
-		slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock),
-	}
-
-	jsonMetadata, jsonErr := json.Marshal(metadata)
+	jsonMetadata, jsonErr := json.Marshal(details.metadata)
 	if jsonErr != nil {
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
@@ -179,34 +193,34 @@ func makeCreateAnnotationModalView(ctx context.Context, ic *slack.InteractionCal
 		Close:           plainTextBlock("Cancel"),
 		Submit:          plainTextBlock(submitText),
 		Blocks:          slack.Blocks{BlockSet: blockSet},
-		ExternalID:      msgId,
+		//ExternalID:      details.messageId,
 	}, nil
 }
 
-func makeUpdatedCreateAnnotationModalView(ic *slack.InteractionCallback) slack.ModalViewRequest {
-	rosterName, _ := getAnnotationSelectedRoster(ic.View.State)
-
-	blockSet := ic.View.Blocks.BlockSet
-	for idx, block := range ic.View.Blocks.BlockSet {
-		if block.ID() == "roster_select_block" {
-			if sb, ok := block.(*slack.SectionBlock); ok {
-				sb.Text = plainTextBlock("Annotating roster: " + rosterName)
-				blockSet[idx] = sb
-			}
-		}
-	}
-
-	return slack.ModalViewRequest{
-		Type:            "modal",
-		CallbackID:      createAnnotationModalViewCallbackID,
-		PrivateMetadata: ic.View.PrivateMetadata,
-		Title:           ic.View.Title,
-		Close:           ic.View.Close,
-		Submit:          ic.View.Submit,
-		Blocks:          slack.Blocks{BlockSet: blockSet},
-		ExternalID:      ic.View.ExternalID,
-	}
-}
+//func makeUpdatedCreateAnnotationModalView(ic *slack.InteractionCallback) slack.ModalViewRequest {
+//	rosterName, rosterId := getAnnotationSelectedRoster(ic.View.State)
+//
+//	blockSet := ic.View.Blocks.BlockSet
+//	for idx, block := range ic.View.Blocks.BlockSet {
+//		if block.ID() == "roster_select_block" {
+//			if sb, ok := block.(*slack.SectionBlock); ok {
+//				sb.Text = plainTextBlock("Annotating roster: " + rosterName)
+//				blockSet[idx] = sb
+//			}
+//		}
+//	}
+//
+//	return slack.ModalViewRequest{
+//		Type:            "modal",
+//		CallbackID:      createAnnotationModalViewCallbackID,
+//		PrivateMetadata: ic.View.PrivateMetadata,
+//		Title:           ic.View.Title,
+//		Close:           ic.View.Close,
+//		Submit:          ic.View.Submit,
+//		Blocks:          slack.Blocks{BlockSet: blockSet},
+//		ExternalID:      ic.View.ExternalID,
+//	}
+//}
 
 func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, string, error) {
 	var blocks []slack.Block

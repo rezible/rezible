@@ -2,7 +2,11 @@ package slack
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -12,9 +16,12 @@ import (
 )
 
 type ChatProvider struct {
-	client           *slack.Client
-	webhookHandler   *webhookHandler
-	messageAnnotator rez.ChatMessageAnnotator
+	client         *slack.Client
+	webhookHandler *webhookHandler
+
+	annotateMessageFn    rez.AnnotateMessageFn
+	lookupUserFn         rez.LookupChatUserFn
+	lookupMessageEventFn rez.LookupChatMessageEventFn
 }
 
 type ChatProviderConfig struct {
@@ -29,8 +36,14 @@ func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
 	return p, nil
 }
 
-func (p *ChatProvider) SetMessageAnnotator(ma rez.ChatMessageAnnotator) {
-	p.messageAnnotator = ma
+func (p *ChatProvider) SetAnnotateMessageFn(fn func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)) {
+	p.annotateMessageFn = fn
+}
+func (p *ChatProvider) SetUserLookupFn(fn func(context.Context, string) (*ent.User, error)) {
+	p.lookupUserFn = fn
+}
+func (p *ChatProvider) SetMessageEventLookupFn(fn func(context.Context, string) (*ent.OncallEvent, error)) {
+	p.lookupMessageEventFn = fn
 }
 
 func (p *ChatProvider) GetWebhooks() rez.Webhooks {
@@ -114,18 +127,82 @@ func (p *ChatProvider) onMessageEvent(data *slackevents.MessageEvent) {
 	log.Debug().Interface("data", data).Msg("slack message event")
 }
 
+func (p *ChatProvider) queryUserRosters(ctx context.Context, userId string) ([]*ent.OncallRoster, error) {
+	if p.lookupUserFn == nil || p.lookupMessageEventFn == nil {
+		return nil, fmt.Errorf("lookup funcs nil")
+	}
+
+	user, userErr := p.lookupUserFn(ctx, userId)
+	if userErr != nil {
+		return nil, userErr
+	}
+
+	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
+	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
+		return nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
+	}
+
+	return rosters, nil
+}
+
+func getMessageId(ic *slack.InteractionCallback) string {
+	return fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
+}
+
+func (p *ChatProvider) makeCreateAnnotationViewDetails(ctx context.Context, ic *slack.InteractionCallback) (*createAnnotationModalDetails, error) {
+	msgId := getMessageId(ic)
+	userId := ic.User.ID
+
+	d := &createAnnotationModalDetails{}
+	if ic.View.PrivateMetadata != "" {
+		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &d.metadata); jsonErr != nil {
+			return nil, jsonErr
+		}
+	} else {
+		d.metadata = createAnnotationMessageMetadata{
+			MsgId:        msgId,
+			UserId:       ic.Message.User,
+			MsgText:      ic.Message.Text,
+			MsgTimestamp: convertSlackTs(ic.MessageTs),
+		}
+	}
+	var rostersErr error
+	d.rosters, rostersErr = p.queryUserRosters(ctx, userId)
+	if rostersErr != nil {
+		return nil, fmt.Errorf("failed to get annotation information: %w", rostersErr)
+	}
+
+	_, selectedId := getSelectedRoster(ic.View.State)
+	if selectedId != uuid.Nil && len(d.rosters) > 0 {
+		for _, roster := range d.rosters {
+			if roster.ID == selectedId {
+				d.selectedRoster = roster
+				break
+			}
+		}
+		event, eventErr := p.lookupMessageEventFn(ctx, msgId)
+		if eventErr != nil && !ent.IsNotFound(eventErr) {
+			return nil, fmt.Errorf("failed to lookup message event: %w", eventErr)
+		}
+		if event != nil {
+			anno, annoErr := event.QueryAnnotations().Where(oncallannotation.RosterID(selectedId)).First(ctx)
+			if annoErr != nil && !ent.IsNotFound(annoErr) {
+				return nil, fmt.Errorf("failed to lookup existing event annotation: %w", annoErr)
+			}
+			d.currAnnotation = anno
+		}
+	}
+
+	return d, nil
+}
+
 func (p *ChatProvider) handleCreateAnnotationInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
-	if p.messageAnnotator == nil {
-		return fmt.Errorf("no chat message annotator")
+	details, detailsErr := p.makeCreateAnnotationViewDetails(ctx, ic)
+	if detailsErr != nil {
+		return fmt.Errorf("failed to get message annotation context: %w", detailsErr)
 	}
 
-	msgId := fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
-	rosters, event, infoErr := p.messageAnnotator.QueryUserChatMessageEventDetails(ctx, ic.User.ID, msgId)
-	if infoErr != nil {
-		return fmt.Errorf("failed to get annotation information: %w", infoErr)
-	}
-
-	view, viewErr := makeCreateAnnotationModalView(ctx, ic, msgId, rosters, event)
+	view, viewErr := makeCreateAnnotationModalView(details)
 	if viewErr != nil || view == nil {
 		return fmt.Errorf("failed to create annotation view: %w", viewErr)
 	}
@@ -140,9 +217,16 @@ func (p *ChatProvider) handleCreateAnnotationInteraction(ctx context.Context, ic
 
 func (p *ChatProvider) handleBlockActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	if ic.View.CallbackID == createAnnotationModalViewCallbackID {
-		view := makeUpdatedCreateAnnotationModalView(ic)
+		details, detailsErr := p.makeCreateAnnotationViewDetails(ctx, ic)
+		if detailsErr != nil {
+			return fmt.Errorf("failed to get message annotation context: %w", detailsErr)
+		}
+		view, viewErr := makeCreateAnnotationModalView(details)
+		if viewErr != nil || view == nil {
+			return fmt.Errorf("failed to create annotation view: %w", viewErr)
+		}
 
-		resp, respErr := p.client.UpdateViewContext(ctx, view, "", "", ic.View.ID)
+		resp, respErr := p.client.UpdateViewContext(ctx, *view, "", "", ic.View.ID)
 		if respErr != nil {
 			logSlackViewErrorResponse(respErr, resp)
 			return fmt.Errorf("open view: %w", respErr)
@@ -152,13 +236,18 @@ func (p *ChatProvider) handleBlockActionInteraction(ctx context.Context, ic *sla
 }
 
 func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+	user, userErr := p.lookupUserFn(ctx, ic.User.ID)
+	if userErr != nil || user == nil {
+		return fmt.Errorf("failed to lookup user: %w", userErr)
+	}
 	anno, annoErr := getCreateAnnotationModalViewAnnotation(ic.View)
 	if annoErr != nil {
 		return fmt.Errorf("failed to get view annotation: %w", annoErr)
 	}
-	if p.messageAnnotator == nil {
+	anno.CreatorID = user.ID
+	if p.annotateMessageFn == nil {
 		return fmt.Errorf("no chat message annotator")
 	}
-	_, createErr := p.messageAnnotator.CreateAnnotation(ctx, anno)
+	_, createErr := p.annotateMessageFn(ctx, anno)
 	return createErr
 }

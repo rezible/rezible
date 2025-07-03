@@ -95,6 +95,12 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
+	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
+	if chatErr != nil {
+		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
+	}
+	chat.Provider().SetUserLookupFn(users.GetByChatId)
+
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
@@ -108,11 +114,6 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
 	if docsErr != nil {
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
-	}
-
-	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
-	if chatErr != nil {
-		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
 	}
 
 	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, lms, chat, users)
@@ -129,7 +130,8 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if eventsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
-	chat.Provider().SetMessageAnnotator(oncallEvents)
+	chat.Provider().SetAnnotateMessageFn(oncallEvents.CreateAnnotation)
+	chat.Provider().SetMessageEventLookupFn(oncallEvents.GetProviderEvent)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)
 	if debriefsErr != nil {
