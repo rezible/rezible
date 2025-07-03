@@ -44,7 +44,7 @@ func (p *TeamDataProvider) TeamDataMapping() *ent.Team {
 func pullSlackTeams(ctx context.Context, client *slack.Client) iter.Seq2[*slack.Team, error] {
 	var cursor string
 	return func(yield func(*slack.Team, error) bool) {
-		for cursor != "" {
+		for {
 			params := slack.ListTeamsParameters{Limit: 20, Cursor: cursor}
 			slackTeams, newCursor, listErr := client.ListTeamsContext(ctx, params)
 			if listErr != nil {
@@ -53,6 +53,9 @@ func pullSlackTeams(ctx context.Context, client *slack.Client) iter.Seq2[*slack.
 			}
 			for _, slackTeam := range slackTeams {
 				yield(&slackTeam, nil)
+			}
+			if newCursor == "" {
+				break
 			}
 			cursor = newCursor
 		}

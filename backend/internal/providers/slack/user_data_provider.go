@@ -62,6 +62,7 @@ func (p *UserDataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, e
 					ChatID:   u.ID,
 					Timezone: u.TZ,
 				}
+				fmt.Printf("user: %+v\n", mapped)
 				yield(mapped, nil)
 			}
 		}

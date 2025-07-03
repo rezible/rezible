@@ -12,8 +12,8 @@ import (
 )
 
 type (
-	ResourceContents = mcp.ResourceContents
-	TextResource     = mcp.TextResourceContents
+	ResourceContents     = mcp.ResourceContents
+	TextResourceContents = mcp.TextResourceContents
 
 	ResourcesHandler interface {
 		ListActiveIncidents(ctx context.Context) ([]ResourceContents, error)
@@ -22,7 +22,7 @@ type (
 )
 
 func NewMarkdownResource(uri string, content string) mcp.ResourceContents {
-	return &TextResource{
+	return &TextResourceContents{
 		URI:      uri,
 		MIMEType: "text/markdown",
 		Text:     content,

@@ -4,22 +4,25 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
 type (
 	TextContent = mcp.TextContent
+
+	Server = server.MCPServer
+	Client = client.Client
 )
 
-//const (
-//	RoleUser      = mcp.RoleUser
-//	RoleAssistant = mcp.RoleAssistant
-//)
+func NewClient(s *Server) (*Client, error) {
+	return client.NewInProcessClient(s)
+}
 
 type Handler interface {
 	ResourcesHandler
-	ToolsHandler
+	// ToolsHandler
 }
 
 func NewHTTPServer(h Handler, path string) http.Handler {
@@ -44,7 +47,7 @@ func NewServer(h Handler) *server.MCPServer {
 		server.WithHooks(hooks))
 
 	addResources(s, h)
-	addTools(s, h)
+	// addTools(s, h)
 	// addPrompts(s, h)
 
 	return s

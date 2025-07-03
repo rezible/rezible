@@ -3,15 +3,16 @@ package rez
 import (
 	"context"
 	"errors"
-	"github.com/cloudwego/eino/components/model"
 	"iter"
 	"net/http"
 	"time"
 
+	"github.com/cloudwego/eino/components/model"
 	"github.com/google/uuid"
+	"github.com/texm/prosemirror-go"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
-	"github.com/texm/prosemirror-go"
 )
 
 var (

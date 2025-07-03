@@ -40,7 +40,7 @@ func NewServer(
 		Handler(oapi.MakeApi(oapiHandler, "/api/v1", oapi.MakeSecurityMiddleware(auth)).Adapter())
 	router.Mount("/api/v1", apiV1Router)
 
-	router.Handle("/api/docs", makeApiDocsHandler())
+	router.Get("/api/docs", serveApiDocs)
 
 	router.Mount("/api/webhooks", webhooksRouter)
 

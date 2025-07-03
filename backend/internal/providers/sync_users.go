@@ -41,8 +41,7 @@ func (ds *userDataSyncer) SyncProviderData(ctx context.Context) error {
 	if usersErr := ds.syncAllProviderUsers(ctx); usersErr != nil {
 		return fmt.Errorf("users: %w", usersErr)
 	}
-	log.Info().
-		Msg("users data sync complete")
+	log.Info().Msg("users data sync complete")
 
 	return nil
 }

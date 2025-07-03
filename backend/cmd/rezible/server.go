@@ -79,6 +79,12 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	}
 
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
+
+	syncer := providers.NewDataSyncer(dbc, pl)
+	if syncErr := syncer.RegisterPeriodicSyncJob(j, time.Hour); syncErr != nil {
+		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
+	}
+
 	provs, provsErr := pl.LoadProviders(ctx)
 	if provsErr != nil {
 		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
@@ -145,13 +151,8 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
 
-	syncer := providers.NewDataSyncer(dbc, pl)
-	if syncErr := syncer.RegisterPeriodicSyncJob(j, time.Hour); syncErr != nil {
-		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
-	}
-
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 	webhookHandler := pl.WebhookHandler()
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)

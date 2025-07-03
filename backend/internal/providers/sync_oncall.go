@@ -50,11 +50,6 @@ func (ds *oncallDataSyncer) SyncProviderData(ctx context.Context) error {
 		}
 	}
 
-	log.Info().
-		Bool("shifts", !skipShifts).
-		Time("last_shifts", lastShiftsSync).
-		Bool("rosters", !skipRosters).
-		Msg("oncall sync finished")
 	return nil
 }
 

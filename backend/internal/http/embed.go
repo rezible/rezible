@@ -95,11 +95,9 @@ var (
 </html>`)
 )
 
-func makeApiDocsHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "text/html")
-		if _, wErr := w.Write(docsBodyScalar); wErr != nil {
-			log.Error().Err(wErr).Msg("failed to write embedded docs body")
-		}
-	})
+func serveApiDocs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	if _, wErr := w.Write(docsBodyScalar); wErr != nil {
+		log.Error().Err(wErr).Msg("failed to write embedded docs body")
+	}
 }

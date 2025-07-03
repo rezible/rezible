@@ -116,6 +116,8 @@ func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (
 func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
 	var created *ent.OncallAnnotation
 	createFn := func(tx *ent.Tx) error {
+		// TODO: create event if it is a message event
+
 		createdAnno, annoErr := tx.OncallAnnotation.Create().
 			SetEventID(anno.EventID).
 			SetRosterID(anno.RosterID).
