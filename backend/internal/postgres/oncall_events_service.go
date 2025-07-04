@@ -92,14 +92,23 @@ func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (
 		Only(ctx)
 }
 
-func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
+func (s *OncallEventsService) createAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
 	var created *ent.OncallAnnotation
+	eventId := anno.EventID
+	if eventId == uuid.Nil && anno.Edges.Event != nil {
+		e := anno.Edges.Event
+		pred := oncallevent.And(oncallevent.ProviderID(e.ProviderID))
+		existingId, eventErr := s.db.OncallEvent.Query().Where(pred).OnlyID(ctx)
+		if eventErr != nil && !ent.IsNotFound(eventErr) {
+			return nil, fmt.Errorf("failed to check for existing oncall event: %w", eventErr)
+		}
+		eventId = existingId
+	}
 	createFn := func(tx *ent.Tx) error {
-		eventId := anno.EventID
 		if eventId == uuid.Nil {
 			event := anno.Edges.Event
-			if event == nil {
-				return fmt.Errorf("no event supplied")
+			if anno.Edges.Event == nil {
+				return fmt.Errorf("oncall annotation event is empty")
 			}
 			createEvent := tx.OncallEvent.Create().
 				SetProviderID(event.ProviderID).
@@ -108,20 +117,16 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 				SetTitle(event.Title).
 				SetDescription(event.Description).
 				SetTimestamp(event.Timestamp)
-
-			// TODO: handle event existing
-			//OnConflictColumns(oncallevent.FieldProviderID, oncallevent.FieldSource).
-			//UpdateNewValues()
-
-			createdEvent, eventErr := createEvent.Save(ctx)
+			var eventErr error
+			event, eventErr = createEvent.Save(ctx)
 			if eventErr != nil {
-				return fmt.Errorf("create event: %w", eventErr)
+				return fmt.Errorf("upsert event: %w", eventErr)
 			}
-			eventId = createdEvent.ID
+			anno.EventID = event.ID
 		}
 
 		createdAnno, annoErr := tx.OncallAnnotation.Create().
-			SetEventID(eventId).
+			SetEventID(anno.EventID).
 			SetRosterID(anno.RosterID).
 			SetCreatorID(anno.CreatorID).
 			SetMinutesOccupied(anno.MinutesOccupied).
@@ -132,8 +137,7 @@ func (s *OncallEventsService) CreateAnnotation(ctx context.Context, anno *ent.On
 			return fmt.Errorf("create annotation: %w", annoErr)
 		}
 
-		alertFb := anno.Edges.AlertFeedback
-		if alertFb != nil {
+		if alertFb := anno.Edges.AlertFeedback; alertFb != nil {
 			createdFb, fbErr := tx.OncallAnnotationAlertFeedback.Create().
 				SetDocumentationAvailable(alertFb.DocumentationAvailable).
 				SetActionable(alertFb.Actionable).
@@ -161,6 +165,9 @@ func (s *OncallEventsService) UpdateAnnotation(ctx context.Context, anno *ent.On
 		WithEvent().
 		Only(ctx)
 	if currErr != nil {
+		if ent.IsNotFound(currErr) {
+			return s.createAnnotation(ctx, anno)
+		}
 		return nil, fmt.Errorf("querying current annotation: %w", currErr)
 	}
 	dbAlertFb := dbAnno.Edges.AlertFeedback

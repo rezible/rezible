@@ -2,17 +2,16 @@ package slack
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/oncallannotation"
+	"net/http"
+
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
-	"net/http"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type ChatProvider struct {
@@ -30,7 +29,17 @@ type ChatProviderConfig struct {
 }
 
 func NewChatProvider(cfg ChatProviderConfig) (*ChatProvider, error) {
-	p := &ChatProvider{}
+	p := &ChatProvider{
+		annotateMessageFn: func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error) {
+			return nil, errors.New("no annotateMessageFn supplied")
+		},
+		lookupUserFn: func(ctx context.Context, chatId string) (*ent.User, error) {
+			return nil, errors.New("no lookupUserFn supplied")
+		},
+		lookupMessageEventFn: func(ctx context.Context, msgId string) (*ent.OncallEvent, error) {
+			return nil, errors.New("no lookupMessageEventFn supplied")
+		},
+	}
 	p.client = slack.New(cfg.BotApiKey)
 	p.webhookHandler = newWebhookHandler(cfg.SigningSecret, p)
 	return p, nil
@@ -73,12 +82,12 @@ func (p *ChatProvider) sendUserMessage(ctx context.Context, id string, msg slack
 	return nil
 }
 
-func (p *ChatProvider) SendMessage(ctx context.Context, id string, content *rez.ContentNode) error {
-	return p.sendUserMessage(ctx, id, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
+func (p *ChatProvider) SendMessage(ctx context.Context, userId string, content *rez.ContentNode) error {
+	return p.sendMessage(ctx, userId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
 }
 
-func (p *ChatProvider) SendTextMessage(ctx context.Context, id string, text string) error {
-	return p.sendUserMessage(ctx, id, slack.MsgOptionText(text, false))
+func (p *ChatProvider) SendTextMessage(ctx context.Context, userId string, text string) error {
+	return p.sendMessage(ctx, userId, slack.MsgOptionText(text, false))
 }
 
 func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
@@ -127,126 +136,35 @@ func (p *ChatProvider) onMessageEvent(data *slackevents.MessageEvent) {
 	log.Debug().Interface("data", data).Msg("slack message event")
 }
 
-func (p *ChatProvider) queryUserRosters(ctx context.Context, userId string) ([]*ent.OncallRoster, error) {
-	if p.lookupUserFn == nil || p.lookupMessageEventFn == nil {
-		return nil, fmt.Errorf("lookup funcs nil")
+func (p *ChatProvider) handleAnnotationModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	c, ctxErr := makeAnnotationViewContext(ctx, ic, p.lookupUserFn, p.lookupMessageEventFn)
+	if ctxErr != nil {
+		return fmt.Errorf("failed to get message annotation context: %w", ctxErr)
 	}
 
-	user, userErr := p.lookupUserFn(ctx, userId)
-	if userErr != nil {
-		return nil, userErr
-	}
-
-	rosters, rostersErr := user.QueryOncallSchedules().QuerySchedule().QueryRoster().All(ctx)
-	if rostersErr != nil && !ent.IsNotFound(rostersErr) {
-		return nil, fmt.Errorf("failed to query oncall rosters for user: %w", rostersErr)
-	}
-
-	return rosters, nil
-}
-
-func getMessageId(ic *slack.InteractionCallback) string {
-	return fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)
-}
-
-func (p *ChatProvider) makeCreateAnnotationViewDetails(ctx context.Context, ic *slack.InteractionCallback) (*createAnnotationModalDetails, error) {
-	msgId := getMessageId(ic)
-	userId := ic.User.ID
-
-	d := &createAnnotationModalDetails{}
-	if ic.View.PrivateMetadata != "" {
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &d.metadata); jsonErr != nil {
-			return nil, jsonErr
-		}
-	} else {
-		d.metadata = createAnnotationMessageMetadata{
-			MsgId:        msgId,
-			UserId:       ic.Message.User,
-			MsgText:      ic.Message.Text,
-			MsgTimestamp: convertSlackTs(ic.MessageTs),
-		}
-	}
-	var rostersErr error
-	d.rosters, rostersErr = p.queryUserRosters(ctx, userId)
-	if rostersErr != nil {
-		return nil, fmt.Errorf("failed to get annotation information: %w", rostersErr)
-	}
-
-	_, selectedId := getSelectedRoster(ic.View.State)
-	if selectedId != uuid.Nil && len(d.rosters) > 0 {
-		for _, roster := range d.rosters {
-			if roster.ID == selectedId {
-				d.selectedRoster = roster
-				break
-			}
-		}
-		event, eventErr := p.lookupMessageEventFn(ctx, msgId)
-		if eventErr != nil && !ent.IsNotFound(eventErr) {
-			return nil, fmt.Errorf("failed to lookup message event: %w", eventErr)
-		}
-		if event != nil {
-			anno, annoErr := event.QueryAnnotations().Where(oncallannotation.RosterID(selectedId)).First(ctx)
-			if annoErr != nil && !ent.IsNotFound(annoErr) {
-				return nil, fmt.Errorf("failed to lookup existing event annotation: %w", annoErr)
-			}
-			d.currAnnotation = anno
-		}
-	}
-
-	return d, nil
-}
-
-func (p *ChatProvider) handleCreateAnnotationInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
-	details, detailsErr := p.makeCreateAnnotationViewDetails(ctx, ic)
-	if detailsErr != nil {
-		return fmt.Errorf("failed to get message annotation context: %w", detailsErr)
-	}
-
-	view, viewErr := makeCreateAnnotationModalView(details)
+	view, viewErr := makeAnnotationModalView(c)
 	if viewErr != nil || view == nil {
 		return fmt.Errorf("failed to create annotation view: %w", viewErr)
 	}
 
-	resp, respErr := p.client.OpenViewContext(ctx, ic.TriggerID, *view)
+	var resp *slack.ViewResponse
+	var respErr error
+	if ic.View.State == nil {
+		resp, respErr = p.client.OpenViewContext(ctx, ic.TriggerID, *view)
+	} else {
+		resp, respErr = p.client.UpdateViewContext(ctx, *view, "", "", ic.View.ID)
+	}
 	if respErr != nil {
 		logSlackViewErrorResponse(respErr, resp)
-		return fmt.Errorf("open view: %w", respErr)
+		return fmt.Errorf("annotation modal view: %w", respErr)
 	}
 	return nil
 }
 
-func (p *ChatProvider) handleBlockActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
-	if ic.View.CallbackID == createAnnotationModalViewCallbackID {
-		details, detailsErr := p.makeCreateAnnotationViewDetails(ctx, ic)
-		if detailsErr != nil {
-			return fmt.Errorf("failed to get message annotation context: %w", detailsErr)
-		}
-		view, viewErr := makeCreateAnnotationModalView(details)
-		if viewErr != nil || view == nil {
-			return fmt.Errorf("failed to create annotation view: %w", viewErr)
-		}
-
-		resp, respErr := p.client.UpdateViewContext(ctx, *view, "", "", ic.View.ID)
-		if respErr != nil {
-			logSlackViewErrorResponse(respErr, resp)
-			return fmt.Errorf("open view: %w", respErr)
-		}
-	}
-	return nil
-}
-
-func (p *ChatProvider) handleCreateAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
-	user, userErr := p.lookupUserFn(ctx, ic.User.ID)
-	if userErr != nil || user == nil {
-		return fmt.Errorf("failed to lookup user: %w", userErr)
-	}
-	anno, annoErr := getCreateAnnotationModalViewAnnotation(ic.View)
+func (p *ChatProvider) handleAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+	anno, annoErr := getAnnotationModalAnnotation(ctx, ic.View, p.lookupUserFn)
 	if annoErr != nil {
 		return fmt.Errorf("failed to get view annotation: %w", annoErr)
-	}
-	anno.CreatorID = user.ID
-	if p.annotateMessageFn == nil {
-		return fmt.Errorf("no chat message annotator")
 	}
 	_, createErr := p.annotateMessageFn(ctx, anno)
 	return createErr

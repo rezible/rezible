@@ -130,7 +130,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if eventsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
-	chat.Provider().SetAnnotateMessageFn(oncallEvents.CreateAnnotation)
+	chat.Provider().SetAnnotateMessageFn(oncallEvents.UpdateAnnotation)
 	chat.Provider().SetMessageEventLookupFn(oncallEvents.GetProviderEvent)
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)

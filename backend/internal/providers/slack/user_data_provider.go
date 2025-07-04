@@ -56,14 +56,12 @@ func (p *UserDataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, e
 				if u.IsBot || u.ID == "USLACKBOT" {
 					continue
 				}
-				mapped := &ent.User{
+				yield(&ent.User{
 					Name:     u.Profile.RealNameNormalized,
 					Email:    u.Profile.Email,
 					ChatID:   u.ID,
 					Timezone: u.TZ,
-				}
-				fmt.Printf("user: %+v\n", mapped)
-				yield(mapped, nil)
+				}, nil)
 			}
 		}
 	}

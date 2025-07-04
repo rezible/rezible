@@ -339,7 +339,6 @@ type (
 
 		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
-		CreateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
 		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}

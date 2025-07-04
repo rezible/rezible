@@ -108,21 +108,23 @@ func (h *webhookHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
 	} else if ev.Type == slackevents.CallbackEvent {
 		w.WriteHeader(http.StatusOK)
 		// TODO: task queue?
-		go func(p *ChatProvider) {
-			switch data := ev.Data.(type) {
-			case *slackevents.AppMentionEvent:
-				p.onMentionEvent(data)
-			case *slackevents.AppHomeOpenedEvent:
-				p.onUserHomeOpenedEvent(data)
-			case *slackevents.MessageEvent:
-				p.onMessageEvent(data)
-			default:
-				log.Debug().Str("type", ev.Type).Msg("unhandled slack callback event")
-			}
-		}(h.prov)
+		go handleCallbackEvent(h.prov, ev)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Warn().Str("type", ev.Type).Msg("failed to handle event")
+	}
+}
+
+func handleCallbackEvent(p *ChatProvider, ev slackevents.EventsAPIEvent) {
+	switch data := ev.Data.(type) {
+	case *slackevents.AppMentionEvent:
+		p.onMentionEvent(data)
+	case *slackevents.AppHomeOpenedEvent:
+		p.onUserHomeOpenedEvent(data)
+	case *slackevents.MessageEvent:
+		p.onMessageEvent(data)
+	default:
+		log.Debug().Str("type", ev.Type).Msg("unhandled slack callback event")
 	}
 }
 
@@ -151,29 +153,43 @@ func (h *webhookHandler) handleInteractions(w http.ResponseWriter, r *http.Reque
 	var handlerErr error
 	switch ic.Type {
 	case slack.InteractionTypeMessageAction:
-		switch ic.CallbackID {
-		case createAnnotationActionCallbackID:
-			handlerErr = h.prov.handleCreateAnnotationInteraction(ctx, &ic)
-		default:
-			handlerErr = fmt.Errorf("unknown message action callback ID: %s", ic.CallbackID)
-		}
+		handlerErr = h.handleMessageActionInteraction(ctx, &ic)
 	case slack.InteractionTypeBlockActions:
-		handlerErr = h.prov.handleBlockActionInteraction(ctx, &ic)
+		handlerErr = h.handleBlockActionInteraction(ctx, &ic)
 	case slack.InteractionTypeViewSubmission:
-		switch ic.View.CallbackID {
-		case createAnnotationModalViewCallbackID:
-			handlerErr = h.prov.handleCreateAnnotationModalSubmission(ctx, &ic)
-		default:
-			handlerErr = fmt.Errorf("unknown view submission callback ID: %s", ic.View.CallbackID)
-		}
+		handlerErr = h.handleViewSubmissionInteraction(ctx, &ic)
 	default:
 		handlerErr = fmt.Errorf("unknown interaction type: %s", string(ic.Type))
 	}
-
-	if handlerErr != nil {
+	if handlerErr == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
 		log.Error().Err(handlerErr).Str("type", string(ic.Type)).Msg("failed to handle interaction")
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-	w.WriteHeader(http.StatusOK)
+}
+
+func (h *webhookHandler) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	switch ic.CallbackID {
+	case createAnnotationActionCallbackID:
+		return h.prov.handleAnnotationModalInteraction(ctx, ic)
+	default:
+		return fmt.Errorf("unknown message action callback ID: %s", ic.CallbackID)
+	}
+}
+
+func (h *webhookHandler) handleBlockActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	if ic.View.CallbackID == createAnnotationModalViewCallbackID {
+		return h.prov.handleAnnotationModalInteraction(ctx, ic)
+	}
+	return nil
+}
+
+func (h *webhookHandler) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	switch ic.View.CallbackID {
+	case createAnnotationModalViewCallbackID:
+		return h.prov.handleAnnotationModalSubmission(ctx, ic)
+	default:
+		return fmt.Errorf("unknown view submission callback ID: %s", ic.View.CallbackID)
+	}
 }

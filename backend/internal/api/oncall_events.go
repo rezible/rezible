@@ -93,7 +93,7 @@ func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, reques
 	}
 
 	var createErr error
-	anno, createErr = h.events.CreateAnnotation(ctx, anno)
+	anno, createErr = h.events.UpdateAnnotation(ctx, anno)
 	if createErr != nil {
 		return nil, detailError("failed to create annotation", createErr)
 	}
