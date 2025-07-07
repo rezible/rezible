@@ -99,7 +99,6 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if chatErr != nil {
 		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
 	}
-	chat.Provider().SetUserLookupFn(users.GetByChatId)
 
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
@@ -130,8 +129,12 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 	if eventsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
-	chat.Provider().SetAnnotateMessageFn(oncallEvents.UpdateAnnotation)
-	chat.Provider().SetMessageEventLookupFn(oncallEvents.GetProviderEvent)
+
+	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
+		LookupChatUserFn:         users.GetByChatId,
+		AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
+		LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
+	})
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)
 	if debriefsErr != nil {

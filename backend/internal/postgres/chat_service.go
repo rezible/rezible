@@ -20,10 +20,6 @@ func NewChatService(db *ent.Client, prov rez.ChatProvider) (*ChatService, error)
 	return p, nil
 }
 
-func (s *ChatService) Provider() rez.ChatProvider {
-	return s.prov
-}
-
 func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
 	return s.prov.SendOncallHandover(ctx, params)
 }

@@ -190,21 +190,21 @@ type (
 )
 
 type (
-	AnnotateMessageFn        = func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
-	LookupChatUserFn         = func(ctx context.Context, chatId string) (*ent.User, error)
-	LookupChatMessageEventFn = func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
+	ChatMessageContextProvider struct {
+		AnnotateMessageFn        func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
+		LookupChatUserFn         func(ctx context.Context, chatId string) (*ent.User, error)
+		LookupChatMessageEventFn func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
+	}
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
 
-		SetAnnotateMessageFn(AnnotateMessageFn)
-		SetUserLookupFn(LookupChatUserFn)
-		SetMessageEventLookupFn(LookupChatMessageEventFn)
+		SetMessageContextProvider(ChatMessageContextProvider)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendTextMessage(ctx context.Context, id string, text string) error
 
-		// TODO: this should just be converted to msg *ContentNode by ChatService
+		// TODO: this should just be converted to *ContentNode by ChatService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 
@@ -216,7 +216,6 @@ type (
 	}
 
 	ChatService interface {
-		Provider() ChatProvider
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 )

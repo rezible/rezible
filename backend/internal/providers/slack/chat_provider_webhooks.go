@@ -116,15 +116,23 @@ func (h *webhookHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleCallbackEvent(p *ChatProvider, ev slackevents.EventsAPIEvent) {
-	switch data := ev.Data.(type) {
-	case *slackevents.AppMentionEvent:
-		p.onMentionEvent(data)
+	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
 		p.onUserHomeOpenedEvent(data)
+	case *slackevents.AppMentionEvent:
+		p.onMentionEvent(data)
+	case *slackevents.AssistantThreadStartedEvent:
+		p.onAssistantThreadStartedEvent(data)
 	case *slackevents.MessageEvent:
 		p.onMessageEvent(data)
+	case *slackevents.ReactionAddedEvent:
+		p.onReactionAddedEvent(data)
+	case *slackevents.ReactionRemovedEvent:
+		p.onReactionRemovedEvent(data)
 	default:
-		log.Debug().Str("type", ev.Type).Msg("unhandled slack callback event")
+		log.Debug().
+			Str("innerEvent", ev.InnerEvent.Type).
+			Msg("unhandled slack callback event")
 	}
 }
 

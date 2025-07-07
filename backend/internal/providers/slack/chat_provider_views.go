@@ -6,6 +6,7 @@ import (
 	"fmt"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/oncallannotation"
+	"github.com/rs/zerolog/log"
 	"strconv"
 	"strings"
 	"time"
@@ -18,6 +19,15 @@ import (
 var (
 	createAnnotationModalViewCallbackID = "create_annotation_confirm"
 )
+
+func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
+	if resp != nil {
+		log.Debug().
+			Strs("messages", resp.ResponseMetadata.Messages).
+			Msg("publish response")
+	}
+	log.Error().Err(err).Msg("slack view response error")
+}
 
 func convertSlackTs(ts string) time.Time {
 	parts := strings.Split(ts, ".")
@@ -77,9 +87,12 @@ func getSelectedAnnotationRoster(state *slack.ViewState) (string, uuid.UUID) {
 func makeAnnotationViewContext(
 	ctx context.Context,
 	ic *slack.InteractionCallback,
-	lookupUser rez.LookupChatUserFn,
-	lookupMessageEvent rez.LookupChatMessageEventFn,
+	msgCtxProv *rez.ChatMessageContextProvider,
 ) (*annotationViewContext, error) {
+	if msgCtxProv == nil {
+		return nil, fmt.Errorf("no ChatMessageContextProvider")
+	}
+
 	d := &annotationViewContext{}
 	if ic.View.PrivateMetadata != "" {
 		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &d.meta); jsonErr != nil {
@@ -93,7 +106,7 @@ func makeAnnotationViewContext(
 		}
 	}
 
-	user, userErr := lookupUser(ctx, d.meta.UserId)
+	user, userErr := msgCtxProv.LookupChatUserFn(ctx, d.meta.UserId)
 	if userErr != nil {
 		return nil, userErr
 	}
@@ -112,7 +125,7 @@ func makeAnnotationViewContext(
 		_, d.selectedRosterId = getSelectedAnnotationRoster(ic.View.State)
 	}
 	if d.selectedRosterId != uuid.Nil {
-		event, eventErr := lookupMessageEvent(ctx, d.meta.MsgId.String())
+		event, eventErr := msgCtxProv.LookupChatMessageEventFn(ctx, d.meta.MsgId.String())
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to lookup message event: %w", eventErr)
 		}
@@ -128,19 +141,7 @@ func makeAnnotationViewContext(
 	return d, nil
 }
 
-func makeAnnotationModalView(c *annotationViewContext) (*slack.ModalViewRequest, error) {
-	if len(c.rosters) == 0 {
-		return &slack.ModalViewRequest{
-			Type:  "modal",
-			Title: plainTextBlock("No Oncall Rosters"),
-			Blocks: slack.Blocks{BlockSet: []slack.Block{
-				slack.NewSectionBlock(plainTextBlock("You are not a member of any oncall rosters"), nil, nil),
-			}},
-			Close:      plainTextBlock("Close"),
-			CallbackID: createAnnotationModalViewCallbackID,
-		}, nil
-	}
-
+func makeAnnotationModalViewBlocks(c *annotationViewContext) []slack.Block {
 	var blockSet []slack.Block
 
 	messageUserDetails := slack.NewRichTextSection(
@@ -192,6 +193,28 @@ func makeAnnotationModalView(c *annotationViewContext) (*slack.ModalViewRequest,
 			slack.NewInputBlock("notes_input", plainTextBlock("Notes"), inputHint, inputBlock))
 	}
 
+	return blockSet
+}
+
+func makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback, ctxProv *rez.ChatMessageContextProvider) (*slack.ModalViewRequest, error) {
+	c, ctxErr := makeAnnotationViewContext(ctx, ic, ctxProv)
+	if ctxErr != nil {
+		return nil, fmt.Errorf("failed to get message annotation context: %w", ctxErr)
+	}
+	if len(c.rosters) == 0 {
+		return &slack.ModalViewRequest{
+			Type:  "modal",
+			Title: plainTextBlock("No Oncall Rosters"),
+			Blocks: slack.Blocks{BlockSet: []slack.Block{
+				slack.NewSectionBlock(plainTextBlock("You are not a member of any oncall rosters"), nil, nil),
+			}},
+			Close:      plainTextBlock("Close"),
+			CallbackID: createAnnotationModalViewCallbackID,
+		}, nil
+	}
+
+	blockSet := makeAnnotationModalViewBlocks(c)
+
 	titleText := "Create Annotation"
 	submitText := "Create"
 
@@ -217,9 +240,9 @@ func makeAnnotationModalView(c *annotationViewContext) (*slack.ModalViewRequest,
 	}, nil
 }
 
-func getAnnotationModalAnnotation(ctx context.Context, view slack.View, lookupUser rez.LookupChatUserFn) (*ent.OncallAnnotation, error) {
-	if lookupUser == nil {
-		return nil, fmt.Errorf("no lookupUser func")
+func getAnnotationModalAnnotation(ctx context.Context, view slack.View, msgCtxProv *rez.ChatMessageContextProvider) (*ent.OncallAnnotation, error) {
+	if msgCtxProv == nil {
+		return nil, fmt.Errorf("no ChatMessageContextProvider")
 	}
 
 	var meta annotationViewMetadata
@@ -227,7 +250,7 @@ func getAnnotationModalAnnotation(ctx context.Context, view slack.View, lookupUs
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	user, userErr := lookupUser(ctx, meta.UserId)
+	user, userErr := msgCtxProv.LookupChatUserFn(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
@@ -266,7 +289,7 @@ func getAnnotationModalAnnotation(ctx context.Context, view slack.View, lookupUs
 	return anno, nil
 }
 
-func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, string, error) {
+func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
 	var blocks []slack.Block
 	blocks = append(blocks, slack.NewSectionBlock(plainTextBlock("Home Tab"), nil, nil))
 	homeView := slack.HomeTabViewRequest{
@@ -274,7 +297,7 @@ func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, string, e
 		CallbackID:      "user_home",
 		PrivateMetadata: "foo",
 		Blocks:          slack.Blocks{BlockSet: blocks},
+		ExternalID:      user.ID.String(),
 	}
-	hash := time.Now().String()
-	return &homeView, hash, nil
+	return &homeView, nil
 }

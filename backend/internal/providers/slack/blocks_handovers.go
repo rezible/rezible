@@ -16,6 +16,17 @@ import (
 		to []slack.Block and send it
 */
 
+func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, slack.MsgOption, error) {
+	mb, builderErr := newHandoverMessageBuilder(params.EndingShift, params.StartingShift, params.PinnedAnnotations)
+	if builderErr != nil {
+		return "", nil, fmt.Errorf("new builder: %w", builderErr)
+	}
+	if buildErr := mb.build(params.Content); buildErr != nil {
+		return "", nil, fmt.Errorf("building message: %w", buildErr)
+	}
+	return mb.getChannel(), mb.getMessage(), nil
+}
+
 type handoverMessageBuilder struct {
 	blocks []slack.Block
 
