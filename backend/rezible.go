@@ -196,12 +196,22 @@ type (
 		LookupChatMessageEventFn func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
 	}
 
+	ChatMentionEvent struct {
+		ChatId      string
+		ThreadId    string
+		UserId      string
+		MessageText string
+	}
+	ChatMentionHandler = func(ev *ChatMentionEvent)
+
 	ChatProvider interface {
 		GetWebhooks() Webhooks
 
 		SetMessageContextProvider(ChatMessageContextProvider)
+		SetMentionHandler(ChatMentionHandler)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
+		SendReply(ctx context.Context, channelId string, threadId string, text string) error
 		SendTextMessage(ctx context.Context, id string, text string) error
 
 		// TODO: this should just be converted to *ContentNode by ChatService

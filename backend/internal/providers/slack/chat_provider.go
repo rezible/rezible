@@ -19,6 +19,7 @@ type ChatProvider struct {
 	webhookHandler *webhookHandler
 
 	msgCtxProvider *rez.ChatMessageContextProvider
+	mentionHandler rez.ChatMentionHandler
 }
 
 type ChatProviderConfig struct {
@@ -37,6 +38,10 @@ func (p *ChatProvider) SetMessageContextProvider(cp rez.ChatMessageContextProvid
 	p.msgCtxProvider = &cp
 }
 
+func (p *ChatProvider) SetMentionHandler(handler rez.ChatMentionHandler) {
+	p.mentionHandler = handler
+}
+
 func (p *ChatProvider) GetWebhooks() rez.Webhooks {
 	return rez.Webhooks{
 		"slack/options":     http.HandlerFunc(p.webhookHandler.handleOptions),
@@ -52,8 +57,8 @@ func (p *ChatProvider) lookupUser(ctx context.Context, userId string) (*ent.User
 	return p.msgCtxProvider.LookupChatUserFn(ctx, userId)
 }
 
-func (p *ChatProvider) sendMessage(ctx context.Context, channel string, msg slack.MsgOption) error {
-	_, _, msgErr := p.client.PostMessageContext(ctx, channel, msg)
+func (p *ChatProvider) sendMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) error {
+	_, _, msgErr := p.client.PostMessageContext(ctx, channelId, msgOpts...)
 	return msgErr
 }
 
@@ -71,12 +76,16 @@ func (p *ChatProvider) sendMessage(ctx context.Context, channel string, msg slac
 //	return nil
 //}
 
-func (p *ChatProvider) SendMessage(ctx context.Context, userId string, content *rez.ContentNode) error {
-	return p.sendMessage(ctx, userId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
+func (p *ChatProvider) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) error {
+	return p.sendMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
 }
 
-func (p *ChatProvider) SendTextMessage(ctx context.Context, userId string, text string) error {
-	return p.sendMessage(ctx, userId, slack.MsgOptionText(text, false))
+func (p *ChatProvider) SendTextMessage(ctx context.Context, channelId string, text string) error {
+	return p.sendMessage(ctx, channelId, slack.MsgOptionText(text, false))
+}
+
+func (p *ChatProvider) SendReply(ctx context.Context, channelId string, threadId string, text string) error {
+	return p.sendMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
 }
 
 func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
@@ -88,13 +97,32 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 }
 
 func (p *ChatProvider) onMentionEvent(data *slackevents.AppMentionEvent) {
-	log.Debug().Msg("mentioned")
+	if p.mentionHandler == nil {
+		log.Warn().Msg("chat mention handler not initialized")
+		return
+	}
+
+	replyTs := data.TimeStamp
+	if data.ThreadTimeStamp != "" {
+		replyTs = data.ThreadTimeStamp
+	}
+
+	p.mentionHandler(&rez.ChatMentionEvent{
+		ChatId:      data.Channel,
+		ThreadId:    replyTs,
+		UserId:      data.User,
+		MessageText: data.Text,
+	})
 }
 
 func (p *ChatProvider) onMessageEvent(data *slackevents.MessageEvent) {
+	threadTs := data.ThreadTimeStamp
+	// TODO check if thread is 'monitored'
+
 	log.Debug().
 		Str("type", data.ChannelType).
 		Str("text", data.Text).
+		Str("thread", threadTs).
 		Str("user", data.User).
 		Msg("message")
 }
@@ -102,12 +130,6 @@ func (p *ChatProvider) onMessageEvent(data *slackevents.MessageEvent) {
 func (p *ChatProvider) onAssistantThreadStartedEvent(data *slackevents.AssistantThreadStartedEvent) {
 	log.Debug().Msg("assistant thread started")
 }
-
-func (p *ChatProvider) onReactionAddedEvent(data *slackevents.ReactionAddedEvent) {
-	log.Debug().Msg("reaction added")
-}
-
-func (p *ChatProvider) onReactionRemovedEvent(data *slackevents.ReactionRemovedEvent) {}
 
 func (p *ChatProvider) onUserHomeOpenedEvent(data *slackevents.AppHomeOpenedEvent) {
 	ctx := context.Background()

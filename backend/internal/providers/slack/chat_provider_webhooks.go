@@ -125,13 +125,9 @@ func handleCallbackEvent(p *ChatProvider, ev slackevents.EventsAPIEvent) {
 		p.onAssistantThreadStartedEvent(data)
 	case *slackevents.MessageEvent:
 		p.onMessageEvent(data)
-	case *slackevents.ReactionAddedEvent:
-		p.onReactionAddedEvent(data)
-	case *slackevents.ReactionRemovedEvent:
-		p.onReactionRemovedEvent(data)
 	default:
 		log.Debug().
-			Str("innerEvent", ev.InnerEvent.Type).
+			Str("innerEventType", ev.InnerEvent.Type).
 			Msg("unhandled slack callback event")
 	}
 }

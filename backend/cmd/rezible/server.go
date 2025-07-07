@@ -72,7 +72,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 	return nil
 }
 
-func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.JobsService) (*http.Server, error) {
+func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez.JobsService) (*http.Server, error) {
 	frontendFiles, feFilesErr := http.GetEmbeddedFrontendFiles()
 	if feFilesErr != nil {
 		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
@@ -80,22 +80,21 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
-	syncer := providers.NewDataSyncer(dbc, pl)
-	if syncErr := syncer.RegisterPeriodicSyncJob(j, time.Hour); syncErr != nil {
-		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
-	}
-
 	provs, provsErr := pl.LoadProviders(ctx)
 	if provsErr != nil {
 		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
+	syncer := providers.NewDataSyncer(dbc, pl)
+	if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
+		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
+	}
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
-	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
+	chat, chatErr := postgres.NewChatService(dbc, jobs, provs.Chat)
 	if chatErr != nil {
 		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
 	}
@@ -115,12 +114,12 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, j, lms, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, jobs, lms, chat, users)
 	if incidentsErr != nil {
 		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, j, docs, chat, users, incidents)
+	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, jobs, docs, chat, users, incidents)
 	if oncallErr != nil {
 		return nil, fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
@@ -136,7 +135,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, j rez.Jo
 		LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
 	})
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, j, lms, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobs, lms, chat)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
