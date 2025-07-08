@@ -19,7 +19,7 @@ type ChatProvider struct {
 	webhookHandler *webhookHandler
 
 	msgCtxProvider *rez.ChatMessageContextProvider
-	mentionHandler rez.ChatMentionHandler
+	eventHandler   rez.ChatEventHandler
 }
 
 type ChatProviderConfig struct {
@@ -38,8 +38,8 @@ func (p *ChatProvider) SetMessageContextProvider(cp rez.ChatMessageContextProvid
 	p.msgCtxProvider = &cp
 }
 
-func (p *ChatProvider) SetMentionHandler(handler rez.ChatMentionHandler) {
-	p.mentionHandler = handler
+func (p *ChatProvider) SetEventHandler(h rez.ChatEventHandler) {
+	p.eventHandler = h
 }
 
 func (p *ChatProvider) GetWebhooks() rez.Webhooks {
@@ -62,20 +62,6 @@ func (p *ChatProvider) sendMessage(ctx context.Context, channelId string, msgOpt
 	return msgErr
 }
 
-//func (p *ChatProvider) sendUserMessage(ctx context.Context, id string, msg slack.MsgOption) error {
-//	params := &slack.OpenConversationParameters{Users: []string{id}}
-//	convo, _, _, convoErr := p.client.OpenConversationContext(ctx, params)
-//	if convoErr != nil {
-//		return fmt.Errorf("failed to open conversation with user %s: %w", id, convoErr)
-//	}
-//
-//	if sendErr := p.sendMessage(ctx, convo.ID, msg); sendErr != nil {
-//		return fmt.Errorf("send user %s message: %w", id, sendErr)
-//	}
-//
-//	return nil
-//}
-
 func (p *ChatProvider) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) error {
 	return p.sendMessage(ctx, channelId, slack.MsgOptionBlocks(convertContentToBlocks(content, "")...))
 }
@@ -97,7 +83,7 @@ func (p *ChatProvider) SendOncallHandover(ctx context.Context, params rez.SendOn
 }
 
 func (p *ChatProvider) onMentionEvent(data *slackevents.AppMentionEvent) {
-	if p.mentionHandler == nil {
+	if p.eventHandler == nil {
 		log.Warn().Msg("chat mention handler not initialized")
 		return
 	}
@@ -107,12 +93,7 @@ func (p *ChatProvider) onMentionEvent(data *slackevents.AppMentionEvent) {
 		replyTs = data.ThreadTimeStamp
 	}
 
-	p.mentionHandler(&rez.ChatMentionEvent{
-		ChatId:      data.Channel,
-		ThreadId:    replyTs,
-		UserId:      data.User,
-		MessageText: data.Text,
-	})
+	p.eventHandler.HandleMentionEvent(data.Channel, replyTs, data.User, data.Text)
 }
 
 func (p *ChatProvider) onMessageEvent(data *slackevents.MessageEvent) {

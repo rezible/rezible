@@ -129,12 +129,6 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
 
-	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
-		LookupChatUserFn:         users.GetByChatId,
-		AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
-		LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
-	})
-
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobs, lms, chat)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
@@ -154,6 +148,13 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 	if authErr != nil {
 		return nil, fmt.Errorf("http auth service: %w", authErr)
 	}
+
+	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
+		LookupChatUserFn:         users.GetByChatId,
+		AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
+		LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
+	})
+	provs.Chat.SetEventHandler(chat)
 
 	webhookHandler := pl.WebhookHandler()
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)

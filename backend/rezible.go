@@ -196,19 +196,15 @@ type (
 		LookupChatMessageEventFn func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
 	}
 
-	ChatMentionEvent struct {
-		ChatId      string
-		ThreadId    string
-		UserId      string
-		MessageText string
+	ChatEventHandler interface {
+		HandleMentionEvent(chatId, threadId, userId, msgText string)
 	}
-	ChatMentionHandler = func(ev *ChatMentionEvent)
 
 	ChatProvider interface {
 		GetWebhooks() Webhooks
 
 		SetMessageContextProvider(ChatMessageContextProvider)
-		SetMentionHandler(ChatMentionHandler)
+		SetEventHandler(ChatEventHandler)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
@@ -226,6 +222,7 @@ type (
 	}
 
 	ChatService interface {
+		ChatEventHandler
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 )
