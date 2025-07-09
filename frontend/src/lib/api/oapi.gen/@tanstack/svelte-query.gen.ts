@@ -38,6 +38,9 @@ const createQueryKey = <TOptions extends Options>(id: string, options?: TOptions
 
 export const getAuthSessionConfigQueryKey = (options?: Options<GetAuthSessionConfigData>) => createQueryKey('getAuthSessionConfig', options);
 
+/**
+ * Get the Auth Session config
+ */
 export const getAuthSessionConfigOptions = (options?: Options<GetAuthSessionConfigData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -55,6 +58,9 @@ export const getAuthSessionConfigOptions = (options?: Options<GetAuthSessionConf
 
 export const getCurrentUserAuthSessionQueryKey = (options?: Options<GetCurrentUserAuthSessionData>) => createQueryKey('getCurrentUserAuthSession', options);
 
+/**
+ * Get the Auth Session for the Current User
+ */
 export const getCurrentUserAuthSessionOptions = (options?: Options<GetCurrentUserAuthSessionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -72,6 +78,9 @@ export const getCurrentUserAuthSessionOptions = (options?: Options<GetCurrentUse
 
 export const listUserNotificationsQueryKey = (options?: Options<ListUserNotificationsData>) => createQueryKey('listUserNotifications', options);
 
+/**
+ * List Notifications for the Current User
+ */
 export const listUserNotificationsOptions = (options?: Options<ListUserNotificationsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -88,7 +97,9 @@ export const listUserNotificationsOptions = (options?: Options<ListUserNotificat
 };
 
 const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'headers' | 'path' | 'query'>>(queryKey: QueryKey<Options>, page: K) => {
-    const params = queryKey[0];
+    const params = {
+        ...queryKey[0]
+    };
     if (page.body) {
         params.body = {
             ...queryKey[0].body as any,
@@ -118,6 +129,9 @@ const createInfiniteParams = <K extends Pick<QueryKey<Options>[0], 'body' | 'hea
 
 export const listUserNotificationsInfiniteQueryKey = (options?: Options<ListUserNotificationsData>): QueryKey<Options<ListUserNotificationsData>> => createQueryKey('listUserNotifications', options, true);
 
+/**
+ * List Notifications for the Current User
+ */
 export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserNotificationsData>) => {
     return infiniteQueryOptions<ListUserNotificationsResponse, ListUserNotificationsError, InfiniteData<ListUserNotificationsResponse>, QueryKey<Options<ListUserNotificationsData>>, number | Pick<QueryKey<Options<ListUserNotificationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -144,6 +158,9 @@ export const listUserNotificationsInfiniteOptions = (options?: Options<ListUserN
 
 export const listDebriefQuestionsQueryKey = (options?: Options<ListDebriefQuestionsData>) => createQueryKey('listDebriefQuestions', options);
 
+/**
+ * List Incident Debrief Questions
+ */
 export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestionsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -161,6 +178,9 @@ export const listDebriefQuestionsOptions = (options?: Options<ListDebriefQuestio
 
 export const listDebriefQuestionsInfiniteQueryKey = (options?: Options<ListDebriefQuestionsData>): QueryKey<Options<ListDebriefQuestionsData>> => createQueryKey('listDebriefQuestions', options, true);
 
+/**
+ * List Incident Debrief Questions
+ */
 export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebriefQuestionsData>) => {
     return infiniteQueryOptions<ListDebriefQuestionsResponse, ListDebriefQuestionsError, InfiniteData<ListDebriefQuestionsResponse>, QueryKey<Options<ListDebriefQuestionsData>>, number | Pick<QueryKey<Options<ListDebriefQuestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -187,6 +207,9 @@ export const listDebriefQuestionsInfiniteOptions = (options?: Options<ListDebrie
 
 export const createDebriefQuestionQueryKey = (options: Options<CreateDebriefQuestionData>) => createQueryKey('createDebriefQuestion', options);
 
+/**
+ * Create an Incident Debrief Question
+ */
 export const createDebriefQuestionOptions = (options: Options<CreateDebriefQuestionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -202,6 +225,9 @@ export const createDebriefQuestionOptions = (options: Options<CreateDebriefQuest
     });
 };
 
+/**
+ * Create an Incident Debrief Question
+ */
 export const createDebriefQuestionMutation = (options?: Partial<Options<CreateDebriefQuestionData>>): MutationOptions<CreateDebriefQuestionResponse, CreateDebriefQuestionError, Options<CreateDebriefQuestionData>> => {
     const mutationOptions: MutationOptions<CreateDebriefQuestionResponse, CreateDebriefQuestionError, Options<CreateDebriefQuestionData>> = {
         mutationFn: async (localOptions) => {
@@ -216,6 +242,9 @@ export const createDebriefQuestionMutation = (options?: Partial<Options<CreateDe
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident Debrief Question
+ */
 export const archiveDebriefQuestionMutation = (options?: Partial<Options<ArchiveDebriefQuestionData>>): MutationOptions<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, Options<ArchiveDebriefQuestionData>> => {
     const mutationOptions: MutationOptions<ArchiveDebriefQuestionResponse, ArchiveDebriefQuestionError, Options<ArchiveDebriefQuestionData>> = {
         mutationFn: async (localOptions) => {
@@ -232,6 +261,9 @@ export const archiveDebriefQuestionMutation = (options?: Partial<Options<Archive
 
 export const getDebriefQuestionQueryKey = (options: Options<GetDebriefQuestionData>) => createQueryKey('getDebriefQuestion', options);
 
+/**
+ * Get an Incident Debrief Question
+ */
 export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -247,6 +279,9 @@ export const getDebriefQuestionOptions = (options: Options<GetDebriefQuestionDat
     });
 };
 
+/**
+ * Update an Incident Debrief Question
+ */
 export const updateDebriefQuestionMutation = (options?: Partial<Options<UpdateDebriefQuestionData>>): MutationOptions<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, Options<UpdateDebriefQuestionData>> => {
     const mutationOptions: MutationOptions<UpdateDebriefQuestionResponse, UpdateDebriefQuestionError, Options<UpdateDebriefQuestionData>> = {
         mutationFn: async (localOptions) => {
@@ -263,6 +298,9 @@ export const updateDebriefQuestionMutation = (options?: Partial<Options<UpdateDe
 
 export const requestDocumentEditorSessionQueryKey = (options: Options<RequestDocumentEditorSessionData>) => createQueryKey('requestDocumentEditorSession', options);
 
+/**
+ * Request a Document Editor Session
+ */
 export const requestDocumentEditorSessionOptions = (options: Options<RequestDocumentEditorSessionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -278,6 +316,9 @@ export const requestDocumentEditorSessionOptions = (options: Options<RequestDocu
     });
 };
 
+/**
+ * Request a Document Editor Session
+ */
 export const requestDocumentEditorSessionMutation = (options?: Partial<Options<RequestDocumentEditorSessionData>>): MutationOptions<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, Options<RequestDocumentEditorSessionData>> => {
     const mutationOptions: MutationOptions<RequestDocumentEditorSessionResponse, RequestDocumentEditorSessionError, Options<RequestDocumentEditorSessionData>> = {
         mutationFn: async (localOptions) => {
@@ -294,6 +335,9 @@ export const requestDocumentEditorSessionMutation = (options?: Partial<Options<R
 
 export const verifyDocumentEditorSessionQueryKey = (options: Options<VerifyDocumentEditorSessionData>) => createQueryKey('verifyDocumentEditorSession', options);
 
+/**
+ * Verify a Document Editor Session
+ */
 export const verifyDocumentEditorSessionOptions = (options: Options<VerifyDocumentEditorSessionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -309,6 +353,9 @@ export const verifyDocumentEditorSessionOptions = (options: Options<VerifyDocume
     });
 };
 
+/**
+ * Verify a Document Editor Session
+ */
 export const verifyDocumentEditorSessionMutation = (options?: Partial<Options<VerifyDocumentEditorSessionData>>): MutationOptions<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, Options<VerifyDocumentEditorSessionData>> => {
     const mutationOptions: MutationOptions<VerifyDocumentEditorSessionResponse, VerifyDocumentEditorSessionError, Options<VerifyDocumentEditorSessionData>> = {
         mutationFn: async (localOptions) => {
@@ -325,6 +372,9 @@ export const verifyDocumentEditorSessionMutation = (options?: Partial<Options<Ve
 
 export const listEnvironmentsQueryKey = (options?: Options<ListEnvironmentsData>) => createQueryKey('listEnvironments', options);
 
+/**
+ * List Environments
+ */
 export const listEnvironmentsOptions = (options?: Options<ListEnvironmentsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -342,6 +392,9 @@ export const listEnvironmentsOptions = (options?: Options<ListEnvironmentsData>)
 
 export const listEnvironmentsInfiniteQueryKey = (options?: Options<ListEnvironmentsData>): QueryKey<Options<ListEnvironmentsData>> => createQueryKey('listEnvironments', options, true);
 
+/**
+ * List Environments
+ */
 export const listEnvironmentsInfiniteOptions = (options?: Options<ListEnvironmentsData>) => {
     return infiniteQueryOptions<ListEnvironmentsResponse, ListEnvironmentsError, InfiniteData<ListEnvironmentsResponse>, QueryKey<Options<ListEnvironmentsData>>, number | Pick<QueryKey<Options<ListEnvironmentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -368,6 +421,9 @@ export const listEnvironmentsInfiniteOptions = (options?: Options<ListEnvironmen
 
 export const createEnvironmentQueryKey = (options: Options<CreateEnvironmentData>) => createQueryKey('createEnvironment', options);
 
+/**
+ * Create an Environment
+ */
 export const createEnvironmentOptions = (options: Options<CreateEnvironmentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -383,6 +439,9 @@ export const createEnvironmentOptions = (options: Options<CreateEnvironmentData>
     });
 };
 
+/**
+ * Create an Environment
+ */
 export const createEnvironmentMutation = (options?: Partial<Options<CreateEnvironmentData>>): MutationOptions<CreateEnvironmentResponse, CreateEnvironmentError, Options<CreateEnvironmentData>> => {
     const mutationOptions: MutationOptions<CreateEnvironmentResponse, CreateEnvironmentError, Options<CreateEnvironmentData>> = {
         mutationFn: async (localOptions) => {
@@ -397,6 +456,9 @@ export const createEnvironmentMutation = (options?: Partial<Options<CreateEnviro
     return mutationOptions;
 };
 
+/**
+ * Archive an Environment
+ */
 export const archiveEnvironmentMutation = (options?: Partial<Options<ArchiveEnvironmentData>>): MutationOptions<ArchiveEnvironmentResponse, ArchiveEnvironmentError, Options<ArchiveEnvironmentData>> => {
     const mutationOptions: MutationOptions<ArchiveEnvironmentResponse, ArchiveEnvironmentError, Options<ArchiveEnvironmentData>> = {
         mutationFn: async (localOptions) => {
@@ -413,6 +475,9 @@ export const archiveEnvironmentMutation = (options?: Partial<Options<ArchiveEnvi
 
 export const getEnvironmentQueryKey = (options: Options<GetEnvironmentData>) => createQueryKey('getEnvironment', options);
 
+/**
+ * Get an Environment
+ */
 export const getEnvironmentOptions = (options: Options<GetEnvironmentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -428,6 +493,9 @@ export const getEnvironmentOptions = (options: Options<GetEnvironmentData>) => {
     });
 };
 
+/**
+ * Update an Environment
+ */
 export const updateEnvironmentMutation = (options?: Partial<Options<UpdateEnvironmentData>>): MutationOptions<UpdateEnvironmentResponse, UpdateEnvironmentError, Options<UpdateEnvironmentData>> => {
     const mutationOptions: MutationOptions<UpdateEnvironmentResponse, UpdateEnvironmentError, Options<UpdateEnvironmentData>> = {
         mutationFn: async (localOptions) => {
@@ -444,6 +512,9 @@ export const updateEnvironmentMutation = (options?: Partial<Options<UpdateEnviro
 
 export const listFunctionalitiesQueryKey = (options?: Options<ListFunctionalitiesData>) => createQueryKey('listFunctionalities', options);
 
+/**
+ * List Functionalities
+ */
 export const listFunctionalitiesOptions = (options?: Options<ListFunctionalitiesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -461,6 +532,9 @@ export const listFunctionalitiesOptions = (options?: Options<ListFunctionalities
 
 export const listFunctionalitiesInfiniteQueryKey = (options?: Options<ListFunctionalitiesData>): QueryKey<Options<ListFunctionalitiesData>> => createQueryKey('listFunctionalities', options, true);
 
+/**
+ * List Functionalities
+ */
 export const listFunctionalitiesInfiniteOptions = (options?: Options<ListFunctionalitiesData>) => {
     return infiniteQueryOptions<ListFunctionalitiesResponse, ListFunctionalitiesError, InfiniteData<ListFunctionalitiesResponse>, QueryKey<Options<ListFunctionalitiesData>>, number | Pick<QueryKey<Options<ListFunctionalitiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -487,6 +561,9 @@ export const listFunctionalitiesInfiniteOptions = (options?: Options<ListFunctio
 
 export const createFunctionalityQueryKey = (options: Options<CreateFunctionalityData>) => createQueryKey('createFunctionality', options);
 
+/**
+ * Create a Functionality
+ */
 export const createFunctionalityOptions = (options: Options<CreateFunctionalityData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -502,6 +579,9 @@ export const createFunctionalityOptions = (options: Options<CreateFunctionalityD
     });
 };
 
+/**
+ * Create a Functionality
+ */
 export const createFunctionalityMutation = (options?: Partial<Options<CreateFunctionalityData>>): MutationOptions<CreateFunctionalityResponse, CreateFunctionalityError, Options<CreateFunctionalityData>> => {
     const mutationOptions: MutationOptions<CreateFunctionalityResponse, CreateFunctionalityError, Options<CreateFunctionalityData>> = {
         mutationFn: async (localOptions) => {
@@ -516,6 +596,9 @@ export const createFunctionalityMutation = (options?: Partial<Options<CreateFunc
     return mutationOptions;
 };
 
+/**
+ * Archive a Functionality
+ */
 export const archiveFunctionalityMutation = (options?: Partial<Options<ArchiveFunctionalityData>>): MutationOptions<ArchiveFunctionalityResponse, ArchiveFunctionalityError, Options<ArchiveFunctionalityData>> => {
     const mutationOptions: MutationOptions<ArchiveFunctionalityResponse, ArchiveFunctionalityError, Options<ArchiveFunctionalityData>> = {
         mutationFn: async (localOptions) => {
@@ -532,6 +615,9 @@ export const archiveFunctionalityMutation = (options?: Partial<Options<ArchiveFu
 
 export const getFunctionalityQueryKey = (options: Options<GetFunctionalityData>) => createQueryKey('getFunctionality', options);
 
+/**
+ * Get a Functionality
+ */
 export const getFunctionalityOptions = (options: Options<GetFunctionalityData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -547,6 +633,9 @@ export const getFunctionalityOptions = (options: Options<GetFunctionalityData>) 
     });
 };
 
+/**
+ * Update a Functionality
+ */
 export const updateFunctionalityMutation = (options?: Partial<Options<UpdateFunctionalityData>>): MutationOptions<UpdateFunctionalityResponse, UpdateFunctionalityError, Options<UpdateFunctionalityData>> => {
     const mutationOptions: MutationOptions<UpdateFunctionalityResponse, UpdateFunctionalityError, Options<UpdateFunctionalityData>> = {
         mutationFn: async (localOptions) => {
@@ -563,6 +652,9 @@ export const updateFunctionalityMutation = (options?: Partial<Options<UpdateFunc
 
 export const getIncidentDebriefQueryKey = (options: Options<GetIncidentDebriefData>) => createQueryKey('getIncidentDebrief', options);
 
+/**
+ * Get Incident Debrief
+ */
 export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -578,6 +670,9 @@ export const getIncidentDebriefOptions = (options: Options<GetIncidentDebriefDat
     });
 };
 
+/**
+ * Update Incident Debrief
+ */
 export const updateIncidentDebriefMutation = (options?: Partial<Options<UpdateIncidentDebriefData>>): MutationOptions<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, Options<UpdateIncidentDebriefData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentDebriefResponse, UpdateIncidentDebriefError, Options<UpdateIncidentDebriefData>> = {
         mutationFn: async (localOptions) => {
@@ -594,6 +689,9 @@ export const updateIncidentDebriefMutation = (options?: Partial<Options<UpdateIn
 
 export const listDebriefMessagesQueryKey = (options: Options<ListDebriefMessagesData>) => createQueryKey('listDebriefMessages', options);
 
+/**
+ * List Incident Debrief Messages
+ */
 export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -611,6 +709,9 @@ export const listDebriefMessagesOptions = (options: Options<ListDebriefMessagesD
 
 export const listDebriefMessagesInfiniteQueryKey = (options: Options<ListDebriefMessagesData>): QueryKey<Options<ListDebriefMessagesData>> => createQueryKey('listDebriefMessages', options, true);
 
+/**
+ * List Incident Debrief Messages
+ */
 export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefMessagesData>) => {
     return infiniteQueryOptions<ListDebriefMessagesResponse, ListDebriefMessagesError, InfiniteData<ListDebriefMessagesResponse>, QueryKey<Options<ListDebriefMessagesData>>, number | Pick<QueryKey<Options<ListDebriefMessagesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -637,6 +738,9 @@ export const listDebriefMessagesInfiniteOptions = (options: Options<ListDebriefM
 
 export const addIncidentDebriefUserMessageQueryKey = (options: Options<AddIncidentDebriefUserMessageData>) => createQueryKey('addIncidentDebriefUserMessage', options);
 
+/**
+ * Add an Incident Debrief message
+ */
 export const addIncidentDebriefUserMessageOptions = (options: Options<AddIncidentDebriefUserMessageData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -652,6 +756,9 @@ export const addIncidentDebriefUserMessageOptions = (options: Options<AddInciden
     });
 };
 
+/**
+ * Add an Incident Debrief message
+ */
 export const addIncidentDebriefUserMessageMutation = (options?: Partial<Options<AddIncidentDebriefUserMessageData>>): MutationOptions<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, Options<AddIncidentDebriefUserMessageData>> => {
     const mutationOptions: MutationOptions<AddIncidentDebriefUserMessageResponse, AddIncidentDebriefUserMessageError, Options<AddIncidentDebriefUserMessageData>> = {
         mutationFn: async (localOptions) => {
@@ -668,6 +775,9 @@ export const addIncidentDebriefUserMessageMutation = (options?: Partial<Options<
 
 export const listDebriefSuggestionsQueryKey = (options: Options<ListDebriefSuggestionsData>) => createQueryKey('listDebriefSuggestions', options);
 
+/**
+ * List Incident Debrief Suggestions
+ */
 export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSuggestionsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -685,6 +795,9 @@ export const listDebriefSuggestionsOptions = (options: Options<ListDebriefSugges
 
 export const listDebriefSuggestionsInfiniteQueryKey = (options: Options<ListDebriefSuggestionsData>): QueryKey<Options<ListDebriefSuggestionsData>> => createQueryKey('listDebriefSuggestions', options, true);
 
+/**
+ * List Incident Debrief Suggestions
+ */
 export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebriefSuggestionsData>) => {
     return infiniteQueryOptions<ListDebriefSuggestionsResponse, ListDebriefSuggestionsError, InfiniteData<ListDebriefSuggestionsResponse>, QueryKey<Options<ListDebriefSuggestionsData>>, number | Pick<QueryKey<Options<ListDebriefSuggestionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -711,6 +824,9 @@ export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebri
 
 export const listIncidentEventContributingFactorCategoriesQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => createQueryKey('listIncidentEventContributingFactorCategories', options);
 
+/**
+ * List Categories of Contributing Factors used in Incident Events
+ */
 export const listIncidentEventContributingFactorCategoriesOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -728,6 +844,9 @@ export const listIncidentEventContributingFactorCategoriesOptions = (options?: O
 
 export const listIncidentEventContributingFactorCategoriesInfiniteQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>): QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>> => createQueryKey('listIncidentEventContributingFactorCategories', options, true);
 
+/**
+ * List Categories of Contributing Factors used in Incident Events
+ */
 export const listIncidentEventContributingFactorCategoriesInfiniteOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => {
     return infiniteQueryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, InfiniteData<ListIncidentEventContributingFactorCategoriesResponse>, QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>, number | Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -752,6 +871,9 @@ export const listIncidentEventContributingFactorCategoriesInfiniteOptions = (opt
     });
 };
 
+/**
+ * Delete an Incident Event
+ */
 export const deleteIncidentEventMutation = (options?: Partial<Options<DeleteIncidentEventData>>): MutationOptions<DeleteIncidentEventResponse, DeleteIncidentEventError, Options<DeleteIncidentEventData>> => {
     const mutationOptions: MutationOptions<DeleteIncidentEventResponse, DeleteIncidentEventError, Options<DeleteIncidentEventData>> = {
         mutationFn: async (localOptions) => {
@@ -766,6 +888,9 @@ export const deleteIncidentEventMutation = (options?: Partial<Options<DeleteInci
     return mutationOptions;
 };
 
+/**
+ * Update an Incident Event
+ */
 export const updateIncidentEventMutation = (options?: Partial<Options<UpdateIncidentEventData>>): MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> = {
         mutationFn: async (localOptions) => {
@@ -782,6 +907,9 @@ export const updateIncidentEventMutation = (options?: Partial<Options<UpdateInci
 
 export const listIncidentFieldsQueryKey = (options?: Options<ListIncidentFieldsData>) => createQueryKey('listIncidentFields', options);
 
+/**
+ * List Incident Fields
+ */
 export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -799,6 +927,9 @@ export const listIncidentFieldsOptions = (options?: Options<ListIncidentFieldsDa
 
 export const listIncidentFieldsInfiniteQueryKey = (options?: Options<ListIncidentFieldsData>): QueryKey<Options<ListIncidentFieldsData>> => createQueryKey('listIncidentFields', options, true);
 
+/**
+ * List Incident Fields
+ */
 export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncidentFieldsData>) => {
     return infiniteQueryOptions<ListIncidentFieldsResponse, ListIncidentFieldsError, InfiniteData<ListIncidentFieldsResponse>, QueryKey<Options<ListIncidentFieldsData>>, number | Pick<QueryKey<Options<ListIncidentFieldsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -825,6 +956,9 @@ export const listIncidentFieldsInfiniteOptions = (options?: Options<ListIncident
 
 export const createIncidentFieldQueryKey = (options: Options<CreateIncidentFieldData>) => createQueryKey('createIncidentField', options);
 
+/**
+ * Create an Incident Field
+ */
 export const createIncidentFieldOptions = (options: Options<CreateIncidentFieldData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -840,6 +974,9 @@ export const createIncidentFieldOptions = (options: Options<CreateIncidentFieldD
     });
 };
 
+/**
+ * Create an Incident Field
+ */
 export const createIncidentFieldMutation = (options?: Partial<Options<CreateIncidentFieldData>>): MutationOptions<CreateIncidentFieldResponse, CreateIncidentFieldError, Options<CreateIncidentFieldData>> => {
     const mutationOptions: MutationOptions<CreateIncidentFieldResponse, CreateIncidentFieldError, Options<CreateIncidentFieldData>> = {
         mutationFn: async (localOptions) => {
@@ -854,6 +991,9 @@ export const createIncidentFieldMutation = (options?: Partial<Options<CreateInci
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident Field
+ */
 export const archiveIncidentFieldMutation = (options?: Partial<Options<ArchiveIncidentFieldData>>): MutationOptions<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, Options<ArchiveIncidentFieldData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentFieldResponse, ArchiveIncidentFieldError, Options<ArchiveIncidentFieldData>> = {
         mutationFn: async (localOptions) => {
@@ -870,6 +1010,9 @@ export const archiveIncidentFieldMutation = (options?: Partial<Options<ArchiveIn
 
 export const getIncidentFieldQueryKey = (options: Options<GetIncidentFieldData>) => createQueryKey('getIncidentField', options);
 
+/**
+ * Get an Incident Field
+ */
 export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -885,6 +1028,9 @@ export const getIncidentFieldOptions = (options: Options<GetIncidentFieldData>) 
     });
 };
 
+/**
+ * Update an Incident Field
+ */
 export const updateIncidentFieldMutation = (options?: Partial<Options<UpdateIncidentFieldData>>): MutationOptions<UpdateIncidentFieldResponse, UpdateIncidentFieldError, Options<UpdateIncidentFieldData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentFieldResponse, UpdateIncidentFieldError, Options<UpdateIncidentFieldData>> = {
         mutationFn: async (localOptions) => {
@@ -899,6 +1045,9 @@ export const updateIncidentFieldMutation = (options?: Partial<Options<UpdateInci
     return mutationOptions;
 };
 
+/**
+ * Delete an Incident Milestone
+ */
 export const deleteIncidentMilestoneMutation = (options?: Partial<Options<DeleteIncidentMilestoneData>>): MutationOptions<DeleteIncidentMilestoneResponse, DeleteIncidentMilestoneError, Options<DeleteIncidentMilestoneData>> => {
     const mutationOptions: MutationOptions<DeleteIncidentMilestoneResponse, DeleteIncidentMilestoneError, Options<DeleteIncidentMilestoneData>> = {
         mutationFn: async (localOptions) => {
@@ -913,6 +1062,9 @@ export const deleteIncidentMilestoneMutation = (options?: Partial<Options<Delete
     return mutationOptions;
 };
 
+/**
+ * Update an Incident Milestone
+ */
 export const updateIncidentMilestoneMutation = (options?: Partial<Options<UpdateIncidentMilestoneData>>): MutationOptions<UpdateIncidentMilestoneResponse, UpdateIncidentMilestoneError, Options<UpdateIncidentMilestoneData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentMilestoneResponse, UpdateIncidentMilestoneError, Options<UpdateIncidentMilestoneData>> = {
         mutationFn: async (localOptions) => {
@@ -929,6 +1081,9 @@ export const updateIncidentMilestoneMutation = (options?: Partial<Options<Update
 
 export const listIncidentRolesQueryKey = (options?: Options<ListIncidentRolesData>) => createQueryKey('listIncidentRoles', options);
 
+/**
+ * List Incident Roles
+ */
 export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -946,6 +1101,9 @@ export const listIncidentRolesOptions = (options?: Options<ListIncidentRolesData
 
 export const listIncidentRolesInfiniteQueryKey = (options?: Options<ListIncidentRolesData>): QueryKey<Options<ListIncidentRolesData>> => createQueryKey('listIncidentRoles', options, true);
 
+/**
+ * List Incident Roles
+ */
 export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentRolesData>) => {
     return infiniteQueryOptions<ListIncidentRolesResponse, ListIncidentRolesError, InfiniteData<ListIncidentRolesResponse>, QueryKey<Options<ListIncidentRolesData>>, number | Pick<QueryKey<Options<ListIncidentRolesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -972,6 +1130,9 @@ export const listIncidentRolesInfiniteOptions = (options?: Options<ListIncidentR
 
 export const createIncidentRoleQueryKey = (options: Options<CreateIncidentRoleData>) => createQueryKey('createIncidentRole', options);
 
+/**
+ * Create an Incident Role
+ */
 export const createIncidentRoleOptions = (options: Options<CreateIncidentRoleData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -987,6 +1148,9 @@ export const createIncidentRoleOptions = (options: Options<CreateIncidentRoleDat
     });
 };
 
+/**
+ * Create an Incident Role
+ */
 export const createIncidentRoleMutation = (options?: Partial<Options<CreateIncidentRoleData>>): MutationOptions<CreateIncidentRoleResponse, CreateIncidentRoleError, Options<CreateIncidentRoleData>> => {
     const mutationOptions: MutationOptions<CreateIncidentRoleResponse, CreateIncidentRoleError, Options<CreateIncidentRoleData>> = {
         mutationFn: async (localOptions) => {
@@ -1001,6 +1165,9 @@ export const createIncidentRoleMutation = (options?: Partial<Options<CreateIncid
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident Role
+ */
 export const archiveIncidentRoleMutation = (options?: Partial<Options<ArchiveIncidentRoleData>>): MutationOptions<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, Options<ArchiveIncidentRoleData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentRoleResponse, ArchiveIncidentRoleError, Options<ArchiveIncidentRoleData>> = {
         mutationFn: async (localOptions) => {
@@ -1017,6 +1184,9 @@ export const archiveIncidentRoleMutation = (options?: Partial<Options<ArchiveInc
 
 export const getIncidentRoleQueryKey = (options: Options<GetIncidentRoleData>) => createQueryKey('getIncidentRole', options);
 
+/**
+ * Get an Incident Role
+ */
 export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1032,6 +1202,9 @@ export const getIncidentRoleOptions = (options: Options<GetIncidentRoleData>) =>
     });
 };
 
+/**
+ * Update an Incident Role
+ */
 export const updateIncidentRoleMutation = (options?: Partial<Options<UpdateIncidentRoleData>>): MutationOptions<UpdateIncidentRoleResponse, UpdateIncidentRoleError, Options<UpdateIncidentRoleData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentRoleResponse, UpdateIncidentRoleError, Options<UpdateIncidentRoleData>> = {
         mutationFn: async (localOptions) => {
@@ -1048,6 +1221,9 @@ export const updateIncidentRoleMutation = (options?: Partial<Options<UpdateIncid
 
 export const listIncidentSeveritiesQueryKey = (options?: Options<ListIncidentSeveritiesData>) => createQueryKey('listIncidentSeverities', options);
 
+/**
+ * List Severities
+ */
 export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeveritiesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1065,6 +1241,9 @@ export const listIncidentSeveritiesOptions = (options?: Options<ListIncidentSeve
 
 export const listIncidentSeveritiesInfiniteQueryKey = (options?: Options<ListIncidentSeveritiesData>): QueryKey<Options<ListIncidentSeveritiesData>> => createQueryKey('listIncidentSeverities', options, true);
 
+/**
+ * List Severities
+ */
 export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListIncidentSeveritiesData>) => {
     return infiniteQueryOptions<ListIncidentSeveritiesResponse, ListIncidentSeveritiesError, InfiniteData<ListIncidentSeveritiesResponse>, QueryKey<Options<ListIncidentSeveritiesData>>, number | Pick<QueryKey<Options<ListIncidentSeveritiesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1091,6 +1270,9 @@ export const listIncidentSeveritiesInfiniteOptions = (options?: Options<ListInci
 
 export const createIncidentSeverityQueryKey = (options: Options<CreateIncidentSeverityData>) => createQueryKey('createIncidentSeverity', options);
 
+/**
+ * Create a Severity
+ */
 export const createIncidentSeverityOptions = (options: Options<CreateIncidentSeverityData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1106,6 +1288,9 @@ export const createIncidentSeverityOptions = (options: Options<CreateIncidentSev
     });
 };
 
+/**
+ * Create a Severity
+ */
 export const createIncidentSeverityMutation = (options?: Partial<Options<CreateIncidentSeverityData>>): MutationOptions<CreateIncidentSeverityResponse, CreateIncidentSeverityError, Options<CreateIncidentSeverityData>> => {
     const mutationOptions: MutationOptions<CreateIncidentSeverityResponse, CreateIncidentSeverityError, Options<CreateIncidentSeverityData>> = {
         mutationFn: async (localOptions) => {
@@ -1120,6 +1305,9 @@ export const createIncidentSeverityMutation = (options?: Partial<Options<CreateI
     return mutationOptions;
 };
 
+/**
+ * Archive a Severity
+ */
 export const archiveIncidentSeverityMutation = (options?: Partial<Options<ArchiveIncidentSeverityData>>): MutationOptions<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, Options<ArchiveIncidentSeverityData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentSeverityResponse, ArchiveIncidentSeverityError, Options<ArchiveIncidentSeverityData>> = {
         mutationFn: async (localOptions) => {
@@ -1136,6 +1324,9 @@ export const archiveIncidentSeverityMutation = (options?: Partial<Options<Archiv
 
 export const getIncidentSeverityQueryKey = (options: Options<GetIncidentSeverityData>) => createQueryKey('getIncidentSeverity', options);
 
+/**
+ * Get a Severity
+ */
 export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1151,6 +1342,9 @@ export const getIncidentSeverityOptions = (options: Options<GetIncidentSeverityD
     });
 };
 
+/**
+ * Update a Severity
+ */
 export const updateIncidentSeverityMutation = (options?: Partial<Options<UpdateIncidentSeverityData>>): MutationOptions<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, Options<UpdateIncidentSeverityData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentSeverityResponse, UpdateIncidentSeverityError, Options<UpdateIncidentSeverityData>> = {
         mutationFn: async (localOptions) => {
@@ -1167,6 +1361,9 @@ export const updateIncidentSeverityMutation = (options?: Partial<Options<UpdateI
 
 export const listIncidentTagsQueryKey = (options?: Options<ListIncidentTagsData>) => createQueryKey('listIncidentTags', options);
 
+/**
+ * List Incident Tags
+ */
 export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1184,6 +1381,9 @@ export const listIncidentTagsOptions = (options?: Options<ListIncidentTagsData>)
 
 export const listIncidentTagsInfiniteQueryKey = (options?: Options<ListIncidentTagsData>): QueryKey<Options<ListIncidentTagsData>> => createQueryKey('listIncidentTags', options, true);
 
+/**
+ * List Incident Tags
+ */
 export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTagsData>) => {
     return infiniteQueryOptions<ListIncidentTagsResponse, ListIncidentTagsError, InfiniteData<ListIncidentTagsResponse>, QueryKey<Options<ListIncidentTagsData>>, number | Pick<QueryKey<Options<ListIncidentTagsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1210,6 +1410,9 @@ export const listIncidentTagsInfiniteOptions = (options?: Options<ListIncidentTa
 
 export const createIncidentTagQueryKey = (options: Options<CreateIncidentTagData>) => createQueryKey('createIncidentTag', options);
 
+/**
+ * Create an Incident Tag
+ */
 export const createIncidentTagOptions = (options: Options<CreateIncidentTagData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1225,6 +1428,9 @@ export const createIncidentTagOptions = (options: Options<CreateIncidentTagData>
     });
 };
 
+/**
+ * Create an Incident Tag
+ */
 export const createIncidentTagMutation = (options?: Partial<Options<CreateIncidentTagData>>): MutationOptions<CreateIncidentTagResponse, CreateIncidentTagError, Options<CreateIncidentTagData>> => {
     const mutationOptions: MutationOptions<CreateIncidentTagResponse, CreateIncidentTagError, Options<CreateIncidentTagData>> = {
         mutationFn: async (localOptions) => {
@@ -1239,6 +1445,9 @@ export const createIncidentTagMutation = (options?: Partial<Options<CreateIncide
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident Tag
+ */
 export const archiveIncidentTagMutation = (options?: Partial<Options<ArchiveIncidentTagData>>): MutationOptions<ArchiveIncidentTagResponse, ArchiveIncidentTagError, Options<ArchiveIncidentTagData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentTagResponse, ArchiveIncidentTagError, Options<ArchiveIncidentTagData>> = {
         mutationFn: async (localOptions) => {
@@ -1255,6 +1464,9 @@ export const archiveIncidentTagMutation = (options?: Partial<Options<ArchiveInci
 
 export const getIncidentTagQueryKey = (options: Options<GetIncidentTagData>) => createQueryKey('getIncidentTag', options);
 
+/**
+ * Get an Incident Tag
+ */
 export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1270,6 +1482,9 @@ export const getIncidentTagOptions = (options: Options<GetIncidentTagData>) => {
     });
 };
 
+/**
+ * Update an Incident Tag
+ */
 export const updateIncidentTagMutation = (options?: Partial<Options<UpdateIncidentTagData>>): MutationOptions<UpdateIncidentTagResponse, UpdateIncidentTagError, Options<UpdateIncidentTagData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentTagResponse, UpdateIncidentTagError, Options<UpdateIncidentTagData>> = {
         mutationFn: async (localOptions) => {
@@ -1286,6 +1501,9 @@ export const updateIncidentTagMutation = (options?: Partial<Options<UpdateIncide
 
 export const listIncidentTypesQueryKey = (options?: Options<ListIncidentTypesData>) => createQueryKey('listIncidentTypes', options);
 
+/**
+ * List Types
+ */
 export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1303,6 +1521,9 @@ export const listIncidentTypesOptions = (options?: Options<ListIncidentTypesData
 
 export const listIncidentTypesInfiniteQueryKey = (options?: Options<ListIncidentTypesData>): QueryKey<Options<ListIncidentTypesData>> => createQueryKey('listIncidentTypes', options, true);
 
+/**
+ * List Types
+ */
 export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentTypesData>) => {
     return infiniteQueryOptions<ListIncidentTypesResponse, ListIncidentTypesError, InfiniteData<ListIncidentTypesResponse>, QueryKey<Options<ListIncidentTypesData>>, number | Pick<QueryKey<Options<ListIncidentTypesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1329,6 +1550,9 @@ export const listIncidentTypesInfiniteOptions = (options?: Options<ListIncidentT
 
 export const createIncidentTypeQueryKey = (options: Options<CreateIncidentTypeData>) => createQueryKey('createIncidentType', options);
 
+/**
+ * Create an Incident Type
+ */
 export const createIncidentTypeOptions = (options: Options<CreateIncidentTypeData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1344,6 +1568,9 @@ export const createIncidentTypeOptions = (options: Options<CreateIncidentTypeDat
     });
 };
 
+/**
+ * Create an Incident Type
+ */
 export const createIncidentTypeMutation = (options?: Partial<Options<CreateIncidentTypeData>>): MutationOptions<CreateIncidentTypeResponse, CreateIncidentTypeError, Options<CreateIncidentTypeData>> => {
     const mutationOptions: MutationOptions<CreateIncidentTypeResponse, CreateIncidentTypeError, Options<CreateIncidentTypeData>> = {
         mutationFn: async (localOptions) => {
@@ -1358,6 +1585,9 @@ export const createIncidentTypeMutation = (options?: Partial<Options<CreateIncid
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident Type
+ */
 export const archiveIncidentTypeMutation = (options?: Partial<Options<ArchiveIncidentTypeData>>): MutationOptions<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, Options<ArchiveIncidentTypeData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentTypeResponse, ArchiveIncidentTypeError, Options<ArchiveIncidentTypeData>> = {
         mutationFn: async (localOptions) => {
@@ -1374,6 +1604,9 @@ export const archiveIncidentTypeMutation = (options?: Partial<Options<ArchiveInc
 
 export const getIncidentTypeQueryKey = (options: Options<GetIncidentTypeData>) => createQueryKey('getIncidentType', options);
 
+/**
+ * Get a Severity
+ */
 export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1389,6 +1622,9 @@ export const getIncidentTypeOptions = (options: Options<GetIncidentTypeData>) =>
     });
 };
 
+/**
+ * Update an Incident Type
+ */
 export const updateIncidentTypeMutation = (options?: Partial<Options<UpdateIncidentTypeData>>): MutationOptions<UpdateIncidentTypeResponse, UpdateIncidentTypeError, Options<UpdateIncidentTypeData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentTypeResponse, UpdateIncidentTypeError, Options<UpdateIncidentTypeData>> = {
         mutationFn: async (localOptions) => {
@@ -1405,6 +1641,9 @@ export const updateIncidentTypeMutation = (options?: Partial<Options<UpdateIncid
 
 export const listIncidentsQueryKey = (options?: Options<ListIncidentsData>) => createQueryKey('listIncidents', options);
 
+/**
+ * List Incidents
+ */
 export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1422,6 +1661,9 @@ export const listIncidentsOptions = (options?: Options<ListIncidentsData>) => {
 
 export const listIncidentsInfiniteQueryKey = (options?: Options<ListIncidentsData>): QueryKey<Options<ListIncidentsData>> => createQueryKey('listIncidents', options, true);
 
+/**
+ * List Incidents
+ */
 export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData>) => {
     return infiniteQueryOptions<ListIncidentsResponse, ListIncidentsError, InfiniteData<ListIncidentsResponse>, QueryKey<Options<ListIncidentsData>>, number | Pick<QueryKey<Options<ListIncidentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1448,6 +1690,9 @@ export const listIncidentsInfiniteOptions = (options?: Options<ListIncidentsData
 
 export const createIncidentQueryKey = (options: Options<CreateIncidentData>) => createQueryKey('createIncident', options);
 
+/**
+ * Create an Incident
+ */
 export const createIncidentOptions = (options: Options<CreateIncidentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1463,6 +1708,9 @@ export const createIncidentOptions = (options: Options<CreateIncidentData>) => {
     });
 };
 
+/**
+ * Create an Incident
+ */
 export const createIncidentMutation = (options?: Partial<Options<CreateIncidentData>>): MutationOptions<CreateIncidentResponse, CreateIncidentError, Options<CreateIncidentData>> => {
     const mutationOptions: MutationOptions<CreateIncidentResponse, CreateIncidentError, Options<CreateIncidentData>> = {
         mutationFn: async (localOptions) => {
@@ -1477,6 +1725,9 @@ export const createIncidentMutation = (options?: Partial<Options<CreateIncidentD
     return mutationOptions;
 };
 
+/**
+ * Archive an Incident
+ */
 export const archiveIncidentMutation = (options?: Partial<Options<ArchiveIncidentData>>): MutationOptions<ArchiveIncidentResponse, ArchiveIncidentError, Options<ArchiveIncidentData>> => {
     const mutationOptions: MutationOptions<ArchiveIncidentResponse, ArchiveIncidentError, Options<ArchiveIncidentData>> = {
         mutationFn: async (localOptions) => {
@@ -1493,6 +1744,9 @@ export const archiveIncidentMutation = (options?: Partial<Options<ArchiveInciden
 
 export const getIncidentQueryKey = (options: Options<GetIncidentData>) => createQueryKey('getIncident', options);
 
+/**
+ * Get Incident
+ */
 export const getIncidentOptions = (options: Options<GetIncidentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1508,6 +1762,9 @@ export const getIncidentOptions = (options: Options<GetIncidentData>) => {
     });
 };
 
+/**
+ * Update an Incident
+ */
 export const updateIncidentMutation = (options?: Partial<Options<UpdateIncidentData>>): MutationOptions<UpdateIncidentResponse, UpdateIncidentError, Options<UpdateIncidentData>> => {
     const mutationOptions: MutationOptions<UpdateIncidentResponse, UpdateIncidentError, Options<UpdateIncidentData>> = {
         mutationFn: async (localOptions) => {
@@ -1524,6 +1781,9 @@ export const updateIncidentMutation = (options?: Partial<Options<UpdateIncidentD
 
 export const getIncidentUserDebriefQueryKey = (options: Options<GetIncidentUserDebriefData>) => createQueryKey('getIncidentUserDebrief', options);
 
+/**
+ * Get Debrief For Incident
+ */
 export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDebriefData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1541,6 +1801,9 @@ export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDe
 
 export const listIncidentEventsQueryKey = (options: Options<ListIncidentEventsData>) => createQueryKey('listIncidentEvents', options);
 
+/**
+ * List Events for Incident
+ */
 export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1558,6 +1821,9 @@ export const listIncidentEventsOptions = (options: Options<ListIncidentEventsDat
 
 export const listIncidentEventsInfiniteQueryKey = (options: Options<ListIncidentEventsData>): QueryKey<Options<ListIncidentEventsData>> => createQueryKey('listIncidentEvents', options, true);
 
+/**
+ * List Events for Incident
+ */
 export const listIncidentEventsInfiniteOptions = (options: Options<ListIncidentEventsData>) => {
     return infiniteQueryOptions<ListIncidentEventsResponse, ListIncidentEventsError, InfiniteData<ListIncidentEventsResponse>, QueryKey<Options<ListIncidentEventsData>>, number | Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1584,6 +1850,9 @@ export const listIncidentEventsInfiniteOptions = (options: Options<ListIncidentE
 
 export const createIncidentEventQueryKey = (options: Options<CreateIncidentEventData>) => createQueryKey('createIncidentEvent', options);
 
+/**
+ * Create an Incident Event
+ */
 export const createIncidentEventOptions = (options: Options<CreateIncidentEventData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1599,6 +1868,9 @@ export const createIncidentEventOptions = (options: Options<CreateIncidentEventD
     });
 };
 
+/**
+ * Create an Incident Event
+ */
 export const createIncidentEventMutation = (options?: Partial<Options<CreateIncidentEventData>>): MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> => {
     const mutationOptions: MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> = {
         mutationFn: async (localOptions) => {
@@ -1615,6 +1887,9 @@ export const createIncidentEventMutation = (options?: Partial<Options<CreateInci
 
 export const listIncidentMilestonesQueryKey = (options: Options<ListIncidentMilestonesData>) => createQueryKey('listIncidentMilestones', options);
 
+/**
+ * List Milestones for Incident
+ */
 export const listIncidentMilestonesOptions = (options: Options<ListIncidentMilestonesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1632,6 +1907,9 @@ export const listIncidentMilestonesOptions = (options: Options<ListIncidentMiles
 
 export const createIncidentMilestoneQueryKey = (options: Options<CreateIncidentMilestoneData>) => createQueryKey('createIncidentMilestone', options);
 
+/**
+ * Create an Incident Milestone
+ */
 export const createIncidentMilestoneOptions = (options: Options<CreateIncidentMilestoneData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1647,6 +1925,9 @@ export const createIncidentMilestoneOptions = (options: Options<CreateIncidentMi
     });
 };
 
+/**
+ * Create an Incident Milestone
+ */
 export const createIncidentMilestoneMutation = (options?: Partial<Options<CreateIncidentMilestoneData>>): MutationOptions<CreateIncidentMilestoneResponse, CreateIncidentMilestoneError, Options<CreateIncidentMilestoneData>> => {
     const mutationOptions: MutationOptions<CreateIncidentMilestoneResponse, CreateIncidentMilestoneError, Options<CreateIncidentMilestoneData>> = {
         mutationFn: async (localOptions) => {
@@ -1663,6 +1944,9 @@ export const createIncidentMilestoneMutation = (options?: Partial<Options<Create
 
 export const getRetrospectiveForIncidentQueryKey = (options: Options<GetRetrospectiveForIncidentData>) => createQueryKey('getRetrospectiveForIncident', options);
 
+/**
+ * Get a Retrospective for an Incident
+ */
 export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospectiveForIncidentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1680,6 +1964,9 @@ export const getRetrospectiveForIncidentOptions = (options: Options<GetRetrospec
 
 export const listIntegrationsQueryKey = (options?: Options<ListIntegrationsData>) => createQueryKey('listIntegrations', options);
 
+/**
+ * List Integrations
+ */
 export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1697,6 +1984,9 @@ export const listIntegrationsOptions = (options?: Options<ListIntegrationsData>)
 
 export const listIntegrationsInfiniteQueryKey = (options?: Options<ListIntegrationsData>): QueryKey<Options<ListIntegrationsData>> => createQueryKey('listIntegrations', options, true);
 
+/**
+ * List Integrations
+ */
 export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegrationsData>) => {
     return infiniteQueryOptions<ListIntegrationsResponse, ListIntegrationsError, InfiniteData<ListIntegrationsResponse>, QueryKey<Options<ListIntegrationsData>>, number | Pick<QueryKey<Options<ListIntegrationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1723,6 +2013,9 @@ export const listIntegrationsInfiniteOptions = (options?: Options<ListIntegratio
 
 export const createIntegrationQueryKey = (options: Options<CreateIntegrationData>) => createQueryKey('createIntegration', options);
 
+/**
+ * Create an Integration
+ */
 export const createIntegrationOptions = (options: Options<CreateIntegrationData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1738,6 +2031,9 @@ export const createIntegrationOptions = (options: Options<CreateIntegrationData>
     });
 };
 
+/**
+ * Create an Integration
+ */
 export const createIntegrationMutation = (options?: Partial<Options<CreateIntegrationData>>): MutationOptions<CreateIntegrationResponse, CreateIntegrationError, Options<CreateIntegrationData>> => {
     const mutationOptions: MutationOptions<CreateIntegrationResponse, CreateIntegrationError, Options<CreateIntegrationData>> = {
         mutationFn: async (localOptions) => {
@@ -1752,6 +2048,9 @@ export const createIntegrationMutation = (options?: Partial<Options<CreateIntegr
     return mutationOptions;
 };
 
+/**
+ * Archive an Integration
+ */
 export const archiveIntegrationMutation = (options?: Partial<Options<ArchiveIntegrationData>>): MutationOptions<ArchiveIntegrationResponse, ArchiveIntegrationError, Options<ArchiveIntegrationData>> => {
     const mutationOptions: MutationOptions<ArchiveIntegrationResponse, ArchiveIntegrationError, Options<ArchiveIntegrationData>> = {
         mutationFn: async (localOptions) => {
@@ -1768,6 +2067,9 @@ export const archiveIntegrationMutation = (options?: Partial<Options<ArchiveInte
 
 export const getIntegrationQueryKey = (options: Options<GetIntegrationData>) => createQueryKey('getIntegration', options);
 
+/**
+ * Get an Integration
+ */
 export const getIntegrationOptions = (options: Options<GetIntegrationData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1783,6 +2085,9 @@ export const getIntegrationOptions = (options: Options<GetIntegrationData>) => {
     });
 };
 
+/**
+ * Update an Integration
+ */
 export const updateIntegrationMutation = (options?: Partial<Options<UpdateIntegrationData>>): MutationOptions<UpdateIntegrationResponse, UpdateIntegrationError, Options<UpdateIntegrationData>> => {
     const mutationOptions: MutationOptions<UpdateIntegrationResponse, UpdateIntegrationError, Options<UpdateIntegrationData>> = {
         mutationFn: async (localOptions) => {
@@ -1799,6 +2104,9 @@ export const updateIntegrationMutation = (options?: Partial<Options<UpdateIntegr
 
 export const listMeetingSchedulesQueryKey = (options?: Options<ListMeetingSchedulesData>) => createQueryKey('listMeetingSchedules', options);
 
+/**
+ * List Meeting Schedules
+ */
 export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedulesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1816,6 +2124,9 @@ export const listMeetingSchedulesOptions = (options?: Options<ListMeetingSchedul
 
 export const listMeetingSchedulesInfiniteQueryKey = (options?: Options<ListMeetingSchedulesData>): QueryKey<Options<ListMeetingSchedulesData>> => createQueryKey('listMeetingSchedules', options, true);
 
+/**
+ * List Meeting Schedules
+ */
 export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetingSchedulesData>) => {
     return infiniteQueryOptions<ListMeetingSchedulesResponse, ListMeetingSchedulesError, InfiniteData<ListMeetingSchedulesResponse>, QueryKey<Options<ListMeetingSchedulesData>>, number | Pick<QueryKey<Options<ListMeetingSchedulesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1842,6 +2153,9 @@ export const listMeetingSchedulesInfiniteOptions = (options?: Options<ListMeetin
 
 export const createMeetingScheduleQueryKey = (options: Options<CreateMeetingScheduleData>) => createQueryKey('createMeetingSchedule', options);
 
+/**
+ * Create a Meeting Schedule
+ */
 export const createMeetingScheduleOptions = (options: Options<CreateMeetingScheduleData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1857,6 +2171,9 @@ export const createMeetingScheduleOptions = (options: Options<CreateMeetingSched
     });
 };
 
+/**
+ * Create a Meeting Schedule
+ */
 export const createMeetingScheduleMutation = (options?: Partial<Options<CreateMeetingScheduleData>>): MutationOptions<CreateMeetingScheduleResponse, CreateMeetingScheduleError, Options<CreateMeetingScheduleData>> => {
     const mutationOptions: MutationOptions<CreateMeetingScheduleResponse, CreateMeetingScheduleError, Options<CreateMeetingScheduleData>> = {
         mutationFn: async (localOptions) => {
@@ -1871,6 +2188,9 @@ export const createMeetingScheduleMutation = (options?: Partial<Options<CreateMe
     return mutationOptions;
 };
 
+/**
+ * Archive a Meeting Schedule
+ */
 export const archiveMeetingScheduleMutation = (options?: Partial<Options<ArchiveMeetingScheduleData>>): MutationOptions<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, Options<ArchiveMeetingScheduleData>> => {
     const mutationOptions: MutationOptions<ArchiveMeetingScheduleResponse, ArchiveMeetingScheduleError, Options<ArchiveMeetingScheduleData>> = {
         mutationFn: async (localOptions) => {
@@ -1887,6 +2207,9 @@ export const archiveMeetingScheduleMutation = (options?: Partial<Options<Archive
 
 export const getMeetingScheduleQueryKey = (options: Options<GetMeetingScheduleData>) => createQueryKey('getMeetingSchedule', options);
 
+/**
+ * Get a Meeting Schedule
+ */
 export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1902,6 +2225,9 @@ export const getMeetingScheduleOptions = (options: Options<GetMeetingScheduleDat
     });
 };
 
+/**
+ * Update a Meeting Schedule
+ */
 export const updateMeetingScheduleMutation = (options?: Partial<Options<UpdateMeetingScheduleData>>): MutationOptions<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, Options<UpdateMeetingScheduleData>> => {
     const mutationOptions: MutationOptions<UpdateMeetingScheduleResponse, UpdateMeetingScheduleError, Options<UpdateMeetingScheduleData>> = {
         mutationFn: async (localOptions) => {
@@ -1918,6 +2244,9 @@ export const updateMeetingScheduleMutation = (options?: Partial<Options<UpdateMe
 
 export const listMeetingSessionsQueryKey = (options?: Options<ListMeetingSessionsData>) => createQueryKey('listMeetingSessions', options);
 
+/**
+ * List Sessions
+ */
 export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessionsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1935,6 +2264,9 @@ export const listMeetingSessionsOptions = (options?: Options<ListMeetingSessions
 
 export const listMeetingSessionsInfiniteQueryKey = (options?: Options<ListMeetingSessionsData>): QueryKey<Options<ListMeetingSessionsData>> => createQueryKey('listMeetingSessions', options, true);
 
+/**
+ * List Sessions
+ */
 export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeetingSessionsData>) => {
     return infiniteQueryOptions<ListMeetingSessionsResponse, ListMeetingSessionsError, InfiniteData<ListMeetingSessionsResponse>, QueryKey<Options<ListMeetingSessionsData>>, number | Pick<QueryKey<Options<ListMeetingSessionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -1961,6 +2293,9 @@ export const listMeetingSessionsInfiniteOptions = (options?: Options<ListMeeting
 
 export const createMeetingSessionQueryKey = (options: Options<CreateMeetingSessionData>) => createQueryKey('createMeetingSession', options);
 
+/**
+ * Create a Meeting Session
+ */
 export const createMeetingSessionOptions = (options: Options<CreateMeetingSessionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -1976,6 +2311,9 @@ export const createMeetingSessionOptions = (options: Options<CreateMeetingSessio
     });
 };
 
+/**
+ * Create a Meeting Session
+ */
 export const createMeetingSessionMutation = (options?: Partial<Options<CreateMeetingSessionData>>): MutationOptions<CreateMeetingSessionResponse, CreateMeetingSessionError, Options<CreateMeetingSessionData>> => {
     const mutationOptions: MutationOptions<CreateMeetingSessionResponse, CreateMeetingSessionError, Options<CreateMeetingSessionData>> = {
         mutationFn: async (localOptions) => {
@@ -1990,6 +2328,9 @@ export const createMeetingSessionMutation = (options?: Partial<Options<CreateMee
     return mutationOptions;
 };
 
+/**
+ * Archive a Meeting Session
+ */
 export const archiveMeetingSessionMutation = (options?: Partial<Options<ArchiveMeetingSessionData>>): MutationOptions<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, Options<ArchiveMeetingSessionData>> => {
     const mutationOptions: MutationOptions<ArchiveMeetingSessionResponse, ArchiveMeetingSessionError, Options<ArchiveMeetingSessionData>> = {
         mutationFn: async (localOptions) => {
@@ -2006,6 +2347,9 @@ export const archiveMeetingSessionMutation = (options?: Partial<Options<ArchiveM
 
 export const getMeetingSessionQueryKey = (options: Options<GetMeetingSessionData>) => createQueryKey('getMeetingSession', options);
 
+/**
+ * Get a Meeting Session
+ */
 export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2021,6 +2365,9 @@ export const getMeetingSessionOptions = (options: Options<GetMeetingSessionData>
     });
 };
 
+/**
+ * Update a Meeting Session
+ */
 export const updateMeetingSessionMutation = (options?: Partial<Options<UpdateMeetingSessionData>>): MutationOptions<UpdateMeetingSessionResponse, UpdateMeetingSessionError, Options<UpdateMeetingSessionData>> => {
     const mutationOptions: MutationOptions<UpdateMeetingSessionResponse, UpdateMeetingSessionError, Options<UpdateMeetingSessionData>> = {
         mutationFn: async (localOptions) => {
@@ -2037,6 +2384,9 @@ export const updateMeetingSessionMutation = (options?: Partial<Options<UpdateMee
 
 export const listOncallAnnotationsQueryKey = (options?: Options<ListOncallAnnotationsData>) => createQueryKey('listOncallAnnotations', options);
 
+/**
+ * List Oncall Annotations
+ */
 export const listOncallAnnotationsOptions = (options?: Options<ListOncallAnnotationsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2054,6 +2404,9 @@ export const listOncallAnnotationsOptions = (options?: Options<ListOncallAnnotat
 
 export const listOncallAnnotationsInfiniteQueryKey = (options?: Options<ListOncallAnnotationsData>): QueryKey<Options<ListOncallAnnotationsData>> => createQueryKey('listOncallAnnotations', options, true);
 
+/**
+ * List Oncall Annotations
+ */
 export const listOncallAnnotationsInfiniteOptions = (options?: Options<ListOncallAnnotationsData>) => {
     return infiniteQueryOptions<ListOncallAnnotationsResponse, ListOncallAnnotationsError, InfiniteData<ListOncallAnnotationsResponse>, QueryKey<Options<ListOncallAnnotationsData>>, number | Pick<QueryKey<Options<ListOncallAnnotationsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2080,6 +2433,9 @@ export const listOncallAnnotationsInfiniteOptions = (options?: Options<ListOncal
 
 export const createOncallAnnotationQueryKey = (options: Options<CreateOncallAnnotationData>) => createQueryKey('createOncallAnnotation', options);
 
+/**
+ * Create an Oncall Annotation
+ */
 export const createOncallAnnotationOptions = (options: Options<CreateOncallAnnotationData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2095,6 +2451,9 @@ export const createOncallAnnotationOptions = (options: Options<CreateOncallAnnot
     });
 };
 
+/**
+ * Create an Oncall Annotation
+ */
 export const createOncallAnnotationMutation = (options?: Partial<Options<CreateOncallAnnotationData>>): MutationOptions<CreateOncallAnnotationResponse, CreateOncallAnnotationError, Options<CreateOncallAnnotationData>> => {
     const mutationOptions: MutationOptions<CreateOncallAnnotationResponse, CreateOncallAnnotationError, Options<CreateOncallAnnotationData>> = {
         mutationFn: async (localOptions) => {
@@ -2109,6 +2468,9 @@ export const createOncallAnnotationMutation = (options?: Partial<Options<CreateO
     return mutationOptions;
 };
 
+/**
+ * Delete an Oncall Event Annotation
+ */
 export const deleteOncallAnnotationMutation = (options?: Partial<Options<DeleteOncallAnnotationData>>): MutationOptions<DeleteOncallAnnotationResponse, DeleteOncallAnnotationError, Options<DeleteOncallAnnotationData>> => {
     const mutationOptions: MutationOptions<DeleteOncallAnnotationResponse, DeleteOncallAnnotationError, Options<DeleteOncallAnnotationData>> = {
         mutationFn: async (localOptions) => {
@@ -2123,6 +2485,9 @@ export const deleteOncallAnnotationMutation = (options?: Partial<Options<DeleteO
     return mutationOptions;
 };
 
+/**
+ * Update an Oncall Event Annotation
+ */
 export const updateOncallAnnotationMutation = (options?: Partial<Options<UpdateOncallAnnotationData>>): MutationOptions<UpdateOncallAnnotationResponse, UpdateOncallAnnotationError, Options<UpdateOncallAnnotationData>> => {
     const mutationOptions: MutationOptions<UpdateOncallAnnotationResponse, UpdateOncallAnnotationError, Options<UpdateOncallAnnotationData>> = {
         mutationFn: async (localOptions) => {
@@ -2139,6 +2504,9 @@ export const updateOncallAnnotationMutation = (options?: Partial<Options<UpdateO
 
 export const listOncallEventsQueryKey = (options?: Options<ListOncallEventsData>) => createQueryKey('listOncallEvents', options);
 
+/**
+ * List Oncall Events
+ */
 export const listOncallEventsOptions = (options?: Options<ListOncallEventsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2156,6 +2524,9 @@ export const listOncallEventsOptions = (options?: Options<ListOncallEventsData>)
 
 export const listOncallEventsInfiniteQueryKey = (options?: Options<ListOncallEventsData>): QueryKey<Options<ListOncallEventsData>> => createQueryKey('listOncallEvents', options, true);
 
+/**
+ * List Oncall Events
+ */
 export const listOncallEventsInfiniteOptions = (options?: Options<ListOncallEventsData>) => {
     return infiniteQueryOptions<ListOncallEventsResponse, ListOncallEventsError, InfiniteData<ListOncallEventsResponse>, QueryKey<Options<ListOncallEventsData>>, number | Pick<QueryKey<Options<ListOncallEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2182,6 +2553,9 @@ export const listOncallEventsInfiniteOptions = (options?: Options<ListOncallEven
 
 export const createOncallHandoverTemplateQueryKey = (options: Options<CreateOncallHandoverTemplateData>) => createQueryKey('createOncallHandoverTemplate', options);
 
+/**
+ * Create an Oncall Handover Template
+ */
 export const createOncallHandoverTemplateOptions = (options: Options<CreateOncallHandoverTemplateData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2197,6 +2571,9 @@ export const createOncallHandoverTemplateOptions = (options: Options<CreateOncal
     });
 };
 
+/**
+ * Create an Oncall Handover Template
+ */
 export const createOncallHandoverTemplateMutation = (options?: Partial<Options<CreateOncallHandoverTemplateData>>): MutationOptions<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, Options<CreateOncallHandoverTemplateData>> => {
     const mutationOptions: MutationOptions<CreateOncallHandoverTemplateResponse, CreateOncallHandoverTemplateError, Options<CreateOncallHandoverTemplateData>> = {
         mutationFn: async (localOptions) => {
@@ -2211,6 +2588,9 @@ export const createOncallHandoverTemplateMutation = (options?: Partial<Options<C
     return mutationOptions;
 };
 
+/**
+ * Archive an Oncall Handover Template
+ */
 export const archiveOncallHandoverTemplateMutation = (options?: Partial<Options<ArchiveOncallHandoverTemplateData>>): MutationOptions<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, Options<ArchiveOncallHandoverTemplateData>> => {
     const mutationOptions: MutationOptions<ArchiveOncallHandoverTemplateResponse, ArchiveOncallHandoverTemplateError, Options<ArchiveOncallHandoverTemplateData>> = {
         mutationFn: async (localOptions) => {
@@ -2227,6 +2607,9 @@ export const archiveOncallHandoverTemplateMutation = (options?: Partial<Options<
 
 export const getOncallShiftHandoverTemplateQueryKey = (options: Options<GetOncallShiftHandoverTemplateData>) => createQueryKey('getOncallShiftHandoverTemplate', options);
 
+/**
+ * Get handover for a shift
+ */
 export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncallShiftHandoverTemplateData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2242,6 +2625,9 @@ export const getOncallShiftHandoverTemplateOptions = (options: Options<GetOncall
     });
 };
 
+/**
+ * Update an Oncall Handover Template
+ */
 export const updateOncallHandoverTemplateMutation = (options?: Partial<Options<UpdateOncallHandoverTemplateData>>): MutationOptions<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, Options<UpdateOncallHandoverTemplateData>> => {
     const mutationOptions: MutationOptions<UpdateOncallHandoverTemplateResponse, UpdateOncallHandoverTemplateError, Options<UpdateOncallHandoverTemplateData>> = {
         mutationFn: async (localOptions) => {
@@ -2256,6 +2642,9 @@ export const updateOncallHandoverTemplateMutation = (options?: Partial<Options<U
     return mutationOptions;
 };
 
+/**
+ * Update an Oncall Shift Handover
+ */
 export const updateOncallShiftHandoverMutation = (options?: Partial<Options<UpdateOncallShiftHandoverData>>): MutationOptions<UpdateOncallShiftHandoverResponse, UpdateOncallShiftHandoverError, Options<UpdateOncallShiftHandoverData>> => {
     const mutationOptions: MutationOptions<UpdateOncallShiftHandoverResponse, UpdateOncallShiftHandoverError, Options<UpdateOncallShiftHandoverData>> = {
         mutationFn: async (localOptions) => {
@@ -2272,6 +2661,9 @@ export const updateOncallShiftHandoverMutation = (options?: Partial<Options<Upda
 
 export const sendOncallShiftHandoverQueryKey = (options: Options<SendOncallShiftHandoverData>) => createQueryKey('sendOncallShiftHandover', options);
 
+/**
+ * Send a Shift Handover
+ */
 export const sendOncallShiftHandoverOptions = (options: Options<SendOncallShiftHandoverData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2287,6 +2679,9 @@ export const sendOncallShiftHandoverOptions = (options: Options<SendOncallShiftH
     });
 };
 
+/**
+ * Send a Shift Handover
+ */
 export const sendOncallShiftHandoverMutation = (options?: Partial<Options<SendOncallShiftHandoverData>>): MutationOptions<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, Options<SendOncallShiftHandoverData>> => {
     const mutationOptions: MutationOptions<SendOncallShiftHandoverResponse, SendOncallShiftHandoverError, Options<SendOncallShiftHandoverData>> = {
         mutationFn: async (localOptions) => {
@@ -2303,6 +2698,9 @@ export const sendOncallShiftHandoverMutation = (options?: Partial<Options<SendOn
 
 export const listOncallRostersQueryKey = (options?: Options<ListOncallRostersData>) => createQueryKey('listOncallRosters', options);
 
+/**
+ * List Oncall Rosters
+ */
 export const listOncallRostersOptions = (options?: Options<ListOncallRostersData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2320,6 +2718,9 @@ export const listOncallRostersOptions = (options?: Options<ListOncallRostersData
 
 export const listOncallRostersInfiniteQueryKey = (options?: Options<ListOncallRostersData>): QueryKey<Options<ListOncallRostersData>> => createQueryKey('listOncallRosters', options, true);
 
+/**
+ * List Oncall Rosters
+ */
 export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRostersData>) => {
     return infiniteQueryOptions<ListOncallRostersResponse, ListOncallRostersError, InfiniteData<ListOncallRostersResponse>, QueryKey<Options<ListOncallRostersData>>, number | Pick<QueryKey<Options<ListOncallRostersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2346,6 +2747,9 @@ export const listOncallRostersInfiniteOptions = (options?: Options<ListOncallRos
 
 export const getOncallRosterQueryKey = (options: Options<GetOncallRosterData>) => createQueryKey('getOncallRoster', options);
 
+/**
+ * Get oncall roster
+ */
 export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2363,6 +2767,9 @@ export const getOncallRosterOptions = (options: Options<GetOncallRosterData>) =>
 
 export const listOncallShiftsQueryKey = (options?: Options<ListOncallShiftsData>) => createQueryKey('listOncallShifts', options);
 
+/**
+ * List Oncall Shifts
+ */
 export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2380,6 +2787,9 @@ export const listOncallShiftsOptions = (options?: Options<ListOncallShiftsData>)
 
 export const listOncallShiftsInfiniteQueryKey = (options?: Options<ListOncallShiftsData>): QueryKey<Options<ListOncallShiftsData>> => createQueryKey('listOncallShifts', options, true);
 
+/**
+ * List Oncall Shifts
+ */
 export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShiftsData>) => {
     return infiniteQueryOptions<ListOncallShiftsResponse, ListOncallShiftsError, InfiniteData<ListOncallShiftsResponse>, QueryKey<Options<ListOncallShiftsData>>, number | Pick<QueryKey<Options<ListOncallShiftsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2406,6 +2816,9 @@ export const listOncallShiftsInfiniteOptions = (options?: Options<ListOncallShif
 
 export const getOncallShiftQueryKey = (options: Options<GetOncallShiftData>) => createQueryKey('getOncallShift', options);
 
+/**
+ * Get an Oncall Shift
+ */
 export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2423,6 +2836,9 @@ export const getOncallShiftOptions = (options: Options<GetOncallShiftData>) => {
 
 export const getOncallShiftHandoverQueryKey = (options: Options<GetOncallShiftHandoverData>) => createQueryKey('getOncallShiftHandover', options);
 
+/**
+ * Get handover for a shift
+ */
 export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHandoverData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2440,6 +2856,9 @@ export const getOncallShiftHandoverOptions = (options: Options<GetOncallShiftHan
 
 export const getNextOncallShiftQueryKey = (options: Options<GetNextOncallShiftData>) => createQueryKey('getNextOncallShift', options);
 
+/**
+ * Get the next Oncall Shift
+ */
 export const getNextOncallShiftOptions = (options: Options<GetNextOncallShiftData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2457,6 +2876,9 @@ export const getNextOncallShiftOptions = (options: Options<GetNextOncallShiftDat
 
 export const getPreviousOncallShiftQueryKey = (options: Options<GetPreviousOncallShiftData>) => createQueryKey('getPreviousOncallShift', options);
 
+/**
+ * Get the previous Oncall Shift
+ */
 export const getPreviousOncallShiftOptions = (options: Options<GetPreviousOncallShiftData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2474,6 +2896,9 @@ export const getPreviousOncallShiftOptions = (options: Options<GetPreviousOncall
 
 export const getUserOncallInformationQueryKey = (options?: Options<GetUserOncallInformationData>) => createQueryKey('getUserOncallInformation', options);
 
+/**
+ * Get current user oncall information
+ */
 export const getUserOncallInformationOptions = (options?: Options<GetUserOncallInformationData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2491,6 +2916,9 @@ export const getUserOncallInformationOptions = (options?: Options<GetUserOncallI
 
 export const listWatchedOncallRostersQueryKey = (options?: Options<ListWatchedOncallRostersData>) => createQueryKey('listWatchedOncallRosters', options);
 
+/**
+ * List watched oncall rosters
+ */
 export const listWatchedOncallRostersOptions = (options?: Options<ListWatchedOncallRostersData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2506,6 +2934,9 @@ export const listWatchedOncallRostersOptions = (options?: Options<ListWatchedOnc
     });
 };
 
+/**
+ * Remove a watched oncall roster
+ */
 export const removeWatchedOncallRosterMutation = (options?: Partial<Options<RemoveWatchedOncallRosterData>>): MutationOptions<RemoveWatchedOncallRosterResponse, RemoveWatchedOncallRosterError, Options<RemoveWatchedOncallRosterData>> => {
     const mutationOptions: MutationOptions<RemoveWatchedOncallRosterResponse, RemoveWatchedOncallRosterError, Options<RemoveWatchedOncallRosterData>> = {
         mutationFn: async (localOptions) => {
@@ -2522,6 +2953,9 @@ export const removeWatchedOncallRosterMutation = (options?: Partial<Options<Remo
 
 export const addWatchedOncallRosterQueryKey = (options: Options<AddWatchedOncallRosterData>) => createQueryKey('addWatchedOncallRoster', options);
 
+/**
+ * Add a watched oncall roster
+ */
 export const addWatchedOncallRosterOptions = (options: Options<AddWatchedOncallRosterData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2537,6 +2971,9 @@ export const addWatchedOncallRosterOptions = (options: Options<AddWatchedOncallR
     });
 };
 
+/**
+ * Add a watched oncall roster
+ */
 export const addWatchedOncallRosterMutation = (options?: Partial<Options<AddWatchedOncallRosterData>>): MutationOptions<AddWatchedOncallRosterResponse, AddWatchedOncallRosterError, Options<AddWatchedOncallRosterData>> => {
     const mutationOptions: MutationOptions<AddWatchedOncallRosterResponse, AddWatchedOncallRosterError, Options<AddWatchedOncallRosterData>> = {
         mutationFn: async (localOptions) => {
@@ -2553,6 +2990,9 @@ export const addWatchedOncallRosterMutation = (options?: Partial<Options<AddWatc
 
 export const getOncallShiftBurdenMetricWeightsQueryKey = (options?: Options<GetOncallShiftBurdenMetricWeightsData>) => createQueryKey('getOncallShiftBurdenMetricWeights', options);
 
+/**
+ * Get Weights for Calculating Burden
+ */
 export const getOncallShiftBurdenMetricWeightsOptions = (options?: Options<GetOncallShiftBurdenMetricWeightsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2570,6 +3010,9 @@ export const getOncallShiftBurdenMetricWeightsOptions = (options?: Options<GetOn
 
 export const getOncallRosterMetricsQueryKey = (options?: Options<GetOncallRosterMetricsData>) => createQueryKey('getOncallRosterMetrics', options);
 
+/**
+ * Get Metrics for an Oncall Roster
+ */
 export const getOncallRosterMetricsOptions = (options?: Options<GetOncallRosterMetricsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2587,6 +3030,9 @@ export const getOncallRosterMetricsOptions = (options?: Options<GetOncallRosterM
 
 export const getOncallShiftMetricsQueryKey = (options?: Options<GetOncallShiftMetricsData>) => createQueryKey('getOncallShiftMetrics', options);
 
+/**
+ * Get Metrics for an Oncall Shift
+ */
 export const getOncallShiftMetricsOptions = (options?: Options<GetOncallShiftMetricsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2602,6 +3048,9 @@ export const getOncallShiftMetricsOptions = (options?: Options<GetOncallShiftMet
     });
 };
 
+/**
+ * Archive a Retrospective Review
+ */
 export const archiveRetrospectiveReviewMutation = (options?: Partial<Options<ArchiveRetrospectiveReviewData>>): MutationOptions<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, Options<ArchiveRetrospectiveReviewData>> => {
     const mutationOptions: MutationOptions<ArchiveRetrospectiveReviewResponse, ArchiveRetrospectiveReviewError, Options<ArchiveRetrospectiveReviewData>> = {
         mutationFn: async (localOptions) => {
@@ -2616,6 +3065,9 @@ export const archiveRetrospectiveReviewMutation = (options?: Partial<Options<Arc
     return mutationOptions;
 };
 
+/**
+ * Update a Retrospective Review
+ */
 export const updateRetrospectiveReviewMutation = (options?: Partial<Options<UpdateRetrospectiveReviewData>>): MutationOptions<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, Options<UpdateRetrospectiveReviewData>> => {
     const mutationOptions: MutationOptions<UpdateRetrospectiveReviewResponse, UpdateRetrospectiveReviewError, Options<UpdateRetrospectiveReviewData>> = {
         mutationFn: async (localOptions) => {
@@ -2632,6 +3084,9 @@ export const updateRetrospectiveReviewMutation = (options?: Partial<Options<Upda
 
 export const listRetrospectivesQueryKey = (options?: Options<ListRetrospectivesData>) => createQueryKey('listRetrospectives', options);
 
+/**
+ * List Retrospectives
+ */
 export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2649,6 +3104,9 @@ export const listRetrospectivesOptions = (options?: Options<ListRetrospectivesDa
 
 export const listRetrospectivesInfiniteQueryKey = (options?: Options<ListRetrospectivesData>): QueryKey<Options<ListRetrospectivesData>> => createQueryKey('listRetrospectives', options, true);
 
+/**
+ * List Retrospectives
+ */
 export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospectivesData>) => {
     return infiniteQueryOptions<ListRetrospectivesResponse, ListRetrospectivesError, InfiniteData<ListRetrospectivesResponse>, QueryKey<Options<ListRetrospectivesData>>, number | Pick<QueryKey<Options<ListRetrospectivesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2675,6 +3133,9 @@ export const listRetrospectivesInfiniteOptions = (options?: Options<ListRetrospe
 
 export const createRetrospectiveQueryKey = (options: Options<CreateRetrospectiveData>) => createQueryKey('createRetrospective', options);
 
+/**
+ * Create an Incident Retrospective
+ */
 export const createRetrospectiveOptions = (options: Options<CreateRetrospectiveData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2690,6 +3151,9 @@ export const createRetrospectiveOptions = (options: Options<CreateRetrospectiveD
     });
 };
 
+/**
+ * Create an Incident Retrospective
+ */
 export const createRetrospectiveMutation = (options?: Partial<Options<CreateRetrospectiveData>>): MutationOptions<CreateRetrospectiveResponse, CreateRetrospectiveError, Options<CreateRetrospectiveData>> => {
     const mutationOptions: MutationOptions<CreateRetrospectiveResponse, CreateRetrospectiveError, Options<CreateRetrospectiveData>> = {
         mutationFn: async (localOptions) => {
@@ -2706,6 +3170,9 @@ export const createRetrospectiveMutation = (options?: Partial<Options<CreateRetr
 
 export const getRetrospectiveQueryKey = (options: Options<GetRetrospectiveData>) => createQueryKey('getRetrospective', options);
 
+/**
+ * Get a Retrospective
+ */
 export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2723,6 +3190,9 @@ export const getRetrospectiveOptions = (options: Options<GetRetrospectiveData>) 
 
 export const listRetrospectiveDiscussionsQueryKey = (options: Options<ListRetrospectiveDiscussionsData>) => createQueryKey('listRetrospectiveDiscussions', options);
 
+/**
+ * List Discussions For a Retrospective
+ */
 export const listRetrospectiveDiscussionsOptions = (options: Options<ListRetrospectiveDiscussionsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2740,6 +3210,9 @@ export const listRetrospectiveDiscussionsOptions = (options: Options<ListRetrosp
 
 export const listRetrospectiveDiscussionsInfiniteQueryKey = (options: Options<ListRetrospectiveDiscussionsData>): QueryKey<Options<ListRetrospectiveDiscussionsData>> => createQueryKey('listRetrospectiveDiscussions', options, true);
 
+/**
+ * List Discussions For a Retrospective
+ */
 export const listRetrospectiveDiscussionsInfiniteOptions = (options: Options<ListRetrospectiveDiscussionsData>) => {
     return infiniteQueryOptions<ListRetrospectiveDiscussionsResponse, ListRetrospectiveDiscussionsError, InfiniteData<ListRetrospectiveDiscussionsResponse>, QueryKey<Options<ListRetrospectiveDiscussionsData>>, number | Pick<QueryKey<Options<ListRetrospectiveDiscussionsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2766,6 +3239,9 @@ export const listRetrospectiveDiscussionsInfiniteOptions = (options: Options<Lis
 
 export const createRetrospectiveDiscussionQueryKey = (options: Options<CreateRetrospectiveDiscussionData>) => createQueryKey('createRetrospectiveDiscussion', options);
 
+/**
+ * Create a Retrospective Discussion
+ */
 export const createRetrospectiveDiscussionOptions = (options: Options<CreateRetrospectiveDiscussionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2781,6 +3257,9 @@ export const createRetrospectiveDiscussionOptions = (options: Options<CreateRetr
     });
 };
 
+/**
+ * Create a Retrospective Discussion
+ */
 export const createRetrospectiveDiscussionMutation = (options?: Partial<Options<CreateRetrospectiveDiscussionData>>): MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> => {
     const mutationOptions: MutationOptions<CreateRetrospectiveDiscussionResponse, CreateRetrospectiveDiscussionError, Options<CreateRetrospectiveDiscussionData>> = {
         mutationFn: async (localOptions) => {
@@ -2797,6 +3276,9 @@ export const createRetrospectiveDiscussionMutation = (options?: Partial<Options<
 
 export const getRetrospectiveDiscussionQueryKey = (options: Options<GetRetrospectiveDiscussionData>) => createQueryKey('getRetrospectiveDiscussion', options);
 
+/**
+ * Get a Retrospective Discussion
+ */
 export const getRetrospectiveDiscussionOptions = (options: Options<GetRetrospectiveDiscussionData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2812,6 +3294,9 @@ export const getRetrospectiveDiscussionOptions = (options: Options<GetRetrospect
     });
 };
 
+/**
+ * Update a Retrospective Discussion
+ */
 export const updateRetrospectiveDiscussionMutation = (options?: Partial<Options<UpdateRetrospectiveDiscussionData>>): MutationOptions<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, Options<UpdateRetrospectiveDiscussionData>> => {
     const mutationOptions: MutationOptions<UpdateRetrospectiveDiscussionResponse, UpdateRetrospectiveDiscussionError, Options<UpdateRetrospectiveDiscussionData>> = {
         mutationFn: async (localOptions) => {
@@ -2828,6 +3313,9 @@ export const updateRetrospectiveDiscussionMutation = (options?: Partial<Options<
 
 export const addRetrospectiveDiscussionReplyQueryKey = (options: Options<AddRetrospectiveDiscussionReplyData>) => createQueryKey('addRetrospectiveDiscussionReply', options);
 
+/**
+ * Add a Reply to a Retrospective Discussion
+ */
 export const addRetrospectiveDiscussionReplyOptions = (options: Options<AddRetrospectiveDiscussionReplyData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2843,6 +3331,9 @@ export const addRetrospectiveDiscussionReplyOptions = (options: Options<AddRetro
     });
 };
 
+/**
+ * Add a Reply to a Retrospective Discussion
+ */
 export const addRetrospectiveDiscussionReplyMutation = (options?: Partial<Options<AddRetrospectiveDiscussionReplyData>>): MutationOptions<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, Options<AddRetrospectiveDiscussionReplyData>> => {
     const mutationOptions: MutationOptions<AddRetrospectiveDiscussionReplyResponse, AddRetrospectiveDiscussionReplyError, Options<AddRetrospectiveDiscussionReplyData>> = {
         mutationFn: async (localOptions) => {
@@ -2859,6 +3350,9 @@ export const addRetrospectiveDiscussionReplyMutation = (options?: Partial<Option
 
 export const listRetrospectiveReviewsQueryKey = (options?: Options<ListRetrospectiveReviewsData>) => createQueryKey('listRetrospectiveReviews', options);
 
+/**
+ * List Retrospective Reviews
+ */
 export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2876,6 +3370,9 @@ export const listRetrospectiveReviewsOptions = (options?: Options<ListRetrospect
 
 export const listRetrospectiveReviewsInfiniteQueryKey = (options?: Options<ListRetrospectiveReviewsData>): QueryKey<Options<ListRetrospectiveReviewsData>> => createQueryKey('listRetrospectiveReviews', options, true);
 
+/**
+ * List Retrospective Reviews
+ */
 export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRetrospectiveReviewsData>) => {
     return infiniteQueryOptions<ListRetrospectiveReviewsResponse, ListRetrospectiveReviewsError, InfiniteData<ListRetrospectiveReviewsResponse>, QueryKey<Options<ListRetrospectiveReviewsData>>, number | Pick<QueryKey<Options<ListRetrospectiveReviewsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2902,6 +3399,9 @@ export const listRetrospectiveReviewsInfiniteOptions = (options?: Options<ListRe
 
 export const createRetrospectiveReviewQueryKey = (options: Options<CreateRetrospectiveReviewData>) => createQueryKey('createRetrospectiveReview', options);
 
+/**
+ * Create a Retrospective Review
+ */
 export const createRetrospectiveReviewOptions = (options: Options<CreateRetrospectiveReviewData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2917,6 +3417,9 @@ export const createRetrospectiveReviewOptions = (options: Options<CreateRetrospe
     });
 };
 
+/**
+ * Create a Retrospective Review
+ */
 export const createRetrospectiveReviewMutation = (options?: Partial<Options<CreateRetrospectiveReviewData>>): MutationOptions<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, Options<CreateRetrospectiveReviewData>> => {
     const mutationOptions: MutationOptions<CreateRetrospectiveReviewResponse, CreateRetrospectiveReviewError, Options<CreateRetrospectiveReviewData>> = {
         mutationFn: async (localOptions) => {
@@ -2933,6 +3436,9 @@ export const createRetrospectiveReviewMutation = (options?: Partial<Options<Crea
 
 export const getSystemAnalysisQueryKey = (options: Options<GetSystemAnalysisData>) => createQueryKey('getSystemAnalysis', options);
 
+/**
+ * Get System Analysis
+ */
 export const getSystemAnalysisOptions = (options: Options<GetSystemAnalysisData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2950,6 +3456,9 @@ export const getSystemAnalysisOptions = (options: Options<GetSystemAnalysisData>
 
 export const listSystemAnalysisComponentsQueryKey = (options: Options<ListSystemAnalysisComponentsData>) => createQueryKey('listSystemAnalysisComponents', options);
 
+/**
+ * List components in a System analysis
+ */
 export const listSystemAnalysisComponentsOptions = (options: Options<ListSystemAnalysisComponentsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -2967,6 +3476,9 @@ export const listSystemAnalysisComponentsOptions = (options: Options<ListSystemA
 
 export const listSystemAnalysisComponentsInfiniteQueryKey = (options: Options<ListSystemAnalysisComponentsData>): QueryKey<Options<ListSystemAnalysisComponentsData>> => createQueryKey('listSystemAnalysisComponents', options, true);
 
+/**
+ * List components in a System analysis
+ */
 export const listSystemAnalysisComponentsInfiniteOptions = (options: Options<ListSystemAnalysisComponentsData>) => {
     return infiniteQueryOptions<ListSystemAnalysisComponentsResponse, ListSystemAnalysisComponentsError, InfiniteData<ListSystemAnalysisComponentsResponse>, QueryKey<Options<ListSystemAnalysisComponentsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -2993,6 +3505,9 @@ export const listSystemAnalysisComponentsInfiniteOptions = (options: Options<Lis
 
 export const addSystemAnalysisComponentQueryKey = (options: Options<AddSystemAnalysisComponentData>) => createQueryKey('addSystemAnalysisComponent', options);
 
+/**
+ * Add a Component to a System Analysis
+ */
 export const addSystemAnalysisComponentOptions = (options: Options<AddSystemAnalysisComponentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3008,6 +3523,9 @@ export const addSystemAnalysisComponentOptions = (options: Options<AddSystemAnal
     });
 };
 
+/**
+ * Add a Component to a System Analysis
+ */
 export const addSystemAnalysisComponentMutation = (options?: Partial<Options<AddSystemAnalysisComponentData>>): MutationOptions<AddSystemAnalysisComponentResponse, AddSystemAnalysisComponentError, Options<AddSystemAnalysisComponentData>> => {
     const mutationOptions: MutationOptions<AddSystemAnalysisComponentResponse, AddSystemAnalysisComponentError, Options<AddSystemAnalysisComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3024,6 +3542,9 @@ export const addSystemAnalysisComponentMutation = (options?: Partial<Options<Add
 
 export const listSystemAnalysisRelationshipsQueryKey = (options: Options<ListSystemAnalysisRelationshipsData>) => createQueryKey('listSystemAnalysisRelationships', options);
 
+/**
+ * List relationships in a System analysis
+ */
 export const listSystemAnalysisRelationshipsOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3041,6 +3562,9 @@ export const listSystemAnalysisRelationshipsOptions = (options: Options<ListSyst
 
 export const listSystemAnalysisRelationshipsInfiniteQueryKey = (options: Options<ListSystemAnalysisRelationshipsData>): QueryKey<Options<ListSystemAnalysisRelationshipsData>> => createQueryKey('listSystemAnalysisRelationships', options, true);
 
+/**
+ * List relationships in a System analysis
+ */
 export const listSystemAnalysisRelationshipsInfiniteOptions = (options: Options<ListSystemAnalysisRelationshipsData>) => {
     return infiniteQueryOptions<ListSystemAnalysisRelationshipsResponse, ListSystemAnalysisRelationshipsError, InfiniteData<ListSystemAnalysisRelationshipsResponse>, QueryKey<Options<ListSystemAnalysisRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemAnalysisRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3067,6 +3591,9 @@ export const listSystemAnalysisRelationshipsInfiniteOptions = (options: Options<
 
 export const createSystemAnalysisRelationshipQueryKey = (options: Options<CreateSystemAnalysisRelationshipData>) => createQueryKey('createSystemAnalysisRelationship', options);
 
+/**
+ * Create a Relationship in a System Analysis
+ */
 export const createSystemAnalysisRelationshipOptions = (options: Options<CreateSystemAnalysisRelationshipData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3082,6 +3609,9 @@ export const createSystemAnalysisRelationshipOptions = (options: Options<CreateS
     });
 };
 
+/**
+ * Create a Relationship in a System Analysis
+ */
 export const createSystemAnalysisRelationshipMutation = (options?: Partial<Options<CreateSystemAnalysisRelationshipData>>): MutationOptions<CreateSystemAnalysisRelationshipResponse, CreateSystemAnalysisRelationshipError, Options<CreateSystemAnalysisRelationshipData>> => {
     const mutationOptions: MutationOptions<CreateSystemAnalysisRelationshipResponse, CreateSystemAnalysisRelationshipError, Options<CreateSystemAnalysisRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3096,6 +3626,9 @@ export const createSystemAnalysisRelationshipMutation = (options?: Partial<Optio
     return mutationOptions;
 };
 
+/**
+ * Delete a Component from a System Analysis
+ */
 export const deleteSystemAnalysisComponentMutation = (options?: Partial<Options<DeleteSystemAnalysisComponentData>>): MutationOptions<DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisComponentError, Options<DeleteSystemAnalysisComponentData>> => {
     const mutationOptions: MutationOptions<DeleteSystemAnalysisComponentResponse, DeleteSystemAnalysisComponentError, Options<DeleteSystemAnalysisComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3112,6 +3645,9 @@ export const deleteSystemAnalysisComponentMutation = (options?: Partial<Options<
 
 export const getSystemAnalysisComponentQueryKey = (options: Options<GetSystemAnalysisComponentData>) => createQueryKey('getSystemAnalysisComponent', options);
 
+/**
+ * Get a component in a System analysis
+ */
 export const getSystemAnalysisComponentOptions = (options: Options<GetSystemAnalysisComponentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3127,6 +3663,9 @@ export const getSystemAnalysisComponentOptions = (options: Options<GetSystemAnal
     });
 };
 
+/**
+ * Update a System Analysis Component
+ */
 export const updateSystemAnalysisComponentMutation = (options?: Partial<Options<UpdateSystemAnalysisComponentData>>): MutationOptions<UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisComponentError, Options<UpdateSystemAnalysisComponentData>> => {
     const mutationOptions: MutationOptions<UpdateSystemAnalysisComponentResponse, UpdateSystemAnalysisComponentError, Options<UpdateSystemAnalysisComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3141,6 +3680,9 @@ export const updateSystemAnalysisComponentMutation = (options?: Partial<Options<
     return mutationOptions;
 };
 
+/**
+ * Delete a Relationship from a System Analysis
+ */
 export const deleteSystemAnalysisRelationshipMutation = (options?: Partial<Options<DeleteSystemAnalysisRelationshipData>>): MutationOptions<DeleteSystemAnalysisRelationshipResponse, DeleteSystemAnalysisRelationshipError, Options<DeleteSystemAnalysisRelationshipData>> => {
     const mutationOptions: MutationOptions<DeleteSystemAnalysisRelationshipResponse, DeleteSystemAnalysisRelationshipError, Options<DeleteSystemAnalysisRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3157,6 +3699,9 @@ export const deleteSystemAnalysisRelationshipMutation = (options?: Partial<Optio
 
 export const getSystemAnalysisRelationshipQueryKey = (options: Options<GetSystemAnalysisRelationshipData>) => createQueryKey('getSystemAnalysisRelationship', options);
 
+/**
+ * Get a relationship in a System analysis
+ */
 export const getSystemAnalysisRelationshipOptions = (options: Options<GetSystemAnalysisRelationshipData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3172,6 +3717,9 @@ export const getSystemAnalysisRelationshipOptions = (options: Options<GetSystemA
     });
 };
 
+/**
+ * Update a System Analysis Relationship
+ */
 export const updateSystemAnalysisRelationshipMutation = (options?: Partial<Options<UpdateSystemAnalysisRelationshipData>>): MutationOptions<UpdateSystemAnalysisRelationshipResponse, UpdateSystemAnalysisRelationshipError, Options<UpdateSystemAnalysisRelationshipData>> => {
     const mutationOptions: MutationOptions<UpdateSystemAnalysisRelationshipResponse, UpdateSystemAnalysisRelationshipError, Options<UpdateSystemAnalysisRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3186,6 +3734,9 @@ export const updateSystemAnalysisRelationshipMutation = (options?: Partial<Optio
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component Constraint
+ */
 export const archiveSystemComponentConstraintMutation = (options?: Partial<Options<ArchiveSystemComponentConstraintData>>): MutationOptions<ArchiveSystemComponentConstraintResponse, ArchiveSystemComponentConstraintError, Options<ArchiveSystemComponentConstraintData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentConstraintResponse, ArchiveSystemComponentConstraintError, Options<ArchiveSystemComponentConstraintData>> = {
         mutationFn: async (localOptions) => {
@@ -3202,6 +3753,9 @@ export const archiveSystemComponentConstraintMutation = (options?: Partial<Optio
 
 export const getSystemComponentConstraintQueryKey = (options: Options<GetSystemComponentConstraintData>) => createQueryKey('getSystemComponentConstraint', options);
 
+/**
+ * Get a System Component
+ */
 export const getSystemComponentConstraintOptions = (options: Options<GetSystemComponentConstraintData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3217,6 +3771,9 @@ export const getSystemComponentConstraintOptions = (options: Options<GetSystemCo
     });
 };
 
+/**
+ * Update a System Component Constraint
+ */
 export const updateSystemComponentConstraintMutation = (options?: Partial<Options<UpdateSystemComponentConstraintData>>): MutationOptions<UpdateSystemComponentConstraintResponse, UpdateSystemComponentConstraintError, Options<UpdateSystemComponentConstraintData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentConstraintResponse, UpdateSystemComponentConstraintError, Options<UpdateSystemComponentConstraintData>> = {
         mutationFn: async (localOptions) => {
@@ -3231,6 +3788,9 @@ export const updateSystemComponentConstraintMutation = (options?: Partial<Option
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component Control
+ */
 export const archiveSystemComponentControlMutation = (options?: Partial<Options<ArchiveSystemComponentControlData>>): MutationOptions<ArchiveSystemComponentControlResponse, ArchiveSystemComponentControlError, Options<ArchiveSystemComponentControlData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentControlResponse, ArchiveSystemComponentControlError, Options<ArchiveSystemComponentControlData>> = {
         mutationFn: async (localOptions) => {
@@ -3247,6 +3807,9 @@ export const archiveSystemComponentControlMutation = (options?: Partial<Options<
 
 export const getSystemComponentControlQueryKey = (options: Options<GetSystemComponentControlData>) => createQueryKey('getSystemComponentControl', options);
 
+/**
+ * Get a System Component Control
+ */
 export const getSystemComponentControlOptions = (options: Options<GetSystemComponentControlData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3262,6 +3825,9 @@ export const getSystemComponentControlOptions = (options: Options<GetSystemCompo
     });
 };
 
+/**
+ * Update a System Component Control
+ */
 export const updateSystemComponentControlMutation = (options?: Partial<Options<UpdateSystemComponentControlData>>): MutationOptions<UpdateSystemComponentControlResponse, UpdateSystemComponentControlError, Options<UpdateSystemComponentControlData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentControlResponse, UpdateSystemComponentControlError, Options<UpdateSystemComponentControlData>> = {
         mutationFn: async (localOptions) => {
@@ -3278,6 +3844,9 @@ export const updateSystemComponentControlMutation = (options?: Partial<Options<U
 
 export const listSystemComponentKindsQueryKey = (options?: Options<ListSystemComponentKindsData>) => createQueryKey('listSystemComponentKinds', options);
 
+/**
+ * List System Component Kinds
+ */
 export const listSystemComponentKindsOptions = (options?: Options<ListSystemComponentKindsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3295,6 +3864,9 @@ export const listSystemComponentKindsOptions = (options?: Options<ListSystemComp
 
 export const listSystemComponentKindsInfiniteQueryKey = (options?: Options<ListSystemComponentKindsData>): QueryKey<Options<ListSystemComponentKindsData>> => createQueryKey('listSystemComponentKinds', options, true);
 
+/**
+ * List System Component Kinds
+ */
 export const listSystemComponentKindsInfiniteOptions = (options?: Options<ListSystemComponentKindsData>) => {
     return infiniteQueryOptions<ListSystemComponentKindsResponse, ListSystemComponentKindsError, InfiniteData<ListSystemComponentKindsResponse>, QueryKey<Options<ListSystemComponentKindsData>>, number | Pick<QueryKey<Options<ListSystemComponentKindsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3321,6 +3893,9 @@ export const listSystemComponentKindsInfiniteOptions = (options?: Options<ListSy
 
 export const createSystemComponentKindQueryKey = (options: Options<CreateSystemComponentKindData>) => createQueryKey('createSystemComponentKind', options);
 
+/**
+ * Create a System Component Kind
+ */
 export const createSystemComponentKindOptions = (options: Options<CreateSystemComponentKindData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3336,6 +3911,9 @@ export const createSystemComponentKindOptions = (options: Options<CreateSystemCo
     });
 };
 
+/**
+ * Create a System Component Kind
+ */
 export const createSystemComponentKindMutation = (options?: Partial<Options<CreateSystemComponentKindData>>): MutationOptions<CreateSystemComponentKindResponse, CreateSystemComponentKindError, Options<CreateSystemComponentKindData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentKindResponse, CreateSystemComponentKindError, Options<CreateSystemComponentKindData>> = {
         mutationFn: async (localOptions) => {
@@ -3350,6 +3928,9 @@ export const createSystemComponentKindMutation = (options?: Partial<Options<Crea
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component Kind
+ */
 export const archiveSystemComponentKindMutation = (options?: Partial<Options<ArchiveSystemComponentKindData>>): MutationOptions<ArchiveSystemComponentKindResponse, ArchiveSystemComponentKindError, Options<ArchiveSystemComponentKindData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentKindResponse, ArchiveSystemComponentKindError, Options<ArchiveSystemComponentKindData>> = {
         mutationFn: async (localOptions) => {
@@ -3366,6 +3947,9 @@ export const archiveSystemComponentKindMutation = (options?: Partial<Options<Arc
 
 export const getSystemComponentKindQueryKey = (options: Options<GetSystemComponentKindData>) => createQueryKey('getSystemComponentKind', options);
 
+/**
+ * Get a System Component Kind
+ */
 export const getSystemComponentKindOptions = (options: Options<GetSystemComponentKindData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3381,6 +3965,9 @@ export const getSystemComponentKindOptions = (options: Options<GetSystemComponen
     });
 };
 
+/**
+ * Update a System Component Kind
+ */
 export const updateSystemComponentKindMutation = (options?: Partial<Options<UpdateSystemComponentKindData>>): MutationOptions<UpdateSystemComponentKindResponse, UpdateSystemComponentKindError, Options<UpdateSystemComponentKindData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentKindResponse, UpdateSystemComponentKindError, Options<UpdateSystemComponentKindData>> = {
         mutationFn: async (localOptions) => {
@@ -3397,6 +3984,9 @@ export const updateSystemComponentKindMutation = (options?: Partial<Options<Upda
 
 export const listSystemComponentRelationshipsQueryKey = (options?: Options<ListSystemComponentRelationshipsData>) => createQueryKey('listSystemComponentRelationships', options);
 
+/**
+ * List System Component Relationships
+ */
 export const listSystemComponentRelationshipsOptions = (options?: Options<ListSystemComponentRelationshipsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3414,6 +4004,9 @@ export const listSystemComponentRelationshipsOptions = (options?: Options<ListSy
 
 export const listSystemComponentRelationshipsInfiniteQueryKey = (options?: Options<ListSystemComponentRelationshipsData>): QueryKey<Options<ListSystemComponentRelationshipsData>> => createQueryKey('listSystemComponentRelationships', options, true);
 
+/**
+ * List System Component Relationships
+ */
 export const listSystemComponentRelationshipsInfiniteOptions = (options?: Options<ListSystemComponentRelationshipsData>) => {
     return infiniteQueryOptions<ListSystemComponentRelationshipsResponse, ListSystemComponentRelationshipsError, InfiniteData<ListSystemComponentRelationshipsResponse>, QueryKey<Options<ListSystemComponentRelationshipsData>>, number | Pick<QueryKey<Options<ListSystemComponentRelationshipsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3440,6 +4033,9 @@ export const listSystemComponentRelationshipsInfiniteOptions = (options?: Option
 
 export const createSystemComponentRelationshipQueryKey = (options: Options<CreateSystemComponentRelationshipData>) => createQueryKey('createSystemComponentRelationship', options);
 
+/**
+ * Create a System Component Relationship
+ */
 export const createSystemComponentRelationshipOptions = (options: Options<CreateSystemComponentRelationshipData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3455,6 +4051,9 @@ export const createSystemComponentRelationshipOptions = (options: Options<Create
     });
 };
 
+/**
+ * Create a System Component Relationship
+ */
 export const createSystemComponentRelationshipMutation = (options?: Partial<Options<CreateSystemComponentRelationshipData>>): MutationOptions<CreateSystemComponentRelationshipResponse, CreateSystemComponentRelationshipError, Options<CreateSystemComponentRelationshipData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentRelationshipResponse, CreateSystemComponentRelationshipError, Options<CreateSystemComponentRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3469,6 +4068,9 @@ export const createSystemComponentRelationshipMutation = (options?: Partial<Opti
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component Relationship
+ */
 export const archiveSystemComponentRelationshipMutation = (options?: Partial<Options<ArchiveSystemComponentRelationshipData>>): MutationOptions<ArchiveSystemComponentRelationshipResponse, ArchiveSystemComponentRelationshipError, Options<ArchiveSystemComponentRelationshipData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentRelationshipResponse, ArchiveSystemComponentRelationshipError, Options<ArchiveSystemComponentRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3485,6 +4087,9 @@ export const archiveSystemComponentRelationshipMutation = (options?: Partial<Opt
 
 export const getSystemComponentRelationshipQueryKey = (options: Options<GetSystemComponentRelationshipData>) => createQueryKey('getSystemComponentRelationship', options);
 
+/**
+ * Get a System Component Relationship
+ */
 export const getSystemComponentRelationshipOptions = (options: Options<GetSystemComponentRelationshipData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3500,6 +4105,9 @@ export const getSystemComponentRelationshipOptions = (options: Options<GetSystem
     });
 };
 
+/**
+ * Update a System Component Relationship
+ */
 export const updateSystemComponentRelationshipMutation = (options?: Partial<Options<UpdateSystemComponentRelationshipData>>): MutationOptions<UpdateSystemComponentRelationshipResponse, UpdateSystemComponentRelationshipError, Options<UpdateSystemComponentRelationshipData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentRelationshipResponse, UpdateSystemComponentRelationshipError, Options<UpdateSystemComponentRelationshipData>> = {
         mutationFn: async (localOptions) => {
@@ -3514,6 +4122,9 @@ export const updateSystemComponentRelationshipMutation = (options?: Partial<Opti
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component Signal
+ */
 export const archiveSystemComponentSignalMutation = (options?: Partial<Options<ArchiveSystemComponentSignalData>>): MutationOptions<ArchiveSystemComponentSignalResponse, ArchiveSystemComponentSignalError, Options<ArchiveSystemComponentSignalData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentSignalResponse, ArchiveSystemComponentSignalError, Options<ArchiveSystemComponentSignalData>> = {
         mutationFn: async (localOptions) => {
@@ -3530,6 +4141,9 @@ export const archiveSystemComponentSignalMutation = (options?: Partial<Options<A
 
 export const getSystemComponentSignalQueryKey = (options: Options<GetSystemComponentSignalData>) => createQueryKey('getSystemComponentSignal', options);
 
+/**
+ * Get a System Component Signal
+ */
 export const getSystemComponentSignalOptions = (options: Options<GetSystemComponentSignalData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3545,6 +4159,9 @@ export const getSystemComponentSignalOptions = (options: Options<GetSystemCompon
     });
 };
 
+/**
+ * Update a System Component Signal
+ */
 export const updateSystemComponentSignalMutation = (options?: Partial<Options<UpdateSystemComponentSignalData>>): MutationOptions<UpdateSystemComponentSignalResponse, UpdateSystemComponentSignalError, Options<UpdateSystemComponentSignalData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentSignalResponse, UpdateSystemComponentSignalError, Options<UpdateSystemComponentSignalData>> = {
         mutationFn: async (localOptions) => {
@@ -3561,6 +4178,9 @@ export const updateSystemComponentSignalMutation = (options?: Partial<Options<Up
 
 export const listSystemComponentsQueryKey = (options?: Options<ListSystemComponentsData>) => createQueryKey('listSystemComponents', options);
 
+/**
+ * List System Components
+ */
 export const listSystemComponentsOptions = (options?: Options<ListSystemComponentsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3578,6 +4198,9 @@ export const listSystemComponentsOptions = (options?: Options<ListSystemComponen
 
 export const listSystemComponentsInfiniteQueryKey = (options?: Options<ListSystemComponentsData>): QueryKey<Options<ListSystemComponentsData>> => createQueryKey('listSystemComponents', options, true);
 
+/**
+ * List System Components
+ */
 export const listSystemComponentsInfiniteOptions = (options?: Options<ListSystemComponentsData>) => {
     return infiniteQueryOptions<ListSystemComponentsResponse, ListSystemComponentsError, InfiniteData<ListSystemComponentsResponse>, QueryKey<Options<ListSystemComponentsData>>, number | Pick<QueryKey<Options<ListSystemComponentsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3604,6 +4227,9 @@ export const listSystemComponentsInfiniteOptions = (options?: Options<ListSystem
 
 export const createSystemComponentQueryKey = (options: Options<CreateSystemComponentData>) => createQueryKey('createSystemComponent', options);
 
+/**
+ * Create a System Component
+ */
 export const createSystemComponentOptions = (options: Options<CreateSystemComponentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3619,6 +4245,9 @@ export const createSystemComponentOptions = (options: Options<CreateSystemCompon
     });
 };
 
+/**
+ * Create a System Component
+ */
 export const createSystemComponentMutation = (options?: Partial<Options<CreateSystemComponentData>>): MutationOptions<CreateSystemComponentResponse, CreateSystemComponentError, Options<CreateSystemComponentData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentResponse, CreateSystemComponentError, Options<CreateSystemComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3633,6 +4262,9 @@ export const createSystemComponentMutation = (options?: Partial<Options<CreateSy
     return mutationOptions;
 };
 
+/**
+ * Archive a System Component
+ */
 export const archiveSystemComponentMutation = (options?: Partial<Options<ArchiveSystemComponentData>>): MutationOptions<ArchiveSystemComponentResponse, ArchiveSystemComponentError, Options<ArchiveSystemComponentData>> => {
     const mutationOptions: MutationOptions<ArchiveSystemComponentResponse, ArchiveSystemComponentError, Options<ArchiveSystemComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3649,6 +4281,9 @@ export const archiveSystemComponentMutation = (options?: Partial<Options<Archive
 
 export const getSystemComponentQueryKey = (options: Options<GetSystemComponentData>) => createQueryKey('getSystemComponent', options);
 
+/**
+ * Get a System Component
+ */
 export const getSystemComponentOptions = (options: Options<GetSystemComponentData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3664,6 +4299,9 @@ export const getSystemComponentOptions = (options: Options<GetSystemComponentDat
     });
 };
 
+/**
+ * Update a System Component
+ */
 export const updateSystemComponentMutation = (options?: Partial<Options<UpdateSystemComponentData>>): MutationOptions<UpdateSystemComponentResponse, UpdateSystemComponentError, Options<UpdateSystemComponentData>> => {
     const mutationOptions: MutationOptions<UpdateSystemComponentResponse, UpdateSystemComponentError, Options<UpdateSystemComponentData>> = {
         mutationFn: async (localOptions) => {
@@ -3680,6 +4318,9 @@ export const updateSystemComponentMutation = (options?: Partial<Options<UpdateSy
 
 export const createSystemComponentConstraintQueryKey = (options: Options<CreateSystemComponentConstraintData>) => createQueryKey('createSystemComponentConstraint', options);
 
+/**
+ * Create a System Component Constraint
+ */
 export const createSystemComponentConstraintOptions = (options: Options<CreateSystemComponentConstraintData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3695,6 +4336,9 @@ export const createSystemComponentConstraintOptions = (options: Options<CreateSy
     });
 };
 
+/**
+ * Create a System Component Constraint
+ */
 export const createSystemComponentConstraintMutation = (options?: Partial<Options<CreateSystemComponentConstraintData>>): MutationOptions<CreateSystemComponentConstraintResponse, CreateSystemComponentConstraintError, Options<CreateSystemComponentConstraintData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentConstraintResponse, CreateSystemComponentConstraintError, Options<CreateSystemComponentConstraintData>> = {
         mutationFn: async (localOptions) => {
@@ -3711,6 +4355,9 @@ export const createSystemComponentConstraintMutation = (options?: Partial<Option
 
 export const createSystemComponentControlQueryKey = (options: Options<CreateSystemComponentControlData>) => createQueryKey('createSystemComponentControl', options);
 
+/**
+ * Create a System Component Control
+ */
 export const createSystemComponentControlOptions = (options: Options<CreateSystemComponentControlData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3726,6 +4373,9 @@ export const createSystemComponentControlOptions = (options: Options<CreateSyste
     });
 };
 
+/**
+ * Create a System Component Control
+ */
 export const createSystemComponentControlMutation = (options?: Partial<Options<CreateSystemComponentControlData>>): MutationOptions<CreateSystemComponentControlResponse, CreateSystemComponentControlError, Options<CreateSystemComponentControlData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentControlResponse, CreateSystemComponentControlError, Options<CreateSystemComponentControlData>> = {
         mutationFn: async (localOptions) => {
@@ -3742,6 +4392,9 @@ export const createSystemComponentControlMutation = (options?: Partial<Options<C
 
 export const createSystemComponentSignalQueryKey = (options: Options<CreateSystemComponentSignalData>) => createQueryKey('createSystemComponentSignal', options);
 
+/**
+ * Create a System Component Signal
+ */
 export const createSystemComponentSignalOptions = (options: Options<CreateSystemComponentSignalData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3757,6 +4410,9 @@ export const createSystemComponentSignalOptions = (options: Options<CreateSystem
     });
 };
 
+/**
+ * Create a System Component Signal
+ */
 export const createSystemComponentSignalMutation = (options?: Partial<Options<CreateSystemComponentSignalData>>): MutationOptions<CreateSystemComponentSignalResponse, CreateSystemComponentSignalError, Options<CreateSystemComponentSignalData>> => {
     const mutationOptions: MutationOptions<CreateSystemComponentSignalResponse, CreateSystemComponentSignalError, Options<CreateSystemComponentSignalData>> = {
         mutationFn: async (localOptions) => {
@@ -3773,6 +4429,9 @@ export const createSystemComponentSignalMutation = (options?: Partial<Options<Cr
 
 export const listTasksQueryKey = (options?: Options<ListTasksData>) => createQueryKey('listTasks', options);
 
+/**
+ * List Tasks
+ */
 export const listTasksOptions = (options?: Options<ListTasksData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3790,6 +4449,9 @@ export const listTasksOptions = (options?: Options<ListTasksData>) => {
 
 export const listTasksInfiniteQueryKey = (options?: Options<ListTasksData>): QueryKey<Options<ListTasksData>> => createQueryKey('listTasks', options, true);
 
+/**
+ * List Tasks
+ */
 export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
     return infiniteQueryOptions<ListTasksResponse, ListTasksError, InfiniteData<ListTasksResponse>, QueryKey<Options<ListTasksData>>, number | Pick<QueryKey<Options<ListTasksData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3816,6 +4478,9 @@ export const listTasksInfiniteOptions = (options?: Options<ListTasksData>) => {
 
 export const createTaskQueryKey = (options: Options<CreateTaskData>) => createQueryKey('createTask', options);
 
+/**
+ * Create a Task
+ */
 export const createTaskOptions = (options: Options<CreateTaskData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3831,6 +4496,9 @@ export const createTaskOptions = (options: Options<CreateTaskData>) => {
     });
 };
 
+/**
+ * Create a Task
+ */
 export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>): MutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> => {
     const mutationOptions: MutationOptions<CreateTaskResponse, CreateTaskError, Options<CreateTaskData>> = {
         mutationFn: async (localOptions) => {
@@ -3845,6 +4513,9 @@ export const createTaskMutation = (options?: Partial<Options<CreateTaskData>>): 
     return mutationOptions;
 };
 
+/**
+ * Archive a Task
+ */
 export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>): MutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> => {
     const mutationOptions: MutationOptions<ArchiveTaskResponse, ArchiveTaskError, Options<ArchiveTaskData>> = {
         mutationFn: async (localOptions) => {
@@ -3861,6 +4532,9 @@ export const archiveTaskMutation = (options?: Partial<Options<ArchiveTaskData>>)
 
 export const getTaskQueryKey = (options: Options<GetTaskData>) => createQueryKey('getTask', options);
 
+/**
+ * Get Task
+ */
 export const getTaskOptions = (options: Options<GetTaskData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3876,6 +4550,9 @@ export const getTaskOptions = (options: Options<GetTaskData>) => {
     });
 };
 
+/**
+ * Update a Task
+ */
 export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>): MutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> => {
     const mutationOptions: MutationOptions<UpdateTaskResponse, UpdateTaskError, Options<UpdateTaskData>> = {
         mutationFn: async (localOptions) => {
@@ -3892,6 +4569,9 @@ export const updateTaskMutation = (options?: Partial<Options<UpdateTaskData>>): 
 
 export const listTeamsQueryKey = (options?: Options<ListTeamsData>) => createQueryKey('listTeams', options);
 
+/**
+ * List Teams
+ */
 export const listTeamsOptions = (options?: Options<ListTeamsData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3909,6 +4589,9 @@ export const listTeamsOptions = (options?: Options<ListTeamsData>) => {
 
 export const listTeamsInfiniteQueryKey = (options?: Options<ListTeamsData>): QueryKey<Options<ListTeamsData>> => createQueryKey('listTeams', options, true);
 
+/**
+ * List Teams
+ */
 export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
     return infiniteQueryOptions<ListTeamsResponse, ListTeamsError, InfiniteData<ListTeamsResponse>, QueryKey<Options<ListTeamsData>>, number | Pick<QueryKey<Options<ListTeamsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -3935,6 +4618,9 @@ export const listTeamsInfiniteOptions = (options?: Options<ListTeamsData>) => {
 
 export const createTeamQueryKey = (options: Options<CreateTeamData>) => createQueryKey('createTeam', options);
 
+/**
+ * Create a Team
+ */
 export const createTeamOptions = (options: Options<CreateTeamData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3950,6 +4636,9 @@ export const createTeamOptions = (options: Options<CreateTeamData>) => {
     });
 };
 
+/**
+ * Create a Team
+ */
 export const createTeamMutation = (options?: Partial<Options<CreateTeamData>>): MutationOptions<CreateTeamResponse, CreateTeamError, Options<CreateTeamData>> => {
     const mutationOptions: MutationOptions<CreateTeamResponse, CreateTeamError, Options<CreateTeamData>> = {
         mutationFn: async (localOptions) => {
@@ -3964,6 +4653,9 @@ export const createTeamMutation = (options?: Partial<Options<CreateTeamData>>): 
     return mutationOptions;
 };
 
+/**
+ * Archive a Team
+ */
 export const archiveTeamMutation = (options?: Partial<Options<ArchiveTeamData>>): MutationOptions<ArchiveTeamResponse, ArchiveTeamError, Options<ArchiveTeamData>> => {
     const mutationOptions: MutationOptions<ArchiveTeamResponse, ArchiveTeamError, Options<ArchiveTeamData>> = {
         mutationFn: async (localOptions) => {
@@ -3980,6 +4672,9 @@ export const archiveTeamMutation = (options?: Partial<Options<ArchiveTeamData>>)
 
 export const getTeamQueryKey = (options: Options<GetTeamData>) => createQueryKey('getTeam', options);
 
+/**
+ * Get a Team
+ */
 export const getTeamOptions = (options: Options<GetTeamData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -3995,6 +4690,9 @@ export const getTeamOptions = (options: Options<GetTeamData>) => {
     });
 };
 
+/**
+ * Update a Team
+ */
 export const updateTeamsMutation = (options?: Partial<Options<UpdateTeamsData>>): MutationOptions<UpdateTeamsResponse, UpdateTeamsError, Options<UpdateTeamsData>> => {
     const mutationOptions: MutationOptions<UpdateTeamsResponse, UpdateTeamsError, Options<UpdateTeamsData>> = {
         mutationFn: async (localOptions) => {
@@ -4009,6 +4707,9 @@ export const updateTeamsMutation = (options?: Partial<Options<UpdateTeamsData>>)
     return mutationOptions;
 };
 
+/**
+ * Delete a Notification for the Current User
+ */
 export const deleteUserNotificationMutation = (options?: Partial<Options<DeleteUserNotificationData>>): MutationOptions<DeleteUserNotificationResponse, DeleteUserNotificationError, Options<DeleteUserNotificationData>> => {
     const mutationOptions: MutationOptions<DeleteUserNotificationResponse, DeleteUserNotificationError, Options<DeleteUserNotificationData>> = {
         mutationFn: async (localOptions) => {
@@ -4025,6 +4726,9 @@ export const deleteUserNotificationMutation = (options?: Partial<Options<DeleteU
 
 export const listUsersQueryKey = (options?: Options<ListUsersData>) => createQueryKey('listUsers', options);
 
+/**
+ * List Users
+ */
 export const listUsersOptions = (options?: Options<ListUsersData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
@@ -4042,6 +4746,9 @@ export const listUsersOptions = (options?: Options<ListUsersData>) => {
 
 export const listUsersInfiniteQueryKey = (options?: Options<ListUsersData>): QueryKey<Options<ListUsersData>> => createQueryKey('listUsers', options, true);
 
+/**
+ * List Users
+ */
 export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
     return infiniteQueryOptions<ListUsersResponse, ListUsersError, InfiniteData<ListUsersResponse>, QueryKey<Options<ListUsersData>>, number | Pick<QueryKey<Options<ListUsersData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
     // @ts-ignore
@@ -4068,6 +4775,9 @@ export const listUsersInfiniteOptions = (options?: Options<ListUsersData>) => {
 
 export const getUserQueryKey = (options: Options<GetUserData>) => createQueryKey('getUser', options);
 
+/**
+ * Get a User
+ */
 export const getUserOptions = (options: Options<GetUserData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
