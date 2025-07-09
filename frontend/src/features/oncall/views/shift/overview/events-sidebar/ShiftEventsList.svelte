@@ -11,24 +11,16 @@
 	const events = $derived(viewState.filteredEvents);
 	const roster = $derived(shift?.attributes.roster);
 
-	const annoDialog = new AnnotationDialogState({
+	setAnnotationDialogState(new AnnotationDialogState({
 		onClosed: (updated?: OncallAnnotation) => {
 			
 		}
-	});
-	setAnnotationDialogState(annoDialog);
-
-	const listEvents = $derived.by<[OncallEvent, OncallAnnotation[]][]>(() => {
-		return viewState.filteredEvents.map(event => {
-			const anno = viewState.eventAnnotationsMap.get(event.id);
-			return [event, !!anno ? [anno] : []]
-		})
-	});
+	}));
 </script>
 
 {#if shift && events && roster}
-	{#each listEvents as [event, annotations]}
-		<EventRow {event} {annotations} />
+	{#each viewState.filteredEvents as event}
+		<EventRow {event} />
 	{:else}
 		<span class="w-full text-center py-8">No Events</span>
 	{/each}

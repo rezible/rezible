@@ -56,7 +56,7 @@ export class AnnotationDialogState {
 	open = $derived(!!this.event);
 
 	oncallInfoQuery = createQuery(() => getUserOncallInformationOptions({
-		query: { 
+		query: {
 			userId: session.userId,
 			activeShifts: true,
 		}
@@ -122,8 +122,6 @@ export class AnnotationDialogState {
 			alertFeedback = this.attributes.getAlertFeedback();
 		}
 		const attributes = $state.snapshot({
-			eventId: this.event.id,
-			rosterId: rosterId,
 			minutesOccupied: 0,
 			notes: this.attributes.notes,
 			tags: this.attributes.tags.values().toArray(),
@@ -132,7 +130,15 @@ export class AnnotationDialogState {
 		if (this.annotation) {
 			this.updateMut.mutate({ path: { id: this.annotation.id }, body: { attributes } });
 		} else {
-			this.createMut.mutate({ body: { attributes } })
+			this.createMut.mutate({
+				body: {
+					attributes: {
+						...attributes,
+						eventId: this.event.id,
+						rosterId: rosterId,
+					}
+				}
+			})
 		}
 	}
 }

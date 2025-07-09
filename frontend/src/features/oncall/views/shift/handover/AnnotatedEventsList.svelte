@@ -1,12 +1,14 @@
 <script lang="ts">
 	import {
+	listOncallAnnotationsOptions,
 		updateOncallShiftHandoverMutation,
+		type ListOncallAnnotationsData,
 		type OncallAnnotation,
 		type OncallEvent,
 		type OncallShiftHandover,
 		type UpdateOncallShiftHandoverRequestBody,
 	} from "$lib/api";
-	import { createMutation } from "@tanstack/svelte-query";
+	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import { useShiftViewState } from "../shiftViewState.svelte";
 	import Header from "$src/components/header/Header.svelte";
@@ -18,6 +20,12 @@
 	const { handover, onUpdated }: Props = $props();
 
 	const viewState = useShiftViewState();
+
+	const annotationsQueryOptions = $derived<ListOncallAnnotationsData["query"]>({
+		shiftId: handover.attributes.shiftId,
+	});
+	const annotationsQuery = createQuery(() => listOncallAnnotationsOptions({ query: annotationsQueryOptions }));
+	const annotations = $derived(annotationsQuery.data?.data ?? []);
 
 	const pinnedAnnos = $derived(handover.attributes.pinnedAnnotations ?? []);
 	const pinnedEventIds = $derived(new Set(pinnedAnnos.map(p => p.attributes.event.id)));
@@ -50,10 +58,10 @@
 		anno: OncallAnnotation;
 		pinned: boolean;
 	};
-	// TODO: do this in viewState?
 	const listItems = $derived.by(() => {
 		const items: EventAnnoListItem[] = [];
-		viewState.eventAnnotationsMap.forEach((anno, eventId) => {
+		annotations.forEach(anno => {
+			const eventId = anno.attributes.event.id;
 			const event = viewState.eventIdMap.get(eventId);
 			if (!!event) items.push({event, anno, pinned: pinnedEventIds.has(eventId)});
 		});

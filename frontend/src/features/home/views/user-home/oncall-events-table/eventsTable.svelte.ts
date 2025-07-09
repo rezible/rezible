@@ -52,47 +52,32 @@ export class OncallEventsTableState {
 	paginationPerPage = $derived(this.pagination.current.perPage);
 	paginationCurrentPage = $derived(this.pagination.current.page as number);
 
-	queryEnabled = $derived(!!this.filters.rosterId && !!this.oncallInfo);
+	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
 	
 	private listEventsQueryOffset = $derived(Math.max(0, (this.paginationCurrentPage - 1) * this.paginationPerPage));
+	private isShiftQuery = $derived(this.dateRangeOption === "shift");
+	private listEventsQueryShiftId = $derived((this.isShiftQuery && this.activeShift) ? this.activeShift.id : undefined);
 	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({ 
-		from: this.dateRange.from?.toISOString(),
-		to: this.dateRange.to?.toISOString(),
-		rosterId: this.filters.rosterId,
+		from: this.isShiftQuery ? undefined : this.dateRange.from?.toISOString(),
+		to: this.isShiftQuery ? undefined : this.dateRange.to?.toISOString(),
+		rosterId: this.isShiftQuery ? undefined : this.filters.rosterId,
+		shiftId: this.listEventsQueryShiftId,
 		limit: this.paginationPerPage,
 		offset: this.listEventsQueryOffset,
+		withAnnotations: true,
 	});
-	listEventsQuery = createQuery(() => ({
-		...listOncallEventsOptions({query: this.listEventsQueryData}),
+	private listEventsQueryOptions = $derived(listOncallEventsOptions({query: this.listEventsQueryData}));
+	private listEventsQuery = createQuery(() => ({
+		...this.listEventsQueryOptions,
 		enabled: this.queryEnabled,
 	}));
-	eventsQueryData = $derived(this.listEventsQuery.data);
-	eventsData = $derived(this.eventsQueryData?.data ?? []);
+	private eventsQueryData = $derived(this.listEventsQuery.data);
+	private eventsData = $derived(this.eventsQueryData?.data ?? []);
 
-	pageData = $derived(this.pagination.current.slice(this.eventsData));
+	pageData = $derived(this.eventsData);
 
-	private annosQueryData = $derived<ListOncallAnnotationsData["query"]>({ 
-		// TODO: backend
-		// from: dateRange.from?.toISOString(),
-		// to: dateRange.to?.toISOString(),
-		rosterId: this.filters.rosterId,
-	});
-	private annosQueryOptions = $derived(listOncallAnnotationsOptions({query: this.annosQueryData}));
-	annosQuery = createQuery(() => ({...this.annosQueryOptions, enabled: this.queryEnabled}));
-	annotations = $derived(this.annosQuery.data?.data ?? []);
-
-	eventAnnotations = $derived.by(() => {
-		const annoMap = new Map<string, OncallAnnotation[]>();
-		// TODO: ugly and probably slow
-		this.annotations.forEach(ann => {
-			const eventId = ann.attributes.event.id;
-			annoMap.set(eventId, [...(annoMap.get(eventId) || []), ann]);
-		});
-		return annoMap;
-	});
-
-	invalidateAnnotationsQuery() {
-		this.queryClient.invalidateQueries(this.annosQueryOptions);
+	invalidateQuery() {
+		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
 	}
 
 	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded)
@@ -107,7 +92,8 @@ export class OncallEventsTableState {
 		});
 
 		watch(() => this.eventsQueryData, d => {
-			this.paginationStore.setTotal(d?.pagination.total ?? 0);
+			if (!d) return;
+			this.paginationStore.setTotal(d.pagination.total ?? 0);
 		});
 	};
 }

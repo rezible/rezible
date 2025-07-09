@@ -10,7 +10,7 @@
 	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 	import { OncallEventsTableState, type DateRangeOption } from "./eventsTable.svelte";
-	import type { OncallAnnotation } from "$lib/api";
+	import type { OncallAnnotation } from "$src/lib/api";
 
 	const tableState = new OncallEventsTableState();
 
@@ -18,8 +18,8 @@
 
 	setAnnotationDialogState(new AnnotationDialogState({
 		onClosed: (updated?: OncallAnnotation) => {
-			if (updated) tableState.invalidateAnnotationsQuery();
-		}
+			if (updated) tableState.invalidateQuery();
+		},
 	}));
 
 	const dateRangeOptions: DateRangeOption[] = [
@@ -81,8 +81,8 @@
 		{#if tableState.loading}
 			<LoadingIndicator />
 		{:else}
-			{#each tableState.pageData as event}
-				<EventRow {event} annotations={tableState.eventAnnotations.get(event.id)} />
+			{#each tableState.pageData as event (event.id)}
+				<EventRow {event} />
 			{:else}
 				<div class="grid place-items-center flex-1">
 					<span class="text-surface-content/80">No Events</span>

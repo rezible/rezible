@@ -35,10 +35,11 @@ type (
 	}
 
 	OncallEventAttributes struct {
-		Kind        string    `json:"kind"`
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		Timestamp   time.Time `json:"timestamp"`
+		Kind        string             `json:"kind"`
+		Title       string             `json:"title"`
+		Description string             `json:"description"`
+		Timestamp   time.Time          `json:"timestamp"`
+		Annotations []OncallAnnotation `json:"annotations,omitempty"`
 	}
 
 	OncallAnnotation struct {
@@ -69,6 +70,13 @@ func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 		Title:       e.Title,
 		Description: e.Description,
 		Timestamp:   e.Timestamp,
+	}
+
+	if e.Edges.Annotations != nil {
+		attr.Annotations = make([]OncallAnnotation, len(e.Edges.Annotations))
+		for i, a := range e.Edges.Annotations {
+			attr.Annotations[i] = OncallAnnotationFromEnt(a)
+		}
 	}
 
 	return OncallEvent{
@@ -131,10 +139,11 @@ var ListOncallEvents = huma.Operation{
 
 type ListOncallEventsRequest struct {
 	ListRequest
-	From     time.Time `query:"from"`
-	To       time.Time `query:"to"`
-	ShiftId  uuid.UUID `query:"shiftId"`
-	RosterId uuid.UUID `query:"rosterId"`
+	From            time.Time `query:"from"`
+	To              time.Time `query:"to"`
+	ShiftId         uuid.UUID `query:"shiftId"`
+	RosterId        uuid.UUID `query:"rosterId"`
+	WithAnnotations bool      `query:"withAnnotations"`
 }
 type ListOncallEventsResponse PaginatedResponse[OncallEvent]
 
@@ -149,8 +158,11 @@ var ListOncallAnnotations = huma.Operation{
 
 type ListOncallAnnotationsRequest struct {
 	ListRequest
-	RosterId uuid.UUID `query:"rosterId"`
-	ShiftId  uuid.UUID `query:"shiftId"`
+	From       time.Time `query:"from"`
+	To         time.Time `query:"to"`
+	RosterId   uuid.UUID `query:"rosterId"`
+	ShiftId    uuid.UUID `query:"shiftId"`
+	WithEvents bool      `query:"withEvents"`
 }
 type ListOncallAnnotationsResponse PaginatedResponse[OncallAnnotation]
 

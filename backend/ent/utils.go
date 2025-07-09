@@ -13,6 +13,7 @@ type ListParams struct {
 	Offset          int
 	Limit           int
 	IncludeArchived bool
+	OrderAsc        bool
 }
 
 func (p ListParams) GetLimit() int {

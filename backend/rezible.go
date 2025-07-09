@@ -325,15 +325,18 @@ type (
 
 	ListOncallEventsParams struct {
 		ListParams
-		From     time.Time
-		To       time.Time
-		RosterID uuid.UUID
+		From            time.Time
+		To              time.Time
+		RosterID        uuid.UUID
+		WithAnnotations bool
 	}
 
 	ListOncallAnnotationsParams struct {
 		ListParams
+		From              time.Time
+		To                time.Time
 		RosterID          uuid.UUID
-		ShiftID           uuid.UUID
+		Shift             *ent.OncallUserShift
 		WithCreator       bool
 		WithRoster        bool
 		WithAlertFeedback bool
@@ -345,6 +348,8 @@ type (
 		CountEvents(ctx context.Context, params ListOncallEventsParams) (int, error)
 
 		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
+		CountAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (int, error)
+
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
 		DeleteAnnotation(ctx context.Context, id uuid.UUID) error

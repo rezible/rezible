@@ -15,11 +15,12 @@
 		togglePinned?: () => void;
 		loadingId?: string;
 	}
-	const { event, annotations = [], pinned, togglePinned, loadingId }: Props = $props();
+	const { event, annotations, pinned, togglePinned, loadingId }: Props = $props();
 
 	const annoDialog = useAnnotationDialogState();
 
-	const canCreate = $derived(annoDialog.allowCreating && annoDialog.canCreate(annotations));
+	const eventAnnotations = $derived(annotations || event.attributes.annotations || []);
+	const canCreate = $derived(annoDialog.allowCreating && annoDialog.canCreate(eventAnnotations));
 
 	const attrs = $derived(event.attributes);
 
@@ -55,7 +56,7 @@
 
 	<div class="flex w-full h-full items-center justify-end">
 		<div class="flex-1 h-full items-center justify-end flex gap-2">
-			{#each annotations as anno}
+			{#each eventAnnotations as anno}
 				{@render annotationBox(anno)}
 			{/each}
 

@@ -1747,6 +1747,7 @@ export type OncallEvent = {
 };
 
 export type OncallEventAttributes = {
+    annotations?: Array<OncallAnnotation>;
     description: string;
     kind: string;
     timestamp: string;
@@ -6647,8 +6648,11 @@ export type ListOncallAnnotationsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        from?: string;
+        to?: string;
         rosterId?: string;
         shiftId?: string;
+        withEvents?: boolean;
     };
     url: '/oncall/annotations';
 };
@@ -6842,6 +6846,7 @@ export type ListOncallEventsData = {
         to?: string;
         shiftId?: string;
         rosterId?: string;
+        withAnnotations?: boolean;
     };
     url: '/oncall/events';
 };
