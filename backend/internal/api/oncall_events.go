@@ -44,13 +44,27 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		params.RosterID = uuid.Nil
 	}
 
-	events, eventsErr := h.events.ListEvents(ctx, params)
-	if eventsErr != nil {
-		return nil, detailError("failed to query events", eventsErr)
+	eventCount, countErr := h.events.CountEvents(ctx, params)
+	if countErr != nil {
+		return nil, detailError("failed to get event count", countErr)
 	}
-	resp.Body.Data = make([]oapi.OncallEvent, len(events))
-	for i, event := range events {
-		resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
+
+	if eventCount > 0 {
+		events, eventsErr := h.events.ListEvents(ctx, params)
+		if eventsErr != nil {
+			return nil, detailError("failed to query events", eventsErr)
+		}
+		resp.Body.Data = make([]oapi.OncallEvent, len(events))
+		for i, event := range events {
+			resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
+		}
+	} else {
+		resp.Body.Data = make([]oapi.OncallEvent, 0)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Next:     nil,
+		Previous: nil,
+		Total:    eventCount,
 	}
 
 	return &resp, nil

@@ -30,17 +30,26 @@ func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserS
 	return s, nil
 }
 
-func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, error) {
+func (s *OncallEventsService) buildListEventsQuery(params rez.ListOncallEventsParams) *ent.OncallEventQuery {
 	query := s.db.OncallEvent.Query().
-		Limit(params.GetLimit()).
-		Offset(params.Offset).
 		Where(oncallevent.And(oncallevent.TimestampGT(params.From), oncallevent.TimestampLT(params.To)))
 
 	if params.RosterID != uuid.Nil {
 		query.Where(oncallevent.RosterID(params.RosterID))
 	}
 
+	return query
+}
+
+func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, error) {
+	query := s.buildListEventsQuery(params)
+	query.Limit(params.GetLimit())
+	query.Offset(params.Offset)
 	return query.All(params.GetQueryContext(ctx))
+}
+
+func (s *OncallEventsService) CountEvents(ctx context.Context, params rez.ListOncallEventsParams) (int, error) {
+	return s.buildListEventsQuery(params).Count(params.GetQueryContext(ctx))
 }
 
 func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
