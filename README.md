@@ -2,7 +2,7 @@
     <img alt="Rezible Logo" src="https://github.com/user-attachments/assets/9f932912-b194-44cd-bf78-204c73d8cdba" />
     <p>
         <br />
-        The open-source AI oncall platform
+        Operations Intelligence Platform
         <br /><br />
         <a href="https://rezible.com">Website</a>
     </p>
@@ -12,16 +12,14 @@
 
 ## What is Rezible?
 
-Rezible is an open-source platform that aims to evolve the oncall experience for busy teams, with three key offerings:
-1. "Mission Control" - opinionated tooling for important human-facing operational tasks (incident retrospectives, alert quality feedback, shift burden scoring etc)
-2. "Ops Brain" - collection of oncall data & institutional knowledge, queryable via chat/API/MCP
-3. "Oncall AI" - an agentic AI oncall companion that can investigate alerts & work on low-priority tasks
+Rezible is an "intelligence layer" for your operations stack. It provides opinionated tooling for important human-facing ops tasks such as incident retrospectives,
+extracts data & institutional knowledge from said tasks, and uses that knowledge to power an agentic AI oncall companion.
 
 ## Features
 - 🔗 Integrates with the tools you already use
-- 📟 Mission Control
+- 📟 Oncall Mission Control
+    - 🔥 Incident retrospectives with collaborative, interactive timelines & diagrammatic system analysis
     - 📋 Oncall shift event tracking & annotations
-    - 🔥 Incident retrospectives with collaborative, interactive timelines & visual systems analysis
     - 🗣️ AI-powered post-incident debriefs
     - 🎓 Structured oncall training & onboarding
     - 🗓️ Facilitation of knowledge sharing meetings (e.g. incident review, operations review)
