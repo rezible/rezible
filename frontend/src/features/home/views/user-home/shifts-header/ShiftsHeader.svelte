@@ -6,17 +6,16 @@
 	import { session } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
+	import { useUserOncallInformation } from "$src/lib/userOncall.svelte";
 
 	const userId = $derived(session.userId);
-	const oncallInfoQueryOpts = $derived(getUserOncallInformationOptions({query: { userId: session.userId }}));
-	const oncallInfoQuery = createQuery(() => oncallInfoQueryOpts);
-	const userOncallInfo = $derived(oncallInfoQuery.data?.data);
+	const oncallInfo = useUserOncallInformation();
 
-	const watchedRosterIds = $derived(userOncallInfo?.watchingRosters.map(r => r.id) ?? []);
-	const userRosterIds = $derived(userOncallInfo?.rosters.map(r => r.id) ?? []);
+	const watchedRosterIds = $derived(oncallInfo.current?.watchingRosters.map(r => r.id) ?? []);
+	const userRosterIds = $derived(oncallInfo.rosterIds);
 	const rosterIds = $derived([...userRosterIds, ...watchedRosterIds]);
 
-	const shifts = $derived(userOncallInfo?.activeShifts ?? []);
+	const shifts = $derived(oncallInfo.activeShifts);
 	const [userShifts, rosterShifts] = $derived.by(() => {
 		let userShifts: OncallShift[] = [];
 		let rosterShifts: OncallShift[] = [];
@@ -34,7 +33,7 @@
 	});
 
 	let rosterDialogOpen = $state(false);
-	const onWatchedRostersUpdated = () => oncallInfoQuery.refetch();
+	const onWatchedRostersUpdated = () => oncallInfo.invalidate();
 </script>
 
 <div class="w-full flex gap-2">

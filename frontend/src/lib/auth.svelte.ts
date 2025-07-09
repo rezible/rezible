@@ -20,7 +20,7 @@ type AuthSession = {
 	user: User;
 };
 
-const parseUserSessionResponse = ({ data }: GetCurrentUserAuthSessionResponse): AuthSession => {
+const parseUserAuthSessionResponse = ({ data }: GetCurrentUserAuthSessionResponse): AuthSession => {
 	return {
 		user: data.user,
 		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
@@ -64,7 +64,7 @@ const createAuthSessionState = () => {
 		loaded = true;
 
 		if (data) {
-			set(parseUserSessionResponse(data));
+			set(parseUserAuthSessionResponse(data));
 			return true;
 		}
 

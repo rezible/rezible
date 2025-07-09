@@ -1,6 +1,6 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation, type OncallEvent } from "$lib/api";
+import { getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";

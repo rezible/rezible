@@ -1,32 +1,28 @@
 import uxThemesCfg from "$src/svelteux-themes.json";
+import { Context } from "runed";
 import { settings as setUxSettings, getSettings as getUxSettings } from "svelte-ux";
 import { fromStore } from "svelte/store";
 
-const createSettingsState = () => {
-	let settings = $state.raw(getUxSettings());
+export type UxSettings = ReturnType<typeof getUxSettings>;
 
-	const currentTheme = $derived(fromStore(settings.currentTheme));
-	const locale = $derived(fromStore(settings.locale));
-	const format = $derived(fromStore(settings.format));
+export class SettingsState {
+	uxSettings: UxSettings = $state.raw(getUxSettings());
 
-	const setup = () => {
+	currentTheme = $derived(fromStore(this.uxSettings.currentTheme));
+	locale = $derived(fromStore(this.uxSettings.locale));
+	format = $derived(fromStore(this.uxSettings.format).current);
+
+	setup() {
 		const uxThemes = uxThemesCfg as Record<string, Record<string, string>>;
 		const themeNames = Object.keys(uxThemes);
 		const lightThemes = themeNames.filter(name => uxThemes[name]["color-scheme"] === "light");
 		const darkThemes = themeNames.filter(name => uxThemes[name]["color-scheme"] === "dark");
 
-		settings = setUxSettings({
+		this.uxSettings = setUxSettings({
 			themes: { light: lightThemes, dark: darkThemes },
 			components: {},
 		});
 	}
-
-	return {
-		setup,
-		get theme() { return currentTheme.current },
-		get locale() { return locale.current },
-		get format() { return format.current },
-	}
 }
 
-export const settings = createSettingsState();
+export const settings = new SettingsState();
