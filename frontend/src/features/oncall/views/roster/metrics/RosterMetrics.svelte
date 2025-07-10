@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { scaleOrdinal } from "d3-scale";
 	import { getOncallRosterMetricsOptions } from "$lib/api";
-	import { rosterViewCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../viewState.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 
 	type Props = {};

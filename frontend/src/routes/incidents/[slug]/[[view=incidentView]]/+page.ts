@@ -6,15 +6,15 @@ import type { PageLoad } from "./$types";
 export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();
 
-	const id = params.slug;
+	const slug = params.slug;
 
-	if (isValidUUID(id)) {
-		const res = await queryClient.fetchQuery(getIncidentOptions({ path: { id } }));
-		const slug = res.data.attributes.slug;
-		queryClient.setQueryData(getIncidentOptions({ path: { id: slug } }).queryKey, res);
-		const slugPath = url.pathname.replaceAll(id, slug) + url.search;
+	if (isValidUUID(slug)) {
+		const res = await queryClient.fetchQuery(getIncidentOptions({ path: { id: slug } }));
+		const realSlug = res.data.attributes.slug;
+		queryClient.setQueryData(getIncidentOptions({ path: { id: realSlug } }).queryKey, res);
+		const slugPath = url.pathname.replaceAll(slug, realSlug) + url.search;
 		throw redirect(301, slugPath);
 	}
 
-	return { id };
+	return { slug };
 }) satisfies PageLoad;

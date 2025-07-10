@@ -13,7 +13,7 @@
 	import Icon from "$src/components/icon/Icon.svelte";
 	import type { User } from "$src/lib/api";
 	import { formatRelative } from "date-fns";
-	import { rosterViewCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../viewState.svelte";
 
 	const viewCtx = rosterViewCtx.get();
 	const rosterId = $derived(viewCtx.rosterId);

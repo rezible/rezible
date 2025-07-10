@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "svelte-ux";
-	import type { RosterViewState } from "./context.svelte";
+	import type { RosterViewState } from "./viewState.svelte";
 
 	type Props = {
 		viewState: RosterViewState;

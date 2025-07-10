@@ -56,16 +56,17 @@ export class OncallEventsTableState {
 	
 	private listEventsQueryOffset = $derived(Math.max(0, (this.paginationCurrentPage - 1) * this.paginationPerPage));
 	private isShiftQuery = $derived(this.dateRangeOption === "shift");
-	private listEventsQueryShiftId = $derived((this.isShiftQuery && this.activeShift) ? this.activeShift.id : undefined);
-	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({ 
-		from: this.isShiftQuery ? undefined : this.dateRange.from?.toISOString(),
-		to: this.isShiftQuery ? undefined : this.dateRange.to?.toISOString(),
-		rosterId: this.isShiftQuery ? undefined : this.filters.rosterId,
-		shiftId: this.listEventsQueryShiftId,
+	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
+		from: this.dateRange.from?.toISOString(),
+		to: this.dateRange.to?.toISOString(),
+		rosterId: this.filters.rosterId,
+	});
+	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({
+		...(this.isShiftQuery ? {shiftId: this.activeShift?.id} : this.listRosterEventsQueryData),
 		limit: this.paginationPerPage,
 		offset: this.listEventsQueryOffset,
 		withAnnotations: true,
-	});
+	})
 	private listEventsQueryOptions = $derived(listOncallEventsOptions({query: this.listEventsQueryData}));
 	private listEventsQuery = createQuery(() => ({
 		...this.listEventsQueryOptions,
@@ -92,8 +93,7 @@ export class OncallEventsTableState {
 		});
 
 		watch(() => this.eventsQueryData, d => {
-			if (!d) return;
-			this.paginationStore.setTotal(d.pagination.total ?? 0);
+			if (d) this.paginationStore.setTotal(d.pagination.total);
 		});
 	};
 }

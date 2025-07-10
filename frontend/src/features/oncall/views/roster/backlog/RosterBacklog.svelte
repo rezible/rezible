@@ -2,7 +2,7 @@
 	import { createQuery, queryOptions } from "@tanstack/svelte-query";
 	import { getLocalTimeZone, now } from "@internationalized/date";
 
-	import { rosterViewCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../viewState.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import Header from "$src/components/header/Header.svelte";
 	

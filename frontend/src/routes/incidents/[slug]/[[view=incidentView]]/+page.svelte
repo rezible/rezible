@@ -8,4 +8,4 @@
 	const view = $derived(convertIncidentViewParam(page.params.view));
 </script>
 
-<IncidentView incidentId={data.id} {view}/>
+<IncidentView incidentId={data.slug} {view}/>

@@ -2,6 +2,8 @@
 	import type { Snippet } from "svelte";
 	import { appShell, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { Button } from "svelte-ux";
+	import { mdiDockLeft } from "@mdi/js";
 
 	type Props = {children: Snippet};
 	const { children }: Props = $props();
@@ -27,13 +29,18 @@
 {/snippet}
 
 <div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-1 text-surface-content">
-	<div class="flex justify-between items-center h-11 border border-surface-content/10 rounded-md pl-2 pr-1">
-		<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end">
-			{#each pageBreadcrumbs as c, i}
-				{#if i > 0}<span>/</span>{/if}
-				{@render breadcrumb(c, i === pageBreadcrumbs.length - 1)}
-			{/each}
-		</span>
+	<!-- <div class="flex justify-between items-center h-11 border border-surface-content/10 rounded-md pl-2 pr-1"> -->
+	<div class="flex justify-between items-center h-11 rounded-md">
+		<div class="flex items-center gap-2">
+			<Button icon={mdiDockLeft} iconOnly size="sm" classes={{root: "text-surface-content/40"}} />
+
+			<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end">
+				{#each pageBreadcrumbs as c, i}
+					{#if i > 0}<span>/</span>{/if}
+					{@render breadcrumb(c, i === pageBreadcrumbs.length - 1)}
+				{/each}
+			</span>
+		</div>
 
 		{#if pageActions}
 			<div class="flex items-center">
@@ -42,7 +49,8 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col flex-1 min-h-0 overflow-auto p-2 border border-surface-content/10 rounded-md bg-surface-200">
+	<!-- <div class="flex flex-col flex-1 min-h-0 overflow-auto p-2 border border-surface-content/10 rounded-md bg-surface-200"> -->
+	<div class="flex flex-col flex-1 min-h-0 overflow-auto">
 		{@render children()}
 	</div>
 </div>

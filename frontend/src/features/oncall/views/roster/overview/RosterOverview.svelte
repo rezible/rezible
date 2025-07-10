@@ -3,7 +3,7 @@
 		mdiChartBar,
 	} from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { rosterViewCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../viewState.svelte";
 	import {
 		getOncallRosterMetricsOptions,
 	} from "$lib/api";

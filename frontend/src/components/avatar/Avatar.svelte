@@ -2,9 +2,10 @@
 	import Avatar from "svelte-boring-avatars";
 
 	type Props = {
-		kind: "team" | "user" | "roster" | "service";
+		kind: "team" | "user" | "roster" | "service" | "incident";
 		id: string;
 		size?: number;
+		square?: boolean;
 		colors?: string[];
 	};
 
@@ -12,6 +13,7 @@
 		kind,
 		id,
 		size = 38,
+		square = false,
 		colors = ["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"],
 	}: Props = $props();
 
@@ -20,10 +22,11 @@
 		user: "marble",
 		roster: "sunset",
 		service: "pixel",
+		incident: "bauhaus",
 	};
 	const variant = variants[kind];
 </script>
 
 {#key id}
-	<Avatar {variant} {size} name={id} {colors} />
+	<Avatar name={id} {variant} {square} {size} {colors} />
 {/key}

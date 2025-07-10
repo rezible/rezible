@@ -3,7 +3,7 @@
 
 	import { appShell, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
 	import PageActions from "./PageActions.svelte";
-	import { rosterViewCtx, RosterViewState } from "./context.svelte";
+	import { rosterViewCtx, RosterViewState } from "./viewState.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import RosterDetailsBar from "./RosterDetailsBar.svelte";

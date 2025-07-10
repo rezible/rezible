@@ -14,15 +14,9 @@
 
 	// const isActiveShift = $derived(shift ? buildShiftTimeDetails(shift).status === "active" : false);
 	// const isSessionUser = $derived(session.userId == shift?.attributes.user.id);
-
-	const id1 = "3c3c74a4-82d7-43a7-8e90-805e7a8f7d32";
-	const id2 = "9a64f439-2349-49cf-91ff-997e69abee74";
-	const otherShiftId = $derived(shiftId === id1 ? id2 : id1);
 </script>
 
 <div class="flex gap-2">
-	<Button href="/oncall/shifts/{otherShiftId}">Other Shift</Button>
-
 	<Button href="/oncall/shifts/{previousShiftId}">
 		<Icon data={mdiChevronLeft} />
 		<span class="">Previous Shift</span>

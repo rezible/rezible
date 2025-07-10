@@ -2,7 +2,7 @@
 	import { Button } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import { formatDistanceToNow } from "date-fns";
-	import { rosterViewCtx } from "../context.svelte";
+	import { rosterViewCtx } from "../viewState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import {
 		getUserOncallInformationOptions,
