@@ -59,6 +59,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -631,6 +632,12 @@ func init() {
 	teamDescID := teamFields[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
+	ticketFields := schema.Ticket{}.Fields()
+	_ = ticketFields
+	// ticketDescID is the schema descriptor for id field.
+	ticketDescID := ticketFields[0].Descriptor()
+	// ticket.DefaultID holds the default value on creation for the id field.
+	ticket.DefaultID = ticketDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescID is the schema descriptor for id field.

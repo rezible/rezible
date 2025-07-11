@@ -67,6 +67,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -133,6 +134,7 @@ const (
 	TypeSystemRelationshipFeedbackSignal = "SystemRelationshipFeedbackSignal"
 	TypeTask                             = "Task"
 	TypeTeam                             = "Team"
+	TypeTicket                           = "Ticket"
 	TypeUser                             = "User"
 )
 
@@ -39138,22 +39140,24 @@ func (m *SystemRelationshipFeedbackSignalMutation) ResetEdge(name string) error 
 // TaskMutation represents an operation that mutates the Task nodes in the graph.
 type TaskMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	_type            *task.Type
-	title            *string
-	issue_tracker_id *string
-	clearedFields    map[string]struct{}
-	incident         *uuid.UUID
-	clearedincident  bool
-	assignee         *uuid.UUID
-	clearedassignee  bool
-	creator          *uuid.UUID
-	clearedcreator   bool
-	done             bool
-	oldValue         func(context.Context) (*Task, error)
-	predicates       []predicate.Task
+	op              Op
+	typ             string
+	id              *uuid.UUID
+	_type           *task.Type
+	title           *string
+	clearedFields   map[string]struct{}
+	tickets         map[uuid.UUID]struct{}
+	removedtickets  map[uuid.UUID]struct{}
+	clearedtickets  bool
+	incident        *uuid.UUID
+	clearedincident bool
+	assignee        *uuid.UUID
+	clearedassignee bool
+	creator         *uuid.UUID
+	clearedcreator  bool
+	done            bool
+	oldValue        func(context.Context) (*Task, error)
+	predicates      []predicate.Task
 }
 
 var _ ent.Mutation = (*TaskMutation)(nil)
@@ -39479,53 +39483,58 @@ func (m *TaskMutation) ResetCreatorID() {
 	delete(m.clearedFields, task.FieldCreatorID)
 }
 
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (m *TaskMutation) SetIssueTrackerID(s string) {
-	m.issue_tracker_id = &s
-}
-
-// IssueTrackerID returns the value of the "issue_tracker_id" field in the mutation.
-func (m *TaskMutation) IssueTrackerID() (r string, exists bool) {
-	v := m.issue_tracker_id
-	if v == nil {
-		return
+// AddTicketIDs adds the "tickets" edge to the Ticket entity by ids.
+func (m *TaskMutation) AddTicketIDs(ids ...uuid.UUID) {
+	if m.tickets == nil {
+		m.tickets = make(map[uuid.UUID]struct{})
 	}
-	return *v, true
-}
-
-// OldIssueTrackerID returns the old "issue_tracker_id" field's value of the Task entity.
-// If the Task object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TaskMutation) OldIssueTrackerID(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIssueTrackerID is only allowed on UpdateOne operations")
+	for i := range ids {
+		m.tickets[ids[i]] = struct{}{}
 	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIssueTrackerID requires an ID field in the mutation")
+}
+
+// ClearTickets clears the "tickets" edge to the Ticket entity.
+func (m *TaskMutation) ClearTickets() {
+	m.clearedtickets = true
+}
+
+// TicketsCleared reports if the "tickets" edge to the Ticket entity was cleared.
+func (m *TaskMutation) TicketsCleared() bool {
+	return m.clearedtickets
+}
+
+// RemoveTicketIDs removes the "tickets" edge to the Ticket entity by IDs.
+func (m *TaskMutation) RemoveTicketIDs(ids ...uuid.UUID) {
+	if m.removedtickets == nil {
+		m.removedtickets = make(map[uuid.UUID]struct{})
 	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIssueTrackerID: %w", err)
+	for i := range ids {
+		delete(m.tickets, ids[i])
+		m.removedtickets[ids[i]] = struct{}{}
 	}
-	return oldValue.IssueTrackerID, nil
 }
 
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (m *TaskMutation) ClearIssueTrackerID() {
-	m.issue_tracker_id = nil
-	m.clearedFields[task.FieldIssueTrackerID] = struct{}{}
+// RemovedTickets returns the removed IDs of the "tickets" edge to the Ticket entity.
+func (m *TaskMutation) RemovedTicketsIDs() (ids []uuid.UUID) {
+	for id := range m.removedtickets {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// IssueTrackerIDCleared returns if the "issue_tracker_id" field was cleared in this mutation.
-func (m *TaskMutation) IssueTrackerIDCleared() bool {
-	_, ok := m.clearedFields[task.FieldIssueTrackerID]
-	return ok
+// TicketsIDs returns the "tickets" edge IDs in the mutation.
+func (m *TaskMutation) TicketsIDs() (ids []uuid.UUID) {
+	for id := range m.tickets {
+		ids = append(ids, id)
+	}
+	return
 }
 
-// ResetIssueTrackerID resets all changes to the "issue_tracker_id" field.
-func (m *TaskMutation) ResetIssueTrackerID() {
-	m.issue_tracker_id = nil
-	delete(m.clearedFields, task.FieldIssueTrackerID)
+// ResetTickets resets all changes to the "tickets" edge.
+func (m *TaskMutation) ResetTickets() {
+	m.tickets = nil
+	m.clearedtickets = false
+	m.removedtickets = nil
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -39643,7 +39652,7 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m._type != nil {
 		fields = append(fields, task.FieldType)
 	}
@@ -39658,9 +39667,6 @@ func (m *TaskMutation) Fields() []string {
 	}
 	if m.creator != nil {
 		fields = append(fields, task.FieldCreatorID)
-	}
-	if m.issue_tracker_id != nil {
-		fields = append(fields, task.FieldIssueTrackerID)
 	}
 	return fields
 }
@@ -39680,8 +39686,6 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 		return m.AssigneeID()
 	case task.FieldCreatorID:
 		return m.CreatorID()
-	case task.FieldIssueTrackerID:
-		return m.IssueTrackerID()
 	}
 	return nil, false
 }
@@ -39701,8 +39705,6 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldAssigneeID(ctx)
 	case task.FieldCreatorID:
 		return m.OldCreatorID(ctx)
-	case task.FieldIssueTrackerID:
-		return m.OldIssueTrackerID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Task field %s", name)
 }
@@ -39747,13 +39749,6 @@ func (m *TaskMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCreatorID(v)
 		return nil
-	case task.FieldIssueTrackerID:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIssueTrackerID(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)
 }
@@ -39793,9 +39788,6 @@ func (m *TaskMutation) ClearedFields() []string {
 	if m.FieldCleared(task.FieldCreatorID) {
 		fields = append(fields, task.FieldCreatorID)
 	}
-	if m.FieldCleared(task.FieldIssueTrackerID) {
-		fields = append(fields, task.FieldIssueTrackerID)
-	}
 	return fields
 }
 
@@ -39818,9 +39810,6 @@ func (m *TaskMutation) ClearField(name string) error {
 		return nil
 	case task.FieldCreatorID:
 		m.ClearCreatorID()
-		return nil
-	case task.FieldIssueTrackerID:
-		m.ClearIssueTrackerID()
 		return nil
 	}
 	return fmt.Errorf("unknown Task nullable field %s", name)
@@ -39845,16 +39834,16 @@ func (m *TaskMutation) ResetField(name string) error {
 	case task.FieldCreatorID:
 		m.ResetCreatorID()
 		return nil
-	case task.FieldIssueTrackerID:
-		m.ResetIssueTrackerID()
-		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TaskMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.tickets != nil {
+		edges = append(edges, task.EdgeTickets)
+	}
 	if m.incident != nil {
 		edges = append(edges, task.EdgeIncident)
 	}
@@ -39871,6 +39860,12 @@ func (m *TaskMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case task.EdgeTickets:
+		ids := make([]ent.Value, 0, len(m.tickets))
+		for id := range m.tickets {
+			ids = append(ids, id)
+		}
+		return ids
 	case task.EdgeIncident:
 		if id := m.incident; id != nil {
 			return []ent.Value{*id}
@@ -39889,19 +39884,33 @@ func (m *TaskMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TaskMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.removedtickets != nil {
+		edges = append(edges, task.EdgeTickets)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TaskMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case task.EdgeTickets:
+		ids := make([]ent.Value, 0, len(m.removedtickets))
+		for id := range m.removedtickets {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TaskMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 4)
+	if m.clearedtickets {
+		edges = append(edges, task.EdgeTickets)
+	}
 	if m.clearedincident {
 		edges = append(edges, task.EdgeIncident)
 	}
@@ -39918,6 +39927,8 @@ func (m *TaskMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *TaskMutation) EdgeCleared(name string) bool {
 	switch name {
+	case task.EdgeTickets:
+		return m.clearedtickets
 	case task.EdgeIncident:
 		return m.clearedincident
 	case task.EdgeAssignee:
@@ -39949,6 +39960,9 @@ func (m *TaskMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TaskMutation) ResetEdge(name string) error {
 	switch name {
+	case task.EdgeTickets:
+		m.ResetTickets()
+		return nil
 	case task.EdgeIncident:
 		m.ResetIncident()
 		return nil
@@ -40910,6 +40924,485 @@ func (m *TeamMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Team edge %s", name)
+}
+
+// TicketMutation represents an operation that mutates the Ticket nodes in the graph.
+type TicketMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	provider_id   *string
+	title         *string
+	clearedFields map[string]struct{}
+	tasks         map[uuid.UUID]struct{}
+	removedtasks  map[uuid.UUID]struct{}
+	clearedtasks  bool
+	done          bool
+	oldValue      func(context.Context) (*Ticket, error)
+	predicates    []predicate.Ticket
+}
+
+var _ ent.Mutation = (*TicketMutation)(nil)
+
+// ticketOption allows management of the mutation configuration using functional options.
+type ticketOption func(*TicketMutation)
+
+// newTicketMutation creates new mutation for the Ticket entity.
+func newTicketMutation(c config, op Op, opts ...ticketOption) *TicketMutation {
+	m := &TicketMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeTicket,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withTicketID sets the ID field of the mutation.
+func withTicketID(id uuid.UUID) ticketOption {
+	return func(m *TicketMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Ticket
+		)
+		m.oldValue = func(ctx context.Context) (*Ticket, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Ticket.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withTicket sets the old Ticket of the mutation.
+func withTicket(node *Ticket) ticketOption {
+	return func(m *TicketMutation) {
+		m.oldValue = func(context.Context) (*Ticket, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m TicketMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m TicketMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Ticket entities.
+func (m *TicketMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *TicketMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *TicketMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Ticket.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *TicketMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *TicketMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the Ticket entity.
+// If the Ticket object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TicketMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *TicketMutation) ResetProviderID() {
+	m.provider_id = nil
+}
+
+// SetTitle sets the "title" field.
+func (m *TicketMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *TicketMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Ticket entity.
+// If the Ticket object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TicketMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *TicketMutation) ResetTitle() {
+	m.title = nil
+}
+
+// AddTaskIDs adds the "tasks" edge to the Task entity by ids.
+func (m *TicketMutation) AddTaskIDs(ids ...uuid.UUID) {
+	if m.tasks == nil {
+		m.tasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.tasks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTasks clears the "tasks" edge to the Task entity.
+func (m *TicketMutation) ClearTasks() {
+	m.clearedtasks = true
+}
+
+// TasksCleared reports if the "tasks" edge to the Task entity was cleared.
+func (m *TicketMutation) TasksCleared() bool {
+	return m.clearedtasks
+}
+
+// RemoveTaskIDs removes the "tasks" edge to the Task entity by IDs.
+func (m *TicketMutation) RemoveTaskIDs(ids ...uuid.UUID) {
+	if m.removedtasks == nil {
+		m.removedtasks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.tasks, ids[i])
+		m.removedtasks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTasks returns the removed IDs of the "tasks" edge to the Task entity.
+func (m *TicketMutation) RemovedTasksIDs() (ids []uuid.UUID) {
+	for id := range m.removedtasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TasksIDs returns the "tasks" edge IDs in the mutation.
+func (m *TicketMutation) TasksIDs() (ids []uuid.UUID) {
+	for id := range m.tasks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTasks resets all changes to the "tasks" edge.
+func (m *TicketMutation) ResetTasks() {
+	m.tasks = nil
+	m.clearedtasks = false
+	m.removedtasks = nil
+}
+
+// Where appends a list predicates to the TicketMutation builder.
+func (m *TicketMutation) Where(ps ...predicate.Ticket) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the TicketMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TicketMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Ticket, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *TicketMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TicketMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Ticket).
+func (m *TicketMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *TicketMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.provider_id != nil {
+		fields = append(fields, ticket.FieldProviderID)
+	}
+	if m.title != nil {
+		fields = append(fields, ticket.FieldTitle)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *TicketMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case ticket.FieldProviderID:
+		return m.ProviderID()
+	case ticket.FieldTitle:
+		return m.Title()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *TicketMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case ticket.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case ticket.FieldTitle:
+		return m.OldTitle(ctx)
+	}
+	return nil, fmt.Errorf("unknown Ticket field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TicketMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case ticket.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case ticket.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Ticket field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *TicketMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *TicketMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *TicketMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Ticket numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *TicketMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *TicketMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *TicketMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Ticket nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *TicketMutation) ResetField(name string) error {
+	switch name {
+	case ticket.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case ticket.FieldTitle:
+		m.ResetTitle()
+		return nil
+	}
+	return fmt.Errorf("unknown Ticket field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *TicketMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.tasks != nil {
+		edges = append(edges, ticket.EdgeTasks)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *TicketMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case ticket.EdgeTasks:
+		ids := make([]ent.Value, 0, len(m.tasks))
+		for id := range m.tasks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *TicketMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedtasks != nil {
+		edges = append(edges, ticket.EdgeTasks)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *TicketMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case ticket.EdgeTasks:
+		ids := make([]ent.Value, 0, len(m.removedtasks))
+		for id := range m.removedtasks {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *TicketMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedtasks {
+		edges = append(edges, ticket.EdgeTasks)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *TicketMutation) EdgeCleared(name string) bool {
+	switch name {
+	case ticket.EdgeTasks:
+		return m.clearedtasks
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *TicketMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Ticket unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *TicketMutation) ResetEdge(name string) error {
+	switch name {
+	case ticket.EdgeTasks:
+		m.ResetTasks()
+		return nil
+	}
+	return fmt.Errorf("unknown Ticket edge %s", name)
 }
 
 // UserMutation represents an operation that mutates the User nodes in the graph.

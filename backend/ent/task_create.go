@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -79,20 +80,6 @@ func (tc *TaskCreate) SetNillableCreatorID(u *uuid.UUID) *TaskCreate {
 	return tc
 }
 
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (tc *TaskCreate) SetIssueTrackerID(s string) *TaskCreate {
-	tc.mutation.SetIssueTrackerID(s)
-	return tc
-}
-
-// SetNillableIssueTrackerID sets the "issue_tracker_id" field if the given value is not nil.
-func (tc *TaskCreate) SetNillableIssueTrackerID(s *string) *TaskCreate {
-	if s != nil {
-		tc.SetIssueTrackerID(*s)
-	}
-	return tc
-}
-
 // SetID sets the "id" field.
 func (tc *TaskCreate) SetID(u uuid.UUID) *TaskCreate {
 	tc.mutation.SetID(u)
@@ -105,6 +92,21 @@ func (tc *TaskCreate) SetNillableID(u *uuid.UUID) *TaskCreate {
 		tc.SetID(*u)
 	}
 	return tc
+}
+
+// AddTicketIDs adds the "tickets" edge to the Ticket entity by IDs.
+func (tc *TaskCreate) AddTicketIDs(ids ...uuid.UUID) *TaskCreate {
+	tc.mutation.AddTicketIDs(ids...)
+	return tc
+}
+
+// AddTickets adds the "tickets" edges to the Ticket entity.
+func (tc *TaskCreate) AddTickets(t ...*Ticket) *TaskCreate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tc.AddTicketIDs(ids...)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -220,9 +222,21 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
-	if value, ok := tc.mutation.IssueTrackerID(); ok {
-		_spec.SetField(task.FieldIssueTrackerID, field.TypeString, value)
-		_node.IssueTrackerID = value
+	if nodes := tc.mutation.TicketsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := tc.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -405,24 +419,6 @@ func (u *TaskUpsert) ClearCreatorID() *TaskUpsert {
 	return u
 }
 
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (u *TaskUpsert) SetIssueTrackerID(v string) *TaskUpsert {
-	u.Set(task.FieldIssueTrackerID, v)
-	return u
-}
-
-// UpdateIssueTrackerID sets the "issue_tracker_id" field to the value that was provided on create.
-func (u *TaskUpsert) UpdateIssueTrackerID() *TaskUpsert {
-	u.SetExcluded(task.FieldIssueTrackerID)
-	return u
-}
-
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (u *TaskUpsert) ClearIssueTrackerID() *TaskUpsert {
-	u.SetNull(task.FieldIssueTrackerID)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -559,27 +555,6 @@ func (u *TaskUpsertOne) UpdateCreatorID() *TaskUpsertOne {
 func (u *TaskUpsertOne) ClearCreatorID() *TaskUpsertOne {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearCreatorID()
-	})
-}
-
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (u *TaskUpsertOne) SetIssueTrackerID(v string) *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetIssueTrackerID(v)
-	})
-}
-
-// UpdateIssueTrackerID sets the "issue_tracker_id" field to the value that was provided on create.
-func (u *TaskUpsertOne) UpdateIssueTrackerID() *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateIssueTrackerID()
-	})
-}
-
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (u *TaskUpsertOne) ClearIssueTrackerID() *TaskUpsertOne {
-	return u.Update(func(s *TaskUpsert) {
-		s.ClearIssueTrackerID()
 	})
 }
 
@@ -886,27 +861,6 @@ func (u *TaskUpsertBulk) UpdateCreatorID() *TaskUpsertBulk {
 func (u *TaskUpsertBulk) ClearCreatorID() *TaskUpsertBulk {
 	return u.Update(func(s *TaskUpsert) {
 		s.ClearCreatorID()
-	})
-}
-
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (u *TaskUpsertBulk) SetIssueTrackerID(v string) *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.SetIssueTrackerID(v)
-	})
-}
-
-// UpdateIssueTrackerID sets the "issue_tracker_id" field to the value that was provided on create.
-func (u *TaskUpsertBulk) UpdateIssueTrackerID() *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.UpdateIssueTrackerID()
-	})
-}
-
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (u *TaskUpsertBulk) ClearIssueTrackerID() *TaskUpsertBulk {
-	return u.Update(func(s *TaskUpsert) {
-		s.ClearIssueTrackerID()
 	})
 }
 

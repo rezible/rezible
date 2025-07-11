@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -119,24 +120,19 @@ func (tu *TaskUpdate) ClearCreatorID() *TaskUpdate {
 	return tu
 }
 
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (tu *TaskUpdate) SetIssueTrackerID(s string) *TaskUpdate {
-	tu.mutation.SetIssueTrackerID(s)
+// AddTicketIDs adds the "tickets" edge to the Ticket entity by IDs.
+func (tu *TaskUpdate) AddTicketIDs(ids ...uuid.UUID) *TaskUpdate {
+	tu.mutation.AddTicketIDs(ids...)
 	return tu
 }
 
-// SetNillableIssueTrackerID sets the "issue_tracker_id" field if the given value is not nil.
-func (tu *TaskUpdate) SetNillableIssueTrackerID(s *string) *TaskUpdate {
-	if s != nil {
-		tu.SetIssueTrackerID(*s)
+// AddTickets adds the "tickets" edges to the Ticket entity.
+func (tu *TaskUpdate) AddTickets(t ...*Ticket) *TaskUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
 	}
-	return tu
-}
-
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (tu *TaskUpdate) ClearIssueTrackerID() *TaskUpdate {
-	tu.mutation.ClearIssueTrackerID()
-	return tu
+	return tu.AddTicketIDs(ids...)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -157,6 +153,27 @@ func (tu *TaskUpdate) SetCreator(u *User) *TaskUpdate {
 // Mutation returns the TaskMutation object of the builder.
 func (tu *TaskUpdate) Mutation() *TaskMutation {
 	return tu.mutation
+}
+
+// ClearTickets clears all "tickets" edges to the Ticket entity.
+func (tu *TaskUpdate) ClearTickets() *TaskUpdate {
+	tu.mutation.ClearTickets()
+	return tu
+}
+
+// RemoveTicketIDs removes the "tickets" edge to Ticket entities by IDs.
+func (tu *TaskUpdate) RemoveTicketIDs(ids ...uuid.UUID) *TaskUpdate {
+	tu.mutation.RemoveTicketIDs(ids...)
+	return tu
+}
+
+// RemoveTickets removes "tickets" edges to Ticket entities.
+func (tu *TaskUpdate) RemoveTickets(t ...*Ticket) *TaskUpdate {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tu.RemoveTicketIDs(ids...)
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -238,11 +255,50 @@ func (tu *TaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := tu.mutation.IssueTrackerID(); ok {
-		_spec.SetField(task.FieldIssueTrackerID, field.TypeString, value)
+	if tu.mutation.TicketsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if tu.mutation.IssueTrackerIDCleared() {
-		_spec.ClearField(task.FieldIssueTrackerID, field.TypeString)
+	if nodes := tu.mutation.RemovedTicketsIDs(); len(nodes) > 0 && !tu.mutation.TicketsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tu.mutation.TicketsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if tu.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -441,24 +497,19 @@ func (tuo *TaskUpdateOne) ClearCreatorID() *TaskUpdateOne {
 	return tuo
 }
 
-// SetIssueTrackerID sets the "issue_tracker_id" field.
-func (tuo *TaskUpdateOne) SetIssueTrackerID(s string) *TaskUpdateOne {
-	tuo.mutation.SetIssueTrackerID(s)
+// AddTicketIDs adds the "tickets" edge to the Ticket entity by IDs.
+func (tuo *TaskUpdateOne) AddTicketIDs(ids ...uuid.UUID) *TaskUpdateOne {
+	tuo.mutation.AddTicketIDs(ids...)
 	return tuo
 }
 
-// SetNillableIssueTrackerID sets the "issue_tracker_id" field if the given value is not nil.
-func (tuo *TaskUpdateOne) SetNillableIssueTrackerID(s *string) *TaskUpdateOne {
-	if s != nil {
-		tuo.SetIssueTrackerID(*s)
+// AddTickets adds the "tickets" edges to the Ticket entity.
+func (tuo *TaskUpdateOne) AddTickets(t ...*Ticket) *TaskUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
 	}
-	return tuo
-}
-
-// ClearIssueTrackerID clears the value of the "issue_tracker_id" field.
-func (tuo *TaskUpdateOne) ClearIssueTrackerID() *TaskUpdateOne {
-	tuo.mutation.ClearIssueTrackerID()
-	return tuo
+	return tuo.AddTicketIDs(ids...)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -479,6 +530,27 @@ func (tuo *TaskUpdateOne) SetCreator(u *User) *TaskUpdateOne {
 // Mutation returns the TaskMutation object of the builder.
 func (tuo *TaskUpdateOne) Mutation() *TaskMutation {
 	return tuo.mutation
+}
+
+// ClearTickets clears all "tickets" edges to the Ticket entity.
+func (tuo *TaskUpdateOne) ClearTickets() *TaskUpdateOne {
+	tuo.mutation.ClearTickets()
+	return tuo
+}
+
+// RemoveTicketIDs removes the "tickets" edge to Ticket entities by IDs.
+func (tuo *TaskUpdateOne) RemoveTicketIDs(ids ...uuid.UUID) *TaskUpdateOne {
+	tuo.mutation.RemoveTicketIDs(ids...)
+	return tuo
+}
+
+// RemoveTickets removes "tickets" edges to Ticket entities.
+func (tuo *TaskUpdateOne) RemoveTickets(t ...*Ticket) *TaskUpdateOne {
+	ids := make([]uuid.UUID, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return tuo.RemoveTicketIDs(ids...)
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -590,11 +662,50 @@ func (tuo *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) 
 	if value, ok := tuo.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 	}
-	if value, ok := tuo.mutation.IssueTrackerID(); ok {
-		_spec.SetField(task.FieldIssueTrackerID, field.TypeString, value)
+	if tuo.mutation.TicketsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if tuo.mutation.IssueTrackerIDCleared() {
-		_spec.ClearField(task.FieldIssueTrackerID, field.TypeString)
+	if nodes := tuo.mutation.RemovedTicketsIDs(); len(nodes) > 0 && !tuo.mutation.TicketsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := tuo.mutation.TicketsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   task.TicketsTable,
+			Columns: task.TicketsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if tuo.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

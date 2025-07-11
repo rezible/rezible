@@ -1266,7 +1266,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"cleanup", "detect", "mitigate", "prevent"}},
 		{Name: "title", Type: field.TypeString},
-		{Name: "issue_tracker_id", Type: field.TypeString, Nullable: true},
 		{Name: "incident_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "assignee_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "creator_id", Type: field.TypeUUID, Nullable: true},
@@ -1279,19 +1278,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "tasks_incidents_tasks",
-				Columns:    []*schema.Column{TasksColumns[4]},
+				Columns:    []*schema.Column{TasksColumns[3]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_users_assigned_tasks",
-				Columns:    []*schema.Column{TasksColumns[5]},
+				Columns:    []*schema.Column{TasksColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_users_created_tasks",
-				Columns:    []*schema.Column{TasksColumns[6]},
+				Columns:    []*schema.Column{TasksColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -1311,6 +1310,18 @@ var (
 		Name:       "teams",
 		Columns:    TeamsColumns,
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
+	}
+	// TicketsColumns holds the columns for the "tickets" table.
+	TicketsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "title", Type: field.TypeString},
+	}
+	// TicketsTable holds the schema information for the "tickets" table.
+	TicketsTable = &schema.Table{
+		Name:       "tickets",
+		Columns:    TicketsColumns,
+		PrimaryKey: []*schema.Column{TicketsColumns[0]},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -1676,6 +1687,31 @@ var (
 			},
 		},
 	}
+	// TaskTicketsColumns holds the columns for the "task_tickets" table.
+	TaskTicketsColumns = []*schema.Column{
+		{Name: "task_id", Type: field.TypeUUID},
+		{Name: "ticket_id", Type: field.TypeUUID},
+	}
+	// TaskTicketsTable holds the schema information for the "task_tickets" table.
+	TaskTicketsTable = &schema.Table{
+		Name:       "task_tickets",
+		Columns:    TaskTicketsColumns,
+		PrimaryKey: []*schema.Column{TaskTicketsColumns[0], TaskTicketsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "task_tickets_task_id",
+				Columns:    []*schema.Column{TaskTicketsColumns[0]},
+				RefColumns: []*schema.Column{TasksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "task_tickets_ticket_id",
+				Columns:    []*schema.Column{TaskTicketsColumns[1]},
+				RefColumns: []*schema.Column{TicketsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// TeamUsersColumns holds the columns for the "team_users" table.
 	TeamUsersColumns = []*schema.Column{
 		{Name: "team_id", Type: field.TypeUUID},
@@ -1807,6 +1843,7 @@ var (
 		SystemRelationshipFeedbackSignalsTable,
 		TasksTable,
 		TeamsTable,
+		TicketsTable,
 		UsersTable,
 		IncidentEnvironmentsTable,
 		IncidentFieldSelectionsTable,
@@ -1822,6 +1859,7 @@ var (
 		SystemHazardComponentsTable,
 		SystemHazardConstraintsTable,
 		SystemHazardRelationshipsTable,
+		TaskTicketsTable,
 		TeamUsersTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -1920,6 +1958,8 @@ func init() {
 	SystemHazardConstraintsTable.ForeignKeys[1].RefTable = SystemComponentConstraintsTable
 	SystemHazardRelationshipsTable.ForeignKeys[0].RefTable = SystemHazardsTable
 	SystemHazardRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
+	TaskTicketsTable.ForeignKeys[0].RefTable = TasksTable
+	TaskTicketsTable.ForeignKeys[1].RefTable = TicketsTable
 	TeamUsersTable.ForeignKeys[0].RefTable = TeamsTable
 	TeamUsersTable.ForeignKeys[1].RefTable = UsersTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

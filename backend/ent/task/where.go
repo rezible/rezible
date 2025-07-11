@@ -74,11 +74,6 @@ func CreatorID(v uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldCreatorID, v))
 }
 
-// IssueTrackerID applies equality check predicate on the "issue_tracker_id" field. It's identical to IssueTrackerIDEQ.
-func IssueTrackerID(v string) predicate.Task {
-	return predicate.Task(sql.FieldEQ(FieldIssueTrackerID, v))
-}
-
 // TypeEQ applies the EQ predicate on the "type" field.
 func TypeEQ(v Type) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldType, v))
@@ -254,79 +249,27 @@ func CreatorIDNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldCreatorID))
 }
 
-// IssueTrackerIDEQ applies the EQ predicate on the "issue_tracker_id" field.
-func IssueTrackerIDEQ(v string) predicate.Task {
-	return predicate.Task(sql.FieldEQ(FieldIssueTrackerID, v))
+// HasTickets applies the HasEdge predicate on the "tickets" edge.
+func HasTickets() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, TicketsTable, TicketsPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
 }
 
-// IssueTrackerIDNEQ applies the NEQ predicate on the "issue_tracker_id" field.
-func IssueTrackerIDNEQ(v string) predicate.Task {
-	return predicate.Task(sql.FieldNEQ(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDIn applies the In predicate on the "issue_tracker_id" field.
-func IssueTrackerIDIn(vs ...string) predicate.Task {
-	return predicate.Task(sql.FieldIn(FieldIssueTrackerID, vs...))
-}
-
-// IssueTrackerIDNotIn applies the NotIn predicate on the "issue_tracker_id" field.
-func IssueTrackerIDNotIn(vs ...string) predicate.Task {
-	return predicate.Task(sql.FieldNotIn(FieldIssueTrackerID, vs...))
-}
-
-// IssueTrackerIDGT applies the GT predicate on the "issue_tracker_id" field.
-func IssueTrackerIDGT(v string) predicate.Task {
-	return predicate.Task(sql.FieldGT(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDGTE applies the GTE predicate on the "issue_tracker_id" field.
-func IssueTrackerIDGTE(v string) predicate.Task {
-	return predicate.Task(sql.FieldGTE(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDLT applies the LT predicate on the "issue_tracker_id" field.
-func IssueTrackerIDLT(v string) predicate.Task {
-	return predicate.Task(sql.FieldLT(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDLTE applies the LTE predicate on the "issue_tracker_id" field.
-func IssueTrackerIDLTE(v string) predicate.Task {
-	return predicate.Task(sql.FieldLTE(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDContains applies the Contains predicate on the "issue_tracker_id" field.
-func IssueTrackerIDContains(v string) predicate.Task {
-	return predicate.Task(sql.FieldContains(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDHasPrefix applies the HasPrefix predicate on the "issue_tracker_id" field.
-func IssueTrackerIDHasPrefix(v string) predicate.Task {
-	return predicate.Task(sql.FieldHasPrefix(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDHasSuffix applies the HasSuffix predicate on the "issue_tracker_id" field.
-func IssueTrackerIDHasSuffix(v string) predicate.Task {
-	return predicate.Task(sql.FieldHasSuffix(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDIsNil applies the IsNil predicate on the "issue_tracker_id" field.
-func IssueTrackerIDIsNil() predicate.Task {
-	return predicate.Task(sql.FieldIsNull(FieldIssueTrackerID))
-}
-
-// IssueTrackerIDNotNil applies the NotNil predicate on the "issue_tracker_id" field.
-func IssueTrackerIDNotNil() predicate.Task {
-	return predicate.Task(sql.FieldNotNull(FieldIssueTrackerID))
-}
-
-// IssueTrackerIDEqualFold applies the EqualFold predicate on the "issue_tracker_id" field.
-func IssueTrackerIDEqualFold(v string) predicate.Task {
-	return predicate.Task(sql.FieldEqualFold(FieldIssueTrackerID, v))
-}
-
-// IssueTrackerIDContainsFold applies the ContainsFold predicate on the "issue_tracker_id" field.
-func IssueTrackerIDContainsFold(v string) predicate.Task {
-	return predicate.Task(sql.FieldContainsFold(FieldIssueTrackerID, v))
+// HasTicketsWith applies the HasEdge predicate on the "tickets" edge with a given conditions (other predicates).
+func HasTicketsWith(preds ...predicate.Ticket) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newTicketsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasIncident applies the HasEdge predicate on the "incident" edge.

@@ -25,8 +25,8 @@ const (
 	FieldAssigneeID = "assignee_id"
 	// FieldCreatorID holds the string denoting the creator_id field in the database.
 	FieldCreatorID = "creator_id"
-	// FieldIssueTrackerID holds the string denoting the issue_tracker_id field in the database.
-	FieldIssueTrackerID = "issue_tracker_id"
+	// EdgeTickets holds the string denoting the tickets edge name in mutations.
+	EdgeTickets = "tickets"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
 	// EdgeAssignee holds the string denoting the assignee edge name in mutations.
@@ -35,6 +35,11 @@ const (
 	EdgeCreator = "creator"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
+	// TicketsTable is the table that holds the tickets relation/edge. The primary key declared below.
+	TicketsTable = "task_tickets"
+	// TicketsInverseTable is the table name for the Ticket entity.
+	// It exists in this package in order to avoid circular dependency with the "ticket" package.
+	TicketsInverseTable = "tickets"
 	// IncidentTable is the table that holds the incident relation/edge.
 	IncidentTable = "tasks"
 	// IncidentInverseTable is the table name for the Incident entity.
@@ -66,8 +71,13 @@ var Columns = []string{
 	FieldIncidentID,
 	FieldAssigneeID,
 	FieldCreatorID,
-	FieldIssueTrackerID,
 }
+
+var (
+	// TicketsPrimaryKey and TicketsColumn2 are the table columns denoting the
+	// primary key for the tickets relation (M2M).
+	TicketsPrimaryKey = []string{"task_id", "ticket_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -142,9 +152,18 @@ func ByCreatorID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatorID, opts...).ToFunc()
 }
 
-// ByIssueTrackerID orders the results by the issue_tracker_id field.
-func ByIssueTrackerID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIssueTrackerID, opts...).ToFunc()
+// ByTicketsCount orders the results by tickets count.
+func ByTicketsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTicketsStep(), opts...)
+	}
+}
+
+// ByTickets orders the results by tickets terms.
+func ByTickets(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTicketsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
 }
 
 // ByIncidentField orders the results by incident field.
@@ -166,6 +185,13 @@ func ByCreatorField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newCreatorStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTicketsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TicketsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, TicketsTable, TicketsPrimaryKey...),
+	)
 }
 func newIncidentStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

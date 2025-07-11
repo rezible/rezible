@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -25,6 +27,7 @@ type TaskQuery struct {
 	order        []task.OrderOption
 	inters       []Interceptor
 	predicates   []predicate.Task
+	withTickets  *TicketQuery
 	withIncident *IncidentQuery
 	withAssignee *UserQuery
 	withCreator  *UserQuery
@@ -63,6 +66,28 @@ func (tq *TaskQuery) Unique(unique bool) *TaskQuery {
 func (tq *TaskQuery) Order(o ...task.OrderOption) *TaskQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryTickets chains the current query on the "tickets" edge.
+func (tq *TaskQuery) QueryTickets() *TicketQuery {
+	query := (&TicketClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, selector),
+			sqlgraph.To(ticket.Table, ticket.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, task.TicketsTable, task.TicketsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryIncident chains the current query on the "incident" edge.
@@ -323,6 +348,7 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		order:        append([]task.OrderOption{}, tq.order...),
 		inters:       append([]Interceptor{}, tq.inters...),
 		predicates:   append([]predicate.Task{}, tq.predicates...),
+		withTickets:  tq.withTickets.Clone(),
 		withIncident: tq.withIncident.Clone(),
 		withAssignee: tq.withAssignee.Clone(),
 		withCreator:  tq.withCreator.Clone(),
@@ -331,6 +357,17 @@ func (tq *TaskQuery) Clone() *TaskQuery {
 		path:      tq.path,
 		modifiers: append([]func(*sql.Selector){}, tq.modifiers...),
 	}
+}
+
+// WithTickets tells the query-builder to eager-load the nodes that are connected to
+// the "tickets" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TaskQuery) WithTickets(opts ...func(*TicketQuery)) *TaskQuery {
+	query := (&TicketClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withTickets = query
+	return tq
 }
 
 // WithIncident tells the query-builder to eager-load the nodes that are connected to
@@ -444,7 +481,8 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	var (
 		nodes       = []*Task{}
 		_spec       = tq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
+			tq.withTickets != nil,
 			tq.withIncident != nil,
 			tq.withAssignee != nil,
 			tq.withCreator != nil,
@@ -471,6 +509,13 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := tq.withTickets; query != nil {
+		if err := tq.loadTickets(ctx, query, nodes,
+			func(n *Task) { n.Edges.Tickets = []*Ticket{} },
+			func(n *Task, e *Ticket) { n.Edges.Tickets = append(n.Edges.Tickets, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := tq.withIncident; query != nil {
 		if err := tq.loadIncident(ctx, query, nodes, nil,
 			func(n *Task, e *Incident) { n.Edges.Incident = e }); err != nil {
@@ -492,6 +537,67 @@ func (tq *TaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Task, e
 	return nodes, nil
 }
 
+func (tq *TaskQuery) loadTickets(ctx context.Context, query *TicketQuery, nodes []*Task, init func(*Task), assign func(*Task, *Ticket)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Task)
+	nids := make(map[uuid.UUID]map[*Task]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(task.TicketsTable)
+		s.Join(joinT).On(s.C(ticket.FieldID), joinT.C(task.TicketsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(task.TicketsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(task.TicketsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Task]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Ticket](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "tickets" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 func (tq *TaskQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*Task, init func(*Task), assign func(*Task, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Task)

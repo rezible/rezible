@@ -29,8 +29,6 @@ type Task struct {
 	AssigneeID uuid.UUID `json:"assignee_id,omitempty"`
 	// CreatorID holds the value of the "creator_id" field.
 	CreatorID uuid.UUID `json:"creator_id,omitempty"`
-	// IssueTrackerID holds the value of the "issue_tracker_id" field.
-	IssueTrackerID string `json:"issue_tracker_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TaskQuery when eager-loading is set.
 	Edges        TaskEdges `json:"edges"`
@@ -39,6 +37,8 @@ type Task struct {
 
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
+	// Tickets holds the value of the tickets edge.
+	Tickets []*Ticket `json:"tickets,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// Assignee holds the value of the assignee edge.
@@ -47,7 +47,16 @@ type TaskEdges struct {
 	Creator *User `json:"creator,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// TicketsOrErr returns the Tickets value or an error if the edge
+// was not loaded in eager-loading.
+func (e TaskEdges) TicketsOrErr() ([]*Ticket, error) {
+	if e.loadedTypes[0] {
+		return e.Tickets, nil
+	}
+	return nil, &NotLoadedError{edge: "tickets"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -55,7 +64,7 @@ type TaskEdges struct {
 func (e TaskEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -66,7 +75,7 @@ func (e TaskEdges) IncidentOrErr() (*Incident, error) {
 func (e TaskEdges) AssigneeOrErr() (*User, error) {
 	if e.Assignee != nil {
 		return e.Assignee, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "assignee"}
@@ -77,7 +86,7 @@ func (e TaskEdges) AssigneeOrErr() (*User, error) {
 func (e TaskEdges) CreatorOrErr() (*User, error) {
 	if e.Creator != nil {
 		return e.Creator, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -88,7 +97,7 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case task.FieldType, task.FieldTitle, task.FieldIssueTrackerID:
+		case task.FieldType, task.FieldTitle:
 			values[i] = new(sql.NullString)
 		case task.FieldID, task.FieldIncidentID, task.FieldAssigneeID, task.FieldCreatorID:
 			values[i] = new(uuid.UUID)
@@ -143,12 +152,6 @@ func (t *Task) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				t.CreatorID = *value
 			}
-		case task.FieldIssueTrackerID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field issue_tracker_id", values[i])
-			} else if value.Valid {
-				t.IssueTrackerID = value.String
-			}
 		default:
 			t.selectValues.Set(columns[i], values[i])
 		}
@@ -160,6 +163,11 @@ func (t *Task) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (t *Task) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
+}
+
+// QueryTickets queries the "tickets" edge of the Task entity.
+func (t *Task) QueryTickets() *TicketQuery {
+	return NewTaskClient(t.config).QueryTickets(t)
 }
 
 // QueryIncident queries the "incident" edge of the Task entity.
@@ -214,9 +222,6 @@ func (t *Task) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("creator_id=")
 	builder.WriteString(fmt.Sprintf("%v", t.CreatorID))
-	builder.WriteString(", ")
-	builder.WriteString("issue_tracker_id=")
-	builder.WriteString(t.IssueTrackerID)
 	builder.WriteByte(')')
 	return builder.String()
 }

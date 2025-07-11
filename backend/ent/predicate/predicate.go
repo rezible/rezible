@@ -168,5 +168,8 @@ type Task func(*sql.Selector)
 // Team is the predicate function for team builders.
 type Team func(*sql.Selector)
 
+// Ticket is the predicate function for ticket builders.
+type Ticket func(*sql.Selector)
+
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

@@ -31,13 +31,14 @@ func (Task) Fields() []ent.Field {
 		field.UUID("incident_id", uuid.UUID{}).Optional(),
 		field.UUID("assignee_id", uuid.UUID{}).Optional(),
 		field.UUID("creator_id", uuid.UUID{}).Optional(),
-		field.String("issue_tracker_id").Optional(),
 	}
 }
 
 // Edges of the Task.
 func (Task) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("tickets", Ticket.Type),
+
 		edge.From("incident", Incident.Type).
 			Ref("tasks").Unique().Field("incident_id"),
 		edge.From("assignee", User.Type).
