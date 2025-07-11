@@ -26,11 +26,11 @@
 		{ path: "/", route: "/(index)", label: "Home", icon: mdiHome },
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
 		{ path: "/oncall", label: "Oncall", icon: mdiPhoneRing },
-		{ path: "/reports", label: "Reports", icon: mdiChartBox },
 		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
+		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
+		// { path: "/reports", label: "Reports", icon: mdiChartBox },
 		// { path: "/services", label: "Services", icon: mdiVectorPolyline },
 		// { path: "/wiki", label: "Wiki", icon: mdiBookshelf },
-		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
 	];
 
 	const currentPath = $derived(page.route.id);
