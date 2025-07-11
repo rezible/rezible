@@ -4,4 +4,4 @@
 	let { data } = $props();
 </script>
 
-<TeamView id={data.team.id} />
+<TeamView team={data.team} />

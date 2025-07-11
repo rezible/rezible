@@ -1,1 +1,0 @@
-<span>team incidents</span>

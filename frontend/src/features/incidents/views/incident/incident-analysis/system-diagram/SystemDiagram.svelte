@@ -43,7 +43,7 @@
 	const relationshipDialog = new RelationshipDialogState();
 	setRelationshipDialog(relationshipDialog);
 
-	const colorMode = $derived<ColorMode>(settings.theme.dark ? "dark" : "light");
+	const colorMode = $derived<ColorMode>(settings.currentTheme.current.dark ? "dark" : "light");
 
 	const flowSettings: SvelteFlowProps = {
 		connectionLineComponent: ConnectionLine,
