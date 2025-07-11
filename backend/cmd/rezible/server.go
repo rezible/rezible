@@ -104,7 +104,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
 	}
 
-	lms, lmsErr := eino.NewLanguageModelService(ctx, provs.AiModel)
+	lms, lmsErr := eino.NewLanguageModelService(ctx, provs.LanguageModel)
 	if lmsErr != nil {
 		return nil, fmt.Errorf("failed to create language model service: %w", lmsErr)
 	}

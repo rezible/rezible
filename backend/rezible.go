@@ -47,7 +47,7 @@ type (
 
 		LoadProviders(context.Context) (*Providers, error)
 
-		LoadAiModelProvider(context.Context) (LanguageModelProvider, error)
+		LoadLanguageModelProvider(context.Context) (LanguageModelProvider, error)
 		LoadChatProvider(context.Context) (ChatProvider, error)
 		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 
@@ -57,19 +57,20 @@ type (
 		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
 		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
+		LoadTicketDataProvider(context.Context) (TicketDataProvider, error)
 	}
 
 	Providers struct {
-		AiModel     LanguageModelProvider
-		AuthSession AuthSessionProvider
-		Chat        ChatProvider
-
+		LanguageModel        LanguageModelProvider
+		AuthSession          AuthSessionProvider
+		Chat                 ChatProvider
 		IncidentData         IncidentDataProvider
 		OncallData           OncallDataProvider
 		OncallEventsData     OncallEventsDataProvider
 		SystemComponentsData SystemComponentsDataProvider
 		TeamData             TeamDataProvider
 		UserData             UserDataProvider
+		TicketData           TicketDataProvider
 	}
 
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
@@ -244,6 +245,7 @@ type (
 
 type (
 	TicketDataProvider interface {
+		PullTickets(context.Context) iter.Seq2[*ent.Ticket, error]
 	}
 
 	TicketService interface {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/internal/providers/jira"
 	"io"
 	"net/http"
 	"os"
@@ -118,7 +119,7 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 	var provs rez.Providers
 	var loadErr error
 
-	provs.AiModel, loadErr = l.LoadLanguageModelProvider(ctx)
+	provs.LanguageModel, loadErr = l.LoadLanguageModelProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("ai model: %w", loadErr)
 	}
@@ -161,6 +162,11 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("user data: %w", loadErr)
+	}
+
+	provs.TicketData, loadErr = l.LoadTicketDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("team data: %w", loadErr)
 	}
 
 	return &provs, nil
@@ -371,5 +377,19 @@ func (l *Loader) LoadAuthSessionProvider(ctx context.Context) (rez.AuthSessionPr
 		return loadProvider(oauth2.NewAuthSessionProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid auth session provider: %s", pCfg.Name)
+	}
+}
+
+func (l *Loader) LoadTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
+	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTickets)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+
+	switch pCfg.Name {
+	case "jira":
+		return loadProviderCtx(ctx, jira.NewTicketDataProvider, pCfg)
+	default:
+		return nil, fmt.Errorf("invalid ticket data provider: %s", pCfg.Name)
 	}
 }

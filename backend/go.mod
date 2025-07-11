@@ -34,6 +34,7 @@ require (
 	ariga.io/atlas v0.35.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/alitto/pond/v2 v2.4.0 // indirect
+	github.com/andygrunwald/go-jira v1.16.0 // indirect
 	github.com/anthropics/anthropic-sdk-go v1.4.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect
@@ -60,6 +61,7 @@ require (
 	github.com/di-wu/parser v0.3.0 // indirect
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/fatih/structs v1.1.0 // indirect
 	github.com/getkin/kin-openapi v0.132.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250626171732-1a886bd29d1b // indirect
 	github.com/go-openapi/inflect v0.21.2 // indirect
@@ -67,6 +69,7 @@ require (
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
@@ -111,6 +114,7 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
+	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
