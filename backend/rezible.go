@@ -243,6 +243,14 @@ type (
 )
 
 type (
+	TicketDataProvider interface {
+	}
+
+	TicketService interface {
+	}
+)
+
+type (
 	IncidentDataProvider interface {
 		GetWebhooks() Webhooks
 
