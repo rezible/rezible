@@ -31,7 +31,7 @@
 
 <EventAnnotationDialog />
 
-<div class="w-full h-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
+<div class="w-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
 	<Header title="Oncall Events" subheading="Operational events during these dates" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
@@ -77,7 +77,7 @@
 		</div>
 	{/if}
 
-	<div class="flex flex-col flex-1 overflow-y-auto border-t">
+	<div class="flex flex-col overflow-y-auto border-t">
 		{#if tableState.loading}
 			<LoadingIndicator />
 		{:else}
