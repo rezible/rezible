@@ -34,9 +34,12 @@ func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context,
 }
 
 func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospective) (*ent.Retrospective, error) {
-	inc, incErr := s.db.Incident.Get(ctx, params.IncidentID)
+	inc, incErr := params.Edges.IncidentOrErr()
 	if incErr != nil {
-		return nil, incErr
+		inc, incErr = s.db.Incident.Get(ctx, params.IncidentID)
+		if incErr != nil {
+			return nil, fmt.Errorf("get incident: %w", incErr)
+		}
 	}
 
 	var createdRetro *ent.Retrospective
@@ -75,10 +78,21 @@ func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospect
 	return createdRetro, nil
 }
 
-func (s *RetrospectiveService) GetByIncidentId(ctx context.Context, incId uuid.UUID) (*ent.Retrospective, error) {
-	retro, retroErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(incId)).Only(ctx)
+func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
+	retro, retroErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
+	if retroErr == nil {
+		return retro, nil
+	} else if !ent.IsNotFound(retroErr) {
+		return nil, fmt.Errorf("querying retrospective: %w", retroErr)
+	}
+	// TODO: query based on incident severity?
+	retroType := retrospective.TypeFull
+	retro, retroErr = s.Create(ctx, ent.Retrospective{
+		Type:  retroType,
+		Edges: ent.RetrospectiveEdges{Incident: inc},
+	})
 	if retroErr != nil {
-		return nil, retroErr
+		return nil, fmt.Errorf("creating retro: %w", retroErr)
 	}
 	return retro, nil
 }

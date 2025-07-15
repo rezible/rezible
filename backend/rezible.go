@@ -317,7 +317,7 @@ type (
 	RetrospectiveService interface {
 		Create(context.Context, ent.Retrospective) (*ent.Retrospective, error)
 		GetById(context.Context, uuid.UUID) (*ent.Retrospective, error)
-		GetByIncidentId(context.Context, uuid.UUID) (*ent.Retrospective, error)
+		GetForIncident(context.Context, *ent.Incident) (*ent.Retrospective, error)
 
 		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
 		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)

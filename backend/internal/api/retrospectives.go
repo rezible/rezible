@@ -62,16 +62,18 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context, input *oapi.GetRetrospectiveForIncidentRequest) (*oapi.GetRetrospectiveForIncidentResponse, error) {
 	var resp oapi.GetRetrospectiveForIncidentResponse
 
-	incidentId := input.Id.UUID
+	var inc *ent.Incident
+	var incErr error
 	if input.Id.IsSlug {
-		var incErr error
-		incidentId, incErr = h.incidents.GetIdForSlug(ctx, input.Id.Slug)
-		if incErr != nil {
-			return nil, detailError("failed to get incident", incErr)
-		}
+		inc, incErr = h.incidents.GetBySlug(ctx, input.Id.Slug)
+	} else {
+		inc, incErr = h.incidents.GetByID(ctx, input.Id.UUID)
+	}
+	if incErr != nil {
+		return nil, detailError("failed to get incident", incErr)
 	}
 
-	retro, retroErr := h.retros.GetByIncidentId(ctx, incidentId)
+	retro, retroErr := h.retros.GetForIncident(ctx, inc)
 	if retroErr != nil {
 		return nil, detailError("failed to get retrospective", retroErr)
 	}
