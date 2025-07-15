@@ -6,12 +6,12 @@
 	import { setIncidentViewState, IncidentViewState } from "./viewState.svelte";
 	
 	import PageActions from "./PageActions.svelte";
-	import IncidentNavMenu from "./IncidentNavMenu.svelte";
-	import CreateRetrospectiveDialog from "./CreateRetrospectiveDialog.svelte";
 	import IncidentOverview from "./incident-overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "./incident-analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./incident-report/IncidentReport.svelte";
 	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
+	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import IncidentDetailsBar from "./IncidentDetailsBar.svelte";
 
 	type Props = {
 		incidentId: string;
@@ -34,30 +34,26 @@
 		href: `/incidents/${incidentId}/${view}`,
 	});
 
-	const isIncidentView = $derived(view === undefined);
-	const pageCrumbs = $derived<PageBreadcrumb[]>(
-		isIncidentView ? [incidentBreadcrumb] : [incidentBreadcrumb, retroBreadcrumb]
-	);
-	appShell.setPageBreadcrumbs(() => [{ label: "Incidents", href: "/incidents" }, ...pageCrumbs]);
+	appShell.setPageBreadcrumbs(() => [
+		{ label: "Incidents", href: "/incidents" }, 
+		incidentBreadcrumb,
+		...(view === undefined ? [] : [retroBreadcrumb])
+	]);
 	appShell.setPageActions(PageActions, true);
+
+	const tabs = $derived<Tab[]>([
+		{label: "Overview", path: "", component: IncidentOverview},
+		{label: "System Analysis", path: "analysis", component: IncidentAnalysis},
+		{label: "Report", path: "retrospective", component: IncidentReport},
+	]);
 </script>
 
-<div class="flex-1 min-h-0 flex flex-row gap-2 overflow-y-hidden">
-	<IncidentNavMenu {view} />
-
-	<div class="flex-1 min-h-0 overflow-y-auto p-2">
-		{#if view === undefined}
-			<IncidentOverview />
-		{:else if view === "analysis"}
-			<IncidentAnalysis />
-		{:else if view === "retrospective"}
-			<IncidentReport />
-		{/if}
-	</div>
-
-	<ContextSidebar />
-</div>
-
-{#if viewState.retrospectiveNeedsCreating}
-	<CreateRetrospectiveDialog {isIncidentView} />
-{/if}
+<TabbedViewContainer 
+	pathBase="/incidents/{incidentId}" 
+	infoBar={IncidentDetailsBar}
+	{tabs}
+>
+	{#snippet tabSidebar()}
+		<ContextSidebar />
+	{/snippet}
+</TabbedViewContainer>

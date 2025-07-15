@@ -4,7 +4,7 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 export class IncidentViewState {
-	incidentIdParam = $state<string>(null!);
+	private incidentIdParam = $state<string>(null!);
 
 	constructor(idParamFn: () => string) {
 		this.incidentIdParam = idParamFn();
@@ -15,7 +15,7 @@ export class IncidentViewState {
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
 
-	// TODO: derive from incident?
+	// TODO: get from incident?
 	timezone = $derived(getLocalTimeZone());
 
 	private retroQuery = createQuery(() => ({
@@ -24,17 +24,7 @@ export class IncidentViewState {
 	}));
 	retrospective = $derived(this.retroQuery.data?.data);
 	retrospectiveId = $derived(this.retrospective?.id);
-
 	systemAnalysisId = $derived(this.retrospective?.attributes.systemAnalysisId);
-
-	// TODO: properly check response
-	retrospectiveNeedsCreating = $derived(this.incidentQuery.isSuccess && this.retroQuery.isError);
-	createRetrospectiveDialogOpen = $state(false);
-
-	onRetrospectiveCreated(retro: Retrospective) {
-		this.retroQuery.refetch();
-		this.createRetrospectiveDialogOpen = false;
-	}
 }
 
 const incidentViewCtx = new Context<IncidentViewState>("incidentView");

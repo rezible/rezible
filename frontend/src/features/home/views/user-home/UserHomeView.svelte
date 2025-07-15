@@ -16,7 +16,7 @@
 		<div class="w-3/5 flex flex-col gap-2 min-h-0">
 			<UserBacklogBox />
 
-			<UserRelevantBox />
+			<!-- <UserRelevantBox /> -->
 		</div>
 	</div>
 </div>

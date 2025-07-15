@@ -3,6 +3,7 @@
 	import {
 		mdiAccountGroup,
 		mdiChartBox,
+		mdiDockLeft,
 		mdiFire,
 		mdiHome,
 		mdiPhoneRing,
@@ -10,7 +11,7 @@
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import Icon from "$components/icon/Icon.svelte";
-	import { Collapse } from "svelte-ux";
+	import { Button, Collapse } from "svelte-ux";
 	import { session } from "$lib/auth.svelte";
 	import OmniSearch from "./omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "./UserProfileMenu.svelte";
@@ -34,7 +35,7 @@
 	];
 
 	const currentPath = $derived(page.route.id);
-	const expandingHover = false;
+	let expanded = $state(true);
 
     const preloadHome = $derived(session.error ? "tap" : "hover");
 </script>
@@ -50,25 +51,29 @@
 				: "border-transparent hover:text-primary-content hover:border-primary/50 hover:bg-primary-900/50"
 		)}
 	>
-		<Icon data={r.icon} classes={{ root: expandingHover ? "group-hover:mr-3" : "mr-3" }} />
-		{r.label}
+		<Icon data={r.icon} classes={{ root: "" }} />
+		<span class={!expanded ? "hidden" : "pl-3"}>{r.label}</span>
 	</a>
 {/snippet}
 
 <aside
 	class={cls(
 		"h-full group flex flex-col overflow-hidden bg-surface-300 pb-2 pl-2",
-		expandingHover ? "w-fit hover:w-60" : "w-60"
+		expanded ? "w-60" : "w-fit"
 	)}
 >
-	<div class="h-16 flex items-center px-4">
+	<div class="h-16 flex items-center justify-between px-4">
 		<a href="/" class="text-2xl flex items-center" 
 			data-sveltekit-preload-data={preloadHome} 
 			data-sveltekit-preload-code={preloadHome}
 		>
 			<img src="/images/logo.svg" alt="logo" class="h-10 w-10 fill-neutral" />
-			<span class="pl-3 {expandingHover ? 'hidden group-hover:inline' : ''}">Rezible</span>
+			<span class={!expanded ? "hidden" : "pl-3"}>Rezible</span>
 		</a>
+
+		<!-- <Button icon={mdiDockLeft} iconOnly size="sm" classes={{root: "ml-2 text-surface-content/40"}} 
+			on:click={() => {expanded = !expanded}} 
+		/> -->
 	</div>
 
 	<div class="overflow-y-auto flex flex-col flex-1 min-h-0 justify-between">
@@ -82,9 +87,7 @@
 						>
 							<Icon
 								data={r.icon}
-								classes={{
-									root: expandingHover ? "group-hover:mr-3" : "mr-3",
-								}}
+								classes={{ root: "mr-3" }}
 							/>
 							{r.label}
 						</div>
@@ -101,11 +104,13 @@
 		</div>
 	</div>
 
-	<div class="my-2">
-		<OmniSearch />
-	</div>
+	{#if expanded}
+		<div class="my-2">
+			<OmniSearch />
+		</div>
 
-	<div class="">
-		<UserProfileMenu />
-	</div>
+		<div class="">
+			<UserProfileMenu />
+		</div>
+	{/if}
 </aside>

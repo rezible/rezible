@@ -14,32 +14,28 @@
 	const pageActionsProps = $derived.by(() => (propsFn()));
 </script>
 
-{#snippet breadcrumb(c: PageBreadcrumb, last: boolean)}
-	<span class="flex items-stretch gap-2">
-		{#if c.avatar}
-			<Avatar {...c.avatar} size={30} />
-		{/if}
+{#snippet breadcrumbs()}
+	<span class="w-fit self-bottom flex gap-2 items-end">
+		{#each pageBreadcrumbs as c, i}
+			{@const last = i === pageBreadcrumbs.length - 1}
+			{#if i > 0}<span class="text-surface-content/50">/</span>{/if}
+			<span class="flex items-stretch gap-2 text-surface-content/50 text-lg">
+				{#if c.avatar}
+					<span class="self-center"><Avatar {...c.avatar} size={24} /></span>
+				{/if}
 
-		{#if c.href}
-			<a href={c.href} class:text-3xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</a>
-		{:else}
-			<span class:text-3xl={last} class:text-surface-content={last}>{c.label ?? "loading"}</span>
-		{/if}
+				<svelte:element this={c.href ? "a" : "span"} href={c.href} class={{"text-2xl": last, "text-surface-content/80": last}}>
+					{c.label ?? ""}
+				</svelte:element>
+			</span>
+		{/each}
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 text-surface-content">
-	<!-- <div class="flex justify-between items-center h-11 border border-surface-content/10 rounded-md pl-2 pr-1"> -->
-	<div class="flex justify-between items-center h-11 rounded-md">
-		<div class="flex items-center gap-2">
-			<Button icon={mdiDockLeft} iconOnly size="sm" classes={{root: "text-surface-content/40"}} />
-
-			<span class="text-xl text-surface-content/50 w-fit self-bottom flex gap-1 items-end">
-				{#each pageBreadcrumbs as c, i}
-					{#if i > 0}<span>/</span>{/if}
-					{@render breadcrumb(c, i === pageBreadcrumbs.length - 1)}
-				{/each}
-			</span>
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-1 text-surface-content">
+	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80">
+		<div class="flex items-center gap-2 px-2">
+			{@render breadcrumbs()}
 		</div>
 
 		{#if pageActions}
@@ -49,7 +45,6 @@
 		{/if}
 	</div>
 
-	<!-- <div class="flex flex-col flex-1 min-h-0 overflow-auto p-2 border border-surface-content/10 rounded-md bg-surface-200"> -->
 	<div class="flex flex-col flex-1 min-h-0 overflow-auto">
 		{@render children()}
 	</div>

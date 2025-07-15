@@ -3,14 +3,13 @@
 
 	type Props = {
 		nav: Snippet;
-		navClosed?: boolean;
 		children: Snippet;
 	};
-	const { nav, navClosed, children }: Props = $props();
+	const { nav, children }: Props = $props();
 </script>
 
 <div class="flex gap-2 w-full h-full max-h-full">
-	<div class="flex flex-col min-h-0 gap-2 max-h-full overflow-hidden pl-1 w-72">
+	<div class="max-h-full overflow-hidden w-full max-w-md">
 		{@render nav()}
 	</div>
 

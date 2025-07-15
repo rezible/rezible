@@ -30,13 +30,15 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { debounce } from "$lib/utils.svelte";
 	import { cls } from "@layerstack/tailwind";
+	import type { Snippet } from "svelte";
 
 	type Props = {
 		filters: FilterOptions;
 		disabled?: DisabledFilters;
+		extra?: Snippet;
 		userRosters?: OncallRoster[];
 	};
-	let { filters = $bindable(), disabled, userRosters = [] }: Props = $props();
+	let { filters = $bindable(), disabled, extra, userRosters = [] }: Props = $props();
 
 	type AnnotationOption = "no" | "any" | "has";
 	const annoOptions: MenuOption<AnnotationOption>[] = [
@@ -175,4 +177,6 @@
 			</Button>
 		</Field>
 	{/if}
+
+	{@render extra?.()}
 </div>

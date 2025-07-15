@@ -11,6 +11,7 @@
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 	import { OncallEventsTableState, type DateRangeOption } from "./eventsTable.svelte";
 	import type { OncallAnnotation } from "$src/lib/api";
+	import { watch } from "runed";
 
 	const tableState = new OncallEventsTableState();
 
@@ -27,16 +28,20 @@
 		{label: "Last Month", value: "30d"}, 
 		{label: "Custom", value: "custom"},
 	];
+
+	watch(() => tableState.dateRangeOption, opt => {
+		if (opt === "custom" && !filtersVisible) filtersVisible = true;
+	})
 </script>
 
 <EventAnnotationDialog />
 
-<div class="w-full max-h-full overflow-y-auto border rounded-lg flex flex-col">
-	<Header title="Oncall Events" subheading="Operational events during these dates" classes={{root: "p-2 w-full", title: "text-xl"}}>
+<div class="w-full h-full overflow-y-auto border rounded-lg flex flex-col">
+	<Header title="Oncall Events" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
-				<Field label="Date Range" labelPlacement="top" dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
-					<ToggleGroup bind:value={tableState.dateRangeOption} variant="outline" inset classes={{root: "bg-surface-100"}}>
+				<Field dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
+					<ToggleGroup variant="outline" inset classes={{root: "bg-surface-100"}} bind:value={tableState.dateRangeOption}>
 						{#if !!tableState.activeShift}
 							<ToggleOption value="shift">Active Shift</ToggleOption>
 						{/if}
@@ -45,21 +50,6 @@
 							<ToggleOption value={opt.value}>{opt.label}</ToggleOption>
 						{/each}
 					</ToggleGroup>
-
-					{#if tableState.dateRangeOption === "custom"}
-						<DateRangeField
-							label=""
-							labelPlacement="top"
-							periodTypes={[PeriodType.Day]}
-							getPeriodTypePresets={() => []}
-							dense
-							classes={{
-								field: { root: "gap-0", container: "pl-0 py-[2px] flex items-center", prepend: "[&>span]:mr-2" },
-							}}
-							icon={mdiCalendarRange}
-							bind:value={() => tableState.dateRange, d => (tableState.customDateRangeValue = d)}
-						/>
-					{/if}
 				</Field>
 
 				<Button icon={mdiFilter} iconOnly 
@@ -73,11 +63,27 @@
 
 	{#if filtersVisible}
 		<div class="w-full p-2 pt-0">
-			<EventsFilters bind:filters={tableState.filters} />
+			<EventsFilters bind:filters={tableState.filters}>
+				{#snippet extra()}
+					{#if tableState.dateRangeOption === "custom"}
+						<DateRangeField
+							label="Custom Date Range"
+							periodTypes={[PeriodType.Day]}
+							getPeriodTypePresets={() => []}
+							dense
+							classes={{
+								field: { root: "gap-0", container: "pl-0 py-[2px] flex items-center", prepend: "[&>span]:mr-2" },
+							}}
+							icon={mdiCalendarRange}
+							bind:value={() => tableState.dateRange, d => (tableState.customDateRangeValue = d)}
+						/>
+					{/if}
+				{/snippet}
+			</EventsFilters>
 		</div>
 	{/if}
 
-	<div class="flex flex-col overflow-y-auto border-t">
+	<div class="flex-1 flex flex-col overflow-y-auto border-t">
 		{#if tableState.loading}
 			<LoadingIndicator />
 		{:else}

@@ -47,13 +47,4 @@
 			<span>loading...</span>
 		{/if}
 	</div>
-
-	<div class="flex flex-col gap-1">
-		<span class="text-surface-content/75">Debug</span>
-		<a href="/incidents/{viewState.incident?.attributes.slug === "test-incident" ? "test-incident-2" : "test-incident"}">
-			<div class="p-2 rounded border">
-				<span>other incident</span>
-			</div>
-		</a>
-	</div>
 </div>

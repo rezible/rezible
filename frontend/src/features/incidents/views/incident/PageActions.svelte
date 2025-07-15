@@ -11,7 +11,7 @@
 		<Icon data={mdiPresentationPlay} />
 	</Button>
 
-	<Button variant="fill-light" color="default">
+	<!-- <Button variant="fill-light" color="default">
 		Schedule Review Meeting
 		<Icon data={mdiCalendar} />
 	</Button>
@@ -19,5 +19,5 @@
 	<Button variant="fill-light" color="default">
 		More Actions
 		<Icon data={mdiChevronDown} />
-	</Button>
+	</Button> -->
 </div>

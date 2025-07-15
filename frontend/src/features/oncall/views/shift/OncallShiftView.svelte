@@ -22,7 +22,7 @@
 	const shiftBreadcrumb = $derived([{ label: viewState.shiftTitle, href: "/oncall/shifts/" + shiftId }]);
 	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/oncall/shifts/${shiftId}/handover`}] : []);
 
-	appShell.setPageActions(PageActions, true);
+	// appShell.setPageActions(PageActions, true);
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall", href: "/oncall" },
 		{ label: "Shifts", href: "/oncall/shifts" },

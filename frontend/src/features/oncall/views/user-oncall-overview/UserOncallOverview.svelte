@@ -6,18 +6,18 @@
 	import UserShiftsDisplay from "./UserShiftsDisplay.svelte";
 	import UserRostersList from "./UserRostersList.svelte";
 	import SplitPage from "$components/split-page/SplitPage.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import SectionHeader from "$src/components/section-header/SectionHeader.svelte";
 
 	const userOncallQuery = createQuery(() => getUserOncallInformationOptions());
 </script>
 
 <SplitPage>
 	{#snippet nav()}
-		<Header title="Rosters" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+		<SectionHeader title="Your Rosters">
 			{#snippet actions()}
 				<Button href="/oncall/rosters">View All</Button>
 			{/snippet}
-		</Header>
+		</SectionHeader>
 
 		<LoadingQueryWrapper query={userOncallQuery}>
 			{#snippet view(details: UserOncallInformation)}
@@ -26,13 +26,11 @@
 		</LoadingQueryWrapper>
 	{/snippet}
 
-	<Header title="Shifts" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
+	<SectionHeader title="Your Shifts">
 		{#snippet actions()}
-			<Button href="/oncall/shifts">
-				<span>View All</span>
-			</Button>
+			<Button href="/oncall/shifts">View All</Button>
 		{/snippet}
-	</Header>
+	</SectionHeader>
 
 	<LoadingQueryWrapper query={userOncallQuery}>
 		{#snippet view(info: UserOncallInformation)}
