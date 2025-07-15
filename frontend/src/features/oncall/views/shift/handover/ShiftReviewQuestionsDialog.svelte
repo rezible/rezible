@@ -15,7 +15,7 @@
 		// TODO: use correct query
 		...createOncallAnnotationMutation(),
 		onSuccess: () => {
-			goto("/oncall/shifts/" + shiftId);
+			goto("/shifts/" + shiftId);
 		},
 	}));
 

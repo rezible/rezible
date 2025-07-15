@@ -45,7 +45,7 @@
 
 		{#snippet shiftItem(shift: OncallShift)}
 			{@const start = parseAbsoluteToLocal(shift.attributes.startAt).toDate()}
-			<a href="/oncall/shifts/{shift.id}" class="block">
+			<a href="/shifts/{shift.id}" class="block">
 				<div
 					class="flex items-center gap-4 bg-surface-100 hover:bg-surface-content/10 p-3 rounded-lg justify-between border"
 					class:border-success-900={isActive(shift)}

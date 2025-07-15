@@ -32,7 +32,7 @@
 					{#each rosters as r (r.id)}
 						<UserRosterCard
 							title={r.attributes.name}
-							href="/oncall/rosters/{r.attributes.slug}"
+							href="/rosters/{r.attributes.slug}"
 							rosterId={r.id}
 						/>
 					{/each}
@@ -58,7 +58,7 @@
 			{#snippet view(rosters: OncallRoster[])}
 				<div class="min-h-0 flex flex-col gap-2 overflow-y-auto flex-1 px-2">
 					{#each rosters as r}
-						<a href="/oncall/rosters/{r.attributes.slug}">
+						<a href="/rosters/{r.attributes.slug}">
 							<ListItem title={r.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 								<svelte:fragment slot="avatar">
 									<Avatar kind="roster" size={32} id={r.id} />

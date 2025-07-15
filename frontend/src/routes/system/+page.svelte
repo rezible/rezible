@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Services" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "System" }]);
 </script>
+
+<span>system</span>

@@ -88,7 +88,7 @@
 					{:else}
 						{#each rosters as roster}
 							{@const attr = roster.attributes}
-							<a href="/oncall/rosters/{roster.id}" class="rounded-lg border bg-neutral p-2">
+							<a href="/rosters/{roster.id}" class="rounded-lg border bg-neutral p-2">
 								<div class="flex items-center gap-2">
 									<Avatar kind="roster" id={roster.id} />
 									<span class="text-lg">{attr.name}</span>

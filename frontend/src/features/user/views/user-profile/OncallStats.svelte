@@ -61,7 +61,7 @@
 {#snippet shiftListItem(shift: OncallShift)}
 	{@const roster = shift.attributes.roster}
 	{@const duration = formatShiftDuration(shift)}
-	<a href="/oncall/shifts/{shift.id}">
+	<a href="/shifts/{shift.id}">
 		<ListItem title={roster.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 			<svelte:fragment slot="avatar">
 				<Avatar kind="roster" size={32} id={roster.id} />

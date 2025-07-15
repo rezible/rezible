@@ -29,7 +29,7 @@
 
 	{#snippet actions()}
 		<div class="px-1 flex flex-row-reverse gap-2">
-			<Button href="/oncall/rosters/{roster.id}">
+			<Button href="/rosters/{roster.id}">
 				View
 				<Icon data={mdiArrowRight} />
 			</Button>

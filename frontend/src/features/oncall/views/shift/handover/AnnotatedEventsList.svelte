@@ -11,7 +11,7 @@
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import { useShiftViewState } from "../shiftViewState.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		handover: OncallShiftHandover;

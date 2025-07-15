@@ -129,7 +129,7 @@
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Recent Activity" classes={{root: "", title: "text-xl"}}>
 			{#snippet actions()}
-				<Button variant="fill-light" href={`/oncall/rosters/${rosterId}/activity`}>
+				<Button variant="fill-light" href={`/rosters/${rosterId}/activity`}>
 					View All
 					<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
 				</Button>
@@ -164,7 +164,7 @@
 							variant="fill"
 							color="neutral"
 							size="sm"
-							href={`/oncall/rosters/${rosterId}/backlog/${activity.id}`}
+							href={`/rosters/${rosterId}/backlog/${activity.id}`}
 						>
 							View
 						</Button>

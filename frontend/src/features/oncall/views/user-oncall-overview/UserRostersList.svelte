@@ -12,7 +12,7 @@
 </script>
 
 {#each rosters as roster (roster.id)}
-	<a href="/oncall/rosters/{roster.id}">
+	<a href="/rosters/{roster.id}">
 		<ListItem title={roster.attributes.name} classes={{ root: "hover:bg-secondary-900" }}>
 			<svelte:fragment slot="avatar">
 				<Avatar kind="roster" size={32} id={roster.id} />

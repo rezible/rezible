@@ -29,7 +29,7 @@
 	<div class="h-fit p-2 flex flex-col gap-2">
 		<Header title="Shifts" classes={{root: "", title: "text-xl"}}>
 			{#snippet actions()}
-				<Button variant="fill-light" href={`/oncall/rosters/${rosterId}/shifts`}>
+				<Button variant="fill-light" href={`/rosters/${rosterId}/shifts`}>
 					View All
 					<Icon data={mdiArrowRight} classes={{root: "ml-1 h-4 w-4"}} />
 				</Button>
@@ -76,7 +76,7 @@
 					<Button
 						variant="fill"
 						color={isActive ? "success" : "neutral"}
-						href={`/oncall/shifts/${shift.id}`}
+						href={`/shifts/${shift.id}`}
 					>
 						View
 					</Button>

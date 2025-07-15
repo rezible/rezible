@@ -1,13 +1,17 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import {
+	mdiAccountClock,
 		mdiAccountGroup,
+		mdiAlarm,
+		mdiAlarmLight,
 		mdiBookshelf,
 		mdiChartBox,
 		mdiDockLeft,
 		mdiFire,
 		mdiHome,
 		mdiPhoneRing,
+		mdiShield,
 		mdiVectorPolyline,
 		mdiVideo,
 	} from "@mdi/js";
@@ -28,12 +32,13 @@
 	const routes: SidebarNavItem[] = [
 		{ path: "/", route: "/(index)", label: "Home", icon: mdiHome },
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
-		{ path: "/oncall", label: "Oncall", icon: mdiPhoneRing },
-		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
-		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
-		{ path: "/services", label: "Services", icon: mdiVectorPolyline },
+		{ path: "/shifts", label: "Shifts", icon: mdiAccountClock },
+		{ path: "/rosters", label: "Rosters", icon: mdiShield },
 		{ path: "/playbooks", label: "Playbooks", icon: mdiBookshelf },
-		// { path: "/reports", label: "Reports", icon: mdiChartBox },
+		{ path: "/alerts", label: "Alerts", icon: mdiAlarmLight },
+		{ path: "/system", label: "System", icon: mdiVectorPolyline },
+		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
+		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
 	];
 
 	const currentPath = $derived(page.route.id);

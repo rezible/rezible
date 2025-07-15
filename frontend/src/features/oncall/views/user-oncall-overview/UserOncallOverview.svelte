@@ -6,7 +6,7 @@
 	import UserShiftsDisplay from "./UserShiftsDisplay.svelte";
 	import UserRostersList from "./UserRostersList.svelte";
 	import SplitPage from "$components/split-page/SplitPage.svelte";
-	import SectionHeader from "$src/components/section-header/SectionHeader.svelte";
+	import SectionHeader from "$components/section-header/SectionHeader.svelte";
 
 	const userOncallQuery = createQuery(() => getUserOncallInformationOptions());
 </script>
@@ -15,7 +15,7 @@
 	{#snippet nav()}
 		<SectionHeader title="Your Rosters">
 			{#snippet actions()}
-				<Button href="/oncall/rosters">View All</Button>
+				<Button href="/rosters">View All</Button>
 			{/snippet}
 		</SectionHeader>
 
@@ -28,7 +28,7 @@
 
 	<SectionHeader title="Your Shifts">
 		{#snippet actions()}
-			<Button href="/oncall/shifts">View All</Button>
+			<Button href="/shifts">View All</Button>
 		{/snippet}
 	</SectionHeader>
 

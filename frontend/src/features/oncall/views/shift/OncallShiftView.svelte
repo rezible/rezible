@@ -19,20 +19,20 @@
 	const viewState = new ShiftViewState(() => shiftId);
 	setShiftViewState(viewState);
 
-	const shiftBreadcrumb = $derived([{ label: viewState.shiftTitle, href: "/oncall/shifts/" + shiftId }]);
-	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/oncall/shifts/${shiftId}/handover`}] : []);
+	const shiftBreadcrumb = $derived([{ label: viewState.shiftTitle, href: "/shifts/" + shiftId }]);
+	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/shifts/${shiftId}/handover`}] : []);
 
 	// appShell.setPageActions(PageActions, true);
 	appShell.setPageBreadcrumbs(() => [
-		{ label: "Oncall", href: "/oncall" },
-		{ label: "Shifts", href: "/oncall/shifts" },
+		{ label: "Oncall", href: "/" },
+		{ label: "Shifts", href: "/shifts" },
 		...shiftBreadcrumb,
 		...handoverBreadcrumb,
 	]);
 </script>
 
 <TabbedViewContainer 
-	pathBase="/oncall/shifts/{shiftId}" 
+	pathBase="/shifts/{shiftId}" 
 	infoBar={ShiftDetailsBar}
 	tabs={[
 		{label: "Overview", path: "", component: ShiftOverview},

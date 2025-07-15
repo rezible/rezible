@@ -26,7 +26,7 @@
 				</div>
 			</a>
 
-			<a href="/oncall/rosters/{roster.id}" class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3">
+			<a href="/rosters/{roster.id}" class="flex items-center gap-2 bg-surface-100 rounded-lg hover:bg-accent-800/40 p-1 px-3">
 				<Avatar kind="roster" size={24} id={roster.id} />
 				<span class="text-lg">{roster.attributes.name}</span>
 			</a>

@@ -16,7 +16,7 @@
 
 <div class="flex gap-2 h-14 max-h-14 overflow-y-hidden justify-between pb-2">
 	{#if activeShift}
-		<a href="/oncall/shifts/{activeShift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
+		<a href="/shifts/{activeShift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
 			<div class="flex flex-col">
 				<span class="text-xs">Currently Oncall</span>
 				<div class="flex items-center align-middle gap-2">

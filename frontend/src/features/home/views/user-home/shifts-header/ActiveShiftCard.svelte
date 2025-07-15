@@ -51,7 +51,7 @@
 			<span class="text-surface-content/70 inline-flex gap-1 items-center whitespace-pre">
 				<span class="text-lg">{shift.attributes.role}</span>
 				<span class="ml-1 text-lg">for</span>
-				<Button size="sm" href="/oncall/rosters/{roster.attributes.slug}" classes={{ root: "p-1 py-0" }}>
+				<Button size="sm" href="/rosters/{roster.attributes.slug}" classes={{ root: "p-1 py-0" }}>
 					<span class="font-bold text-base text-lg">{roster.attributes.name}</span>
 					<div class="self-center ml-1">
 						<Avatar id={roster.id} kind="roster" size={16} />
@@ -61,7 +61,7 @@
 		{/snippet}
 		{#snippet actions()}
 			<div class="flex flex-col gap-2 px-2 py-0 justify-end">
-				<Button href="/oncall/shifts/{shift.id}" variant="fill" color={isUser ? "success" : "default"}>
+				<Button href="/shifts/{shift.id}" variant="fill" color={isUser ? "success" : "default"}>
 					View
 					<Icon data={mdiArrowRight} />
 				</Button>

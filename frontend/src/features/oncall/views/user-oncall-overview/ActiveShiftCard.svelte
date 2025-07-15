@@ -4,10 +4,10 @@
 
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
-	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";
-	import Header from "$src/components/header/Header.svelte";
-	import Card from "$src/components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
+	import Card from "$components/card/Card.svelte";
 
 	type Props = {
 		shift: OncallShift;
@@ -24,7 +24,7 @@
 	const isActive = $derived(!isUpcoming && !isFinished);
 </script>
 
-<a href="/oncall/shifts/{shift.id}" class="group w-96">
+<a href="/shifts/{shift.id}" class="group w-96">
 	<Card
 		classes={{
 			root: "bg-success-900/20 border-success-100/10 group-hover:bg-success-900/50 group-hover:border-success-100/50",

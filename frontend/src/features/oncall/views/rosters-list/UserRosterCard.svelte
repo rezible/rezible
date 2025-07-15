@@ -4,7 +4,7 @@
 	import { cls } from "@layerstack/tailwind";
 	import { page } from "$app/state";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	import Card from "$components/card/Card.svelte";
 
 	type Props = {

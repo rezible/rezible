@@ -17,14 +17,14 @@
 </script>
 
 <div class="flex gap-2">
-	<Button href="/oncall/shifts/{previousShiftId}">
+	<Button href="/shifts/{previousShiftId}">
 		<Icon data={mdiChevronLeft} />
 		<span class="">Previous Shift</span>
 	</Button>
 
 	<!-- {#if shift && isActiveShift && isSessionUser}
 		<Button
-			href="/oncall/shifts/{shift.id}/handover"
+			href="/shifts/{shift.id}/handover"
 			variant="fill"
 			color="secondary"
 		>
@@ -32,7 +32,7 @@
 		</Button>
 	{/if} -->
 
-	<Button href="/oncall/shifts/{nextShiftId}">
+	<Button href="/shifts/{nextShiftId}">
 		<span class="">Next Shift</span>
 		<Icon data={mdiChevronRight} />
 	</Button>
