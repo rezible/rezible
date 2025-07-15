@@ -19,26 +19,25 @@ export class IncidentCollaborationState {
 	error = $state<Error>();
 
 	constructor(retroIdFn: () => (string | undefined)) {
-		watch(retroIdFn, retroId => { this.connect(retroId) });
+		watch(retroIdFn, id => { this.connect(id) });
 		onMount(() => (() => { this.cleanup() }));
 	};
 
 	cleanup() {
 		// https://github.com/ueberdosis/hocuspocus/issues/845
-		// if (collab.provider && collab.provider.isConnected) {}
-		try {
-			this.documentName = undefined;
-			if (this.provider) {
+		if (this.provider) {
+			try {
 				if (this.provider.isConnected) this.provider.disconnect();
 				this.provider.destroy();
 				this.provider = undefined;
+			} catch (e) {
+				console.error("failed to disconnect collaboration provider ", e);
 			}
-			this.awareness = [];
-			this.connectionStatus = WebSocketStatus.Disconnected;
-			this.error = undefined;
-		} catch (e) {
-			console.error("failed to disconnect collaboration provider ", e);
 		}
+		this.documentName = undefined;
+		this.awareness = [];
+		this.connectionStatus = WebSocketStatus.Disconnected;
+		this.error = undefined;
 	};
 
 	private onAwarenessChange({ states }: onAwarenessChangeParameters) {
@@ -92,6 +91,6 @@ export class IncidentCollaborationState {
 	};
 }
 
-const collabCtx = new Context<IncidentCollaborationState>("incidentCollaboration");
-export const setIncidentCollaboration = (s: IncidentCollaborationState) => collabCtx.set(s);
-export const useIncidentCollaboration = () => collabCtx.get();
+const ctx = new Context<IncidentCollaborationState>("incidentCollaboration");
+export const setIncidentCollaboration = (s: IncidentCollaborationState) => ctx.set(s);
+export const useIncidentCollaboration = () => ctx.get();

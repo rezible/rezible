@@ -20,9 +20,9 @@ import (
 type oapiSecurity = []map[string][]string
 
 const (
-	securityMethodSessionCookie = "session-cookie"
-	securityMethodApiToken      = "api-token"
-	securityMethodSessionToken  = "session-token"
+	securityMethodSessionCookie    = "session-cookie"
+	securityMethodApiToken         = "api-token"
+	securityMethodAuthSessionToken = "session-token"
 
 	sessionCookieName = "rez_session"
 )
@@ -39,7 +39,7 @@ var (
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
 		},
-		securityMethodSessionToken: {
+		securityMethodAuthSessionToken: {
 			Type:         "http",
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
@@ -98,9 +98,9 @@ func GetRequestApiBearerToken(r *http.Request) (string, error) {
 }
 
 var securityMethodTokenFuncs = map[string]func(r *http.Request) (string, error){
-	securityMethodSessionCookie: GetRequestSessionCookieToken,
-	securityMethodApiToken:      GetRequestApiBearerToken,
-	securityMethodSessionToken:  GetRequestApiBearerToken,
+	securityMethodSessionCookie:    GetRequestSessionCookieToken,
+	securityMethodApiToken:         GetRequestApiBearerToken,
+	securityMethodAuthSessionToken: GetRequestApiBearerToken,
 }
 
 func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string, []string) {

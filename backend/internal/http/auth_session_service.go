@@ -140,6 +140,7 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	var redirectUrl string
 	var createSessionErr error
 
+	ctx := r.Context()
 	onUserSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
 		redirectUrl = redirect
 		expiry := expiresAt
@@ -147,15 +148,16 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 			expiry = time.Now().Add(defaultSessionDuration)
 		}
 
-		userId, matchIdErr := s.matchUserIdFromProvider(r.Context(), provUser)
+		userId, matchIdErr := s.matchUserIdFromProvider(ctx, provUser)
 		if matchIdErr != nil {
 			createSessionErr = fmt.Errorf("failed to match user id from provider details: %w", matchIdErr)
-		} else {
-			if userId == uuid.Nil {
-				log.Debug().Msg("no internal user exists for auth provider supplied details")
-			}
-			createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, UserId: userId})
+			return
 		}
+		if userId == uuid.Nil {
+			// TODO: handle this
+			log.Debug().Msg("no internal user exists for auth provider supplied details")
+		}
+		createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, UserId: userId})
 	}
 
 	providerHandled := s.sessProvider.HandleAuthFlowRequest(w, r, onUserSessionCreated)
@@ -198,7 +200,6 @@ func (s *AuthSessionService) storeAuthSession(w http.ResponseWriter, r *http.Req
 	}
 
 	http.SetCookie(w, oapi.MakeSessionCookie(r, token, sess.ExpiresAt, 0))
-
 	return nil
 }
 

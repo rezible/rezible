@@ -60,7 +60,7 @@ var VerifyDocumentEditorSession = huma.Operation{
 	Tags:        documentsTags,
 	Errors:      errorCodes(),
 	Security: []map[string][]string{
-		{"auth-session-token": {}},
+		{securityMethodAuthSessionToken: {}},
 	},
 }
 

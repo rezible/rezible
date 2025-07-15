@@ -34,18 +34,19 @@
 		href: `/incidents/${incidentId}/${view}`,
 	});
 
+	const isIncidentView = $derived(view === undefined);
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Incidents", href: "/incidents" }, 
 		incidentBreadcrumb,
-		...(view === undefined ? [] : [retroBreadcrumb])
+		...(isIncidentView ? [] : [retroBreadcrumb])
 	]);
 	appShell.setPageActions(PageActions, true);
 
-	const tabs = $derived<Tab[]>([
+	const tabs: Tab[] = [
 		{label: "Overview", path: "", component: IncidentOverview},
 		{label: "System Analysis", path: "analysis", component: IncidentAnalysis},
 		{label: "Report", path: "retrospective", component: IncidentReport},
-	]);
+	];
 </script>
 
 <TabbedViewContainer 

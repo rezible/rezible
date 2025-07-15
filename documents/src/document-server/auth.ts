@@ -46,9 +46,7 @@ export class SessionAuthentication implements Extension {
 	}
 
 	async verifyDocumentAuth(documentName: string, token: string) {
-		const reqBody = {
-			attributes: {documentName},
-		}
+		const reqBody = {attributes: {documentName}};
 		const res = await fetch(this.config.verifySessionUrl, {
 			method: "POST",
 			headers: [["Authorization", `Bearer ${token}`]],
@@ -56,6 +54,7 @@ export class SessionAuthentication implements Extension {
 		});
 
 		if (!res.ok || res.status != 200) {
+            console.log("err", res);
 			console.log("error status", res.status);
 			throw new Error("Authentication Failed");
 		}

@@ -9,37 +9,36 @@
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$components/header/Header.svelte";
 
-	const collaboration = useIncidentCollaboration();
+	const collab = useIncidentCollaboration();
 
-	const connected = $derived(collaboration.connectionStatus === WebSocketStatus.Connected);
-	const connecting = $derived(collaboration.connectionStatus === WebSocketStatus.Connecting);
+	const ctxColor = $derived.by(() => {
+		if (collab.error) return "fill-danger";
+		switch (collab.connectionStatus) {
+			case WebSocketStatus.Connecting: return "fill-default";
+			case WebSocketStatus.Connected: return "fill-success";
+			case WebSocketStatus.Disconnected: return "fill-warning";
+		}
+	})
 
 	let drawer = $state<undefined | "add-component">();
 
 	const drawerOpen = $derived(!!drawer);
 </script>
 
-<div class="w-64 border flex flex-col relative">
+<div class="w-64 border-l flex flex-col relative">
 	<!-- <div class="absolute w-full h-full bg-surface-300/20 z-1" class:hidden={!drawerOpen}></div> -->
 
 	<Header classes={{root: "p-2"}}>
 		{#snippet title()}
 			<span class="text-xl flex gap-1 items-center">
 				Context
-				<Icon
-					data={mdiCircleMedium}
-					classes={{
-						root: "opacity-70",
-						path: cls(connected ? "fill-success" : (connecting ? "fill-warning" : "fill-default")),
-					}}
-				/>
+				<Icon data={mdiCircleMedium} classes={{root: "opacity-70", path: ctxColor}} />
 			</span>
 		{/snippet}
-		{#snippet actions()}
-			<Button 
-				iconOnly icon={drawerOpen ? mdiChevronLeft : mdiChevronRight}
-				on:click={() => (drawer = (!!drawer ? undefined : "add-component"))}
-			/>
+		{#snippet subheading()}
+			{#if collab.error}
+				<span class="text-danger-300">Connection Error: {collab.error.message}</span>
+			{/if}
 		{/snippet}
 	</Header>
 
