@@ -2,16 +2,18 @@
 	import { page } from "$app/state";
 	import {
 		mdiAccountGroup,
+		mdiBookshelf,
 		mdiChartBox,
 		mdiDockLeft,
 		mdiFire,
 		mdiHome,
 		mdiPhoneRing,
+		mdiVectorPolyline,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import Icon from "$components/icon/Icon.svelte";
-	import { Button, Collapse } from "svelte-ux";
+	import { Collapse } from "svelte-ux";
 	import { session } from "$lib/auth.svelte";
 	import OmniSearch from "./omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "./UserProfileMenu.svelte";
@@ -29,9 +31,9 @@
 		{ path: "/oncall", label: "Oncall", icon: mdiPhoneRing },
 		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
 		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
+		{ path: "/services", label: "Services", icon: mdiVectorPolyline },
+		{ path: "/playbooks", label: "Playbooks", icon: mdiBookshelf },
 		// { path: "/reports", label: "Reports", icon: mdiChartBox },
-		// { path: "/services", label: "Services", icon: mdiVectorPolyline },
-		// { path: "/wiki", label: "Wiki", icon: mdiBookshelf },
 	];
 
 	const currentPath = $derived(page.route.id);
