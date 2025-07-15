@@ -2,7 +2,7 @@
 	import { page } from "$app/state";
 	import PlaybookView from "$features/playbooks/views/playbook/PlaybookView.svelte";
 
-	const slug = $derived(page.params.slug);
+	const id = $derived(page.params.id);
 </script>
 
-<PlaybookView {slug} />
+<PlaybookView {id} />

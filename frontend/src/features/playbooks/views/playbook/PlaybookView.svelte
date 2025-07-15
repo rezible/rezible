@@ -1,8 +1,8 @@
 <script lang="ts">
 	type Props = {
-		slug: string;
+		id: string;
 	};
-	const { slug }: Props = $props();
+	const { id }: Props = $props();
 </script>
 
-<span>{slug}</span>
+<span>{id}</span>
