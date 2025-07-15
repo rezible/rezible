@@ -21,7 +21,7 @@
 		getEmptyForm,
 		type CreateMeetingFormData,
 	} from "$features/meetings/lib/meetings";
-	import UserPickerField from "$features/meetings/views/meetings-overview/UserPickerField.svelte";
+	import UserPickerField from "./UserPickerField.svelte";
 	import { Weekdays, type Weekday } from "$lib/scheduling";
 
 	type Props = {

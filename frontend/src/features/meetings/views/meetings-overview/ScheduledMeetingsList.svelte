@@ -25,12 +25,7 @@
 <div class="flex flex-col gap-2 min-h-0 h-full">
 	<Header title="Scheduled" subheading="" classes={{ title: "text-2xl", root: "h-11" }}>
 		{#snippet actions()}
-			<Button icon={mdiFilter} iconOnly>
-				<span class="flex gap-1 items-center">
-					Filters
-					<Icon data={mdiChevronDown} />
-				</span>
-			</Button>
+			<Button icon={mdiFilter} iconOnly />
 		{/snippet}
 	</Header>
 

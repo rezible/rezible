@@ -2,49 +2,41 @@
 	import type { MeetingSchedule, MeetingScheduleAttributes, MeetingScheduleTiming } from "$lib/api";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ScheduleSessions from "./ScheduleSessions.svelte";
+	import Header from "$src/components/header/Header.svelte";
+	import { Button } from "svelte-ux";
+	import { mdiPencil } from "@mdi/js";
 
 	type Props = { schedule: MeetingSchedule };
 	const { schedule }: Props = $props();
 
 	const attr = $derived(schedule.attributes);
 
-	const getRepeats = (s: MeetingScheduleTiming["repeat"], step: number) => {
+	const timing = $derived(attr.timing);
+	const repeats = $derived.by(() => {
 		let rep = "week";
-		if (s === "monthly") rep = "month";
-		if (s === "daily") rep = "day";
+		if (timing.repeat === "monthly") rep = "month";
+		if (timing.repeat === "daily") rep = "day";
 
-		if (step <= 1) return rep;
-		return `${step} ${rep}s`;
-	};
+		let label = `${timing.repeatStep} ${rep}s`;
+		if (timing.repeatStep <= 1) return rep;
+		if (timing.repeat === "monthly") label += ` on ${timing.repeatMonthlyOn}`;
+		return label;
+	});
+
+	const untilLabel = $derived.by(() => {
+		if (timing.indefinite) {
+			return `indefinitely`;
+		} else if (timing.untilNumRepetitions) {
+			return `until ${timing.untilNumRepetitions} repetitions`;
+		} else if (timing.untilDate) {
+			return `until ${timing.untilDate}`;
+		}
+	});
+
+	const scheduleLabel = $derived(repeats + (untilLabel ? `, ${untilLabel}` : ""));
 </script>
 
 <div class="grid grid-cols-3 gap-2 flex-1 min-h-0 overflow-y-hidden">
-	{@render scheduleAttributesView(attr)}
-
-	<div class="border p-2 flex flex-col gap-2 overflow-y-auto">
-		<ScheduleSessions {schedule} />
-	</div>
-
-	<div class="border p-2 overflow-y-auto">
-		<div class="h-32">meeting document template</div>
-	</div>
-</div>
-
-{#snippet timingView(t: MeetingScheduleTiming)}
-	<span>repeats every {getRepeats(t.repeat, t.repeatStep)}</span>
-	{#if t.repeat === "monthly"}
-		<span>on {t.repeatMonthlyOn}</span>
-	{/if}
-	{#if t.indefinite}
-		<span>indefinitely</span>
-	{:else if t.untilNumRepetitions}
-		<span>until {t.untilNumRepetitions} repetitions</span>
-	{:else if t.untilDate}
-		<span>until {t.untilDate}</span>
-	{/if}
-{/snippet}
-
-{#snippet scheduleAttributesView(attr: MeetingScheduleAttributes)}
 	<div class="flex flex-col gap-2">
 		<div class="border p-2 flex items-center gap-2">
 			<Avatar kind="team" id={attr.hostTeamId} />
@@ -52,14 +44,36 @@
 		</div>
 
 		<div class="border p-2 flex flex-col gap-2">
-			{@render timingView(attr.timing)}
+			<Header title="Schedule"></Header>
+			<span>repeats every {scheduleLabel}</span>
 		</div>
 
 		<div class="border p-2 flex flex-col gap-2">
-			<span class="text-lg">Invites</span>
+			<Header title="Attendees"></Header>
 			<span>{attr.attendees.private ? "Private" : "Open to everyone"}</span>
-			<span>Users: {JSON.stringify(attr.attendees.users)}</span>
-			<span>Teams: {JSON.stringify(attr.attendees.teams)}</span>
+			<div class="grid grid-cols-2">
+				<div class="flex flex-col gap-2">
+					{#each attr.attendees.teams as team}
+						<span>{team}</span>
+					{/each}
+
+					{#each attr.attendees.users as user}
+						<span>{user}</span>
+					{/each}
+				</div>
+			</div>
 		</div>
 	</div>
-{/snippet}
+
+	<div class="flex flex-col gap-2 overflow-y-auto">
+		<ScheduleSessions {schedule} />
+	</div>
+
+	<div class="border p-2 overflow-y-auto">
+		<Header title="Meeting Document Template">
+			{#snippet actions()}
+				<Button>Edit</Button>
+			{/snippet}
+		</Header>
+	</div>
+</div>

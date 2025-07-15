@@ -51,7 +51,7 @@
 			<Icon data={kindIcon.icon} classes={{ root: `rounded-full size-4 w-auto ${kindIcon.color}` }} />
 			<span class="text-xs uppercase font-normal text-surface-content/50">{attrs.kind}</span>
 		</div>
-		<span class="w-full leading-none truncate text-left">{attrs.title}</span>
+		<span class="w-full truncate text-left align-baseline">{attrs.title}</span>
 	</div>
 
 	<div class="flex w-full h-full items-center justify-end">

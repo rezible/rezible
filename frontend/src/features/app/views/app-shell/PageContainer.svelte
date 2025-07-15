@@ -28,7 +28,7 @@
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 px-1 text-surface-content">
+<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-2 text-surface-content">
 	<!-- <div class="flex justify-between items-center h-11 border border-surface-content/10 rounded-md pl-2 pr-1"> -->
 	<div class="flex justify-between items-center h-11 rounded-md">
 		<div class="flex items-center gap-2">

@@ -27,9 +27,7 @@
 
 <div class="border p-2 flex-1 min-h-0 overflow-y-auto">
 	<Header title="Past Sessions" classes={{ title: "text-lg" }}>
-		{#snippet actions()}
-			<Button>filter</Button>
-		{/snippet}
+		
 	</Header>
 	<LoadingQueryWrapper {query}>
 		{#snippet view(sessions: MeetingSession[])}
