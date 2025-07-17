@@ -15,7 +15,9 @@ export class UserOncallInformationState {
 	infoQuery = createQuery(() => ({...this.infoQueryOptions, enabled: !!session.user}));
 	current = $derived(this.infoQuery.data?.data);
 
-	rosterIds = $derived(this.current?.rosters.map(r => r.id) ?? []);
+	rosters = $derived(this.current?.rosters ?? []);
+	rosterIds = $derived(this.rosters.map(r => r.id));
+
 	activeShifts = $derived(this.current?.activeShifts ?? []);
 
 	loaded = $derived(this.infoQuery.isFetched);

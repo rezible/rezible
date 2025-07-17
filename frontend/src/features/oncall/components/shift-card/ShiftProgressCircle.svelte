@@ -1,9 +1,8 @@
 <script lang="ts">
 	import type { OncallShift } from "$lib/api";
-	import { mdiCircleMedium } from "@mdi/js";
-	import { formatDistance } from "date-fns";
+	import { formatDistanceToNow } from "date-fns";
 	import { Tooltip, ProgressCircle } from "svelte-ux";
-	import Icon from "$components/icon/Icon.svelte";
+	import { cls } from "@layerstack/tailwind";
 
 	type Props = {
 		shift: OncallShift;
@@ -15,19 +14,17 @@
 	const start = $derived(new Date(shift.attributes.startAt));
 	const end = $derived(new Date(shift.attributes.endAt));
 	const progress = $derived(100 * (Date.now() - start.valueOf()) / (end.valueOf() - start.valueOf()));
-	const timeLeft = $derived(formatDistance(end, Date.now()));
+	const timeLeft = $derived(formatDistanceToNow(end));
 </script>
 
 <Tooltip>
 	<ProgressCircle
 		{size}
+		width={size/4}
 		value={progress}
 		track
-		class="text-success [--track-color:theme(colors.success/10%)]"
+		class={cls("text-success [--track-color:theme(colors.success/10%)]")}
 	>
-		{#if pulse}
-			<Icon data={mdiCircleMedium} classes={{root: "animate-pulse"}} />
-		{/if}
 	</ProgressCircle>
 	<div
 		slot="title"

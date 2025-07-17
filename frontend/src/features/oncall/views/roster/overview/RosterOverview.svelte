@@ -13,10 +13,13 @@
 	import RosterShiftsColumn from "./RosterShiftsColumn.svelte";
 
 	const viewCtx = rosterViewCtx.get();
-	const rosterId = $derived(viewCtx.rosterId);
+	const rosterId = $derived(viewCtx.roster?.id);
 
 	let periodDays = $state(30);
-	const metricsQuery = createQuery(() => getOncallRosterMetricsOptions({ query: { rosterId } }));
+	const metricsQuery = createQuery(() => ({
+		...getOncallRosterMetricsOptions({ query: { rosterId } }),
+		enabled: !!rosterId,
+	}));
 	const metrics = $derived(metricsQuery.data?.data);
 </script>
 

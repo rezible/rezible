@@ -1,24 +1,30 @@
 <script lang="ts">
-	import { DateRangeField, TextField } from "svelte-ux";
+	import { DateRangeField, MultiSelectField, type MenuOption } from "svelte-ux";
 	import { PeriodType } from "@layerstack/utils";
 	import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
-	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
-	import { formatDistanceToNow, subDays } from "date-fns";
+	import { mdiCalendarRange } from "@mdi/js";
+	import { subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import Header from "$components/header/Header.svelte";
-	import Card from "$components/card/Card.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
-	import SearchInput from "$components/search-input/SearchInput.svelte";
+	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
+	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
+	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
+	import { watch } from "runed";
+	import PaginatedListBox from "$src/components/paginated-listbox/PaginatedListBox.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
-	let searchValue = $state<string>();
+	const kindOptions: MenuOption<string>[] = [
+		{ label: 'Active', value: "active" },
+		{ label: 'Past', value: "past" },
+		{ label: 'Upcoming', value: "upcoming", disabled: true },
+	];
+	let selectedKinds = $state<string[]>(kindOptions.map(o => o.value));
 
-	let queryParams = $state<ListOncallShiftsData["query"]>({});
-	const shiftsQuery = createQuery(() => listOncallShiftsOptions({query: queryParams}));
+	const pagination = createPaginationStore();
 
 	const today = new Date();
 	let dateRange = $state<DateRangeType>({
@@ -39,14 +45,55 @@
 	const updateDateRange = (newRange: DateRangeType) => {
 		console.log(newRange);
 	};
+
+	const onRosterSelected = (id?: string) => {
+		if (!id) return;
+	}
+
+	const formatShiftKindField = (opts: MenuOption<string>[]) => {
+		if (opts.length === 0) return "None";
+		if (opts.length === kindOptions.length) return "Any";
+		return opts.map((o) => o.label).join(", ");
+	};
+
+	const setShiftKind = (value?: string[]) => {
+		if (!value || value.length === 0) return;
+		selectedKinds = value;
+	};
+
+	const queryParams = $derived<ListOncallShiftsData["query"]>({});
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({query: queryParams}));
+	const queryPagination = $derived(shiftsQuery.data?.pagination);
+	watch(() => queryPagination, p => {
+		if (!p) return;
+		pagination.setTotal(p.total)
+	})
 </script>
 
 {#snippet filters()}
 	<div class="flex flex-col gap-2">
-		<SearchInput bind:value={searchValue} />
+		<MultiSelectField
+			label="Shift Kind"
+			labelPlacement="top"
+  			formatSelected={c => formatShiftKindField(c.options)}
+			options={kindOptions}
+			bind:value={() => selectedKinds, setShiftKind}
+			clearable={false}
+			mode="actions"
+			maintainOrder
+		>
+			<div slot="actions" let:selection class="flex items-center">
+				{#if !selection.selected || (Array.isArray(selection.selected) && selection.selected.length === 0)}
+					<div class="text-sm text-danger">Nothing selected</div>
+				{/if}
+			</div>
+		</MultiSelectField>
+
+		<RosterSelectField onSelected={onRosterSelected} />
 
 		<DateRangeField
-			dense
+			label="Date Range"
+			labelPlacement="top"
 			{periodTypes}
 			bind:value={dateRange}
 			on:change={(e) => {
@@ -58,27 +105,13 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<div class="flex flex-col gap-2 min-h-0 flex-1 overflow-auto">
+	<PaginatedListBox {pagination}>
 		<LoadingQueryWrapper query={shiftsQuery}>
 			{#snippet view(shifts: OncallShift[])}
 				{#each shifts as shift}
-					{@const attr = shift.attributes}
-					{@const roster = attr.roster.attributes}
-					<a href="/shifts/{shift.id}">
-						<Card classes={{ root: "w-full hover:bg-primary/30", headerContainer: "py-2" }}>
-							{#snippet header()}
-								<Header title={roster.name} subheading={attr.role} />
-							{/snippet}
-
-							{#snippet contents()}
-								<div class="pb-2">
-									<span>{formatDistanceToNow(attr.endAt)} ago</span>
-								</div>
-							{/snippet}
-						</Card>
-					</a>
+					<ShiftCard {shift} />
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</div>
+	</PaginatedListBox>
 </FilterPage>

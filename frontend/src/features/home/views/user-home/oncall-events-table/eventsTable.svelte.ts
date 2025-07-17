@@ -1,5 +1,4 @@
-import { listOncallAnnotationsOptions, listOncallEventsOptions, type ListOncallAnnotationsData, type ListOncallEventsData, type OncallAnnotation } from "$lib/api";
-import type { FilterOptions } from "$src/components/oncall-events/EventsFilters.svelte";
+import { listOncallEventsOptions, type ListOncallEventsData, type OncallEventAttributes } from "$lib/api";
 import { PeriodType } from "@layerstack/utils";
 import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
@@ -11,8 +10,22 @@ import { useUserOncallInformation } from "$lib/userOncall.svelte";
 
 export type DateRangeOption = {label: string, value: "shift" | "7d" | "30d" | "custom"};
 
+export const dateRangeOptions: DateRangeOption[] = [
+	{label: "Last 7 Days", value: "7d"},
+	{label: "Last Month", value: "30d"}, 
+	{label: "Custom", value: "custom"},
+];
+
 const last7Days = () => ({from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day});
 const lastMonth = () => ({from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day});
+
+export type EventKind = OncallEventAttributes["kind"];
+
+export type FilterOptions = {
+	rosterId?: string;
+	eventKinds?: EventKind[];
+	annotated?: boolean;
+};
 
 export class OncallEventsTableState {
 	private queryClient = useQueryClient();

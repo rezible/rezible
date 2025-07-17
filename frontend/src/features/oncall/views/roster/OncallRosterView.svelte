@@ -15,18 +15,18 @@
 	import RosterResources from "./resources/RosterResources.svelte";
 
 	type Props = {
-		rosterId: string;
+		id: string;
 		view: OncallRosterViewRouteParam;
 	};
-	const { rosterId, view }: Props = $props();
+	const { id, view }: Props = $props();
 
-	const viewState = new RosterViewState(() => rosterId);
+	const viewState = new RosterViewState(() => id);
 	rosterViewCtx.set(viewState);
 
 	const rosterBreadcrumb = $derived<PageBreadcrumb>({
 		label: viewState.rosterName ?? "",
-		href: `/rosters/${rosterId}`,
-		avatar: { kind: "roster", id: rosterId },
+		href: `/rosters/${id}`,
+		avatar: { kind: "roster", id },
 	});
 
 	appShell.setPageBreadcrumbs(() => [
@@ -37,7 +37,7 @@
 </script>
 
 <TabbedViewContainer
-	pathBase="/rosters/{rosterId}"
+	pathBase="/rosters/{id}"
 	infoBar={RosterDetailsBar}
 	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },

@@ -2,9 +2,13 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getUserOncallInformationOptions } from "$lib/api";
-	import ShiftProgressCircle from "$features/oncall/components/shift-progress-circle/ShiftProgressCircle.svelte";
+	import ShiftProgressCircle from "$src/features/oncall/components/shift-card/ShiftProgressCircle.svelte";
+	import { rosterViewCtx } from "./viewState.svelte";
 
-	const teamId = "test-team-2";
+	const rosterCtx = rosterViewCtx.get();
+
+	// TODO: include this
+	const teamId = $derived(rosterCtx.rosterId);
 
 	const shiftsQuery = createQuery(() => getUserOncallInformationOptions());
 	const shifts = $derived(shiftsQuery.data?.data);

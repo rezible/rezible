@@ -13,6 +13,7 @@
 	import { parseAbsoluteToLocal } from "@internationalized/date";
 	import Header from "$src/components/header/Header.svelte";
 	import { mdiArrowRight } from "@mdi/js";
+	import ShiftCard from "$src/features/oncall/components/shift-card/ShiftCard.svelte";
 
 	const viewCtx = rosterViewCtx.get();
 	const rosterId = $derived(viewCtx.rosterId);
@@ -37,55 +38,9 @@
 		</Header>
 	</div>
 
-	<div class="flex-1 flex flex-col px-0 overflow-y-auto">
-		{#snippet shiftCard(shift: OncallShift, status: "previous" | "active" | "next")}
-			{@const user = shift.attributes.user}
-			{@const isActive = status === "active"}
-			<div
-				class={cls(
-					"border-y p-4 flex items-center justify-between gap-2 min-w-72",
-					isActive
-						? "border-success-900 bg-success-900/10"
-						: "border-neutral-content/10 bg-neutral-900/30"
-				)}
-			>
-				<div class="flex flex-col gap-2">
-					<div class="flex items-center gap-2">
-						<Avatar id={user.id} kind="user" size={30} />
-						<span class="text-lg">{user.attributes.name}</span>
-					</div>
-
-					{#if status === "previous"}
-						<span
-							>Ended {formatDistanceToNow(
-								parseAbsoluteToLocal(shift.attributes.endAt).toDate()
-							)} ago</span
-						>
-					{:else if status === "active"}
-						<span>Active Now</span>
-					{:else}
-						<span
-							>Starts in {formatDistanceToNow(
-								parseAbsoluteToLocal(shift.attributes.startAt).toDate()
-							)}</span
-						>
-					{/if}
-				</div>
-
-				<div class="flex self-center">
-					<Button
-						variant="fill"
-						color={isActive ? "success" : "neutral"}
-						href={`/shifts/${shift.id}`}
-					>
-						View
-					</Button>
-				</div>
-			</div>
-		{/snippet}
-		
-		{#if nextShift}{@render shiftCard(nextShift, "next")}{/if}
-		{#if activeShift}{@render shiftCard(activeShift, "active")}{/if}
-		{#if prevShift}{@render shiftCard(prevShift, "previous")}{/if}
+	<div class="flex-1 flex flex-col gap-2 px-0 overflow-y-auto">
+		{#if nextShift}<ShiftCard shift={nextShift} hideRoster />{/if}
+		{#if activeShift}<ShiftCard shift={activeShift} hideRoster />{/if}
+		{#if prevShift}<ShiftCard shift={prevShift} hideRoster />{/if}
 	</div>
 </div>

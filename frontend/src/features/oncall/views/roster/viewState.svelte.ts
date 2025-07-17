@@ -3,8 +3,9 @@ import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 export class RosterViewState {
-	rosterId = $state<string>("");
+	rosterId = $state<string>(null!);
 	constructor(idFn: () => string) {
+		this.rosterId = idFn();
 		watch(idFn, id => {this.rosterId = id});
 	}
 

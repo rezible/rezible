@@ -1,17 +1,15 @@
 <script lang="ts">
-	import { Field, ToggleGroup, ToggleOption } from "svelte-ux";
+	import { Field, ToggleGroup, ToggleOption, Button, Pagination } from "svelte-ux";
 	import Header from "$components/header/Header.svelte";
-	import { Button, DateRangeField, Pagination } from "svelte-ux";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventsFilters from "$components/oncall-events/EventsFilters.svelte";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
-	import { PeriodType } from "@layerstack/utils";
-	import { mdiCalendarRange, mdiFilter } from "@mdi/js";
+	import { mdiFilter } from "@mdi/js";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-	import { OncallEventsTableState, type DateRangeOption } from "./eventsTable.svelte";
-	import type { OncallAnnotation } from "$src/lib/api";
+	import { dateRangeOptions, OncallEventsTableState } from "./eventsTable.svelte";
+	import type { OncallAnnotation } from "$lib/api";
 	import { watch } from "runed";
+	import EventsFilters from "./EventsFilters.svelte";
 
 	const tableState = new OncallEventsTableState();
 
@@ -22,12 +20,6 @@
 			if (updated) tableState.invalidateQuery();
 		},
 	}));
-
-	const dateRangeOptions: DateRangeOption[] = [
-		{label: "Last 7 Days", value: "7d"},
-		{label: "Last Month", value: "30d"}, 
-		{label: "Custom", value: "custom"},
-	];
 
 	watch(() => tableState.dateRangeOption, opt => {
 		if (opt === "custom" && !filtersVisible) filtersVisible = true;
@@ -63,23 +55,7 @@
 
 	{#if filtersVisible}
 		<div class="w-full p-2 pt-0">
-			<EventsFilters bind:filters={tableState.filters}>
-				{#snippet extra()}
-					{#if tableState.dateRangeOption === "custom"}
-						<DateRangeField
-							label="Custom Date Range"
-							periodTypes={[PeriodType.Day]}
-							getPeriodTypePresets={() => []}
-							dense
-							classes={{
-								field: { root: "gap-0", container: "pl-0 py-[2px] flex items-center", prepend: "[&>span]:mr-2" },
-							}}
-							icon={mdiCalendarRange}
-							bind:value={() => tableState.dateRange, d => (tableState.customDateRangeValue = d)}
-						/>
-					{/if}
-				{/snippet}
-			</EventsFilters>
+			<EventsFilters {tableState} />
 		</div>
 	{/if}
 

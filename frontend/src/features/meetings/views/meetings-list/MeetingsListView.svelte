@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Month } from "svelte-ux";
+	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { listMeetingSessionsOptions, type ListMeetingSessionsData, type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import FilterPage from "$src/components/filter-page/FilterPage.svelte";
+	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import MeetingsPageActions from "$features/meetings/components/meetings-page-actions/MeetingsPageActions.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
+	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 
 	appShell.setPageActions(MeetingsPageActions, true);
 
+	const pagination = createPaginationStore();
 	let searchValue = $state<string>();
 
 	let queryParams = $state<ListMeetingSessionsData["query"]>({});
@@ -28,7 +31,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<div class="flex flex-col min-h-0 h-full gap-2 overflow-y-auto">
+	<PaginatedListBox {pagination}>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(sessions: MeetingSession[])}
 				{#each sessions as session}
@@ -38,5 +41,5 @@
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
-	</div>
+	</PaginatedListBox>
 </FilterPage>

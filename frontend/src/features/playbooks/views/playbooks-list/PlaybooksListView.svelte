@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import FilterPage from '$components/filter-page/FilterPage.svelte';
+	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
+	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
 
+	const pagination = createPaginationStore();
 	let searchValue = $state<string>();
 </script>
 
@@ -13,7 +16,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<div class="flex flex-col gap-2 min-h-0 flex-1 overflow-auto">
-		playbooks
-	</div>
+	<PaginatedListBox {pagination}>
+		<span></span>
+	</PaginatedListBox>
 </FilterPage>
