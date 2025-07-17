@@ -1,24 +1,18 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import {
-	mdiAccountClock,
+		mdiAccountClock,
 		mdiAccountGroup,
-		mdiAlarm,
 		mdiAlarmLight,
 		mdiBookshelf,
-		mdiChartBox,
-		mdiDockLeft,
 		mdiFire,
 		mdiHome,
-		mdiPhoneRing,
 		mdiShape,
 		mdiShield,
-		mdiVectorPolyline,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
 	import Icon from "$components/icon/Icon.svelte";
-	import { Collapse } from "svelte-ux";
 	import { session } from "$lib/auth.svelte";
 	import OmniSearch from "./omni-search/OmniSearch.svelte";
 	import UserProfileMenu from "./UserProfileMenu.svelte";
@@ -40,7 +34,7 @@
 		{ path: "/alerts", label: "Alerts", icon: mdiAlarmLight },
 		{ path: "/rosters", label: "Rosters", icon: mdiShield },
 		{ path: "/shifts", label: "Shifts", icon: mdiAccountClock },
-		{ label: "System" },
+		{ label: "Library" },
 		{ path: "/playbooks", label: "Playbooks", icon: mdiBookshelf },
 		{ path: "/system", label: "Components", icon: mdiShape },
 		{ label: "People" },

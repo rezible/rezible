@@ -37,7 +37,7 @@
 <EventAnnotationDialog />
 
 <div class="w-full h-full overflow-y-auto border rounded-lg flex flex-col">
-	<Header title="Oncall Events" classes={{root: "p-2 w-full", title: "text-xl"}}>
+	<Header title="Events" subheading="Recent oncall events" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
 				<Field dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
