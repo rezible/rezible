@@ -26,7 +26,7 @@
 	const activeTab = $derived(props.tabs[activeIdx]);
 </script>
 
-<div class="flex-1 flex flex-col h-full max-h-full min-h-0 overflow-hidden">
+<div class="flex-1 flex flex-col h-full max-h-full min-h-0 overflow-auto">
 	<div class="w-full flex h-12 z-[1] justify-between">
 		<div class="flex gap-1 self-end">
 			{#each props.tabs as tab, i}
@@ -49,7 +49,7 @@
 		{/if}
 	</div>
 
-	<div class="flex-1 flex border border-surface-100 rounded-b-lg rounded-tr-lg bg-surface-200">
+	<div class="flex-1 flex border border-surface-100 rounded-b-lg rounded-tr-lg bg-surface-200 overflow-y-auto">
 		<div class="flex-1 min-h-0 max-h-full overflow-y-auto p-2">
 			<activeTab.component></activeTab.component>
 		</div>

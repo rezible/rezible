@@ -5,16 +5,20 @@
 	import { mdiCalendarRange, mdiMagnify } from "@mdi/js";
 	import { formatDistanceToNow, subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
-	import Header from "$src/components/header/Header.svelte";
-	import Card from "$src/components/card/Card.svelte";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import Header from "$components/header/Header.svelte";
+	import Card from "$components/card/Card.svelte";
+	import FilterPage from "$components/filter-page/FilterPage.svelte";
+	import SearchInput from "$components/search-input/SearchInput.svelte";
 
-	type Props = {};
-	const {}: Props = $props();
+	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
-	let params = $state<ListOncallShiftsData>();
-	const shiftsQuery = createQuery(() => listOncallShiftsOptions(params));
+	let searchValue = $state<string>();
+
+	let queryParams = $state<ListOncallShiftsData["query"]>({});
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({query: queryParams}));
 
 	const today = new Date();
 	let dateRange = $state<DateRangeType>({
@@ -37,8 +41,10 @@
 	};
 </script>
 
-<div class="flex flex-col gap-2 overflow-x-hidden">
-	<div class="grid grid-cols-2 gap-2">
+{#snippet filters()}
+	<div class="flex flex-col gap-2">
+		<SearchInput bind:value={searchValue} />
+
 		<DateRangeField
 			dense
 			{periodTypes}
@@ -48,38 +54,31 @@
 			}}
 			icon={mdiCalendarRange}
 		/>
-
-		<TextField
-			label="Search"
-			dense
-			on:change={(e) => console.log(e.detail)}
-			debounceChange
-			iconRight={mdiMagnify}
-			labelPlacement="float"
-		/>
 	</div>
+{/snippet}
 
-	<div class="w-full border-b"></div>
-
-	<div class="flex flex-col gap-2 min-h-0 flex-1 overflow-auto p-1">
+<FilterPage {filters}>
+	<div class="flex flex-col gap-2 min-h-0 flex-1 overflow-auto">
 		<LoadingQueryWrapper query={shiftsQuery}>
 			{#snippet view(shifts: OncallShift[])}
 				{#each shifts as shift}
 					{@const attr = shift.attributes}
 					{@const roster = attr.roster.attributes}
-					<Card classes={{ root: "w-full", headerContainer: "py-2" }}>
-						{#snippet header()}
-							<Header title={roster.name} subheading={attr.role} />
-						{/snippet}
+					<a href="/shifts/{shift.id}">
+						<Card classes={{ root: "w-full hover:bg-primary/30", headerContainer: "py-2" }}>
+							{#snippet header()}
+								<Header title={roster.name} subheading={attr.role} />
+							{/snippet}
 
-						{#snippet contents()}
-							<div class="pb-2">
-								<span>{formatDistanceToNow(attr.endAt)} ago</span>
-							</div>
-						{/snippet}
-					</Card>
+							{#snippet contents()}
+								<div class="pb-2">
+									<span>{formatDistanceToNow(attr.endAt)} ago</span>
+								</div>
+							{/snippet}
+						</Card>
+					</a>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>
 	</div>
-</div>
+</FilterPage>

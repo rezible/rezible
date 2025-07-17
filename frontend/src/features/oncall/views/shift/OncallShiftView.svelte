@@ -5,7 +5,6 @@
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
 	import { setShiftViewState, ShiftViewState } from "./shiftViewState.svelte";
-	import PageActions from "./PageActions.svelte";
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
 	import ShiftHandover from "./handover/ShiftHandover.svelte";
@@ -22,10 +21,8 @@
 	const shiftBreadcrumb = $derived([{ label: viewState.shiftTitle, href: "/shifts/" + shiftId }]);
 	const handoverBreadcrumb = $derived(view === "handover" ? [{label: "Handover", href: `/shifts/${shiftId}/handover`}] : []);
 
-	// appShell.setPageActions(PageActions, true);
 	appShell.setPageBreadcrumbs(() => [
-		{ label: "Oncall", href: "/" },
-		{ label: "Shifts", href: "/shifts" },
+		{ label: "Oncall Shifts", href: "/shifts" },
 		...shiftBreadcrumb,
 		...handoverBreadcrumb,
 	]);

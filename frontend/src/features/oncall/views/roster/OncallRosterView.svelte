@@ -30,15 +30,14 @@
 	});
 
 	appShell.setPageBreadcrumbs(() => [
-		{ label: "Oncall", href: "/" },
-		{ label: "Rosters", href: "/rosters" },
+		{ label: "Oncall Rosters", href: "/rosters" },
 		rosterBreadcrumb,
 	]);
 	appShell.setPageActions(PageActions, true, () => ({ viewState }));
 </script>
 
 <TabbedViewContainer
-	pathBase="/oncall/{rosterId}"
+	pathBase="/rosters/{rosterId}"
 	infoBar={RosterDetailsBar}
 	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },

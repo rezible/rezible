@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SplitPage from "$components/split-page/SplitPage.svelte";
+	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import type { Snippet } from "svelte";
 	import SavedReportsNav from "./SavedReportsNav.svelte";
 	
@@ -9,7 +9,10 @@
 	const { children }: Props = $props();
 </script>
 
-<SplitPage>
-	{#snippet nav()}<SavedReportsNav />{/snippet}
+{#snippet filters()}
+	<SavedReportsNav />
+{/snippet}
+
+<FilterPage {filters}>
 	{@render children()}
-</SplitPage>
+</FilterPage>

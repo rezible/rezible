@@ -20,17 +20,13 @@
 <div class="antialiased flex h-dvh min-h-dvh w-dvw bg-surface-300 text-surface-content">
 	{#if session.user}
 		<Sidebar />
-
-		<main class="w-full p-2">
-			<PageContainer>
-				{@render children()}
-			</PageContainer>
-		</main>
-	{:else}
-		<main class="w-full p-2">
-			{@render children()}
-		</main>
 	{/if}
+
+	<main class="w-full h-full p-2">
+		<PageContainer>
+			{@render children()}
+		</PageContainer>
+	</main>
 </div>
 
 <Toaster />

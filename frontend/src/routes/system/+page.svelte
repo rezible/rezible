@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app/lib/appShellState.svelte";
-
-	appShell.setPageBreadcrumbs(() => [{ label: "System" }]);
+	import SystemComponentsListView from "$features/system/views/components-list/SystemComponentsListView.svelte";	
 </script>
 
-<span>system</span>
+<SystemComponentsListView />

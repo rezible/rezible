@@ -1,7 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app/lib/appShellState.svelte";
-
-	appShell.setPageBreadcrumbs(() => [{ label: "Alerts" }]);
+	import AlertsListView from "$features/alerts/views/alerts-list/AlertsListView.svelte";
 </script>
 
-<span>alerts</span>
+<AlertsListView />

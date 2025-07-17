@@ -1,9 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { appShell, type PageBreadcrumb } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { Button } from "svelte-ux";
-	import { mdiDockLeft } from "@mdi/js";
 
 	type Props = {children: Snippet};
 	const { children }: Props = $props();
@@ -32,7 +30,7 @@
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 overflow-hidden flex flex-col gap-1 text-surface-content">
+<div class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col gap-1 text-surface-content">
 	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80">
 		<div class="flex items-center gap-2 px-2">
 			{@render breadcrumbs()}
