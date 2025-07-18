@@ -13,6 +13,7 @@ import (
 type Handler struct {
 	*middlewareHandler
 
+	*alertsHandler
 	*authSessionsHandler
 	*documentsHandler
 	*environmentsHandler
@@ -32,6 +33,7 @@ type Handler struct {
 	*oncallHandler
 	*oncallEventsHandler
 	*oncallMetricsHandler
+	*playbooksHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*systemComponentsHandler
@@ -57,6 +59,7 @@ func NewHandler(
 	return &Handler{
 		middlewareHandler: newMiddlewareHandler(auth),
 
+		alertsHandler:             newAlertsHandler(db),
 		oncallMetricsHandler:      newOncallMetricsHandler(),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
@@ -76,6 +79,7 @@ func NewHandler(
 		meetingsHandler:           newMeetingsHandler(),
 		oncallHandler:             newOncallHandler(auth, users, incidents, oncall),
 		oncallEventsHandler:       newOncallEventsHandler(auth, users, oncall, incidents, oncallEvents),
+		playbooksHandler:          newPlaybooksHandler(db),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, cmp),
 		systemComponentsHandler:   newSystemComponentsHandler(db, cmp),

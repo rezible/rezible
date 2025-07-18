@@ -55,7 +55,7 @@ func TaskFromEnt(task *ent.Task) Task {
 	}
 }
 
-var tasksTags = []string{"Incident Tasks"}
+var tasksTags = []string{"Tasks"}
 
 // ops
 

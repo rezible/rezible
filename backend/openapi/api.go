@@ -41,8 +41,10 @@ type Handler interface {
 	DocumentsHandler
 	RetrospectivesHandler
 	TasksHandler
+	PlaybooksHandler
 	MeetingsHandler
 
+	AlertsHandler
 	OncallHandler
 	OncallEventsHandler
 
