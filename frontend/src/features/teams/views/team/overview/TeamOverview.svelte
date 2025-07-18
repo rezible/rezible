@@ -8,8 +8,10 @@
 	const slackChannel = slackChannelOptions[0].value;
 </script>
 
-<div class="flex flex-col gap-2">
-	<div class="flex flex-col gap-2 w-fit p-2">
+<div class="flex gap-2 p-2">
+	<div class="flex flex-col gap-2 w-fit border p-2">
+		<span class="uppercase font-semibold text-surface-content/90">Details</span>
+
 		<SelectField
 			label="Slack Channel"
 			labelPlacement="top"
@@ -21,9 +23,7 @@
 		/>
 	</div>
 
-	<div class="flex gap-2">
-		<TeamUsersTable />
+	<TeamUsersTable />
 
-		<TeamRostersTable />
-	</div>
+	<TeamRostersTable />
 </div>

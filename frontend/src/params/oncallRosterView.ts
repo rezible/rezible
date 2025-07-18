@@ -1,7 +1,7 @@
 import type { ParamMatcher } from "@sveltejs/kit";
 
-export type OncallRosterViewRouteParam = undefined | "metrics" | "schedule" | "members" | "backlog" | "resources";
-const params = new Set([undefined, "metrics", "schedule", "members", "backlog", "resources"]);
+export type OncallRosterViewRouteParam = undefined | "metrics" | "schedule" | "members" | "resources";
+const params = new Set([undefined, "metrics", "schedule", "members", "resources"]);
 
 export const convertOncallRosterViewParam = (param?: string): OncallRosterViewRouteParam => {
 	if (!params.has(param)) return undefined;

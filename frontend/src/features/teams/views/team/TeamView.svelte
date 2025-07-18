@@ -4,7 +4,7 @@
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import { setTeamViewState, TeamViewState } from "./viewState.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
-	import TeamDetailsBar from "./TeamDetailsBar.svelte";
+	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 
 	type Props = {
 		team: Team;
@@ -26,6 +26,7 @@
 
 	const tabs = $derived([
 		{label: "Overview", path: "", component: TeamOverview},
+		{label: "Backlog", path: "backlog", component: TeamBacklogView},
 	]);
 </script>
 

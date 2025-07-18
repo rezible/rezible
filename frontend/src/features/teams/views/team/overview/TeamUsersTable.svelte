@@ -1,84 +1,42 @@
 <script lang="ts">
 	import Avatar from "$src/components/avatar/Avatar.svelte";
-	import Card from "$src/components/card/Card.svelte";
-	import Header from "$src/components/header/Header.svelte";
-	import { listUsersOptions, type User } from "$src/lib/api";
-	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
-	import { Pagination, Table } from "svelte-ux";
+	import { listUsersOptions, type ListUsersData } from "$lib/api";
 	import { useTeamViewState } from "../viewState.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { tableCell, type ColumnDef } from "@layerstack/svelte-table";
-	import { fromStore } from "svelte/store";
-	import { watch } from "runed";
+	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import { Pagination } from "svelte-ux";
 
 	const viewState = useTeamViewState();
 	const teamId = $derived(viewState.teamId);
 
-	const columns: ColumnDef<User>[] = [
-		{
-			name: "avatar",
-			header: "",
-			classes: {th: "w-9"}
-		},
-		{
-			name: "name",
-			header: "",
-			value: data => data.attributes.name,
-		},
-		{
-			name: "actions",
-			header: "",
-			align: "right",
-		},
-	];
-
-	const paginationStore = createPaginationStore({ page: 1, perPage: 10, total: 0 });
-	const pagination = fromStore(paginationStore);
-
-	const usersQuery = createQuery(() => ({...listUsersOptions({ query: { teamId } }) }));
+	const paginator = new QueryPaginatorState();
+	
+	const params = $derived<ListUsersData["query"]>({
+		teamId,
+		limit: paginator.limit,
+		offset: paginator.offset,
+	})
+	const usersQuery = createQuery(() => listUsersOptions({ query: params }));
+	paginator.watchQuery(usersQuery);
 	const users = $derived(usersQuery.data?.data ?? []);
-	const numUsers = $derived(users.length);
-	watch(() => numUsers, total => {paginationStore.setTotal(total)});
-
-	const usersPage = $derived(users);
 </script>
 
-{#snippet usersTableView()}
-	<Table data={usersPage} {columns}>
-		<tbody slot="data" let:columns let:data let:getCellValue>
-			{#each data ?? [] as rowData, rowIndex}
-				<tr class="">
-					{#each columns as column (column.name)}
-						{@const value = getCellValue(column, rowData, rowIndex)}
+<div class="flex flex-col max-h-full max-w-xl border p-2">
+	<span class="uppercase font-semibold text-surface-content/90">Users</span>
 
-						<td use:tableCell={{ column, rowData, rowIndex, tableData: data }} class="w-fit">
-							{#if column.name === "avatar"}
-								<Avatar kind="user" size={24} id={rowData.id} />
-							{:else if column.name === "actions"}
-								<span>edit</span>
-							{:else}
-								{value}
-							{/if}
-						</td>
-					{/each}
-				</tr>
-			{/each}
-		</tbody>
-	</Table>
-	<Pagination
-		pagination={paginationStore}
-		perPageOptions={[5, 10, 25, 100]}
-		show={["perPage", "pagination", "prevPage", "nextPage"]}
-		classes={{
-			root: "border-t py-1 mt-2",
-			perPage: "flex-1 text-right",
-			pagination: "px-8",
-		}}
-	/>
-{/snippet}
+	<div class="flex flex-col gap-2 min-h-0 flex-0 overflow-auto py-1">
+		{#each users ?? [] as user (user.id)}
+			<a class="flex gap-2 items-center rounded border border-surface-content/10 p-2" href="/users/{user.id}">
+				<Avatar kind="user" size={20} id={user.id} />
+				<span>{user.attributes.name}</span>
+			</a>
+		{/each}
+	</div>
 
-<Card classes={{ root: "max-w-lg", headerContainer: "p-3" }} contents={usersTableView}>
-	{#snippet header()}
-		<Header title="Users" classes={{title: "text-xl"}} />
-	{/snippet}
-</Card>
+	<div class="flex justify-end">
+		<Pagination 
+			{...paginator.paginationProps}
+			hideSinglePage
+		/>
+	</div>
+</div>

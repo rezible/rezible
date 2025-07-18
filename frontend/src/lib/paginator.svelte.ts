@@ -20,6 +20,8 @@ export class QueryPaginatorState {
 	limit = $derived(this.pagState.current.perPage);
 	offset = $derived(Math.max(0, (this.page - 1) * this.limit));
 
+	queryParams = $derived({limit: this.limit, offset: this.offset});
+
 	watchQuery(query: PaginatedQuery<PaginatedData>) {
 		watch(() => query.data, d => {
 			if (!d) return;

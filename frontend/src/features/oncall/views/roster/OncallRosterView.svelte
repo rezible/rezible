@@ -11,7 +11,6 @@
 	import RosterOverview from "./overview/RosterOverview.svelte";
 	import RosterMembers from "./members/RosterMembers.svelte";
 	import RosterSchedule from "./schedule/RosterSchedule.svelte";
-	import RosterBacklog from "./backlog/RosterBacklog.svelte";
 	import RosterResources from "./resources/RosterResources.svelte";
 
 	type Props = {
@@ -43,7 +42,6 @@
 		{ label: "Overview", path: "", component: RosterOverview },
 		{ label: "Members", path: "members", component: RosterMembers },
 		{ label: "Schedule", path: "schedule", component: RosterSchedule },
-		{ label: "Task Backlog", path: "backlog", component: RosterBacklog },
 		{ label: "Resources", path: "resources", component: RosterResources },
 	]}
 />
