@@ -66,7 +66,7 @@ type (
 
 func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 	attr := OncallEventAttributes{
-		Kind:        e.Kind,
+		Kind:        e.Kind.String(),
 		Title:       e.Title,
 		Description: e.Description,
 		Timestamp:   e.Timestamp,

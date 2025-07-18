@@ -82,15 +82,15 @@ func (oeu *OncallEventUpdate) SetNillableTimestamp(t *time.Time) *OncallEventUpd
 }
 
 // SetKind sets the "kind" field.
-func (oeu *OncallEventUpdate) SetKind(s string) *OncallEventUpdate {
-	oeu.mutation.SetKind(s)
+func (oeu *OncallEventUpdate) SetKind(o oncallevent.Kind) *OncallEventUpdate {
+	oeu.mutation.SetKind(o)
 	return oeu
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (oeu *OncallEventUpdate) SetNillableKind(s *string) *OncallEventUpdate {
-	if s != nil {
-		oeu.SetKind(*s)
+func (oeu *OncallEventUpdate) SetNillableKind(o *oncallevent.Kind) *OncallEventUpdate {
+	if o != nil {
+		oeu.SetKind(*o)
 	}
 	return oeu
 }
@@ -241,6 +241,16 @@ func (oeu *OncallEventUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oeu *OncallEventUpdate) check() error {
+	if v, ok := oeu.mutation.Kind(); ok {
+		if err := oncallevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "OncallEvent.kind": %w`, err)}
+		}
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oeu *OncallEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallEventUpdate {
 	oeu.modifiers = append(oeu.modifiers, modifiers...)
@@ -248,6 +258,9 @@ func (oeu *OncallEventUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *O
 }
 
 func (oeu *OncallEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := oeu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallevent.Table, oncallevent.Columns, sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID))
 	if ps := oeu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -263,7 +276,7 @@ func (oeu *OncallEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(oncallevent.FieldTimestamp, field.TypeTime, value)
 	}
 	if value, ok := oeu.mutation.Kind(); ok {
-		_spec.SetField(oncallevent.FieldKind, field.TypeString, value)
+		_spec.SetField(oncallevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := oeu.mutation.Title(); ok {
 		_spec.SetField(oncallevent.FieldTitle, field.TypeString, value)
@@ -448,15 +461,15 @@ func (oeuo *OncallEventUpdateOne) SetNillableTimestamp(t *time.Time) *OncallEven
 }
 
 // SetKind sets the "kind" field.
-func (oeuo *OncallEventUpdateOne) SetKind(s string) *OncallEventUpdateOne {
-	oeuo.mutation.SetKind(s)
+func (oeuo *OncallEventUpdateOne) SetKind(o oncallevent.Kind) *OncallEventUpdateOne {
+	oeuo.mutation.SetKind(o)
 	return oeuo
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (oeuo *OncallEventUpdateOne) SetNillableKind(s *string) *OncallEventUpdateOne {
-	if s != nil {
-		oeuo.SetKind(*s)
+func (oeuo *OncallEventUpdateOne) SetNillableKind(o *oncallevent.Kind) *OncallEventUpdateOne {
+	if o != nil {
+		oeuo.SetKind(*o)
 	}
 	return oeuo
 }
@@ -620,6 +633,16 @@ func (oeuo *OncallEventUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oeuo *OncallEventUpdateOne) check() error {
+	if v, ok := oeuo.mutation.Kind(); ok {
+		if err := oncallevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "OncallEvent.kind": %w`, err)}
+		}
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oeuo *OncallEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallEventUpdateOne {
 	oeuo.modifiers = append(oeuo.modifiers, modifiers...)
@@ -627,6 +650,9 @@ func (oeuo *OncallEventUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)
 }
 
 func (oeuo *OncallEventUpdateOne) sqlSave(ctx context.Context) (_node *OncallEvent, err error) {
+	if err := oeuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallevent.Table, oncallevent.Columns, sqlgraph.NewFieldSpec(oncallevent.FieldID, field.TypeUUID))
 	id, ok := oeuo.mutation.ID()
 	if !ok {
@@ -659,7 +685,7 @@ func (oeuo *OncallEventUpdateOne) sqlSave(ctx context.Context) (_node *OncallEve
 		_spec.SetField(oncallevent.FieldTimestamp, field.TypeTime, value)
 	}
 	if value, ok := oeuo.mutation.Kind(); ok {
-		_spec.SetField(oncallevent.FieldKind, field.TypeString, value)
+		_spec.SetField(oncallevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := oeuo.mutation.Title(); ok {
 		_spec.SetField(oncallevent.FieldTitle, field.TypeString, value)

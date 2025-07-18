@@ -54,8 +54,8 @@ func (oec *OncallEventCreate) SetTimestamp(t time.Time) *OncallEventCreate {
 }
 
 // SetKind sets the "kind" field.
-func (oec *OncallEventCreate) SetKind(s string) *OncallEventCreate {
-	oec.mutation.SetKind(s)
+func (oec *OncallEventCreate) SetKind(o oncallevent.Kind) *OncallEventCreate {
+	oec.mutation.SetKind(o)
 	return oec
 }
 
@@ -182,6 +182,11 @@ func (oec *OncallEventCreate) check() error {
 	if _, ok := oec.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "OncallEvent.kind"`)}
 	}
+	if v, ok := oec.mutation.Kind(); ok {
+		if err := oncallevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "OncallEvent.kind": %w`, err)}
+		}
+	}
 	if _, ok := oec.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "OncallEvent.title"`)}
 	}
@@ -236,7 +241,7 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 		_node.Timestamp = value
 	}
 	if value, ok := oec.mutation.Kind(); ok {
-		_spec.SetField(oncallevent.FieldKind, field.TypeString, value)
+		_spec.SetField(oncallevent.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
 	}
 	if value, ok := oec.mutation.Title(); ok {
@@ -396,7 +401,7 @@ func (u *OncallEventUpsert) UpdateTimestamp() *OncallEventUpsert {
 }
 
 // SetKind sets the "kind" field.
-func (u *OncallEventUpsert) SetKind(v string) *OncallEventUpsert {
+func (u *OncallEventUpsert) SetKind(v oncallevent.Kind) *OncallEventUpsert {
 	u.Set(oncallevent.FieldKind, v)
 	return u
 }
@@ -541,7 +546,7 @@ func (u *OncallEventUpsertOne) UpdateTimestamp() *OncallEventUpsertOne {
 }
 
 // SetKind sets the "kind" field.
-func (u *OncallEventUpsertOne) SetKind(v string) *OncallEventUpsertOne {
+func (u *OncallEventUpsertOne) SetKind(v oncallevent.Kind) *OncallEventUpsertOne {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.SetKind(v)
 	})
@@ -861,7 +866,7 @@ func (u *OncallEventUpsertBulk) UpdateTimestamp() *OncallEventUpsertBulk {
 }
 
 // SetKind sets the "kind" field.
-func (u *OncallEventUpsertBulk) SetKind(v string) *OncallEventUpsertBulk {
+func (u *OncallEventUpsertBulk) SetKind(v oncallevent.Kind) *OncallEventUpsertBulk {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.SetKind(v)
 	})

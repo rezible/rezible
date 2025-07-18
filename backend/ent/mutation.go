@@ -20039,7 +20039,7 @@ type OncallEventMutation struct {
 	id                 *uuid.UUID
 	provider_id        *string
 	timestamp          *time.Time
-	kind               *string
+	kind               *oncallevent.Kind
 	title              *string
 	description        *string
 	source             *string
@@ -20282,12 +20282,12 @@ func (m *OncallEventMutation) ResetTimestamp() {
 }
 
 // SetKind sets the "kind" field.
-func (m *OncallEventMutation) SetKind(s string) {
-	m.kind = &s
+func (m *OncallEventMutation) SetKind(o oncallevent.Kind) {
+	m.kind = &o
 }
 
 // Kind returns the value of the "kind" field in the mutation.
-func (m *OncallEventMutation) Kind() (r string, exists bool) {
+func (m *OncallEventMutation) Kind() (r oncallevent.Kind, exists bool) {
 	v := m.kind
 	if v == nil {
 		return
@@ -20298,7 +20298,7 @@ func (m *OncallEventMutation) Kind() (r string, exists bool) {
 // OldKind returns the old "kind" field's value of the OncallEvent entity.
 // If the OncallEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallEventMutation) OldKind(ctx context.Context) (v string, err error) {
+func (m *OncallEventMutation) OldKind(ctx context.Context) (v oncallevent.Kind, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
@@ -20677,7 +20677,7 @@ func (m *OncallEventMutation) SetField(name string, value ent.Value) error {
 		m.SetTimestamp(v)
 		return nil
 	case oncallevent.FieldKind:
-		v, ok := value.(string)
+		v, ok := value.(oncallevent.Kind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

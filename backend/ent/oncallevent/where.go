@@ -71,11 +71,6 @@ func Timestamp(v time.Time) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldTimestamp, v))
 }
 
-// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
-func Kind(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldEQ(FieldKind, v))
-}
-
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldTitle, v))
@@ -227,68 +222,23 @@ func TimestampLTE(v time.Time) predicate.OncallEvent {
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v string) predicate.OncallEvent {
+func KindEQ(v Kind) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldKind, v))
 }
 
 // KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v string) predicate.OncallEvent {
+func KindNEQ(v Kind) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldNEQ(FieldKind, v))
 }
 
 // KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...string) predicate.OncallEvent {
+func KindIn(vs ...Kind) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldIn(FieldKind, vs...))
 }
 
 // KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...string) predicate.OncallEvent {
+func KindNotIn(vs ...Kind) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldNotIn(FieldKind, vs...))
-}
-
-// KindGT applies the GT predicate on the "kind" field.
-func KindGT(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldGT(FieldKind, v))
-}
-
-// KindGTE applies the GTE predicate on the "kind" field.
-func KindGTE(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldGTE(FieldKind, v))
-}
-
-// KindLT applies the LT predicate on the "kind" field.
-func KindLT(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldLT(FieldKind, v))
-}
-
-// KindLTE applies the LTE predicate on the "kind" field.
-func KindLTE(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldLTE(FieldKind, v))
-}
-
-// KindContains applies the Contains predicate on the "kind" field.
-func KindContains(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldContains(FieldKind, v))
-}
-
-// KindHasPrefix applies the HasPrefix predicate on the "kind" field.
-func KindHasPrefix(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldHasPrefix(FieldKind, v))
-}
-
-// KindHasSuffix applies the HasSuffix predicate on the "kind" field.
-func KindHasSuffix(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldHasSuffix(FieldKind, v))
-}
-
-// KindEqualFold applies the EqualFold predicate on the "kind" field.
-func KindEqualFold(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldEqualFold(FieldKind, v))
-}
-
-// KindContainsFold applies the ContainsFold predicate on the "kind" field.
-func KindContainsFold(v string) predicate.OncallEvent {
-	return predicate.OncallEvent(sql.FieldContainsFold(FieldKind, v))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.

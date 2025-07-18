@@ -626,7 +626,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "timestamp", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"alert", "page", "message", "other"}},
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},

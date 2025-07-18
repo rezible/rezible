@@ -3,6 +3,7 @@ package fakeprovider
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rs/zerolog/log"
 	"iter"
 	"math/rand"
@@ -129,7 +130,7 @@ func makeFakeDayAlertEvent(date time.Time) *ent.OncallEvent {
 			hour, minute, 0, 0, date.Location(),
 		),
 		Source:      "fake",
-		Kind:        "alert",
+		Kind:        oncallevent.KindAlert,
 		Title:       alert.Title,
 		Description: alert.Description,
 	}

@@ -27,7 +27,7 @@ type OncallEvent struct {
 	// Timestamp holds the value of the "timestamp" field.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Kind holds the value of the "kind" field.
-	Kind string `json:"kind,omitempty"`
+	Kind oncallevent.Kind `json:"kind,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
@@ -141,7 +141,7 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				oe.Kind = value.String
+				oe.Kind = oncallevent.Kind(value.String)
 			}
 		case oncallevent.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -229,7 +229,7 @@ func (oe *OncallEvent) String() string {
 	builder.WriteString(oe.Timestamp.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(oe.Kind)
+	builder.WriteString(fmt.Sprintf("%v", oe.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(oe.Title)
