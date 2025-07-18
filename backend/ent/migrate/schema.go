@@ -8,6 +8,18 @@ import (
 )
 
 var (
+	// AlertsColumns holds the columns for the "alerts" table.
+	AlertsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString},
+		{Name: "provider_id", Type: field.TypeString},
+	}
+	// AlertsTable holds the schema information for the "alerts" table.
+	AlertsTable = &schema.Table{
+		Name:       "alerts",
+		Columns:    AlertsColumns,
+		PrimaryKey: []*schema.Column{AlertsColumns[0]},
+	}
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -619,6 +631,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
 		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "oncall_event_alert", Type: field.TypeUUID, Nullable: true},
 	}
 	// OncallEventsTable holds the schema information for the "oncall_events" table.
 	OncallEventsTable = &schema.Table{
@@ -630,6 +643,12 @@ var (
 				Symbol:     "oncall_events_oncall_rosters_roster",
 				Columns:    []*schema.Column{OncallEventsColumns[7]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "oncall_events_alerts_alert",
+				Columns:    []*schema.Column{OncallEventsColumns[8]},
+				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -1789,6 +1808,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AlertsTable,
 		EnvironmentsTable,
 		FunctionalitiesTable,
 		IncidentsTable,
@@ -1895,6 +1915,7 @@ func init() {
 	OncallAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
 	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable
 	OncallEventsTable.ForeignKeys[0].RefTable = OncallRostersTable
+	OncallEventsTable.ForeignKeys[1].RefTable = AlertsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable

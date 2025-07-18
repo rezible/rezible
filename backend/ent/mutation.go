@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -80,6 +81,7 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
+	TypeAlert                            = "Alert"
 	TypeEnvironment                      = "Environment"
 	TypeFunctionality                    = "Functionality"
 	TypeIncident                         = "Incident"
@@ -137,6 +139,485 @@ const (
 	TypeTicket                           = "Ticket"
 	TypeUser                             = "User"
 )
+
+// AlertMutation represents an operation that mutates the Alert nodes in the graph.
+type AlertMutation struct {
+	config
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	title            *string
+	provider_id      *string
+	clearedFields    map[string]struct{}
+	instances        map[uuid.UUID]struct{}
+	removedinstances map[uuid.UUID]struct{}
+	clearedinstances bool
+	done             bool
+	oldValue         func(context.Context) (*Alert, error)
+	predicates       []predicate.Alert
+}
+
+var _ ent.Mutation = (*AlertMutation)(nil)
+
+// alertOption allows management of the mutation configuration using functional options.
+type alertOption func(*AlertMutation)
+
+// newAlertMutation creates new mutation for the Alert entity.
+func newAlertMutation(c config, op Op, opts ...alertOption) *AlertMutation {
+	m := &AlertMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAlert,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAlertID sets the ID field of the mutation.
+func withAlertID(id uuid.UUID) alertOption {
+	return func(m *AlertMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Alert
+		)
+		m.oldValue = func(ctx context.Context) (*Alert, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Alert.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAlert sets the old Alert of the mutation.
+func withAlert(node *Alert) alertOption {
+	return func(m *AlertMutation) {
+		m.oldValue = func(context.Context) (*Alert, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AlertMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AlertMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Alert entities.
+func (m *AlertMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AlertMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AlertMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Alert.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *AlertMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *AlertMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Alert entity.
+// If the Alert object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *AlertMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *AlertMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *AlertMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the Alert entity.
+// If the Alert object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *AlertMutation) ResetProviderID() {
+	m.provider_id = nil
+}
+
+// AddInstanceIDs adds the "instances" edge to the OncallEvent entity by ids.
+func (m *AlertMutation) AddInstanceIDs(ids ...uuid.UUID) {
+	if m.instances == nil {
+		m.instances = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.instances[ids[i]] = struct{}{}
+	}
+}
+
+// ClearInstances clears the "instances" edge to the OncallEvent entity.
+func (m *AlertMutation) ClearInstances() {
+	m.clearedinstances = true
+}
+
+// InstancesCleared reports if the "instances" edge to the OncallEvent entity was cleared.
+func (m *AlertMutation) InstancesCleared() bool {
+	return m.clearedinstances
+}
+
+// RemoveInstanceIDs removes the "instances" edge to the OncallEvent entity by IDs.
+func (m *AlertMutation) RemoveInstanceIDs(ids ...uuid.UUID) {
+	if m.removedinstances == nil {
+		m.removedinstances = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.instances, ids[i])
+		m.removedinstances[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedInstances returns the removed IDs of the "instances" edge to the OncallEvent entity.
+func (m *AlertMutation) RemovedInstancesIDs() (ids []uuid.UUID) {
+	for id := range m.removedinstances {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// InstancesIDs returns the "instances" edge IDs in the mutation.
+func (m *AlertMutation) InstancesIDs() (ids []uuid.UUID) {
+	for id := range m.instances {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetInstances resets all changes to the "instances" edge.
+func (m *AlertMutation) ResetInstances() {
+	m.instances = nil
+	m.clearedinstances = false
+	m.removedinstances = nil
+}
+
+// Where appends a list predicates to the AlertMutation builder.
+func (m *AlertMutation) Where(ps ...predicate.Alert) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AlertMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AlertMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Alert, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AlertMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AlertMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Alert).
+func (m *AlertMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AlertMutation) Fields() []string {
+	fields := make([]string, 0, 2)
+	if m.title != nil {
+		fields = append(fields, alert.FieldTitle)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, alert.FieldProviderID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AlertMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case alert.FieldTitle:
+		return m.Title()
+	case alert.FieldProviderID:
+		return m.ProviderID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AlertMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case alert.FieldTitle:
+		return m.OldTitle(ctx)
+	case alert.FieldProviderID:
+		return m.OldProviderID(ctx)
+	}
+	return nil, fmt.Errorf("unknown Alert field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlertMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case alert.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case alert.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Alert field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AlertMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AlertMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlertMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Alert numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AlertMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AlertMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AlertMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Alert nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AlertMutation) ResetField(name string) error {
+	switch name {
+	case alert.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case alert.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	}
+	return fmt.Errorf("unknown Alert field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AlertMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.instances != nil {
+		edges = append(edges, alert.EdgeInstances)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AlertMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case alert.EdgeInstances:
+		ids := make([]ent.Value, 0, len(m.instances))
+		for id := range m.instances {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AlertMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedinstances != nil {
+		edges = append(edges, alert.EdgeInstances)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AlertMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case alert.EdgeInstances:
+		ids := make([]ent.Value, 0, len(m.removedinstances))
+		for id := range m.removedinstances {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AlertMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedinstances {
+		edges = append(edges, alert.EdgeInstances)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AlertMutation) EdgeCleared(name string) bool {
+	switch name {
+	case alert.EdgeInstances:
+		return m.clearedinstances
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AlertMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Alert unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AlertMutation) ResetEdge(name string) error {
+	switch name {
+	case alert.EdgeInstances:
+		m.ResetInstances()
+		return nil
+	}
+	return fmt.Errorf("unknown Alert edge %s", name)
+}
 
 // EnvironmentMutation represents an operation that mutates the Environment nodes in the graph.
 type EnvironmentMutation struct {
@@ -19480,6 +19961,8 @@ type OncallEventMutation struct {
 	clearedFields      map[string]struct{}
 	roster             *uuid.UUID
 	clearedroster      bool
+	alert              *uuid.UUID
+	clearedalert       bool
 	annotations        map[uuid.UUID]struct{}
 	removedannotations map[uuid.UUID]struct{}
 	clearedannotations bool
@@ -19884,6 +20367,45 @@ func (m *OncallEventMutation) ResetRoster() {
 	m.clearedroster = false
 }
 
+// SetAlertID sets the "alert" edge to the Alert entity by id.
+func (m *OncallEventMutation) SetAlertID(id uuid.UUID) {
+	m.alert = &id
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (m *OncallEventMutation) ClearAlert() {
+	m.clearedalert = true
+}
+
+// AlertCleared reports if the "alert" edge to the Alert entity was cleared.
+func (m *OncallEventMutation) AlertCleared() bool {
+	return m.clearedalert
+}
+
+// AlertID returns the "alert" edge ID in the mutation.
+func (m *OncallEventMutation) AlertID() (id uuid.UUID, exists bool) {
+	if m.alert != nil {
+		return *m.alert, true
+	}
+	return
+}
+
+// AlertIDs returns the "alert" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AlertID instead. It exists only for internal usage by the builders.
+func (m *OncallEventMutation) AlertIDs() (ids []uuid.UUID) {
+	if id := m.alert; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAlert resets all changes to the "alert" edge.
+func (m *OncallEventMutation) ResetAlert() {
+	m.alert = nil
+	m.clearedalert = false
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by ids.
 func (m *OncallEventMutation) AddAnnotationIDs(ids ...uuid.UUID) {
 	if m.annotations == nil {
@@ -20182,9 +20704,12 @@ func (m *OncallEventMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallEventMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.roster != nil {
 		edges = append(edges, oncallevent.EdgeRoster)
+	}
+	if m.alert != nil {
+		edges = append(edges, oncallevent.EdgeAlert)
 	}
 	if m.annotations != nil {
 		edges = append(edges, oncallevent.EdgeAnnotations)
@@ -20200,6 +20725,10 @@ func (m *OncallEventMutation) AddedIDs(name string) []ent.Value {
 		if id := m.roster; id != nil {
 			return []ent.Value{*id}
 		}
+	case oncallevent.EdgeAlert:
+		if id := m.alert; id != nil {
+			return []ent.Value{*id}
+		}
 	case oncallevent.EdgeAnnotations:
 		ids := make([]ent.Value, 0, len(m.annotations))
 		for id := range m.annotations {
@@ -20212,7 +20741,7 @@ func (m *OncallEventMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallEventMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.removedannotations != nil {
 		edges = append(edges, oncallevent.EdgeAnnotations)
 	}
@@ -20235,9 +20764,12 @@ func (m *OncallEventMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallEventMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
 	if m.clearedroster {
 		edges = append(edges, oncallevent.EdgeRoster)
+	}
+	if m.clearedalert {
+		edges = append(edges, oncallevent.EdgeAlert)
 	}
 	if m.clearedannotations {
 		edges = append(edges, oncallevent.EdgeAnnotations)
@@ -20251,6 +20783,8 @@ func (m *OncallEventMutation) EdgeCleared(name string) bool {
 	switch name {
 	case oncallevent.EdgeRoster:
 		return m.clearedroster
+	case oncallevent.EdgeAlert:
+		return m.clearedalert
 	case oncallevent.EdgeAnnotations:
 		return m.clearedannotations
 	}
@@ -20264,6 +20798,9 @@ func (m *OncallEventMutation) ClearEdge(name string) error {
 	case oncallevent.EdgeRoster:
 		m.ClearRoster()
 		return nil
+	case oncallevent.EdgeAlert:
+		m.ClearAlert()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallEvent unique edge %s", name)
 }
@@ -20274,6 +20811,9 @@ func (m *OncallEventMutation) ResetEdge(name string) error {
 	switch name {
 	case oncallevent.EdgeRoster:
 		m.ResetRoster()
+		return nil
+	case oncallevent.EdgeAlert:
+		m.ResetAlert()
 		return nil
 	case oncallevent.EdgeAnnotations:
 		m.ResetAnnotations()

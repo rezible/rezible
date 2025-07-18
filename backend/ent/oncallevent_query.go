@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -27,7 +28,9 @@ type OncallEventQuery struct {
 	inters          []Interceptor
 	predicates      []predicate.OncallEvent
 	withRoster      *OncallRosterQuery
+	withAlert       *AlertQuery
 	withAnnotations *OncallAnnotationQuery
+	withFKs         bool
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -80,6 +83,28 @@ func (oeq *OncallEventQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, selector),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.RosterTable, oncallevent.RosterColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAlert chains the current query on the "alert" edge.
+func (oeq *OncallEventQuery) QueryAlert() *AlertQuery {
+	query := (&AlertClient{config: oeq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, selector),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.AlertTable, oncallevent.AlertColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(oeq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,6 +327,7 @@ func (oeq *OncallEventQuery) Clone() *OncallEventQuery {
 		inters:          append([]Interceptor{}, oeq.inters...),
 		predicates:      append([]predicate.OncallEvent{}, oeq.predicates...),
 		withRoster:      oeq.withRoster.Clone(),
+		withAlert:       oeq.withAlert.Clone(),
 		withAnnotations: oeq.withAnnotations.Clone(),
 		// clone intermediate query.
 		sql:       oeq.sql.Clone(),
@@ -318,6 +344,17 @@ func (oeq *OncallEventQuery) WithRoster(opts ...func(*OncallRosterQuery)) *Oncal
 		opt(query)
 	}
 	oeq.withRoster = query
+	return oeq
+}
+
+// WithAlert tells the query-builder to eager-load the nodes that are connected to
+// the "alert" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeq *OncallEventQuery) WithAlert(opts ...func(*AlertQuery)) *OncallEventQuery {
+	query := (&AlertClient{config: oeq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeq.withAlert = query
 	return oeq
 }
 
@@ -409,12 +446,20 @@ func (oeq *OncallEventQuery) prepareQuery(ctx context.Context) error {
 func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallEvent, error) {
 	var (
 		nodes       = []*OncallEvent{}
+		withFKs     = oeq.withFKs
 		_spec       = oeq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
 			oeq.withRoster != nil,
+			oeq.withAlert != nil,
 			oeq.withAnnotations != nil,
 		}
 	)
+	if oeq.withAlert != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, oncallevent.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallEvent).scanValues(nil, columns)
 	}
@@ -439,6 +484,12 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if query := oeq.withRoster; query != nil {
 		if err := oeq.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallEvent, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := oeq.withAlert; query != nil {
+		if err := oeq.loadAlert(ctx, query, nodes, nil,
+			func(n *OncallEvent, e *Alert) { n.Edges.Alert = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -474,6 +525,38 @@ func (oeq *OncallEventQuery) loadRoster(ctx context.Context, query *OncallRoster
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "roster_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (oeq *OncallEventQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *Alert)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OncallEvent)
+	for i := range nodes {
+		if nodes[i].oncall_event_alert == nil {
+			continue
+		}
+		fk := *nodes[i].oncall_event_alert
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(alert.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "oncall_event_alert" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

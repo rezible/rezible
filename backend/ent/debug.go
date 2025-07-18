@@ -4,6 +4,14 @@ package ent
 
 import "entgo.io/ent/dialect"
 
+func (c *AlertClient) Debug() *AlertClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertClient{config: cfg}
+}
+
 func (c *EnvironmentClient) Debug() *EnvironmentClient {
 	if c.debug {
 		return c

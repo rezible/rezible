@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 )
@@ -35,19 +36,22 @@ type OncallEvent struct {
 	Source string `json:"source,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallEventQuery when eager-loading is set.
-	Edges        OncallEventEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges              OncallEventEdges `json:"edges"`
+	oncall_event_alert *uuid.UUID
+	selectValues       sql.SelectValues
 }
 
 // OncallEventEdges holds the relations/edges for other nodes in the graph.
 type OncallEventEdges struct {
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
+	// Alert holds the value of the alert edge.
+	Alert *Alert `json:"alert,omitempty"`
 	// Annotations holds the value of the annotations edge.
 	Annotations []*OncallAnnotation `json:"annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -61,10 +65,21 @@ func (e OncallEventEdges) RosterOrErr() (*OncallRoster, error) {
 	return nil, &NotLoadedError{edge: "roster"}
 }
 
+// AlertOrErr returns the Alert value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallEventEdges) AlertOrErr() (*Alert, error) {
+	if e.Alert != nil {
+		return e.Alert, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: alert.Label}
+	}
+	return nil, &NotLoadedError{edge: "alert"}
+}
+
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallEventEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -81,6 +96,8 @@ func (*OncallEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case oncallevent.FieldID, oncallevent.FieldRosterID:
 			values[i] = new(uuid.UUID)
+		case oncallevent.ForeignKeys[0]: // oncall_event_alert
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -144,6 +161,13 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				oe.Source = value.String
 			}
+		case oncallevent.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field oncall_event_alert", values[i])
+			} else if value.Valid {
+				oe.oncall_event_alert = new(uuid.UUID)
+				*oe.oncall_event_alert = *value.S.(*uuid.UUID)
+			}
 		default:
 			oe.selectValues.Set(columns[i], values[i])
 		}
@@ -160,6 +184,11 @@ func (oe *OncallEvent) Value(name string) (ent.Value, error) {
 // QueryRoster queries the "roster" edge of the OncallEvent entity.
 func (oe *OncallEvent) QueryRoster() *OncallRosterQuery {
 	return NewOncallEventClient(oe.config).QueryRoster(oe)
+}
+
+// QueryAlert queries the "alert" edge of the OncallEvent entity.
+func (oe *OncallEvent) QueryAlert() *AlertQuery {
+	return NewOncallEventClient(oe.config).QueryAlert(oe)
 }
 
 // QueryAnnotations queries the "annotations" edge of the OncallEvent entity.

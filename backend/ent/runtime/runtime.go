@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -67,6 +68,12 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	alertFields := schema.Alert{}.Fields()
+	_ = alertFields
+	// alertDescID is the schema descriptor for id field.
+	alertDescID := alertFields[0].Descriptor()
+	// alert.DefaultID holds the default value on creation for the id field.
+	alert.DefaultID = alertDescID.Default.(func() uuid.UUID)
 	environmentMixin := schema.Environment{}.Mixin()
 	environmentMixinHooks0 := environmentMixin[0].Hooks()
 	environment.Hooks[0] = environmentMixinHooks0[0]

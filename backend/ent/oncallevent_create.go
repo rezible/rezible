@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -93,6 +94,25 @@ func (oec *OncallEventCreate) SetNillableID(u *uuid.UUID) *OncallEventCreate {
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oec *OncallEventCreate) SetRoster(o *OncallRoster) *OncallEventCreate {
 	return oec.SetRosterID(o.ID)
+}
+
+// SetAlertID sets the "alert" edge to the Alert entity by ID.
+func (oec *OncallEventCreate) SetAlertID(id uuid.UUID) *OncallEventCreate {
+	oec.mutation.SetAlertID(id)
+	return oec
+}
+
+// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
+func (oec *OncallEventCreate) SetNillableAlertID(id *uuid.UUID) *OncallEventCreate {
+	if id != nil {
+		oec = oec.SetAlertID(*id)
+	}
+	return oec
+}
+
+// SetAlert sets the "alert" edge to the Alert entity.
+func (oec *OncallEventCreate) SetAlert(a *Alert) *OncallEventCreate {
+	return oec.SetAlertID(a.ID)
 }
 
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
@@ -246,6 +266,23 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.RosterID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oec.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.AlertTable,
+			Columns: []string{oncallevent.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.oncall_event_alert = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oec.mutation.AnnotationsIDs(); len(nodes) > 0 {

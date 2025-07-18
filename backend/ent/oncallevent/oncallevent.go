@@ -29,6 +29,8 @@ const (
 	FieldSource = "source"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
+	// EdgeAlert holds the string denoting the alert edge name in mutations.
+	EdgeAlert = "alert"
 	// EdgeAnnotations holds the string denoting the annotations edge name in mutations.
 	EdgeAnnotations = "annotations"
 	// Table holds the table name of the oncallevent in the database.
@@ -40,6 +42,13 @@ const (
 	RosterInverseTable = "oncall_rosters"
 	// RosterColumn is the table column denoting the roster relation/edge.
 	RosterColumn = "roster_id"
+	// AlertTable is the table that holds the alert relation/edge.
+	AlertTable = "oncall_events"
+	// AlertInverseTable is the table name for the Alert entity.
+	// It exists in this package in order to avoid circular dependency with the "alert" package.
+	AlertInverseTable = "alerts"
+	// AlertColumn is the table column denoting the alert relation/edge.
+	AlertColumn = "oncall_event_alert"
 	// AnnotationsTable is the table that holds the annotations relation/edge.
 	AnnotationsTable = "oncall_annotations"
 	// AnnotationsInverseTable is the table name for the OncallAnnotation entity.
@@ -61,10 +70,21 @@ var Columns = []string{
 	FieldSource,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "oncall_events"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"oncall_event_alert",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -126,6 +146,13 @@ func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByAlertField orders the results by alert field.
+func ByAlertField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAnnotationsCount orders the results by annotations count.
 func ByAnnotationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -144,6 +171,13 @@ func newRosterStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RosterInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, RosterTable, RosterColumn),
+	)
+}
+func newAlertStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AlertTable, AlertColumn),
 	)
 }
 func newAnnotationsStep() *sqlgraph.Step {

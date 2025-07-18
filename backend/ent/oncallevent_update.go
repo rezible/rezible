@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -141,6 +142,25 @@ func (oeu *OncallEventUpdate) SetRoster(o *OncallRoster) *OncallEventUpdate {
 	return oeu.SetRosterID(o.ID)
 }
 
+// SetAlertID sets the "alert" edge to the Alert entity by ID.
+func (oeu *OncallEventUpdate) SetAlertID(id uuid.UUID) *OncallEventUpdate {
+	oeu.mutation.SetAlertID(id)
+	return oeu
+}
+
+// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
+func (oeu *OncallEventUpdate) SetNillableAlertID(id *uuid.UUID) *OncallEventUpdate {
+	if id != nil {
+		oeu = oeu.SetAlertID(*id)
+	}
+	return oeu
+}
+
+// SetAlert sets the "alert" edge to the Alert entity.
+func (oeu *OncallEventUpdate) SetAlert(a *Alert) *OncallEventUpdate {
+	return oeu.SetAlertID(a.ID)
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
 func (oeu *OncallEventUpdate) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdate {
 	oeu.mutation.AddAnnotationIDs(ids...)
@@ -164,6 +184,12 @@ func (oeu *OncallEventUpdate) Mutation() *OncallEventMutation {
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
 func (oeu *OncallEventUpdate) ClearRoster() *OncallEventUpdate {
 	oeu.mutation.ClearRoster()
+	return oeu
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (oeu *OncallEventUpdate) ClearAlert() *OncallEventUpdate {
+	oeu.mutation.ClearAlert()
 	return oeu
 }
 
@@ -270,6 +296,35 @@ func (oeu *OncallEventUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeu.mutation.AlertCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.AlertTable,
+			Columns: []string{oncallevent.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeu.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.AlertTable,
+			Columns: []string{oncallevent.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -453,6 +508,25 @@ func (oeuo *OncallEventUpdateOne) SetRoster(o *OncallRoster) *OncallEventUpdateO
 	return oeuo.SetRosterID(o.ID)
 }
 
+// SetAlertID sets the "alert" edge to the Alert entity by ID.
+func (oeuo *OncallEventUpdateOne) SetAlertID(id uuid.UUID) *OncallEventUpdateOne {
+	oeuo.mutation.SetAlertID(id)
+	return oeuo
+}
+
+// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
+func (oeuo *OncallEventUpdateOne) SetNillableAlertID(id *uuid.UUID) *OncallEventUpdateOne {
+	if id != nil {
+		oeuo = oeuo.SetAlertID(*id)
+	}
+	return oeuo
+}
+
+// SetAlert sets the "alert" edge to the Alert entity.
+func (oeuo *OncallEventUpdateOne) SetAlert(a *Alert) *OncallEventUpdateOne {
+	return oeuo.SetAlertID(a.ID)
+}
+
 // AddAnnotationIDs adds the "annotations" edge to the OncallAnnotation entity by IDs.
 func (oeuo *OncallEventUpdateOne) AddAnnotationIDs(ids ...uuid.UUID) *OncallEventUpdateOne {
 	oeuo.mutation.AddAnnotationIDs(ids...)
@@ -476,6 +550,12 @@ func (oeuo *OncallEventUpdateOne) Mutation() *OncallEventMutation {
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
 func (oeuo *OncallEventUpdateOne) ClearRoster() *OncallEventUpdateOne {
 	oeuo.mutation.ClearRoster()
+	return oeuo
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (oeuo *OncallEventUpdateOne) ClearAlert() *OncallEventUpdateOne {
+	oeuo.mutation.ClearAlert()
 	return oeuo
 }
 
@@ -612,6 +692,35 @@ func (oeuo *OncallEventUpdateOne) sqlSave(ctx context.Context) (_node *OncallEve
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oeuo.mutation.AlertCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.AlertTable,
+			Columns: []string{oncallevent.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oeuo.mutation.AlertIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.AlertTable,
+			Columns: []string{oncallevent.AlertColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
