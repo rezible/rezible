@@ -284,6 +284,14 @@ func (c *OncallUserShiftMetricsClient) Debug() *OncallUserShiftMetricsClient {
 	return &OncallUserShiftMetricsClient{config: cfg}
 }
 
+func (c *PlaybookClient) Debug() *PlaybookClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &PlaybookClient{config: cfg}
+}
+
 func (c *ProviderConfigClient) Debug() *ProviderConfigClient {
 	if c.debug {
 		return c

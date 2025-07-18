@@ -17,10 +17,17 @@ const (
 	FieldTitle = "title"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
+	EdgePlaybooks = "playbooks"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
+	// PlaybooksTable is the table that holds the playbooks relation/edge. The primary key declared below.
+	PlaybooksTable = "playbook_alerts"
+	// PlaybooksInverseTable is the table name for the Playbook entity.
+	// It exists in this package in order to avoid circular dependency with the "playbook" package.
+	PlaybooksInverseTable = "playbooks"
 	// InstancesTable is the table that holds the instances relation/edge.
 	InstancesTable = "oncall_events"
 	// InstancesInverseTable is the table name for the OncallEvent entity.
@@ -36,6 +43,12 @@ var Columns = []string{
 	FieldTitle,
 	FieldProviderID,
 }
+
+var (
+	// PlaybooksPrimaryKey and PlaybooksColumn2 are the table columns denoting the
+	// primary key for the playbooks relation (M2M).
+	PlaybooksPrimaryKey = []string{"playbook_id", "alert_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -70,6 +83,20 @@ func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
+// ByPlaybooksCount orders the results by playbooks count.
+func ByPlaybooksCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newPlaybooksStep(), opts...)
+	}
+}
+
+// ByPlaybooks orders the results by playbooks terms.
+func ByPlaybooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPlaybooksStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByInstancesCount orders the results by instances count.
 func ByInstancesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -82,6 +109,13 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newPlaybooksStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PlaybooksInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, PlaybooksTable, PlaybooksPrimaryKey...),
+	)
 }
 func newInstancesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

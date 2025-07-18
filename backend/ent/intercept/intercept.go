@@ -43,6 +43,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -1069,6 +1070,33 @@ func (f TraverseOncallUserShiftMetrics) Traverse(ctx context.Context, q ent.Quer
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftMetricsQuery", q)
 }
 
+// The PlaybookFunc type is an adapter to allow the use of ordinary function as a Querier.
+type PlaybookFunc func(context.Context, *ent.PlaybookQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f PlaybookFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.PlaybookQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.PlaybookQuery", q)
+}
+
+// The TraversePlaybook type is an adapter to allow the use of ordinary function as Traverser.
+type TraversePlaybook func(context.Context, *ent.PlaybookQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraversePlaybook) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraversePlaybook) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.PlaybookQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.PlaybookQuery", q)
+}
+
 // The ProviderConfigFunc type is an adapter to allow the use of ordinary function as a Querier.
 type ProviderConfigFunc func(context.Context, *ent.ProviderConfigQuery) (ent.Value, error)
 
@@ -1736,6 +1764,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallUserShiftHandoverQuery, predicate.OncallUserShiftHandover, oncallusershifthandover.OrderOption]{typ: ent.TypeOncallUserShiftHandover, tq: q}, nil
 	case *ent.OncallUserShiftMetricsQuery:
 		return &query[*ent.OncallUserShiftMetricsQuery, predicate.OncallUserShiftMetrics, oncallusershiftmetrics.OrderOption]{typ: ent.TypeOncallUserShiftMetrics, tq: q}, nil
+	case *ent.PlaybookQuery:
+		return &query[*ent.PlaybookQuery, predicate.Playbook, playbook.OrderOption]{typ: ent.TypePlaybook, tq: q}, nil
 	case *ent.ProviderConfigQuery:
 		return &query[*ent.ProviderConfigQuery, predicate.ProviderConfig, providerconfig.OrderOption]{typ: ent.TypeProviderConfig, tq: q}, nil
 	case *ent.ProviderSyncHistoryQuery:

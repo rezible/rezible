@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -25,6 +26,7 @@ type AlertQuery struct {
 	order         []alert.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.Alert
+	withPlaybooks *PlaybookQuery
 	withInstances *OncallEventQuery
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (aq *AlertQuery) Unique(unique bool) *AlertQuery {
 func (aq *AlertQuery) Order(o ...alert.OrderOption) *AlertQuery {
 	aq.order = append(aq.order, o...)
 	return aq
+}
+
+// QueryPlaybooks chains the current query on the "playbooks" edge.
+func (aq *AlertQuery) QueryPlaybooks() *PlaybookQuery {
+	query := (&PlaybookClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, selector),
+			sqlgraph.To(playbook.Table, playbook.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryInstances chains the current query on the "instances" edge.
@@ -277,12 +301,24 @@ func (aq *AlertQuery) Clone() *AlertQuery {
 		order:         append([]alert.OrderOption{}, aq.order...),
 		inters:        append([]Interceptor{}, aq.inters...),
 		predicates:    append([]predicate.Alert{}, aq.predicates...),
+		withPlaybooks: aq.withPlaybooks.Clone(),
 		withInstances: aq.withInstances.Clone(),
 		// clone intermediate query.
 		sql:       aq.sql.Clone(),
 		path:      aq.path,
 		modifiers: append([]func(*sql.Selector){}, aq.modifiers...),
 	}
+}
+
+// WithPlaybooks tells the query-builder to eager-load the nodes that are connected to
+// the "playbooks" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
+	query := (&PlaybookClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withPlaybooks = query
+	return aq
 }
 
 // WithInstances tells the query-builder to eager-load the nodes that are connected to
@@ -374,7 +410,8 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	var (
 		nodes       = []*Alert{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			aq.withPlaybooks != nil,
 			aq.withInstances != nil,
 		}
 	)
@@ -399,6 +436,13 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := aq.withPlaybooks; query != nil {
+		if err := aq.loadPlaybooks(ctx, query, nodes,
+			func(n *Alert) { n.Edges.Playbooks = []*Playbook{} },
+			func(n *Alert, e *Playbook) { n.Edges.Playbooks = append(n.Edges.Playbooks, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := aq.withInstances; query != nil {
 		if err := aq.loadInstances(ctx, query, nodes,
 			func(n *Alert) { n.Edges.Instances = []*OncallEvent{} },
@@ -409,6 +453,67 @@ func (aq *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	return nodes, nil
 }
 
+func (aq *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *Playbook)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Alert)
+	nids := make(map[uuid.UUID]map[*Alert]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(alert.PlaybooksTable)
+		s.Join(joinT).On(s.C(playbook.FieldID), joinT.C(alert.PlaybooksPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(alert.PlaybooksPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(alert.PlaybooksPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Alert]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Playbook](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "playbooks" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 func (aq *AlertQuery) loadInstances(ctx context.Context, query *OncallEventQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallEvent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Alert)

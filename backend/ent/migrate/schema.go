@@ -823,6 +823,19 @@ var (
 			},
 		},
 	}
+	// PlaybooksColumns holds the columns for the "playbooks" table.
+	PlaybooksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "title", Type: field.TypeString},
+		{Name: "provider_id", Type: field.TypeString},
+		{Name: "content", Type: field.TypeBytes},
+	}
+	// PlaybooksTable holds the schema information for the "playbooks" table.
+	PlaybooksTable = &schema.Table{
+		Name:       "playbooks",
+		Columns:    PlaybooksColumns,
+		PrimaryKey: []*schema.Column{PlaybooksColumns[0]},
+	}
 	// ProviderConfigsColumns holds the columns for the "provider_configs" table.
 	ProviderConfigsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1631,6 +1644,31 @@ var (
 			},
 		},
 	}
+	// PlaybookAlertsColumns holds the columns for the "playbook_alerts" table.
+	PlaybookAlertsColumns = []*schema.Column{
+		{Name: "playbook_id", Type: field.TypeUUID},
+		{Name: "alert_id", Type: field.TypeUUID},
+	}
+	// PlaybookAlertsTable holds the schema information for the "playbook_alerts" table.
+	PlaybookAlertsTable = &schema.Table{
+		Name:       "playbook_alerts",
+		Columns:    PlaybookAlertsColumns,
+		PrimaryKey: []*schema.Column{PlaybookAlertsColumns[0], PlaybookAlertsColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "playbook_alerts_playbook_id",
+				Columns:    []*schema.Column{PlaybookAlertsColumns[0]},
+				RefColumns: []*schema.Column{PlaybooksColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "playbook_alerts_alert_id",
+				Columns:    []*schema.Column{PlaybookAlertsColumns[1]},
+				RefColumns: []*schema.Column{AlertsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// SystemHazardComponentsColumns holds the columns for the "system_hazard_components" table.
 	SystemHazardComponentsColumns = []*schema.Column{
 		{Name: "system_hazard_id", Type: field.TypeUUID},
@@ -1843,6 +1881,7 @@ var (
 		OncallUserShiftsTable,
 		OncallUserShiftHandoversTable,
 		OncallUserShiftMetricsTable,
+		PlaybooksTable,
 		ProviderConfigsTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
@@ -1876,6 +1915,7 @@ var (
 		IncidentDebriefQuestionIncidentTypesTable,
 		MeetingScheduleOwningTeamTable,
 		OncallUserShiftHandoverPinnedAnnotationsTable,
+		PlaybookAlertsTable,
 		SystemHazardComponentsTable,
 		SystemHazardConstraintsTable,
 		SystemHazardRelationshipsTable,
@@ -1973,6 +2013,8 @@ func init() {
 	MeetingScheduleOwningTeamTable.ForeignKeys[1].RefTable = TeamsTable
 	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[0].RefTable = OncallUserShiftHandoversTable
 	OncallUserShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = OncallAnnotationsTable
+	PlaybookAlertsTable.ForeignKeys[0].RefTable = PlaybooksTable
+	PlaybookAlertsTable.ForeignKeys[1].RefTable = AlertsTable
 	SystemHazardComponentsTable.ForeignKeys[0].RefTable = SystemHazardsTable
 	SystemHazardComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
 	SystemHazardConstraintsTable.ForeignKeys[0].RefTable = SystemHazardsTable

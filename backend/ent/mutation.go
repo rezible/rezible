@@ -47,6 +47,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -116,6 +117,7 @@ const (
 	TypeOncallUserShift                  = "OncallUserShift"
 	TypeOncallUserShiftHandover          = "OncallUserShiftHandover"
 	TypeOncallUserShiftMetrics           = "OncallUserShiftMetrics"
+	TypePlaybook                         = "Playbook"
 	TypeProviderConfig                   = "ProviderConfig"
 	TypeProviderSyncHistory              = "ProviderSyncHistory"
 	TypeRetrospective                    = "Retrospective"
@@ -149,6 +151,9 @@ type AlertMutation struct {
 	title            *string
 	provider_id      *string
 	clearedFields    map[string]struct{}
+	playbooks        map[uuid.UUID]struct{}
+	removedplaybooks map[uuid.UUID]struct{}
+	clearedplaybooks bool
 	instances        map[uuid.UUID]struct{}
 	removedinstances map[uuid.UUID]struct{}
 	clearedinstances bool
@@ -331,6 +336,60 @@ func (m *AlertMutation) OldProviderID(ctx context.Context) (v string, err error)
 // ResetProviderID resets all changes to the "provider_id" field.
 func (m *AlertMutation) ResetProviderID() {
 	m.provider_id = nil
+}
+
+// AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by ids.
+func (m *AlertMutation) AddPlaybookIDs(ids ...uuid.UUID) {
+	if m.playbooks == nil {
+		m.playbooks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.playbooks[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPlaybooks clears the "playbooks" edge to the Playbook entity.
+func (m *AlertMutation) ClearPlaybooks() {
+	m.clearedplaybooks = true
+}
+
+// PlaybooksCleared reports if the "playbooks" edge to the Playbook entity was cleared.
+func (m *AlertMutation) PlaybooksCleared() bool {
+	return m.clearedplaybooks
+}
+
+// RemovePlaybookIDs removes the "playbooks" edge to the Playbook entity by IDs.
+func (m *AlertMutation) RemovePlaybookIDs(ids ...uuid.UUID) {
+	if m.removedplaybooks == nil {
+		m.removedplaybooks = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.playbooks, ids[i])
+		m.removedplaybooks[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPlaybooks returns the removed IDs of the "playbooks" edge to the Playbook entity.
+func (m *AlertMutation) RemovedPlaybooksIDs() (ids []uuid.UUID) {
+	for id := range m.removedplaybooks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PlaybooksIDs returns the "playbooks" edge IDs in the mutation.
+func (m *AlertMutation) PlaybooksIDs() (ids []uuid.UUID) {
+	for id := range m.playbooks {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPlaybooks resets all changes to the "playbooks" edge.
+func (m *AlertMutation) ResetPlaybooks() {
+	m.playbooks = nil
+	m.clearedplaybooks = false
+	m.removedplaybooks = nil
 }
 
 // AddInstanceIDs adds the "instances" edge to the OncallEvent entity by ids.
@@ -537,7 +596,10 @@ func (m *AlertMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AlertMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.playbooks != nil {
+		edges = append(edges, alert.EdgePlaybooks)
+	}
 	if m.instances != nil {
 		edges = append(edges, alert.EdgeInstances)
 	}
@@ -548,6 +610,12 @@ func (m *AlertMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *AlertMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case alert.EdgePlaybooks:
+		ids := make([]ent.Value, 0, len(m.playbooks))
+		for id := range m.playbooks {
+			ids = append(ids, id)
+		}
+		return ids
 	case alert.EdgeInstances:
 		ids := make([]ent.Value, 0, len(m.instances))
 		for id := range m.instances {
@@ -560,7 +628,10 @@ func (m *AlertMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.removedplaybooks != nil {
+		edges = append(edges, alert.EdgePlaybooks)
+	}
 	if m.removedinstances != nil {
 		edges = append(edges, alert.EdgeInstances)
 	}
@@ -571,6 +642,12 @@ func (m *AlertMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AlertMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case alert.EdgePlaybooks:
+		ids := make([]ent.Value, 0, len(m.removedplaybooks))
+		for id := range m.removedplaybooks {
+			ids = append(ids, id)
+		}
+		return ids
 	case alert.EdgeInstances:
 		ids := make([]ent.Value, 0, len(m.removedinstances))
 		for id := range m.removedinstances {
@@ -583,7 +660,10 @@ func (m *AlertMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AlertMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 2)
+	if m.clearedplaybooks {
+		edges = append(edges, alert.EdgePlaybooks)
+	}
 	if m.clearedinstances {
 		edges = append(edges, alert.EdgeInstances)
 	}
@@ -594,6 +674,8 @@ func (m *AlertMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *AlertMutation) EdgeCleared(name string) bool {
 	switch name {
+	case alert.EdgePlaybooks:
+		return m.clearedplaybooks
 	case alert.EdgeInstances:
 		return m.clearedinstances
 	}
@@ -612,6 +694,9 @@ func (m *AlertMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AlertMutation) ResetEdge(name string) error {
 	switch name {
+	case alert.EdgePlaybooks:
+		m.ResetPlaybooks()
+		return nil
 	case alert.EdgeInstances:
 		m.ResetInstances()
 		return nil
@@ -26202,6 +26287,539 @@ func (m *OncallUserShiftMetricsMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown OncallUserShiftMetrics edge %s", name)
+}
+
+// PlaybookMutation represents an operation that mutates the Playbook nodes in the graph.
+type PlaybookMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	title         *string
+	provider_id   *string
+	content       *[]byte
+	clearedFields map[string]struct{}
+	alerts        map[uuid.UUID]struct{}
+	removedalerts map[uuid.UUID]struct{}
+	clearedalerts bool
+	done          bool
+	oldValue      func(context.Context) (*Playbook, error)
+	predicates    []predicate.Playbook
+}
+
+var _ ent.Mutation = (*PlaybookMutation)(nil)
+
+// playbookOption allows management of the mutation configuration using functional options.
+type playbookOption func(*PlaybookMutation)
+
+// newPlaybookMutation creates new mutation for the Playbook entity.
+func newPlaybookMutation(c config, op Op, opts ...playbookOption) *PlaybookMutation {
+	m := &PlaybookMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePlaybook,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPlaybookID sets the ID field of the mutation.
+func withPlaybookID(id uuid.UUID) playbookOption {
+	return func(m *PlaybookMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Playbook
+		)
+		m.oldValue = func(ctx context.Context) (*Playbook, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Playbook.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPlaybook sets the old Playbook of the mutation.
+func withPlaybook(node *Playbook) playbookOption {
+	return func(m *PlaybookMutation) {
+		m.oldValue = func(context.Context) (*Playbook, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PlaybookMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PlaybookMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Playbook entities.
+func (m *PlaybookMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PlaybookMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PlaybookMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Playbook.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTitle sets the "title" field.
+func (m *PlaybookMutation) SetTitle(s string) {
+	m.title = &s
+}
+
+// Title returns the value of the "title" field in the mutation.
+func (m *PlaybookMutation) Title() (r string, exists bool) {
+	v := m.title
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle returns the old "title" field's value of the Playbook entity.
+// If the Playbook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaybookMutation) OldTitle(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle: %w", err)
+	}
+	return oldValue.Title, nil
+}
+
+// ResetTitle resets all changes to the "title" field.
+func (m *PlaybookMutation) ResetTitle() {
+	m.title = nil
+}
+
+// SetProviderID sets the "provider_id" field.
+func (m *PlaybookMutation) SetProviderID(s string) {
+	m.provider_id = &s
+}
+
+// ProviderID returns the value of the "provider_id" field in the mutation.
+func (m *PlaybookMutation) ProviderID() (r string, exists bool) {
+	v := m.provider_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderID returns the old "provider_id" field's value of the Playbook entity.
+// If the Playbook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaybookMutation) OldProviderID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderID: %w", err)
+	}
+	return oldValue.ProviderID, nil
+}
+
+// ResetProviderID resets all changes to the "provider_id" field.
+func (m *PlaybookMutation) ResetProviderID() {
+	m.provider_id = nil
+}
+
+// SetContent sets the "content" field.
+func (m *PlaybookMutation) SetContent(b []byte) {
+	m.content = &b
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *PlaybookMutation) Content() (r []byte, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Playbook entity.
+// If the Playbook object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PlaybookMutation) OldContent(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *PlaybookMutation) ResetContent() {
+	m.content = nil
+}
+
+// AddAlertIDs adds the "alerts" edge to the Alert entity by ids.
+func (m *PlaybookMutation) AddAlertIDs(ids ...uuid.UUID) {
+	if m.alerts == nil {
+		m.alerts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.alerts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAlerts clears the "alerts" edge to the Alert entity.
+func (m *PlaybookMutation) ClearAlerts() {
+	m.clearedalerts = true
+}
+
+// AlertsCleared reports if the "alerts" edge to the Alert entity was cleared.
+func (m *PlaybookMutation) AlertsCleared() bool {
+	return m.clearedalerts
+}
+
+// RemoveAlertIDs removes the "alerts" edge to the Alert entity by IDs.
+func (m *PlaybookMutation) RemoveAlertIDs(ids ...uuid.UUID) {
+	if m.removedalerts == nil {
+		m.removedalerts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.alerts, ids[i])
+		m.removedalerts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAlerts returns the removed IDs of the "alerts" edge to the Alert entity.
+func (m *PlaybookMutation) RemovedAlertsIDs() (ids []uuid.UUID) {
+	for id := range m.removedalerts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AlertsIDs returns the "alerts" edge IDs in the mutation.
+func (m *PlaybookMutation) AlertsIDs() (ids []uuid.UUID) {
+	for id := range m.alerts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAlerts resets all changes to the "alerts" edge.
+func (m *PlaybookMutation) ResetAlerts() {
+	m.alerts = nil
+	m.clearedalerts = false
+	m.removedalerts = nil
+}
+
+// Where appends a list predicates to the PlaybookMutation builder.
+func (m *PlaybookMutation) Where(ps ...predicate.Playbook) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PlaybookMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PlaybookMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Playbook, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PlaybookMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PlaybookMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Playbook).
+func (m *PlaybookMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PlaybookMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.title != nil {
+		fields = append(fields, playbook.FieldTitle)
+	}
+	if m.provider_id != nil {
+		fields = append(fields, playbook.FieldProviderID)
+	}
+	if m.content != nil {
+		fields = append(fields, playbook.FieldContent)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PlaybookMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case playbook.FieldTitle:
+		return m.Title()
+	case playbook.FieldProviderID:
+		return m.ProviderID()
+	case playbook.FieldContent:
+		return m.Content()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PlaybookMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case playbook.FieldTitle:
+		return m.OldTitle(ctx)
+	case playbook.FieldProviderID:
+		return m.OldProviderID(ctx)
+	case playbook.FieldContent:
+		return m.OldContent(ctx)
+	}
+	return nil, fmt.Errorf("unknown Playbook field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlaybookMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case playbook.FieldTitle:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle(v)
+		return nil
+	case playbook.FieldProviderID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderID(v)
+		return nil
+	case playbook.FieldContent:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Playbook field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PlaybookMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PlaybookMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PlaybookMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Playbook numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PlaybookMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PlaybookMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PlaybookMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Playbook nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PlaybookMutation) ResetField(name string) error {
+	switch name {
+	case playbook.FieldTitle:
+		m.ResetTitle()
+		return nil
+	case playbook.FieldProviderID:
+		m.ResetProviderID()
+		return nil
+	case playbook.FieldContent:
+		m.ResetContent()
+		return nil
+	}
+	return fmt.Errorf("unknown Playbook field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PlaybookMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.alerts != nil {
+		edges = append(edges, playbook.EdgeAlerts)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PlaybookMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case playbook.EdgeAlerts:
+		ids := make([]ent.Value, 0, len(m.alerts))
+		for id := range m.alerts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PlaybookMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedalerts != nil {
+		edges = append(edges, playbook.EdgeAlerts)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PlaybookMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case playbook.EdgeAlerts:
+		ids := make([]ent.Value, 0, len(m.removedalerts))
+		for id := range m.removedalerts {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PlaybookMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedalerts {
+		edges = append(edges, playbook.EdgeAlerts)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PlaybookMutation) EdgeCleared(name string) bool {
+	switch name {
+	case playbook.EdgeAlerts:
+		return m.clearedalerts
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PlaybookMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Playbook unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PlaybookMutation) ResetEdge(name string) error {
+	switch name {
+	case playbook.EdgeAlerts:
+		m.ResetAlerts()
+		return nil
+	}
+	return fmt.Errorf("unknown Playbook edge %s", name)
 }
 
 // ProviderConfigMutation represents an operation that mutates the ProviderConfig nodes in the graph.

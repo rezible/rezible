@@ -51,6 +51,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -150,6 +151,8 @@ type Client struct {
 	OncallUserShiftHandover *OncallUserShiftHandoverClient
 	// OncallUserShiftMetrics is the client for interacting with the OncallUserShiftMetrics builders.
 	OncallUserShiftMetrics *OncallUserShiftMetricsClient
+	// Playbook is the client for interacting with the Playbook builders.
+	Playbook *PlaybookClient
 	// ProviderConfig is the client for interacting with the ProviderConfig builders.
 	ProviderConfig *ProviderConfigClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
@@ -240,6 +243,7 @@ func (c *Client) init() {
 	c.OncallUserShift = NewOncallUserShiftClient(c.config)
 	c.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(c.config)
 	c.OncallUserShiftMetrics = NewOncallUserShiftMetricsClient(c.config)
+	c.Playbook = NewPlaybookClient(c.config)
 	c.ProviderConfig = NewProviderConfigClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
@@ -389,6 +393,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
 		OncallUserShiftMetrics:           NewOncallUserShiftMetricsClient(cfg),
+		Playbook:                         NewPlaybookClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
@@ -465,6 +470,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
 		OncallUserShiftHandover:          NewOncallUserShiftHandoverClient(cfg),
 		OncallUserShiftMetrics:           NewOncallUserShiftMetricsClient(cfg),
+		Playbook:                         NewPlaybookClient(cfg),
 		ProviderConfig:                   NewProviderConfigClient(cfg),
 		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
 		Retrospective:                    NewRetrospectiveClient(cfg),
@@ -527,7 +533,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
@@ -554,7 +560,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
 		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
-		c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
+		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
@@ -639,6 +645,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallUserShiftHandover.mutate(ctx, m)
 	case *OncallUserShiftMetricsMutation:
 		return c.OncallUserShiftMetrics.mutate(ctx, m)
+	case *PlaybookMutation:
+		return c.Playbook.mutate(ctx, m)
 	case *ProviderConfigMutation:
 		return c.ProviderConfig.mutate(ctx, m)
 	case *ProviderSyncHistoryMutation:
@@ -794,6 +802,22 @@ func (c *AlertClient) GetX(ctx context.Context, id uuid.UUID) *Alert {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryPlaybooks queries the playbooks edge of a Alert.
+func (c *AlertClient) QueryPlaybooks(a *Alert) *PlaybookQuery {
+	query := (&PlaybookClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(playbook.Table, playbook.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryInstances queries the instances edge of a Alert.
@@ -6849,6 +6873,155 @@ func (c *OncallUserShiftMetricsClient) mutate(ctx context.Context, m *OncallUser
 	}
 }
 
+// PlaybookClient is a client for the Playbook schema.
+type PlaybookClient struct {
+	config
+}
+
+// NewPlaybookClient returns a client for the Playbook from the given config.
+func NewPlaybookClient(c config) *PlaybookClient {
+	return &PlaybookClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `playbook.Hooks(f(g(h())))`.
+func (c *PlaybookClient) Use(hooks ...Hook) {
+	c.hooks.Playbook = append(c.hooks.Playbook, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `playbook.Intercept(f(g(h())))`.
+func (c *PlaybookClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Playbook = append(c.inters.Playbook, interceptors...)
+}
+
+// Create returns a builder for creating a Playbook entity.
+func (c *PlaybookClient) Create() *PlaybookCreate {
+	mutation := newPlaybookMutation(c.config, OpCreate)
+	return &PlaybookCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Playbook entities.
+func (c *PlaybookClient) CreateBulk(builders ...*PlaybookCreate) *PlaybookCreateBulk {
+	return &PlaybookCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *PlaybookClient) MapCreateBulk(slice any, setFunc func(*PlaybookCreate, int)) *PlaybookCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &PlaybookCreateBulk{err: fmt.Errorf("calling to PlaybookClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*PlaybookCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &PlaybookCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Playbook.
+func (c *PlaybookClient) Update() *PlaybookUpdate {
+	mutation := newPlaybookMutation(c.config, OpUpdate)
+	return &PlaybookUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PlaybookClient) UpdateOne(pl *Playbook) *PlaybookUpdateOne {
+	mutation := newPlaybookMutation(c.config, OpUpdateOne, withPlaybook(pl))
+	return &PlaybookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PlaybookClient) UpdateOneID(id uuid.UUID) *PlaybookUpdateOne {
+	mutation := newPlaybookMutation(c.config, OpUpdateOne, withPlaybookID(id))
+	return &PlaybookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Playbook.
+func (c *PlaybookClient) Delete() *PlaybookDelete {
+	mutation := newPlaybookMutation(c.config, OpDelete)
+	return &PlaybookDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PlaybookClient) DeleteOne(pl *Playbook) *PlaybookDeleteOne {
+	return c.DeleteOneID(pl.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PlaybookClient) DeleteOneID(id uuid.UUID) *PlaybookDeleteOne {
+	builder := c.Delete().Where(playbook.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PlaybookDeleteOne{builder}
+}
+
+// Query returns a query builder for Playbook.
+func (c *PlaybookClient) Query() *PlaybookQuery {
+	return &PlaybookQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePlaybook},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Playbook entity by its id.
+func (c *PlaybookClient) Get(ctx context.Context, id uuid.UUID) (*Playbook, error) {
+	return c.Query().Where(playbook.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PlaybookClient) GetX(ctx context.Context, id uuid.UUID) *Playbook {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAlerts queries the alerts edge of a Playbook.
+func (c *PlaybookClient) QueryAlerts(pl *Playbook) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(playbook.Table, playbook.FieldID, id),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertsTable, playbook.AlertsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *PlaybookClient) Hooks() []Hook {
+	return c.hooks.Playbook
+}
+
+// Interceptors returns the client interceptors.
+func (c *PlaybookClient) Interceptors() []Interceptor {
+	return c.inters.Playbook
+}
+
+func (c *PlaybookClient) mutate(ctx context.Context, m *PlaybookMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PlaybookCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PlaybookUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PlaybookUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PlaybookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Playbook mutation op: %q", m.Op())
+	}
+}
+
 // ProviderConfigClient is a client for the ProviderConfig schema.
 type ProviderConfigClient struct {
 	config
@@ -11003,7 +11176,7 @@ type (
 		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
 		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
 		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftHandover, OncallUserShiftMetrics, ProviderConfig,
+		OncallUserShiftHandover, OncallUserShiftMetrics, Playbook, ProviderConfig,
 		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
@@ -11022,7 +11195,7 @@ type (
 		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
 		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
 		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftHandover, OncallUserShiftMetrics, ProviderConfig,
+		OncallUserShiftHandover, OncallUserShiftMetrics, Playbook, ProviderConfig,
 		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,

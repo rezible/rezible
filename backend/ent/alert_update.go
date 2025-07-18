@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -58,6 +59,21 @@ func (au *AlertUpdate) SetNillableProviderID(s *string) *AlertUpdate {
 	return au
 }
 
+// AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
+func (au *AlertUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+	au.mutation.AddPlaybookIDs(ids...)
+	return au
+}
+
+// AddPlaybooks adds the "playbooks" edges to the Playbook entity.
+func (au *AlertUpdate) AddPlaybooks(p ...*Playbook) *AlertUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return au.AddPlaybookIDs(ids...)
+}
+
 // AddInstanceIDs adds the "instances" edge to the OncallEvent entity by IDs.
 func (au *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
 	au.mutation.AddInstanceIDs(ids...)
@@ -76,6 +92,27 @@ func (au *AlertUpdate) AddInstances(o ...*OncallEvent) *AlertUpdate {
 // Mutation returns the AlertMutation object of the builder.
 func (au *AlertUpdate) Mutation() *AlertMutation {
 	return au.mutation
+}
+
+// ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
+func (au *AlertUpdate) ClearPlaybooks() *AlertUpdate {
+	au.mutation.ClearPlaybooks()
+	return au
+}
+
+// RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
+func (au *AlertUpdate) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
+	au.mutation.RemovePlaybookIDs(ids...)
+	return au
+}
+
+// RemovePlaybooks removes "playbooks" edges to Playbook entities.
+func (au *AlertUpdate) RemovePlaybooks(p ...*Playbook) *AlertUpdate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return au.RemovePlaybookIDs(ids...)
 }
 
 // ClearInstances clears all "instances" edges to the OncallEvent entity.
@@ -146,6 +183,51 @@ func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := au.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	}
+	if au.mutation.PlaybooksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !au.mutation.PlaybooksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.PlaybooksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if au.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -242,6 +324,21 @@ func (auo *AlertUpdateOne) SetNillableProviderID(s *string) *AlertUpdateOne {
 	return auo
 }
 
+// AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
+func (auo *AlertUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	auo.mutation.AddPlaybookIDs(ids...)
+	return auo
+}
+
+// AddPlaybooks adds the "playbooks" edges to the Playbook entity.
+func (auo *AlertUpdateOne) AddPlaybooks(p ...*Playbook) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return auo.AddPlaybookIDs(ids...)
+}
+
 // AddInstanceIDs adds the "instances" edge to the OncallEvent entity by IDs.
 func (auo *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
 	auo.mutation.AddInstanceIDs(ids...)
@@ -260,6 +357,27 @@ func (auo *AlertUpdateOne) AddInstances(o ...*OncallEvent) *AlertUpdateOne {
 // Mutation returns the AlertMutation object of the builder.
 func (auo *AlertUpdateOne) Mutation() *AlertMutation {
 	return auo.mutation
+}
+
+// ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
+func (auo *AlertUpdateOne) ClearPlaybooks() *AlertUpdateOne {
+	auo.mutation.ClearPlaybooks()
+	return auo
+}
+
+// RemovePlaybookIDs removes the "playbooks" edge to Playbook entities by IDs.
+func (auo *AlertUpdateOne) RemovePlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	auo.mutation.RemovePlaybookIDs(ids...)
+	return auo
+}
+
+// RemovePlaybooks removes "playbooks" edges to Playbook entities.
+func (auo *AlertUpdateOne) RemovePlaybooks(p ...*Playbook) *AlertUpdateOne {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return auo.RemovePlaybookIDs(ids...)
 }
 
 // ClearInstances clears all "instances" edges to the OncallEvent entity.
@@ -360,6 +478,51 @@ func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error
 	}
 	if value, ok := auo.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
+	}
+	if auo.mutation.PlaybooksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !auo.mutation.PlaybooksCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.PlaybooksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if auo.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{

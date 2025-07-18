@@ -429,6 +429,18 @@ func (f OncallUserShiftMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMetricsMutation", m)
 }
 
+// The PlaybookFunc type is an adapter to allow the use of ordinary
+// function as Playbook mutator.
+type PlaybookFunc func(context.Context, *ent.PlaybookMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f PlaybookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.PlaybookMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaybookMutation", m)
+}
+
 // The ProviderConfigFunc type is an adapter to allow the use of ordinary
 // function as ProviderConfig mutator.
 type ProviderConfigFunc func(context.Context, *ent.ProviderConfigMutation) (ent.Value, error)

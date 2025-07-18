@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallevent"
+	"github.com/rezible/rezible/ent/playbook"
 )
 
 // AlertCreate is the builder for creating a Alert entity.
@@ -48,6 +49,21 @@ func (ac *AlertCreate) SetNillableID(u *uuid.UUID) *AlertCreate {
 		ac.SetID(*u)
 	}
 	return ac
+}
+
+// AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
+func (ac *AlertCreate) AddPlaybookIDs(ids ...uuid.UUID) *AlertCreate {
+	ac.mutation.AddPlaybookIDs(ids...)
+	return ac
+}
+
+// AddPlaybooks adds the "playbooks" edges to the Playbook entity.
+func (ac *AlertCreate) AddPlaybooks(p ...*Playbook) *AlertCreate {
+	ids := make([]uuid.UUID, len(p))
+	for i := range p {
+		ids[i] = p[i].ID
+	}
+	return ac.AddPlaybookIDs(ids...)
 }
 
 // AddInstanceIDs adds the "instances" edge to the OncallEvent entity by IDs.
@@ -157,6 +173,22 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
+	}
+	if nodes := ac.mutation.PlaybooksIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   alert.PlaybooksTable,
+			Columns: alert.PlaybooksPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
