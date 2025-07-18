@@ -31,12 +31,12 @@
 		{ path: "/", route: "/(index)", label: "Home", icon: mdiHome },
 		{ label: "Oncall" },
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
-		{ path: "/alerts", label: "Alerts", icon: mdiAlarmLight },
 		{ path: "/rosters", label: "Rosters", icon: mdiShield },
 		{ path: "/shifts", label: "Shifts", icon: mdiAccountClock },
-		{ label: "Library" },
+		{ label: "System" },
+		{ path: "/alerts", label: "Alerts", icon: mdiAlarmLight },
 		{ path: "/playbooks", label: "Playbooks", icon: mdiBookshelf },
-		{ path: "/system", label: "Components", icon: mdiShape },
+		{ path: "/components", label: "Components", icon: mdiShape },
 		{ label: "People" },
 		{ path: "/teams", label: "Teams", icon: mdiAccountGroup },
 		{ path: "/meetings", label: "Meetings", icon: mdiVideo },
@@ -53,7 +53,7 @@
 	<a
 		href={r.path}
 		class={cls(
-			"inline-block px-4 py-2 flex items-center gap-2 text-center border-none-2 rounded-lg",
+			"inline-block px-4 py-2 flex items-center gap-2 border-none-2 rounded-lg",
 			active
 				? "text-neutral-content bg-primary-900"
 				: "border-transparent hover:text-primary-content hover:border-primary/50 hover:bg-primary-900/50"

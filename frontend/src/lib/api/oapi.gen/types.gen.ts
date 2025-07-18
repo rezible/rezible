@@ -2904,7 +2904,7 @@ export type VerifyDocumentEditorSessionResponseBody = {
     data: DocumentEditorSessionAuth;
 };
 
-export type ListAlertssData = {
+export type ListAlertsData = {
     body?: never;
     path?: never;
     query?: {
@@ -2917,7 +2917,7 @@ export type ListAlertssData = {
     url: '/alerts';
 };
 
-export type ListAlertssErrors = {
+export type ListAlertsErrors = {
     /**
      * Bad Request
      */
@@ -2944,18 +2944,18 @@ export type ListAlertssErrors = {
     500: ErrorModel;
 };
 
-export type ListAlertssError = ListAlertssErrors[keyof ListAlertssErrors];
+export type ListAlertsError = ListAlertsErrors[keyof ListAlertsErrors];
 
-export type ListAlertssResponses = {
+export type ListAlertsResponses = {
     /**
      * OK
      */
     200: ListAlertsResponseBody;
 };
 
-export type ListAlertssResponse = ListAlertssResponses[keyof ListAlertssResponses];
+export type ListAlertsResponse = ListAlertsResponses[keyof ListAlertsResponses];
 
-export type GetAlertsData = {
+export type GetAlertData = {
     body?: never;
     path: {
         id: string;
@@ -2964,7 +2964,7 @@ export type GetAlertsData = {
     url: '/alerts/{id}';
 };
 
-export type GetAlertsErrors = {
+export type GetAlertErrors = {
     /**
      * Bad Request
      */
@@ -2991,16 +2991,16 @@ export type GetAlertsErrors = {
     500: ErrorModel;
 };
 
-export type GetAlertsError = GetAlertsErrors[keyof GetAlertsErrors];
+export type GetAlertError = GetAlertErrors[keyof GetAlertErrors];
 
-export type GetAlertsResponses = {
+export type GetAlertResponses = {
     /**
      * OK
      */
     200: GetAlertResponseBody;
 };
 
-export type GetAlertsResponse = GetAlertsResponses[keyof GetAlertsResponses];
+export type GetAlertResponse = GetAlertResponses[keyof GetAlertResponses];
 
 export type GetAuthSessionConfigData = {
     body?: never;
@@ -8021,7 +8021,7 @@ export type GetOncallShiftMetricsResponses = {
 
 export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
 
-export type ListPlaybookssData = {
+export type ListPlaybooksData = {
     body?: never;
     path?: never;
     query?: {
@@ -8034,7 +8034,7 @@ export type ListPlaybookssData = {
     url: '/playbooks';
 };
 
-export type ListPlaybookssErrors = {
+export type ListPlaybooksErrors = {
     /**
      * Bad Request
      */
@@ -8061,25 +8061,25 @@ export type ListPlaybookssErrors = {
     500: ErrorModel;
 };
 
-export type ListPlaybookssError = ListPlaybookssErrors[keyof ListPlaybookssErrors];
+export type ListPlaybooksError = ListPlaybooksErrors[keyof ListPlaybooksErrors];
 
-export type ListPlaybookssResponses = {
+export type ListPlaybooksResponses = {
     /**
      * OK
      */
     200: ListPlaybooksResponseBody;
 };
 
-export type ListPlaybookssResponse = ListPlaybookssResponses[keyof ListPlaybookssResponses];
+export type ListPlaybooksResponse = ListPlaybooksResponses[keyof ListPlaybooksResponses];
 
-export type CreatePlaybooksData = {
+export type CreatePlaybookData = {
     body: CreatePlaybookRequestBody;
     path?: never;
     query?: never;
     url: '/playbooks';
 };
 
-export type CreatePlaybooksErrors = {
+export type CreatePlaybookErrors = {
     /**
      * Bad Request
      */
@@ -8106,18 +8106,18 @@ export type CreatePlaybooksErrors = {
     500: ErrorModel;
 };
 
-export type CreatePlaybooksError = CreatePlaybooksErrors[keyof CreatePlaybooksErrors];
+export type CreatePlaybookError = CreatePlaybookErrors[keyof CreatePlaybookErrors];
 
-export type CreatePlaybooksResponses = {
+export type CreatePlaybookResponses = {
     /**
      * OK
      */
     200: CreatePlaybookResponseBody;
 };
 
-export type CreatePlaybooksResponse = CreatePlaybooksResponses[keyof CreatePlaybooksResponses];
+export type CreatePlaybookResponse = CreatePlaybookResponses[keyof CreatePlaybookResponses];
 
-export type ArchivePlaybooksData = {
+export type ArchivePlaybookData = {
     body?: never;
     path: {
         id: string;
@@ -8126,7 +8126,7 @@ export type ArchivePlaybooksData = {
     url: '/playbooks/{id}';
 };
 
-export type ArchivePlaybooksErrors = {
+export type ArchivePlaybookErrors = {
     /**
      * Bad Request
      */
@@ -8153,18 +8153,18 @@ export type ArchivePlaybooksErrors = {
     500: ErrorModel;
 };
 
-export type ArchivePlaybooksError = ArchivePlaybooksErrors[keyof ArchivePlaybooksErrors];
+export type ArchivePlaybookError = ArchivePlaybookErrors[keyof ArchivePlaybookErrors];
 
-export type ArchivePlaybooksResponses = {
+export type ArchivePlaybookResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type ArchivePlaybooksResponse = ArchivePlaybooksResponses[keyof ArchivePlaybooksResponses];
+export type ArchivePlaybookResponse = ArchivePlaybookResponses[keyof ArchivePlaybookResponses];
 
-export type GetPlaybooksData = {
+export type GetPlaybookData = {
     body?: never;
     path: {
         id: string;
@@ -8173,7 +8173,7 @@ export type GetPlaybooksData = {
     url: '/playbooks/{id}';
 };
 
-export type GetPlaybooksErrors = {
+export type GetPlaybookErrors = {
     /**
      * Bad Request
      */
@@ -8200,18 +8200,18 @@ export type GetPlaybooksErrors = {
     500: ErrorModel;
 };
 
-export type GetPlaybooksError = GetPlaybooksErrors[keyof GetPlaybooksErrors];
+export type GetPlaybookError = GetPlaybookErrors[keyof GetPlaybookErrors];
 
-export type GetPlaybooksResponses = {
+export type GetPlaybookResponses = {
     /**
      * OK
      */
     200: GetPlaybookResponseBody;
 };
 
-export type GetPlaybooksResponse = GetPlaybooksResponses[keyof GetPlaybooksResponses];
+export type GetPlaybookResponse = GetPlaybookResponses[keyof GetPlaybookResponses];
 
-export type UpdatePlaybooksData = {
+export type UpdatePlaybookData = {
     body: UpdatePlaybookRequestBody;
     path: {
         id: string;
@@ -8220,7 +8220,7 @@ export type UpdatePlaybooksData = {
     url: '/playbooks/{id}';
 };
 
-export type UpdatePlaybooksErrors = {
+export type UpdatePlaybookErrors = {
     /**
      * Bad Request
      */
@@ -8247,16 +8247,16 @@ export type UpdatePlaybooksErrors = {
     500: ErrorModel;
 };
 
-export type UpdatePlaybooksError = UpdatePlaybooksErrors[keyof UpdatePlaybooksErrors];
+export type UpdatePlaybookError = UpdatePlaybookErrors[keyof UpdatePlaybookErrors];
 
-export type UpdatePlaybooksResponses = {
+export type UpdatePlaybookResponses = {
     /**
      * OK
      */
     200: UpdatePlaybookResponseBody;
 };
 
-export type UpdatePlaybooksResponse = UpdatePlaybooksResponses[keyof UpdatePlaybooksResponses];
+export type UpdatePlaybookResponse = UpdatePlaybookResponses[keyof UpdatePlaybookResponses];
 
 export type ArchiveRetrospectiveReviewData = {
     body?: never;

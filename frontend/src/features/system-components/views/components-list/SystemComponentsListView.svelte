@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
+	import { listPlaybooksOptions, listSystemComponentsOptions, type ListPlaybooksData, type ListSystemComponentsData, type SystemComponent } from "$lib/api";
 	import { appShell } from "$features/app/lib/appShellState.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
@@ -9,15 +9,15 @@
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import { ListItem } from "svelte-ux";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
+	appShell.setPageBreadcrumbs(() => [{ label: "System Components" }]);
 
 	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();
-	const params = $derived<ListPlaybooksData["query"]>({
+	const params = $derived<ListSystemComponentsData["query"]>({
 		search: searchValue,
 		...paginator.queryParams,
 	});
-	const query = createQuery(() => listPlaybooksOptions({ query: params }));
+	const query = createQuery(() => listSystemComponentsOptions({ query: params }));
 	paginator.watchQuery(query);
 </script>
 
@@ -25,20 +25,20 @@
 	<SearchInput bind:value={searchValue} />
 {/snippet}
 
-{#snippet playbookListItem(pb: Playbook)}
-	<a href="/playbooks/{pb.id}">
-		<ListItem title={pb.attributes.name} subheading={pb.attributes.description} />
+{#snippet componentListItem(c: SystemComponent)}
+	<a href="/components/{c.id}">
+		<ListItem title={c.attributes.name} subheading={c.attributes.description} />
 	</a>
 {/snippet}
 
 <FilterPage {filters}>
 	<PaginatedListBox pagination={paginator.pagination}>
 		<LoadingQueryWrapper {query}>
-			{#snippet view(playbooks: Playbook[])}
-				{#each playbooks as pb (pb.id)}
-					{@render playbookListItem(pb)}
+			{#snippet view(components: SystemComponent[])}
+				{#each components as c (c.id)}
+					{@render componentListItem(c)}
 				{:else}
-					<span>No Playbooks Found</span>
+					<span>No Components Found</span>
 				{/each}
 			{/snippet}
 		</LoadingQueryWrapper>

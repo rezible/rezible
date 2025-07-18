@@ -50,7 +50,7 @@ var playbooksTags = []string{"Playbooks"}
 // ops
 
 var ListPlaybooks = huma.Operation{
-	OperationID: "list-playbookss",
+	OperationID: "list-playbooks",
 	Method:      http.MethodGet,
 	Path:        "/playbooks",
 	Summary:     "List Playbooks",
@@ -65,7 +65,7 @@ type ListPlaybooksRequest struct {
 type ListPlaybooksResponse PaginatedResponse[Playbook]
 
 var GetPlaybook = huma.Operation{
-	OperationID: "get-playbooks",
+	OperationID: "get-playbook",
 	Method:      http.MethodGet,
 	Path:        "/playbooks/{id}",
 	Summary:     "Get Playbook",
@@ -77,7 +77,7 @@ type GetPlaybookRequest GetIdRequest
 type GetPlaybookResponse ItemResponse[Playbook]
 
 var CreatePlaybook = huma.Operation{
-	OperationID: "create-playbooks",
+	OperationID: "create-playbook",
 	Method:      http.MethodPost,
 	Path:        "/playbooks",
 	Summary:     "Create a Playbook",
@@ -92,7 +92,7 @@ type CreatePlaybookRequest RequestWithBodyAttributes[CreatePlaybookAttributes]
 type CreatePlaybookResponse ItemResponse[Playbook]
 
 var UpdatePlaybook = huma.Operation{
-	OperationID: "update-playbooks",
+	OperationID: "update-playbook",
 	Method:      http.MethodPatch,
 	Path:        "/playbooks/{id}",
 	Summary:     "Update a Playbook",
@@ -107,7 +107,7 @@ type UpdatePlaybookRequest UpdateIdRequest[UpdatePlaybookAttributes]
 type UpdatePlaybookResponse ItemResponse[Playbook]
 
 var ArchivePlaybook = huma.Operation{
-	OperationID: "archive-playbooks",
+	OperationID: "archive-playbook",
 	Method:      http.MethodDelete,
 	Path:        "/playbooks/{id}",
 	Summary:     "Archive a Playbook",

@@ -4,7 +4,6 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button, ListItem } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import BacklogList from "./BacklogList.svelte";
 	import { useTeamViewState } from "../viewState.svelte";
 	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 

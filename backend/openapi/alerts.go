@@ -44,7 +44,7 @@ var alertsTags = []string{"Alerts"}
 // ops
 
 var ListAlerts = huma.Operation{
-	OperationID: "list-alertss",
+	OperationID: "list-alerts",
 	Method:      http.MethodGet,
 	Path:        "/alerts",
 	Summary:     "List Alerts",
@@ -59,7 +59,7 @@ type ListAlertsRequest struct {
 type ListAlertsResponse PaginatedResponse[Alert]
 
 var GetAlert = huma.Operation{
-	OperationID: "get-alerts",
+	OperationID: "get-alert",
 	Method:      http.MethodGet,
 	Path:        "/alerts/{id}",
 	Summary:     "Get Alert",
