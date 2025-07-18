@@ -25,7 +25,7 @@ func (Alert) Fields() []ent.Field {
 // Edges of the Alert.
 func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
-		//edge.From("playbooks", Playbook.Type).Ref("alerts"),
+		edge.From("playbooks", Playbook.Type).Ref("alerts"),
 		edge.From("instances", OncallEvent.Type).Ref("alert"),
 	}
 }
