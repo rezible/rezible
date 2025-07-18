@@ -70,6 +70,16 @@ export type AddWatchedOncallRosterResponseBody = {
     data: Array<OncallRoster>;
 };
 
+export type Alert = {
+    attributes: AlertAttributes;
+    id: string;
+};
+
+export type AlertAttributes = {
+    description: string;
+    name: string;
+};
+
 export type AuthSessionsConfig = {
     providerName: string;
 };
@@ -423,6 +433,26 @@ export type CreateOncallShiftHandoverTemplateResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandoverTemplate;
+};
+
+export type CreatePlaybookAttributes = {
+    title: string;
+};
+
+export type CreatePlaybookRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreatePlaybookAttributes;
+};
+
+export type CreatePlaybookResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Playbook;
 };
 
 export type CreateRetrospectiveAttributes = {
@@ -780,6 +810,14 @@ export type FunctionalityAttributes = {
     name: string;
 };
 
+export type GetAlertResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Alert;
+};
+
 export type GetAuthSessionsConfigResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -970,6 +1008,14 @@ export type GetOncallShiftResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShift;
+};
+
+export type GetPlaybookResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Playbook;
 };
 
 export type GetPreviousOncallShiftResponseBody = {
@@ -1372,6 +1418,15 @@ export type Integration = {
     [key: string]: never;
 };
 
+export type ListAlertsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Alert>;
+    pagination: ResponsePagination;
+};
+
 export type ListEnvironmentsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1565,6 +1620,15 @@ export type ListOncallShiftsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<OncallShift>;
+    pagination: ResponsePagination;
+};
+
+export type ListPlaybooksResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<Playbook>;
     pagination: ResponsePagination;
 };
 
@@ -1863,6 +1927,16 @@ export type OncallShiftMetricsBurden = {
 export type OncallShiftMetricsIncidents = {
     responseTimeMinutes: number;
     total: number;
+};
+
+export type Playbook = {
+    attributes: PlaybookAttributes;
+    id: string;
+};
+
+export type PlaybookAttributes = {
+    description: string;
+    name: string;
 };
 
 export type RemoveWatchedOncallRosterResponseBody = {
@@ -2507,6 +2581,26 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
     data: OncallShiftHandoverTemplate;
 };
 
+export type UpdatePlaybookAttributes = {
+    name?: string;
+};
+
+export type UpdatePlaybookRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdatePlaybookAttributes;
+};
+
+export type UpdatePlaybookResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Playbook;
+};
+
 export type UpdateRetrospectiveDiscussionAttributes = {
     resolved?: boolean;
 };
@@ -2809,6 +2903,104 @@ export type VerifyDocumentEditorSessionResponseBody = {
     readonly $schema?: string;
     data: DocumentEditorSessionAuth;
 };
+
+export type ListAlertssData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        teamId?: string;
+    };
+    url: '/alerts';
+};
+
+export type ListAlertssErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAlertssError = ListAlertssErrors[keyof ListAlertssErrors];
+
+export type ListAlertssResponses = {
+    /**
+     * OK
+     */
+    200: ListAlertsResponseBody;
+};
+
+export type ListAlertssResponse = ListAlertssResponses[keyof ListAlertssResponses];
+
+export type GetAlertsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/alerts/{id}';
+};
+
+export type GetAlertsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAlertsError = GetAlertsErrors[keyof GetAlertsErrors];
+
+export type GetAlertsResponses = {
+    /**
+     * OK
+     */
+    200: GetAlertResponseBody;
+};
+
+export type GetAlertsResponse = GetAlertsResponses[keyof GetAlertsResponses];
 
 export type GetAuthSessionConfigData = {
     body?: never;
@@ -7828,6 +8020,243 @@ export type GetOncallShiftMetricsResponses = {
 };
 
 export type GetOncallShiftMetricsResponse = GetOncallShiftMetricsResponses[keyof GetOncallShiftMetricsResponses];
+
+export type ListPlaybookssData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        teamId?: string;
+    };
+    url: '/playbooks';
+};
+
+export type ListPlaybookssErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListPlaybookssError = ListPlaybookssErrors[keyof ListPlaybookssErrors];
+
+export type ListPlaybookssResponses = {
+    /**
+     * OK
+     */
+    200: ListPlaybooksResponseBody;
+};
+
+export type ListPlaybookssResponse = ListPlaybookssResponses[keyof ListPlaybookssResponses];
+
+export type CreatePlaybooksData = {
+    body: CreatePlaybookRequestBody;
+    path?: never;
+    query?: never;
+    url: '/playbooks';
+};
+
+export type CreatePlaybooksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreatePlaybooksError = CreatePlaybooksErrors[keyof CreatePlaybooksErrors];
+
+export type CreatePlaybooksResponses = {
+    /**
+     * OK
+     */
+    200: CreatePlaybookResponseBody;
+};
+
+export type CreatePlaybooksResponse = CreatePlaybooksResponses[keyof CreatePlaybooksResponses];
+
+export type ArchivePlaybooksData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/playbooks/{id}';
+};
+
+export type ArchivePlaybooksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchivePlaybooksError = ArchivePlaybooksErrors[keyof ArchivePlaybooksErrors];
+
+export type ArchivePlaybooksResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchivePlaybooksResponse = ArchivePlaybooksResponses[keyof ArchivePlaybooksResponses];
+
+export type GetPlaybooksData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/playbooks/{id}';
+};
+
+export type GetPlaybooksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetPlaybooksError = GetPlaybooksErrors[keyof GetPlaybooksErrors];
+
+export type GetPlaybooksResponses = {
+    /**
+     * OK
+     */
+    200: GetPlaybookResponseBody;
+};
+
+export type GetPlaybooksResponse = GetPlaybooksResponses[keyof GetPlaybooksResponses];
+
+export type UpdatePlaybooksData = {
+    body: UpdatePlaybookRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/playbooks/{id}';
+};
+
+export type UpdatePlaybooksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdatePlaybooksError = UpdatePlaybooksErrors[keyof UpdatePlaybooksErrors];
+
+export type UpdatePlaybooksResponses = {
+    /**
+     * OK
+     */
+    200: UpdatePlaybookResponseBody;
+};
+
+export type UpdatePlaybooksResponse = UpdatePlaybooksResponses[keyof UpdatePlaybooksResponses];
 
 export type ArchiveRetrospectiveReviewData = {
     body?: never;
