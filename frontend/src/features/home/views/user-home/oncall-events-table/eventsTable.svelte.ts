@@ -7,17 +7,18 @@ import { subMonths, subWeeks } from "date-fns";
 import { watch } from "runed";
 import { fromStore } from "svelte/store";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
+import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 
-export type DateRangeOption = {label: string, value: "shift" | "7d" | "30d" | "custom"};
+export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
 
 export const dateRangeOptions: DateRangeOption[] = [
-	{label: "Last 7 Days", value: "7d"},
-	{label: "Last Month", value: "30d"}, 
-	{label: "Custom", value: "custom"},
+	{ label: "Last 7 Days", value: "7d" },
+	{ label: "Last Month", value: "30d" },
+	{ label: "Custom", value: "custom" },
 ];
 
-const last7Days = () => ({from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day});
-const lastMonth = () => ({from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day});
+const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
+const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 
 export type EventKind = OncallEventAttributes["kind"];
 
@@ -58,37 +59,31 @@ export class OncallEventsTableState {
 		if (this.oncallInfo.rosterIds.length > 0) return this.oncallInfo.rosterIds.at(0);
 	});
 
-	paginationStore = createPaginationStore({ page: 1, perPage: 10, total: 0 });
-	pagination = fromStore(this.paginationStore);
-
-	paginationTotal = $derived(this.pagination.current.total);
-	paginationPerPage = $derived(this.pagination.current.perPage);
-	paginationCurrentPage = $derived(this.pagination.current.page as number);
-
+	paginator = new QueryPaginatorState();
 	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
-	
-	private listEventsQueryOffset = $derived(Math.max(0, (this.paginationCurrentPage - 1) * this.paginationPerPage));
-	private isShiftQuery = $derived(this.dateRangeOption === "shift");
+
 	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
 		rosterId: this.filters.rosterId,
 	});
+	private listShiftEventsQueryData = $derived<ListOncallEventsData["query"]>({ shiftId: this.activeShift?.id });
+	private listShiftEventsFinalQueryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
+
 	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({
-		...(this.isShiftQuery ? {shiftId: this.activeShift?.id} : this.listRosterEventsQueryData),
-		limit: this.paginationPerPage,
-		offset: this.listEventsQueryOffset,
+		...this.listShiftEventsFinalQueryData,
+		limit: this.paginator.limit,
+		offset: this.paginator.offset,
 		withAnnotations: true,
 	})
-	private listEventsQueryOptions = $derived(listOncallEventsOptions({query: this.listEventsQueryData}));
+	private listEventsQueryOptions = $derived(listOncallEventsOptions({ query: this.listEventsQueryData }));
+
 	private listEventsQuery = createQuery(() => ({
 		...this.listEventsQueryOptions,
 		enabled: this.queryEnabled,
 	}));
-	private eventsQueryData = $derived(this.listEventsQuery.data);
-	private eventsData = $derived(this.eventsQueryData?.data ?? []);
-
-	pageData = $derived(this.eventsData);
+	private listEventsQueryDataResult = $derived(this.listEventsQuery.data);
+	events = $derived(this.listEventsQueryDataResult?.data ?? []);
 
 	invalidateQuery() {
 		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
@@ -105,8 +100,6 @@ export class OncallEventsTableState {
 			this.filters.rosterId = id;
 		});
 
-		watch(() => this.eventsQueryData, d => {
-			if (d) this.paginationStore.setTotal(d.pagination.total);
-		});
+		this.paginator.watchQuery(this.listEventsQuery);
 	};
 }

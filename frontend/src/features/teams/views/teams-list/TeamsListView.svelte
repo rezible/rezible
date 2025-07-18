@@ -1,30 +1,22 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
 	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import TeamCard from "$components/team-card/TeamCard.svelte";
+	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 
-	const pagination = createPaginationStore();
 	let searchValue = $state<string>();
-	let params = $state<ListTeamsData["query"]>({});
-	const query = createQuery(() => listTeamsOptions({ query: params }));
-
-	// const maybeUpdateParams = (newParams: QueryParams) => {
-	// 	let { limit, offset, search } = params || {};
-	// 	offset = offset ?? 0;
-
-	// 	const newLimit = newParams?.limit ?? limit;
-	// 	const newOffset = newParams?.offset ?? offset;
-	// 	const newSearch = newParams?.search ?? search;
-
-	// 	if (limit !== newLimit || offset !== newOffset || search !== newSearch) {
-	// 		// console.log('updateParams', { limit: newLimit, offset: newOffset, search: newSearch });
-	// 	}
-	// };
+	const paginator = new QueryPaginatorState();
+	const params = $derived(listTeamsOptions({ query: {
+		limit: paginator.limit,
+		offset: paginator.offset,
+		search: searchValue,
+	}}));
+	const query = createQuery(() => params);
+	paginator.watchQuery(query);
 </script>
 
 {#snippet filters()}
@@ -32,7 +24,7 @@
 {/snippet}
 
 <FilterPage {filters}>
-	<PaginatedListBox {pagination}>
+	<PaginatedListBox pagination={paginator.pagination}>
 		<LoadingQueryWrapper {query}>
 			{#snippet view(teams: Team[])}
 				{#each teams as team (team.id)}

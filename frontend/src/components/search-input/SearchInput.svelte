@@ -11,13 +11,15 @@
 		value = $bindable(),
 		field: fieldProps = {},
 	}: Props = $props();
+
+	const coerceValue = (v: string | number | null) => ((!!v && typeof v === "string") ? v : undefined);
 </script>
 
 <TextField
 	label="Search"
 	labelPlacement="top"
-	on:change={(e) => console.log(e.detail)}
-	debounceChange
+	on:change={(e) => (value = coerceValue(e.detail.inputValue))}
+	debounceChange={300}
 	iconRight={mdiMagnify}
 	...fieldProps
 />

@@ -63,7 +63,7 @@
 		{#if tableState.loading}
 			<LoadingIndicator />
 		{:else}
-			{#each tableState.pageData as event (event.id)}
+			{#each tableState.events as event (event.id)}
 				<EventRow {event} />
 			{:else}
 				<div class="grid place-items-center flex-1">
@@ -73,16 +73,11 @@
 		{/if}
 	</div>
 
-	{#if tableState.pagination.current.totalPages > 0}
-		<Pagination
-			pagination={tableState.paginationStore}
-			perPageOptions={[10, 25, 50]}
-			show={["perPage", "pagination", "prevPage", "nextPage"]}
-			classes={{
-				root: "border-t py-1",
-				perPage: "flex-1 text-right",
-				pagination: "px-8",
-			}}
-		/>
-	{/if}
+	<Pagination {...tableState.paginator.paginationProps}
+		classes={{
+			root: "border-t py-1",
+			perPage: "flex-1 text-right",
+			pagination: "px-8",
+		}}
+	/>
 </div>
