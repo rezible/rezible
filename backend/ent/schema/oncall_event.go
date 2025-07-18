@@ -27,6 +27,7 @@ func (OncallEvent) Fields() []ent.Field {
 func (OncallEvent) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roster", OncallRoster.Type).Field("roster_id").Unique(),
+		edge.To("alert", Alert.Type).Unique(),
 		edge.From("annotations", OncallAnnotation.Type).Ref("event"),
 	}
 }
