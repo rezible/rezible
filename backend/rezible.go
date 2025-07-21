@@ -391,6 +391,7 @@ type (
 		WithCreator       bool
 		WithRoster        bool
 		WithAlertFeedback bool
+		WithEvent         bool
 	}
 
 	OncallEventsService interface {

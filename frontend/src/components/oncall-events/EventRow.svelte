@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
-	import { Button, Lazy } from "svelte-ux";
+	import { Button, Lazy, Tooltip } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "../avatar/Avatar.svelte";
 	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
@@ -25,7 +25,7 @@
 	const attrs = $derived(event.attributes);
 
 	const loading = $derived(!!loadingId && loadingId === event.id);
-	const disabled = $derived(!!loadingId && loadingId !== event.id);
+	const disabled = $derived(!!loadingId);
 
 	const kindIcon = $derived(getEventKindIcon(attrs.kind));
 </script>
@@ -54,7 +54,7 @@
 		<span class="w-full truncate text-left align-baseline">{attrs.title}</span>
 	</div>
 
-	<div class="flex w-full h-full items-center justify-end">
+	<div class="flex w-full h-full items-center justify-end gap-2">
 		<div class="flex-1 h-full items-center justify-end flex gap-2">
 			{#each eventAnnotations as anno}
 				{@render annotationBox(anno)}
@@ -62,7 +62,7 @@
 
 			{#if canCreate}
 				<div class="hidden group-hover:inline w-fit h-full">
-					<Button classes={{root: "w-full h-full items-center"}} {loading} {disabled} on:click={() => annoDialog.setOpen(event)}>
+					<Button classes={{root: "w-full h-full items-center"}} {disabled} {loading} on:click={() => annoDialog.setOpen(event)}>
 						Annotate
 						<Icon data={mdiChatPlus} />
 					</Button>
@@ -71,9 +71,9 @@
 		</div>
 
 		{#if !!togglePinned}
-			<div class="self-end">
-				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {loading} {disabled} on:click={togglePinned} />
-			</div>
+			<Tooltip title="Toggle Pinned">
+				<Button iconOnly icon={pinned ? mdiPin : mdiPinOutline} {disabled} {loading} on:click={togglePinned} />
+			</Tooltip>
 		{/if}
 	</div>
 </Lazy>

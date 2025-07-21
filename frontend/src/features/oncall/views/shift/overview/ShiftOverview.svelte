@@ -9,6 +9,7 @@
 	import ShiftAlerts from "./sections/ShiftAlerts.svelte";
 
 	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";
+	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 
 	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);
@@ -32,3 +33,5 @@
 		<ShiftEventsSidebar />
 	</div>
 </div>
+
+<EventAnnotationDialog />

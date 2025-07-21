@@ -1,13 +1,11 @@
 <script lang="ts">
+	import { Collapse } from "svelte-ux";
 	import type { OncallShiftMetrics } from "$lib/api";
-
+	import MetricComparisonLabel from "$components/viz/MetricComparisonLabel.svelte";
 	import Header from "$components/header/Header.svelte";
-	import InlineStat from "$components/viz/InlineStat.svelte";
 	
 	import SectionCard from "../SectionCard.svelte";
 	import BurdenRadar from "./BurdenRadar.svelte";
-	import MetricComparisonLabel from "$src/components/viz/MetricComparisonLabel.svelte";
-	import { Collapse } from "svelte-ux";
 
 	type Props = {
 		metrics?: OncallShiftMetrics;

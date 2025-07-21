@@ -72,6 +72,9 @@ func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.Li
 	if params.WithAlertFeedback {
 		query.WithAlertFeedback()
 	}
+	if params.WithEvent {
+		query.WithEvent()
+	}
 
 	rosterId := params.RosterID
 	if params.Shift != nil {

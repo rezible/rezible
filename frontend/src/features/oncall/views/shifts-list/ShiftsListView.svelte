@@ -17,12 +17,12 @@
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
-	const kindOptions: MenuOption<string>[] = [
+	const statusOptions: MenuOption<string>[] = [
 		{ label: 'Active', value: "active" },
 		{ label: 'Past', value: "past" },
 		{ label: 'Upcoming', value: "upcoming", disabled: true },
 	];
-	let selectedKinds = $state<string[]>(kindOptions.map(o => o.value));
+	let selectedStatus = $state<string[]>(statusOptions.map(o => o.value));
 
 	const pagination = createPaginationStore();
 
@@ -50,15 +50,15 @@
 		if (!id) return;
 	}
 
-	const formatShiftKindField = (opts: MenuOption<string>[]) => {
+	const formatShiftStatusField = (opts: MenuOption<string>[]) => {
 		if (opts.length === 0) return "None";
-		if (opts.length === kindOptions.length) return "Any";
+		if (opts.length === statusOptions.length) return "Any";
 		return opts.map((o) => o.label).join(", ");
 	};
 
-	const setShiftKind = (value?: string[]) => {
+	const setShiftStatus = (value?: string[]) => {
 		if (!value || value.length === 0) return;
-		selectedKinds = value;
+		selectedStatus = value;
 	};
 
 	const queryParams = $derived<ListOncallShiftsData["query"]>({});
@@ -73,11 +73,11 @@
 {#snippet filters()}
 	<div class="flex flex-col gap-2">
 		<MultiSelectField
-			label="Shift Kind"
+			label="Shift Status"
 			labelPlacement="top"
-  			formatSelected={c => formatShiftKindField(c.options)}
-			options={kindOptions}
-			bind:value={() => selectedKinds, setShiftKind}
+  			formatSelected={c => formatShiftStatusField(c.options)}
+			options={statusOptions}
+			bind:value={() => selectedStatus, setShiftStatus}
 			clearable={false}
 			mode="actions"
 			maintainOrder

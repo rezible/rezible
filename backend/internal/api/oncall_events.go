@@ -68,6 +68,7 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 	params := rez.ListOncallAnnotationsParams{
 		ListParams: request.ListParams(),
 		RosterID:   request.RosterId,
+		WithEvent:  request.WithEvents,
 	}
 	if request.ShiftId != uuid.Nil {
 		shift, shiftErr := h.oncall.GetShiftByID(ctx, request.ShiftId)

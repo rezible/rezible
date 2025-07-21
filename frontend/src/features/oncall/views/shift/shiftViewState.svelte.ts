@@ -1,17 +1,23 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
-import { createQuery } from "@tanstack/svelte-query";
-import { getOncallShiftOptions, type ListOncallAnnotationsData, listOncallAnnotationsOptions, type ListOncallEventsData, listOncallEventsOptions } from "$lib/api";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
+import { getOncallShiftOptions, listOncallAnnotationsOptions, type ListOncallEventsData, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
 import { PeriodType } from "@layerstack/utils";
 
 export class ShiftViewState {
+	private queryClient = useQueryClient();
 	shiftId = $state<string>(null!);
 
 	constructor(idFn: () => string) {
 		this.shiftId = idFn();
 		watch(idFn, id => { this.shiftId = id });
+
+		setAnnotationDialogState(new AnnotationDialogState({
+			onClosed: (updated?: OncallAnnotation) => {this.onAnnotationDialogUpdated(updated)},
+		}));
 	}
 
 	useShiftTimezone = $state(false);
@@ -31,12 +37,12 @@ export class ShiftViewState {
 		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
 	})
 
-	private eventsQueryOptions = $derived<ListOncallEventsData["query"]>({
+	private eventsQueryOptions = $derived(listOncallEventsOptions({ query: {
 		shiftId: this.shiftId,
-	});
-	eventsQuery = createQuery(() => listOncallEventsOptions({ query: this.eventsQueryOptions }));
+		withAnnotations: true,
+	}}));
+	eventsQuery = createQuery(() => (this.eventsQueryOptions));
 	events = $derived(this.eventsQuery.data?.data);
-	eventIdMap = $derived(new Map(this.events?.map(e => ([e.id, e]))));
 
 	eventsFilter = $state<ShiftEventFilterKind>();
 	filteredEvents = $derived.by(() => {
@@ -44,6 +50,12 @@ export class ShiftViewState {
 		if (!this.eventsFilter) return this.events;
 		return this.events.filter(e => (!this.eventsFilter || shiftEventMatchesFilter(e, this.eventsFilter)));
 	});
+
+	onAnnotationDialogUpdated(updated?: OncallAnnotation) {
+		if (!updated) return;
+		this.queryClient.invalidateQueries(this.eventsQueryOptions);
+		this.queryClient.invalidateQueries(listOncallAnnotationsOptions({ query: { shiftId: this.shiftId, withEvents: true } }));
+	}
 }
 
 const shiftViewStateCtx = new Context<ShiftViewState>("shiftViewState");

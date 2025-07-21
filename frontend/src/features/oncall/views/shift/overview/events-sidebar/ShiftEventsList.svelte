@@ -1,7 +1,5 @@
 <script lang="ts">
-	import type { OncallAnnotation, OncallEvent } from "$lib/api";
 	import EventRow from "$components/oncall-events/EventRow.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { useShiftViewState } from "../../shiftViewState.svelte";
 
@@ -10,12 +8,6 @@
 	const shift = $derived(viewState.shift);
 	const events = $derived(viewState.filteredEvents);
 	const roster = $derived(shift?.attributes.roster);
-
-	setAnnotationDialogState(new AnnotationDialogState({
-		onClosed: (updated?: OncallAnnotation) => {
-			
-		}
-	}));
 </script>
 
 {#if shift && events && roster}
