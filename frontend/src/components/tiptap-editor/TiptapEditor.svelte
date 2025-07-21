@@ -17,10 +17,9 @@
 
 	const { editor = $bindable(), children, class: className }: Props = $props();
 
-	let ref: HTMLElement;
+	let ref = $state<HTMLElement>(null!);
 
 	const setupEditor = () => {
-		if (!ref) return;
 		if (!editor?.options.element) return;
 		if (editor.contentElement) return;
 

@@ -35,6 +35,7 @@ type (
 	PlaybookAttributes struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
+		Content     []byte `json:"content"`
 	}
 )
 
@@ -42,6 +43,7 @@ func PlaybookFromEnt(pb *ent.Playbook) Playbook {
 	attrs := PlaybookAttributes{
 		Title:       pb.Title,
 		Description: "",
+		Content:     pb.Content,
 	}
 	return Playbook{
 		Id:         pb.ID,

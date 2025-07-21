@@ -4,8 +4,7 @@ import {
 	configureBaseExtensions,
 	configureUserMentionExtension,
 } from "@rezible/documents/tiptap-extensions";
-
-import { RezUserSuggestion } from "$src/components/tiptap-editor/user-suggestions/user-suggestion.svelte";
+import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 
 export const createMentionEditor = (content: Content, classes = "") => {
 	const baseExtensions = configureBaseExtensions(true);

@@ -1935,6 +1935,7 @@ export type Playbook = {
 };
 
 export type PlaybookAttributes = {
+    content: string;
     description: string;
     title: string;
 };
