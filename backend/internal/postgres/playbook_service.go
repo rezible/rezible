@@ -22,14 +22,19 @@ func NewPlaybookService(db *ent.Client, prov rez.PlaybookDataProvider) (*Playboo
 	return s, nil
 }
 
+// TODO: don't fake
+var fakePlaybook = &ent.Playbook{
+	ID:         uuid.New(),
+	Title:      "Example Playbook",
+	ProviderID: "example",
+	Content:    nil,
+	Edges:      ent.PlaybookEdges{},
+}
+
 func (s *PlaybookService) ListPlaybooks(ctx context.Context, params *rez.ListPlaybooksParams) ([]*ent.Playbook, int, error) {
-	// TODO: don't fake
-	fakePlaybook := &ent.Playbook{
-		ID:         uuid.New(),
-		Title:      "Example Playbook",
-		ProviderID: "example",
-		Content:    nil,
-		Edges:      ent.PlaybookEdges{},
-	}
 	return []*ent.Playbook{fakePlaybook}, 1, nil
+}
+
+func (s *PlaybookService) GetPlaybook(ctx context.Context, id uuid.UUID) (*ent.Playbook, error) {
+	return fakePlaybook, nil
 }

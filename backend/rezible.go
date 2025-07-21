@@ -276,6 +276,7 @@ type (
 
 	AlertService interface {
 		ListAlerts(context.Context, *ListAlertsParams) ([]*ent.Alert, int, error)
+		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 	}
 )
 
@@ -290,6 +291,7 @@ type (
 
 	PlaybookService interface {
 		ListPlaybooks(context.Context, *ListPlaybooksParams) ([]*ent.Playbook, int, error)
+		GetPlaybook(context.Context, uuid.UUID) (*ent.Playbook, error)
 	}
 )
 

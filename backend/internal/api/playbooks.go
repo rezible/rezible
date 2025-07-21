@@ -42,6 +42,13 @@ func (h *playbooksHandler) CreatePlaybook(ctx context.Context, request *oapi.Cre
 func (h *playbooksHandler) GetPlaybook(ctx context.Context, request *oapi.GetPlaybookRequest) (*oapi.GetPlaybookResponse, error) {
 	var resp oapi.GetPlaybookResponse
 
+	pb, getErr := h.playbooks.GetPlaybook(ctx, request.Id)
+	if getErr != nil {
+		return nil, detailError("get playbook", getErr)
+	}
+
+	resp.Body.Data = oapi.PlaybookFromEnt(pb)
+
 	return &resp, nil
 }
 
