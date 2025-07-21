@@ -18,7 +18,8 @@
 
 	const dialog = useAnnotationDialogState();
 
-	const title = $derived(dialog.view === "view" ? "Viewing Annotation" : "Annotating Alert");
+	const eventKind = $derived(event.attributes.kind === "alert" ? "Alert" : "Event");
+	const title = $derived(dialog.view === "view" ? "Viewing Annotation" : `Annotating ${eventKind}`);
 
 	const kindIcon = $derived(getEventKindIcon(event.attributes.kind));
 </script>

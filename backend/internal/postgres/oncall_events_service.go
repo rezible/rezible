@@ -30,25 +30,17 @@ func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserS
 	return s, nil
 }
 
-func (s *OncallEventsService) buildListEventsQuery(params rez.ListOncallEventsParams) *ent.OncallEventQuery {
+func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, int, error) {
 	query := s.db.OncallEvent.Query().
 		Where(oncallevent.And(oncallevent.TimestampGT(params.From), oncallevent.TimestampLT(params.To)))
-
 	if params.RosterID != uuid.Nil {
 		query.Where(oncallevent.RosterID(params.RosterID))
 	}
-
 	order := sql.OrderDesc()
 	if params.OrderAsc {
 		order = sql.OrderAsc()
 	}
 	query.Order(oncallevent.ByTimestamp(order))
-
-	return query
-}
-
-func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, error) {
-	query := s.buildListEventsQuery(params)
 	query.Offset(params.Offset)
 	query.Limit(params.GetLimit())
 	if params.WithAnnotations {
@@ -58,18 +50,15 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 			}
 		})
 	}
-	return query.All(params.GetQueryContext(ctx))
-}
 
-func (s *OncallEventsService) CountEvents(ctx context.Context, params rez.ListOncallEventsParams) (int, error) {
-	return s.buildListEventsQuery(params).Count(params.GetQueryContext(ctx))
+	return ent.RunCountableQuery[*ent.OncallEvent](params.GetQueryContext(ctx), query, params.Count)
 }
 
 func (s *OncallEventsService) GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error) {
 	return s.db.OncallEvent.Query().Where(oncallevent.ProviderID(providerId)).First(ctx)
 }
 
-func (s *OncallEventsService) buildListAnnotationsQuery(params rez.ListOncallAnnotationsParams) *ent.OncallAnnotationQuery {
+func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error) {
 	query := s.db.OncallAnnotation.Query().
 		Limit(params.GetLimit()).
 		Offset(params.Offset)
@@ -101,15 +90,8 @@ func (s *OncallEventsService) buildListAnnotationsQuery(params rez.ListOncallAnn
 	if rosterId != uuid.Nil {
 		query.Where(oncallannotation.RosterID(rosterId))
 	}
-	return query
-}
 
-func (s *OncallEventsService) ListAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error) {
-	return s.buildListAnnotationsQuery(params).All(params.GetQueryContext(ctx))
-}
-
-func (s *OncallEventsService) CountAnnotations(ctx context.Context, params rez.ListOncallAnnotationsParams) (int, error) {
-	return s.buildListAnnotationsQuery(params).Count(params.GetQueryContext(ctx))
+	return ent.RunCountableQuery[*ent.OncallAnnotation](params.GetQueryContext(ctx), query, params.Count)
 }
 
 func (s *OncallEventsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error) {

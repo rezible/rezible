@@ -94,6 +94,11 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
 	}
 
+	auth, authErr := http.NewAuthSessionService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
+	if authErr != nil {
+		return nil, fmt.Errorf("http auth service: %w", authErr)
+	}
+
 	chat, chatErr := postgres.NewChatService(dbc, jobs, provs.Chat)
 	if chatErr != nil {
 		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
@@ -139,14 +144,19 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
-	components, cmpsErr := postgres.NewSystemComponentsService(dbc)
-	if cmpsErr != nil {
-		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", cmpsErr)
+	components, componentsErr := postgres.NewSystemComponentsService(dbc)
+	if componentsErr != nil {
+		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
-	if authErr != nil {
-		return nil, fmt.Errorf("http auth service: %w", authErr)
+	alerts, alertsErr := postgres.NewAlertService(dbc, jobs, provs.AlertsData)
+	if alertsErr != nil {
+		return nil, fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
+	}
+
+	playbooks, playbooksErr := postgres.NewPlaybookService(dbc, provs.PlaybooksData)
+	if playbooksErr != nil {
+		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
 	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
@@ -157,7 +167,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 	provs.Chat.SetEventHandler(chat)
 
 	webhookHandler := pl.WebhookHandler()
-	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components)
+	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)

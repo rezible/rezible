@@ -33,15 +33,19 @@ type (
 	}
 
 	PlaybookAttributes struct {
-		Name        string `json:"name"`
+		Title       string `json:"title"`
 		Description string `json:"description"`
 	}
 )
 
-func PlaybookFromEnt(playbooks *ent.Playbook) Playbook {
+func PlaybookFromEnt(pb *ent.Playbook) Playbook {
+	attrs := PlaybookAttributes{
+		Title:       pb.Title,
+		Description: "",
+	}
 	return Playbook{
-		Id:         playbooks.ID,
-		Attributes: PlaybookAttributes{},
+		Id:         pb.ID,
+		Attributes: attrs,
 	}
 }
 

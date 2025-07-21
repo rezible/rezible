@@ -71,6 +71,7 @@ func (l ListRequest) ListParams() rez.ListParams {
 		Offset:          l.Offset,
 		Limit:           l.Limit,
 		IncludeArchived: l.IncludeArchived,
+		Count:           true,
 	}
 }
 

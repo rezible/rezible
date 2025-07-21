@@ -64,8 +64,8 @@
 
 	<ChartWithStats {stats}>
 		{#snippet chart()}
-			<div class="h-[250px] w-[300px] overflow-auto border">
-				incident bar chart
+			<div class="h-[250px] w-[300px] overflow-auto">
+				
 			</div>
 		{/snippet}
 	</ChartWithStats>

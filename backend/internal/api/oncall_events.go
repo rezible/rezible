@@ -45,27 +45,18 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		params.RosterID = uuid.Nil
 	}
 
-	eventCount, countErr := h.events.CountEvents(ctx, params)
-	if countErr != nil {
-		return nil, detailError("failed to get event count", countErr)
+	events, count, eventsErr := h.events.ListEvents(ctx, params)
+	if eventsErr != nil {
+		return nil, detailError("failed to query events", eventsErr)
 	}
-
-	if eventCount > 0 {
-		events, eventsErr := h.events.ListEvents(ctx, params)
-		if eventsErr != nil {
-			return nil, detailError("failed to query events", eventsErr)
-		}
-		resp.Body.Data = make([]oapi.OncallEvent, len(events))
-		for i, event := range events {
-			resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
-		}
-	} else {
-		resp.Body.Data = make([]oapi.OncallEvent, 0)
+	resp.Body.Data = make([]oapi.OncallEvent, len(events))
+	for i, event := range events {
+		resp.Body.Data[i] = oapi.OncallEventFromEnt(event)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
 		Next:     nil,
 		Previous: nil,
-		Total:    eventCount,
+		Total:    count,
 	}
 
 	return &resp, nil
@@ -86,24 +77,16 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 		params.Shift = shift
 	}
 
-	count, countErr := h.events.CountAnnotations(ctx, params)
-	if countErr != nil {
-		return nil, detailError("failed to query events", countErr)
+	annos, count, annosErr := h.events.ListAnnotations(ctx, params)
+	if annosErr != nil {
+		return nil, detailError("query shift annotations", annosErr)
 	}
 
-	if count > 0 {
-		annos, annosErr := h.events.ListAnnotations(ctx, params)
-		if annosErr != nil {
-			return nil, detailError("query shift annotations", annosErr)
-		}
-
-		resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
-		for i, anno := range annos {
-			resp.Body.Data[i] = oapi.OncallAnnotationFromEnt(anno)
-		}
-	} else {
-		resp.Body.Data = make([]oapi.OncallAnnotation, 0)
+	resp.Body.Data = make([]oapi.OncallAnnotation, len(annos))
+	for i, anno := range annos {
+		resp.Body.Data[i] = oapi.OncallAnnotationFromEnt(anno)
 	}
+
 	resp.Body.Pagination = oapi.ResponsePagination{
 		Next:     nil,
 		Previous: nil,

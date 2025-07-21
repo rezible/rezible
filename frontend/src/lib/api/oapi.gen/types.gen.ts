@@ -77,7 +77,7 @@ export type Alert = {
 
 export type AlertAttributes = {
     description: string;
-    name: string;
+    title: string;
 };
 
 export type AuthSessionsConfig = {
@@ -1936,7 +1936,7 @@ export type Playbook = {
 
 export type PlaybookAttributes = {
     description: string;
-    name: string;
+    title: string;
 };
 
 export type RemoveWatchedOncallRosterResponseBody = {

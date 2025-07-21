@@ -2,20 +2,33 @@ package api
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
+	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type playbooksHandler struct {
-	db *ent.Client
+	playbooks rez.PlaybookService
 }
 
-func newPlaybooksHandler(db *ent.Client) *playbooksHandler {
-	return &playbooksHandler{db: db}
+func newPlaybooksHandler(pb rez.PlaybookService) *playbooksHandler {
+	return &playbooksHandler{playbooks: pb}
 }
 
 func (h *playbooksHandler) ListPlaybooks(ctx context.Context, request *oapi.ListPlaybooksRequest) (*oapi.ListPlaybooksResponse, error) {
 	var resp oapi.ListPlaybooksResponse
+
+	playbooks, count, playbooksErr := h.playbooks.ListPlaybooks(ctx, nil)
+	if playbooksErr != nil {
+		return nil, detailError("failed to list playbooks", playbooksErr)
+	}
+
+	resp.Body.Data = make([]oapi.Playbook, len(playbooks))
+	for i, pb := range playbooks {
+		resp.Body.Data[i] = oapi.PlaybookFromEnt(pb)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Total: count,
+	}
 
 	return &resp, nil
 }

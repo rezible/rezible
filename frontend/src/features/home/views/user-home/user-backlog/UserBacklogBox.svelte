@@ -59,7 +59,7 @@
 		{:else}
 			<div class="grid place-items-center">
 				<div class="flex gap-2 items-center text-surface-content/80">
-					<span class="leading-none">Backlog Empty</span>
+					<span class="leading-none">No Items Found</span>
 					<Icon data={mdiGhostOutline} />
 				</div>
 			</div>

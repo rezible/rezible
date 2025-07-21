@@ -27,7 +27,7 @@
 
 {#snippet alertListItem(a: Alert)}
 	<a href="/alerts/{a.id}">
-		<ListItem title={a.attributes.name} subheading={a.attributes.description} />
+		<ListItem title={a.attributes.title} subheading={a.attributes.description} />
 	</a>
 {/snippet}
 

@@ -71,6 +71,8 @@ type (
 		TeamData             TeamDataProvider
 		UserData             UserDataProvider
 		TicketData           TicketDataProvider
+		AlertsData           AlertDataProvider
+		PlaybooksData        PlaybookDataProvider
 	}
 
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
@@ -136,8 +138,14 @@ type (
 		ControlActions  []ComponentTraitReference
 	}
 
+	ListSystemComponentsParams struct {
+		ListParams
+	}
+
 	SystemComponentsService interface {
 		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
+
+		ListSystemComponents(context.Context, ListSystemComponentsParams) ([]*ent.SystemComponent, int, error)
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
@@ -248,7 +256,40 @@ type (
 		PullTickets(context.Context) iter.Seq2[*ent.Ticket, error]
 	}
 
+	ListTicketsParams struct {
+		ListParams
+	}
+
 	TicketService interface {
+		ListTickets(context.Context, ListTicketsParams) ([]*ent.Ticket, int, error)
+	}
+)
+
+type (
+	AlertDataProvider interface {
+		PullAlerts(context.Context) iter.Seq2[*ent.Alert, error]
+	}
+
+	ListAlertsParams struct {
+		ListParams
+	}
+
+	AlertService interface {
+		ListAlerts(context.Context, *ListAlertsParams) ([]*ent.Alert, int, error)
+	}
+)
+
+type (
+	PlaybookDataProvider interface {
+		PullAlerts(context.Context) iter.Seq2[*ent.Playbook, error]
+	}
+
+	ListPlaybooksParams struct {
+		ListParams
+	}
+
+	PlaybookService interface {
+		ListPlaybooks(context.Context, *ListPlaybooksParams) ([]*ent.Playbook, int, error)
 	}
 )
 
@@ -354,11 +395,9 @@ type (
 
 	OncallEventsService interface {
 		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
-		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, error)
-		CountEvents(ctx context.Context, params ListOncallEventsParams) (int, error)
+		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, int, error)
 
-		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, error)
-		CountAnnotations(ctx context.Context, params ListOncallAnnotationsParams) (int, error)
+		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error)
 
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.OncallAnnotation, error)
 		UpdateAnnotation(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)

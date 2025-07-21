@@ -27,15 +27,19 @@ type (
 	}
 
 	AlertAttributes struct {
-		Name        string `json:"name"`
+		Title       string `json:"title"`
 		Description string `json:"description"`
 	}
 )
 
-func AlertFromEnt(alerts *ent.Alert) Alert {
+func AlertFromEnt(a *ent.Alert) Alert {
+	attrs := AlertAttributes{
+		Title:       a.Title,
+		Description: "",
+	}
 	return Alert{
-		Id:         alerts.ID,
-		Attributes: AlertAttributes{},
+		Id:         a.ID,
+		Attributes: attrs,
 	}
 }
 

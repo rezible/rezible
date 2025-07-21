@@ -2,20 +2,33 @@ package api
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
+	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
 type alertsHandler struct {
-	db *ent.Client
+	alerts rez.AlertService
 }
 
-func newAlertsHandler(db *ent.Client) *alertsHandler {
-	return &alertsHandler{db: db}
+func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
+	return &alertsHandler{alerts: alerts}
 }
 
 func (h *alertsHandler) ListAlerts(ctx context.Context, request *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
 	var resp oapi.ListAlertsResponse
+
+	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, nil)
+	if alertsErr != nil {
+		return nil, detailError("failed to list alerts", alertsErr)
+	}
+
+	resp.Body.Data = make([]oapi.Alert, len(alerts))
+	for i, a := range alerts {
+		resp.Body.Data[i] = oapi.AlertFromEnt(a)
+	}
+	resp.Body.Pagination = oapi.ResponsePagination{
+		Total: count,
+	}
 
 	return &resp, nil
 }

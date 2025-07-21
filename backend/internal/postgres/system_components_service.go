@@ -92,6 +92,12 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 	return created, nil
 }
 
+func (*SystemComponentsService) ListSystemComponents(ctx context.Context, p rez.ListSystemComponentsParams) ([]*ent.SystemComponent, int, error) {
+	components := make([]*ent.SystemComponent, 0)
+	count := 0
+	return components, count, nil
+}
+
 func (s *SystemComponentsService) GetRelationship(ctx context.Context, id1 uuid.UUID, id2 uuid.UUID) (*ent.SystemComponentRelationship, error) {
 	pred1 := systemcomponentrelationship.And(
 		systemcomponentrelationship.SourceID(id1),

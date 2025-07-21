@@ -12,6 +12,7 @@ type ListParams struct {
 	Search          string
 	Offset          int
 	Limit           int
+	Count           bool
 	IncludeArchived bool
 	OrderAsc        bool
 }
@@ -64,4 +65,24 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 		return nil, errors.New("ent: pgx.Tx does not support driver")
 	}
 	return pgxDrvTx.PGXTransaction(), nil
+}
+
+type CountableQuery[T any] interface {
+	All(ctx context.Context) ([]T, error)
+	Count(ctx context.Context) (int, error)
+}
+
+func RunCountableQuery[T any](ctx context.Context, q CountableQuery[T], doCount bool) ([]T, int, error) {
+	results, queryErr := q.All(ctx)
+	if queryErr != nil {
+		return nil, 0, fmt.Errorf("list: %w", queryErr)
+	}
+	var count int
+	if doCount {
+		count, queryErr = q.Count(ctx)
+		if queryErr != nil {
+			return nil, 0, fmt.Errorf("count: %w", queryErr)
+		}
+	}
+	return results, count, nil
 }
