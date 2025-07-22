@@ -121,7 +121,7 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 
 	provs.LanguageModel, loadErr = l.LoadLanguageModelProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("ai model: %w", loadErr)
+		return nil, fmt.Errorf("language model: %w", loadErr)
 	}
 
 	provs.AuthSession, loadErr = l.LoadAuthSessionProvider(ctx)
@@ -131,12 +131,12 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 
 	provs.TeamData, loadErr = l.LoadTeamDataProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("team data: %w", loadErr)
+		return nil, fmt.Errorf("teams: %w", loadErr)
 	}
 
 	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("user data: %w", loadErr)
+		return nil, fmt.Errorf("users: %w", loadErr)
 	}
 
 	provs.Chat, loadErr = l.LoadChatProvider(ctx)
@@ -151,12 +151,12 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 
 	provs.IncidentData, loadErr = l.LoadIncidentDataProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("incident data: %w", loadErr)
+		return nil, fmt.Errorf("incidents: %w", loadErr)
 	}
 
 	provs.OncallData, loadErr = l.LoadOncallDataProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("oncall data: %w", loadErr)
+		return nil, fmt.Errorf("oncall: %w", loadErr)
 	}
 
 	provs.SystemComponentsData, loadErr = l.LoadSystemComponentsDataProvider(ctx)
@@ -166,7 +166,7 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 
 	provs.TicketData, loadErr = l.LoadTicketDataProvider(ctx)
 	if loadErr != nil {
-		return nil, fmt.Errorf("team data: %w", loadErr)
+		return nil, fmt.Errorf("tickets: %w", loadErr)
 	}
 
 	return &provs, nil
@@ -346,7 +346,7 @@ func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider
 	case "fake":
 		return loadProvider(fakeprovider.NewTeamsDataProvider, pCfg)
 	default:
-		return nil, fmt.Errorf("invalid user data provider: %s", pCfg.Name)
+		return nil, fmt.Errorf("invalid team data provider: %s", pCfg.Name)
 	}
 }
 
@@ -389,6 +389,8 @@ func (l *Loader) LoadTicketDataProvider(ctx context.Context) (rez.TicketDataProv
 	switch pCfg.Name {
 	case "jira":
 		return loadProviderCtx(ctx, jira.NewTicketDataProvider, pCfg)
+	case "fake":
+		return loadProvider(fakeprovider.NewTicketDataProvider, pCfg)
 	default:
 		return nil, fmt.Errorf("invalid ticket data provider: %s", pCfg.Name)
 	}
