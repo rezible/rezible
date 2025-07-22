@@ -4,6 +4,7 @@ go 1.24.1
 
 require (
 	entgo.io/ent v0.14.4
+	github.com/andygrunwald/go-jira v1.16.0
 	github.com/cloudwego/eino v0.3.45
 	github.com/cloudwego/eino-ext/components/model/claude v0.1.0
 	github.com/crewjam/saml v0.5.1
@@ -33,8 +34,6 @@ require (
 require (
 	ariga.io/atlas v0.35.0 // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/alitto/pond/v2 v2.4.0 // indirect
-	github.com/andygrunwald/go-jira v1.16.0 // indirect
 	github.com/anthropics/anthropic-sdk-go v1.4.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/aws/aws-sdk-go-v2 v1.33.0 // indirect
@@ -56,7 +55,6 @@ require (
 	github.com/bytedance/sonic v1.13.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/crewjam/httperr v0.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/di-wu/parser v0.3.0 // indirect
 	github.com/di-wu/xsd-datetime v1.0.0 // indirect

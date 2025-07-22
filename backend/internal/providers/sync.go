@@ -95,11 +95,11 @@ func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) e
 	}
 
 	if args.OncallEvents {
-		oncallEventsProv, provErr := s.pl.LoadOncallEventsDataProvider(ctx)
+		alertsProv, provErr := s.pl.LoadAlertDataProvider(ctx)
 		if provErr != nil {
 			return fmt.Errorf("failed to load oncall events data provider: %w", provErr)
 		}
-		syncer := newOncallEventsDataSyncer(s.db, oncallEventsProv)
+		syncer := newOncallEventsDataSyncer(s.db, alertsProv)
 		if syncErr := syncer.SyncProviderData(ctx); syncErr != nil {
 			return fmt.Errorf("oncall events sync failed: %w", syncErr)
 		}

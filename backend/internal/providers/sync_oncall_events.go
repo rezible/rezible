@@ -3,23 +3,25 @@ package providers
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallevent"
-	"github.com/rs/zerolog/log"
-	"time"
 )
 
 type oncallEventsDataSyncer struct {
-	db       *ent.Client
-	provider rez.OncallEventsDataProvider
+	db     *ent.Client
+	alerts rez.AlertDataProvider
 
 	mutations []ent.Mutation
 }
 
-func newOncallEventsDataSyncer(db *ent.Client, provider rez.OncallEventsDataProvider) *oncallEventsDataSyncer {
-	return &oncallEventsDataSyncer{db: db, provider: provider}
+func newOncallEventsDataSyncer(db *ent.Client, alerts rez.AlertDataProvider) *oncallEventsDataSyncer {
+	return &oncallEventsDataSyncer{db: db, alerts: alerts}
 }
 
 func (ds *oncallEventsDataSyncer) resetState() {
@@ -30,30 +32,30 @@ func (ds *oncallEventsDataSyncer) SyncProviderData(ctx context.Context) error {
 	start := time.Now()
 
 	lastSync := getLastSyncTime(ctx, ds.db, "oncall_events")
-	if ds.provider.Source() == "fake" && !lastSync.IsZero() {
+	if rez.DebugMode && !lastSync.IsZero() {
 		return nil
 	}
 	if lastSync.Add(time.Minute * 30).After(start) {
 		return nil
 	}
 
-	if syncErr := ds.syncProviderEvents(ctx, lastSync); syncErr != nil {
+	if syncErr := ds.syncProviderAlertEvents(ctx, lastSync); syncErr != nil {
 		return fmt.Errorf("oncall events: %w", syncErr)
 	}
 
 	return nil
 }
 
-func (ds *oncallEventsDataSyncer) syncProviderEvents(ctx context.Context, from time.Time) error {
+func (ds *oncallEventsDataSyncer) syncProviderAlertEvents(ctx context.Context, from time.Time) error {
 	var batch []*ent.OncallEvent
 
 	start := time.Now()
 	var numMutations int
 
 	batchSize := 10
-	for provTeam, pullErr := range ds.provider.PullEventsBetweenDates(ctx, from, time.Now()) {
+	for provTeam, pullErr := range ds.alerts.PullAlertEventsBetweenDates(ctx, from, time.Now()) {
 		if pullErr != nil {
-			return fmt.Errorf("pull oncall events: %w", pullErr)
+			return fmt.Errorf("pull alert events: %w", pullErr)
 		}
 		batch = append(batch, provTeam)
 

@@ -129,12 +129,22 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 		return nil, fmt.Errorf("auth: %w", loadErr)
 	}
 
+	provs.TeamData, loadErr = l.LoadTeamDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("team data: %w", loadErr)
+	}
+
+	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
+	if loadErr != nil {
+		return nil, fmt.Errorf("user data: %w", loadErr)
+	}
+
 	provs.Chat, loadErr = l.LoadChatProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("chat: %w", loadErr)
 	}
 
-	provs.OncallEventsData, loadErr = l.LoadOncallEventsDataProvider(ctx)
+	provs.AlertsData, loadErr = l.LoadAlertDataProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("alerts: %w", loadErr)
 	}
@@ -152,16 +162,6 @@ func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
 	provs.SystemComponentsData, loadErr = l.LoadSystemComponentsDataProvider(ctx)
 	if loadErr != nil {
 		return nil, fmt.Errorf("system components: %w", loadErr)
-	}
-
-	provs.TeamData, loadErr = l.LoadTeamDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("team data: %w", loadErr)
-	}
-
-	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("user data: %w", loadErr)
 	}
 
 	provs.TicketData, loadErr = l.LoadTicketDataProvider(ctx)
@@ -275,23 +275,23 @@ func (l *Loader) LoadOncallDataProvider(ctx context.Context) (rez.OncallDataProv
 	return prov, provErr
 }
 
-func (l *Loader) LoadOncallEventsDataProvider(ctx context.Context) (rez.OncallEventsDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeOncallEvents)
+func (l *Loader) LoadAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
+	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	var prov rez.OncallEventsDataProvider
+	var prov rez.AlertDataProvider
 	var provErr error
 	switch pCfg.Name {
 	case "fake":
-		prov, provErr = loadProvider(fakeprovider.NewOncallEventsDataProvider, pCfg)
+		prov, provErr = loadProvider(fakeprovider.NewAlertDataProvider, pCfg)
 	default:
-		return nil, fmt.Errorf("invalid oncall events data provider: %s", pCfg.Name)
+		return nil, fmt.Errorf("invalid alerts data provider: %s", pCfg.Name)
 	}
 
 	if prov != nil && provErr == nil {
-		l.updateWebhooks("oncall_events", prov.GetWebhooks())
+		l.updateWebhooks("alerts", prov.GetWebhooks())
 	}
 
 	return prov, provErr

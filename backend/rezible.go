@@ -53,11 +53,11 @@ type (
 
 		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
-		LoadOncallEventsDataProvider(context.Context) (OncallEventsDataProvider, error)
 		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
 		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
 		LoadTicketDataProvider(context.Context) (TicketDataProvider, error)
+		LoadAlertDataProvider(context.Context) (AlertDataProvider, error)
 	}
 
 	Providers struct {
@@ -66,7 +66,6 @@ type (
 		Chat                 ChatProvider
 		IncidentData         IncidentDataProvider
 		OncallData           OncallDataProvider
-		OncallEventsData     OncallEventsDataProvider
 		SystemComponentsData SystemComponentsDataProvider
 		TeamData             TeamDataProvider
 		UserData             UserDataProvider
@@ -267,7 +266,9 @@ type (
 
 type (
 	AlertDataProvider interface {
+		GetWebhooks() Webhooks
 		PullAlerts(context.Context) iter.Seq2[*ent.Alert, error]
+		PullAlertEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
 	}
 
 	ListAlertsParams struct {
@@ -370,12 +371,6 @@ type (
 )
 
 type (
-	OncallEventsDataProvider interface {
-		GetWebhooks() Webhooks
-		Source() string
-		PullEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
-	}
-
 	ListOncallEventsParams struct {
 		ListParams
 		From            time.Time
