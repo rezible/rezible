@@ -85,7 +85,7 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
-	syncer := providers.NewDataSyncer(dbc, pl)
+	syncer := providers.NewProviderDataSyncer(dbc, pl)
 	if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
 		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
 	}

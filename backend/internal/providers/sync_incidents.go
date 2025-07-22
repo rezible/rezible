@@ -351,7 +351,7 @@ func (ds *incidentDataSyncer) syncIncidentRoleAssignments(ctx context.Context, d
 			return fmt.Errorf("missing db role for id: %s", provRole.ProviderID)
 		}
 
-		usr, usrErr := getUserByEmail(ctx, ds.db, provUser.Email)
+		usr, usrErr := lookupProviderUser(ctx, ds.db, provUser)
 		if usrErr != nil {
 			log.Warn().Str("email", provUser.Email).Msg("failed to lookup incident role user by email")
 			//return fmt.Errorf("role user: %w", usrErr)

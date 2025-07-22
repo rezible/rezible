@@ -62,39 +62,6 @@ func participantUniqueId(p *ent.OncallScheduleParticipant) string {
 	return fmt.Sprintf("%s_%s_%d", p.ScheduleID.String(), p.UserID.String(), p.Index)
 }
 
-/*
-var distinctOnRosterId = "DISTINCT ON (" + oncallusershift.FieldRosterID + ") " + oncallusershift.FieldRosterID + ", " + oncallusershift.FieldEndAt
-
-func selectDistinctRosters(s *sql.Selector) {
-	s.SelectExpr(sql.Raw(distinctOnRosterId))
-}
-
-func getLatestShiftsByRoster(ctx context.Context, client *ent.OncallUserShiftClient, after time.Time) (map[uuid.UUID]time.Time, error) {
-	query := client.Query().
-		Where(oncallusershift.StartAtGT(after)).
-		Modify(selectDistinctRosters).
-		Order(ent.Asc(oncallusershift.FieldRosterID)).
-		Order(ent.Desc(oncallusershift.FieldEndAt)).
-		Select(oncallusershift.FieldRosterID, oncallusershift.FieldEndAt)
-
-	var results []struct {
-		RosterID uuid.UUID `json:"roster_id"`
-		EndAt    time.Time `json:"end_at"`
-	}
-
-	if err := query.Scan(ctx, &results); err != nil {
-		return nil, err
-	}
-
-	latestMap := make(map[uuid.UUID]time.Time)
-	for _, shift := range results {
-		latestMap[shift.RosterID] = shift.EndAt
-	}
-
-	return latestMap, nil
-}
-*/
-
 func (ds *oncallDataSyncer) syncAllRosters(ctx context.Context) error {
 	start := time.Now()
 	var numMutations int
@@ -213,7 +180,7 @@ func (ds *oncallDataSyncer) buildOncallRostersSyncMutations(ctx context.Context,
 				provPart.ScheduleID = provSched.ID
 
 				provUser := provPart.Edges.User
-				currUser, userErr := getUserByEmail(ctx, ds.db, provPart.Edges.User.Email)
+				currUser, userErr := lookupProviderUser(ctx, ds.db, provUser)
 				if userErr != nil && !ent.IsNotFound(userErr) {
 					return fmt.Errorf("querying for existing schedule user: %w", userErr)
 				}
@@ -451,10 +418,9 @@ func (ds *oncallDataSyncer) buildRosterShiftsSyncMutations(ctx context.Context, 
 		}
 		shift.RosterID = roster.ID
 
-		userEmail := shift.Edges.User.Email
-		usr, usrErr := getUserByEmail(ctx, ds.db, userEmail)
+		usr, usrErr := lookupProviderUser(ctx, ds.db, shift.Edges.User)
 		if usrErr != nil {
-			log.Error().Err(usrErr).Str("email", userEmail).Msg("failed to get user")
+			log.Error().Err(usrErr).Str("email", shift.Edges.User.Email).Msg("failed to get user")
 			continue
 		}
 		shift.UserID = usr.ID

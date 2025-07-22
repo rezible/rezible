@@ -16,16 +16,16 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-type DataSyncer struct {
+type ProviderDataSyncer struct {
 	db *ent.Client
 	pl *Loader
 }
 
-func NewDataSyncer(db *ent.Client, loader *Loader) *DataSyncer {
-	return &DataSyncer{db: db, pl: loader}
+func NewProviderDataSyncer(db *ent.Client, loader *Loader) *ProviderDataSyncer {
+	return &ProviderDataSyncer{db: db, pl: loader}
 }
 
-func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Duration) error {
+func (s *ProviderDataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Duration) error {
 	args := &jobs.SyncProviderData{
 		Users:            true,
 		Teams:            true,
@@ -55,7 +55,7 @@ func (s *DataSyncer) RegisterPeriodicSyncJob(j rez.JobsService, interval time.Du
 	return jobs.RegisterWorkerFunc(s.SyncData)
 }
 
-func (s *DataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) error {
+func (s *ProviderDataSyncer) SyncData(ctx context.Context, args jobs.SyncProviderData) error {
 	if args.Hard {
 		// TODO: maybe just pass a flag?
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
@@ -202,7 +202,7 @@ func (s *slugTracker) generateUnique(title string, initialCountFn func(string) (
 }
 
 // TODO: userTracker ?
-func getUserByEmail(ctx context.Context, dbc *ent.Client, email string) (*ent.User, error) {
+func lookupProviderUser(ctx context.Context, dbc *ent.Client, u *ent.User) (*ent.User, error) {
 	// TODO: cache?
-	return dbc.User.Query().Where(user.Email(email)).First(ctx)
+	return dbc.User.Query().Where(user.Email(u.Email)).First(ctx)
 }

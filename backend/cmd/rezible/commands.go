@@ -82,7 +82,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 		}
 
 		dbc := db.Client()
-		syncer := providers.NewDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
+		syncer := providers.NewProviderDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
 		return syncer.SyncData(ctx, args)
 	})
 }
