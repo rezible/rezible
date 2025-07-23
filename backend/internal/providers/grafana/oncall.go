@@ -137,11 +137,21 @@ func (p *OncallDataProvider) FetchOncallersForRoster(ctx context.Context, roster
 }
 
 func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string, from, to time.Time) iter.Seq2[*ent.OncallUserShift, error] {
+	formatFrom := formatOncallTime(from.UTC())
+	formatTo := formatOncallTime(to.UTC())
+
 	params := &url.Values{}
-	params.Set("start_date", formatOncallTime(from))
-	params.Set("end_date", formatOncallTime(to))
+	params.Set("start_date", formatFrom)
+	params.Set("end_date", formatTo)
 	endpoint := fmt.Sprintf("schedules/%s/final_shifts", id)
 	initialUrl := oncallApiUrl(p.apiEndpoint, endpoint, params)
+
+	isIncompleteShift := func(shiftStart, shiftEnd time.Time) bool {
+		if formatFrom == formatOncallTime(shiftStart.UTC()) {
+			return true
+		}
+		return formatTo == formatOncallTime(shiftEnd.UTC())
+	}
 
 	return func(yield func(*ent.OncallUserShift, error) bool) {
 		reqUrl := &initialUrl
@@ -167,6 +177,12 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 				if endErr != nil {
 					log.Error().Err(endErr).Str("time", res.ShiftEnd).Msg("failed to parse shift end time")
 				}
+
+				if isIncompleteShift(startsAt, endsAt) {
+					log.Debug().Msg("skipping incomplete shift")
+					continue
+				}
+
 				shift := &ent.OncallUserShift{
 					ProviderID: fmt.Sprintf("%s_%s_%s_%s", id, res.UserPk, res.ShiftStart, res.ShiftEnd),
 					StartAt:    startsAt,
@@ -397,12 +413,8 @@ func oncallRequest(ctx context.Context, method string, url string, apiToken stri
 	return b, nil
 }
 
-const (
-	oncallTimeFormat = "2006-01-02T15:04"
-)
-
 func formatOncallTime(t time.Time) string {
-	return t.Format(oncallTimeFormat)
+	return t.Format("2006-01-02T15:04")
 }
 
 func oncallApiUrl(base, endpoint string, values *url.Values) string {

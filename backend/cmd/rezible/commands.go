@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/internal/postgres/datasyncer"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -82,8 +83,10 @@ func syncCmd(ctx context.Context, opts *Options) error {
 		}
 
 		dbc := db.Client()
-		syncer := providers.NewProviderDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
-		return syncer.SyncData(ctx, args)
+
+		sc := datasyncer.NewSyncController(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
+		//syncer := providers.NewProviderDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
+		return sc.SyncData(ctx, args)
 	})
 }
 

@@ -3,21 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
-	"os"
-	"time"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/internal/postgres/datasyncer"
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"net"
+	"os"
 )
 
 type rezServer struct {
@@ -76,10 +74,15 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
-	syncer := providers.NewProviderDataSyncer(dbc, pl)
-	if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
-		return fmt.Errorf("failed to register data sync job: %w", syncErr)
+	sc := datasyncer.NewSyncController(dbc, pl)
+	if syncErr := sc.RegisterPeriodicSyncJob(jobs); syncErr != nil {
+		return fmt.Errorf("datasyncer.SyncController.RegisterPeriodicSyncJob: %w", syncErr)
 	}
+	//syncer := providers.NewProviderDataSyncer(dbc, pl)
+	//if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
+	//	return fmt.Errorf("failed to register data sync job: %w", syncErr)
+	//}
+
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)

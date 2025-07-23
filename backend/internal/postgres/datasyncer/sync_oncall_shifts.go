@@ -20,16 +20,17 @@ func syncOncallShifts(ctx context.Context, db *ent.Client, prov rez.OncallDataPr
 	return s.Sync(ctx)
 }
 
+type oncallShiftBatchParams struct {
+	rosterID uuid.UUID
+	from     time.Time
+	to       time.Time
+}
+
 type oncallShiftsBatcher struct {
 	db       *ent.Client
 	provider rez.OncallDataProvider
 
-	batchRosterId uuid.UUID
-}
-
-func newOncallShiftsSyncer(db *ent.Client, prov rez.OncallDataProvider) *batchedDataSyncer[*ent.OncallUserShift] {
-	b := &oncallShiftsBatcher{db: db, provider: prov}
-	return newBatchedDataSyncer[*ent.OncallUserShift](db, "oncall_shifts", b)
+	batchParams *oncallShiftBatchParams
 }
 
 func (b *oncallShiftsBatcher) setup(ctx context.Context) error {
@@ -49,10 +50,21 @@ func (b *oncallShiftsBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Oncal
 			shiftDuration := time.Hour * 24 * 7
 			syncWindow := shiftDuration * 2
 
-			from := time.Now().Add(-syncWindow)
-			to := time.Now().Add(syncWindow)
+			rosterTz, tzErr := time.LoadLocation("UTC")
+			if tzErr != nil {
+				yield(nil, fmt.Errorf("loading roster timezone: %w", tzErr))
+				return
+			}
+			rosterNow := time.Now().In(rosterTz)
 
-			b.batchRosterId = r.ID
+			from := rosterNow.Add(-syncWindow)
+			to := rosterNow.Add(syncWindow)
+
+			b.batchParams = &oncallShiftBatchParams{
+				rosterID: r.ID,
+				from:     from,
+				to:       to,
+			}
 			for shift, pullErr := range b.provider.PullShiftsForRoster(ctx, r.ProviderID, from, to) {
 				if !yield(shift, pullErr) {
 					return
@@ -70,7 +82,7 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 
 	dbShifts, queryErr := b.db.OncallUserShift.Query().
 		Where(oncallusershift.ProviderIDIn(provIds...)).
-		Where(oncallusershift.RosterID(b.batchRosterId)).
+		Where(oncallusershift.RosterID(b.batchParams.rosterID)).
 		All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying roster shifts: %w", queryErr)
@@ -84,10 +96,7 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 	var mutations []ent.Mutation
 	for _, provShift := range batch {
 		prov := provShift
-		//if isIncompleteShift(prov.StartAt, prov.EndAt) {
-		//	continue
-		//}
-		prov.RosterID = b.batchRosterId
+		prov.RosterID = b.batchParams.rosterID
 
 		usr, usrErr := lookupProviderUser(ctx, b.db, prov.Edges.User)
 		if usrErr != nil {
