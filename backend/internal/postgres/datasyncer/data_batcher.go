@@ -2,11 +2,11 @@ package datasyncer
 
 import (
 	"context"
+	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"iter"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/ent"
@@ -86,14 +86,15 @@ func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
 }
 
 func (ds *batchedDataSyncer[T]) getLastSyncTime(ctx context.Context) time.Time {
-	lastSync, queryErr := ds.db.ProviderSyncHistory.Query().
+	last, queryErr := ds.db.ProviderSyncHistory.Query().
 		Where(providersynchistory.DataType(ds.dataType)).
 		Order(providersynchistory.ByFinishedAt(sql.OrderDesc())).
+		Select(providersynchistory.FieldFinishedAt).
 		First(ctx)
 	if queryErr != nil {
 		return time.Time{}
 	}
-	return lastSync.FinishedAt
+	return last.FinishedAt
 }
 
 func (ds *batchedDataSyncer[T]) saveSyncHistory(ctx context.Context, start time.Time, num int) error {
