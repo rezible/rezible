@@ -19,14 +19,14 @@ type Options struct {
 
 func main() {
 	onOptionsParsed := func(hooks humacli.Hooks, opts *Options) {
-		rezSrv := newRezServer(opts)
-		rootCtx := context.Background()
+		ctx := context.Background()
+		rezSrv := newRezibleServer(opts)
 		hooks.OnStart(func() {
-			rezSrv.Start(rootCtx)
+			rezSrv.Start(ctx)
 		})
 		hooks.OnStop(func() {
 			timeout := time.Duration(opts.StopTimeoutSeconds) * time.Second
-			timeoutCtx, cancelStopCtx := context.WithTimeout(rootCtx, timeout)
+			timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
 			defer cancelStopCtx()
 			rezSrv.Stop(timeoutCtx)
 		})

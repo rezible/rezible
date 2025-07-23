@@ -11,7 +11,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
@@ -29,7 +28,7 @@ type rezServer struct {
 	httpServer *http.Server
 }
 
-func newRezServer(opts *Options) *rezServer {
+func newRezibleServer(opts *Options) *rezServer {
 	if opts.Mode == "PROD" {
 		rez.DebugMode = false
 	} else {
@@ -57,106 +56,98 @@ func (s *rezServer) setup(ctx context.Context) error {
 	}
 	s.db = db
 
-	jobSvc, jobsErr := river.NewJobService(db.Pool)
+	jobs, jobsErr := river.NewJobService(db.Pool)
 	if jobsErr != nil {
 		return fmt.Errorf("failed to create job service: %w", jobsErr)
 	}
-	s.jobs = jobSvc
+	s.jobs = jobs
 
-	srv, srvErr := s.setupServices(ctx, db.Client(), jobSvc)
-	if srvErr != nil {
-		return fmt.Errorf("failed to setup http server: %w", srvErr)
-	}
-	s.httpServer = srv
+	dbc := db.Client()
 
-	return nil
-}
-
-func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez.JobsService) (*http.Server, error) {
 	frontendFiles, feFilesErr := http.GetEmbeddedFrontendFiles()
 	if feFilesErr != nil {
-		return nil, fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
+		return fmt.Errorf("failed to make embedded frontend server: %w", feFilesErr)
 	}
 
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
 	provs, provsErr := pl.LoadProviders(ctx)
 	if provsErr != nil {
-		return nil, fmt.Errorf("failed to load providers: %w", provsErr)
+		return fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
 	syncer := providers.NewProviderDataSyncer(dbc, pl)
 	if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
-		return nil, fmt.Errorf("failed to register data sync job: %w", syncErr)
+		return fmt.Errorf("failed to register data sync job: %w", syncErr)
 	}
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
-		return nil, fmt.Errorf("postgres.UserService: %w", usersErr)
+		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
 	auth, authErr := http.NewAuthSessionService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
 	if authErr != nil {
-		return nil, fmt.Errorf("http auth service: %w", authErr)
+		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
 	chat, chatErr := postgres.NewChatService(dbc, jobs, provs.Chat)
 	if chatErr != nil {
-		return nil, fmt.Errorf("failed to create chat: %w", chatErr)
+		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
 
 	_, teamsErr := postgres.NewTeamService(dbc)
 	if teamsErr != nil {
-		return nil, fmt.Errorf("postgres.TeamService: %w", teamsErr)
+		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
 	lms, lmsErr := eino.NewLanguageModelService(ctx, provs.LanguageModel)
 	if lmsErr != nil {
-		return nil, fmt.Errorf("failed to create language model service: %w", lmsErr)
+		return fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}
 
 	docs, docsErr := prosemirror.NewDocumentsService(s.opts.DocumentServerAddress, users)
 	if docsErr != nil {
-		return nil, fmt.Errorf("failed to create document service: %w", docsErr)
+		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
 	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, jobs, lms, chat, users)
 	if incidentsErr != nil {
-		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
+		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
 	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, jobs, docs, chat, users, incidents)
 	if oncallErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
+		return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
 
 	oncallEvents, eventsErr := postgres.NewOncallEventsService(ctx, dbc, users, oncall, incidents)
 	if eventsErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
+		return fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
 
 	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobs, lms, chat)
 	if debriefsErr != nil {
-		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
+		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
 
 	retros, retrosErr := postgres.NewRetrospectiveService(dbc)
 	if retrosErr != nil {
-		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
+		return fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}
 
 	components, componentsErr := postgres.NewSystemComponentsService(dbc)
 	if componentsErr != nil {
-		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
+		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
 	alerts, alertsErr := postgres.NewAlertService(dbc, jobs, provs.AlertsData)
 	if alertsErr != nil {
-		return nil, fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
+		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
 
 	playbooks, playbooksErr := postgres.NewPlaybookService(dbc, provs.PlaybooksData)
 	if playbooksErr != nil {
-		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
+		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
 	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
@@ -171,9 +162,9 @@ func (s *rezServer) setupServices(ctx context.Context, dbc *ent.Client, jobs rez
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	httpServer := http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
+	s.httpServer = http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
 
-	return httpServer, nil
+	return nil
 }
 
 func (s *rezServer) start(ctx context.Context) error {
