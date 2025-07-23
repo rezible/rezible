@@ -1,4 +1,4 @@
-package datasyncer
+package datasync
 
 import (
 	"context"

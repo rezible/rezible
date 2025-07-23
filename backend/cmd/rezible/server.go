@@ -8,7 +8,7 @@ import (
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/internal/postgres/datasyncer"
+	"github.com/rezible/rezible/internal/postgres/datasync"
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
@@ -74,7 +74,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("failed to load providers: %w", provsErr)
 	}
 
-	sc := datasyncer.NewSyncController(dbc, pl)
+	sc := datasync.NewSyncController(dbc, pl)
 	if syncErr := sc.RegisterPeriodicSyncJob(jobs); syncErr != nil {
 		return fmt.Errorf("datasyncer.SyncController.RegisterPeriodicSyncJob: %w", syncErr)
 	}
