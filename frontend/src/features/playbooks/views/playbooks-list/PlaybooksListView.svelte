@@ -27,7 +27,7 @@
 
 {#snippet playbookListItem(pb: Playbook)}
 	<a href="/playbooks/{pb.id}">
-		<ListItem title={pb.attributes.title} subheading={pb.attributes.description} />
+		<ListItem title={pb.attributes.title} />
 	</a>
 {/snippet}
 

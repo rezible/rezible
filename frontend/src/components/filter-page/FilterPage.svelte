@@ -9,7 +9,7 @@
 </script>
 
 <div class="flex gap-2 w-full h-full max-h-full pt-2 pl-2">
-	<div class="w-full h-full max-h-full overflow-y-auto max-w-sm flex flex-col">
+	<div class="w-full h-full max-h-full overflow-y-auto max-w-md flex flex-col">
 		<span class="text-sm uppercase font-semibold text-surface-content/60">Filters</span>
 		<div class="flex flex-col flex-0 gap-1 border p-2 rounded overflow-x-hidden overflow-y-auto">
 			{@render filters()}

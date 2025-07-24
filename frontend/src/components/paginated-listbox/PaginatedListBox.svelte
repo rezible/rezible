@@ -4,17 +4,19 @@
 
 	type Props = {
 		title?: string;
-		children: Snippet;	
+		children: Snippet;
+		dense?: boolean;
 		pagination: ComponentProps<Pagination>["pagination"];
 	};
 	const { 
 		title = "Results",
 		children,
+		dense,
 		pagination,
 	}: Props = $props();
 </script>
 
-<div class="flex flex-col max-h-full max-w-xl">
+<div class="flex flex-col max-h-full" class:max-w-xl={dense}>
 	<span class="text-sm uppercase font-semibold text-surface-content/60">{title}</span>
 
 	<div class="flex flex-col gap-2 min-h-0 flex-0 overflow-auto pb-1 pr-1 border-b">

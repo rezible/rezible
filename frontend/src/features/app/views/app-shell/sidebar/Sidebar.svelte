@@ -9,6 +9,7 @@
 		mdiHome,
 		mdiShape,
 		mdiShield,
+		mdiTimelineText,
 		mdiVideo,
 	} from "@mdi/js";
 	import { cls } from '@layerstack/tailwind';
@@ -30,6 +31,7 @@
 	const items: SidebarItem[] = [
 		{ path: "/", route: "/(index)", label: "Home", icon: mdiHome },
 		{ label: "Oncall" },
+		{ path: "/events", label: "Events", icon: mdiTimelineText },
 		{ path: "/incidents", label: "Incidents", icon: mdiFire },
 		{ path: "/rosters", label: "Rosters", icon: mdiShield },
 		{ path: "/shifts", label: "Shifts", icon: mdiAccountClock },

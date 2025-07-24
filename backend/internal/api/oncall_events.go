@@ -20,6 +20,18 @@ func newOncallEventsHandler(auth rez.AuthSessionService, users rez.UserService, 
 	return &oncallEventsHandler{auth: auth, users: users, oncall: oncall, incidents: inc, events: events}
 }
 
+func (h *oncallEventsHandler) GetOncallEvent(ctx context.Context, req *oapi.GetOncallEventRequest) (*oapi.GetOncallEventResponse, error) {
+	var resp oapi.GetOncallEventResponse
+
+	event, eventErr := h.events.GetEvent(ctx, req.Id)
+	if eventErr != nil {
+		return nil, detailError("failed to get oncall event", eventErr)
+	}
+	resp.Body.Data = oapi.OncallEventFromEnt(event)
+
+	return &resp, nil
+}
+
 func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.ListOncallEventsRequest) (*oapi.ListOncallEventsResponse, error) {
 	var resp oapi.ListOncallEventsResponse
 

@@ -394,8 +394,9 @@ type (
 	}
 
 	OncallEventsService interface {
-		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
+		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
 		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, int, error)
+		GetProviderEvent(ctx context.Context, providerId string) (*ent.OncallEvent, error)
 
 		ListAnnotations(ctx context.Context, params ListOncallAnnotationsParams) ([]*ent.OncallAnnotation, int, error)
 

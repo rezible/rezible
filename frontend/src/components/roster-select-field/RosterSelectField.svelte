@@ -84,7 +84,7 @@
 		{#if !!selectedId}
 			<Avatar kind="roster" id={selectedId} size={18} />
 		{:else}
-			<span>Any</span>
+			<span class="text-sm">Any</span>
 		{/if}
 	</div>
 

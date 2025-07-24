@@ -1,19 +1,13 @@
 import { listOncallEventsOptions, type ListOncallEventsData, type OncallEventAttributes } from "$lib/api";
-import { PeriodType } from "@layerstack/utils";
-import { type DateRange as DateRangeType } from "@layerstack/utils/dateRange";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { subMonths, subWeeks } from "date-fns";
-import { watch } from "runed";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
-import { QueryPaginatorState } from "$lib/paginator.svelte";
+import { PeriodType } from "@layerstack/utils";
+import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
+import { subMonths, subWeeks } from "date-fns";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { Context } from "runed";
+import { QueryPaginatorState } from "$src/lib/paginator.svelte";
 
 export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
-
-export const dateRangeOptions: DateRangeOption[] = [
-	{ label: "Last 7 Days", value: "7d" },
-	{ label: "Last Month", value: "30d" },
-	{ label: "Custom", value: "custom" },
-];
 
 const last7Days = () => ({ from: subWeeks(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
 const lastMonth = () => ({ from: subMonths(new Date(), 1), to: new Date(), periodType: PeriodType.Day });
@@ -26,7 +20,8 @@ export type FilterOptions = {
 	annotated?: boolean;
 };
 
-export class OncallEventsTableState {
+
+export class EventsListViewState {
 	private queryClient = useQueryClient();
 	private oncallInfo = useUserOncallInformation();
 
@@ -50,8 +45,7 @@ export class OncallEventsTableState {
 			case "custom": return this.customDateRangeValue;
 		}
 	});
-
-	filters = $state<FilterOptions>({});
+	
 	defaultRosterId = $derived.by(() => {
 		if (this.activeShift) return this.activeShift.attributes.roster.id;
 		if (this.oncallInfo.rosterIds.length > 0) return this.oncallInfo.rosterIds.at(0);
@@ -60,10 +54,14 @@ export class OncallEventsTableState {
 	paginator = new QueryPaginatorState();
 	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
 
+	filterEventKinds = $state<EventKind[]>();
+	filterAnnotation = $state<boolean>();
+	filterRosterId = $state<string>();
+
 	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
-		rosterId: this.filters.rosterId,
+		rosterId: this.filterRosterId,
 	});
 	private listShiftEventsQueryData = $derived<ListOncallEventsData["query"]>({ shiftId: this.activeShift?.id });
 	private listShiftEventsFinalQueryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
@@ -87,17 +85,11 @@ export class OncallEventsTableState {
 		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
 	}
 
-	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded)
+	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded);
 
 	constructor() {
-		watch(() => this.activeShift, s => {
-			this.dateRangeOption = !!s ? "shift" : this.dateRangeOption;
-		});
-
-		watch(() => this.defaultRosterId, id => {
-			this.filters.rosterId = id;
-		});
-
 		this.paginator.watchQuery(this.listEventsQuery);
 	};
 }
+
+export const eventsListViewStateCtx = new Context<EventsListViewState>("eventsListView");

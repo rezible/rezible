@@ -30,6 +30,10 @@ func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserS
 	return s, nil
 }
 
+func (s *OncallEventsService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error) {
+	return s.db.OncallEvent.Get(ctx, id)
+}
+
 func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOncallEventsParams) ([]*ent.OncallEvent, int, error) {
 	query := s.db.OncallEvent.Query().
 		Where(oncallevent.And(oncallevent.TimestampGT(params.From), oncallevent.TimestampLT(params.To)))

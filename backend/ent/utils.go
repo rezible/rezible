@@ -2,6 +2,7 @@ package ent
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/jackc/pgx/v5"
@@ -73,15 +74,19 @@ type CountableQuery[T any] interface {
 }
 
 func RunCountableQuery[T any](ctx context.Context, q CountableQuery[T], doCount bool) ([]T, int, error) {
-	results, queryErr := q.All(ctx)
-	if queryErr != nil {
-		return nil, 0, fmt.Errorf("list: %w", queryErr)
-	}
 	var count int
+	var queryErr error
+	results := make([]T, 0)
 	if doCount {
 		count, queryErr = q.Count(ctx)
-		if queryErr != nil {
+		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
 			return nil, 0, fmt.Errorf("count: %w", queryErr)
+		}
+	}
+	if !doCount || count > 0 {
+		results, queryErr = q.All(ctx)
+		if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
+			return nil, 0, fmt.Errorf("list: %w", queryErr)
 		}
 	}
 	return results, count, nil

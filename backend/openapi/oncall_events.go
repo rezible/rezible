@@ -11,6 +11,7 @@ import (
 )
 
 type OncallEventsHandler interface {
+	GetOncallEvent(context.Context, *GetOncallEventRequest) (*GetOncallEventResponse, error)
 	ListOncallEvents(context.Context, *ListOncallEventsRequest) (*ListOncallEventsResponse, error)
 
 	ListOncallAnnotations(context.Context, *ListOncallAnnotationsRequest) (*ListOncallAnnotationsResponse, error)
@@ -20,6 +21,7 @@ type OncallEventsHandler interface {
 }
 
 func (o operations) RegisterOncallEvents(api huma.API) {
+	huma.Register(api, GetOncallEvent, o.GetOncallEvent)
 	huma.Register(api, ListOncallEvents, o.ListOncallEvents)
 
 	huma.Register(api, ListOncallAnnotations, o.ListOncallAnnotations)
@@ -127,6 +129,18 @@ func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
 var oncallEventsTags = []string{"Oncall Events"}
 
 // ops
+
+var GetOncallEvent = huma.Operation{
+	OperationID: "get-oncall-event",
+	Method:      http.MethodGet,
+	Path:        "/oncall/events/{id}",
+	Summary:     "Get Oncall Event",
+	Tags:        oncallEventsTags,
+	Errors:      errorCodes(),
+}
+
+type GetOncallEventRequest GetIdRequest
+type GetOncallEventResponse ItemResponse[OncallEvent]
 
 var ListOncallEvents = huma.Operation{
 	OperationID: "list-oncall-events",

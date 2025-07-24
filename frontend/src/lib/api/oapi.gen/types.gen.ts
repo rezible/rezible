@@ -955,6 +955,14 @@ export type GetNextOncallShiftResponseBody = {
     data: OncallShift;
 };
 
+export type GetOncallEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallEvent;
+};
+
 export type GetOncallRosterMetricsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -7082,6 +7090,53 @@ export type ListOncallEventsResponses = {
 };
 
 export type ListOncallEventsResponse = ListOncallEventsResponses[keyof ListOncallEventsResponses];
+
+export type GetOncallEventData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/events/{id}';
+};
+
+export type GetOncallEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetOncallEventError = GetOncallEventErrors[keyof GetOncallEventErrors];
+
+export type GetOncallEventResponses = {
+    /**
+     * OK
+     */
+    200: GetOncallEventResponseBody;
+};
+
+export type GetOncallEventResponse = GetOncallEventResponses[keyof GetOncallEventResponses];
 
 export type CreateOncallHandoverTemplateData = {
     body: CreateOncallShiftHandoverTemplateRequestBody;
