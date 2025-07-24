@@ -4,13 +4,6 @@ import "github.com/google/uuid"
 
 type SyncProviderData struct {
 	Hard bool
-
-	Users            bool
-	Teams            bool
-	Incidents        bool
-	Oncall           bool
-	OncallEvents     bool
-	SystemComponents bool
 }
 
 func (SyncProviderData) Kind() string {

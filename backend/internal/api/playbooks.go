@@ -17,7 +17,7 @@ func newPlaybooksHandler(pb rez.PlaybookService) *playbooksHandler {
 func (h *playbooksHandler) ListPlaybooks(ctx context.Context, request *oapi.ListPlaybooksRequest) (*oapi.ListPlaybooksResponse, error) {
 	var resp oapi.ListPlaybooksResponse
 
-	playbooks, count, playbooksErr := h.playbooks.ListPlaybooks(ctx, nil)
+	playbooks, count, playbooksErr := h.playbooks.ListPlaybooks(ctx, rez.ListPlaybooksParams{})
 	if playbooksErr != nil {
 		return nil, detailError("failed to list playbooks", playbooksErr)
 	}

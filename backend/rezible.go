@@ -58,6 +58,7 @@ type (
 		LoadUserDataProvider(context.Context) (UserDataProvider, error)
 		LoadTicketDataProvider(context.Context) (TicketDataProvider, error)
 		LoadAlertDataProvider(context.Context) (AlertDataProvider, error)
+		LoadPlaybookDataProvider(context.Context) (PlaybookDataProvider, error)
 	}
 
 	Providers struct {
@@ -276,14 +277,14 @@ type (
 	}
 
 	AlertService interface {
-		ListAlerts(context.Context, *ListAlertsParams) ([]*ent.Alert, int, error)
+		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
 	}
 )
 
 type (
 	PlaybookDataProvider interface {
-		PullAlerts(context.Context) iter.Seq2[*ent.Playbook, error]
+		PullPlaybooks(context.Context) iter.Seq2[*ent.Playbook, error]
 	}
 
 	ListPlaybooksParams struct {
@@ -291,7 +292,7 @@ type (
 	}
 
 	PlaybookService interface {
-		ListPlaybooks(context.Context, *ListPlaybooksParams) ([]*ent.Playbook, int, error)
+		ListPlaybooks(context.Context, ListPlaybooksParams) ([]*ent.Playbook, int, error)
 		GetPlaybook(context.Context, uuid.UUID) (*ent.Playbook, error)
 	}
 )

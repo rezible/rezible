@@ -395,3 +395,17 @@ func (l *Loader) LoadTicketDataProvider(ctx context.Context) (rez.TicketDataProv
 		return nil, fmt.Errorf("invalid ticket data provider: %s", pCfg.Name)
 	}
 }
+
+func (l *Loader) LoadPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
+	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypePlaybooks)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+
+	switch pCfg.Name {
+	case "fake":
+		return loadProvider(fakeprovider.NewPlaybookDataProvider, pCfg)
+	default:
+		return nil, fmt.Errorf("invalid playbooks data provider: %s", pCfg.Name)
+	}
+}

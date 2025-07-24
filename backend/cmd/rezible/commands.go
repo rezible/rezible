@@ -73,19 +73,12 @@ func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
 		// TODO: use cli flags
 		args := jobs.SyncProviderData{
-			Hard:             true,
-			Users:            true,
-			Teams:            true,
-			Incidents:        true,
-			Oncall:           true,
-			OncallEvents:     true,
-			SystemComponents: true,
+			Hard: true,
 		}
 
 		dbc := db.Client()
 
 		sc := datasync.NewSyncController(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
-		//syncer := providers.NewProviderDataSyncer(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
 		return sc.SyncData(ctx, args)
 	})
 }

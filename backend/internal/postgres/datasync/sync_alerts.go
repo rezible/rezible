@@ -10,13 +10,15 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+func syncAlerts(ctx context.Context, db *ent.Client, prov rez.AlertDataProvider) error {
+	b := &alertsBatcher{db: db, provider: prov}
+	s := newBatchedDataSyncer[*ent.Alert](db, "alerts", b)
+	return s.Sync(ctx)
+}
+
 type alertsBatcher struct {
 	db       *ent.Client
 	provider rez.AlertDataProvider
-}
-
-func newAlertsSyncer(db *ent.Client, prov rez.AlertDataProvider) *batchedDataSyncer[*ent.Alert] {
-	return newBatchedDataSyncer[*ent.Alert](db, "alerts", &alertsBatcher{db: db, provider: prov})
 }
 
 func (b *alertsBatcher) setup(ctx context.Context) error {
@@ -47,7 +49,6 @@ func (b *alertsBatcher) createBatchMutations(ctx context.Context, batch []*ent.A
 	for _, provAlert := range batch {
 		dbAlert, exists := dbProvMap[provAlert.ProviderID]
 		if exists {
-			// don't delete this user
 		}
 
 		var m *ent.AlertMutation

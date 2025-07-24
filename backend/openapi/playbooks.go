@@ -33,17 +33,15 @@ type (
 	}
 
 	PlaybookAttributes struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
-		Content     []byte `json:"content"`
+		Title   string `json:"title"`
+		Content string `json:"content"`
 	}
 )
 
 func PlaybookFromEnt(pb *ent.Playbook) Playbook {
 	attrs := PlaybookAttributes{
-		Title:       pb.Title,
-		Description: "",
-		Content:     pb.Content,
+		Title:   pb.Title,
+		Content: string(pb.Content),
 	}
 	return Playbook{
 		Id:         pb.ID,
@@ -92,7 +90,8 @@ var CreatePlaybook = huma.Operation{
 }
 
 type CreatePlaybookAttributes struct {
-	Name string `json:"title"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
 }
 type CreatePlaybookRequest RequestWithBodyAttributes[CreatePlaybookAttributes]
 type CreatePlaybookResponse ItemResponse[Playbook]
@@ -107,7 +106,8 @@ var UpdatePlaybook = huma.Operation{
 }
 
 type UpdatePlaybookAttributes struct {
-	Name OmittableNullable[string] `json:"name,omitempty"`
+	Title   OmittableNullable[string] `json:"title,omitempty"`
+	Content OmittableNullable[string] `json:"content,omitempty"`
 }
 type UpdatePlaybookRequest UpdateIdRequest[UpdatePlaybookAttributes]
 type UpdatePlaybookResponse ItemResponse[Playbook]

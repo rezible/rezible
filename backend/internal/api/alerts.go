@@ -17,7 +17,7 @@ func newAlertsHandler(alerts rez.AlertService) *alertsHandler {
 func (h *alertsHandler) ListAlerts(ctx context.Context, request *oapi.ListAlertsRequest) (*oapi.ListAlertsResponse, error) {
 	var resp oapi.ListAlertsResponse
 
-	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, nil)
+	alerts, count, alertsErr := h.alerts.ListAlerts(ctx, rez.ListAlertsParams{})
 	if alertsErr != nil {
 		return nil, detailError("failed to list alerts", alertsErr)
 	}

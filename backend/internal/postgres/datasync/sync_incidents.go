@@ -214,8 +214,7 @@ func (b *incidentBatcher) syncIncidentRoleAssignments(ctx context.Context, dbInc
 
 		usr, usrErr := lookupProviderUser(ctx, b.db, provUser)
 		if usrErr != nil {
-			log.Warn().Str("email", provUser.Email).Msg("failed to lookup incident role user by email")
-			//return fmt.Errorf("role user: %w", usrErr)
+			// log.Warn().Str("email", provUser.Email).Msg("failed to lookup incident role user by email")
 			continue
 		}
 
