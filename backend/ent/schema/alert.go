@@ -25,7 +25,28 @@ func (Alert) Fields() []ent.Field {
 // Edges of the Alert.
 func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("metrics", AlertMetrics.Type).Ref("alert"),
 		edge.From("playbooks", Playbook.Type).Ref("alerts"),
 		edge.From("instances", OncallEvent.Type).Ref("alert"),
+	}
+}
+
+// AlertMetrics holds the schema definition for the AlertMetrics entity.
+type AlertMetrics struct {
+	ent.Schema
+}
+
+// Fields of the AlertMetrics.
+func (AlertMetrics) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("alert_id", uuid.UUID{}),
+	}
+}
+
+// Edges of the AlertMetrics.
+func (AlertMetrics) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("alert", Alert.Type).Unique().Required().Field("alert_id"),
 	}
 }

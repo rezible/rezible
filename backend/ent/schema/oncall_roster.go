@@ -55,5 +55,25 @@ func (OncallRoster) Edges() []ent.Edge {
 		edge.From("shifts", OncallUserShift.Type).Ref("roster"),
 
 		edge.From("user_watchers", User.Type).Ref("watched_oncall_rosters"),
+
+		edge.From("metrics", OncallRosterMetrics.Type).Ref("roster"),
+	}
+}
+
+type OncallRosterMetrics struct {
+	ent.Schema
+}
+
+func (OncallRosterMetrics) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("roster_id", uuid.UUID{}),
+	}
+}
+
+func (OncallRosterMetrics) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("roster", OncallRoster.Type).
+			Unique().Required().Field("roster_id"),
 	}
 }
