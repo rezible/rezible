@@ -40,7 +40,6 @@ func (h *alertsHandler) GetAlert(ctx context.Context, request *oapi.GetAlertRequ
 	if getErr != nil {
 		return nil, detailError("get alert", getErr)
 	}
-
 	resp.Body.Data = oapi.AlertFromEnt(alert)
 
 	return &resp, nil

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import AlertOverview from "./overview/AlertOverview.svelte";
 	import { AlertViewState, alertViewStateCtx } from "./viewState.svelte";
 
 	type Props = {
@@ -16,8 +17,6 @@
 	]);
 </script>
 
-<div class="flex flex-1 items-center justify-around">
-	<div class="w-42 h-full border">
-		hello
-	</div>
+<div class="flex-1">
+	<AlertOverview />
 </div>
