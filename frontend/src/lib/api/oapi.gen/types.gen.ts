@@ -436,6 +436,7 @@ export type CreateOncallShiftHandoverTemplateResponseBody = {
 };
 
 export type CreatePlaybookAttributes = {
+    content: string;
     title: string;
 };
 
@@ -1936,7 +1937,6 @@ export type Playbook = {
 
 export type PlaybookAttributes = {
     content: string;
-    description: string;
     title: string;
 };
 
@@ -2583,7 +2583,8 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
 };
 
 export type UpdatePlaybookAttributes = {
-    name?: string;
+    content?: string;
+    title?: string;
 };
 
 export type UpdatePlaybookRequestBody = {

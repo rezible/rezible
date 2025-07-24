@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import type { Editor } from "@tiptap/core";
 	import { configureBaseExtensions } from "@rezible/documents/tiptap-extensions";
+	import { playbookViewStateCtx } from "./viewState.svelte";
 
-	let editor = $state<SvelteEditor>();
+	const viewState = playbookViewStateCtx.get();
+
 	const mountEditor = () => {
-		editor = new SvelteEditor({
+		viewState.editor = new SvelteEditor({
+			content: viewState.playbookContent,
 			extensions: configureBaseExtensions(false),
 			editable: true,
 			autofocus: false,
@@ -16,21 +18,21 @@
 				},
 			},
 			onFocus({ editor }) {
-				
+
 			},
 			onBlur() {
-				// setIsActive(undefined)
+
 			},
 		});
 		return () => {
-			if (!editor?.isDestroyed) editor?.destroy();
+			if (!viewState.editor?.isDestroyed) viewState.editor?.destroy();
 		};
 	};
 	onMount(mountEditor);
 
 	const onEditorContainerFocused = () => {
-		if (!editor || editor.isFocused) return;
-		editor.chain().focus("end").run();
+		if (!viewState.editor || viewState.editor.isFocused) return;
+		viewState.editor.chain().focus("end").run();
 	};
 </script>
 
@@ -40,7 +42,7 @@
 	spellcheck="false"
 	onfocus={onEditorContainerFocused}
 >
-	{#if editor}
-		<TiptapEditor bind:editor />
+	{#if viewState.editor}
+		<TiptapEditor bind:editor={viewState.editor} />
 	{/if}
 </div>

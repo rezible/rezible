@@ -106,8 +106,8 @@ var UpdatePlaybook = huma.Operation{
 }
 
 type UpdatePlaybookAttributes struct {
-	Title   OmittableNullable[string] `json:"title,omitempty"`
-	Content OmittableNullable[string] `json:"content,omitempty"`
+	Title   *string `json:"title,omitempty"`
+	Content *string `json:"content,omitempty"`
 }
 type UpdatePlaybookRequest UpdateIdRequest[UpdatePlaybookAttributes]
 type UpdatePlaybookResponse ItemResponse[Playbook]

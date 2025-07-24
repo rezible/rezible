@@ -36,5 +36,12 @@ func (h *alertsHandler) ListAlerts(ctx context.Context, request *oapi.ListAlerts
 func (h *alertsHandler) GetAlert(ctx context.Context, request *oapi.GetAlertRequest) (*oapi.GetAlertResponse, error) {
 	var resp oapi.GetAlertResponse
 
+	alert, getErr := h.alerts.GetAlert(ctx, request.Id)
+	if getErr != nil {
+		return nil, detailError("get alert", getErr)
+	}
+
+	resp.Body.Data = oapi.AlertFromEnt(alert)
+
 	return &resp, nil
 }

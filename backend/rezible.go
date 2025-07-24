@@ -294,6 +294,7 @@ type (
 	PlaybookService interface {
 		ListPlaybooks(context.Context, ListPlaybooksParams) ([]*ent.Playbook, int, error)
 		GetPlaybook(context.Context, uuid.UUID) (*ent.Playbook, error)
+		UpdatePlaybook(context.Context, *ent.Playbook) (*ent.Playbook, error)
 	}
 )
 

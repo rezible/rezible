@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi"
 )
 
@@ -36,6 +37,17 @@ func (h *playbooksHandler) ListPlaybooks(ctx context.Context, request *oapi.List
 func (h *playbooksHandler) CreatePlaybook(ctx context.Context, request *oapi.CreatePlaybookRequest) (*oapi.CreatePlaybookResponse, error) {
 	var resp oapi.CreatePlaybookResponse
 
+	attr := request.Body.Attributes
+	reqPb := &ent.Playbook{
+		Title:   attr.Title,
+		Content: []byte(attr.Content),
+	}
+	pb, createErr := h.playbooks.UpdatePlaybook(ctx, reqPb)
+	if createErr != nil {
+		return nil, detailError("failed to create", createErr)
+	}
+	resp.Body.Data = oapi.PlaybookFromEnt(pb)
+
 	return &resp, nil
 }
 
@@ -54,6 +66,25 @@ func (h *playbooksHandler) GetPlaybook(ctx context.Context, request *oapi.GetPla
 
 func (h *playbooksHandler) UpdatePlaybook(ctx context.Context, request *oapi.UpdatePlaybookRequest) (*oapi.UpdatePlaybookResponse, error) {
 	var resp oapi.UpdatePlaybookResponse
+
+	pb, pbErr := h.playbooks.GetPlaybook(ctx, request.Id)
+	if pbErr != nil {
+		return nil, detailError("failed to get playbook", pbErr)
+	}
+
+	attr := request.Body.Attributes
+	if attr.Content != nil {
+		pb.Content = []byte(*attr.Content)
+	}
+	if attr.Title != nil {
+		pb.Title = *attr.Title
+	}
+
+	updated, updateErr := h.playbooks.UpdatePlaybook(ctx, pb)
+	if updateErr != nil {
+		return nil, detailError("failed to update", updateErr)
+	}
+	resp.Body.Data = oapi.PlaybookFromEnt(updated)
 
 	return &resp, nil
 }

@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { appShell } from "$features/app/lib/appShellState.svelte";
-	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { PlaybookViewState, playbookViewStateCtx } from "./viewState.svelte";
-	import { Button } from "svelte-ux";
 	import PlaybookEditor from "./PlaybookEditor.svelte";
 	import PlaybookPageActions from "./PlaybookPageActions.svelte";
 

@@ -1,5 +1,6 @@
-import { getPlaybookOptions } from "$lib/api";
-import { createQuery } from "@tanstack/svelte-query";
+import { getPlaybookOptions, updatePlaybookMutation, type UpdatePlaybookAttributes } from "$lib/api";
+import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 export class PlaybookViewState {
@@ -11,7 +12,21 @@ export class PlaybookViewState {
 	playbookTitle = $derived(this.playbook?.attributes.title ?? "");
 	playbookContent = $derived(this.playbook?.attributes.content);
 
-	loading = $derived(this.playbookQuery.isLoading);
+	updatePlaybookMut = createMutation(() => ({
+		...updatePlaybookMutation(),
+		onSettled: () => {
+			this.editing = false;
+			this.editor?.setEditable(true);
+		},
+		onSuccess: (data) => {
+			// TODO: optimistic update
+			this.playbookQuery.refetch();
+		}
+	}));
+
+	loading = $derived(this.updatePlaybookMut.isPending || this.playbookQuery.isLoading);
+
+	editor = $state<SvelteEditor>();
 
 	constructor(idFn: () => string) {
 		this.playbookId = idFn();
@@ -24,6 +39,18 @@ export class PlaybookViewState {
 
 	saveEdit() {
 		this.editing = false;
+		if (!this.editor || !this.playbook) return;
+		this.editor.setEditable(false);
+
+		const id = this.playbookId;
+		const attributes: UpdatePlaybookAttributes = {
+			title: this.playbook.attributes.title,
+			content: this.editor.getHTML(),
+		}
+		this.updatePlaybookMut.mutateAsync({
+			body: { attributes },
+			path: { id },
+		});
 	}
 }
 
