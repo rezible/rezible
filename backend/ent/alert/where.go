@@ -194,6 +194,29 @@ func ProviderIDContainsFold(v string) predicate.Alert {
 	return predicate.Alert(sql.FieldContainsFold(FieldProviderID, v))
 }
 
+// HasMetrics applies the HasEdge predicate on the "metrics" edge.
+func HasMetrics() predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMetricsWith applies the HasEdge predicate on the "metrics" edge with a given conditions (other predicates).
+func HasMetricsWith(preds ...predicate.AlertMetrics) predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := newMetricsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasPlaybooks applies the HasEdge predicate on the "playbooks" edge.
 func HasPlaybooks() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {

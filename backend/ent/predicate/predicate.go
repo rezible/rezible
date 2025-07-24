@@ -9,6 +9,9 @@ import (
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 
+// AlertMetrics is the predicate function for alertmetrics builders.
+type AlertMetrics func(*sql.Selector)
+
 // Environment is the predicate function for environment builders.
 type Environment func(*sql.Selector)
 
@@ -95,6 +98,9 @@ type OncallHandoverTemplate func(*sql.Selector)
 
 // OncallRoster is the predicate function for oncallroster builders.
 type OncallRoster func(*sql.Selector)
+
+// OncallRosterMetrics is the predicate function for oncallrostermetrics builders.
+type OncallRosterMetrics func(*sql.Selector)
 
 // OncallSchedule is the predicate function for oncallschedule builders.
 type OncallSchedule func(*sql.Selector)

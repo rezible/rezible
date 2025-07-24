@@ -29,19 +29,30 @@ type Alert struct {
 
 // AlertEdges holds the relations/edges for other nodes in the graph.
 type AlertEdges struct {
+	// Metrics holds the value of the metrics edge.
+	Metrics []*AlertMetrics `json:"metrics,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
 	// Instances holds the value of the instances edge.
 	Instances []*OncallEvent `json:"instances,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// MetricsOrErr returns the Metrics value or an error if the edge
+// was not loaded in eager-loading.
+func (e AlertEdges) MetricsOrErr() ([]*AlertMetrics, error) {
+	if e.loadedTypes[0] {
+		return e.Metrics, nil
+	}
+	return nil, &NotLoadedError{edge: "metrics"}
 }
 
 // PlaybooksOrErr returns the Playbooks value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Playbooks, nil
 	}
 	return nil, &NotLoadedError{edge: "playbooks"}
@@ -50,7 +61,7 @@ func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
 // InstancesOrErr returns the Instances value or an error if the edge
 // was not loaded in eager-loading.
 func (e AlertEdges) InstancesOrErr() ([]*OncallEvent, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Instances, nil
 	}
 	return nil, &NotLoadedError{edge: "instances"}
@@ -109,6 +120,11 @@ func (a *Alert) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (a *Alert) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
+}
+
+// QueryMetrics queries the "metrics" edge of the Alert entity.
+func (a *Alert) QueryMetrics() *AlertMetricsQuery {
+	return NewAlertClient(a.config).QueryMetrics(a)
 }
 
 // QueryPlaybooks queries the "playbooks" edge of the Alert entity.

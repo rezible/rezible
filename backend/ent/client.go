@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -46,6 +47,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -83,6 +85,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
+	// AlertMetrics is the client for interacting with the AlertMetrics builders.
+	AlertMetrics *AlertMetricsClient
 	// Environment is the client for interacting with the Environment builders.
 	Environment *EnvironmentClient
 	// Functionality is the client for interacting with the Functionality builders.
@@ -141,6 +145,8 @@ type Client struct {
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
 	OncallRoster *OncallRosterClient
+	// OncallRosterMetrics is the client for interacting with the OncallRosterMetrics builders.
+	OncallRosterMetrics *OncallRosterMetricsClient
 	// OncallSchedule is the client for interacting with the OncallSchedule builders.
 	OncallSchedule *OncallScheduleClient
 	// OncallScheduleParticipant is the client for interacting with the OncallScheduleParticipant builders.
@@ -209,6 +215,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
+	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Environment = NewEnvironmentClient(c.config)
 	c.Functionality = NewFunctionalityClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
@@ -238,6 +245,7 @@ func (c *Client) init() {
 	c.OncallEvent = NewOncallEventClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
+	c.OncallRosterMetrics = NewOncallRosterMetricsClient(c.config)
 	c.OncallSchedule = NewOncallScheduleClient(c.config)
 	c.OncallScheduleParticipant = NewOncallScheduleParticipantClient(c.config)
 	c.OncallUserShift = NewOncallUserShiftClient(c.config)
@@ -359,6 +367,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                              ctx,
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Environment:                      NewEnvironmentClient(cfg),
 		Functionality:                    NewFunctionalityClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
@@ -388,6 +397,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
+		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
@@ -436,6 +446,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                              ctx,
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Environment:                      NewEnvironmentClient(cfg),
 		Functionality:                    NewFunctionalityClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
@@ -465,6 +476,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
+		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
 		OncallSchedule:                   NewOncallScheduleClient(cfg),
 		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
 		OncallUserShift:                  NewOncallUserShiftClient(cfg),
@@ -522,8 +534,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.Alert, c.AlertMetrics, c.Environment, c.Functionality, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
@@ -531,10 +543,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
-		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
-		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftHandover,
+		c.OncallUserShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
+		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
 		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
@@ -549,8 +561,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.Environment, c.Functionality, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.Alert, c.AlertMetrics, c.Environment, c.Functionality, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
@@ -558,10 +570,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
 		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
 		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
-		c.OncallRoster, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallUserShift, c.OncallUserShiftHandover, c.OncallUserShiftMetrics,
-		c.Playbook, c.ProviderConfig, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
+		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
+		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftHandover,
+		c.OncallUserShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
+		c.Retrospective, c.RetrospectiveDiscussion, c.RetrospectiveDiscussionReply,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisComponent,
 		c.SystemAnalysisRelationship, c.SystemComponent, c.SystemComponentConstraint,
 		c.SystemComponentControl, c.SystemComponentKind, c.SystemComponentRelationship,
@@ -577,6 +589,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AlertMutation:
 		return c.Alert.mutate(ctx, m)
+	case *AlertMetricsMutation:
+		return c.AlertMetrics.mutate(ctx, m)
 	case *EnvironmentMutation:
 		return c.Environment.mutate(ctx, m)
 	case *FunctionalityMutation:
@@ -635,6 +649,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
 		return c.OncallRoster.mutate(ctx, m)
+	case *OncallRosterMetricsMutation:
+		return c.OncallRosterMetrics.mutate(ctx, m)
 	case *OncallScheduleMutation:
 		return c.OncallSchedule.mutate(ctx, m)
 	case *OncallScheduleParticipantMutation:
@@ -804,6 +820,22 @@ func (c *AlertClient) GetX(ctx context.Context, id uuid.UUID) *Alert {
 	return obj
 }
 
+// QueryMetrics queries the metrics edge of a Alert.
+func (c *AlertClient) QueryMetrics(a *Alert) *AlertMetricsQuery {
+	query := (&AlertMetricsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(alertmetrics.Table, alertmetrics.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, alert.MetricsTable, alert.MetricsColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryPlaybooks queries the playbooks edge of a Alert.
 func (c *AlertClient) QueryPlaybooks(a *Alert) *PlaybookQuery {
 	query := (&PlaybookClient{config: c.config}).Query()
@@ -858,6 +890,155 @@ func (c *AlertClient) mutate(ctx context.Context, m *AlertMutation) (Value, erro
 		return (&AlertDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Alert mutation op: %q", m.Op())
+	}
+}
+
+// AlertMetricsClient is a client for the AlertMetrics schema.
+type AlertMetricsClient struct {
+	config
+}
+
+// NewAlertMetricsClient returns a client for the AlertMetrics from the given config.
+func NewAlertMetricsClient(c config) *AlertMetricsClient {
+	return &AlertMetricsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alertmetrics.Hooks(f(g(h())))`.
+func (c *AlertMetricsClient) Use(hooks ...Hook) {
+	c.hooks.AlertMetrics = append(c.hooks.AlertMetrics, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertmetrics.Intercept(f(g(h())))`.
+func (c *AlertMetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertMetrics = append(c.inters.AlertMetrics, interceptors...)
+}
+
+// Create returns a builder for creating a AlertMetrics entity.
+func (c *AlertMetricsClient) Create() *AlertMetricsCreate {
+	mutation := newAlertMetricsMutation(c.config, OpCreate)
+	return &AlertMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AlertMetrics entities.
+func (c *AlertMetricsClient) CreateBulk(builders ...*AlertMetricsCreate) *AlertMetricsCreateBulk {
+	return &AlertMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertMetricsClient) MapCreateBulk(slice any, setFunc func(*AlertMetricsCreate, int)) *AlertMetricsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertMetricsCreateBulk{err: fmt.Errorf("calling to AlertMetricsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertMetricsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AlertMetrics.
+func (c *AlertMetricsClient) Update() *AlertMetricsUpdate {
+	mutation := newAlertMetricsMutation(c.config, OpUpdate)
+	return &AlertMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertMetricsClient) UpdateOne(am *AlertMetrics) *AlertMetricsUpdateOne {
+	mutation := newAlertMetricsMutation(c.config, OpUpdateOne, withAlertMetrics(am))
+	return &AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertMetricsClient) UpdateOneID(id uuid.UUID) *AlertMetricsUpdateOne {
+	mutation := newAlertMetricsMutation(c.config, OpUpdateOne, withAlertMetricsID(id))
+	return &AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AlertMetrics.
+func (c *AlertMetricsClient) Delete() *AlertMetricsDelete {
+	mutation := newAlertMetricsMutation(c.config, OpDelete)
+	return &AlertMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertMetricsClient) DeleteOne(am *AlertMetrics) *AlertMetricsDeleteOne {
+	return c.DeleteOneID(am.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertMetricsClient) DeleteOneID(id uuid.UUID) *AlertMetricsDeleteOne {
+	builder := c.Delete().Where(alertmetrics.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertMetricsDeleteOne{builder}
+}
+
+// Query returns a query builder for AlertMetrics.
+func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
+	return &AlertMetricsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertMetrics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AlertMetrics entity by its id.
+func (c *AlertMetricsClient) Get(ctx context.Context, id uuid.UUID) (*AlertMetrics, error) {
+	return c.Query().Where(alertmetrics.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertMetricsClient) GetX(ctx context.Context, id uuid.UUID) *AlertMetrics {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryAlert queries the alert edge of a AlertMetrics.
+func (c *AlertMetricsClient) QueryAlert(am *AlertMetrics) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := am.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertmetrics.Table, alertmetrics.FieldID, id),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertmetrics.AlertTable, alertmetrics.AlertColumn),
+		)
+		fromV = sqlgraph.Neighbors(am.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AlertMetricsClient) Hooks() []Hook {
+	return c.hooks.AlertMetrics
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertMetricsClient) Interceptors() []Interceptor {
+	return c.inters.AlertMetrics
+}
+
+func (c *AlertMetricsClient) mutate(ctx context.Context, m *AlertMetricsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AlertMetrics mutation op: %q", m.Op())
 	}
 }
 
@@ -5987,6 +6168,22 @@ func (c *OncallRosterClient) QueryUserWatchers(or *OncallRoster) *UserQuery {
 	return query
 }
 
+// QueryMetrics queries the metrics edge of a OncallRoster.
+func (c *OncallRosterClient) QueryMetrics(or *OncallRoster) *OncallRosterMetricsQuery {
+	query := (&OncallRosterMetricsClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(oncallrostermetrics.Table, oncallrostermetrics.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.MetricsTable, oncallroster.MetricsColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *OncallRosterClient) Hooks() []Hook {
 	hooks := c.hooks.OncallRoster
@@ -6011,6 +6208,155 @@ func (c *OncallRosterClient) mutate(ctx context.Context, m *OncallRosterMutation
 		return (&OncallRosterDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallRoster mutation op: %q", m.Op())
+	}
+}
+
+// OncallRosterMetricsClient is a client for the OncallRosterMetrics schema.
+type OncallRosterMetricsClient struct {
+	config
+}
+
+// NewOncallRosterMetricsClient returns a client for the OncallRosterMetrics from the given config.
+func NewOncallRosterMetricsClient(c config) *OncallRosterMetricsClient {
+	return &OncallRosterMetricsClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `oncallrostermetrics.Hooks(f(g(h())))`.
+func (c *OncallRosterMetricsClient) Use(hooks ...Hook) {
+	c.hooks.OncallRosterMetrics = append(c.hooks.OncallRosterMetrics, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `oncallrostermetrics.Intercept(f(g(h())))`.
+func (c *OncallRosterMetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.OncallRosterMetrics = append(c.inters.OncallRosterMetrics, interceptors...)
+}
+
+// Create returns a builder for creating a OncallRosterMetrics entity.
+func (c *OncallRosterMetricsClient) Create() *OncallRosterMetricsCreate {
+	mutation := newOncallRosterMetricsMutation(c.config, OpCreate)
+	return &OncallRosterMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of OncallRosterMetrics entities.
+func (c *OncallRosterMetricsClient) CreateBulk(builders ...*OncallRosterMetricsCreate) *OncallRosterMetricsCreateBulk {
+	return &OncallRosterMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *OncallRosterMetricsClient) MapCreateBulk(slice any, setFunc func(*OncallRosterMetricsCreate, int)) *OncallRosterMetricsCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &OncallRosterMetricsCreateBulk{err: fmt.Errorf("calling to OncallRosterMetricsClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*OncallRosterMetricsCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &OncallRosterMetricsCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for OncallRosterMetrics.
+func (c *OncallRosterMetricsClient) Update() *OncallRosterMetricsUpdate {
+	mutation := newOncallRosterMetricsMutation(c.config, OpUpdate)
+	return &OncallRosterMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *OncallRosterMetricsClient) UpdateOne(orm *OncallRosterMetrics) *OncallRosterMetricsUpdateOne {
+	mutation := newOncallRosterMetricsMutation(c.config, OpUpdateOne, withOncallRosterMetrics(orm))
+	return &OncallRosterMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *OncallRosterMetricsClient) UpdateOneID(id uuid.UUID) *OncallRosterMetricsUpdateOne {
+	mutation := newOncallRosterMetricsMutation(c.config, OpUpdateOne, withOncallRosterMetricsID(id))
+	return &OncallRosterMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for OncallRosterMetrics.
+func (c *OncallRosterMetricsClient) Delete() *OncallRosterMetricsDelete {
+	mutation := newOncallRosterMetricsMutation(c.config, OpDelete)
+	return &OncallRosterMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *OncallRosterMetricsClient) DeleteOne(orm *OncallRosterMetrics) *OncallRosterMetricsDeleteOne {
+	return c.DeleteOneID(orm.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *OncallRosterMetricsClient) DeleteOneID(id uuid.UUID) *OncallRosterMetricsDeleteOne {
+	builder := c.Delete().Where(oncallrostermetrics.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &OncallRosterMetricsDeleteOne{builder}
+}
+
+// Query returns a query builder for OncallRosterMetrics.
+func (c *OncallRosterMetricsClient) Query() *OncallRosterMetricsQuery {
+	return &OncallRosterMetricsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeOncallRosterMetrics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a OncallRosterMetrics entity by its id.
+func (c *OncallRosterMetricsClient) Get(ctx context.Context, id uuid.UUID) (*OncallRosterMetrics, error) {
+	return c.Query().Where(oncallrostermetrics.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *OncallRosterMetricsClient) GetX(ctx context.Context, id uuid.UUID) *OncallRosterMetrics {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryRoster queries the roster edge of a OncallRosterMetrics.
+func (c *OncallRosterMetricsClient) QueryRoster(orm *OncallRosterMetrics) *OncallRosterQuery {
+	query := (&OncallRosterClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := orm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallrostermetrics.Table, oncallrostermetrics.FieldID, id),
+			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallrostermetrics.RosterTable, oncallrostermetrics.RosterColumn),
+		)
+		fromV = sqlgraph.Neighbors(orm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *OncallRosterMetricsClient) Hooks() []Hook {
+	return c.hooks.OncallRosterMetrics
+}
+
+// Interceptors returns the client interceptors.
+func (c *OncallRosterMetricsClient) Interceptors() []Interceptor {
+	return c.inters.OncallRosterMetrics
+}
+
+func (c *OncallRosterMetricsClient) mutate(ctx context.Context, m *OncallRosterMetricsMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OncallRosterMetricsCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OncallRosterMetricsUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OncallRosterMetricsUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OncallRosterMetricsDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown OncallRosterMetrics mutation op: %q", m.Op())
 	}
 }
 
@@ -11167,7 +11513,7 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, Environment, Functionality, Incident, IncidentDebrief,
+		Alert, AlertMetrics, Environment, Functionality, Incident, IncidentDebrief,
 		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
 		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
 		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
@@ -11175,9 +11521,9 @@ type (
 		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentTeamAssignment,
 		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
 		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
-		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftHandover, OncallUserShiftMetrics, Playbook, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
+		OncallUserShift, OncallUserShiftHandover, OncallUserShiftMetrics, Playbook,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
@@ -11186,7 +11532,7 @@ type (
 		Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, Environment, Functionality, Incident, IncidentDebrief,
+		Alert, AlertMetrics, Environment, Functionality, Incident, IncidentDebrief,
 		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
 		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
 		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
@@ -11194,9 +11540,9 @@ type (
 		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentTeamAssignment,
 		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
 		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
-		OncallRoster, OncallSchedule, OncallScheduleParticipant, OncallUserShift,
-		OncallUserShiftHandover, OncallUserShiftMetrics, Playbook, ProviderConfig,
-		ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
+		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
+		OncallUserShift, OncallUserShiftHandover, OncallUserShiftMetrics, Playbook,
+		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
 		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
 		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,

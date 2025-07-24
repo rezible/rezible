@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -42,6 +43,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -83,6 +85,7 @@ const (
 
 	// Node types.
 	TypeAlert                            = "Alert"
+	TypeAlertMetrics                     = "AlertMetrics"
 	TypeEnvironment                      = "Environment"
 	TypeFunctionality                    = "Functionality"
 	TypeIncident                         = "Incident"
@@ -112,6 +115,7 @@ const (
 	TypeOncallEvent                      = "OncallEvent"
 	TypeOncallHandoverTemplate           = "OncallHandoverTemplate"
 	TypeOncallRoster                     = "OncallRoster"
+	TypeOncallRosterMetrics              = "OncallRosterMetrics"
 	TypeOncallSchedule                   = "OncallSchedule"
 	TypeOncallScheduleParticipant        = "OncallScheduleParticipant"
 	TypeOncallUserShift                  = "OncallUserShift"
@@ -151,6 +155,9 @@ type AlertMutation struct {
 	title            *string
 	provider_id      *string
 	clearedFields    map[string]struct{}
+	metrics          map[uuid.UUID]struct{}
+	removedmetrics   map[uuid.UUID]struct{}
+	clearedmetrics   bool
 	playbooks        map[uuid.UUID]struct{}
 	removedplaybooks map[uuid.UUID]struct{}
 	clearedplaybooks bool
@@ -336,6 +343,60 @@ func (m *AlertMutation) OldProviderID(ctx context.Context) (v string, err error)
 // ResetProviderID resets all changes to the "provider_id" field.
 func (m *AlertMutation) ResetProviderID() {
 	m.provider_id = nil
+}
+
+// AddMetricIDs adds the "metrics" edge to the AlertMetrics entity by ids.
+func (m *AlertMutation) AddMetricIDs(ids ...uuid.UUID) {
+	if m.metrics == nil {
+		m.metrics = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.metrics[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMetrics clears the "metrics" edge to the AlertMetrics entity.
+func (m *AlertMutation) ClearMetrics() {
+	m.clearedmetrics = true
+}
+
+// MetricsCleared reports if the "metrics" edge to the AlertMetrics entity was cleared.
+func (m *AlertMutation) MetricsCleared() bool {
+	return m.clearedmetrics
+}
+
+// RemoveMetricIDs removes the "metrics" edge to the AlertMetrics entity by IDs.
+func (m *AlertMutation) RemoveMetricIDs(ids ...uuid.UUID) {
+	if m.removedmetrics == nil {
+		m.removedmetrics = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.metrics, ids[i])
+		m.removedmetrics[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMetrics returns the removed IDs of the "metrics" edge to the AlertMetrics entity.
+func (m *AlertMutation) RemovedMetricsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmetrics {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MetricsIDs returns the "metrics" edge IDs in the mutation.
+func (m *AlertMutation) MetricsIDs() (ids []uuid.UUID) {
+	for id := range m.metrics {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMetrics resets all changes to the "metrics" edge.
+func (m *AlertMutation) ResetMetrics() {
+	m.metrics = nil
+	m.clearedmetrics = false
+	m.removedmetrics = nil
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by ids.
@@ -596,7 +657,10 @@ func (m *AlertMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AlertMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.metrics != nil {
+		edges = append(edges, alert.EdgeMetrics)
+	}
 	if m.playbooks != nil {
 		edges = append(edges, alert.EdgePlaybooks)
 	}
@@ -610,6 +674,12 @@ func (m *AlertMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *AlertMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case alert.EdgeMetrics:
+		ids := make([]ent.Value, 0, len(m.metrics))
+		for id := range m.metrics {
+			ids = append(ids, id)
+		}
+		return ids
 	case alert.EdgePlaybooks:
 		ids := make([]ent.Value, 0, len(m.playbooks))
 		for id := range m.playbooks {
@@ -628,7 +698,10 @@ func (m *AlertMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AlertMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.removedmetrics != nil {
+		edges = append(edges, alert.EdgeMetrics)
+	}
 	if m.removedplaybooks != nil {
 		edges = append(edges, alert.EdgePlaybooks)
 	}
@@ -642,6 +715,12 @@ func (m *AlertMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AlertMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case alert.EdgeMetrics:
+		ids := make([]ent.Value, 0, len(m.removedmetrics))
+		for id := range m.removedmetrics {
+			ids = append(ids, id)
+		}
+		return ids
 	case alert.EdgePlaybooks:
 		ids := make([]ent.Value, 0, len(m.removedplaybooks))
 		for id := range m.removedplaybooks {
@@ -660,7 +739,10 @@ func (m *AlertMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AlertMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
+	edges := make([]string, 0, 3)
+	if m.clearedmetrics {
+		edges = append(edges, alert.EdgeMetrics)
+	}
 	if m.clearedplaybooks {
 		edges = append(edges, alert.EdgePlaybooks)
 	}
@@ -674,6 +756,8 @@ func (m *AlertMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *AlertMutation) EdgeCleared(name string) bool {
 	switch name {
+	case alert.EdgeMetrics:
+		return m.clearedmetrics
 	case alert.EdgePlaybooks:
 		return m.clearedplaybooks
 	case alert.EdgeInstances:
@@ -694,6 +778,9 @@ func (m *AlertMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AlertMutation) ResetEdge(name string) error {
 	switch name {
+	case alert.EdgeMetrics:
+		m.ResetMetrics()
+		return nil
 	case alert.EdgePlaybooks:
 		m.ResetPlaybooks()
 		return nil
@@ -702,6 +789,392 @@ func (m *AlertMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Alert edge %s", name)
+}
+
+// AlertMetricsMutation represents an operation that mutates the AlertMetrics nodes in the graph.
+type AlertMetricsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	clearedFields map[string]struct{}
+	alert         *uuid.UUID
+	clearedalert  bool
+	done          bool
+	oldValue      func(context.Context) (*AlertMetrics, error)
+	predicates    []predicate.AlertMetrics
+}
+
+var _ ent.Mutation = (*AlertMetricsMutation)(nil)
+
+// alertmetricsOption allows management of the mutation configuration using functional options.
+type alertmetricsOption func(*AlertMetricsMutation)
+
+// newAlertMetricsMutation creates new mutation for the AlertMetrics entity.
+func newAlertMetricsMutation(c config, op Op, opts ...alertmetricsOption) *AlertMetricsMutation {
+	m := &AlertMetricsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAlertMetrics,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAlertMetricsID sets the ID field of the mutation.
+func withAlertMetricsID(id uuid.UUID) alertmetricsOption {
+	return func(m *AlertMetricsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AlertMetrics
+		)
+		m.oldValue = func(ctx context.Context) (*AlertMetrics, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AlertMetrics.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAlertMetrics sets the old AlertMetrics of the mutation.
+func withAlertMetrics(node *AlertMetrics) alertmetricsOption {
+	return func(m *AlertMetricsMutation) {
+		m.oldValue = func(context.Context) (*AlertMetrics, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AlertMetricsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AlertMetricsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AlertMetrics entities.
+func (m *AlertMetricsMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AlertMetricsMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AlertMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AlertMetrics.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetAlertID sets the "alert_id" field.
+func (m *AlertMetricsMutation) SetAlertID(u uuid.UUID) {
+	m.alert = &u
+}
+
+// AlertID returns the value of the "alert_id" field in the mutation.
+func (m *AlertMetricsMutation) AlertID() (r uuid.UUID, exists bool) {
+	v := m.alert
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAlertID returns the old "alert_id" field's value of the AlertMetrics entity.
+// If the AlertMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertMetricsMutation) OldAlertID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAlertID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAlertID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAlertID: %w", err)
+	}
+	return oldValue.AlertID, nil
+}
+
+// ResetAlertID resets all changes to the "alert_id" field.
+func (m *AlertMetricsMutation) ResetAlertID() {
+	m.alert = nil
+}
+
+// ClearAlert clears the "alert" edge to the Alert entity.
+func (m *AlertMetricsMutation) ClearAlert() {
+	m.clearedalert = true
+	m.clearedFields[alertmetrics.FieldAlertID] = struct{}{}
+}
+
+// AlertCleared reports if the "alert" edge to the Alert entity was cleared.
+func (m *AlertMetricsMutation) AlertCleared() bool {
+	return m.clearedalert
+}
+
+// AlertIDs returns the "alert" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// AlertID instead. It exists only for internal usage by the builders.
+func (m *AlertMetricsMutation) AlertIDs() (ids []uuid.UUID) {
+	if id := m.alert; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetAlert resets all changes to the "alert" edge.
+func (m *AlertMetricsMutation) ResetAlert() {
+	m.alert = nil
+	m.clearedalert = false
+}
+
+// Where appends a list predicates to the AlertMetricsMutation builder.
+func (m *AlertMetricsMutation) Where(ps ...predicate.AlertMetrics) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the AlertMetricsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *AlertMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.AlertMetrics, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *AlertMetricsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *AlertMetricsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (AlertMetrics).
+func (m *AlertMetricsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AlertMetricsMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.alert != nil {
+		fields = append(fields, alertmetrics.FieldAlertID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AlertMetricsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case alertmetrics.FieldAlertID:
+		return m.AlertID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AlertMetricsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case alertmetrics.FieldAlertID:
+		return m.OldAlertID(ctx)
+	}
+	return nil, fmt.Errorf("unknown AlertMetrics field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlertMetricsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case alertmetrics.FieldAlertID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAlertID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AlertMetrics field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AlertMetricsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AlertMetricsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AlertMetricsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown AlertMetrics numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AlertMetricsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AlertMetricsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AlertMetricsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown AlertMetrics nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AlertMetricsMutation) ResetField(name string) error {
+	switch name {
+	case alertmetrics.FieldAlertID:
+		m.ResetAlertID()
+		return nil
+	}
+	return fmt.Errorf("unknown AlertMetrics field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AlertMetricsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.alert != nil {
+		edges = append(edges, alertmetrics.EdgeAlert)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AlertMetricsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case alertmetrics.EdgeAlert:
+		if id := m.alert; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AlertMetricsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AlertMetricsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AlertMetricsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedalert {
+		edges = append(edges, alertmetrics.EdgeAlert)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AlertMetricsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case alertmetrics.EdgeAlert:
+		return m.clearedalert
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AlertMetricsMutation) ClearEdge(name string) error {
+	switch name {
+	case alertmetrics.EdgeAlert:
+		m.ClearAlert()
+		return nil
+	}
+	return fmt.Errorf("unknown AlertMetrics unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AlertMetricsMutation) ResetEdge(name string) error {
+	switch name {
+	case alertmetrics.EdgeAlert:
+		m.ResetAlert()
+		return nil
+	}
+	return fmt.Errorf("unknown AlertMetrics edge %s", name)
 }
 
 // EnvironmentMutation represents an operation that mutates the Environment nodes in the graph.
@@ -21528,6 +22001,9 @@ type OncallRosterMutation struct {
 	user_watchers            map[uuid.UUID]struct{}
 	removeduser_watchers     map[uuid.UUID]struct{}
 	cleareduser_watchers     bool
+	metrics                  map[uuid.UUID]struct{}
+	removedmetrics           map[uuid.UUID]struct{}
+	clearedmetrics           bool
 	done                     bool
 	oldValue                 func(context.Context) (*OncallRoster, error)
 	predicates               []predicate.OncallRoster
@@ -22341,6 +22817,60 @@ func (m *OncallRosterMutation) ResetUserWatchers() {
 	m.removeduser_watchers = nil
 }
 
+// AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by ids.
+func (m *OncallRosterMutation) AddMetricIDs(ids ...uuid.UUID) {
+	if m.metrics == nil {
+		m.metrics = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.metrics[ids[i]] = struct{}{}
+	}
+}
+
+// ClearMetrics clears the "metrics" edge to the OncallRosterMetrics entity.
+func (m *OncallRosterMutation) ClearMetrics() {
+	m.clearedmetrics = true
+}
+
+// MetricsCleared reports if the "metrics" edge to the OncallRosterMetrics entity was cleared.
+func (m *OncallRosterMutation) MetricsCleared() bool {
+	return m.clearedmetrics
+}
+
+// RemoveMetricIDs removes the "metrics" edge to the OncallRosterMetrics entity by IDs.
+func (m *OncallRosterMutation) RemoveMetricIDs(ids ...uuid.UUID) {
+	if m.removedmetrics == nil {
+		m.removedmetrics = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.metrics, ids[i])
+		m.removedmetrics[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedMetrics returns the removed IDs of the "metrics" edge to the OncallRosterMetrics entity.
+func (m *OncallRosterMutation) RemovedMetricsIDs() (ids []uuid.UUID) {
+	for id := range m.removedmetrics {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// MetricsIDs returns the "metrics" edge IDs in the mutation.
+func (m *OncallRosterMutation) MetricsIDs() (ids []uuid.UUID) {
+	for id := range m.metrics {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetMetrics resets all changes to the "metrics" edge.
+func (m *OncallRosterMutation) ResetMetrics() {
+	m.metrics = nil
+	m.clearedmetrics = false
+	m.removedmetrics = nil
+}
+
 // Where appends a list predicates to the OncallRosterMutation builder.
 func (m *OncallRosterMutation) Where(ps ...predicate.OncallRoster) {
 	m.predicates = append(m.predicates, ps...)
@@ -22626,7 +23156,7 @@ func (m *OncallRosterMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OncallRosterMutation) AddedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.schedules != nil {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -22647,6 +23177,9 @@ func (m *OncallRosterMutation) AddedEdges() []string {
 	}
 	if m.user_watchers != nil {
 		edges = append(edges, oncallroster.EdgeUserWatchers)
+	}
+	if m.metrics != nil {
+		edges = append(edges, oncallroster.EdgeMetrics)
 	}
 	return edges
 }
@@ -22695,13 +23228,19 @@ func (m *OncallRosterMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case oncallroster.EdgeMetrics:
+		ids := make([]ent.Value, 0, len(m.metrics))
+		for id := range m.metrics {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OncallRosterMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.removedschedules != nil {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -22719,6 +23258,9 @@ func (m *OncallRosterMutation) RemovedEdges() []string {
 	}
 	if m.removeduser_watchers != nil {
 		edges = append(edges, oncallroster.EdgeUserWatchers)
+	}
+	if m.removedmetrics != nil {
+		edges = append(edges, oncallroster.EdgeMetrics)
 	}
 	return edges
 }
@@ -22763,13 +23305,19 @@ func (m *OncallRosterMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case oncallroster.EdgeMetrics:
+		ids := make([]ent.Value, 0, len(m.removedmetrics))
+		for id := range m.removedmetrics {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OncallRosterMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 7)
+	edges := make([]string, 0, 8)
 	if m.clearedschedules {
 		edges = append(edges, oncallroster.EdgeSchedules)
 	}
@@ -22790,6 +23338,9 @@ func (m *OncallRosterMutation) ClearedEdges() []string {
 	}
 	if m.cleareduser_watchers {
 		edges = append(edges, oncallroster.EdgeUserWatchers)
+	}
+	if m.clearedmetrics {
+		edges = append(edges, oncallroster.EdgeMetrics)
 	}
 	return edges
 }
@@ -22812,6 +23363,8 @@ func (m *OncallRosterMutation) EdgeCleared(name string) bool {
 		return m.clearedshifts
 	case oncallroster.EdgeUserWatchers:
 		return m.cleareduser_watchers
+	case oncallroster.EdgeMetrics:
+		return m.clearedmetrics
 	}
 	return false
 }
@@ -22852,8 +23405,397 @@ func (m *OncallRosterMutation) ResetEdge(name string) error {
 	case oncallroster.EdgeUserWatchers:
 		m.ResetUserWatchers()
 		return nil
+	case oncallroster.EdgeMetrics:
+		m.ResetMetrics()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallRoster edge %s", name)
+}
+
+// OncallRosterMetricsMutation represents an operation that mutates the OncallRosterMetrics nodes in the graph.
+type OncallRosterMetricsMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	clearedFields map[string]struct{}
+	roster        *uuid.UUID
+	clearedroster bool
+	done          bool
+	oldValue      func(context.Context) (*OncallRosterMetrics, error)
+	predicates    []predicate.OncallRosterMetrics
+}
+
+var _ ent.Mutation = (*OncallRosterMetricsMutation)(nil)
+
+// oncallrostermetricsOption allows management of the mutation configuration using functional options.
+type oncallrostermetricsOption func(*OncallRosterMetricsMutation)
+
+// newOncallRosterMetricsMutation creates new mutation for the OncallRosterMetrics entity.
+func newOncallRosterMetricsMutation(c config, op Op, opts ...oncallrostermetricsOption) *OncallRosterMetricsMutation {
+	m := &OncallRosterMetricsMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeOncallRosterMetrics,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withOncallRosterMetricsID sets the ID field of the mutation.
+func withOncallRosterMetricsID(id uuid.UUID) oncallrostermetricsOption {
+	return func(m *OncallRosterMetricsMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *OncallRosterMetrics
+		)
+		m.oldValue = func(ctx context.Context) (*OncallRosterMetrics, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().OncallRosterMetrics.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withOncallRosterMetrics sets the old OncallRosterMetrics of the mutation.
+func withOncallRosterMetrics(node *OncallRosterMetrics) oncallrostermetricsOption {
+	return func(m *OncallRosterMetricsMutation) {
+		m.oldValue = func(context.Context) (*OncallRosterMetrics, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m OncallRosterMetricsMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m OncallRosterMetricsMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of OncallRosterMetrics entities.
+func (m *OncallRosterMetricsMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *OncallRosterMetricsMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *OncallRosterMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().OncallRosterMetrics.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetRosterID sets the "roster_id" field.
+func (m *OncallRosterMetricsMutation) SetRosterID(u uuid.UUID) {
+	m.roster = &u
+}
+
+// RosterID returns the value of the "roster_id" field in the mutation.
+func (m *OncallRosterMetricsMutation) RosterID() (r uuid.UUID, exists bool) {
+	v := m.roster
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRosterID returns the old "roster_id" field's value of the OncallRosterMetrics entity.
+// If the OncallRosterMetrics object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallRosterMetricsMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRosterID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRosterID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRosterID: %w", err)
+	}
+	return oldValue.RosterID, nil
+}
+
+// ResetRosterID resets all changes to the "roster_id" field.
+func (m *OncallRosterMetricsMutation) ResetRosterID() {
+	m.roster = nil
+}
+
+// ClearRoster clears the "roster" edge to the OncallRoster entity.
+func (m *OncallRosterMetricsMutation) ClearRoster() {
+	m.clearedroster = true
+	m.clearedFields[oncallrostermetrics.FieldRosterID] = struct{}{}
+}
+
+// RosterCleared reports if the "roster" edge to the OncallRoster entity was cleared.
+func (m *OncallRosterMetricsMutation) RosterCleared() bool {
+	return m.clearedroster
+}
+
+// RosterIDs returns the "roster" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RosterID instead. It exists only for internal usage by the builders.
+func (m *OncallRosterMetricsMutation) RosterIDs() (ids []uuid.UUID) {
+	if id := m.roster; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRoster resets all changes to the "roster" edge.
+func (m *OncallRosterMetricsMutation) ResetRoster() {
+	m.roster = nil
+	m.clearedroster = false
+}
+
+// Where appends a list predicates to the OncallRosterMetricsMutation builder.
+func (m *OncallRosterMetricsMutation) Where(ps ...predicate.OncallRosterMetrics) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the OncallRosterMetricsMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OncallRosterMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallRosterMetrics, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *OncallRosterMetricsMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OncallRosterMetricsMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (OncallRosterMetrics).
+func (m *OncallRosterMetricsMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *OncallRosterMetricsMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.roster != nil {
+		fields = append(fields, oncallrostermetrics.FieldRosterID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *OncallRosterMetricsMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case oncallrostermetrics.FieldRosterID:
+		return m.RosterID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *OncallRosterMetricsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case oncallrostermetrics.FieldRosterID:
+		return m.OldRosterID(ctx)
+	}
+	return nil, fmt.Errorf("unknown OncallRosterMetrics field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallRosterMetricsMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case oncallrostermetrics.FieldRosterID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRosterID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown OncallRosterMetrics field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *OncallRosterMetricsMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *OncallRosterMetricsMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *OncallRosterMetricsMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown OncallRosterMetrics numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *OncallRosterMetricsMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *OncallRosterMetricsMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *OncallRosterMetricsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown OncallRosterMetrics nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *OncallRosterMetricsMutation) ResetField(name string) error {
+	switch name {
+	case oncallrostermetrics.FieldRosterID:
+		m.ResetRosterID()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallRosterMetrics field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *OncallRosterMetricsMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.roster != nil {
+		edges = append(edges, oncallrostermetrics.EdgeRoster)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *OncallRosterMetricsMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case oncallrostermetrics.EdgeRoster:
+		if id := m.roster; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *OncallRosterMetricsMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *OncallRosterMetricsMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *OncallRosterMetricsMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedroster {
+		edges = append(edges, oncallrostermetrics.EdgeRoster)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *OncallRosterMetricsMutation) EdgeCleared(name string) bool {
+	switch name {
+	case oncallrostermetrics.EdgeRoster:
+		return m.clearedroster
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *OncallRosterMetricsMutation) ClearEdge(name string) error {
+	switch name {
+	case oncallrostermetrics.EdgeRoster:
+		m.ClearRoster()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallRosterMetrics unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *OncallRosterMetricsMutation) ResetEdge(name string) error {
+	switch name {
+	case oncallrostermetrics.EdgeRoster:
+		m.ResetRoster()
+		return nil
+	}
+	return fmt.Errorf("unknown OncallRosterMetrics edge %s", name)
 }
 
 // OncallScheduleMutation represents an operation that mutates the OncallSchedule nodes in the graph.

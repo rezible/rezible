@@ -44,6 +44,8 @@ const (
 	EdgeShifts = "shifts"
 	// EdgeUserWatchers holds the string denoting the user_watchers edge name in mutations.
 	EdgeUserWatchers = "user_watchers"
+	// EdgeMetrics holds the string denoting the metrics edge name in mutations.
+	EdgeMetrics = "metrics"
 	// Table holds the table name of the oncallroster in the database.
 	Table = "oncall_rosters"
 	// SchedulesTable is the table that holds the schedules relation/edge.
@@ -91,6 +93,13 @@ const (
 	// UserWatchersInverseTable is the table name for the User entity.
 	// It exists in this package in order to avoid circular dependency with the "user" package.
 	UserWatchersInverseTable = "users"
+	// MetricsTable is the table that holds the metrics relation/edge.
+	MetricsTable = "oncall_roster_metrics"
+	// MetricsInverseTable is the table name for the OncallRosterMetrics entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallrostermetrics" package.
+	MetricsInverseTable = "oncall_roster_metrics"
+	// MetricsColumn is the table column denoting the metrics relation/edge.
+	MetricsColumn = "roster_id"
 )
 
 // Columns holds all SQL columns for oncallroster fields.
@@ -275,6 +284,20 @@ func ByUserWatchers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserWatchersStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByMetricsCount orders the results by metrics count.
+func ByMetricsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMetricsStep(), opts...)
+	}
+}
+
+// ByMetrics orders the results by metrics terms.
+func ByMetrics(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMetricsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newSchedulesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -322,5 +345,12 @@ func newUserWatchersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserWatchersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, UserWatchersTable, UserWatchersPrimaryKey...),
+	)
+}
+func newMetricsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MetricsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
 	)
 }

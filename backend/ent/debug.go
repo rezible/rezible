@@ -12,6 +12,14 @@ func (c *AlertClient) Debug() *AlertClient {
 	return &AlertClient{config: cfg}
 }
 
+func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertMetricsClient{config: cfg}
+}
+
 func (c *EnvironmentClient) Debug() *EnvironmentClient {
 	if c.debug {
 		return c
@@ -242,6 +250,14 @@ func (c *OncallRosterClient) Debug() *OncallRosterClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &OncallRosterClient{config: cfg}
+}
+
+func (c *OncallRosterMetricsClient) Debug() *OncallRosterMetricsClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &OncallRosterMetricsClient{config: cfg}
 }
 
 func (c *OncallScheduleClient) Debug() *OncallScheduleClient {

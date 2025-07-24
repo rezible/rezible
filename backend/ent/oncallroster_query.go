@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/predicate"
@@ -38,6 +39,7 @@ type OncallRosterQuery struct {
 	withTeams            *TeamQuery
 	withShifts           *OncallUserShiftQuery
 	withUserWatchers     *UserQuery
+	withMetrics          *OncallRosterMetricsQuery
 	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -222,6 +224,28 @@ func (orq *OncallRosterQuery) QueryUserWatchers() *UserQuery {
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.UserWatchersTable, oncallroster.UserWatchersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMetrics chains the current query on the "metrics" edge.
+func (orq *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
+	query := (&OncallRosterMetricsClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
+			sqlgraph.To(oncallrostermetrics.Table, oncallrostermetrics.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.MetricsTable, oncallroster.MetricsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
 		return fromU, nil
@@ -428,6 +452,7 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		withTeams:            orq.withTeams.Clone(),
 		withShifts:           orq.withShifts.Clone(),
 		withUserWatchers:     orq.withUserWatchers.Clone(),
+		withMetrics:          orq.withMetrics.Clone(),
 		// clone intermediate query.
 		sql:       orq.sql.Clone(),
 		path:      orq.path,
@@ -512,6 +537,17 @@ func (orq *OncallRosterQuery) WithUserWatchers(opts ...func(*UserQuery)) *Oncall
 	return orq
 }
 
+// WithMetrics tells the query-builder to eager-load the nodes that are connected to
+// the "metrics" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OncallRosterQuery) WithMetrics(opts ...func(*OncallRosterMetricsQuery)) *OncallRosterQuery {
+	query := (&OncallRosterMetricsClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withMetrics = query
+	return orq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
@@ -590,7 +626,7 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*OncallRoster{}
 		_spec       = orq.querySpec()
-		loadedTypes = [7]bool{
+		loadedTypes = [8]bool{
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
 			orq.withEvents != nil,
@@ -598,6 +634,7 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			orq.withTeams != nil,
 			orq.withShifts != nil,
 			orq.withUserWatchers != nil,
+			orq.withMetrics != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -666,6 +703,13 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		if err := orq.loadUserWatchers(ctx, query, nodes,
 			func(n *OncallRoster) { n.Edges.UserWatchers = []*User{} },
 			func(n *OncallRoster, e *User) { n.Edges.UserWatchers = append(n.Edges.UserWatchers, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := orq.withMetrics; query != nil {
+		if err := orq.loadMetrics(ctx, query, nodes,
+			func(n *OncallRoster) { n.Edges.Metrics = []*OncallRosterMetrics{} },
+			func(n *OncallRoster, e *OncallRosterMetrics) { n.Edges.Metrics = append(n.Edges.Metrics, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -941,6 +985,36 @@ func (orq *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQ
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (orq *OncallRosterQuery) loadMetrics(ctx context.Context, query *OncallRosterMetricsQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallRosterMetrics)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*OncallRoster)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oncallrostermetrics.FieldRosterID)
+	}
+	query.Where(predicate.OncallRosterMetrics(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(oncallroster.MetricsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.RosterID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "roster_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

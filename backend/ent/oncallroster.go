@@ -57,9 +57,11 @@ type OncallRosterEdges struct {
 	Shifts []*OncallUserShift `json:"shifts,omitempty"`
 	// UserWatchers holds the value of the user_watchers edge.
 	UserWatchers []*User `json:"user_watchers,omitempty"`
+	// Metrics holds the value of the metrics edge.
+	Metrics []*OncallRosterMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [7]bool
+	loadedTypes [8]bool
 }
 
 // SchedulesOrErr returns the Schedules value or an error if the edge
@@ -125,6 +127,15 @@ func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
 		return e.UserWatchers, nil
 	}
 	return nil, &NotLoadedError{edge: "user_watchers"}
+}
+
+// MetricsOrErr returns the Metrics value or an error if the edge
+// was not loaded in eager-loading.
+func (e OncallRosterEdges) MetricsOrErr() ([]*OncallRosterMetrics, error) {
+	if e.loadedTypes[7] {
+		return e.Metrics, nil
+	}
+	return nil, &NotLoadedError{edge: "metrics"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -253,6 +264,11 @@ func (or *OncallRoster) QueryShifts() *OncallUserShiftQuery {
 // QueryUserWatchers queries the "user_watchers" edge of the OncallRoster entity.
 func (or *OncallRoster) QueryUserWatchers() *UserQuery {
 	return NewOncallRosterClient(or.config).QueryUserWatchers(or)
+}
+
+// QueryMetrics queries the "metrics" edge of the OncallRoster entity.
+func (or *OncallRoster) QueryMetrics() *OncallRosterMetricsQuery {
+	return NewOncallRosterClient(or.config).QueryMetrics(or)
 }
 
 // Update returns a builder for updating this OncallRoster.

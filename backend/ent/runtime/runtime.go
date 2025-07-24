@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -34,6 +35,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -75,6 +77,12 @@ func init() {
 	alertDescID := alertFields[0].Descriptor()
 	// alert.DefaultID holds the default value on creation for the id field.
 	alert.DefaultID = alertDescID.Default.(func() uuid.UUID)
+	alertmetricsFields := schema.AlertMetrics{}.Fields()
+	_ = alertmetricsFields
+	// alertmetricsDescID is the schema descriptor for id field.
+	alertmetricsDescID := alertmetricsFields[0].Descriptor()
+	// alertmetrics.DefaultID holds the default value on creation for the id field.
+	alertmetrics.DefaultID = alertmetricsDescID.Default.(func() uuid.UUID)
 	environmentMixin := schema.Environment{}.Mixin()
 	environmentMixinHooks0 := environmentMixin[0].Hooks()
 	environment.Hooks[0] = environmentMixinHooks0[0]
@@ -371,6 +379,12 @@ func init() {
 	oncallrosterDescID := oncallrosterFields[0].Descriptor()
 	// oncallroster.DefaultID holds the default value on creation for the id field.
 	oncallroster.DefaultID = oncallrosterDescID.Default.(func() uuid.UUID)
+	oncallrostermetricsFields := schema.OncallRosterMetrics{}.Fields()
+	_ = oncallrostermetricsFields
+	// oncallrostermetricsDescID is the schema descriptor for id field.
+	oncallrostermetricsDescID := oncallrostermetricsFields[0].Descriptor()
+	// oncallrostermetrics.DefaultID holds the default value on creation for the id field.
+	oncallrostermetrics.DefaultID = oncallrostermetricsDescID.Default.(func() uuid.UUID)
 	oncallscheduleMixin := schema.OncallSchedule{}.Mixin()
 	oncallscheduleMixinHooks0 := oncallscheduleMixin[0].Hooks()
 	oncallschedule.Hooks[0] = oncallscheduleMixinHooks0[0]

@@ -21,6 +21,18 @@ func (f AlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMutation", m)
 }
 
+// The AlertMetricsFunc type is an adapter to allow the use of ordinary
+// function as AlertMetrics mutator.
+type AlertMetricsFunc func(context.Context, *ent.AlertMetricsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertMetricsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMetricsMutation", m)
+}
+
 // The EnvironmentFunc type is an adapter to allow the use of ordinary
 // function as Environment mutator.
 type EnvironmentFunc func(context.Context, *ent.EnvironmentMutation) (ent.Value, error)
@@ -367,6 +379,18 @@ func (f OncallRosterFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallRosterMutation", m)
+}
+
+// The OncallRosterMetricsFunc type is an adapter to allow the use of ordinary
+// function as OncallRosterMetrics mutator.
+type OncallRosterMetricsFunc func(context.Context, *ent.OncallRosterMetricsMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f OncallRosterMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallRosterMetricsMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallRosterMetricsMutation", m)
 }
 
 // The OncallScheduleFunc type is an adapter to allow the use of ordinary

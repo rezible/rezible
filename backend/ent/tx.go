@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
+	// AlertMetrics is the client for interacting with the AlertMetrics builders.
+	AlertMetrics *AlertMetricsClient
 	// Environment is the client for interacting with the Environment builders.
 	Environment *EnvironmentClient
 	// Functionality is the client for interacting with the Functionality builders.
@@ -72,6 +74,8 @@ type Tx struct {
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
 	OncallRoster *OncallRosterClient
+	// OncallRosterMetrics is the client for interacting with the OncallRosterMetrics builders.
+	OncallRosterMetrics *OncallRosterMetricsClient
 	// OncallSchedule is the client for interacting with the OncallSchedule builders.
 	OncallSchedule *OncallScheduleClient
 	// OncallScheduleParticipant is the client for interacting with the OncallScheduleParticipant builders.
@@ -260,6 +264,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
+	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Environment = NewEnvironmentClient(tx.config)
 	tx.Functionality = NewFunctionalityClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
@@ -289,6 +294,7 @@ func (tx *Tx) init() {
 	tx.OncallEvent = NewOncallEventClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
+	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)
 	tx.OncallSchedule = NewOncallScheduleClient(tx.config)
 	tx.OncallScheduleParticipant = NewOncallScheduleParticipantClient(tx.config)
 	tx.OncallUserShift = NewOncallUserShiftClient(tx.config)

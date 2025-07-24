@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -38,6 +39,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -150,6 +152,33 @@ func (f TraverseAlert) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertQuery", q)
+}
+
+// The AlertMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertMetricsFunc func(context.Context, *ent.AlertMetricsQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AlertMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
+}
+
+// The TraverseAlertMetrics type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertMetrics func(context.Context, *ent.AlertMetricsQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAlertMetrics) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAlertMetrics) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
 }
 
 // The EnvironmentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -935,6 +964,33 @@ func (f TraverseOncallRoster) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallRosterQuery", q)
 }
 
+// The OncallRosterMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallRosterMetricsFunc func(context.Context, *ent.OncallRosterMetricsQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OncallRosterMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallRosterMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallRosterMetricsQuery", q)
+}
+
+// The TraverseOncallRosterMetrics type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallRosterMetrics func(context.Context, *ent.OncallRosterMetricsQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOncallRosterMetrics) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOncallRosterMetrics) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallRosterMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallRosterMetricsQuery", q)
+}
+
 // The OncallScheduleFunc type is an adapter to allow the use of ordinary function as a Querier.
 type OncallScheduleFunc func(context.Context, *ent.OncallScheduleQuery) (ent.Value, error)
 
@@ -1696,6 +1752,8 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
+	case *ent.AlertMetricsQuery:
+		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.EnvironmentQuery:
 		return &query[*ent.EnvironmentQuery, predicate.Environment, environment.OrderOption]{typ: ent.TypeEnvironment, tq: q}, nil
 	case *ent.FunctionalityQuery:
@@ -1754,6 +1812,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:
 		return &query[*ent.OncallRosterQuery, predicate.OncallRoster, oncallroster.OrderOption]{typ: ent.TypeOncallRoster, tq: q}, nil
+	case *ent.OncallRosterMetricsQuery:
+		return &query[*ent.OncallRosterMetricsQuery, predicate.OncallRosterMetrics, oncallrostermetrics.OrderOption]{typ: ent.TypeOncallRosterMetrics, tq: q}, nil
 	case *ent.OncallScheduleQuery:
 		return &query[*ent.OncallScheduleQuery, predicate.OncallSchedule, oncallschedule.OrderOption]{typ: ent.TypeOncallSchedule, tq: q}, nil
 	case *ent.OncallScheduleParticipantQuery:

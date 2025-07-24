@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/predicate"
@@ -274,6 +275,21 @@ func (oru *OncallRosterUpdate) AddUserWatchers(u ...*User) *OncallRosterUpdate {
 	return oru.AddUserWatcherIDs(ids...)
 }
 
+// AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by IDs.
+func (oru *OncallRosterUpdate) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.AddMetricIDs(ids...)
+	return oru
+}
+
+// AddMetrics adds the "metrics" edges to the OncallRosterMetrics entity.
+func (oru *OncallRosterUpdate) AddMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oru.AddMetricIDs(ids...)
+}
+
 // Mutation returns the OncallRosterMutation object of the builder.
 func (oru *OncallRosterUpdate) Mutation() *OncallRosterMutation {
 	return oru.mutation
@@ -409,6 +425,27 @@ func (oru *OncallRosterUpdate) RemoveUserWatchers(u ...*User) *OncallRosterUpdat
 		ids[i] = u[i].ID
 	}
 	return oru.RemoveUserWatcherIDs(ids...)
+}
+
+// ClearMetrics clears all "metrics" edges to the OncallRosterMetrics entity.
+func (oru *OncallRosterUpdate) ClearMetrics() *OncallRosterUpdate {
+	oru.mutation.ClearMetrics()
+	return oru
+}
+
+// RemoveMetricIDs removes the "metrics" edge to OncallRosterMetrics entities by IDs.
+func (oru *OncallRosterUpdate) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdate {
+	oru.mutation.RemoveMetricIDs(ids...)
+	return oru
+}
+
+// RemoveMetrics removes "metrics" edges to OncallRosterMetrics entities.
+func (oru *OncallRosterUpdate) RemoveMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oru.RemoveMetricIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -785,6 +822,51 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if oru.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oru.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !oru.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oru.mutation.MetricsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(oru.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, oru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1044,6 +1126,21 @@ func (oruo *OncallRosterUpdateOne) AddUserWatchers(u ...*User) *OncallRosterUpda
 	return oruo.AddUserWatcherIDs(ids...)
 }
 
+// AddMetricIDs adds the "metrics" edge to the OncallRosterMetrics entity by IDs.
+func (oruo *OncallRosterUpdateOne) AddMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.AddMetricIDs(ids...)
+	return oruo
+}
+
+// AddMetrics adds the "metrics" edges to the OncallRosterMetrics entity.
+func (oruo *OncallRosterUpdateOne) AddMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oruo.AddMetricIDs(ids...)
+}
+
 // Mutation returns the OncallRosterMutation object of the builder.
 func (oruo *OncallRosterUpdateOne) Mutation() *OncallRosterMutation {
 	return oruo.mutation
@@ -1179,6 +1276,27 @@ func (oruo *OncallRosterUpdateOne) RemoveUserWatchers(u ...*User) *OncallRosterU
 		ids[i] = u[i].ID
 	}
 	return oruo.RemoveUserWatcherIDs(ids...)
+}
+
+// ClearMetrics clears all "metrics" edges to the OncallRosterMetrics entity.
+func (oruo *OncallRosterUpdateOne) ClearMetrics() *OncallRosterUpdateOne {
+	oruo.mutation.ClearMetrics()
+	return oruo
+}
+
+// RemoveMetricIDs removes the "metrics" edge to OncallRosterMetrics entities by IDs.
+func (oruo *OncallRosterUpdateOne) RemoveMetricIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
+	oruo.mutation.RemoveMetricIDs(ids...)
+	return oruo
+}
+
+// RemoveMetrics removes "metrics" edges to OncallRosterMetrics entities.
+func (oruo *OncallRosterUpdateOne) RemoveMetrics(o ...*OncallRosterMetrics) *OncallRosterUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return oruo.RemoveMetricIDs(ids...)
 }
 
 // Where appends a list predicates to the OncallRosterUpdate builder.
@@ -1578,6 +1696,51 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if oruo.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oruo.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !oruo.mutation.MetricsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := oruo.mutation.MetricsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   oncallroster.MetricsTable,
+			Columns: []string{oncallroster.MetricsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

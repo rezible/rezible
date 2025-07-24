@@ -20,6 +20,25 @@ var (
 		Columns:    AlertsColumns,
 		PrimaryKey: []*schema.Column{AlertsColumns[0]},
 	}
+	// AlertMetricsColumns holds the columns for the "alert_metrics" table.
+	AlertMetricsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "alert_id", Type: field.TypeUUID},
+	}
+	// AlertMetricsTable holds the schema information for the "alert_metrics" table.
+	AlertMetricsTable = &schema.Table{
+		Name:       "alert_metrics",
+		Columns:    AlertMetricsColumns,
+		PrimaryKey: []*schema.Column{AlertMetricsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alert_metrics_alerts_alert",
+				Columns:    []*schema.Column{AlertMetricsColumns[1]},
+				RefColumns: []*schema.Column{AlertsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// EnvironmentsColumns holds the columns for the "environments" table.
 	EnvironmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -690,6 +709,25 @@ var (
 				Columns:    []*schema.Column{OncallRostersColumns[8]},
 				RefColumns: []*schema.Column{OncallHandoverTemplatesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// OncallRosterMetricsColumns holds the columns for the "oncall_roster_metrics" table.
+	OncallRosterMetricsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "roster_id", Type: field.TypeUUID},
+	}
+	// OncallRosterMetricsTable holds the schema information for the "oncall_roster_metrics" table.
+	OncallRosterMetricsTable = &schema.Table{
+		Name:       "oncall_roster_metrics",
+		Columns:    OncallRosterMetricsColumns,
+		PrimaryKey: []*schema.Column{OncallRosterMetricsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_roster_metrics_oncall_rosters_roster",
+				Columns:    []*schema.Column{OncallRosterMetricsColumns[1]},
+				RefColumns: []*schema.Column{OncallRostersColumns[0]},
+				OnDelete:   schema.NoAction,
 			},
 		},
 	}
@@ -1847,6 +1885,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlertsTable,
+		AlertMetricsTable,
 		EnvironmentsTable,
 		FunctionalitiesTable,
 		IncidentsTable,
@@ -1876,6 +1915,7 @@ var (
 		OncallEventsTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
+		OncallRosterMetricsTable,
 		OncallSchedulesTable,
 		OncallScheduleParticipantsTable,
 		OncallUserShiftsTable,
@@ -1927,6 +1967,7 @@ var (
 )
 
 func init() {
+	AlertMetricsTable.ForeignKeys[0].RefTable = AlertsTable
 	IncidentsTable.ForeignKeys[0].RefTable = IncidentSeveritiesTable
 	IncidentsTable.ForeignKeys[1].RefTable = IncidentTypesTable
 	IncidentDebriefsTable.ForeignKeys[0].RefTable = IncidentsTable
@@ -1957,6 +1998,7 @@ func init() {
 	OncallEventsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallEventsTable.ForeignKeys[1].RefTable = AlertsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
+	OncallRosterMetricsTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable
 	OncallScheduleParticipantsTable.ForeignKeys[1].RefTable = UsersTable

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
@@ -42,6 +43,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallusershift"
@@ -131,6 +133,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			alert.Table:                            alert.ValidColumn,
+			alertmetrics.Table:                     alertmetrics.ValidColumn,
 			environment.Table:                      environment.ValidColumn,
 			functionality.Table:                    functionality.ValidColumn,
 			incident.Table:                         incident.ValidColumn,
@@ -160,6 +163,7 @@ func checkColumn(table, column string) error {
 			oncallevent.Table:                      oncallevent.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                     oncallroster.ValidColumn,
+			oncallrostermetrics.Table:              oncallrostermetrics.ValidColumn,
 			oncallschedule.Table:                   oncallschedule.ValidColumn,
 			oncallscheduleparticipant.Table:        oncallscheduleparticipant.ValidColumn,
 			oncallusershift.Table:                  oncallusershift.ValidColumn,

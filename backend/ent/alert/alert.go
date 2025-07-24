@@ -17,12 +17,21 @@ const (
 	FieldTitle = "title"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// EdgeMetrics holds the string denoting the metrics edge name in mutations.
+	EdgeMetrics = "metrics"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
 	EdgePlaybooks = "playbooks"
 	// EdgeInstances holds the string denoting the instances edge name in mutations.
 	EdgeInstances = "instances"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
+	// MetricsTable is the table that holds the metrics relation/edge.
+	MetricsTable = "alert_metrics"
+	// MetricsInverseTable is the table name for the AlertMetrics entity.
+	// It exists in this package in order to avoid circular dependency with the "alertmetrics" package.
+	MetricsInverseTable = "alert_metrics"
+	// MetricsColumn is the table column denoting the metrics relation/edge.
+	MetricsColumn = "alert_id"
 	// PlaybooksTable is the table that holds the playbooks relation/edge. The primary key declared below.
 	PlaybooksTable = "playbook_alerts"
 	// PlaybooksInverseTable is the table name for the Playbook entity.
@@ -83,6 +92,20 @@ func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
+// ByMetricsCount orders the results by metrics count.
+func ByMetricsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMetricsStep(), opts...)
+	}
+}
+
+// ByMetrics orders the results by metrics terms.
+func ByMetrics(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMetricsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByPlaybooksCount orders the results by playbooks count.
 func ByPlaybooksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -109,6 +132,13 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newMetricsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MetricsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
+	)
 }
 func newPlaybooksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
