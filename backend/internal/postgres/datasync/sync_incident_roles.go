@@ -27,10 +27,6 @@ type incidentRolesBatcher struct {
 	deletedIds      mapset.Set[uuid.UUID]
 }
 
-func newIncidentRolesSyncer(db *ent.Client, prov rez.IncidentDataProvider) *batchedDataSyncer[*ent.IncidentRole] {
-	return newBatchedDataSyncer[*ent.IncidentRole](db, "incident_role", &incidentRolesBatcher{db: db, provider: prov})
-}
-
 func (b *incidentRolesBatcher) setup(ctx context.Context) error {
 	dbRoles, dbRolesErr := b.db.IncidentRole.Query().All(ctx)
 	if dbRolesErr != nil {
@@ -54,11 +50,11 @@ func (b *incidentRolesBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Inci
 	return func(yield func(*ent.IncidentRole, error) bool) {
 		if rolesErr != nil {
 			yield(nil, rolesErr)
-		} else {
-			for _, role := range roles {
-				if !yield(role, nil) {
-					break
-				}
+			return
+		}
+		for _, role := range roles {
+			if !yield(role, nil) {
+				break
 			}
 		}
 	}
@@ -66,32 +62,38 @@ func (b *incidentRolesBatcher) pullData(ctx context.Context) iter.Seq2[*ent.Inci
 
 func (b *incidentRolesBatcher) createBatchMutations(ctx context.Context, batch []*ent.IncidentRole) ([]ent.Mutation, error) {
 	var mutations []ent.Mutation
-
 	for _, r := range batch {
 		prov := r
-		db, exists := b.dbProviderIdMap[prov.ProviderID]
+		curr, exists := b.dbProviderIdMap[prov.ProviderID]
 		if exists {
-			b.deletedIds.Remove(db.ID)
+			b.deletedIds.Remove(curr.ID)
 		}
-
-		var mut *ent.IncidentRoleMutation
-		needsSync := true
-		if db == nil {
-			mut = b.db.IncidentRole.Create().SetID(uuid.New()).Mutation()
-		} else {
-			mut = b.db.IncidentRole.UpdateOneID(db.ID).Mutation()
-			// TODO: get provider mapping support for fields
-			needsSync = db.Name != prov.Name || db.Required != prov.Required
-		}
-		mut.SetProviderID(prov.ProviderID)
-		mut.SetName(prov.Name)
-		mut.SetRequired(prov.Required)
-		if needsSync {
+		if mut := b.syncIncidentRole(curr, prov); mut != nil {
 			mutations = append(mutations, mut)
 		}
 	}
-
 	return mutations, nil
+}
+
+func (b *incidentRolesBatcher) syncIncidentRole(curr, prov *ent.IncidentRole) *ent.IncidentRoleMutation {
+	var mut *ent.IncidentRoleMutation
+
+	if curr == nil {
+		mut = b.db.IncidentRole.Create().Mutation()
+	} else {
+		mut = b.db.IncidentRole.UpdateOneID(curr.ID).Mutation()
+
+		// TODO: get provider mapping support for fields
+		needsSync := curr.Name != prov.Name || curr.Required != prov.Required
+		if !needsSync {
+			return nil
+		}
+	}
+	mut.SetProviderID(prov.ProviderID)
+	mut.SetName(prov.Name)
+	mut.SetRequired(prov.Required)
+
+	return mut
 }
 
 func (b *incidentRolesBatcher) getDeletionMutations() []ent.Mutation {
