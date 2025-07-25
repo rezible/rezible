@@ -7,7 +7,7 @@ import Bold from "@tiptap/extension-bold";
 import Italic from "@tiptap/extension-italic";
 import { session } from "$lib/auth.svelte";
 
-import { RezUserSuggestion } from "$src/components/tiptap-editor/user-suggestions/user-suggestion.svelte";
+import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 import { configureUserMentionExtension } from "@rezible/documents/tiptap-extensions";
 
 export const createReplyEditor = (content: Content, editable?: boolean) => {

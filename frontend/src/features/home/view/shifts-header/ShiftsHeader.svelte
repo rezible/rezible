@@ -6,7 +6,7 @@
 	import { session } from "$lib/auth.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
-	import { useUserOncallInformation } from "$src/lib/userOncall.svelte";
+	import { useUserOncallInformation } from "$lib/userOncall.svelte";
 
 	const userId = $derived(session.userId);
 	const oncallInfo = useUserOncallInformation();

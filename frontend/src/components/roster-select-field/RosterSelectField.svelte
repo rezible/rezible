@@ -5,7 +5,7 @@
 	import { MenuItem, SelectField, type MenuOption } from "svelte-ux";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { cls } from "@layerstack/tailwind";
-	import { useUserOncallInformation } from "$src/lib/userOncall.svelte";
+	import { useUserOncallInformation } from "$lib/userOncall.svelte";
 	import type { ComponentProps } from "svelte";
 
 	type Props = {

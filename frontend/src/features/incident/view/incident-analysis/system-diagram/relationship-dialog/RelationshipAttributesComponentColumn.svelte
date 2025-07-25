@@ -4,7 +4,7 @@
 	import type { SystemComponent, SystemComponentSignal, SystemComponentControl } from "$lib/api";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { relationshipAttributes, relationshipTraits, type RelationshipTrait } from "./attributesState.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = { component: SystemComponent };
 	const { component }: Props = $props();

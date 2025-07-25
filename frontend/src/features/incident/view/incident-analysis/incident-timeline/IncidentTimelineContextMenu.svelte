@@ -6,7 +6,7 @@
 	import type { TimelineItem } from "vis-timeline";
 	import { useIncidentTimeline } from "./timelineState.svelte";
 	import { mdiPencilCircle, mdiPlusCircle } from "@mdi/js";
-	import AnalysisContextMenu from "$src/features/incident/components/analysis-context-menu/AnalysisContextMenu.svelte";
+	import AnalysisContextMenu from "$features/incident/components/analysis-context-menu/AnalysisContextMenu.svelte";
 
 	type Props = {
 		containerRect: DOMRect;

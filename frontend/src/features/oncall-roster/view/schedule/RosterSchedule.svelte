@@ -6,7 +6,7 @@
 	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {};
 	const {}: Props = $props();

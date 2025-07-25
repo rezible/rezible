@@ -5,8 +5,8 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
-	import Avatar from "$src/components/avatar/Avatar.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		shifts: OncallShift[];

@@ -14,7 +14,7 @@
 	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		metrics?: OncallShiftMetrics;

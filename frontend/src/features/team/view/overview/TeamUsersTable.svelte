@@ -1,9 +1,9 @@
 <script lang="ts">
-	import Avatar from "$src/components/avatar/Avatar.svelte";
+	import Avatar from "$components/avatar/Avatar.svelte";
 	import { listUsersOptions, type ListUsersData } from "$lib/api";
 	import { useTeamViewState } from "../viewState.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { Pagination } from "svelte-ux";
 
 	const viewState = useTeamViewState();

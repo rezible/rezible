@@ -6,7 +6,7 @@
 	import { mdiCheck } from "@mdi/js";
 	import { activeDiscussion, createReplyEditor } from "$features/incident/lib/discussions.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		discussion: RetrospectiveDiscussion;

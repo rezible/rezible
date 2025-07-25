@@ -11,7 +11,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { cls } from "@layerstack/tailwind";
 	import { parseAbsoluteToLocal } from "@internationalized/date";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	import { mdiArrowRight } from "@mdi/js";
 	import ShiftCard from "$features/oncall-shifts-list/components/shift-card/ShiftCard.svelte";
 

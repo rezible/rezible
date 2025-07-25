@@ -3,7 +3,7 @@
 	import { Button, ToggleGroup, ToggleOption } from "svelte-ux";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	let showFilters = $state(false);
 

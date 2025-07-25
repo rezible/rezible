@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Avatar from "$src/components/avatar/Avatar.svelte";
-	import Card from "$src/components/card/Card.svelte";
-	import Header from "$src/components/header/Header.svelte";
-	import type { OncallShift } from "$src/lib/api";
+	import Avatar from "$components/avatar/Avatar.svelte";
+	import Card from "$components/card/Card.svelte";
+	import Header from "$components/header/Header.svelte";
+	import type { OncallShift } from "$lib/api";
 	import { formatDistanceToNowStrict, isFuture, isPast, formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 	import ShiftProgressCircle from "./ShiftProgressCircle.svelte";
-	import Icon from "$src/components/icon/Icon.svelte";
+	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { cls } from "@layerstack/tailwind";
-	import { settings } from "$src/lib/settings.svelte";
+	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";
 	import { Button } from "svelte-ux";
 

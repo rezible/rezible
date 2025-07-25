@@ -3,7 +3,7 @@
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { listUsersOptions } from "$src/lib/api";
+	import { listUsersOptions } from "$lib/api";
 	import Header from "$components/header/Header.svelte";
 	import Card from "$components/card/Card.svelte";
 

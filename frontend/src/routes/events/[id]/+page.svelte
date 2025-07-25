@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import EventView from "$src/features/event/view/EventView.svelte";
+	import EventView from "$features/event/view/EventView.svelte";
 	
 </script>
 

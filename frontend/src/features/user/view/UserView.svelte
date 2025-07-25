@@ -6,7 +6,7 @@
 
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import OncallStats from "./OncallStats.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		userId: string;

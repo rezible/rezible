@@ -10,8 +10,8 @@
 	} from "@mdi/js";
 	import { Button } from "svelte-ux";
 	import Header from "$components/header/Header.svelte";
-	import Icon from "$src/components/icon/Icon.svelte";
-	import type { User } from "$src/lib/api";
+	import Icon from "$components/icon/Icon.svelte";
+	import type { User } from "$lib/api";
 	import { formatRelative } from "date-fns";
 	import { rosterViewCtx } from "../viewState.svelte";
 

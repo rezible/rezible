@@ -1,4 +1,4 @@
-import { getOncallRosterOptions } from "$src/lib/api";
+import { getOncallRosterOptions } from "$lib/api";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 

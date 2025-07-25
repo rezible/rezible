@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	import { mdiChevronRight, mdiPencil } from "@mdi/js";
 	import { Button } from "svelte-ux";
 

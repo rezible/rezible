@@ -2,7 +2,7 @@
 	import type { MeetingSchedule } from "$lib/api";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ScheduleSessions from "./ScheduleSessions.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	import { Button } from "svelte-ux";
 
 	type Props = { schedule: MeetingSchedule };

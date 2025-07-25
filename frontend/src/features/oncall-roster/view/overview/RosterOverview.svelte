@@ -8,7 +8,7 @@
 		getOncallRosterMetricsOptions,
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	import RosterActivityColumn from "./RosterActivityColumn.svelte";
 	import RosterShiftsColumn from "./RosterShiftsColumn.svelte";
 

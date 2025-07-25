@@ -4,7 +4,7 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 	import ReportsListPageActions from "./ReportsListPageActions.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	appShell.setPageActions(ReportsListPageActions, false);
 

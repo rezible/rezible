@@ -4,7 +4,7 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import RelationshipAttributesEditor from "./RelationshipAttributesEditor.svelte";
 	import { useRelationshipDialog } from "./dialogState.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	
 	const relationshipDialog = useRelationshipDialog();
 	const open = $derived(relationshipDialog.view !== "closed");

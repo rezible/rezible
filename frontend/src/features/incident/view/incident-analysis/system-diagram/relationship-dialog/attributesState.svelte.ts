@@ -1,4 +1,4 @@
-import type { SystemAnalysisRelationshipControlAction, SystemAnalysisRelationshipFeedbackSignal, SystemAnalysisRelationshipAttributes, SystemAnalysisRelationshipControlActionAttributes, SystemAnalysisRelationshipFeedbackSignalAttributes } from "$src/lib/api";
+import type { SystemAnalysisRelationshipControlAction, SystemAnalysisRelationshipFeedbackSignal, SystemAnalysisRelationshipAttributes, SystemAnalysisRelationshipControlActionAttributes, SystemAnalysisRelationshipFeedbackSignalAttributes } from "$lib/api";
 import { SvelteSet } from "svelte/reactivity";
 import { v4 as uuidv4 } from "uuid";
 

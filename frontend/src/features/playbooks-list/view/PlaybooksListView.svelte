@@ -6,7 +6,7 @@
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { ListItem } from "svelte-ux";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Playbooks" }]);

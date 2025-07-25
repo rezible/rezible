@@ -5,7 +5,7 @@
 	import { createReplyEditor, draft } from "$features/incident/lib/discussions.svelte";
 	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { createRetrospectiveDiscussionMutation, type RetrospectiveDiscussion } from "$lib/api";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		retrospectiveId: string;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "svelte-ux";
 	import { mdiDotsVertical } from "@mdi/js";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 </script>
 

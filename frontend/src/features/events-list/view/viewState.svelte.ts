@@ -5,7 +5,7 @@ import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 import { subMonths, subWeeks } from "date-fns";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context } from "runed";
-import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
 

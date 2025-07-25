@@ -11,9 +11,9 @@
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ShiftCard from "$features/oncall-shifts-list/components/shift-card/ShiftCard.svelte";
 	import { paginationStore as createPaginationStore } from "@layerstack/svelte-stores";
-	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
+	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
 	import { watch } from "runed";
-	import PaginatedListBox from "$src/components/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 

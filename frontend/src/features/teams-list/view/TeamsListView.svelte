@@ -6,7 +6,7 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import TeamCard from "$components/team-card/TeamCard.svelte";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 	let searchValue = $state<string>();
 	const paginator = new QueryPaginatorState();

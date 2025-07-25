@@ -5,7 +5,7 @@
 	import ComponentAttributesEditor from "./ComponentAttributesEditor.svelte";
 	import ComponentSelector from "./ComponentSelector.svelte";
 	import { useComponentDialog } from "./dialogState.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 	
 	const componentDialog = useComponentDialog();
 

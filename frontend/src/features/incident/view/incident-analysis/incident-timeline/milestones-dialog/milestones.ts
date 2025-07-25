@@ -1,4 +1,4 @@
-import type { IncidentMilestone, IncidentMilestoneAttributes } from "$src/lib/api";
+import type { IncidentMilestone, IncidentMilestoneAttributes } from "$lib/api";
 import { parseAbsolute, parseAbsoluteToLocal, type ZonedDateTime } from "@internationalized/date";
 import { mdiAlertDecagram, mdiAccountAlert, mdiAccountEye, mdiFireExtinguisher, mdiTimelineClock } from "@mdi/js";
 

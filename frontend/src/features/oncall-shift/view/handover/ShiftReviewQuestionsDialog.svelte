@@ -6,7 +6,7 @@
 	import { goto } from "$app/navigation";
 	
 	import { useShiftViewState } from "../shiftViewState.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	const viewState = useShiftViewState();
 	const shiftId = $derived(viewState.shiftId);

@@ -6,7 +6,7 @@
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import IncidentCard from "$src/components/incident-card/IncidentCard.svelte";
+	import IncidentCard from "$components/incident-card/IncidentCard.svelte";
 
 	const pagination = createPaginationStore();
 	let searchValue = $state<string>();

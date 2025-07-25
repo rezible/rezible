@@ -4,7 +4,7 @@
 	import { mdiContentDuplicate, mdiPlus, mdiStar, mdiStarOutline, mdiTrashCan } from "@mdi/js";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 	import IncidentsGraph from "./IncidentsGraph.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {id: string;}
 	const { id }: Props = $props();

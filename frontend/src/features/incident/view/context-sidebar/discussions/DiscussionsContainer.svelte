@@ -5,7 +5,7 @@
 	import { draft } from "$features/incident/lib/discussions.svelte";
 	import DiscussionThread from "./DiscussionThread.svelte";
 	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		retrospectiveId: string;

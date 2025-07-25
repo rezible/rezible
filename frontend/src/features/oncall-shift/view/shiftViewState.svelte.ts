@@ -2,7 +2,7 @@ import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
 import { getOncallShiftOptions, listOncallAnnotationsOptions, type ListOncallEventsData, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
-import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$src/features/oncall-shift/lib/utils";
+import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
 import { PeriodType } from "@layerstack/utils";

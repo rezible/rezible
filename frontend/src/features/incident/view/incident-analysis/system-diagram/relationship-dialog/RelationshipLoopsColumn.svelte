@@ -23,7 +23,7 @@
 	import { relationshipAttributes } from "./attributesState.svelte";
 	import LabelDescriptionEditor from "./LabelDescriptionEditor.svelte";
 	import { mdiMinus, mdiPencil } from "@mdi/js";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		source: SystemComponent;

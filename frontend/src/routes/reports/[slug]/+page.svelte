@@ -1,6 +1,6 @@
 <script lang="ts">
-	import ReportView from "$src/features/report/view/ReportView.svelte";
-	import ReportBuilder from "$src/features/report-builder/view/ReportBuilder.svelte";
+	import ReportView from "$features/report/view/ReportView.svelte";
+	import ReportBuilder from "$features/report-builder/view/ReportBuilder.svelte";
 	import type { PageData } from "./$types";
 
 	type Props = {

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Icon from "$src/components/icon/Icon.svelte";
-	import type { OncallEvent } from "$src/lib/api";
+	import Icon from "$components/icon/Icon.svelte";
+	import type { OncallEvent } from "$lib/api";
 	import { mdiCalendar, mdiClose, mdiPhoneAlert } from "@mdi/js";
 	import { settings } from "$lib/settings.svelte";
 	import { PeriodType } from "@layerstack/utils";

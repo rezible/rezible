@@ -4,7 +4,7 @@
 	import { mdiFormatBold, mdiFormatListBulleted } from "@mdi/js";
 	import { ShiftHandoverEditorState, type HandoverEditorSection } from "./state.svelte";
 	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
-	import Header from "$src/components/header/Header.svelte";
+	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		handoverState: ShiftHandoverEditorState;

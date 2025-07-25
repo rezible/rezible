@@ -1,5 +1,5 @@
-import { createOncallAnnotationMutation, type OncallEvent, updateOncallAnnotationMutation, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallRoster, getUserOncallInformationOptions } from "$src/lib/api";
-import { session } from "$src/lib/auth.svelte";
+import { createOncallAnnotationMutation, type OncallEvent, updateOncallAnnotationMutation, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallRoster, getUserOncallInformationOptions } from "$lib/api";
+import { session } from "$lib/auth.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { SvelteSet } from "svelte/reactivity";
