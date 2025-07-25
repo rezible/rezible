@@ -30,7 +30,6 @@ type OncallEventQuery struct {
 	withRoster      *OncallRosterQuery
 	withAlert       *AlertQuery
 	withAnnotations *OncallAnnotationQuery
-	withFKs         bool
 	modifiers       []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -446,7 +445,6 @@ func (oeq *OncallEventQuery) prepareQuery(ctx context.Context) error {
 func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OncallEvent, error) {
 	var (
 		nodes       = []*OncallEvent{}
-		withFKs     = oeq.withFKs
 		_spec       = oeq.querySpec()
 		loadedTypes = [3]bool{
 			oeq.withRoster != nil,
@@ -454,12 +452,6 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 			oeq.withAnnotations != nil,
 		}
 	)
-	if oeq.withAlert != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, oncallevent.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OncallEvent).scanValues(nil, columns)
 	}
@@ -536,10 +528,7 @@ func (oeq *OncallEventQuery) loadAlert(ctx context.Context, query *AlertQuery, n
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallEvent)
 	for i := range nodes {
-		if nodes[i].oncall_event_alert == nil {
-			continue
-		}
-		fk := *nodes[i].oncall_event_alert
+		fk := nodes[i].AlertID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -556,7 +545,7 @@ func (oeq *OncallEventQuery) loadAlert(ctx context.Context, query *AlertQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "oncall_event_alert" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "alert_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -625,6 +614,9 @@ func (oeq *OncallEventQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if oeq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallevent.FieldRosterID)
+		}
+		if oeq.withAlert != nil {
+			_spec.Node.AddColumnOnce(oncallevent.FieldAlertID)
 		}
 	}
 	if ps := oeq.predicates; len(ps) > 0 {

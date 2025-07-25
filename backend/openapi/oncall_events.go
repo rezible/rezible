@@ -42,6 +42,8 @@ type (
 		Description string             `json:"description"`
 		Timestamp   time.Time          `json:"timestamp"`
 		Annotations []OncallAnnotation `json:"annotations,omitempty"`
+		RosterId    uuid.UUID          `json:"roster_id,omitempty"`
+		AlertId     uuid.UUID          `json:"alert_id,omitempty"`
 	}
 
 	OncallAnnotation struct {
@@ -72,6 +74,8 @@ func OncallEventFromEnt(e *ent.OncallEvent) OncallEvent {
 		Title:       e.Title,
 		Description: e.Description,
 		Timestamp:   e.Timestamp,
+		RosterId:    e.RosterID,
+		AlertId:     e.AlertID,
 	}
 
 	if e.Edges.Annotations != nil {

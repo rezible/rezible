@@ -598,7 +598,9 @@ func (aq *AlertQuery) loadInstances(ctx context.Context, query *OncallEventQuery
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(oncallevent.FieldAlertID)
+	}
 	query.Where(predicate.OncallEvent(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(alert.InstancesColumn), fks...))
 	}))
@@ -607,13 +609,10 @@ func (aq *AlertQuery) loadInstances(ctx context.Context, query *OncallEventQuery
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.oncall_event_alert
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "oncall_event_alert" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.AlertID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "oncall_event_alert" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "alert_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

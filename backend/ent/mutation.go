@@ -20718,6 +20718,55 @@ func (m *OncallEventMutation) ResetRosterID() {
 	delete(m.clearedFields, oncallevent.FieldRosterID)
 }
 
+// SetAlertID sets the "alert_id" field.
+func (m *OncallEventMutation) SetAlertID(u uuid.UUID) {
+	m.alert = &u
+}
+
+// AlertID returns the value of the "alert_id" field in the mutation.
+func (m *OncallEventMutation) AlertID() (r uuid.UUID, exists bool) {
+	v := m.alert
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAlertID returns the old "alert_id" field's value of the OncallEvent entity.
+// If the OncallEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OncallEventMutation) OldAlertID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAlertID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAlertID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAlertID: %w", err)
+	}
+	return oldValue.AlertID, nil
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (m *OncallEventMutation) ClearAlertID() {
+	m.alert = nil
+	m.clearedFields[oncallevent.FieldAlertID] = struct{}{}
+}
+
+// AlertIDCleared returns if the "alert_id" field was cleared in this mutation.
+func (m *OncallEventMutation) AlertIDCleared() bool {
+	_, ok := m.clearedFields[oncallevent.FieldAlertID]
+	return ok
+}
+
+// ResetAlertID resets all changes to the "alert_id" field.
+func (m *OncallEventMutation) ResetAlertID() {
+	m.alert = nil
+	delete(m.clearedFields, oncallevent.FieldAlertID)
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (m *OncallEventMutation) SetTimestamp(t time.Time) {
 	m.timestamp = &t
@@ -20925,27 +20974,15 @@ func (m *OncallEventMutation) ResetRoster() {
 	m.clearedroster = false
 }
 
-// SetAlertID sets the "alert" edge to the Alert entity by id.
-func (m *OncallEventMutation) SetAlertID(id uuid.UUID) {
-	m.alert = &id
-}
-
 // ClearAlert clears the "alert" edge to the Alert entity.
 func (m *OncallEventMutation) ClearAlert() {
 	m.clearedalert = true
+	m.clearedFields[oncallevent.FieldAlertID] = struct{}{}
 }
 
 // AlertCleared reports if the "alert" edge to the Alert entity was cleared.
 func (m *OncallEventMutation) AlertCleared() bool {
-	return m.clearedalert
-}
-
-// AlertID returns the "alert" edge ID in the mutation.
-func (m *OncallEventMutation) AlertID() (id uuid.UUID, exists bool) {
-	if m.alert != nil {
-		return *m.alert, true
-	}
-	return
+	return m.AlertIDCleared() || m.clearedalert
 }
 
 // AlertIDs returns the "alert" edge IDs in the mutation.
@@ -21052,12 +21089,15 @@ func (m *OncallEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OncallEventMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.provider_id != nil {
 		fields = append(fields, oncallevent.FieldProviderID)
 	}
 	if m.roster != nil {
 		fields = append(fields, oncallevent.FieldRosterID)
+	}
+	if m.alert != nil {
+		fields = append(fields, oncallevent.FieldAlertID)
 	}
 	if m.timestamp != nil {
 		fields = append(fields, oncallevent.FieldTimestamp)
@@ -21086,6 +21126,8 @@ func (m *OncallEventMutation) Field(name string) (ent.Value, bool) {
 		return m.ProviderID()
 	case oncallevent.FieldRosterID:
 		return m.RosterID()
+	case oncallevent.FieldAlertID:
+		return m.AlertID()
 	case oncallevent.FieldTimestamp:
 		return m.Timestamp()
 	case oncallevent.FieldKind:
@@ -21109,6 +21151,8 @@ func (m *OncallEventMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldProviderID(ctx)
 	case oncallevent.FieldRosterID:
 		return m.OldRosterID(ctx)
+	case oncallevent.FieldAlertID:
+		return m.OldAlertID(ctx)
 	case oncallevent.FieldTimestamp:
 		return m.OldTimestamp(ctx)
 	case oncallevent.FieldKind:
@@ -21141,6 +21185,13 @@ func (m *OncallEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRosterID(v)
+		return nil
+	case oncallevent.FieldAlertID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAlertID(v)
 		return nil
 	case oncallevent.FieldTimestamp:
 		v, ok := value.(time.Time)
@@ -21210,6 +21261,9 @@ func (m *OncallEventMutation) ClearedFields() []string {
 	if m.FieldCleared(oncallevent.FieldRosterID) {
 		fields = append(fields, oncallevent.FieldRosterID)
 	}
+	if m.FieldCleared(oncallevent.FieldAlertID) {
+		fields = append(fields, oncallevent.FieldAlertID)
+	}
 	return fields
 }
 
@@ -21227,6 +21281,9 @@ func (m *OncallEventMutation) ClearField(name string) error {
 	case oncallevent.FieldRosterID:
 		m.ClearRosterID()
 		return nil
+	case oncallevent.FieldAlertID:
+		m.ClearAlertID()
+		return nil
 	}
 	return fmt.Errorf("unknown OncallEvent nullable field %s", name)
 }
@@ -21240,6 +21297,9 @@ func (m *OncallEventMutation) ResetField(name string) error {
 		return nil
 	case oncallevent.FieldRosterID:
 		m.ResetRosterID()
+		return nil
+	case oncallevent.FieldAlertID:
+		m.ResetAlertID()
 		return nil
 	case oncallevent.FieldTimestamp:
 		m.ResetTimestamp()

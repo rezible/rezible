@@ -1820,9 +1820,11 @@ export type OncallEvent = {
 };
 
 export type OncallEventAttributes = {
+    alert_id?: string;
     annotations?: Array<OncallAnnotation>;
     description: string;
     kind: string;
+    roster_id?: string;
     timestamp: string;
     title: string;
 };

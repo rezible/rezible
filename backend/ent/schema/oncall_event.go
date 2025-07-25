@@ -18,6 +18,7 @@ func (OncallEvent) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("provider_id"),
 		field.UUID("roster_id", uuid.UUID{}).Optional(),
+		field.UUID("alert_id", uuid.UUID{}).Optional(),
 		field.Time("timestamp"),
 		field.Enum("kind").Values(oncallEventKind...),
 		field.String("title"),
@@ -29,7 +30,7 @@ func (OncallEvent) Fields() []ent.Field {
 func (OncallEvent) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("roster", OncallRoster.Type).Field("roster_id").Unique(),
-		edge.To("alert", Alert.Type).Unique(),
+		edge.To("alert", Alert.Type).Field("alert_id").Unique(),
 		edge.From("annotations", OncallAnnotation.Type).Ref("event"),
 	}
 }

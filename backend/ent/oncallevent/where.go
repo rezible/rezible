@@ -66,6 +66,11 @@ func RosterID(v uuid.UUID) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldRosterID, v))
 }
 
+// AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
+func AlertID(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldEQ(FieldAlertID, v))
+}
+
 // Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
 func Timestamp(v time.Time) predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldEQ(FieldTimestamp, v))
@@ -179,6 +184,36 @@ func RosterIDIsNil() predicate.OncallEvent {
 // RosterIDNotNil applies the NotNil predicate on the "roster_id" field.
 func RosterIDNotNil() predicate.OncallEvent {
 	return predicate.OncallEvent(sql.FieldNotNull(FieldRosterID))
+}
+
+// AlertIDEQ applies the EQ predicate on the "alert_id" field.
+func AlertIDEQ(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldEQ(FieldAlertID, v))
+}
+
+// AlertIDNEQ applies the NEQ predicate on the "alert_id" field.
+func AlertIDNEQ(v uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNEQ(FieldAlertID, v))
+}
+
+// AlertIDIn applies the In predicate on the "alert_id" field.
+func AlertIDIn(vs ...uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldIn(FieldAlertID, vs...))
+}
+
+// AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
+func AlertIDNotIn(vs ...uuid.UUID) predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNotIn(FieldAlertID, vs...))
+}
+
+// AlertIDIsNil applies the IsNil predicate on the "alert_id" field.
+func AlertIDIsNil() predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldIsNull(FieldAlertID))
+}
+
+// AlertIDNotNil applies the NotNil predicate on the "alert_id" field.
+func AlertIDNotNil() predicate.OncallEvent {
+	return predicate.OncallEvent(sql.FieldNotNull(FieldAlertID))
 }
 
 // TimestampEQ applies the EQ predicate on the "timestamp" field.

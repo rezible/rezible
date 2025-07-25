@@ -24,6 +24,8 @@ type OncallEvent struct {
 	ProviderID string `json:"provider_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
+	// AlertID holds the value of the "alert_id" field.
+	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Kind holds the value of the "kind" field.
@@ -36,9 +38,8 @@ type OncallEvent struct {
 	Source string `json:"source,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OncallEventQuery when eager-loading is set.
-	Edges              OncallEventEdges `json:"edges"`
-	oncall_event_alert *uuid.UUID
-	selectValues       sql.SelectValues
+	Edges        OncallEventEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // OncallEventEdges holds the relations/edges for other nodes in the graph.
@@ -94,10 +95,8 @@ func (*OncallEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case oncallevent.FieldTimestamp:
 			values[i] = new(sql.NullTime)
-		case oncallevent.FieldID, oncallevent.FieldRosterID:
+		case oncallevent.FieldID, oncallevent.FieldRosterID, oncallevent.FieldAlertID:
 			values[i] = new(uuid.UUID)
-		case oncallevent.ForeignKeys[0]: // oncall_event_alert
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -131,6 +130,12 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				oe.RosterID = *value
 			}
+		case oncallevent.FieldAlertID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
+			} else if value != nil {
+				oe.AlertID = *value
+			}
 		case oncallevent.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field timestamp", values[i])
@@ -160,13 +165,6 @@ func (oe *OncallEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value.Valid {
 				oe.Source = value.String
-			}
-		case oncallevent.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field oncall_event_alert", values[i])
-			} else if value.Valid {
-				oe.oncall_event_alert = new(uuid.UUID)
-				*oe.oncall_event_alert = *value.S.(*uuid.UUID)
 			}
 		default:
 			oe.selectValues.Set(columns[i], values[i])
@@ -224,6 +222,9 @@ func (oe *OncallEvent) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
 	builder.WriteString(fmt.Sprintf("%v", oe.RosterID))
+	builder.WriteString(", ")
+	builder.WriteString("alert_id=")
+	builder.WriteString(fmt.Sprintf("%v", oe.AlertID))
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
 	builder.WriteString(oe.Timestamp.Format(time.ANSIC))

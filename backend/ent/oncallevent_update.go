@@ -67,6 +67,26 @@ func (oeu *OncallEventUpdate) ClearRosterID() *OncallEventUpdate {
 	return oeu
 }
 
+// SetAlertID sets the "alert_id" field.
+func (oeu *OncallEventUpdate) SetAlertID(u uuid.UUID) *OncallEventUpdate {
+	oeu.mutation.SetAlertID(u)
+	return oeu
+}
+
+// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
+func (oeu *OncallEventUpdate) SetNillableAlertID(u *uuid.UUID) *OncallEventUpdate {
+	if u != nil {
+		oeu.SetAlertID(*u)
+	}
+	return oeu
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (oeu *OncallEventUpdate) ClearAlertID() *OncallEventUpdate {
+	oeu.mutation.ClearAlertID()
+	return oeu
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (oeu *OncallEventUpdate) SetTimestamp(t time.Time) *OncallEventUpdate {
 	oeu.mutation.SetTimestamp(t)
@@ -140,20 +160,6 @@ func (oeu *OncallEventUpdate) SetNillableSource(s *string) *OncallEventUpdate {
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oeu *OncallEventUpdate) SetRoster(o *OncallRoster) *OncallEventUpdate {
 	return oeu.SetRosterID(o.ID)
-}
-
-// SetAlertID sets the "alert" edge to the Alert entity by ID.
-func (oeu *OncallEventUpdate) SetAlertID(id uuid.UUID) *OncallEventUpdate {
-	oeu.mutation.SetAlertID(id)
-	return oeu
-}
-
-// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
-func (oeu *OncallEventUpdate) SetNillableAlertID(id *uuid.UUID) *OncallEventUpdate {
-	if id != nil {
-		oeu = oeu.SetAlertID(*id)
-	}
-	return oeu
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -446,6 +452,26 @@ func (oeuo *OncallEventUpdateOne) ClearRosterID() *OncallEventUpdateOne {
 	return oeuo
 }
 
+// SetAlertID sets the "alert_id" field.
+func (oeuo *OncallEventUpdateOne) SetAlertID(u uuid.UUID) *OncallEventUpdateOne {
+	oeuo.mutation.SetAlertID(u)
+	return oeuo
+}
+
+// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
+func (oeuo *OncallEventUpdateOne) SetNillableAlertID(u *uuid.UUID) *OncallEventUpdateOne {
+	if u != nil {
+		oeuo.SetAlertID(*u)
+	}
+	return oeuo
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (oeuo *OncallEventUpdateOne) ClearAlertID() *OncallEventUpdateOne {
+	oeuo.mutation.ClearAlertID()
+	return oeuo
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (oeuo *OncallEventUpdateOne) SetTimestamp(t time.Time) *OncallEventUpdateOne {
 	oeuo.mutation.SetTimestamp(t)
@@ -519,20 +545,6 @@ func (oeuo *OncallEventUpdateOne) SetNillableSource(s *string) *OncallEventUpdat
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oeuo *OncallEventUpdateOne) SetRoster(o *OncallRoster) *OncallEventUpdateOne {
 	return oeuo.SetRosterID(o.ID)
-}
-
-// SetAlertID sets the "alert" edge to the Alert entity by ID.
-func (oeuo *OncallEventUpdateOne) SetAlertID(id uuid.UUID) *OncallEventUpdateOne {
-	oeuo.mutation.SetAlertID(id)
-	return oeuo
-}
-
-// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
-func (oeuo *OncallEventUpdateOne) SetNillableAlertID(id *uuid.UUID) *OncallEventUpdateOne {
-	if id != nil {
-		oeuo = oeuo.SetAlertID(*id)
-	}
-	return oeuo
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.

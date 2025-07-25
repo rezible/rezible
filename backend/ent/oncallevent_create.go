@@ -47,6 +47,20 @@ func (oec *OncallEventCreate) SetNillableRosterID(u *uuid.UUID) *OncallEventCrea
 	return oec
 }
 
+// SetAlertID sets the "alert_id" field.
+func (oec *OncallEventCreate) SetAlertID(u uuid.UUID) *OncallEventCreate {
+	oec.mutation.SetAlertID(u)
+	return oec
+}
+
+// SetNillableAlertID sets the "alert_id" field if the given value is not nil.
+func (oec *OncallEventCreate) SetNillableAlertID(u *uuid.UUID) *OncallEventCreate {
+	if u != nil {
+		oec.SetAlertID(*u)
+	}
+	return oec
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (oec *OncallEventCreate) SetTimestamp(t time.Time) *OncallEventCreate {
 	oec.mutation.SetTimestamp(t)
@@ -94,20 +108,6 @@ func (oec *OncallEventCreate) SetNillableID(u *uuid.UUID) *OncallEventCreate {
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oec *OncallEventCreate) SetRoster(o *OncallRoster) *OncallEventCreate {
 	return oec.SetRosterID(o.ID)
-}
-
-// SetAlertID sets the "alert" edge to the Alert entity by ID.
-func (oec *OncallEventCreate) SetAlertID(id uuid.UUID) *OncallEventCreate {
-	oec.mutation.SetAlertID(id)
-	return oec
-}
-
-// SetNillableAlertID sets the "alert" edge to the Alert entity by ID if the given value is not nil.
-func (oec *OncallEventCreate) SetNillableAlertID(id *uuid.UUID) *OncallEventCreate {
-	if id != nil {
-		oec = oec.SetAlertID(*id)
-	}
-	return oec
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -287,7 +287,7 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.oncall_event_alert = &nodes[0]
+		_node.AlertID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oec.mutation.AnnotationsIDs(); len(nodes) > 0 {
@@ -385,6 +385,24 @@ func (u *OncallEventUpsert) UpdateRosterID() *OncallEventUpsert {
 // ClearRosterID clears the value of the "roster_id" field.
 func (u *OncallEventUpsert) ClearRosterID() *OncallEventUpsert {
 	u.SetNull(oncallevent.FieldRosterID)
+	return u
+}
+
+// SetAlertID sets the "alert_id" field.
+func (u *OncallEventUpsert) SetAlertID(v uuid.UUID) *OncallEventUpsert {
+	u.Set(oncallevent.FieldAlertID, v)
+	return u
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *OncallEventUpsert) UpdateAlertID() *OncallEventUpsert {
+	u.SetExcluded(oncallevent.FieldAlertID)
+	return u
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (u *OncallEventUpsert) ClearAlertID() *OncallEventUpsert {
+	u.SetNull(oncallevent.FieldAlertID)
 	return u
 }
 
@@ -528,6 +546,27 @@ func (u *OncallEventUpsertOne) UpdateRosterID() *OncallEventUpsertOne {
 func (u *OncallEventUpsertOne) ClearRosterID() *OncallEventUpsertOne {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.ClearRosterID()
+	})
+}
+
+// SetAlertID sets the "alert_id" field.
+func (u *OncallEventUpsertOne) SetAlertID(v uuid.UUID) *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.SetAlertID(v)
+	})
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *OncallEventUpsertOne) UpdateAlertID() *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.UpdateAlertID()
+	})
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (u *OncallEventUpsertOne) ClearAlertID() *OncallEventUpsertOne {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.ClearAlertID()
 	})
 }
 
@@ -848,6 +887,27 @@ func (u *OncallEventUpsertBulk) UpdateRosterID() *OncallEventUpsertBulk {
 func (u *OncallEventUpsertBulk) ClearRosterID() *OncallEventUpsertBulk {
 	return u.Update(func(s *OncallEventUpsert) {
 		s.ClearRosterID()
+	})
+}
+
+// SetAlertID sets the "alert_id" field.
+func (u *OncallEventUpsertBulk) SetAlertID(v uuid.UUID) *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.SetAlertID(v)
+	})
+}
+
+// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
+func (u *OncallEventUpsertBulk) UpdateAlertID() *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.UpdateAlertID()
+	})
+}
+
+// ClearAlertID clears the value of the "alert_id" field.
+func (u *OncallEventUpsertBulk) ClearAlertID() *OncallEventUpsertBulk {
+	return u.Update(func(s *OncallEventUpsert) {
+		s.ClearAlertID()
 	})
 }
 

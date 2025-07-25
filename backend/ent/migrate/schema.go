@@ -650,7 +650,7 @@ var (
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
 		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "oncall_event_alert", Type: field.TypeUUID, Nullable: true},
+		{Name: "alert_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// OncallEventsTable holds the schema information for the "oncall_events" table.
 	OncallEventsTable = &schema.Table{

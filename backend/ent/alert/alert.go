@@ -43,7 +43,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "oncallevent" package.
 	InstancesInverseTable = "oncall_events"
 	// InstancesColumn is the table column denoting the instances relation/edge.
-	InstancesColumn = "oncall_event_alert"
+	InstancesColumn = "alert_id"
 )
 
 // Columns holds all SQL columns for alert fields.
