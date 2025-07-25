@@ -1,5 +1,5 @@
 <script>
-	import ShiftsListView from "$src/features/oncall/views/shifts-list/ShiftsListView.svelte";
+	import OncallShiftsListView from "$features/oncall-shifts-list/view/OncallShiftsListView.svelte";
 </script>
 
-<ShiftsListView />
+<OncallShiftsListView />

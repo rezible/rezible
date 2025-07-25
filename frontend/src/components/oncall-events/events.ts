@@ -1,5 +1,5 @@
 import { mdiSleepOff, mdiWeatherSunset, mdiClockOutline, mdiChatQuestion, mdiFire, mdiPhoneAlert } from "@mdi/js";
-import { isBusinessHours, isNightHours } from "$features/oncall/lib/utils";
+import { isBusinessHours, isNightHours } from "$src/features/oncall-shift/lib/utils";
 
 export const getEventTimeIcon = (date: Date) => {
 	const isOutsideBusinessHours = !isBusinessHours(date.getHours());

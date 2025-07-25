@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import UserProfileView from "$features/users/views/user-profile/UserProfileView.svelte";
+	import UserView from "$src/features/user/view/UserView.svelte";
 </script>
 
-<UserProfileView userId={page.params.id} />
+<UserView userId={page.params.id} />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AlertsListView from "$features/alerts/views/alerts-list/AlertsListView.svelte";
+	import AlertsListView from "$features/alerts-list/view/AlertsListView.svelte";
 </script>
 
 <AlertsListView />

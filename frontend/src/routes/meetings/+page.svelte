@@ -1,6 +1,6 @@
 <script lang="ts">
-	import MeetingsListView from "$features/meetings/views/meetings-list/MeetingsListView.svelte";
-	import { appShell } from "$features/app/lib/appShellState.svelte";
+	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import MeetingsListView from "$features/meetings-list/view/MeetingsListView.svelte";
 
 	appShell.setPageBreadcrumbs(() => [{ label: "Meetings" }]);
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PlaybooksListView from "$features/playbooks/views/playbooks-list/PlaybooksListView.svelte";
+	import PlaybooksListView from "$src/features/playbooks-list/view/PlaybooksListView.svelte";
 </script>
 
 <PlaybooksListView />

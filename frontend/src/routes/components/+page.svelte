@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SystemComponentsListView from "$features/system-components/views/components-list/SystemComponentsListView.svelte";	
+	import SystemComponentsListView from "$src/features/system-components-list/view/SystemComponentsListView.svelte";	
 </script>
 
 <SystemComponentsListView />

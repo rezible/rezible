@@ -1,5 +1,5 @@
 <script lang="ts">
-	import AuthScreenView from "$features/app/views/auth-screen/AuthScreenView.svelte";
+	import AuthScreenView from "$features/auth/view/AuthScreenView.svelte";
 </script>
 
 <AuthScreenView />

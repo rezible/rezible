@@ -2,7 +2,7 @@
 	import "$src/app.postcss";
 	import { QueryClientProvider } from "@tanstack/svelte-query";
 	import { ThemeInit } from "svelte-ux";
-	import AppShell from "$features/app/views/app-shell/AppShell.svelte";
+	import AppShell from "$features/app-shell/view/AppShellView.svelte";
 
 	const { data, children } = $props();
 </script>
