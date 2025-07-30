@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -31,18 +30,7 @@ func NewDebriefService(db *ent.Client, jobs rez.JobsService, lms rez.LanguageMod
 		chat: chat,
 	}
 
-	if jobsErr := svc.registerBackgroundJobs(); jobsErr != nil {
-		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
-	}
-
 	return svc, nil
-}
-
-func (s *DebriefService) registerBackgroundJobs() error {
-	return errors.Join(
-		jobs.RegisterWorkerFunc(s.HandleSendRequestsJob),
-		jobs.RegisterWorkerFunc(s.HandleGenerateResponseJob),
-	)
 }
 
 func (s *DebriefService) CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {
@@ -97,8 +85,10 @@ func (s *DebriefService) StartDebrief(ctx context.Context, debriefId uuid.UUID) 
 			return fmt.Errorf("failed to start incident debrief: %w", updateErr)
 		}
 
-		job := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if genErr := s.jobs.InsertTx(ctx, tx, job, nil); genErr != nil {
+		params := jobs.InsertJobParams{
+			Args: jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId},
+		}
+		if genErr := s.jobs.InsertTx(ctx, tx, params); genErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genErr)
 		}
 
@@ -117,6 +107,7 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 	if getErr != nil {
 		return nil, fmt.Errorf("failed to get debrief: %w", getErr)
 	}
+	// TODO: check is already completed
 	//if debrief.Completed {
 	//	return debrief, nil
 	//}
@@ -124,13 +115,16 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 	updateTxFn := func(tx *ent.Tx) error {
 		updated, updateErr := tx.IncidentDebrief.UpdateOneID(debriefId).
 			SetStarted(true).
+			// SetCompleted(true).
 			Save(ctx)
 		if updateErr != nil {
 			return fmt.Errorf("failed to save: %w", updateErr)
 		}
 
-		job := jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId}
-		if genErr := s.jobs.InsertTx(ctx, tx, job, nil); genErr != nil {
+		params := jobs.InsertJobParams{
+			Args: jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId},
+		}
+		if genErr := s.jobs.InsertTx(ctx, tx, params); genErr != nil {
 			return fmt.Errorf("failed to request suggestions generation: %w", genErr)
 		}
 
@@ -144,6 +138,10 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 	return debrief, nil
 }
 
+func (s *DebriefService) HandleGenerateSuggestions(ctx context.Context, args jobs.GenerateIncidentDebriefSuggestions) error {
+	return nil
+}
+
 func (s *DebriefService) GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error) {
 	return s.db.IncidentDebrief.Get(ctx, id)
 }
@@ -154,7 +152,7 @@ func (s *DebriefService) GetUserDebrief(ctx context.Context, incidentId uuid.UUI
 		Only(ctx)
 }
 
-func (s *DebriefService) HandleSendRequestsJob(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
+func (s *DebriefService) HandleSendDebriefRequests(ctx context.Context, args jobs.SendIncidentDebriefRequests) error {
 	incidentId := args.IncidentId
 	inc, incErr := s.db.Incident.Get(ctx, incidentId)
 	if incErr != nil {
@@ -218,7 +216,7 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 	*/
 }
 
-func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uuid.UUID, content string) (*ent.IncidentDebriefMessage, error) {
+func (s *DebriefService) AddDebriefMessage(ctx context.Context, debriefId uuid.UUID, content string) (*ent.IncidentDebriefMessage, error) {
 	debrief, getErr := s.db.IncidentDebrief.Get(ctx, debriefId)
 	if getErr != nil {
 		return nil, getErr
@@ -235,8 +233,10 @@ func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uu
 			return fmt.Errorf("failed to save incident debrief message: %w", msgErr)
 		}
 
-		job := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if genJobErr := s.jobs.InsertTx(ctx, tx, job, nil); genJobErr != nil {
+		params := jobs.InsertJobParams{
+			Args: jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId},
+		}
+		if genJobErr := s.jobs.InsertTx(ctx, tx, params); genJobErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genJobErr)
 		}
 
@@ -249,7 +249,7 @@ func (s *DebriefService) AddUserDebriefMessage(ctx context.Context, debriefId uu
 	return msg, nil
 }
 
-func (s *DebriefService) HandleGenerateResponseJob(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
+func (s *DebriefService) HandleGenerateDebriefResponse(ctx context.Context, args jobs.GenerateIncidentDebriefResponse) error {
 	debriefId := args.DebriefId
 	debrief, debriefErr := s.db.IncidentDebrief.Query().
 		Where(incidentdebrief.ID(debriefId)).

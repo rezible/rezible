@@ -54,11 +54,11 @@ func (s *rezServer) setup(ctx context.Context) error {
 	}
 	s.db = db
 
-	jobs, jobsErr := river.NewJobService(db.Pool)
-	if jobsErr != nil {
-		return fmt.Errorf("failed to create job service: %w", jobsErr)
+	jobSvc, jobSvcErr := river.NewJobService(db.Pool)
+	if jobSvcErr != nil {
+		return fmt.Errorf("failed to create job service: %w", jobSvcErr)
 	}
-	s.jobs = jobs
+	s.jobs = jobSvc
 
 	dbc := db.Client()
 
@@ -69,19 +69,12 @@ func (s *rezServer) setup(ctx context.Context) error {
 
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
+	syncSvc := datasync.NewProviderSyncService(dbc, pl)
+
 	provs, provsErr := pl.LoadProviders(ctx)
 	if provsErr != nil {
 		return fmt.Errorf("failed to load providers: %w", provsErr)
 	}
-
-	sc := datasync.NewSyncController(dbc, pl)
-	if syncErr := sc.RegisterPeriodicSyncJob(jobs); syncErr != nil {
-		return fmt.Errorf("datasyncer.SyncController.RegisterPeriodicSyncJob: %w", syncErr)
-	}
-	//syncer := providers.NewProviderDataSyncer(dbc, pl)
-	//if syncErr := syncer.RegisterPeriodicSyncJob(jobs, time.Hour); syncErr != nil {
-	//	return fmt.Errorf("failed to register data sync job: %w", syncErr)
-	//}
 
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
@@ -93,7 +86,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
-	chat, chatErr := postgres.NewChatService(dbc, jobs, provs.Chat)
+	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -113,12 +106,12 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, jobs, lms, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, jobSvc, lms, chat, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, jobs, docs, chat, users, incidents)
+	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, jobSvc, docs, chat, users, incidents)
 	if oncallErr != nil {
 		return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
@@ -128,7 +121,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
 
-	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobs, lms, chat)
+	debriefs, debriefsErr := postgres.NewDebriefService(dbc, jobSvc, lms, chat)
 	if debriefsErr != nil {
 		return fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
@@ -143,7 +136,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertService(dbc, jobs, provs.AlertsData)
+	alerts, alertsErr := postgres.NewAlertService(dbc, provs.AlertsData)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
@@ -166,6 +159,34 @@ func (s *rezServer) setup(ctx context.Context) error {
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	s.httpServer = http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
+
+	if jobsErr := s.registerJobs(ctx, syncSvc, oncall, debriefs); jobsErr != nil {
+		return fmt.Errorf("registering jobs: %w", jobsErr)
+	}
+
+	return nil
+}
+
+func (s *rezServer) registerJobs(
+	ctx context.Context,
+	sync rez.ProviderSyncService,
+	oncall rez.OncallService,
+	debriefs rez.DebriefService,
+) error {
+	river.RegisterPeriodicJob(sync.MakeSyncProviderDataPeriodicJob(), sync.SyncProviderData)
+
+	scanShiftsJob, scanJobErr := oncall.MakeScanShiftsPeriodicJob(ctx)
+	if scanJobErr != nil || scanShiftsJob == nil {
+		return fmt.Errorf("oncall.MakeScanShiftsPeriodicJob: %w", scanJobErr)
+	}
+	river.RegisterPeriodicJob(*scanShiftsJob, oncall.HandlePeriodicScanShifts)
+	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverReminderSent)
+	river.RegisterWorkerFunc(oncall.HandleEnsureShiftHandoverSent)
+	river.RegisterWorkerFunc(oncall.HandleGenerateShiftMetrics)
+
+	river.RegisterWorkerFunc(debriefs.HandleGenerateDebriefResponse)
+	river.RegisterWorkerFunc(debriefs.HandleGenerateSuggestions)
+	river.RegisterWorkerFunc(debriefs.HandleSendDebriefRequests)
 
 	return nil
 }

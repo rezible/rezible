@@ -3,8 +3,8 @@ package postgres
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"github.com/rezible/rezible/jobs"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,7 +22,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
 )
 
 type OncallService struct {
@@ -44,33 +43,9 @@ func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService,
 		incidents: incidents,
 	}
 
-	if jobsErr := s.registerBackgroundJobs(); jobsErr != nil {
-		return nil, fmt.Errorf("registering job workers: %w", jobsErr)
-	}
-
 	//go s.registerHandoverSchema()
 
 	return s, nil
-}
-
-func (s *OncallService) registerBackgroundJobs() error {
-	interval := time.Hour
-
-	job := jobs.NewPeriodicJob(
-		jobs.PeriodicInterval(interval),
-		func() (jobs.JobArgs, *jobs.InsertOpts) {
-			return &jobs.ScanOncallHandovers{}, nil
-		},
-		&jobs.PeriodicJobOpts{
-			RunOnStart: true,
-		},
-	)
-	s.jobs.RegisterPeriodicJob(job)
-
-	return errors.Join(
-		jobs.RegisterWorkerFunc(s.HandleScanForShiftsNeedingHandoverJob),
-		jobs.RegisterWorkerFunc(s.HandleEnsureShiftHandoverJob),
-	)
 }
 
 func (s *OncallService) registerHandoverSchema() {
@@ -231,122 +206,123 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 	return query.All(params.GetQueryContext(ctx))
 }
 
-func (s *OncallService) HandleScanForShiftsNeedingHandoverJob(ctx context.Context, args jobs.ScanOncallHandovers) error {
-	// check for shifts ending within window, that don't have reminder sent
-	window := time.Hour
+func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallUserShift, error) {
 	shiftEndingWithinWindow := oncallusershift.And(
 		oncallusershift.EndAtGT(time.Now().Add(-window)),
 		oncallusershift.EndAtLT(time.Now().Add(window)))
-	endingShiftsQuery := s.db.OncallUserShift.Query().Where(shiftEndingWithinWindow)
 
-	shifts, shiftsErr := endingShiftsQuery.All(ctx)
+	query := s.db.OncallUserShift.Query().
+		Where(shiftEndingWithinWindow).
+		WithHandover()
+
+	shifts, shiftsErr := query.All(ctx)
+	if shiftsErr != nil {
+		return nil, fmt.Errorf("failed to get shifts: %w", shiftsErr)
+	}
+
+	return shifts, nil
+}
+
+func (s *OncallService) MakeScanShiftsPeriodicJob(ctx context.Context) (*jobs.PeriodicJob, error) {
+	// TODO: check shift schedule duration, make interval less than it
+	interval := time.Hour
+	job := &jobs.PeriodicJob{
+		ConstructorFunc: func() jobs.InsertJobParams {
+			return jobs.InsertJobParams{Args: &jobs.ScanOncallShifts{}}
+		},
+		Interval: interval,
+		Opts: &jobs.PeriodicJobOpts{
+			RunOnStart: true,
+		},
+	}
+	return job, nil
+}
+
+func (s *OncallService) HandlePeriodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
+	// check for shifts ending within window, that don't have reminder sent
+	shifts, shiftsErr := s.queryShiftsEndingWithinWindow(ctx, time.Hour)
 	if shiftsErr != nil {
 		return fmt.Errorf("failed to get shifts: %w", shiftsErr)
 	}
 
-	shiftIds := make([]uuid.UUID, 0, len(shifts))
-	for i, shift := range shifts {
-		shiftIds[i] = shift.ID
-	}
+	reminderWindow := time.Minute * 10
 
-	sentShiftIds := mapset.NewSet[uuid.UUID]()
-	sentHandovers, handoversErr := s.db.OncallUserShiftHandover.Query().
-		Where(oncallusershifthandover.ShiftIDIn(shiftIds...)).
-		Where(oncallusershifthandover.ReminderSent(true)).
-		All(ctx)
-	if handoversErr != nil {
-		return fmt.Errorf("failed to get handovers: %w", handoversErr)
-	}
-	for _, h := range sentHandovers {
-		sentShiftIds.Add(h.ShiftID)
-	}
-
-	var endingShiftIds []uuid.UUID
-	for _, sh := range shifts {
-		shiftId := sh.ID
-		if !sentShiftIds.Contains(shiftId) {
-			endingShiftIds = append(endingShiftIds, shiftId)
-		}
-	}
-
-	if len(endingShiftIds) == 0 {
-		return nil
-	}
-
-	params := make([]jobs.InsertManyParams, len(endingShiftIds))
-	for i, id := range endingShiftIds {
-		params[i] = jobs.InsertManyParams{
-			Args: jobs.EnsureShiftHandover{ShiftId: id},
-			Opts: &jobs.InsertOpts{
-				Uniqueness: &jobs.UniquenessOpts{
+	var params []jobs.InsertJobParams
+	for _, shift := range shifts {
+		ho := shift.Edges.Handover
+		reminderSent := ho != nil && ho.ReminderSent // !ho.ReminderSentAt.IsZero
+		if !reminderSent {
+			params = append(params, jobs.InsertJobParams{
+				Args:        jobs.EnsureShiftHandoverReminderSent{ShiftId: shift.ID},
+				ScheduledAt: shift.EndAt.Add(-reminderWindow),
+				Uniqueness: &jobs.JobUniquenessOpts{
 					Args: true,
 				},
+			})
+		}
+		isSent := ho != nil && !ho.SentAt.IsZero()
+		if !isSent {
+			params = append(params, jobs.InsertJobParams{
+				Args:        jobs.EnsureShiftHandoverSent{ShiftId: shift.ID},
+				ScheduledAt: shift.EndAt,
+				Uniqueness: &jobs.JobUniquenessOpts{
+					Args: true,
+				},
+			})
+		}
+		params = append(params, jobs.InsertJobParams{
+			Args:        jobs.GenerateShiftMetrics{ShiftId: shift.ID},
+			ScheduledAt: shift.EndAt,
+			Uniqueness: &jobs.JobUniquenessOpts{
+				Args: true,
 			},
-		}
+		})
 	}
 
-	if insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
-		return fmt.Errorf("could not insert jobs: %w", insertErr)
+	if len(params) > 0 {
+		if insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
+			return fmt.Errorf("could not insert jobs: %w", insertErr)
+		}
 	}
 
 	return nil
 }
 
-func (s *OncallService) HandleEnsureShiftHandoverJob(ctx context.Context, args jobs.EnsureShiftHandover) error {
-	/*
-		shiftId := args.ShiftId
+func (s *OncallService) HandleEnsureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {
+	shiftId := args.ShiftId
 
-		shift, shiftErr := s.GetShiftByID(ctx, shiftId)
-		if shiftErr != nil {
-			return fmt.Errorf("failed to get shift: %w", shiftErr)
-		}
+	ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
+	if hoErr != nil {
+		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
+	}
+	_, sendErr := s.sendShiftHandover(ctx, ho)
 
-		ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
-		if hoErr != nil {
-			return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
-		}
-
-		// shift has already ended, within window
-		if shift.EndAt.Before(time.Now()) {
-			if sendErr := s.sendFallbackShiftHandover(ctx, ho); sendErr != nil {
-				return fmt.Errorf("failed to send fallback handover: %w", sendErr)
-			}
-		} else {
-			if reminderErr := s.sendShiftHandoverReminder(ctx, shift, ho); reminderErr != nil {
-				return fmt.Errorf("failed to send handover reminder: %w", reminderErr)
-			}
-		}
-	*/
-
-	return nil
+	return sendErr
 }
 
-func (s *OncallService) sendShiftHandoverReminder(ctx context.Context, shift *ent.OncallUserShift, ho *ent.OncallUserShiftHandover) error {
+func (s *OncallService) HandleEnsureShiftHandoverReminderSent(ctx context.Context, args jobs.EnsureShiftHandoverReminderSent) error {
+	shiftId := args.ShiftId
+
+	shift, shiftErr := s.GetShiftByID(ctx, shiftId)
+	if shiftErr != nil {
+		return fmt.Errorf("querying shift: %w", shiftErr)
+	}
+
+	ho, hoErr := s.GetHandoverForShift(ctx, shiftId, true)
+	if hoErr != nil {
+		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
+	}
+
 	if ho.ReminderSent {
 		return nil
 	}
 
-	//user, userErr := s.users.GetById(ctx, shift.UserID)
-	//if userErr != nil {
-	//	return fmt.Errorf("failed to get shift user: %w", userErr)
-	//}
+	if msgErr := s.chat.SendOncallHandoverReminder(ctx, shift); msgErr != nil {
+		return fmt.Errorf("sending reminder: %w", msgErr)
+	}
 
-	//roster, rosterErr := s.GetRosterByID(ctx, shift.RosterID)
-	//if rosterErr != nil {
-	//	return fmt.Errorf("failed to get roster: %w", rosterErr)
-	//}
-
-	//if msgErr := s.chat.SendTextMessage(ctx, user.ChatID, "handover message"); msgErr != nil {
-	//	return fmt.Errorf("failed to send message: %w", msgErr)
-	//}
-	//msgText := fmt.Sprintf("Your shift for %s is ending in %d minutes!\nPlease complete your handover",
-	//	roster.Name, int(shift.EndAt.Sub(time.Now()).Minutes()))
-	//msgLinkUrl := fmt.Sprintf("%s/oncall/shifts/%s/handover", rez.FrontendUrl, shift.ID)
-	//if msgErr := s.chat.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, "Complete Handover"); msgErr != nil {
-	//	return fmt.Errorf("failed to send message: %w", msgErr)
-	//}
-
-	if updateErr := ho.Update().SetReminderSent(true).Exec(ctx); updateErr != nil {
+	update := ho.Update().SetReminderSent(true)
+	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("failed to set reminder_sent: %w", updateErr)
 	}
 
@@ -449,72 +425,76 @@ func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.Onc
 }
 
 func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	handover, handoverErr := s.db.OncallUserShiftHandover.Get(ctx, handoverId)
+	query := s.db.OncallUserShiftHandover.Query().
+		Where(oncallusershifthandover.ID(handoverId)).
+		WithShift().
+		WithPinnedAnnotations(func(q *ent.OncallAnnotationQuery) {
+			q.WithEvent()
+		})
+
+	handover, handoverErr := query.First(ctx)
 	if handover == nil || handoverErr != nil {
 		return nil, fmt.Errorf("failed to get handover: %w", handoverErr)
 	}
-
-	if !handover.SentAt.IsZero() {
-		return handover, nil
-	}
-
-	if sendErr := s.sendShiftHandover(ctx, handover); sendErr != nil {
-		return nil, fmt.Errorf("failed to send handover: %w", sendErr)
-	}
-
-	updateErr := handover.Update().SetSentAt(time.Now()).Exec(ctx)
-	if updateErr != nil {
-		return nil, fmt.Errorf("failed to update handover sent_at time: %w", updateErr)
-	}
-	handover.SentAt = time.Now()
-
-	return handover, nil
+	return s.sendShiftHandover(ctx, handover)
 }
 
-func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) error {
-	var sections []rez.OncallShiftHandoverSection
-	if jsonErr := json.Unmarshal(ho.Contents, &sections); jsonErr != nil {
-		return fmt.Errorf("failed to unmarshal content: %w", jsonErr)
+func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error) {
+	if !ho.SentAt.IsZero() {
+		return ho, nil
 	}
 
-	shift, shiftErr := s.GetShiftByID(ctx, ho.ShiftID)
+	if ho.UpdatedAt.IsZero() {
+		// TODO: fill in template
+	}
+
+	var sections []rez.OncallShiftHandoverSection
+	if jsonErr := json.Unmarshal(ho.Contents, &sections); jsonErr != nil {
+		return nil, fmt.Errorf("failed to unmarshal content: %w", jsonErr)
+	}
+
+	shift, shiftErr := ho.Edges.ShiftOrErr()
 	if shiftErr != nil {
-		return fmt.Errorf("failed to get handover shift: %w", shiftErr)
+		return nil, fmt.Errorf("failed to get handover shift: %w", shiftErr)
 	}
 
 	nextShift, nextShiftErr := s.GetNextShift(ctx, ho.ShiftID)
 	if nextShiftErr != nil {
-		return fmt.Errorf("failed to get next shift: %w", nextShiftErr)
+		return nil, fmt.Errorf("get next shift: %w", nextShiftErr)
 	}
 
-	roster, rosterErr := nextShift.QueryRoster().Only(ctx)
+	roster, rosterErr := nextShift.Edges.RosterOrErr()
 	if rosterErr != nil {
-		return fmt.Errorf("failed to get roster: %w", rosterErr)
+		return nil, fmt.Errorf("next shift roster: %w", rosterErr)
 	}
 	if roster.ChatChannelID == "" {
-		return fmt.Errorf("no roster chat channel found")
+		return nil, fmt.Errorf("no roster chat channel found")
 	}
 
-	annos, annosErr := ho.QueryPinnedAnnotations().WithEvent().All(ctx)
+	annos, annosErr := ho.Edges.PinnedAnnotationsOrErr()
 	if annosErr != nil {
-		return fmt.Errorf("failed to get pinned annotations: %w", annosErr)
+		return nil, fmt.Errorf("get pinned annotations: %w", annosErr)
 	}
 
-	/*
-		msgContent, contentErr := s.docs.CreateOncallShiftHandoverMessage(sections, annos, roster, shift, nextShift)
-		if contentErr != nil {
-			return fmt.Errorf("failed to create oncall shift handover message: %w", contentErr)
-		}
-
-		return s.chat.SendMessage(ctx, roster.ChatChannelID, msgContent)
-	*/
 	params := rez.SendOncallHandoverParams{
 		Content:           sections,
 		EndingShift:       shift,
 		StartingShift:     nextShift,
 		PinnedAnnotations: annos,
 	}
-	log.Debug().Interface("params", params).Msg("sending oncall handover")
+	if sendErr := s.chat.SendOncallHandover(ctx, params); sendErr != nil {
+		return nil, fmt.Errorf("failed to send oncall handover: %w", sendErr)
+	}
 
-	return nil // s.chat.SendOncallHandover(ctx, )
+	updated, updateErr := ho.Update().SetSentAt(time.Now()).Save(ctx)
+	if updateErr != nil {
+		return nil, fmt.Errorf("update handover sent_at time: %w", updateErr)
+	}
+
+	return updated, nil
+}
+
+func (s *OncallService) HandleGenerateShiftMetrics(ctx context.Context, args jobs.GenerateShiftMetrics) error {
+	log.Debug().Msg("generate shift metrics")
+	return nil
 }

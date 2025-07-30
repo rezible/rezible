@@ -11,8 +11,8 @@ import (
 )
 
 type OncallEventsHandler interface {
-	GetOncallEvent(context.Context, *GetOncallEventRequest) (*GetOncallEventResponse, error)
 	ListOncallEvents(context.Context, *ListOncallEventsRequest) (*ListOncallEventsResponse, error)
+	GetOncallEvent(context.Context, *GetOncallEventRequest) (*GetOncallEventResponse, error)
 
 	ListOncallAnnotations(context.Context, *ListOncallAnnotationsRequest) (*ListOncallAnnotationsResponse, error)
 	CreateOncallAnnotation(context.Context, *CreateOncallAnnotationRequest) (*CreateOncallAnnotationResponse, error)
@@ -21,8 +21,8 @@ type OncallEventsHandler interface {
 }
 
 func (o operations) RegisterOncallEvents(api huma.API) {
-	huma.Register(api, GetOncallEvent, o.GetOncallEvent)
 	huma.Register(api, ListOncallEvents, o.ListOncallEvents)
+	huma.Register(api, GetOncallEvent, o.GetOncallEvent)
 
 	huma.Register(api, ListOncallAnnotations, o.ListOncallAnnotations)
 	huma.Register(api, CreateOncallAnnotation, o.CreateOncallAnnotation)
@@ -41,9 +41,9 @@ type (
 		Title       string             `json:"title"`
 		Description string             `json:"description"`
 		Timestamp   time.Time          `json:"timestamp"`
-		Annotations []OncallAnnotation `json:"annotations,omitempty"`
 		RosterId    uuid.UUID          `json:"roster_id,omitempty"`
 		AlertId     uuid.UUID          `json:"alert_id,omitempty"`
+		Annotations []OncallAnnotation `json:"annotations,omitempty"`
 	}
 
 	OncallAnnotation struct {
@@ -62,9 +62,9 @@ type (
 	}
 
 	OncallAnnotationAlertFeedback struct {
-		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
 		Actionable             bool   `json:"actionable"`
-		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,needs_update,no"`
+		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
+		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,no,needs_update"`
 	}
 )
 

@@ -115,7 +115,7 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefMessages(ctx context.Contex
 func (h *incidentDebriefsHandler) AddIncidentDebriefUserMessage(ctx context.Context, request *oapi.AddIncidentDebriefUserMessageRequest) (*oapi.AddIncidentDebriefUserMessageResponse, error) {
 	var resp oapi.AddIncidentDebriefUserMessageResponse
 
-	msg, msgErr := h.debriefs.AddUserDebriefMessage(ctx, request.Id, request.Body.Attributes.MessageContent)
+	msg, msgErr := h.debriefs.AddDebriefMessage(ctx, request.Id, request.Body.Attributes.MessageContent)
 	if msgErr != nil {
 		return nil, detailError("failed to add user message", msgErr)
 	}

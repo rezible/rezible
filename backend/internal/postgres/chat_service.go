@@ -11,14 +11,12 @@ import (
 
 type ChatService struct {
 	db   *ent.Client
-	jobs rez.JobsService
 	prov rez.ChatProvider
 }
 
-func NewChatService(db *ent.Client, jobs rez.JobsService, prov rez.ChatProvider) (*ChatService, error) {
+func NewChatService(db *ent.Client, prov rez.ChatProvider) (*ChatService, error) {
 	s := &ChatService{
 		db:   db,
-		jobs: jobs,
 		prov: prov,
 	}
 
@@ -36,4 +34,8 @@ func (s *ChatService) HandleMentionEvent(chatId, threadId, userId, msgText strin
 
 func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOncallHandoverParams) error {
 	return s.prov.SendOncallHandover(ctx, params)
+}
+
+func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallUserShift) error {
+	return nil
 }

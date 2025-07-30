@@ -4,48 +4,36 @@ import (
 	"context"
 	"fmt"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
 	"time"
-
-	"github.com/rezible/rezible/ent"
 )
 
-type SyncController struct {
+type ProviderSyncService struct {
 	db *ent.Client
 	pl rez.ProviderLoader
 }
 
-var syncInterval = time.Hour
-
-func NewSyncController(db *ent.Client, pl rez.ProviderLoader) *SyncController {
-	return &SyncController{db: db, pl: pl}
+func NewProviderSyncService(db *ent.Client, pl rez.ProviderLoader) *ProviderSyncService {
+	return &ProviderSyncService{db: db, pl: pl}
 }
 
-func (s *SyncController) RegisterPeriodicSyncJob(j rez.JobsService) error {
-	args := &jobs.SyncProviderData{}
-
-	opts := &jobs.InsertOpts{
-		Uniqueness: &jobs.UniquenessOpts{
-			ByState: jobs.NonCompletedJobStates,
+func (s *ProviderSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob {
+	return jobs.PeriodicJob{
+		ConstructorFunc: func() jobs.InsertJobParams {
+			return jobs.InsertJobParams{
+				Args: &jobs.SyncProviderData{},
+				Uniqueness: &jobs.JobUniquenessOpts{
+					ByState: jobs.NonCompletedJobStates,
+				},
+			}
 		},
+		Interval: time.Hour,
+		Opts:     &jobs.PeriodicJobOpts{RunOnStart: true},
 	}
-
-	job := jobs.NewPeriodicJob(
-		jobs.PeriodicInterval(syncInterval),
-		func() (jobs.JobArgs, *jobs.InsertOpts) {
-			return args, opts
-		},
-		&jobs.PeriodicJobOpts{
-			RunOnStart: true,
-		},
-	)
-
-	j.RegisterPeriodicJob(job)
-
-	return jobs.RegisterWorkerFunc(s.SyncData)
 }
 
-func (s *SyncController) SyncData(ctx context.Context, args jobs.SyncProviderData) error {
+func (s *ProviderSyncService) SyncProviderData(ctx context.Context, args jobs.SyncProviderData) error {
 	if args.Hard {
 		// TODO: maybe just pass a flag?
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)

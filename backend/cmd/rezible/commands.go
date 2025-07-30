@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rezible/rezible/jobs"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -15,7 +16,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres/datasync"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
-	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -71,15 +71,10 @@ func migrateCmd(ctx context.Context, opts *Options) error {
 
 func syncCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		// TODO: use cli flags
-		args := jobs.SyncProviderData{
-			Hard: true,
-		}
-
+		args := jobs.SyncProviderData{Hard: true}
 		dbc := db.Client()
-
-		sc := datasync.NewSyncController(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
-		return sc.SyncData(ctx, args)
+		svc := datasync.NewProviderSyncService(dbc, providers.NewProviderLoader(dbc.ProviderConfig))
+		return svc.SyncProviderData(ctx, args)
 	})
 }
 

@@ -11,14 +11,12 @@ import (
 
 type AlertService struct {
 	db   *ent.Client
-	jobs rez.JobsService
 	prov rez.AlertDataProvider
 }
 
-func NewAlertService(db *ent.Client, jobs rez.JobsService, prov rez.AlertDataProvider) (*AlertService, error) {
+func NewAlertService(db *ent.Client, prov rez.AlertDataProvider) (*AlertService, error) {
 	s := &AlertService{
 		db:   db,
-		jobs: jobs,
 		prov: prov,
 	}
 

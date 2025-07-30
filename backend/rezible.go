@@ -3,6 +3,7 @@ package rez
 import (
 	"context"
 	"errors"
+	"github.com/rezible/rezible/jobs"
 	"iter"
 	"net/http"
 	"time"
@@ -12,7 +13,6 @@ import (
 	"github.com/texm/prosemirror-go"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/jobs"
 )
 
 var (
@@ -76,18 +76,21 @@ type (
 	}
 
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
+
+	ProviderSyncService interface {
+		MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob
+		SyncProviderData(context.Context, jobs.SyncProviderData) error
+	}
 )
 
 type (
 	JobsService interface {
-		RegisterPeriodicJob(*jobs.PeriodicJob)
-
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 
-		Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error
-		InsertMany(ctx context.Context, params []jobs.InsertManyParams) error
-		InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs, opts *jobs.InsertOpts) error
+		Insert(ctx context.Context, params jobs.InsertJobParams) error
+		InsertTx(ctx context.Context, tx *ent.Tx, params jobs.InsertJobParams) error
+		InsertMany(ctx context.Context, params []jobs.InsertJobParams) error
 	}
 )
 
@@ -232,6 +235,7 @@ type (
 
 	ChatService interface {
 		ChatEventHandler
+		SendOncallHandoverReminder(context.Context, *ent.OncallUserShift) error
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 )
@@ -328,15 +332,17 @@ type (
 
 type (
 	DebriefService interface {
-		HandleSendRequestsJob(context.Context, jobs.SendIncidentDebriefRequests) error
-		HandleGenerateResponseJob(context.Context, jobs.GenerateIncidentDebriefResponse) error
+		HandleSendDebriefRequests(context.Context, jobs.SendIncidentDebriefRequests) error
+		HandleGenerateDebriefResponse(context.Context, jobs.GenerateIncidentDebriefResponse) error
+		HandleGenerateSuggestions(context.Context, jobs.GenerateIncidentDebriefSuggestions) error
 
-		CreateDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
+		CreateDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error)
 		GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error)
-		GetUserDebrief(ctx context.Context, incidentID uuid.UUID, userID uuid.UUID) (*ent.IncidentDebrief, error)
-		AddUserDebriefMessage(ctx context.Context, debriefID uuid.UUID, text string) (*ent.IncidentDebriefMessage, error)
-		StartDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
-		CompleteDebrief(ctx context.Context, debriefID uuid.UUID) (*ent.IncidentDebrief, error)
+		GetUserDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error)
+		AddDebriefMessage(ctx context.Context, debriefId uuid.UUID, text string) (*ent.IncidentDebriefMessage, error)
+
+		StartDebrief(ctx context.Context, debriefId uuid.UUID) (*ent.IncidentDebrief, error)
+		CompleteDebrief(ctx context.Context, debriefId uuid.UUID) (*ent.IncidentDebrief, error)
 	}
 )
 
@@ -439,8 +445,8 @@ type (
 	}
 
 	OncallService interface {
-		HandleScanForShiftsNeedingHandoverJob(context.Context, jobs.ScanOncallHandovers) error
-		HandleEnsureShiftHandoverJob(context.Context, jobs.EnsureShiftHandover) error
+		MakeScanShiftsPeriodicJob(context.Context) (*jobs.PeriodicJob, error)
+		HandlePeriodicScanShifts(context.Context, jobs.ScanOncallShifts) error
 
 		ListRosters(context.Context, ListOncallRostersParams) ([]*ent.OncallRoster, error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
@@ -458,5 +464,9 @@ type (
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
 		UpdateShiftHandover(ctx context.Context, handover *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error)
 		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
+
+		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
+		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error
+		HandleGenerateShiftMetrics(context.Context, jobs.GenerateShiftMetrics) error
 	}
 )
