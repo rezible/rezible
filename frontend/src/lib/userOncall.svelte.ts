@@ -6,13 +6,14 @@ import { Context } from "runed";
 export class UserOncallInformationState {
 	private queryClient = useQueryClient();
 
+	private userId = $derived(session.userId || "");
 	private infoQueryOptions = $derived(getUserOncallInformationOptions({
 		query: {
-			userId: session.userId,
+			userId: this.userId,
 			activeShifts: true,
 		}}
 	));
-	infoQuery = createQuery(() => ({...this.infoQueryOptions, enabled: !!session.user}));
+	infoQuery = createQuery(() => ({...this.infoQueryOptions, enabled: !!this.userId}));
 	current = $derived(this.infoQuery.data?.data);
 
 	rosters = $derived(this.current?.rosters ?? []);

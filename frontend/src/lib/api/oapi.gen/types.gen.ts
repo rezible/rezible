@@ -1801,7 +1801,7 @@ export type OncallAnnotation = {
 export type OncallAnnotationAlertFeedback = {
     accurate: 'yes' | 'no' | 'unknown';
     actionable: boolean;
-    documentationAvailable: 'yes' | 'needs_update' | 'no';
+    documentationAvailable: 'yes' | 'no' | 'needs_update';
 };
 
 export type OncallAnnotationAttributes = {
@@ -7763,8 +7763,8 @@ export type GetPreviousOncallShiftResponse = GetPreviousOncallShiftResponses[key
 export type GetUserOncallInformationData = {
     body?: never;
     path?: never;
-    query?: {
-        userId?: string;
+    query: {
+        userId: string;
         activeShifts?: boolean;
         upcomingShifts?: number;
         pastShifts?: number;

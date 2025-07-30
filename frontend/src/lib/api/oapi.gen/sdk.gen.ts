@@ -2308,10 +2308,10 @@ export const getPreviousOncallShift = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Get current user oncall information
+ * Get oncall information for a user
  */
-export const getUserOncallInformation = <ThrowOnError extends boolean = false>(options?: Options<GetUserOncallInformationData, ThrowOnError>) => {
-    return (options?.client ?? _heyApiClient).get<GetUserOncallInformationResponses, GetUserOncallInformationErrors, ThrowOnError>({
+export const getUserOncallInformation = <ThrowOnError extends boolean = false>(options: Options<GetUserOncallInformationData, ThrowOnError>) => {
+    return (options.client ?? _heyApiClient).get<GetUserOncallInformationResponses, GetUserOncallInformationErrors, ThrowOnError>({
         security: [
             {
                 in: 'cookie',

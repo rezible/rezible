@@ -14,14 +14,14 @@ import (
 )
 
 type OncallHandler interface {
+	GetUserOncallInformation(context.Context, *GetUserOncallInformationRequest) (*GetUserOncallInformationResponse, error)
+
 	ListOncallRosters(context.Context, *ListOncallRostersRequest) (*ListOncallRostersResponse, error)
 	GetOncallRoster(context.Context, *GetOncallRosterRequest) (*GetOncallRosterResponse, error)
 
 	AddWatchedOncallRoster(context.Context, *AddWatchedOncallRosterRequest) (*AddWatchedOncallRosterResponse, error)
 	ListWatchedOncallRosters(context.Context, *ListWatchedOncallRostersRequest) (*ListWatchedOncallRostersResponse, error)
 	RemoveWatchedOncallRoster(context.Context, *RemoveWatchedOncallRosterRequest) (*RemoveWatchedOncallRosterResponse, error)
-
-	GetUserOncallInformation(context.Context, *GetUserOncallInformationRequest) (*GetUserOncallInformationResponse, error)
 
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
 
@@ -40,14 +40,14 @@ type OncallHandler interface {
 }
 
 func (o operations) RegisterOncall(api huma.API) {
+	huma.Register(api, GetUserOncallInformation, o.GetUserOncallInformation)
+
 	huma.Register(api, ListOncallRosters, o.ListOncallRosters)
 	huma.Register(api, GetOncallRoster, o.GetOncallRoster)
 
 	huma.Register(api, AddWatchedOncallRoster, o.AddWatchedOncallRoster)
 	huma.Register(api, ListWatchedOncallRosters, o.ListWatchedOncallRosters)
 	huma.Register(api, RemoveWatchedOncallRoster, o.RemoveWatchedOncallRoster)
-
-	huma.Register(api, GetUserOncallInformation, o.GetUserOncallInformation)
 
 	huma.Register(api, ListOncallShifts, o.ListOncallShifts)
 
@@ -66,6 +66,14 @@ func (o operations) RegisterOncall(api huma.API) {
 }
 
 type (
+	UserOncallInformation struct {
+		MemberRosters   []OncallRoster `json:"rosters"`
+		WatchingRosters []OncallRoster `json:"watchingRosters"`
+		ActiveShifts    []OncallShift  `json:"activeShifts"`
+		UpcomingShifts  []OncallShift  `json:"upcomingShifts"`
+		PastShifts      []OncallShift  `json:"pastShifts"`
+	}
+
 	OncallRoster struct {
 		Id         uuid.UUID              `json:"id"`
 		Attributes OncallRosterAttributes `json:"attributes"`
@@ -251,6 +259,23 @@ var oncallTags = []string{"Oncall"}
 
 // ops
 
+var GetUserOncallInformation = huma.Operation{
+	OperationID: "get-user-oncall-information",
+	Method:      http.MethodGet,
+	Path:        "/oncall/user",
+	Summary:     "Get oncall information for a user",
+	Tags:        oncallTags,
+	Errors:      errorCodes(),
+}
+
+type GetUserOncallInformationRequest struct {
+	UserId         uuid.UUID `query:"userId" required:"true"`
+	ActiveShifts   bool      `query:"activeShifts" required:"false" default:"true"`
+	UpcomingShifts int       `query:"upcomingShifts" required:"false" default:"0"`
+	PastShifts     int       `query:"pastShifts" required:"false" default:"0"`
+}
+type GetUserOncallInformationResponse ItemResponse[UserOncallInformation]
+
 var ListOncallRosters = huma.Operation{
 	OperationID: "list-oncall-rosters",
 	Method:      http.MethodGet,
@@ -315,30 +340,6 @@ var RemoveWatchedOncallRoster = huma.Operation{
 
 type RemoveWatchedOncallRosterRequest DeleteIdRequest
 type RemoveWatchedOncallRosterResponse ListResponse[OncallRoster]
-
-var GetUserOncallInformation = huma.Operation{
-	OperationID: "get-user-oncall-information",
-	Method:      http.MethodGet,
-	Path:        "/oncall/user",
-	Summary:     "Get current user oncall information",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type GetUserOncallInformationRequest struct {
-	UserId         uuid.UUID `query:"userId" required:"false" nullable:"false"`
-	ActiveShifts   bool      `query:"activeShifts" required:"false" default:"true"`
-	UpcomingShifts int       `query:"upcomingShifts" required:"false" default:"1"`
-	PastShifts     int       `query:"pastShifts" required:"false" default:"1"`
-}
-type UserOncallInformation struct {
-	MemberRosters   []OncallRoster `json:"rosters"`
-	WatchingRosters []OncallRoster `json:"watchingRosters"`
-	ActiveShifts    []OncallShift  `json:"activeShifts"`
-	UpcomingShifts  []OncallShift  `json:"upcomingShifts"`
-	PastShifts      []OncallShift  `json:"pastShifts"`
-}
-type GetUserOncallInformationResponse ItemResponse[UserOncallInformation]
 
 var ListOncallShifts = huma.Operation{
 	OperationID: "list-oncall-shifts",

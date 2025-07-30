@@ -2983,12 +2983,12 @@ export const getPreviousOncallShiftOptions = (options: Options<GetPreviousOncall
     });
 };
 
-export const getUserOncallInformationQueryKey = (options?: Options<GetUserOncallInformationData>) => createQueryKey('getUserOncallInformation', options);
+export const getUserOncallInformationQueryKey = (options: Options<GetUserOncallInformationData>) => createQueryKey('getUserOncallInformation', options);
 
 /**
- * Get current user oncall information
+ * Get oncall information for a user
  */
-export const getUserOncallInformationOptions = (options?: Options<GetUserOncallInformationData>) => {
+export const getUserOncallInformationOptions = (options: Options<GetUserOncallInformationData>) => {
     return queryOptions({
         queryFn: async ({ queryKey, signal }) => {
             const { data } = await getUserOncallInformation({
