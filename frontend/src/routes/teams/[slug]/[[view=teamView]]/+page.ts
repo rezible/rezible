@@ -6,17 +6,15 @@ import type { PageLoad } from "./$types";
 export const load = (async ({ params, parent, url }) => {
 	const { queryClient } = await parent();
 
-	const param = params.slug;
-	const res = await queryClient.fetchQuery(getTeamOptions({ path: { id: param } }));
-	const team = res.data;
-	
-	const slug = team.attributes.slug;
-	queryClient.setQueryData(getTeamOptions({ path: { id: team.id } }).queryKey, res);
-	queryClient.setQueryData(getTeamOptions({ path: { id: slug } }).queryKey, res);
+	const slug = params.slug;
 
-	if (isValidUUID(param)) {
-		throw redirect(301, url.pathname.replaceAll(param, slug) + url.search);
+	if (isValidUUID(slug)) {
+		const res = await queryClient.fetchQuery(getTeamOptions({ path: { id: slug } }));
+		const realSlug = res.data.attributes.slug;
+		queryClient.setQueryData(getTeamOptions({ path: { id: realSlug } }).queryKey, res);
+		const slugPath = url.pathname.replaceAll(slug, realSlug) + url.search;
+		throw redirect(301, slugPath);
 	}
 
-	return {team}
+	return { slug };
 }) satisfies PageLoad;

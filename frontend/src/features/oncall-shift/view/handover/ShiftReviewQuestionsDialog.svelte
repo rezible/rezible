@@ -5,11 +5,11 @@
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
 	
-	import { useShiftViewState } from "../shiftViewState.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 
-	const viewState = useShiftViewState();
-	const shiftId = $derived(viewState.shiftId);
+	const view = useOncallShiftViewState();
+	const shiftId = $derived(view.shiftId);
 
 	const reviewShiftMutation = createMutation(() => ({
 		// TODO: use correct query

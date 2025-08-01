@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { getOncallShiftMetricsOptions } from "$lib/api";
-	import { useShiftViewState } from "../shiftViewState.svelte";
 
 	import ShiftSummaryCards from "./sections/ShiftSummaryCards.svelte";
 	import ShiftIncidents from "./sections/ShiftIncidents.svelte";
@@ -10,9 +9,10 @@
 
 	import ShiftEventsSidebar from "./events-sidebar/ShiftEventsSidebar.svelte";
 	import EventAnnotationDialog from "$components/oncall-events/annotation-dialog/EventAnnotationDialog.svelte";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 
-	const viewState = useShiftViewState();
-	const shiftId = $derived(viewState.shiftId);
+	const view = useOncallShiftViewState();
+	const shiftId = $derived(view.shiftId);
 
 	const comparisonQuery = createQuery(() => getOncallShiftMetricsOptions());
 	const comparison = $derived(comparisonQuery.data?.data);

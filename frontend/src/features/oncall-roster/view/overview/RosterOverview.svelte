@@ -3,7 +3,6 @@
 		mdiChartBar,
 	} from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
-	import { rosterViewCtx } from "../viewState.svelte";
 	import {
 		getOncallRosterMetricsOptions,
 	} from "$lib/api";
@@ -11,14 +10,14 @@
 	import Header from "$components/header/Header.svelte";
 	import RosterActivityColumn from "./RosterActivityColumn.svelte";
 	import RosterShiftsColumn from "./RosterShiftsColumn.svelte";
-
-	const viewCtx = rosterViewCtx.get();
-	const rosterId = $derived(viewCtx.roster?.id);
+	import { useOncallRosterViewState } from "$features/oncall-roster";
+	
+	const view = useOncallRosterViewState();
 
 	let periodDays = $state(30);
 	const metricsQuery = createQuery(() => ({
-		...getOncallRosterMetricsOptions({ query: { rosterId } }),
-		enabled: !!rosterId,
+		...getOncallRosterMetricsOptions({ query: { rosterId: view.rosterId } }),
+		enabled: !!view.rosterId,
 	}));
 	const metrics = $derived(metricsQuery.data?.data);
 </script>

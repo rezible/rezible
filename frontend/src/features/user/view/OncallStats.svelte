@@ -7,14 +7,13 @@
 	import MetricCard from "$components/viz/MetricCard.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { useUserViewState } from "$features/user";
 
-	type Props = {
-		shifts: OncallShift[];
-	};
-	const { shifts }: Props = $props();
+	const view = useUserViewState();
+	const shifts = $derived(view.oncallShifts ?? []);
 
 	// Calculate stats
-	const totalShifts = shifts.length;
+	const totalShifts = $derived(shifts.length);
 
 	// TODO: make this a component (currently taken from user oncall view)
 

@@ -1,13 +1,14 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-import { getOncallShiftOptions, listOncallAnnotationsOptions, type ListOncallEventsData, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
+import { getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
 import { PeriodType } from "@layerstack/utils";
+import type { Getter } from "$src/lib/utils.svelte";
 
-export class ShiftViewState {
+class OncallShiftViewState {
 	private queryClient = useQueryClient();
 	shiftId = $state<string>(null!);
 
@@ -58,6 +59,6 @@ export class ShiftViewState {
 	}
 }
 
-const shiftViewStateCtx = new Context<ShiftViewState>("shiftViewState");
-export const setShiftViewState = (s: ShiftViewState) => shiftViewStateCtx.set(s);
-export const useShiftViewState = () => shiftViewStateCtx.get();
+const ctx = new Context<OncallShiftViewState>("oncallShiftViewState");
+export const setOncallShiftViewState = (idFn: Getter<string>) => ctx.set(new OncallShiftViewState(idFn));
+export const useOncallShiftViewState = () => ctx.get();

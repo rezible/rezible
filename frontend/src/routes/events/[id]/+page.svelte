@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import OncallEventView from "$features/oncall-event/view/OncallEventView.svelte";
+	import { OncallEventView, setOncallEventViewState } from "$features/oncall-event";
+
+	setOncallEventViewState(() => page.params.id);
 </script>
 
-<OncallEventView id={page.params.id} />
+<OncallEventView />

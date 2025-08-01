@@ -1,36 +1,30 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { createQuery } from "@tanstack/svelte-query";
-	import { getUserOncallInformationOptions } from "$lib/api";
 	import ShiftProgressCircle from "$features/oncall-shifts-list/components/shift-card/ShiftProgressCircle.svelte";
-	import { rosterViewCtx } from "./viewState.svelte";
-
-	const rosterCtx = rosterViewCtx.get();
+	import { useOncallRosterViewState } from "$features/oncall-roster";
+	
+	const view = useOncallRosterViewState();
 
 	// TODO: include this
-	const teamId = $derived(rosterCtx.rosterId);
-
-	const shiftsQuery = createQuery(() => getUserOncallInformationOptions());
-	const shifts = $derived(shiftsQuery.data?.data);
-
-	const activeShift = $derived(shifts?.activeShifts.at(0));
+	const teamId = $derived(view.rosterId);
+	const shift = $derived(view.activeShift);
 
 	const userLocalTime = new Date(Date.now()).toLocaleTimeString(undefined, {hour: "2-digit", minute: "2-digit", hour12: true})
 </script>
 
 <div class="flex gap-2 h-14 max-h-14 overflow-y-hidden justify-between pb-2">
-	{#if activeShift}
-		<a href="/shifts/{activeShift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
+	{#if shift}
+		<a href="/shifts/{shift.id}" class="flex items-center gap-4 px-4 bg-success-900/50 rounded-lg hover:bg-success-900/40">
 			<div class="flex flex-col">
 				<span class="text-xs">Currently Oncall</span>
 				<div class="flex items-center align-middle gap-2">
-					<Avatar kind="user" size={14} id={activeShift.id} />
-					<span class="text-sm font-semibold">{activeShift.attributes.user.attributes.name}</span>
+					<Avatar kind="user" size={14} id={shift.id} />
+					<span class="text-sm font-semibold">{shift.attributes.user.attributes.name}</span>
 					<span class="text-xs text-surface-content/70 align-middle">({userLocalTime})</span>
 				</div>
 			</div>
 			<div class="">
-				<ShiftProgressCircle shift={activeShift} size={30} pulse={false} />
+				<ShiftProgressCircle {shift} size={30} pulse={false} />
 			</div>
 		</a>
 	{/if}

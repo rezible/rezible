@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import UserView from "$features/user/view/UserView.svelte";
+	import { UserView, setUserViewState } from "$features/user";
+
+	setUserViewState(() => page.params.id);
 </script>
 
-<UserView userId={page.params.id} />
+<UserView />

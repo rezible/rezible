@@ -2,6 +2,7 @@ import { getPlaybookOptions, updatePlaybookMutation, type UpdatePlaybookAttribut
 import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
+import type { Getter } from "$src/lib/utils.svelte";
 
 export class PlaybookViewState {
 	playbookId = $state<string>(null!);
@@ -54,4 +55,6 @@ export class PlaybookViewState {
 	}
 }
 
-export const playbookViewStateCtx = new Context<PlaybookViewState>("playbookView");
+const ctx = new Context<PlaybookViewState>("playbookView");
+export const setPlaybookViewState = (idFn: Getter<string>) => ctx.set(new PlaybookViewState(idFn));
+export const usePlaybookViewState = () => ctx.get();

@@ -6,11 +6,11 @@
 	import { GridComponent, TitleComponent, VisualMapComponent, TooltipComponent } from "echarts/components";
 	import { CanvasRenderer } from "echarts/renderers";
 	import EChart, { type ChartProps, type ECMouseEvent } from "$components/viz/echart/EChart.svelte";
-	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import type { ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 	import { differenceInCalendarDays, getDay } from "date-fns";
 	import { settings } from "$lib/settings.svelte";
 	import type { YAXisOption, XAXisOption } from "echarts/types/dist/shared";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 
 	use([HeatmapChart, GridComponent, CanvasRenderer, TitleComponent, VisualMapComponent, TooltipComponent]);
 
@@ -19,18 +19,18 @@
 	};
 	const { onHourClicked }: Props = $props();
 
-	const viewState = useShiftViewState();
+	const view = useOncallShiftViewState();
 
 	const onEventKindClicked = (kind: ShiftEventFilterKind) => {
-		if (viewState.eventsFilter === kind) {
-			viewState.eventsFilter = undefined;
+		if (view.eventsFilter === kind) {
+			view.eventsFilter = undefined;
 			return;
 		}
-		viewState.eventsFilter = kind;
+		view.eventsFilter = kind;
 	};
 
-	const startDate = $derived(viewState.shiftStart?.toDate());
-	const endDate = $derived(viewState.shiftEnd?.toDate());
+	const startDate = $derived(view.shiftStart?.toDate());
+	const endDate = $derived(view.shiftEnd?.toDate());
 
 	const numDays = $derived((!!startDate && !!endDate) ? differenceInCalendarDays(endDate, startDate) : 0);
 
@@ -39,7 +39,7 @@
 		if (!startDate || !endDate) return [];
 
 		const numEvents = new Map<string, number>();
-		viewState.filteredEvents.forEach((event) => {
+		view.filteredEvents.forEach((event) => {
 			const eventDate = new Date(event.attributes.timestamp);
 			const day = differenceInCalendarDays(eventDate, startDate);
 			const key = eventDayKey(day, eventDate.getHours());
@@ -57,7 +57,7 @@
 	
 	const weekdayLabels = $derived.by(() => {
 		return Array.from({ length: numDays }, (_, day) => {
-			const start = viewState.shiftStart;
+			const start = view.shiftStart;
 			if (!start) return "";
 			const date = start.add({ days: day });
 			const dayOfWeek = getDay(date.toAbsoluteString());

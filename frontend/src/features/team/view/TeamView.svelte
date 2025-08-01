@@ -1,27 +1,16 @@
 <script lang="ts">
-	import type { Team } from "$lib/api";
-	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { appShell, type PageBreadcrumb } from "$features/app-shell/lib/appShellState.svelte";
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
-	import { setTeamViewState, TeamViewState } from "./viewState.svelte";
+	import { useTeamViewState } from "$features/team";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 
-	type Props = {
-		team: Team;
-	}
-	let { team }: Props = $props();
+	const view = useTeamViewState();
 
-	const id = $derived(team.id);
-	const slug = $derived(team.attributes.slug);
-
-	const viewState = new TeamViewState(() => id);
-	setTeamViewState(viewState);
-
-	// const slug = $derived(viewState)
-
+	const avatar = $derived<PageBreadcrumb["avatar"]>(view.team ? { kind: "team", id: view.team.id } : undefined);
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Teams", href: "/teams" },
-		{ label: viewState.teamName, href: `/teams/${slug}`, avatar: { kind: "team", id } },
+		{ label: view.teamName, href: `/teams/${view.teamSlug}`, avatar },
 	]);
 
 	const tabs = $derived([
@@ -30,4 +19,4 @@
 	]);
 </script>
 
-<TabbedViewContainer {tabs} pathBase="/teams/{slug}" />
+<TabbedViewContainer {tabs} pathBase="/teams/{view.teamSlug}" />

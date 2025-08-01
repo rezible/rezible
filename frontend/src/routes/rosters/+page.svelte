@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RostersListView from "$features/oncall-rosters-list/view/RostersListView.svelte";
+	import { OncallRostersListView } from "$features/oncall-rosters-list";
 </script>
 
-<RostersListView />
+<OncallRostersListView />

@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import MeetingSessionView from "$features/meetings/views/meeting-session/MeetingSessionView.svelte";
+	import { MeetingSessionView, setMeetingSessionViewState } from "$features/meeting-session";
+
+	setMeetingSessionViewState(() => page.params.id);
 </script>
 
-<MeetingSessionView sessionId={page.params.id} />
+<MeetingSessionView />

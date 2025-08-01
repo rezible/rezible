@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from "$app/state";
-	import ScheduledMeetingView from "$features/meetings/views/scheduled-meeting/ScheduledMeetingView.svelte";
+	import { MeetingScheduleView, setMeetingScheduleViewState } from "$features/meeting-schedule";
+
+	setMeetingScheduleViewState(() => page.params.id);
 </script>
 
-<ScheduledMeetingView scheduleId={page.params.id} />
+<MeetingScheduleView />

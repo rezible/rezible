@@ -1,15 +1,10 @@
-<script lang="ts" module>
-	
-</script>
-
 <script lang="ts">
-	import type { OncallRosterViewRouteParam } from "$src/params/oncallRosterView";
-
 	import { appShell, type PageBreadcrumb } from "$features/app-shell/lib/appShellState.svelte";
-	import PageActions from "./PageActions.svelte";
-	import { rosterViewCtx, RosterViewState } from "./viewState.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+
+	import { useOncallRosterViewState } from "$features/oncall-roster";
+	import PageActions from "./PageActions.svelte";
 	import RosterDetailsBar from "./RosterDetailsBar.svelte";
 
 	import RosterOverview from "./overview/RosterOverview.svelte";
@@ -17,30 +12,24 @@
 	import RosterSchedule from "./schedule/RosterSchedule.svelte";
 	import RosterResources from "./resources/RosterResources.svelte";
 
-	type Props = {
-		id: string;
-		view: OncallRosterViewRouteParam;
-	};
-	const { id, view }: Props = $props();
+	const view = useOncallRosterViewState();
 
-	const viewState = new RosterViewState(() => id);
-	rosterViewCtx.set(viewState);
-
+	const avatar = $derived<PageBreadcrumb["avatar"]>(view.rosterId ? {kind: "roster", id: view.rosterId} : undefined);
 	const rosterBreadcrumb = $derived<PageBreadcrumb>({
-		label: viewState.rosterName ?? "",
-		href: `/rosters/${id}`,
-		avatar: { kind: "roster", id },
+		label: view.rosterName,
+		href: `/rosters/${view.rosterSlug}`,
+		avatar,
 	});
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall Rosters", href: "/rosters" },
 		rosterBreadcrumb,
 	]);
-	appShell.setPageActions(PageActions, true, () => ({ viewState }));
+	appShell.setPageActions(PageActions, true);
 </script>
 
 <TabbedViewContainer
-	pathBase="/rosters/{id}"
+	pathBase="/rosters/{view.rosterSlug}"
 	infoBar={RosterDetailsBar}
 	tabs={[
 		{ label: "Overview", path: "", component: RosterOverview },

@@ -10,18 +10,17 @@
 
 	import * as echarts from "echarts";
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
-
-	import { useShiftViewState } from "../../shiftViewState.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
 	import Header from "$components/header/Header.svelte";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 
 	type Props = {
 		metrics?: OncallShiftMetrics;
 	};
 	let { metrics }: Props = $props();
 
-	const viewState = useShiftViewState();
+	const view = useOncallShiftViewState();
 
 	let showFilters = $state(false);
 
@@ -32,7 +31,7 @@
 			alerts: 0,
 			incidents: 0,
 		}));
-		viewState.filteredEvents.forEach(({attributes: a}) => {
+		view.filteredEvents.forEach(({attributes: a}) => {
 			const hour = new Date(a.timestamp).getHours();
 			if (a.kind === "alert") hours[hour].alerts++;
 			if (a.kind === "incident") hours[hour].incidents++;

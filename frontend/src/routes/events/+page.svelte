@@ -1,6 +1,5 @@
 <script lang="ts">
-	import OncallEventsListView from "$features/oncall-events-list/view/OncallEventsListView.svelte";
-	
+	import { OncallEventsListView } from "$features/oncall-events-list";
 </script>
 
 <OncallEventsListView />

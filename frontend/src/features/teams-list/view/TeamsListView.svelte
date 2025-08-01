@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listTeamsOptions, type ListTeamsData, type Team } from "$lib/api";
+	import { appShell } from "$features/app-shell";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import TeamCard from "$components/team-card/TeamCard.svelte";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
+
+	appShell.setPageBreadcrumbs(() => [{ label: "Teams" }]);
 
 	let searchValue = $state<string>();
 	const paginator = new QueryPaginatorState();

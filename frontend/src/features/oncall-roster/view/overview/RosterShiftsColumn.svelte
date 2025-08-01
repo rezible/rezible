@@ -1,29 +1,23 @@
 <script lang="ts">
 	import { Button } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
-	import { formatDistanceToNow } from "date-fns";
-	import { rosterViewCtx } from "../viewState.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import {
-		getUserOncallInformationOptions,
-		type OncallShift,
-	} from "$lib/api";
+	import { listOncallShiftsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { cls } from "@layerstack/tailwind";
-	import { parseAbsoluteToLocal } from "@internationalized/date";
 	import Header from "$components/header/Header.svelte";
 	import { mdiArrowRight } from "@mdi/js";
 	import ShiftCard from "$features/oncall-shifts-list/components/shift-card/ShiftCard.svelte";
 
-	const viewCtx = rosterViewCtx.get();
-	const rosterId = $derived(viewCtx.rosterId);
+	import { useOncallRosterViewState } from "$features/oncall-roster";
+	
+	const view = useOncallRosterViewState();
+	const rosterId = $derived(view.rosterId);
 
 	// TODO: use correct query
-	const shiftsQuery = createQuery(() => getUserOncallInformationOptions({ query: {} }));
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: {userId: rosterId} }));
 	const shifts = $derived(shiftsQuery.data?.data);
-	const prevShift = $derived(shifts?.pastShifts.at(0));
-	const activeShift = $derived(shifts?.activeShifts.at(0));
-	const nextShift = $derived(shifts?.upcomingShifts.at(0));
+	const prevShift = $derived(shifts?.at(0));
+	const activeShift = $derived(shifts?.at(0));
+	const nextShift = $derived(shifts?.at(0));
 </script>
 
 <div class="flex flex-col h-full border border-surface-content/10 rounded">

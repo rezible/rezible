@@ -3,15 +3,15 @@
 	import { isFuture } from "date-fns";
 	import { settings } from "$lib/settings.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { useShiftViewState } from "./shiftViewState.svelte";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 
-	const viewState = useShiftViewState();
-	const attr = $derived(viewState.shift?.attributes);
+	const view = useOncallShiftViewState();
+	const attr = $derived(view.shift?.attributes);
 	const roster = $derived(attr?.roster);
 	const user = $derived(attr?.user);
 
-	const startDate = $derived(viewState.shiftStart?.toDate());
-	const endDate = $derived(viewState.shiftEnd?.toDate());
+	const startDate = $derived(view.shiftStart?.toDate());
+	const endDate = $derived(view.shiftEnd?.toDate());
 
 	const timeFmt = `${DateToken.Hour_numeric}:${DateToken.Minute_numeric}`;
 </script>

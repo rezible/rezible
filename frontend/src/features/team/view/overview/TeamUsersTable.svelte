@@ -1,22 +1,22 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { listUsersOptions, type ListUsersData } from "$lib/api";
-	import { useTeamViewState } from "../viewState.svelte";
+	import { useTeamViewState } from "$features/team";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { Pagination } from "svelte-ux";
 
-	const viewState = useTeamViewState();
-	const teamId = $derived(viewState.teamId);
-
+	const view = useTeamViewState();
 	const paginator = new QueryPaginatorState();
 	
 	const params = $derived<ListUsersData["query"]>({
-		teamId,
-		limit: paginator.limit,
-		offset: paginator.offset,
+		teamId: view.teamId,
+		...paginator.queryParams,
 	})
-	const usersQuery = createQuery(() => listUsersOptions({ query: params }));
+	const usersQuery = createQuery(() => ({
+		...listUsersOptions({ query: params }),
+		enabled: !!view.teamId,
+	}));
 	paginator.watchQuery(usersQuery);
 	const users = $derived(usersQuery.data?.data ?? []);
 </script>

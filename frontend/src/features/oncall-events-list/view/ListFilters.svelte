@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Icon from "$components/icon/Icon.svelte";
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import {
 		Button,
@@ -11,11 +10,15 @@
 		ToggleOption,
 		type MenuOption,
 	} from "svelte-ux";
-	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
-	import { eventsListViewStateCtx, type DateRangeOption, type EventKind } from "./viewState.svelte";
 	import { PeriodType } from "@layerstack/utils";
+	import type { DateRangeOption, EventKind, EventsListFiltersState } from "./filters.svelte";
+	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
+	import Icon from "$components/icon/Icon.svelte";
 
-	const viewState = eventsListViewStateCtx.get();
+	type Props = {
+		filtersState: EventsListFiltersState;
+	};
+	const { filtersState }: Props = $props();
 
 	const dateRangeOptions: DateRangeOption[] = [
 		{ label: "Last 7 Days", value: "7d" },
@@ -29,12 +32,12 @@
 		{value: "has", label: "Yes"},
 		{value: "no", label: "No"},
 	];
-	const annoValue = $derived(viewState.filterAnnotation === undefined ? "any" : (viewState.filterAnnotation ? "yes" : "no"));
+	const annoValue = $derived(filtersState.annotation === undefined ? "any" : (filtersState.annotation ? "yes" : "no"));
 	const setAnnotated = (v: string | null | undefined) => {
 		if (v === "any") {
-			viewState.filterAnnotation = undefined;
+			filtersState.annotation = undefined;
 		} else {
-			viewState.filterAnnotation = v === "has";
+			filtersState.annotation = v === "has";
 		}
 	}
 
@@ -47,8 +50,8 @@
 
 <div class="flex flex-col gap-2">
 	<Field label="Date Range" labelPlacement="top" dense base classes={{root: "", container: "px-0 border-none py-0", input: "my-0 gap-2"}}>
-		<ToggleGroup variant="outline" inset classes={{root: "bg-surface-100 w-full"}} bind:value={viewState.dateRangeOption}>
-			{#if !!viewState.activeShift}
+		<ToggleGroup variant="outline" inset classes={{root: "bg-surface-100 w-full"}} bind:value={filtersState.dateRangeOption}>
+			{#if !!filtersState.activeShift}
 				<ToggleOption value="shift">Active Shift</ToggleOption>
 			{/if}
 
@@ -58,7 +61,7 @@
 		</ToggleGroup>
 	</Field>
 
-	{#if viewState.dateRangeOption === "custom"}
+	{#if filtersState.dateRangeOption === "custom"}
 		<DateRangeField
 			label="Custom Date Range"
 			periodTypes={[PeriodType.Day]}
@@ -68,7 +71,7 @@
 				field: { root: "gap-0", container: "pl-0 py-[2px] flex items-center", prepend: "[&>span]:mr-2" },
 			}}
 			icon={mdiCalendarRange}
-			bind:value={() => viewState.dateRange, d => (viewState.customDateRangeValue = d)}
+			bind:value={() => filtersState.dateRange, d => (filtersState.customDateRangeValue = d)}
 		/>
 	{/if}
 
@@ -85,8 +88,8 @@
 	/>
 
 	<RosterSelectField 
-		selectedId={viewState.filterRosterId} 
-		onSelected={id => (viewState.filterRosterId = id)}
+		selectedId={filtersState.rosterId} 
+		onSelected={id => (filtersState.rosterId = id)}
 		dense
 		classes={{ root: "gap-0 w-44", field: {root: "gap-0", container: "h-8"} }}
 	/>
@@ -100,7 +103,7 @@
 	>
 		<Button {id} on:click={toggleKindMenu} classes={{ root: "h-8 px-2" }}>
 			<div class="flex gap-2">
-				{#each (viewState.filterEventKinds ?? []) as v}
+				{#each (filtersState.eventKinds ?? []) as v}
 					<span class="flex items-center gap-1">
 						{v}
 					</span>
@@ -111,11 +114,11 @@
 			<Icon data={mdiChevronDown} />
 			<MultiSelectMenu
 				options={eventKindOptions}
-				bind:value={viewState.filterEventKinds}
+				bind:value={filtersState.eventKinds}
 				open={kindMenuOpen}
 				maintainOrder
 				placeholder="Event Kinds"
-				on:change={(e) => (viewState.filterEventKinds = (e.detail.value as string[]))}
+				on:change={(e) => (filtersState.eventKinds = (e.detail.value as string[]))}
 				on:close={toggleKindMenu}
 			/>
 		</Button>

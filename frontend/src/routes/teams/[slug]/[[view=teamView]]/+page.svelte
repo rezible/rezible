@@ -1,7 +1,9 @@
 <script lang="ts">
-	import TeamView from "$features/team/view/TeamView.svelte";
+	import { TeamView, setTeamViewState } from "$features/team";
 
 	let { data } = $props();
+
+	setTeamViewState(() => data.slug);
 </script>
 
-<TeamView team={data.team} />
+<TeamView />

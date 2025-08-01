@@ -1,8 +1,7 @@
 <script lang="ts">
-	type Props = {
-		id: string;
-	};
-	const { id }: Props = $props();
+	import { useSystemComponentViewState } from "$features/system-component";
+
+	const view = useSystemComponentViewState();
 </script>
 
-<span>{id}</span>
+<span>name: {view.componentName}</span>

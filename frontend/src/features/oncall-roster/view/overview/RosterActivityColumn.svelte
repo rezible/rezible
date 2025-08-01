@@ -13,10 +13,10 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import type { User } from "$lib/api";
 	import { formatRelative } from "date-fns";
-	import { rosterViewCtx } from "../viewState.svelte";
-
-	const viewCtx = rosterViewCtx.get();
-	const rosterId = $derived(viewCtx.rosterId);
+	import { useOncallRosterViewState } from "$features/oncall-roster";
+	
+	const view = useOncallRosterViewState();
+	const rosterId = $derived(view.rosterId);
 
 	type ActivityItem = {
 		id: string;

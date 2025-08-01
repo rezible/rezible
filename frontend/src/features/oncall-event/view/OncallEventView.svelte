@@ -1,18 +1,12 @@
 <script lang="ts">
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
-	import { EventViewState, eventViewStateCtx } from "./viewState.svelte";
+	import { useOncallEventViewState } from "$features/oncall-event";
 
-	type Props = {
-		id: string;
-	};
-	const { id }: Props = $props();
-
-	const viewState = new EventViewState(() => id);
-	eventViewStateCtx.set(viewState);
+	const view = useOncallEventViewState();
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Events" },
-		{ label: viewState.eventTitle, href: `/events/${id}` },
+		{ label: view.eventTitle, href: `/events/${view.eventId}` },
 	]);
 </script>
 

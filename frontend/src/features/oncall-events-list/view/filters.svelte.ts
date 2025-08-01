@@ -1,11 +1,8 @@
-import { listOncallEventsOptions, type ListOncallEventsData, type OncallEventAttributes } from "$lib/api";
+import type { ListOncallEventsData, OncallEventAttributes } from "$lib/api";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { PeriodType } from "@layerstack/utils";
 import type { DateRange as DateRangeType } from "@layerstack/utils/dateRange";
 import { subMonths, subWeeks } from "date-fns";
-import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { Context } from "runed";
-import { QueryPaginatorState } from "$lib/paginator.svelte";
 
 export type DateRangeOption = { label: string, value: "shift" | "7d" | "30d" | "custom" };
 
@@ -20,14 +17,10 @@ export type FilterOptions = {
 	annotated?: boolean;
 };
 
-
-export class EventsListViewState {
-	private queryClient = useQueryClient();
+export class EventsListFiltersState {
 	private oncallInfo = useUserOncallInformation();
-
 	activeShift = $derived(this.oncallInfo.activeShifts.at(0));
-
-	defaultShiftDateRange = $derived(this.activeShift && {
+	private defaultShiftDateRange = $derived(this.activeShift && {
 		from: new Date(this.activeShift.attributes.startAt),
 		to: new Date(this.activeShift.attributes.endAt),
 		periodType: PeriodType.Day,
@@ -46,50 +39,21 @@ export class EventsListViewState {
 		}
 	});
 	
-	defaultRosterId = $derived.by(() => {
+	private defaultRosterId = $derived.by(() => {
 		if (this.activeShift) return this.activeShift.attributes.roster.id;
 		if (this.oncallInfo.rosterIds.length > 0) return this.oncallInfo.rosterIds.at(0);
 	});
 
-	paginator = new QueryPaginatorState();
-	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
-
-	filterEventKinds = $state<EventKind[]>();
-	filterAnnotation = $state<boolean>();
-	filterRosterId = $state<string>();
+	eventKinds = $state<EventKind[]>();
+	annotation = $state<boolean>();
+	rosterId = $state<string>();
 
 	private listRosterEventsQueryData = $derived<ListOncallEventsData["query"]>({
 		from: this.dateRange.from?.toISOString(),
 		to: this.dateRange.to?.toISOString(),
-		rosterId: this.filterRosterId,
+		rosterId: this.rosterId,
 	});
 	private listShiftEventsQueryData = $derived<ListOncallEventsData["query"]>({ shiftId: this.activeShift?.id });
-	private listShiftEventsFinalQueryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
-
-	private listEventsQueryData = $derived<ListOncallEventsData["query"]>({
-		...this.listShiftEventsFinalQueryData,
-		limit: this.paginator.limit,
-		offset: this.paginator.offset,
-		withAnnotations: true,
-	})
-	private listEventsQueryOptions = $derived(listOncallEventsOptions({ query: this.listEventsQueryData }));
-
-	private listEventsQuery = createQuery(() => ({
-		...this.listEventsQueryOptions,
-		enabled: this.queryEnabled,
-	}));
-	private listEventsQueryDataResult = $derived(this.listEventsQuery.data);
-	events = $derived(this.listEventsQueryDataResult?.data ?? []);
-
-	invalidateQuery() {
-		this.queryClient.invalidateQueries(this.listEventsQueryOptions);
-	}
-
-	loading = $derived(this.listEventsQuery.isLoading || !this.oncallInfo.loaded);
-
-	constructor() {
-		this.paginator.watchQuery(this.listEventsQuery);
-	};
-}
-
-export const eventsListViewStateCtx = new Context<EventsListViewState>("eventsListView");
+	queryData = $derived(this.dateRangeOption === "shift" ? this.listShiftEventsQueryData : this.listRosterEventsQueryData);
+	queryEnabled = $derived(!!this.oncallInfo && !!this.defaultRosterId);
+};

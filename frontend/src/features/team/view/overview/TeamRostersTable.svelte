@@ -2,22 +2,23 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listOncallRostersOptions, type ListOncallRostersData } from "$lib/api";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
-	import { useTeamViewState } from "../viewState.svelte";
+	import { useTeamViewState } from "$features/team";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { Pagination } from "svelte-ux";
 
-	const viewState = useTeamViewState();
-	const teamId = $derived(viewState.teamId);
-
+	const view = useTeamViewState();
 	const paginator = new QueryPaginatorState();
 	
 	const params = $derived<ListOncallRostersData["query"]>({
-		teamId,
-		limit: paginator.limit,
-		offset: paginator.offset,
-	})
-	const rostersQuery = createQuery(() => listOncallRostersOptions({ query: params }));
+		teamId: view.teamId,
+		...paginator.queryParams,
+	});
+	const rostersQuery = createQuery(() => ({
+		...listOncallRostersOptions({ query: params }),
+		enabled: !!view.teamId,
+	}));
 	paginator.watchQuery(rostersQuery);
+	
 	const rosters = $derived(rostersQuery.data?.data ?? []);
 </script>
 

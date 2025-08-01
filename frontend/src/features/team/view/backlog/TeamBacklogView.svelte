@@ -4,17 +4,20 @@
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button, ListItem } from "svelte-ux";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { useTeamViewState } from "../viewState.svelte";
+	import { useTeamViewState } from "$features/team";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	const viewState = useTeamViewState();
+	const view = useTeamViewState();
 
 	const paginator = new QueryPaginatorState();
 	const queryParams = $derived<ListTasksData["query"]>({
-		teamId: viewState.teamId,
+		teamId: view.teamId,
 		...paginator.queryParams,
-	})
-	const query = createQuery(() => listTasksOptions({ query: queryParams }));
+	});
+	const query = createQuery(() => ({
+		...listTasksOptions({ query: queryParams }),
+		enabled: !!view.teamId,
+	}));
 	paginator.watchQuery(query);
 </script>
 

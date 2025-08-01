@@ -3,20 +3,21 @@
 	import { Button, Month } from "svelte-ux";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
-	import { getUserOncallInformationOptions, type OncallShift } from "$lib/api";
+	import { listOncallShiftsOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
 	import Header from "$components/header/Header.svelte";
+	import { useOncallRosterViewState } from "$features/oncall-roster";
 
-	type Props = {};
-	const {}: Props = $props();
+	const view = useOncallRosterViewState();
+	const rosterId = $derived(view.rosterId);
 
 	// TODO: use correct query
-	const shiftsQuery = createQuery(() => getUserOncallInformationOptions());
+	const shiftsQuery = createQuery(() => listOncallShiftsOptions({ query: {userId: rosterId} }));
 
-	const currentShifts = $derived<OncallShift[]>(shiftsQuery.data?.data.activeShifts ?? []);
-	const pastShifts = $derived<OncallShift[]>(shiftsQuery.data?.data.pastShifts ?? []);
-	const upcomingShifts = $derived<OncallShift[]>(shiftsQuery.data?.data.upcomingShifts ?? []);
+	const currentShifts = $derived<OncallShift[]>([]);
+	const pastShifts = $derived<OncallShift[]>([]);
+	const upcomingShifts = $derived<OncallShift[]>([]);
 
 	const allShifts = $derived([...pastShifts, ...currentShifts, ...upcomingShifts]);
 
