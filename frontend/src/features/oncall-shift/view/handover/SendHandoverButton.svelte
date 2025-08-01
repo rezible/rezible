@@ -8,7 +8,7 @@
 		getOncallShiftHandoverOptions,
 		sendOncallShiftHandoverMutation,
 	} from "$lib/api";
-	import { getToastState } from "$features/app-shell/lib/toasts.svelte";
+	import { useToastState } from "$lib/toasts.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { ShiftHandoverEditorState } from "$features/oncall-shift/components/shift-handover-content/state.svelte";
 
@@ -27,7 +27,7 @@
 
 	const queryClient = useQueryClient();
 
-	const toasts = getToastState();
+	const toasts = useToastState();
 
 	const sendMutation = createMutation(() => ({
 		...sendOncallShiftHandoverMutation(),

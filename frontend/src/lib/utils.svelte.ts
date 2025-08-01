@@ -10,6 +10,8 @@ import {
 import { tryUnwrapApiError, type ErrorModel } from "./api";
 import { z } from "zod";
 
+export type IdFunc = () => string;
+
 export function debounce<T extends Function>(cb: T, wait = 100) {
 	let timeout: ReturnType<typeof setTimeout>;
 	let callable = (...args: any) => {

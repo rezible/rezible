@@ -2,9 +2,9 @@
 	import { mdiCircleMedium } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 	import { Notification } from "svelte-ux";
-	import { getToastState, type Toast } from "$features/app-shell/lib/toasts.svelte";
+	import { useToastState, type Toast } from "$lib/toasts.svelte";
 
-	const toastState = getToastState();
+	const toastState = useToastState();
 </script>
 
 {#snippet toast(t: Toast)}

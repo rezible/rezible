@@ -1,19 +1,13 @@
 <script lang="ts">
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
+	import { useAlertViewState } from "$features/alert";
 	import AlertOverview from "./overview/AlertOverview.svelte";
-	import { AlertViewState, alertViewStateCtx } from "./viewState.svelte";
 
-	type Props = {
-		id: string;
-	};
-	const { id }: Props = $props();
-
-	const viewState = new AlertViewState(() => id);
-	alertViewStateCtx.set(viewState);
+	const viewState = useAlertViewState();
 
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Alerts" },
-		{ label: viewState.alertTitle, href: `/alerts/${id}` },
+		{ label: viewState.alertTitle, href: `/alerts/${viewState.alertId}` },
 	]);
 </script>
 

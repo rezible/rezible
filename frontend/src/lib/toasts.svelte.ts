@@ -43,11 +43,5 @@ export class ToastState {
 }
 
 const TOAST_KEY = Symbol("TOAST_STATE");
-
-export function setToastState() {
-	return setContext(TOAST_KEY, new ToastState());
-}
-
-export function getToastState() {
-	return getContext<ReturnType<typeof setToastState>>(TOAST_KEY);
-}
+export const setToastState = () => setContext(TOAST_KEY, new ToastState());
+export const useToastState = () => getContext<ReturnType<typeof setToastState>>(TOAST_KEY);
