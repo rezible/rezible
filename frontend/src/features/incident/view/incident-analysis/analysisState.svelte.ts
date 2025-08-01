@@ -13,7 +13,7 @@ import {
 	type UpdateSystemAnalysisRelationshipAttributes,
 } from "$lib/api";
 import { Context } from "runed";
-import { useIncidentViewState } from "../viewState.svelte";
+import { useIncidentViewState } from "$features/incident";
 import type { ComponentProps } from "svelte";
 
 import IncidentTimelineContextMenu from "./incident-timeline/IncidentTimelineContextMenu.svelte";

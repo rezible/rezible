@@ -10,7 +10,7 @@ import {
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-import { useIncidentViewState } from "../../../viewState.svelte";
+import { useIncidentViewState } from "$features/incident";
 import { TimelineState } from "../timelineState.svelte";
 import { eventAttributes } from "./attribute-panels/eventAttributesState.svelte";
 

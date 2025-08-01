@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { convertIncidentViewParam } from "$src/params/incidentView.js";
-	import IncidentView from "$features/incident/view/IncidentView.svelte";
+	import { IncidentView, setIncidentViewState } from "$features/incident";
 
 	const { data } = $props();
 
-	const view = $derived(convertIncidentViewParam(page.params.view));
+	const viewParams = $derived({
+		slug: data.slug,
+		viewRouteParam: convertIncidentViewParam(page.params.view),
+	});
+
+	setIncidentViewState(() => viewParams);
 </script>
 
-<IncidentView incidentId={data.slug} {view}/>
+<IncidentView />

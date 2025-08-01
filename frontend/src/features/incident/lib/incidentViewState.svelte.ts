@@ -1,17 +1,28 @@
 import { getIncidentOptions, getRetrospectiveForIncidentOptions, type Retrospective } from "$lib/api";
+import type { Getter } from "$src/lib/utils.svelte";
+import type { IncidentViewRouteParam } from "$src/params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-export class IncidentViewState {
-	private incidentIdParam = $state<string>(null!);
+type StateParams = {slug: string, viewRouteParam: IncidentViewRouteParam};
 
-	constructor(idParamFn: () => string) {
-		this.incidentIdParam = idParamFn();
-		watch(idParamFn, id => {this.incidentIdParam = id});
+export class IncidentViewState {
+	incidentSlug = $state<string>(null!);
+	viewRouteParam = $state<IncidentViewRouteParam>(null!);
+
+	private setParams({slug, viewRouteParam}: StateParams) {
+		this.incidentSlug = slug;
+		this.viewRouteParam = viewRouteParam;
 	}
 
-	private incidentQuery = createQuery(() => getIncidentOptions({ path: { id: this.incidentIdParam } }));
+	constructor(paramsFn: Getter<StateParams>) {
+		this.setParams(paramsFn());
+
+		watch(paramsFn, p => {this.setParams(p)});
+	}
+
+	private incidentQuery = createQuery(() => getIncidentOptions({ path: { id: this.incidentSlug } }));
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
 
@@ -28,5 +39,5 @@ export class IncidentViewState {
 }
 
 const incidentViewCtx = new Context<IncidentViewState>("incidentView");
-export const setIncidentViewState = (s: IncidentViewState) => incidentViewCtx.set(s);
+export const setIncidentViewState = (paramsFn: Getter<StateParams>) => incidentViewCtx.set(new IncidentViewState(paramsFn));
 export const useIncidentViewState = () => incidentViewCtx.get();

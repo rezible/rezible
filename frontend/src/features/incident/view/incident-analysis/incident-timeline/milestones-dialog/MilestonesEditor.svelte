@@ -10,7 +10,7 @@
 	
 	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 
-	import { useIncidentViewState } from "../../../viewState.svelte";
+	import { useIncidentViewState } from "$features/incident";
 	import { useMilestonesDialog } from "./dialogState.svelte";
 
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";

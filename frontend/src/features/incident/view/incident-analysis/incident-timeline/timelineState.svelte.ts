@@ -6,7 +6,7 @@ import { createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query
 import { Context, watch } from "runed";
 
 import { listIncidentEventsOptions, listIncidentMilestonesOptions, type Incident, type IncidentEvent, type IncidentMilestone } from "$lib/api";
-import { useIncidentViewState } from "../../viewState.svelte";
+import { useIncidentViewState } from "$features/incident";
 
 import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentProps } from "./IncidentTimelineEventItemContent.svelte";
 import IncidentTimelineMilestoneItemContent, { type Props as TimelineMilestoneComponentProps } from "./IncidentTimelineMilestoneItemContent.svelte";

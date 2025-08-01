@@ -6,7 +6,7 @@
 	import LoadingIndicator from "$components/loader/LoadingIndicator.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-	import { dateRangeOptions, OncallEventsTableState } from "./eventsTable.svelte";
+	import { dateRangeOptions, OncallEventsTableState } from "./eventsTableState.svelte";
 	import type { OncallAnnotation } from "$lib/api";
 	import { watch } from "runed";
 	import EventsFilters from "./EventsFilters.svelte";

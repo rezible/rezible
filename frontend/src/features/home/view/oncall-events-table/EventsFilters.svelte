@@ -10,7 +10,7 @@
 		type MenuOption,
 	} from "svelte-ux";
 	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
-	import type { EventKind, OncallEventsTableState } from "./eventsTable.svelte";
+	import type { EventKind, OncallEventsTableState } from "./eventsTableState.svelte";
 	import { PeriodType } from "@layerstack/utils";
 
 	type Props = {

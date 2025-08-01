@@ -19,7 +19,7 @@
 
 	import { createMentionEditor } from "$components/tiptap-editor/editors";
 	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
-	import { useIncidentViewState } from "../../../viewState.svelte";
+	import { useIncidentViewState } from "$features/incident";
 	import { watch } from "runed";
 	import { useIncidentTimeline } from "../timelineState.svelte";
 

@@ -10,16 +10,19 @@ import {
 import { requestDocumentEditorSession } from "$lib/api/oapi.gen";
 import { onMount } from "svelte";
 import { Context, watch } from "runed";
+import { useIncidentViewState } from "./incidentViewState.svelte";
 
-export class IncidentCollaborationState {
+class IncidentCollaborationState {
+	viewState = useIncidentViewState();
+	retrospectiveId = $derived(this.viewState.retrospectiveId);
 	documentName = $state<string>();
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	connectionStatus = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state<Error>();
 
-	constructor(retroIdFn: () => (string | undefined)) {
-		watch(retroIdFn, id => { this.connect(id) });
+	constructor() {
+		watch(() => this.retrospectiveId, id => { this.connect(id) });
 		onMount(() => (() => { this.cleanup() }));
 	};
 
@@ -92,5 +95,5 @@ export class IncidentCollaborationState {
 }
 
 const ctx = new Context<IncidentCollaborationState>("incidentCollaboration");
-export const setIncidentCollaboration = (s: IncidentCollaborationState) => ctx.set(s);
-export const useIncidentCollaboration = () => ctx.get();
+export const setIncidentCollaborationState = () => ctx.set(new IncidentCollaborationState());
+export const useIncidentCollaborationState = () => ctx.get();

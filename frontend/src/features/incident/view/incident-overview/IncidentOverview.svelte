@@ -4,7 +4,7 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { useIncidentViewState } from "../viewState.svelte";
+	import { useIncidentViewState } from "$features/incident";
 
 	const viewState = useIncidentViewState();
 

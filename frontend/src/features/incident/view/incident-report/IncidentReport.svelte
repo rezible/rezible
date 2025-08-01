@@ -2,22 +2,18 @@
 	import "./styles.postcss";
 	import type { Editor as TiptapEditor } from "@tiptap/core";
 
+	import { useIncidentViewState, useIncidentCollaborationState } from "$features/incident";
+
 	import { draft } from "$features/incident/lib/discussions.svelte";
 	import { activeEditor } from "$features/incident/lib/activeEditor.svelte";
 
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";
 
-	import { useIncidentViewState } from "../viewState.svelte";
-	import { useIncidentCollaboration } from "../collaboration.svelte";
-
-	type Props = {};
-	let {}: Props = $props();
-
 	const viewState = useIncidentViewState();
 	const sections = $derived(viewState.retrospective?.attributes.reportSections ?? []);
 
-	const collaboration = useIncidentCollaboration();
+	const collaboration = useIncidentCollaborationState();
 
 	let sectionsSidebarVisible = $state(false);
 

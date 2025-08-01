@@ -1,9 +1,7 @@
 <script lang="ts">
-	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 	import { appShell, type PageBreadcrumb } from "$features/app-shell/lib/appShellState.svelte";
 
-	import { IncidentCollaborationState, setIncidentCollaboration } from "./collaboration.svelte";
-	import { setIncidentViewState, IncidentViewState } from "./viewState.svelte";
+	import { setIncidentCollaborationState } from "../lib/collaborationState.svelte";
 	
 	import PageActions from "./PageActions.svelte";
 	import IncidentOverview from "./incident-overview/IncidentOverview.svelte";
@@ -12,26 +10,21 @@
 	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import IncidentDetailsBar from "./IncidentDetailsBar.svelte";
+	import { useIncidentViewState } from "../lib/incidentViewState.svelte";
 
-	type Props = {
-		incidentId: string;
-		view?: IncidentViewRouteParam;
-	};
-	const { incidentId, view }: Props = $props();
+	const viewState = useIncidentViewState();
+	setIncidentCollaborationState();
 
-	const viewState = new IncidentViewState(() => incidentId);
-	setIncidentViewState(viewState);
-
-	const collabState = new IncidentCollaborationState(() => viewState.retrospectiveId);
-	setIncidentCollaboration(collabState);
-
+	const pathBase = $derived(`/incidents/${viewState.incidentSlug}`);
 	const incidentBreadcrumb = $derived<PageBreadcrumb>({
 		label: viewState.incident?.attributes.title,
-		href: `/incidents/${incidentId}`,
+		href: pathBase,
 	});
+
+	const view = $derived(viewState.viewRouteParam);
 	const retroBreadcrumb = $derived<PageBreadcrumb>({
 		label: view === "analysis" ? "System Analysis" : "Report",
-		href: `/incidents/${incidentId}/${view}`,
+		href: `${pathBase}/${view}`,
 	});
 
 	const isIncidentView = $derived(view === undefined);
@@ -49,11 +42,9 @@
 	];
 </script>
 
-<TabbedViewContainer 
-	pathBase="/incidents/{incidentId}" 
-	infoBar={IncidentDetailsBar}
-	{tabs}
->
+<a href="/incidents/aut-rpc-outage">other</a>
+
+<TabbedViewContainer {pathBase} {tabs} infoBar={IncidentDetailsBar}>
 	{#snippet tabSidebar()}
 		<ContextSidebar />
 	{/snippet}
