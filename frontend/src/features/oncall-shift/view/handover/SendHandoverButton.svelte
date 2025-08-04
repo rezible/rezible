@@ -1,31 +1,23 @@
 <script lang="ts">
-	import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+	import { createMutation } from "@tanstack/svelte-query";
 	import { Button } from "svelte-ux";
-	import Icon from "$components/icon/Icon.svelte";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
-	import {
-		getNextOncallShiftOptions,
-		getOncallShiftHandoverOptions,
-		sendOncallShiftHandoverMutation,
-	} from "$lib/api";
+	import { sendOncallShiftHandoverMutation } from "$lib/api";
 	import { useToastState } from "$lib/toasts.svelte";
+	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
+	import { useOncallShiftViewState } from "$features/oncall-shift";
 	import { ShiftHandoverEditorState } from "$features/oncall-shift/components/shift-handover-content/state.svelte";
 
 	type Props = { 
 		handoverState: ShiftHandoverEditorState;
+		onSent: () => void;
 	};
-	const { handoverState }: Props = $props();
+	const { handoverState, onSent }: Props = $props();
 
-	const shiftId = $derived(handoverState.handover?.attributes.shiftId || "");
+	const view = useOncallShiftViewState();
 
-	const nextShiftQuery = createQuery(() => ({
-		...getNextOncallShiftOptions({ path: { id: shiftId } }),
-		enabled: !!shiftId,
-	}));
-	const nextUser = $derived(nextShiftQuery.data?.data.attributes.user);
-
-	const queryClient = useQueryClient();
+	const nextUser = $derived(view.nextShift?.attributes.user);
 
 	const toasts = useToastState();
 
@@ -34,14 +26,14 @@
 		onSuccess: () => {
 			// handoverState.setSent();
 			toasts.add("Handover Sent", "Sent oncall shift handover", mdiPhoneForward);
-			queryClient.invalidateQueries(getOncallShiftHandoverOptions({ path: { id: shiftId } }));
 			// showReviewDialog;
+			onSent();
 		},
 	}));
 
 	const submitHandover = () => {
 		sendMutation.mutate({
-			path: { id: shiftId },
+			path: { id: view.shiftId },
 			body: { attributes: {  } },
 		});
 	};

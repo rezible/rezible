@@ -149,11 +149,21 @@ func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.On
 
 func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShift, error) {
 	return s.db.OncallUserShift.Query().
-		Where(oncallusershift.And(
-			oncallusershift.RosterID(shift.RosterID),
-			oncallusershift.StartAtGTE(shift.EndAt),
-			oncallusershift.IDNEQ(shift.ID))).
+		Where(oncallusershift.RosterID(shift.RosterID)).
+		Where(oncallusershift.IDNEQ(shift.ID)).
+		Where(oncallusershift.StartAtGTE(shift.StartAt)).
 		Order(oncallusershift.ByStartAt(sql.OrderAsc())).
+		WithUser().
+		WithRoster().
+		First(ctx)
+}
+
+func (s *OncallService) getPreviousShift(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShift, error) {
+	return s.db.OncallUserShift.Query().
+		Where(oncallusershift.RosterID(shift.RosterID)).
+		Where(oncallusershift.IDNEQ(shift.ID)).
+		Where(oncallusershift.EndAtLTE(shift.StartAt)).
+		Order(oncallusershift.ByEndAt(sql.OrderDesc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
@@ -162,26 +172,20 @@ func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallUserS
 func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, *ent.OncallUserShift, error) {
 	shift, shiftErr := s.db.OncallUserShift.Get(ctx, id)
 	if shiftErr != nil {
-		return nil, nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+		return nil, nil, fmt.Errorf("lookup shift: %w", shiftErr)
 	}
 
-	query := s.db.OncallUserShift.Query().
-		Where(oncallusershift.RosterID(shift.RosterID)).
-		Where(oncallusershift.IDNEQ(id)).
-		Where(oncallusershift.Or(oncallusershift.EndAtLTE(shift.StartAt))).
-		Order(oncallusershift.ByStartAt(sql.OrderDesc())).
-		WithUser().
-		WithRoster().
-		Limit(2)
+	nextShift, nextShiftErr := s.getNextShift(ctx, shift)
+	if nextShiftErr != nil && !ent.IsNotFound(nextShiftErr) {
+		return nil, nil, fmt.Errorf("next shift: %w", nextShiftErr)
+	}
 
-	shifts, queryErr := query.All(ctx)
-	if queryErr != nil {
-		return nil, nil, fmt.Errorf("failed to query shifts: %w", queryErr)
+	prevShift, prevShiftErr := s.getPreviousShift(ctx, shift)
+	if prevShiftErr != nil && !ent.IsNotFound(prevShiftErr) {
+		return nil, nil, fmt.Errorf("previous shift: %w", prevShiftErr)
 	}
-	if len(shifts) != 2 {
-		return nil, nil, fmt.Errorf("expected 2 shifts, got %d", len(shifts))
-	}
-	return shifts[0], shifts[1], nil
+
+	return prevShift, nextShift, nil
 }
 
 func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallUserShift, error) {

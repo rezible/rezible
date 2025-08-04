@@ -1,7 +1,7 @@
 import { getLocalTimeZone, parseAbsolute } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { AnnotationDialogState, setAnnotationDialogState } from "$components/oncall-events/annotation-dialog/dialogState.svelte";
-import { getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
+import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listOncallAnnotationsOptions, listOncallEventsOptions, type OncallAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall-shift/lib/utils";
 import { Context, watch } from "runed";
 import { settings } from "$lib/settings.svelte";
@@ -24,7 +24,7 @@ class OncallShiftViewState {
 	useShiftTimezone = $state(false);
 	timezone = $derived(this.useShiftTimezone ? "" : getLocalTimeZone());
 
-	shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: this.shiftId } }))
+	private shiftQuery = createQuery(() => getOncallShiftOptions({ path: { id: this.shiftId } }))
 	shift = $derived(this.shiftQuery.data?.data);
 	roster = $derived(this.shift?.attributes.roster);
 
@@ -36,7 +36,11 @@ class OncallShiftViewState {
 		const startFmt = settings.format(this.shiftStart.toDate(), PeriodType.Day);
 		const endFmt = settings.format(this.shiftEnd.toDate(), PeriodType.Day);
 		return `${this.roster.attributes.name} - ${startFmt} to ${endFmt}`;
-	})
+	});
+
+	private adjacentShiftsQuery = createQuery(() => getAdjacentOncallShiftsOptions({ path: { id: this.shiftId }}));
+	nextShift = $derived(this.adjacentShiftsQuery.data?.data.next);
+	previousShift = $derived(this.adjacentShiftsQuery.data?.data.previous);
 
 	private eventsQueryOptions = $derived(listOncallEventsOptions({ query: {
 		shiftId: this.shiftId,

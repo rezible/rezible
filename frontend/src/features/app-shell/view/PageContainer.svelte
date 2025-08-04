@@ -30,7 +30,7 @@
 	</span>
 {/snippet}
 
-<div class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col gap-1 text-surface-content">
+<div class="w-full max-w-full h-full max-h-full min-h-0 flex flex-col text-surface-content">
 	<div class="flex justify-between items-center h-11 rounded-md bg-surface-200/80">
 		<div class="flex items-center gap-2 px-2">
 			{@render breadcrumbs()}
@@ -43,7 +43,7 @@
 		{/if}
 	</div>
 
-	<div class="flex flex-col flex-1 min-h-0 overflow-auto">
+	<div class="flex flex-col flex-1 min-h-0 overflow-auto pt-1">
 		{@render children()}
 	</div>
 </div>

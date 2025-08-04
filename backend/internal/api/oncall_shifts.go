@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -66,12 +67,19 @@ func (h *oncallShiftsHandler) GetAdjacentOncallShifts(ctx context.Context, reque
 
 	prev, next, shiftErr := h.oncall.GetAdjacentShifts(ctx, request.Id)
 	if shiftErr != nil {
-		return nil, detailError("failed to query next shift", shiftErr)
+		log.Debug().Err(shiftErr).Msg("GetAdjacentOncallShifts")
+		return nil, detailError("failed to query adjacent shifts", shiftErr)
 	}
-	resp.Body.Data = oapi.OncallShiftsAdjacent{
-		Previous: oapi.OncallShiftFromEnt(prev),
-		Next:     oapi.OncallShiftFromEnt(next),
+	var adj oapi.OncallShiftsAdjacent
+	if prev != nil {
+		s := oapi.OncallShiftFromEnt(prev)
+		adj.Previous = &s
 	}
+	if next != nil {
+		s := oapi.OncallShiftFromEnt(next)
+		adj.Next = &s
+	}
+	resp.Body.Data = adj
 
 	return &resp, nil
 }

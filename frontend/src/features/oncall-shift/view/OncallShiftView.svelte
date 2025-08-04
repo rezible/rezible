@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { ComponentProps } from "svelte";
 	import { appShell } from "$features/app-shell/lib/appShellState.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
@@ -7,6 +8,7 @@
 	import ShiftDetailsBar from "./ShiftDetailsBar.svelte";
 	import ShiftOverview from "./overview/ShiftOverview.svelte";
 	import ShiftHandover from "./handover/ShiftHandover.svelte";
+	import PageActions from "./PageActions.svelte";
 
 	const view = useOncallShiftViewState();
 
@@ -18,6 +20,11 @@
 		...shiftBreadcrumb,
 		// ...handoverBreadcrumb,
 	]);
+	const pageActionsProps = $derived<ComponentProps<typeof PageActions>>({
+		previousId: view.previousShift?.id,
+		nextId: view.nextShift?.id,
+	})
+	appShell.setPageActions(PageActions, true, () => pageActionsProps);
 </script>
 
 <TabbedViewContainer 

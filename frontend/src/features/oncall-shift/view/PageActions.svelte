@@ -4,36 +4,25 @@
 	import { mdiChevronLeft, mdiChevronRight } from "@mdi/js";
 	import { page } from "$app/state";
 
-	const shiftId = $derived(page.params.id);
-	// const currentView = $derived(page.params.view);
-	// const query = createQuery(() => getOncallShiftOptions({ path: { id: shiftId } }));
-	// const shift = $derived(query.data?.data);
-
-	const previousShiftId = $derived(shiftId);
-	const nextShiftId = $derived(shiftId);
-
-	// const isActiveShift = $derived(shift ? buildShiftTimeDetails(shift).status === "active" : false);
-	// const isSessionUser = $derived(session.userId == shift?.attributes.user.id);
+	type Props = {
+		previousId?: string;
+		nextId?: string;
+	};
+	const { previousId, nextId }: Props = $props();
 </script>
 
 <div class="flex gap-2">
-	<Button href="/shifts/{previousShiftId}">
-		<Icon data={mdiChevronLeft} />
-		<span class="">Previous Shift</span>
-	</Button>
-
-	<!-- {#if shift && isActiveShift && isSessionUser}
-		<Button
-			href="/shifts/{shift.id}/handover"
-			variant="fill"
-			color="secondary"
-		>
-			<span>Edit Handover</span>
+	{#if previousId}
+		<Button href="/shifts/{previousId}">
+			<Icon data={mdiChevronLeft} />
+			<span class="">Previous Shift</span>
 		</Button>
-	{/if} -->
+	{/if}
 
-	<Button href="/shifts/{nextShiftId}">
-		<span class="">Next Shift</span>
-		<Icon data={mdiChevronRight} />
-	</Button>
+	{#if nextId}
+		<Button href="/shifts/{nextId}">
+			<span class="">Next Shift</span>
+			<Icon data={mdiChevronRight} />
+		</Button>
+	{/if}
 </div>

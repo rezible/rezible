@@ -45,7 +45,9 @@
 		</div>
 
 		{#if props.infoBar}
-			<props.infoBar></props.infoBar>
+			<div class="flex gap-4 h-12 max-h-14 overflow-y-hidden justify-between pb-1">
+				<props.infoBar></props.infoBar>
+			</div>
 		{/if}
 	</div>
 

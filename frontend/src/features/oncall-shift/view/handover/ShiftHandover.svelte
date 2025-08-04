@@ -21,7 +21,7 @@
 	const handoverEditorState = new ShiftHandoverEditorState(() => handover, allowEditing);
 
 	const queryClient = useQueryClient();
-	const onUpdated = () => queryClient.invalidateQueries(handoverQueryOpts);
+	const invalidateHandoverQuery = () => queryClient.invalidateQueries(handoverQueryOpts);
 
 	let showReviewDialog = $state(false);
 
@@ -32,7 +32,7 @@
 	<div class="flex-1 flex gap-2 max-h-full min-h-0 overflow-y-auto">
 		{#if handover && !handoverEditorState.isSent}
 			<div class="w-1/3 flex flex-col gap-2 min-h-0 h-full max-h-full overflow-hidden">
-				<AnnotatedEventsList {handover} {onUpdated} />
+				<AnnotatedEventsList {handover} onUpdated={invalidateHandoverQuery} />
 			</div>
 		{/if}
 
@@ -47,7 +47,7 @@
 
 	{#if handoverEditorState.editable}
 		<div class="border-t pt-2 flex items-center justify-end">
-			<SendHandoverButton handoverState={handoverEditorState} />
+			<SendHandoverButton handoverState={handoverEditorState} onSent={invalidateHandoverQuery}  />
 		</div>
 	{/if}
 </div>

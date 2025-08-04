@@ -58,8 +58,8 @@ type (
 	}
 
 	OncallShiftsAdjacent struct {
-		Previous OncallShift `json:"previous"`
-		Next     OncallShift `json:"next"`
+		Previous *OncallShift `json:"previous,omitempty"`
+		Next     *OncallShift `json:"next,omitempty"`
 	}
 
 	OncallShiftHandoverTemplate struct {
