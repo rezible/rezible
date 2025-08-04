@@ -3,31 +3,18 @@ package openapi
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-	"time"
-
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
-
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
+	"net/http"
+	"time"
 )
 
-type OncallHandler interface {
-	GetUserOncallInformation(context.Context, *GetUserOncallInformationRequest) (*GetUserOncallInformationResponse, error)
-
-	ListOncallRosters(context.Context, *ListOncallRostersRequest) (*ListOncallRostersResponse, error)
-	GetOncallRoster(context.Context, *GetOncallRosterRequest) (*GetOncallRosterResponse, error)
-
-	AddWatchedOncallRoster(context.Context, *AddWatchedOncallRosterRequest) (*AddWatchedOncallRosterResponse, error)
-	ListWatchedOncallRosters(context.Context, *ListWatchedOncallRostersRequest) (*ListWatchedOncallRostersResponse, error)
-	RemoveWatchedOncallRoster(context.Context, *RemoveWatchedOncallRosterRequest) (*RemoveWatchedOncallRosterResponse, error)
-
+type OncallShiftsHandler interface {
 	ListOncallShifts(context.Context, *ListOncallShiftsRequest) (*ListOncallShiftsResponse, error)
-
 	GetOncallShift(context.Context, *GetOncallShiftRequest) (*GetOncallShiftResponse, error)
-	GetPreviousOncallShift(context.Context, *GetPreviousOncallShiftRequest) (*GetPreviousOncallShiftResponse, error)
-	GetNextOncallShift(context.Context, *GetNextOncallShiftRequest) (*GetNextOncallShiftResponse, error)
+	GetAdjacentOncallShifts(context.Context, *GetAdjacentOncallShiftsRequest) (*GetAdjacentOncallShiftsResponse, error)
 
 	CreateOncallShiftHandoverTemplate(context.Context, *CreateOncallShiftHandoverTemplateRequest) (*CreateOncallShiftHandoverTemplateResponse, error)
 	GetOncallShiftHandoverTemplate(context.Context, *GetOncallShiftHandoverTemplateRequest) (*GetOncallShiftHandoverTemplateResponse, error)
@@ -39,21 +26,11 @@ type OncallHandler interface {
 	SendOncallShiftHandover(context.Context, *SendOncallShiftHandoverRequest) (*SendOncallShiftHandoverResponse, error)
 }
 
-func (o operations) RegisterOncall(api huma.API) {
-	huma.Register(api, GetUserOncallInformation, o.GetUserOncallInformation)
-
-	huma.Register(api, ListOncallRosters, o.ListOncallRosters)
-	huma.Register(api, GetOncallRoster, o.GetOncallRoster)
-
-	huma.Register(api, AddWatchedOncallRoster, o.AddWatchedOncallRoster)
-	huma.Register(api, ListWatchedOncallRosters, o.ListWatchedOncallRosters)
-	huma.Register(api, RemoveWatchedOncallRoster, o.RemoveWatchedOncallRoster)
-
+func (o operations) RegisterOncallShifts(api huma.API) {
 	huma.Register(api, ListOncallShifts, o.ListOncallShifts)
 
 	huma.Register(api, GetOncallShift, o.GetOncallShift)
-	huma.Register(api, GetPreviousOncallShift, o.GetPreviousOncallShift)
-	huma.Register(api, GetNextOncallShift, o.GetNextOncallShift)
+	huma.Register(api, GetAdjacentOncallShifts, o.GetAdjacentOncallShifts)
 
 	huma.Register(api, CreateOncallShiftHandoverTemplate, o.CreateOncallShiftHandoverTemplate)
 	huma.Register(api, GetOncallShiftHandoverTemplate, o.GetOncallShiftHandoverTemplate)
@@ -66,43 +43,6 @@ func (o operations) RegisterOncall(api huma.API) {
 }
 
 type (
-	UserOncallInformation struct {
-		MemberRosters   []OncallRoster `json:"rosters"`
-		WatchingRosters []OncallRoster `json:"watchingRosters"`
-		ActiveShifts    []OncallShift  `json:"activeShifts"`
-		UpcomingShifts  []OncallShift  `json:"upcomingShifts"`
-		PastShifts      []OncallShift  `json:"pastShifts"`
-	}
-
-	OncallRoster struct {
-		Id         uuid.UUID              `json:"id"`
-		Attributes OncallRosterAttributes `json:"attributes"`
-	}
-
-	OncallRosterAttributes struct {
-		Name               string           `json:"name"`
-		Slug               string           `json:"slug"`
-		Schedules          []OncallSchedule `json:"schedules"`
-		HandoverTemplateId uuid.UUID        `json:"handoverTemplateId"`
-	}
-
-	OncallSchedule struct {
-		Id         uuid.UUID                `json:"id"`
-		Attributes OncallScheduleAttributes `json:"attributes"`
-	}
-
-	OncallScheduleAttributes struct {
-		Roster       OncallRoster                `json:"roster"`
-		Description  string                      `json:"description"`
-		Timezone     string                      `json:"timezone"`
-		Participants []OncallScheduleParticipant `json:"participants"`
-	}
-
-	OncallScheduleParticipant struct {
-		User  User `json:"user"`
-		Index int  `json:"order"`
-	}
-
 	OncallShift struct {
 		Id         uuid.UUID             `json:"id"`
 		Attributes OncallShiftAttributes `json:"attributes"`
@@ -115,6 +55,11 @@ type (
 		StartAt      time.Time    `json:"startAt"`
 		EndAt        time.Time    `json:"endAt"`
 		PrimaryShift *OncallShift `json:"primaryShift"`
+	}
+
+	OncallShiftsAdjacent struct {
+		Previous OncallShift `json:"previous"`
+		Next     OncallShift `json:"next"`
 	}
 
 	OncallShiftHandoverTemplate struct {
@@ -144,45 +89,6 @@ type (
 		JsonContent *string `json:"jsonContent,omitempty"`
 	}
 )
-
-func OncallRosterFromEnt(roster *ent.OncallRoster) OncallRoster {
-	attr := OncallRosterAttributes{
-		Name: roster.Name,
-		Slug: roster.Slug,
-	}
-
-	attr.Schedules = make([]OncallSchedule, len(roster.Edges.Schedules))
-	for i, schedule := range roster.Edges.Schedules {
-		attr.Schedules[i] = OncallScheduleFromEnt(schedule)
-	}
-
-	// attr.Services = make([]Service, len(roster.Edges.Services))
-
-	return OncallRoster{
-		Id:         roster.ID,
-		Attributes: attr,
-	}
-}
-
-func OncallScheduleFromEnt(schedule *ent.OncallSchedule) OncallSchedule {
-	attr := OncallScheduleAttributes{
-		Timezone:    schedule.Timezone,
-		Description: "",
-	}
-
-	attr.Participants = make([]OncallScheduleParticipant, len(schedule.Edges.Participants))
-	for i, p := range schedule.Edges.Participants {
-		attr.Participants[i] = OncallScheduleParticipant{
-			User:  UserFromEnt(p.Edges.User),
-			Index: p.Index,
-		}
-	}
-
-	return OncallSchedule{
-		Id:         schedule.ID,
-		Attributes: attr,
-	}
-}
 
 func OncallShiftFromEnt(shift *ent.OncallUserShift) OncallShift {
 	attr := OncallShiftAttributes{
@@ -255,98 +161,16 @@ func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHando
 	}
 }
 
-var oncallTags = []string{"Oncall"}
-
 // ops
 
-var GetUserOncallInformation = huma.Operation{
-	OperationID: "get-user-oncall-information",
-	Method:      http.MethodGet,
-	Path:        "/oncall/user",
-	Summary:     "Get oncall information for a user",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type GetUserOncallInformationRequest struct {
-	UserId         uuid.UUID `query:"userId" required:"true"`
-	ActiveShifts   bool      `query:"activeShifts" required:"false" default:"true"`
-	UpcomingShifts int       `query:"upcomingShifts" required:"false" default:"0"`
-	PastShifts     int       `query:"pastShifts" required:"false" default:"0"`
-}
-type GetUserOncallInformationResponse ItemResponse[UserOncallInformation]
-
-var ListOncallRosters = huma.Operation{
-	OperationID: "list-oncall-rosters",
-	Method:      http.MethodGet,
-	Path:        "/oncall/rosters",
-	Summary:     "List Oncall Rosters",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ListOncallRostersRequest struct {
-	ListRequest
-	TeamId uuid.UUID `query:"teamId" required:"false" nullable:"false"`
-	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
-	Pinned bool      `query:"pinned" required:"false" nullable:"false"`
-}
-type ListOncallRostersResponse PaginatedResponse[OncallRoster]
-
-var GetOncallRoster = huma.Operation{
-	OperationID: "get-oncall-roster",
-	Method:      http.MethodGet,
-	Path:        "/oncall/rosters/{id}",
-	Summary:     "Get oncall roster",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type GetOncallRosterRequest = GetFlexibleIdRequest
-type GetOncallRosterResponse ItemResponse[OncallRoster]
-
-var AddWatchedOncallRoster = huma.Operation{
-	OperationID: "add-watched-oncall-roster",
-	Method:      http.MethodPost,
-	Path:        "/oncall/watched_rosters/{id}",
-	Summary:     "Add a watched oncall roster",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type AddWatchedOncallRosterRequest PostIdRequest
-type AddWatchedOncallRosterResponse ListResponse[OncallRoster]
-
-var ListWatchedOncallRosters = huma.Operation{
-	OperationID: "list-watched-oncall-rosters",
-	Method:      http.MethodGet,
-	Path:        "/oncall/watched_rosters",
-	Summary:     "List watched oncall rosters",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type ListWatchedOncallRostersRequest EmptyRequest
-type ListWatchedOncallRostersResponse ListResponse[OncallRoster]
-
-var RemoveWatchedOncallRoster = huma.Operation{
-	OperationID: "remove-watched-oncall-roster",
-	Method:      http.MethodDelete,
-	Path:        "/oncall/watched_rosters/{id}",
-	Summary:     "Remove a watched oncall roster",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type RemoveWatchedOncallRosterRequest DeleteIdRequest
-type RemoveWatchedOncallRosterResponse ListResponse[OncallRoster]
+var oncallShiftsTags = []string{"Oncall Shifts"}
 
 var ListOncallShifts = huma.Operation{
 	OperationID: "list-oncall-shifts",
 	Method:      http.MethodGet,
 	Path:        "/oncall/shifts",
 	Summary:     "List Oncall Shifts",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -362,43 +186,31 @@ var GetOncallShift = huma.Operation{
 	Method:      http.MethodGet,
 	Path:        "/oncall/shifts/{id}",
 	Summary:     "Get an Oncall Shift",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
 type GetOncallShiftRequest GetIdRequest
 type GetOncallShiftResponse ItemResponse[OncallShift]
 
-var GetNextOncallShift = huma.Operation{
-	OperationID: "get-next-oncall-shift",
+var GetAdjacentOncallShifts = huma.Operation{
+	OperationID: "get-adjacent-oncall-shifts",
 	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/next",
-	Summary:     "Get the next Oncall Shift",
-	Tags:        oncallTags,
+	Path:        "/oncall/shifts/{id}/adjacent",
+	Summary:     "Get shifts adjacent to a given shift",
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
-type GetNextOncallShiftRequest GetIdRequest
-type GetNextOncallShiftResponse ItemResponse[OncallShift]
-
-var GetPreviousOncallShift = huma.Operation{
-	OperationID: "get-previous-oncall-shift",
-	Method:      http.MethodGet,
-	Path:        "/oncall/shifts/{id}/previous",
-	Summary:     "Get the previous Oncall Shift",
-	Tags:        oncallTags,
-	Errors:      errorCodes(),
-}
-
-type GetPreviousOncallShiftRequest GetIdRequest
-type GetPreviousOncallShiftResponse ItemResponse[OncallShift]
+type GetAdjacentOncallShiftsRequest GetIdRequest
+type GetAdjacentOncallShiftsResponse ItemResponse[OncallShiftsAdjacent]
 
 var CreateOncallShiftHandoverTemplate = huma.Operation{
 	OperationID: "create-oncall-handover-template",
 	Method:      http.MethodPost,
 	Path:        "/oncall/handover_templates",
 	Summary:     "Create an Oncall Handover Template",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -413,7 +225,7 @@ var GetOncallShiftHandoverTemplate = huma.Operation{
 	Method:      http.MethodGet,
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Get handover for a shift",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -425,7 +237,7 @@ var UpdateOncallShiftHandoverTemplate = huma.Operation{
 	Method:      http.MethodPatch,
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Update an Oncall Handover Template",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -440,7 +252,7 @@ var ArchiveOncallShiftHandoverTemplate = huma.Operation{
 	Method:      http.MethodDelete,
 	Path:        "/oncall/handover_templates/{id}",
 	Summary:     "Archive an Oncall Handover Template",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -452,7 +264,7 @@ var GetOncallShiftHandover = huma.Operation{
 	Method:      http.MethodGet,
 	Path:        "/oncall/shifts/{id}/handover",
 	Summary:     "Get handover for a shift",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -464,7 +276,7 @@ var UpdateOncallShiftHandover = huma.Operation{
 	Method:      http.MethodPatch,
 	Path:        "/oncall/handovers/{id}",
 	Summary:     "Update an Oncall Shift Handover",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 
@@ -480,7 +292,7 @@ var SendOncallShiftHandover = huma.Operation{
 	Method:      http.MethodPost,
 	Path:        "/oncall/handovers/{id}/send",
 	Summary:     "Send a Shift Handover",
-	Tags:        oncallTags,
+	Tags:        oncallShiftsTags,
 	Errors:      errorCodes(),
 }
 

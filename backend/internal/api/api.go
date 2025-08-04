@@ -30,9 +30,10 @@ type Handler struct {
 	*incidentsHandler
 	*integrationsHandler
 	*meetingsHandler
-	*oncallHandler
 	*oncallEventsHandler
 	*oncallMetricsHandler
+	*oncallRostersHandler
+	*oncallShiftsHandler
 	*playbooksHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
@@ -79,8 +80,9 @@ func NewHandler(
 		incidentsHandler:          newIncidentsHandler(db),
 		integrationsHandler:       newIntegrationsHandler(),
 		meetingsHandler:           newMeetingsHandler(),
-		oncallHandler:             newOncallHandler(auth, users, incidents, oncall),
 		oncallEventsHandler:       newOncallEventsHandler(auth, users, oncall, incidents, oncallEvents),
+		oncallRostersHandler:      newOncallRostersHandler(auth, users, incidents, oncall),
+		oncallShiftsHandler:       newOncallShiftsHandler(auth, users, incidents, oncall),
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, components),

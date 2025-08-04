@@ -811,6 +811,14 @@ export type FunctionalityAttributes = {
     name: string;
 };
 
+export type GetAdjacentOncallShiftsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: OncallShiftsAdjacent;
+};
+
 export type GetAlertResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -947,14 +955,6 @@ export type GetMeetingSessionResponseBody = {
     data: MeetingSession;
 };
 
-export type GetNextOncallShiftResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: OncallShift;
-};
-
 export type GetOncallEventResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1025,14 +1025,6 @@ export type GetPlaybookResponseBody = {
      */
     readonly $schema?: string;
     data: Playbook;
-};
-
-export type GetPreviousOncallShiftResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: OncallShift;
 };
 
 export type GetRetrospectiveDiscussionResponseBody = {
@@ -1938,6 +1930,11 @@ export type OncallShiftMetricsBurden = {
 export type OncallShiftMetricsIncidents = {
     responseTimeMinutes: number;
     total: number;
+};
+
+export type OncallShiftsAdjacent = {
+    next: OncallShift;
+    previous: OncallShift;
 };
 
 export type Playbook = {
@@ -7619,6 +7616,53 @@ export type GetOncallShiftResponses = {
 
 export type GetOncallShiftResponse = GetOncallShiftResponses[keyof GetOncallShiftResponses];
 
+export type GetAdjacentOncallShiftsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/oncall/shifts/{id}/adjacent';
+};
+
+export type GetAdjacentOncallShiftsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAdjacentOncallShiftsError = GetAdjacentOncallShiftsErrors[keyof GetAdjacentOncallShiftsErrors];
+
+export type GetAdjacentOncallShiftsResponses = {
+    /**
+     * OK
+     */
+    200: GetAdjacentOncallShiftsResponseBody;
+};
+
+export type GetAdjacentOncallShiftsResponse = GetAdjacentOncallShiftsResponses[keyof GetAdjacentOncallShiftsResponses];
+
 export type GetOncallShiftHandoverData = {
     body?: never;
     path: {
@@ -7665,100 +7709,6 @@ export type GetOncallShiftHandoverResponses = {
 };
 
 export type GetOncallShiftHandoverResponse = GetOncallShiftHandoverResponses[keyof GetOncallShiftHandoverResponses];
-
-export type GetNextOncallShiftData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/oncall/shifts/{id}/next';
-};
-
-export type GetNextOncallShiftErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetNextOncallShiftError = GetNextOncallShiftErrors[keyof GetNextOncallShiftErrors];
-
-export type GetNextOncallShiftResponses = {
-    /**
-     * OK
-     */
-    200: GetNextOncallShiftResponseBody;
-};
-
-export type GetNextOncallShiftResponse = GetNextOncallShiftResponses[keyof GetNextOncallShiftResponses];
-
-export type GetPreviousOncallShiftData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/oncall/shifts/{id}/previous';
-};
-
-export type GetPreviousOncallShiftErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetPreviousOncallShiftError = GetPreviousOncallShiftErrors[keyof GetPreviousOncallShiftErrors];
-
-export type GetPreviousOncallShiftResponses = {
-    /**
-     * OK
-     */
-    200: GetPreviousOncallShiftResponseBody;
-};
-
-export type GetPreviousOncallShiftResponse = GetPreviousOncallShiftResponses[keyof GetPreviousOncallShiftResponses];
 
 export type GetUserOncallInformationData = {
     body?: never;

@@ -45,7 +45,8 @@ type Handler interface {
 	MeetingsHandler
 
 	AlertsHandler
-	OncallHandler
+	OncallRostersHandler
+	OncallShiftsHandler
 	OncallEventsHandler
 
 	UsersHandler

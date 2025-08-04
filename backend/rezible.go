@@ -3,7 +3,6 @@ package rez
 import (
 	"context"
 	"errors"
-	"github.com/rezible/rezible/jobs"
 	"iter"
 	"net/http"
 	"time"
@@ -13,6 +12,7 @@ import (
 	"github.com/texm/prosemirror-go"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 )
 
 var (
@@ -457,8 +457,7 @@ type (
 
 		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallUserShift, error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
-		GetNextShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
-		GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
+		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, *ent.OncallUserShift, error)
 
 		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error)
 		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)

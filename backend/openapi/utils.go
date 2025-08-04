@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-	"reflect"
 )
 
 const (
@@ -109,11 +110,11 @@ type FlexibleId struct {
 	Slug   string
 }
 
-func GetEntPredicate[P any](id FlexibleId, uuidPred func(uuid.UUID) P, slugPred func(string) P) P {
+func GetEntPredicate[P any](id FlexibleId, idFn func(uuid.UUID) P, slugFn func(string) P) P {
 	if id.IsUUID {
-		return uuidPred(id.UUID)
+		return idFn(id.UUID)
 	} else {
-		return slugPred(id.Slug)
+		return slugFn(id.Slug)
 	}
 }
 
@@ -147,7 +148,7 @@ type OmittableNullable[T any] struct {
 	Value T
 }
 
-func (o *OmittableNullable[T]) NillableValue() *T {
+func (o OmittableNullable[T]) NillableValue() *T {
 	if !o.Sent {
 		return nil
 	}
@@ -158,7 +159,7 @@ func (o *OmittableNullable[T]) NillableValue() *T {
 	return &o.Value
 }
 
-func (o *OmittableNullable[T]) UnmarshalJSON(b []byte) error {
+func (o OmittableNullable[T]) UnmarshalJSON(b []byte) error {
 	if len(b) > 0 {
 		o.Sent = true
 		if bytes.Equal(b, []byte("null")) {

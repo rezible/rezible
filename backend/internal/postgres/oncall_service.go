@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/jobs"
 )
 
 type OncallService struct {
@@ -147,38 +147,41 @@ func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.On
 	return query.Only(ctx)
 }
 
-func (s *OncallService) GetNextShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error) {
-	shift, shiftErr := s.db.OncallUserShift.Get(ctx, id)
-	if shiftErr != nil {
-		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
-	}
-
+func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShift, error) {
 	return s.db.OncallUserShift.Query().
 		Where(oncallusershift.And(
 			oncallusershift.RosterID(shift.RosterID),
 			oncallusershift.StartAtGTE(shift.EndAt),
-			oncallusershift.IDNEQ(id))).
+			oncallusershift.IDNEQ(shift.ID))).
 		Order(oncallusershift.ByStartAt(sql.OrderAsc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
 }
 
-func (s *OncallService) GetPreviousShift(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error) {
+func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, *ent.OncallUserShift, error) {
 	shift, shiftErr := s.db.OncallUserShift.Get(ctx, id)
 	if shiftErr != nil {
-		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
+		return nil, nil, fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
 
-	return s.db.OncallUserShift.Query().
-		Where(oncallusershift.And(
-			oncallusershift.RosterID(shift.RosterID),
-			oncallusershift.EndAtLTE(shift.StartAt),
-			oncallusershift.IDNEQ(id))).
+	query := s.db.OncallUserShift.Query().
+		Where(oncallusershift.RosterID(shift.RosterID)).
+		Where(oncallusershift.IDNEQ(id)).
+		Where(oncallusershift.Or(oncallusershift.EndAtLTE(shift.StartAt))).
 		Order(oncallusershift.ByStartAt(sql.OrderDesc())).
 		WithUser().
 		WithRoster().
-		First(ctx)
+		Limit(2)
+
+	shifts, queryErr := query.All(ctx)
+	if queryErr != nil {
+		return nil, nil, fmt.Errorf("failed to query shifts: %w", queryErr)
+	}
+	if len(shifts) != 2 {
+		return nil, nil, fmt.Errorf("expected 2 shifts, got %d", len(shifts))
+	}
+	return shifts[0], shifts[1], nil
 }
 
 func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallUserShift, error) {
@@ -458,7 +461,7 @@ func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUse
 		return nil, fmt.Errorf("failed to get handover shift: %w", shiftErr)
 	}
 
-	nextShift, nextShiftErr := s.GetNextShift(ctx, ho.ShiftID)
+	nextShift, nextShiftErr := s.getNextShift(ctx, shift)
 	if nextShiftErr != nil {
 		return nil, fmt.Errorf("get next shift: %w", nextShiftErr)
 	}
