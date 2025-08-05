@@ -20,34 +20,34 @@ import (
 type oapiSecurity = []map[string][]string
 
 const (
-	securityMethodSessionCookie    = "session-cookie"
-	securityMethodApiToken         = "api-token"
-	securityMethodAuthSessionToken = "session-token"
+	SecurityMethodSessionCookie    = "session-cookie"
+	SecurityMethodApiToken         = "api-token"
+	SecurityMethodAuthSessionToken = "session-token"
 
 	sessionCookieName = "rez_session"
 )
 
 var (
 	DefaultSecuritySchemes = map[string]*huma.SecurityScheme{
-		securityMethodSessionCookie: {
+		SecurityMethodSessionCookie: {
 			Type: "apiKey",
 			In:   "cookie",
 			Name: sessionCookieName,
 		},
-		securityMethodApiToken: {
+		SecurityMethodApiToken: {
 			Type:         "http",
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
 		},
-		securityMethodAuthSessionToken: {
+		SecurityMethodAuthSessionToken: {
 			Type:         "http",
 			Scheme:       "bearer",
 			BearerFormat: "JWT",
 		},
 	}
 	DefaultSecurity = oapiSecurity{
-		{securityMethodSessionCookie: {}},
-		{securityMethodApiToken: {}},
+		{SecurityMethodSessionCookie: {}},
+		{SecurityMethodApiToken: {}},
 	}
 )
 
@@ -98,9 +98,9 @@ func GetRequestApiBearerToken(r *http.Request) (string, error) {
 }
 
 var securityMethodTokenFuncs = map[string]func(r *http.Request) (string, error){
-	securityMethodSessionCookie:    GetRequestSessionCookieToken,
-	securityMethodApiToken:         GetRequestApiBearerToken,
-	securityMethodAuthSessionToken: GetRequestApiBearerToken,
+	SecurityMethodSessionCookie:    GetRequestSessionCookieToken,
+	SecurityMethodApiToken:         GetRequestApiBearerToken,
+	SecurityMethodAuthSessionToken: GetRequestApiBearerToken,
 }
 
 func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string, []string) {
@@ -118,30 +118,32 @@ func getRequestSecurityTokenAndScopes(sec oapiSecurity, r *http.Request) (string
 
 func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 	return func(c Context, next func(Context)) {
+		r, w := humago.Unwrap(c)
+
 		security := c.Operation().Security
 		explicitNoAuth := security != nil && len(security) == 0
-		if explicitNoAuth {
-			next(c)
-			return
-		} else if security == nil {
+		if security == nil {
 			security = DefaultSecurity
 		}
 
-		r, w := humago.Unwrap(c)
-		token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-		sess, authErr := auth.VerifySessionToken(token)
-		if authErr != nil {
-			log.Debug().Err(authErr).Msg("failed to verify session token")
-			writeAuthSessionError(w, authErr)
-			return
-		}
+		var userSess *rez.UserAuthSession
+		if !explicitNoAuth {
+			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
+			var verifyErr error
+			userSess, verifyErr = auth.VerifyUserAuthSessionToken(token)
+			if verifyErr != nil {
+				log.Debug().Err(verifyErr).Msg("failed to verify session token")
+				writeAuthSessionError(w, verifyErr)
+				return
+			}
 
-		// TODO: check scopes
-		for _, scope := range requiredScopes {
-			log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+			// TODO: check scopes
+			for _, scope := range requiredScopes {
+				log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
+			}
 		}
+		authCtx := auth.CreateAuthContext(r.Context(), userSess)
 
-		authCtx := auth.CreateSessionContext(r.Context(), sess)
 		next(huma.WithContext(c, authCtx))
 	}
 }

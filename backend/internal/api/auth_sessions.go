@@ -29,7 +29,7 @@ func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oa
 func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, input *oapi.GetCurrentUserAuthSessionRequest) (*oapi.GetCurrentUserAuthSessionResponse, error) {
 	var resp oapi.GetCurrentUserAuthSessionResponse
 
-	sess := mustGetAuthSession(ctx, h.auth)
+	sess := requestUserAuthSession(ctx, h.auth)
 	user, userErr := h.users.GetById(ctx, sess.UserId)
 	if userErr != nil {
 		return nil, detailError("failed to get user", userErr)

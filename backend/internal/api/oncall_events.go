@@ -112,7 +112,7 @@ func (h *oncallEventsHandler) ListOncallAnnotations(ctx context.Context, request
 func (h *oncallEventsHandler) CreateOncallAnnotation(ctx context.Context, request *oapi.CreateOncallAnnotationRequest) (*oapi.CreateOncallAnnotationResponse, error) {
 	var resp oapi.CreateOncallAnnotationResponse
 
-	user := mustGetAuthSession(ctx, h.auth)
+	user := requestUserAuthSession(ctx, h.auth)
 
 	attr := request.Body.Attributes
 

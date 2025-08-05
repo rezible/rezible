@@ -26,17 +26,14 @@ func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, au
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
 	var resp oapi.GetIncidentUserDebriefResponse
 
-	sess, sessErr := h.auth.GetSession(ctx)
-	if sessErr != nil {
-		return nil, detailError("failed to get auth session", sessErr)
-	}
+	userId := requestUserId(ctx, h.auth)
 
-	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, sess.UserId)
+	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
 			return nil, detailError("failed to get incident debrief", debriefErr)
 		}
-		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, sess.UserId)
+		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, userId)
 		if createErr != nil {
 			return nil, detailError("failed to create debrief", createErr)
 		}
@@ -50,12 +47,8 @@ func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, re
 func (h *incidentDebriefsHandler) GetIncidentDebrief(ctx context.Context, request *oapi.GetIncidentDebriefRequest) (*oapi.GetIncidentDebriefResponse, error) {
 	var resp oapi.GetIncidentDebriefResponse
 
-	_, sessErr := h.auth.GetSession(ctx)
-	if sessErr != nil {
-		return nil, detailError("failed to get auth session", sessErr)
-	}
-
 	// TODO: ensure session user has access to debrief
+	// userId := requestUserId(ctx, h.auth)
 
 	debrief, debriefErr := h.debriefs.GetDebrief(ctx, request.Id)
 	if debriefErr != nil {

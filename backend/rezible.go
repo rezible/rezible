@@ -95,29 +95,32 @@ type (
 )
 
 type (
-	AuthSession struct {
-		ExpiresAt time.Time
-		UserId    uuid.UUID
-	}
 	AuthSessionCreatedFn = func(*ent.User, time.Time, string)
 
 	AuthSessionProvider interface {
 		Name() string
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreatedFn AuthSessionCreatedFn) (handled bool)
 		ClearSession(w http.ResponseWriter, r *http.Request)
+	}
+
+	UserAuthSession struct {
+		UserId    uuid.UUID
+		ExpiresAt time.Time
 	}
 
 	AuthSessionService interface {
 		ProviderName() string
-		MakeUserAuthHandler() http.Handler
-		MakeFrontendAuthMiddleware() func(http.Handler) http.Handler
-		MakeMCPServerAuthMiddleware() func(http.Handler) http.Handler
-		CreateSessionContext(context.Context, *AuthSession) context.Context
-		GetSession(context.Context) (*AuthSession, error)
-		IssueSessionToken(*AuthSession) (string, error)
-		VerifySessionToken(tokenStr string) (*AuthSession, error)
+
+		AuthHandler() http.Handler
+		FrontendMiddleware() func(http.Handler) http.Handler
+		MCPServerMiddleware() func(http.Handler) http.Handler
+
+		CreateAuthContext(context.Context, *UserAuthSession) context.Context
+		GetUserAuthSession(context.Context) (*UserAuthSession, error)
+		IssueUserAuthSessionToken(*UserAuthSession) (string, error)
+		VerifyUserAuthSessionToken(tokenStr string) (*UserAuthSession, error)
 	}
 )
 
@@ -374,6 +377,7 @@ type (
 		CreateDiscussion(context.Context, CreateRetrospectiveDiscussionParams) (*ent.RetrospectiveDiscussion, error)
 		ListDiscussions(context.Context, ListRetrospectiveDiscussionsParams) ([]*ent.RetrospectiveDiscussion, error)
 		GetDiscussionByID(context.Context, uuid.UUID) (*ent.RetrospectiveDiscussion, error)
+		// TODO: just pass a *ent.RetrospectiveDiscussionReply
 		AddDiscussionReply(context.Context, AddRetrospectiveDiscussionReplyParams) (*ent.RetrospectiveDiscussionReply, error)
 	}
 )

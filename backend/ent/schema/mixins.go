@@ -26,7 +26,7 @@ func (BaseMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
 			privacyrules.DenyIfNoAccessContext(),
-			privacyrules.AllowIfSystem(),
+			privacyrules.AllowIfSystemRole(),
 		},
 		Mutation: privacy.MutationPolicy{
 			privacyrules.DenyIfNoAccessContext(),

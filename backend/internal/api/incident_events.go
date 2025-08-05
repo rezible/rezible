@@ -58,7 +58,7 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 		return nil, detailError("invalid kind", kindErr)
 	}
 
-	userId := mustGetAuthSession(ctx, h.auth).UserId
+	userId := requestUserId(ctx, h.auth)
 
 	sequence, seqErr := h.getEventSequence(ctx, request.Id, attr.Timestamp)
 	if seqErr != nil {

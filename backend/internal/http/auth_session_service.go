@@ -17,23 +17,17 @@ import (
 	oapi "github.com/rezible/rezible/openapi"
 )
 
-type authContextKey struct{}
-
-var (
-	authSessionContextKey = authContextKey{}
-)
-
 const (
 	defaultSessionDuration = time.Hour
 )
-
-// TODO: this should eventually be backed by some kind of storage
 
 type AuthSessionService struct {
 	users         rez.UserService
 	sessProvider  rez.AuthSessionProvider
 	sessionSecret []byte
 }
+
+var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
 func NewAuthSessionService(ctx context.Context, users rez.UserService, sessProv rez.AuthSessionProvider, sessionSecretKey string) (*AuthSessionService, error) {
 	return &AuthSessionService{
@@ -47,12 +41,18 @@ func (s *AuthSessionService) ProviderName() string {
 	return s.sessProvider.Name()
 }
 
-func (s *AuthSessionService) CreateSessionContext(ctx context.Context, sess *rez.AuthSession) context.Context {
-	return context.WithValue(ctx, authSessionContextKey, sess)
+type authUserSessionContextKey struct{}
+
+func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.UserAuthSession {
+	return &rez.UserAuthSession{UserId: userId, ExpiresAt: expiresAt}
 }
 
-func (s *AuthSessionService) GetSession(ctx context.Context) (*rez.AuthSession, error) {
-	sess, ok := ctx.Value(authSessionContextKey).(*rez.AuthSession)
+func (s *AuthSessionService) CreateAuthContext(ctx context.Context, sess *rez.UserAuthSession) context.Context {
+	return context.WithValue(ctx, authUserSessionContextKey{}, sess)
+}
+
+func (s *AuthSessionService) GetUserAuthSession(ctx context.Context) (*rez.UserAuthSession, error) {
+	sess, ok := ctx.Value(authUserSessionContextKey{}).(*rez.UserAuthSession)
 	if !ok || sess == nil {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -63,7 +63,11 @@ func isRedirectableError(err error) bool {
 	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
 }
 
-func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) http.Handler {
+func (s *AuthSessionService) wrapAuthenticatedUserRequest(r *http.Request, sess *rez.UserAuthSession) *http.Request {
+	return r.WithContext(s.CreateAuthContext(r.Context(), sess))
+}
+
+func (s *AuthSessionService) FrontendMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.URL.Path == "/favicon.ico" {
@@ -71,69 +75,58 @@ func (s *AuthSessionService) MakeFrontendAuthMiddleware() func(http.Handler) htt
 				return
 			}
 
-			sess, sessErr := s.getVerifiedSessionFromRequestCookieToken(r)
-			if sessErr == nil {
-				next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
+			sess, sessErr := s.getVerifiedUserAuthSession(r)
+			if sessErr != nil {
+				if isRedirectableError(sessErr) {
+					s.sessProvider.StartAuthFlow(w, r)
+				} else {
+					http.Error(w, sessErr.Error(), http.StatusInternalServerError)
+				}
 				return
 			}
-
-			if isRedirectableError(sessErr) {
-				s.sessProvider.StartAuthFlow(w, r)
-				return
-			}
-			http.Error(w, sessErr.Error(), http.StatusInternalServerError)
+			next.ServeHTTP(w, s.wrapAuthenticatedUserRequest(r, sess))
 		})
 	}
 }
 
-func (s *AuthSessionService) getMCPAuthSession(r *http.Request) (*rez.AuthSession, error) {
-	token, tokenErr := oapi.GetRequestApiBearerToken(r)
-	if tokenErr != nil {
-		return nil, tokenErr
-	} else if token == "" {
-		return nil, rez.ErrNoAuthSession
-	}
-	// TODO: a lot
-	fakeSess := &rez.AuthSession{
-		ExpiresAt: time.Now().Add(time.Hour),
-		UserId:    uuid.New(),
-	}
-	return fakeSess, nil
-}
-
-func (s *AuthSessionService) MakeMCPServerAuthMiddleware() func(http.Handler) http.Handler {
+func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			sess, authErr := s.getMCPAuthSession(r)
+			sess, authErr := s.getMCPUserSession(r)
 			if authErr != nil {
 				// w.Header().Add("WWW-Authenticate", `Bearer resource_metadata="/.well-known/oauth-protected-resource"`)
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			next.ServeHTTP(w, r.WithContext(s.CreateSessionContext(r.Context(), sess)))
+			next.ServeHTTP(w, s.wrapAuthenticatedUserRequest(r, sess))
 		})
 	}
 }
 
-func (s *AuthSessionService) MakeUserAuthHandler() http.Handler {
+func (s *AuthSessionService) AuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/auth/logout" {
+			s.handleLogoutRequest(w, r)
+			return
+		}
+
 		if providerHandled := s.providerAuthFlow(w, r); providerHandled {
 			return
 		}
 
-		if r.URL.Path == "/auth/logout" {
-			s.clearAuthSession(w, r)
-			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
-			return
-		}
-
-		_, sessErr := s.getVerifiedSessionFromRequestCookieToken(r)
+		_, sessErr := s.getVerifiedUserAuthSession(r)
 		if sessErr != nil && isRedirectableError(sessErr) {
 			s.sessProvider.StartAuthFlow(w, r)
 		} else {
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 		}
 	})
+}
+
+func (s *AuthSessionService) handleLogoutRequest(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
+	s.sessProvider.ClearSession(w, r)
+	http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 }
 
 func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
@@ -143,9 +136,8 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	ctx := r.Context()
 	onUserSessionCreated := func(provUser *ent.User, expiresAt time.Time, redirect string) {
 		redirectUrl = redirect
-		expiry := expiresAt
 		if expiresAt.IsZero() {
-			expiry = time.Now().Add(defaultSessionDuration)
+			expiresAt = time.Now().Add(defaultSessionDuration)
 		}
 
 		userId, matchIdErr := s.matchUserIdFromProvider(ctx, provUser)
@@ -157,7 +149,12 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 			// TODO: handle this
 			log.Debug().Msg("no internal user exists for auth provider supplied details")
 		}
-		createSessionErr = s.storeAuthSession(w, r, &rez.AuthSession{ExpiresAt: expiry, UserId: userId})
+		token, tokenErr := s.IssueUserAuthSessionToken(newUserAuthSession(userId, expiresAt))
+		if tokenErr != nil {
+			createSessionErr = fmt.Errorf("failed to issue user session token: %w", tokenErr)
+		} else {
+			http.SetCookie(w, oapi.MakeSessionCookie(r, token, expiresAt, 0))
+		}
 	}
 
 	providerHandled := s.sessProvider.HandleAuthFlowRequest(w, r, onUserSessionCreated)
@@ -193,42 +190,34 @@ func (s *AuthSessionService) matchUserIdFromProvider(ctx context.Context, provUs
 	return user.ID, nil
 }
 
-func (s *AuthSessionService) storeAuthSession(w http.ResponseWriter, r *http.Request, sess *rez.AuthSession) error {
-	token, tokenErr := s.IssueSessionToken(sess)
+func (s *AuthSessionService) getMCPUserSession(r *http.Request) (*rez.UserAuthSession, error) {
+	bearerToken, tokenErr := oapi.GetRequestApiBearerToken(r)
 	if tokenErr != nil {
-		return tokenErr
+		return nil, tokenErr
 	}
-
-	http.SetCookie(w, oapi.MakeSessionCookie(r, token, sess.ExpiresAt, 0))
-	return nil
+	// TODO: a lot
+	// return s.VerifyUserSessionToken(bearerToken)
+	log.Debug().Str("bearer", bearerToken).Msg("skipping mcp auth verification")
+	return newUserAuthSession(uuid.New(), time.Now().Add(time.Hour)), nil
 }
 
-func (s *AuthSessionService) clearAuthSession(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
-	s.sessProvider.ClearSession(w, r)
-}
-
-func (s *AuthSessionService) getVerifiedSessionFromRequestCookieToken(req *http.Request) (*rez.AuthSession, error) {
-	cookieToken, cookieErr := oapi.GetRequestSessionCookieToken(req)
+func (s *AuthSessionService) getVerifiedUserAuthSession(r *http.Request) (*rez.UserAuthSession, error) {
+	cookieToken, cookieErr := oapi.GetRequestSessionCookieToken(r)
 	if cookieErr != nil {
-		return nil, fmt.Errorf("error getting token from cookie: %w", cookieErr)
+		return nil, fmt.Errorf("getting token from cookie: %w", cookieErr)
 	}
-	return s.VerifySessionToken(cookieToken)
+	return s.VerifyUserAuthSessionToken(cookieToken)
 }
 
 type authSessionTokenClaims struct {
 	jwt.RegisteredClaims
-	Session rez.AuthSession `json:"session"`
+	UserId uuid.UUID `json:"userId"`
 }
 
-func (s *AuthSessionService) IssueSessionToken(session *rez.AuthSession) (string, error) {
-	if session == nil {
-		return "", errors.New("nil session")
-	}
-
+func (s *AuthSessionService) IssueUserAuthSessionToken(sess *rez.UserAuthSession) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"session": *session,
-		"exp":     jwt.NewNumericDate(session.ExpiresAt),
+		"userId": sess.UserId,
+		"exp":    jwt.NewNumericDate(sess.ExpiresAt),
 	})
 
 	signedToken, signErr := token.SignedString(s.sessionSecret)
@@ -239,7 +228,7 @@ func (s *AuthSessionService) IssueSessionToken(session *rez.AuthSession) (string
 	return signedToken, nil
 }
 
-func (s *AuthSessionService) VerifySessionToken(tokenStr string) (*rez.AuthSession, error) {
+func (s *AuthSessionService) VerifyUserAuthSessionToken(tokenStr string) (*rez.UserAuthSession, error) {
 	if tokenStr == "" {
 		return nil, rez.ErrNoAuthSession
 	}
@@ -249,7 +238,7 @@ func (s *AuthSessionService) VerifySessionToken(tokenStr string) (*rez.AuthSessi
 		return nil, fmt.Errorf("failed to parse token: %w", parseErr)
 	}
 
-	if claims.Session.UserId == uuid.Nil {
+	if claims.UserId == uuid.Nil {
 		return nil, rez.ErrAuthSessionUserMissing
 	}
 
@@ -258,7 +247,7 @@ func (s *AuthSessionService) VerifySessionToken(tokenStr string) (*rez.AuthSessi
 		return nil, rez.ErrAuthSessionExpired
 	}
 
-	return &claims.Session, nil
+	return newUserAuthSession(claims.UserId, exp.Time), nil
 }
 
 func (s *AuthSessionService) parseSessionTokenClaims(tokenStr string) (*authSessionTokenClaims, error) {

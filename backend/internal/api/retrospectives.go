@@ -150,14 +150,11 @@ func (h *retrospectivesHandler) ListRetrospectiveDiscussions(ctx context.Context
 func (h *retrospectivesHandler) CreateRetrospectiveDiscussion(ctx context.Context, request *oapi.CreateRetrospectiveDiscussionRequest) (*oapi.CreateRetrospectiveDiscussionResponse, error) {
 	var resp oapi.CreateRetrospectiveDiscussionResponse
 
-	sess, sessErr := h.auth.GetSession(ctx)
-	if sessErr != nil {
-		return nil, detailError("failed to get session", sessErr)
-	}
+	userId := requestUserId(ctx, h.auth)
 
 	discussion, createErr := h.retros.CreateDiscussion(ctx, rez.CreateRetrospectiveDiscussionParams{
 		RetrospectiveID: request.Id,
-		UserID:          sess.UserId,
+		UserID:          userId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
@@ -204,10 +201,7 @@ func (h *retrospectivesHandler) UpdateRetrospectiveDiscussion(ctx context.Contex
 func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Context, request *oapi.AddRetrospectiveDiscussionReplyRequest) (*oapi.AddRetrospectiveDiscussionReplyResponse, error) {
 	var resp oapi.AddRetrospectiveDiscussionReplyResponse
 
-	sess, sessErr := h.auth.GetSession(ctx)
-	if sessErr != nil {
-		return nil, detailError("failed to get session", sessErr)
-	}
+	userId := requestUserId(ctx, h.auth)
 
 	discussion, discussionErr := h.retros.GetDiscussionByID(ctx, request.DiscussionId)
 	if discussionErr != nil {
@@ -217,7 +211,7 @@ func (h *retrospectivesHandler) AddRetrospectiveDiscussionReply(ctx context.Cont
 	attr := request.Body.Attributes
 	reply, replyErr := h.retros.AddDiscussionReply(ctx, rez.AddRetrospectiveDiscussionReplyParams{
 		DiscussionId: discussion.ID,
-		UserID:       sess.UserId,
+		UserID:       userId,
 		ParentID:     attr.ParentReplyId,
 		Content:      attr.Content,
 	})

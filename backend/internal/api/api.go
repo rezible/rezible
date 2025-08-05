@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"regexp"
 
 	rez "github.com/rezible/rezible"
@@ -11,8 +12,6 @@ import (
 )
 
 type Handler struct {
-	*middlewareHandler
-
 	*alertsHandler
 	*authSessionsHandler
 	*documentsHandler
@@ -60,8 +59,6 @@ func NewHandler(
 	playbooks rez.PlaybookService,
 ) *Handler {
 	return &Handler{
-		middlewareHandler: newMiddlewareHandler(auth),
-
 		alertsHandler:             newAlertsHandler(alerts),
 		oncallMetricsHandler:      newOncallMetricsHandler(),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
@@ -93,12 +90,16 @@ func NewHandler(
 	}
 }
 
-func mustGetAuthSession(ctx context.Context, auth rez.AuthSessionService) *rez.AuthSession {
-	sess, sessErr := auth.GetSession(ctx)
+func requestUserAuthSession(ctx context.Context, auth rez.AuthSessionService) *rez.UserAuthSession {
+	sess, sessErr := auth.GetUserAuthSession(ctx)
 	if sessErr != nil {
-		panic("mustGetAuthSession: " + sessErr.Error())
+		panic("requestUserAuthSession: " + sessErr.Error())
 	}
 	return sess
+}
+
+func requestUserId(ctx context.Context, auth rez.AuthSessionService) uuid.UUID {
+	return requestUserAuthSession(ctx, auth).UserId
 }
 
 var (

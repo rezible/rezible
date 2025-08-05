@@ -35,9 +35,13 @@ func NewServer(
 	router := chi.NewRouter()
 	router.Use(middleware.Recoverer)
 
+	oapiMw := []oapi.Middleware{
+		oapi.MakeSecurityMiddleware(auth),
+	}
+	oapiAdapter := oapi.MakeApi(oapiHandler, "/api/v1", oapiMw...).Adapter()
 	apiV1Router := chi.
 		Chain(middleware.Logger).
-		Handler(oapi.MakeApi(oapiHandler, "/api/v1", oapi.MakeSecurityMiddleware(auth)).Adapter())
+		Handler(oapiAdapter)
 	router.Mount("/api/v1", apiV1Router)
 
 	router.Get("/api/docs", serveApiDocs)
@@ -45,15 +49,15 @@ func NewServer(
 	router.Mount("/api/webhooks", webhooksRouter)
 
 	mcpRouter := chi.
-		Chain(auth.MakeMCPServerAuthMiddleware()).
+		Chain(auth.MCPServerMiddleware()).
 		Handler(mcp.NewHTTPServer(mcpHandler, "/mcp"))
 	router.Mount("/mcp", mcpRouter)
 
-	router.Mount("/auth", auth.MakeUserAuthHandler())
+	router.Mount("/auth", auth.AuthHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
 	frontendRouter := chi.
-		Chain(auth.MakeFrontendAuthMiddleware()).
+		Chain(auth.FrontendMiddleware()).
 		Handler(makeEmbeddedFrontendFilesServer(feFiles))
 	// Serve static files for any other route
 	router.Handle("/*", frontendRouter)

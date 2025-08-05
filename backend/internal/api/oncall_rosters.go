@@ -80,7 +80,7 @@ func (h *oncallRostersHandler) getUserWatchedOncallRosters(ctx context.Context, 
 func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, request *oapi.AddWatchedOncallRosterRequest) (*oapi.AddWatchedOncallRosterResponse, error) {
 	var resp oapi.AddWatchedOncallRosterResponse
 
-	user, userErr := h.users.GetById(ctx, mustGetAuthSession(ctx, h.auth).UserId)
+	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
 	if userErr != nil {
 		return nil, detailError("failed to get user", userErr)
 	}
@@ -101,7 +101,7 @@ func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, reque
 func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, request *oapi.ListWatchedOncallRostersRequest) (*oapi.ListWatchedOncallRostersResponse, error) {
 	var resp oapi.ListWatchedOncallRostersResponse
 
-	user, userErr := h.users.GetById(ctx, mustGetAuthSession(ctx, h.auth).UserId)
+	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
 	if userErr != nil {
 		return nil, detailError("failed to get user", userErr)
 	}
@@ -117,7 +117,7 @@ func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, req
 func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, request *oapi.RemoveWatchedOncallRosterRequest) (*oapi.RemoveWatchedOncallRosterResponse, error) {
 	var resp oapi.RemoveWatchedOncallRosterResponse
 
-	user, userErr := h.users.GetById(ctx, mustGetAuthSession(ctx, h.auth).UserId)
+	user, userErr := h.users.GetById(ctx, requestUserId(ctx, h.auth))
 	if userErr != nil {
 		return nil, detailError("failed to get user", userErr)
 	}
@@ -138,12 +138,7 @@ func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, re
 func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, request *oapi.GetUserOncallInformationRequest) (*oapi.GetUserOncallInformationResponse, error) {
 	var resp oapi.GetUserOncallInformationResponse
 
-	sess, sessErr := h.auth.GetSession(ctx)
-	if sessErr != nil {
-		return nil, detailError("failed to get session", sessErr)
-	}
-
-	userId := sess.UserId
+	userId := requestUserId(ctx, h.auth)
 	if request.UserId != uuid.Nil {
 		userId = request.UserId
 	}

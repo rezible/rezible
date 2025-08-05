@@ -28,7 +28,7 @@ func (Tenant) Fields() []ent.Field {
 func (Tenant) Policy() ent.Policy {
 	return privacy.Policy{
 		Mutation: privacy.MutationPolicy{
-			privacyrules.AllowIfSystem(),
+			privacyrules.AllowIfSystemRole(),
 			privacy.AlwaysDenyRule(),
 		},
 	}
