@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/hook"
 	"github.com/rezible/rezible/ent/intercept"
 	"github.com/rezible/rezible/ent/privacy"
-	"github.com/rezible/rezible/ent/privacyrules"
+	"github.com/rezible/rezible/ent/schema/privacyrules"
 )
 
 type BaseMixin struct {

@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/privacy"
-	"github.com/rezible/rezible/ent/privacyrules"
+	"github.com/rezible/rezible/ent/schema/privacyrules"
 )
 
 type Tenant struct {
