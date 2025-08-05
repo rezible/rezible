@@ -70,17 +70,17 @@ func (ArchiveMixin) Fields() []ent.Field {
 	}
 }
 
-const archiveKey = "include_archived"
+const includeArchivedContextKey = "include_archived"
 
 func IncludeArchived(parent context.Context) context.Context {
-	return context.WithValue(parent, archiveKey, true)
+	return context.WithValue(parent, includeArchivedContextKey, true)
 }
 
 func (d ArchiveMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
 			// Skip archive, means include archived entities.
-			if skip, _ := ctx.Value(archiveKey).(bool); skip {
+			if skip, _ := ctx.Value(includeArchivedContextKey).(bool); skip {
 				return nil
 			}
 			d.P(q)
@@ -100,8 +100,7 @@ func (d ArchiveMixin) Hooks() []ent.Hook {
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
 				return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-					// Skip archival, means delete the entity permanently.
-					if skip, _ := ctx.Value(archiveKey).(bool); skip {
+					if skip, _ := ctx.Value(includeArchivedContextKey).(bool); skip {
 						return next.Mutate(ctx, m)
 					}
 					mx, ok := m.(ArchiveableMutation)

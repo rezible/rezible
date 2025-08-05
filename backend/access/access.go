@@ -46,7 +46,7 @@ func (v AuthContext) TenantId() (int, bool) {
 
 type ctxKey struct{}
 
-func StoreAuthContext(parent context.Context, ac *AuthContext) context.Context {
+func storeAuthContext(parent context.Context, ac *AuthContext) context.Context {
 	return context.WithValue(parent, ctxKey{}, ac)
 }
 
@@ -56,5 +56,13 @@ func GetAuthContext(ctx context.Context) *AuthContext {
 }
 
 func SystemContext(ctx context.Context) context.Context {
-	return StoreAuthContext(ctx, &AuthContext{roles: MakeRoles(RoleSystem)})
+	return storeAuthContext(ctx, &AuthContext{roles: MakeRoles(RoleSystem)})
+}
+
+func TenantSystemContext(ctx context.Context, tenant *ent.Tenant) context.Context {
+	c := &AuthContext{
+		roles:  MakeRoles(RoleSystem),
+		tenant: tenant,
+	}
+	return storeAuthContext(ctx, c)
 }

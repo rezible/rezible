@@ -1413,12 +1413,21 @@ var (
 		{Name: "email", Type: field.TypeString},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// UsersTable holds the schema information for the "users" table.
 	UsersTable = &schema.Table{
 		Name:       "users",
 		Columns:    UsersColumns,
 		PrimaryKey: []*schema.Column{UsersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "users_tenants_tenant",
+				Columns:    []*schema.Column{UsersColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// IncidentEnvironmentsColumns holds the columns for the "incident_environments" table.
 	IncidentEnvironmentsColumns = []*schema.Column{
@@ -2047,6 +2056,7 @@ func init() {
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
+	UsersTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentEnvironmentsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentEnvironmentsTable.ForeignKeys[1].RefTable = EnvironmentsTable
 	IncidentFieldSelectionsTable.ForeignKeys[0].RefTable = IncidentsTable

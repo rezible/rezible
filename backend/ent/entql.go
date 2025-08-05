@@ -1119,6 +1119,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			user.FieldTenantID: {Type: field.TypeInt, Column: user.FieldTenantID},
 			user.FieldName:     {Type: field.TypeString, Column: user.FieldName},
 			user.FieldEmail:    {Type: field.TypeString, Column: user.FieldEmail},
 			user.FieldChatID:   {Type: field.TypeString, Column: user.FieldChatID},
@@ -3092,6 +3093,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Ticket",
 		"Task",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.TenantTable,
+			Columns: []string{user.TenantColumn},
+			Bidi:    false,
+		},
+		"User",
+		"Tenant",
 	)
 	graph.MustAddE(
 		"teams",
@@ -9235,6 +9248,11 @@ func (f *UserFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(user.FieldID))
 }
 
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *UserFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(user.FieldTenantID))
+}
+
 // WhereName applies the entql string predicate on the name field.
 func (f *UserFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(user.FieldName))
@@ -9253,6 +9271,20 @@ func (f *UserFilter) WhereChatID(p entql.StringP) {
 // WhereTimezone applies the entql string predicate on the timezone field.
 func (f *UserFilter) WhereTimezone(p entql.StringP) {
 	f.Where(p.Field(user.FieldTimezone))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *UserFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *UserFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
 }
 
 // WhereHasTeams applies a predicate to check if query has an edge teams.

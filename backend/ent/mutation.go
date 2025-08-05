@@ -44031,6 +44031,8 @@ type UserMutation struct {
 	chat_id                               *string
 	timezone                              *string
 	clearedFields                         map[string]struct{}
+	tenant                                *int
+	clearedtenant                         bool
 	teams                                 map[uuid.UUID]struct{}
 	removedteams                          map[uuid.UUID]struct{}
 	clearedteams                          bool
@@ -44171,6 +44173,42 @@ func (m *UserMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *UserMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *UserMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the User entity.
+// If the User object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *UserMutation) ResetTenantID() {
+	m.tenant = nil
 }
 
 // SetName sets the "name" field.
@@ -44341,6 +44379,33 @@ func (m *UserMutation) TimezoneCleared() bool {
 func (m *UserMutation) ResetTimezone() {
 	m.timezone = nil
 	delete(m.clearedFields, user.FieldTimezone)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *UserMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[user.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *UserMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *UserMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *UserMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by ids.
@@ -44971,7 +45036,10 @@ func (m *UserMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
+	if m.tenant != nil {
+		fields = append(fields, user.FieldTenantID)
+	}
 	if m.name != nil {
 		fields = append(fields, user.FieldName)
 	}
@@ -44992,6 +45060,8 @@ func (m *UserMutation) Fields() []string {
 // schema.
 func (m *UserMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case user.FieldTenantID:
+		return m.TenantID()
 	case user.FieldName:
 		return m.Name()
 	case user.FieldEmail:
@@ -45009,6 +45079,8 @@ func (m *UserMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case user.FieldTenantID:
+		return m.OldTenantID(ctx)
 	case user.FieldName:
 		return m.OldName(ctx)
 	case user.FieldEmail:
@@ -45026,6 +45098,13 @@ func (m *UserMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *UserMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case user.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
 	case user.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -45061,13 +45140,16 @@ func (m *UserMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *UserMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *UserMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -45118,6 +45200,9 @@ func (m *UserMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *UserMutation) ResetField(name string) error {
 	switch name {
+	case user.FieldTenantID:
+		m.ResetTenantID()
+		return nil
 	case user.FieldName:
 		m.ResetName()
 		return nil
@@ -45136,7 +45221,10 @@ func (m *UserMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UserMutation) AddedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
+	if m.tenant != nil {
+		edges = append(edges, user.EdgeTenant)
+	}
 	if m.teams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -45177,6 +45265,10 @@ func (m *UserMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UserMutation) AddedIDs(name string) []ent.Value {
 	switch name {
+	case user.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
 	case user.EdgeTeams:
 		ids := make([]ent.Value, 0, len(m.teams))
 		for id := range m.teams {
@@ -45249,7 +45341,7 @@ func (m *UserMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *UserMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
 	if m.removedteams != nil {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -45362,7 +45454,10 @@ func (m *UserMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UserMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 11)
+	edges := make([]string, 0, 12)
+	if m.clearedtenant {
+		edges = append(edges, user.EdgeTenant)
+	}
 	if m.clearedteams {
 		edges = append(edges, user.EdgeTeams)
 	}
@@ -45403,6 +45498,8 @@ func (m *UserMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UserMutation) EdgeCleared(name string) bool {
 	switch name {
+	case user.EdgeTenant:
+		return m.clearedtenant
 	case user.EdgeTeams:
 		return m.clearedteams
 	case user.EdgeWatchedOncallRosters:
@@ -45433,6 +45530,9 @@ func (m *UserMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UserMutation) ClearEdge(name string) error {
 	switch name {
+	case user.EdgeTenant:
+		m.ClearTenant()
+		return nil
 	}
 	return fmt.Errorf("unknown User unique edge %s", name)
 }
@@ -45441,6 +45541,9 @@ func (m *UserMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UserMutation) ResetEdge(name string) error {
 	switch name {
+	case user.EdgeTenant:
+		m.ResetTenant()
+		return nil
 	case user.EdgeTeams:
 		m.ResetTeams()
 		return nil

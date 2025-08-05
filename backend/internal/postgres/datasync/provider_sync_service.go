@@ -3,10 +3,14 @@ package datasync
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/rs/zerolog/log"
+
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/jobs"
-	"time"
 )
 
 type ProviderSyncService struct {
@@ -34,8 +38,26 @@ func (s *ProviderSyncService) MakeSyncProviderDataPeriodicJob() jobs.PeriodicJob
 }
 
 func (s *ProviderSyncService) SyncProviderData(ctx context.Context, args jobs.SyncProviderData) error {
-	if args.Hard {
-		// TODO: maybe just pass a flag?
+	tenants, tenantsErr := s.db.Tenant.Query().All(ctx)
+	if tenantsErr != nil {
+		return fmt.Errorf("querying tenants: %w", tenantsErr)
+	}
+
+	for _, tenant := range tenants {
+		log.Debug().Str("tenant", tenant.Name).Msg("syncing provider data")
+		tenantCtx := access.TenantSystemContext(ctx, tenant)
+		if syncErr := s.syncProviderData(tenantCtx, args.Hard); syncErr != nil {
+			log.Error().
+				Err(syncErr).
+				Str("tenant", tenant.Name).
+				Msg("failed to sync provider data")
+		}
+	}
+	return nil
+}
+
+func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) error {
+	if hard {
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}
 

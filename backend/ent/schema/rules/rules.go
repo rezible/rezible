@@ -35,7 +35,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 		ac := access.GetAuthContext(ctx)
 		tenantId, hasTenant := ac.TenantId()
 		if !hasTenant {
-			return privacy.Denyf("missing tenant information in access context")
+			return privacy.Denyf("missing tenant in access context")
 		}
 		tf, isFilterable := f.(TenantsFilter)
 		if !isFilterable {

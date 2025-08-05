@@ -14,6 +14,8 @@ const (
 	Label = "user"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldEmail holds the string denoting the email field in the database.
@@ -22,6 +24,8 @@ const (
 	FieldChatID = "chat_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
 	// EdgeWatchedOncallRosters holds the string denoting the watched_oncall_rosters edge name in mutations.
@@ -46,6 +50,13 @@ const (
 	EdgeRetrospectiveReviewResponses = "retrospective_review_responses"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "users"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
 	TeamsTable = "team_users"
 	// TeamsInverseTable is the table name for the Team entity.
@@ -124,6 +135,7 @@ const (
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldName,
 	FieldEmail,
 	FieldChatID,
@@ -169,6 +181,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
@@ -187,6 +204,13 @@ func ByChatID(opts ...sql.OrderTermOption) OrderOption {
 // ByTimezone orders the results by the timezone field.
 func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByTeamsCount orders the results by teams count.
@@ -341,6 +365,13 @@ func ByRetrospectiveReviewResponses(term sql.OrderTerm, terms ...sql.OrderTerm) 
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveReviewResponsesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newTeamsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

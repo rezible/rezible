@@ -1289,7 +1289,7 @@ func init() {
 	// ticket.DefaultID holds the default value on creation for the id field.
 	ticket.DefaultID = ticketDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
-	user.Policy = privacy.NewPolicies(userMixin[0], schema.User{})
+	user.Policy = privacy.NewPolicies(userMixin[0], userMixin[1], schema.User{})
 	user.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := user.Policy.EvalMutation(ctx, m); err != nil {

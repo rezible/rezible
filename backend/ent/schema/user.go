@@ -15,6 +15,7 @@ type User struct {
 func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -33,7 +34,6 @@ func (User) Fields() []ent.Field {
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("teams", Team.Type).Ref("users"),
-		//edge.From("ladders", Ladder.Type).Ref("users"),
 
 		edge.To("watched_oncall_rosters", OncallRoster.Type),
 

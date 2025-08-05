@@ -93,6 +93,9 @@ func seedCmd(ctx context.Context, opts *Options) error {
 }
 
 func seedDatabase(ctx context.Context, db *postgres.Database) error {
-
+	devTenantErr := db.Client().Tenant.Create().SetName("dev tenant").Exec(ctx)
+	if devTenantErr != nil {
+		return devTenantErr
+	}
 	return nil
 }

@@ -3,8 +3,9 @@ package postgres
 import (
 	"context"
 	_ "embed"
+	"errors"
 	"fmt"
-
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 
 	"entgo.io/ent/dialect"
@@ -41,8 +42,28 @@ func (d *Database) Close() error {
 	return nil
 }
 
+func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
+	type tenantedMutation interface {
+		SetTenantID(int)
+	}
+	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+		if m.Op() == ent.OpCreate {
+			if tm, ok := m.(tenantedMutation); ok {
+				tid, tenantExists := access.GetAuthContext(ctx).TenantId()
+				if !tenantExists {
+					return nil, errors.New("tenant not found in auth context")
+				}
+				tm.SetTenantID(tid)
+			}
+		}
+		return next.Mutate(ctx, m)
+	})
+}
+
 func (d *Database) Client() *ent.Client {
-	return ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
+	c := ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
+	c.Use(ensureTenantIdSetHook)
+	return c
 }
 
 func (d *Database) tryCloseClient(c *ent.Client) {

@@ -11502,6 +11502,22 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a User.
+func (c *UserClient) QueryTenant(u *User) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.TenantTable, user.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTeams queries the teams edge of a User.
 func (c *UserClient) QueryTeams(u *User) *TeamQuery {
 	query := (&TeamClient{config: c.config}).Query()

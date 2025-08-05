@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -34,6 +35,7 @@ type UserQuery struct {
 	order                            []user.OrderOption
 	inters                           []Interceptor
 	predicates                       []predicate.User
+	withTenant                       *TenantQuery
 	withTeams                        *TeamQuery
 	withWatchedOncallRosters         *OncallRosterQuery
 	withOncallSchedules              *OncallScheduleParticipantQuery
@@ -80,6 +82,28 @@ func (uq *UserQuery) Unique(unique bool) *UserQuery {
 func (uq *UserQuery) Order(o ...user.OrderOption) *UserQuery {
 	uq.order = append(uq.order, o...)
 	return uq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (uq *UserQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: uq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := uq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := uq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.TenantTable, user.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryTeams chains the current query on the "teams" edge.
@@ -516,6 +540,7 @@ func (uq *UserQuery) Clone() *UserQuery {
 		order:                            append([]user.OrderOption{}, uq.order...),
 		inters:                           append([]Interceptor{}, uq.inters...),
 		predicates:                       append([]predicate.User{}, uq.predicates...),
+		withTenant:                       uq.withTenant.Clone(),
 		withTeams:                        uq.withTeams.Clone(),
 		withWatchedOncallRosters:         uq.withWatchedOncallRosters.Clone(),
 		withOncallSchedules:              uq.withOncallSchedules.Clone(),
@@ -532,6 +557,17 @@ func (uq *UserQuery) Clone() *UserQuery {
 		path:      uq.path,
 		modifiers: append([]func(*sql.Selector){}, uq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (uq *UserQuery) WithTenant(opts ...func(*TenantQuery)) *UserQuery {
+	query := (&TenantClient{config: uq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	uq.withTenant = query
+	return uq
 }
 
 // WithTeams tells the query-builder to eager-load the nodes that are connected to
@@ -661,12 +697,12 @@ func (uq *UserQuery) WithRetrospectiveReviewResponses(opts ...func(*Retrospectiv
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		GroupBy(user.FieldName).
+//		GroupBy(user.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
@@ -684,11 +720,11 @@ func (uq *UserQuery) GroupBy(field string, fields ...string) *UserGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.User.Query().
-//		Select(user.FieldName).
+//		Select(user.FieldTenantID).
 //		Scan(ctx, &v)
 func (uq *UserQuery) Select(fields ...string) *UserSelect {
 	uq.ctx.Fields = append(uq.ctx.Fields, fields...)
@@ -739,7 +775,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = uq.querySpec()
-		loadedTypes = [11]bool{
+		loadedTypes = [12]bool{
+			uq.withTenant != nil,
 			uq.withTeams != nil,
 			uq.withWatchedOncallRosters != nil,
 			uq.withOncallSchedules != nil,
@@ -773,6 +810,12 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := uq.withTenant; query != nil {
+		if err := uq.loadTenant(ctx, query, nodes, nil,
+			func(n *User, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := uq.withTeams; query != nil {
 		if err := uq.loadTeams(ctx, query, nodes,
@@ -862,6 +905,35 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	return nodes, nil
 }
 
+func (uq *UserQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*User, init func(*User), assign func(*User, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*User)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (uq *UserQuery) loadTeams(ctx context.Context, query *TeamQuery, nodes []*User, init func(*User), assign func(*User, *Team)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*User)
@@ -1284,6 +1356,9 @@ func (uq *UserQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != user.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if uq.withTenant != nil {
+			_spec.Node.AddColumnOnce(user.FieldTenantID)
 		}
 	}
 	if ps := uq.predicates; len(ps) > 0 {

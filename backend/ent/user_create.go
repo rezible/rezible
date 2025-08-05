@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -30,6 +31,12 @@ type UserCreate struct {
 	mutation *UserMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (uc *UserCreate) SetTenantID(i int) *UserCreate {
+	uc.mutation.SetTenantID(i)
+	return uc
 }
 
 // SetName sets the "name" field.
@@ -84,6 +91,11 @@ func (uc *UserCreate) SetNillableID(u *uuid.UUID) *UserCreate {
 		uc.SetID(*u)
 	}
 	return uc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (uc *UserCreate) SetTenant(t *Tenant) *UserCreate {
+	return uc.SetTenantID(t.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -300,11 +312,17 @@ func (uc *UserCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (uc *UserCreate) check() error {
+	if _, ok := uc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "User.tenant_id"`)}
+	}
 	if _, ok := uc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
 	}
 	if _, ok := uc.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
+	}
+	if len(uc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "User.tenant"`)}
 	}
 	return nil
 }
@@ -357,6 +375,23 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := uc.mutation.Timezone(); ok {
 		_spec.SetField(user.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
+	}
+	if nodes := uc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.TenantTable,
+			Columns: []string{user.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := uc.mutation.TeamsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -541,7 +576,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.User.Create().
-//		SetName(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -550,7 +585,7 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserUpsert) {
-//			SetName(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (uc *UserCreate) OnConflict(opts ...sql.ConflictOption) *UserUpsertOne {
@@ -662,6 +697,9 @@ func (u *UserUpsertOne) UpdateNewValues() *UserUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(user.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(user.FieldTenantID)
 		}
 	}))
 	return u
@@ -900,7 +938,7 @@ func (ucb *UserCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.UserUpsert) {
-//			SetName(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ucb *UserCreateBulk) OnConflict(opts ...sql.ConflictOption) *UserUpsertBulk {
@@ -946,6 +984,9 @@ func (u *UserUpsertBulk) UpdateNewValues() *UserUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(user.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(user.FieldTenantID)
 			}
 		}
 	}))
