@@ -16,10 +16,6 @@ type Tx struct {
 	Alert *AlertClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
-	// Environment is the client for interacting with the Environment builders.
-	Environment *EnvironmentClient
-	// Functionality is the client for interacting with the Functionality builders.
-	Functionality *FunctionalityClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -267,8 +263,6 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
-	tx.Environment = NewEnvironmentClient(tx.config)
-	tx.Functionality = NewFunctionalityClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.IncidentDebrief = NewIncidentDebriefClient(tx.config)
 	tx.IncidentDebriefMessage = NewIncidentDebriefMessageClient(tx.config)

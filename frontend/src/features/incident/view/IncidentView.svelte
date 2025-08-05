@@ -42,8 +42,6 @@
 	];
 </script>
 
-<a href="/incidents/aut-rpc-outage">other</a>
-
 <TabbedViewContainer {pathBase} {tabs} infoBar={IncidentDetailsBar}>
 	{#snippet tabSidebar()}
 		<ContextSidebar />

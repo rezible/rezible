@@ -24,9 +24,6 @@ type Handler interface {
 	SystemComponentsHandler
 	SystemAnalysisHandler
 
-	EnvironmentsHandler
-	FunctionalitiesHandler
-
 	IncidentsHandler
 	IncidentMilestonesHandler
 	IncidentEventsHandler
@@ -51,7 +48,6 @@ type Handler interface {
 	UsersHandler
 	AuthSessionsHandler
 	TeamsHandler
-	SubscriptionsHandler
 
 	IntegrationsHandler
 }

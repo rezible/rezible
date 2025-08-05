@@ -9,8 +9,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
-	"github.com/rezible/rezible/ent/environment"
-	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -110,43 +108,6 @@ func init() {
 	alertmetricsDescID := alertmetricsFields[0].Descriptor()
 	// alertmetrics.DefaultID holds the default value on creation for the id field.
 	alertmetrics.DefaultID = alertmetricsDescID.Default.(func() uuid.UUID)
-	environmentMixin := schema.Environment{}.Mixin()
-	environment.Policy = privacy.NewPolicies(environmentMixin[0], schema.Environment{})
-	environment.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := environment.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	environmentMixinHooks1 := environmentMixin[1].Hooks()
-
-	environment.Hooks[1] = environmentMixinHooks1[0]
-	environmentMixinInters1 := environmentMixin[1].Interceptors()
-	environment.Interceptors[0] = environmentMixinInters1[0]
-	environmentFields := schema.Environment{}.Fields()
-	_ = environmentFields
-	// environmentDescID is the schema descriptor for id field.
-	environmentDescID := environmentFields[0].Descriptor()
-	// environment.DefaultID holds the default value on creation for the id field.
-	environment.DefaultID = environmentDescID.Default.(func() uuid.UUID)
-	functionalityMixin := schema.Functionality{}.Mixin()
-	functionality.Policy = privacy.NewPolicies(functionalityMixin[0], schema.Functionality{})
-	functionality.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := functionality.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	functionalityFields := schema.Functionality{}.Fields()
-	_ = functionalityFields
-	// functionalityDescID is the schema descriptor for id field.
-	functionalityDescID := functionalityFields[0].Descriptor()
-	// functionality.DefaultID holds the default value on creation for the id field.
-	functionality.DefaultID = functionalityDescID.Default.(func() uuid.UUID)
 	incidentMixin := schema.Incident{}.Mixin()
 	incident.Policy = privacy.NewPolicies(incidentMixin[0], schema.Incident{})
 	incident.Hooks[0] = func(next ent.Mutator) ent.Mutator {

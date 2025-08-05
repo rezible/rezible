@@ -36,8 +36,6 @@ const (
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
 	FieldTypeID = "type_id"
-	// EdgeEnvironments holds the string denoting the environments edge name in mutations.
-	EdgeEnvironments = "environments"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
@@ -68,11 +66,6 @@ const (
 	EdgeIncidentLinks = "incident_links"
 	// Table holds the table name of the incident in the database.
 	Table = "incidents"
-	// EnvironmentsTable is the table that holds the environments relation/edge. The primary key declared below.
-	EnvironmentsTable = "incident_environments"
-	// EnvironmentsInverseTable is the table name for the Environment entity.
-	// It exists in this package in order to avoid circular dependency with the "environment" package.
-	EnvironmentsInverseTable = "environments"
 	// SeverityTable is the table that holds the severity relation/edge.
 	SeverityTable = "incidents"
 	// SeverityInverseTable is the table name for the IncidentSeverity entity.
@@ -179,9 +172,6 @@ var Columns = []string{
 }
 
 var (
-	// EnvironmentsPrimaryKey and EnvironmentsColumn2 are the table columns denoting the
-	// primary key for the environments relation (M2M).
-	EnvironmentsPrimaryKey = []string{"incident_id", "environment_id"}
 	// LinkedIncidentsPrimaryKey and LinkedIncidentsColumn2 are the table columns denoting the
 	// primary key for the linked_incidents relation (M2M).
 	LinkedIncidentsPrimaryKey = []string{"incident_id", "linked_incident_id"}
@@ -281,20 +271,6 @@ func BySeverityID(opts ...sql.OrderTermOption) OrderOption {
 // ByTypeID orders the results by the type_id field.
 func ByTypeID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTypeID, opts...).ToFunc()
-}
-
-// ByEnvironmentsCount orders the results by environments count.
-func ByEnvironmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEnvironmentsStep(), opts...)
-	}
-}
-
-// ByEnvironments orders the results by environments terms.
-func ByEnvironments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEnvironmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
 }
 
 // BySeverityField orders the results by severity field.
@@ -477,13 +453,6 @@ func ByIncidentLinks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentLinksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
-}
-func newEnvironmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EnvironmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, EnvironmentsTable, EnvironmentsPrimaryKey...),
-	)
 }
 func newSeverityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

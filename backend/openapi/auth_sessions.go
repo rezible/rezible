@@ -33,8 +33,14 @@ type (
 	}
 
 	UserAuthSession struct {
-		ExpiresAt time.Time `json:"expiresAt"`
-		User      User      `json:"user"`
+		ExpiresAt    time.Time    `json:"expiresAt"`
+		Organization Organization `json:"organization"`
+		User         User         `json:"user"`
+	}
+
+	Organization struct {
+		Id   uuid.UUID `json:"id"`
+		Name string    `json:"name"`
 	}
 
 	UserNotification struct {

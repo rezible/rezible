@@ -10,8 +10,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
-	"github.com/rezible/rezible/ent/environment"
-	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -180,60 +178,6 @@ func (f TraverseAlertMetrics) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
-}
-
-// The EnvironmentFunc type is an adapter to allow the use of ordinary function as a Querier.
-type EnvironmentFunc func(context.Context, *ent.EnvironmentQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f EnvironmentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.EnvironmentQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentQuery", q)
-}
-
-// The TraverseEnvironment type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseEnvironment func(context.Context, *ent.EnvironmentQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseEnvironment) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseEnvironment) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.EnvironmentQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.EnvironmentQuery", q)
-}
-
-// The FunctionalityFunc type is an adapter to allow the use of ordinary function as a Querier.
-type FunctionalityFunc func(context.Context, *ent.FunctionalityQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f FunctionalityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.FunctionalityQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.FunctionalityQuery", q)
-}
-
-// The TraverseFunctionality type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseFunctionality func(context.Context, *ent.FunctionalityQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseFunctionality) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseFunctionality) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.FunctionalityQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.FunctionalityQuery", q)
 }
 
 // The IncidentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1782,10 +1726,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
-	case *ent.EnvironmentQuery:
-		return &query[*ent.EnvironmentQuery, predicate.Environment, environment.OrderOption]{typ: ent.TypeEnvironment, tq: q}, nil
-	case *ent.FunctionalityQuery:
-		return &query[*ent.FunctionalityQuery, predicate.Functionality, functionality.OrderOption]{typ: ent.TypeFunctionality, tq: q}, nil
 	case *ent.IncidentQuery:
 		return &query[*ent.IncidentQuery, predicate.Incident, incident.OrderOption]{typ: ent.TypeIncident, tq: q}, nil
 	case *ent.IncidentDebriefQuery:

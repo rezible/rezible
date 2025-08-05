@@ -18,8 +18,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
-	"github.com/rezible/rezible/ent/environment"
-	"github.com/rezible/rezible/ent/functionality"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -88,10 +86,6 @@ type Client struct {
 	Alert *AlertClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
-	// Environment is the client for interacting with the Environment builders.
-	Environment *EnvironmentClient
-	// Functionality is the client for interacting with the Functionality builders.
-	Functionality *FunctionalityClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -219,8 +213,6 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
-	c.Environment = NewEnvironmentClient(c.config)
-	c.Functionality = NewFunctionalityClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
 	c.IncidentDebriefMessage = NewIncidentDebriefMessageClient(c.config)
@@ -372,8 +364,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
-		Environment:                      NewEnvironmentClient(cfg),
-		Functionality:                    NewFunctionalityClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -452,8 +442,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
-		Environment:                      NewEnvironmentClient(cfg),
-		Functionality:                    NewFunctionalityClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -540,8 +528,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertMetrics, c.Environment, c.Functionality, c.Incident,
-		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.Alert, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
@@ -567,8 +555,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertMetrics, c.Environment, c.Functionality, c.Incident,
-		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.Alert, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
@@ -597,10 +585,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *AlertMetricsMutation:
 		return c.AlertMetrics.mutate(ctx, m)
-	case *EnvironmentMutation:
-		return c.Environment.mutate(ctx, m)
-	case *FunctionalityMutation:
-		return c.Functionality.mutate(ctx, m)
 	case *IncidentMutation:
 		return c.Incident.mutate(ctx, m)
 	case *IncidentDebriefMutation:
@@ -1052,291 +1036,6 @@ func (c *AlertMetricsClient) mutate(ctx context.Context, m *AlertMetricsMutation
 	}
 }
 
-// EnvironmentClient is a client for the Environment schema.
-type EnvironmentClient struct {
-	config
-}
-
-// NewEnvironmentClient returns a client for the Environment from the given config.
-func NewEnvironmentClient(c config) *EnvironmentClient {
-	return &EnvironmentClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `environment.Hooks(f(g(h())))`.
-func (c *EnvironmentClient) Use(hooks ...Hook) {
-	c.hooks.Environment = append(c.hooks.Environment, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `environment.Intercept(f(g(h())))`.
-func (c *EnvironmentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Environment = append(c.inters.Environment, interceptors...)
-}
-
-// Create returns a builder for creating a Environment entity.
-func (c *EnvironmentClient) Create() *EnvironmentCreate {
-	mutation := newEnvironmentMutation(c.config, OpCreate)
-	return &EnvironmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Environment entities.
-func (c *EnvironmentClient) CreateBulk(builders ...*EnvironmentCreate) *EnvironmentCreateBulk {
-	return &EnvironmentCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *EnvironmentClient) MapCreateBulk(slice any, setFunc func(*EnvironmentCreate, int)) *EnvironmentCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &EnvironmentCreateBulk{err: fmt.Errorf("calling to EnvironmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*EnvironmentCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &EnvironmentCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Environment.
-func (c *EnvironmentClient) Update() *EnvironmentUpdate {
-	mutation := newEnvironmentMutation(c.config, OpUpdate)
-	return &EnvironmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *EnvironmentClient) UpdateOne(e *Environment) *EnvironmentUpdateOne {
-	mutation := newEnvironmentMutation(c.config, OpUpdateOne, withEnvironment(e))
-	return &EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *EnvironmentClient) UpdateOneID(id uuid.UUID) *EnvironmentUpdateOne {
-	mutation := newEnvironmentMutation(c.config, OpUpdateOne, withEnvironmentID(id))
-	return &EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Environment.
-func (c *EnvironmentClient) Delete() *EnvironmentDelete {
-	mutation := newEnvironmentMutation(c.config, OpDelete)
-	return &EnvironmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *EnvironmentClient) DeleteOne(e *Environment) *EnvironmentDeleteOne {
-	return c.DeleteOneID(e.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EnvironmentClient) DeleteOneID(id uuid.UUID) *EnvironmentDeleteOne {
-	builder := c.Delete().Where(environment.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &EnvironmentDeleteOne{builder}
-}
-
-// Query returns a query builder for Environment.
-func (c *EnvironmentClient) Query() *EnvironmentQuery {
-	return &EnvironmentQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeEnvironment},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Environment entity by its id.
-func (c *EnvironmentClient) Get(ctx context.Context, id uuid.UUID) (*Environment, error) {
-	return c.Query().Where(environment.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *EnvironmentClient) GetX(ctx context.Context, id uuid.UUID) *Environment {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryIncidents queries the incidents edge of a Environment.
-func (c *EnvironmentClient) QueryIncidents(e *Environment) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := e.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(environment.Table, environment.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, environment.IncidentsTable, environment.IncidentsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *EnvironmentClient) Hooks() []Hook {
-	hooks := c.hooks.Environment
-	return append(hooks[:len(hooks):len(hooks)], environment.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *EnvironmentClient) Interceptors() []Interceptor {
-	inters := c.inters.Environment
-	return append(inters[:len(inters):len(inters)], environment.Interceptors[:]...)
-}
-
-func (c *EnvironmentClient) mutate(ctx context.Context, m *EnvironmentMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&EnvironmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&EnvironmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&EnvironmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&EnvironmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Environment mutation op: %q", m.Op())
-	}
-}
-
-// FunctionalityClient is a client for the Functionality schema.
-type FunctionalityClient struct {
-	config
-}
-
-// NewFunctionalityClient returns a client for the Functionality from the given config.
-func NewFunctionalityClient(c config) *FunctionalityClient {
-	return &FunctionalityClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `functionality.Hooks(f(g(h())))`.
-func (c *FunctionalityClient) Use(hooks ...Hook) {
-	c.hooks.Functionality = append(c.hooks.Functionality, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `functionality.Intercept(f(g(h())))`.
-func (c *FunctionalityClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Functionality = append(c.inters.Functionality, interceptors...)
-}
-
-// Create returns a builder for creating a Functionality entity.
-func (c *FunctionalityClient) Create() *FunctionalityCreate {
-	mutation := newFunctionalityMutation(c.config, OpCreate)
-	return &FunctionalityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Functionality entities.
-func (c *FunctionalityClient) CreateBulk(builders ...*FunctionalityCreate) *FunctionalityCreateBulk {
-	return &FunctionalityCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *FunctionalityClient) MapCreateBulk(slice any, setFunc func(*FunctionalityCreate, int)) *FunctionalityCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &FunctionalityCreateBulk{err: fmt.Errorf("calling to FunctionalityClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*FunctionalityCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &FunctionalityCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Functionality.
-func (c *FunctionalityClient) Update() *FunctionalityUpdate {
-	mutation := newFunctionalityMutation(c.config, OpUpdate)
-	return &FunctionalityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *FunctionalityClient) UpdateOne(f *Functionality) *FunctionalityUpdateOne {
-	mutation := newFunctionalityMutation(c.config, OpUpdateOne, withFunctionality(f))
-	return &FunctionalityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *FunctionalityClient) UpdateOneID(id uuid.UUID) *FunctionalityUpdateOne {
-	mutation := newFunctionalityMutation(c.config, OpUpdateOne, withFunctionalityID(id))
-	return &FunctionalityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Functionality.
-func (c *FunctionalityClient) Delete() *FunctionalityDelete {
-	mutation := newFunctionalityMutation(c.config, OpDelete)
-	return &FunctionalityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *FunctionalityClient) DeleteOne(f *Functionality) *FunctionalityDeleteOne {
-	return c.DeleteOneID(f.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *FunctionalityClient) DeleteOneID(id uuid.UUID) *FunctionalityDeleteOne {
-	builder := c.Delete().Where(functionality.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &FunctionalityDeleteOne{builder}
-}
-
-// Query returns a query builder for Functionality.
-func (c *FunctionalityClient) Query() *FunctionalityQuery {
-	return &FunctionalityQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeFunctionality},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Functionality entity by its id.
-func (c *FunctionalityClient) Get(ctx context.Context, id uuid.UUID) (*Functionality, error) {
-	return c.Query().Where(functionality.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *FunctionalityClient) GetX(ctx context.Context, id uuid.UUID) *Functionality {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *FunctionalityClient) Hooks() []Hook {
-	hooks := c.hooks.Functionality
-	return append(hooks[:len(hooks):len(hooks)], functionality.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *FunctionalityClient) Interceptors() []Interceptor {
-	return c.inters.Functionality
-}
-
-func (c *FunctionalityClient) mutate(ctx context.Context, m *FunctionalityMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&FunctionalityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&FunctionalityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&FunctionalityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&FunctionalityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Functionality mutation op: %q", m.Op())
-	}
-}
-
 // IncidentClient is a client for the Incident schema.
 type IncidentClient struct {
 	config
@@ -1443,22 +1142,6 @@ func (c *IncidentClient) GetX(ctx context.Context, id uuid.UUID) *Incident {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryEnvironments queries the environments edge of a Incident.
-func (c *IncidentClient) QueryEnvironments(i *Incident) *EnvironmentQuery {
-	query := (&EnvironmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // QuerySeverity queries the severity edge of a Incident.
@@ -11723,41 +11406,40 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertMetrics, Environment, Functionality, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
-		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
-		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
-		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentTeamAssignment,
-		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
-		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallUserShift, OncallUserShiftHandover, OncallUserShiftMetrics, Playbook,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User []ent.Hook
+		Alert, AlertMetrics, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
+		OncallUserShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
+		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
+		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
+		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, AlertMetrics, Environment, Functionality, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
-		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
-		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
-		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentTeamAssignment,
-		IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
-		OncallAnnotationAlertFeedback, OncallEvent, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallUserShift, OncallUserShiftHandover, OncallUserShiftMetrics, Playbook,
-		ProviderConfig, ProviderSyncHistory, Retrospective, RetrospectiveDiscussion,
-		RetrospectiveDiscussionReply, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		Tenant, Ticket, User []ent.Interceptor
+		Alert, AlertMetrics, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
+		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
+		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
+		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
+		OncallUserShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
+		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
+		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
+		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket,
+		User []ent.Interceptor
 	}
 )

@@ -84,46 +84,6 @@ export type AuthSessionsConfig = {
     providerName: string;
 };
 
-export type CreateEnvironmentAttributes = {
-    name: string;
-};
-
-export type CreateEnvironmentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateEnvironmentAttributes;
-};
-
-export type CreateEnvironmentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Environment;
-};
-
-export type CreateFunctionalityAttributes = {
-    name: string;
-};
-
-export type CreateFunctionalityRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateFunctionalityAttributes;
-};
-
-export type CreateFunctionalityResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Functionality;
-};
-
 export type CreateIncidentAttributes = {
     summary: string;
     title: string;
@@ -727,16 +687,6 @@ export type DocumentEditorSessionUser = {
     username: string;
 };
 
-export type Environment = {
-    attributes: EnvironmentAttributes;
-    id: string;
-};
-
-export type EnvironmentAttributes = {
-    archived: boolean;
-    name: string;
-};
-
 export type ErrorDetail = {
     /**
      * Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
@@ -802,15 +752,6 @@ export type ExternalTicket = {
     provider: string;
 };
 
-export type Functionality = {
-    attributes: FunctionalityAttributes;
-    id: string;
-};
-
-export type FunctionalityAttributes = {
-    name: string;
-};
-
 export type GetAdjacentOncallShiftsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -841,22 +782,6 @@ export type GetCurrentUserAuthSessionResponseBody = {
      */
     readonly $schema?: string;
     data: UserAuthSession;
-};
-
-export type GetEnvironmentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Environment;
-};
-
-export type GetFunctionalityResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Functionality;
 };
 
 export type GetIncidentDebriefQuestionResponseBody = {
@@ -1164,7 +1089,6 @@ export type IncidentAttributes = {
     chatChannel: IncidentChatChannel;
     closedAt: string;
     currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
-    environments: Array<Environment>;
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
     private: boolean;
@@ -1175,7 +1099,7 @@ export type IncidentAttributes = {
     tags: Array<IncidentTag>;
     tasks: Array<Task>;
     teams: Array<IncidentTeamAssignment>;
-    ticket: ExternalTicket;
+    ticket?: ExternalTicket;
     title: string;
     type: IncidentType;
 };
@@ -1425,24 +1349,6 @@ export type ListAlertsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Alert>;
-    pagination: ResponsePagination;
-};
-
-export type ListEnvironmentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Environment>;
-    pagination: ResponsePagination;
-};
-
-export type ListFunctionalitiesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<Functionality>;
     pagination: ResponsePagination;
 };
 
@@ -1937,6 +1843,11 @@ export type OncallShiftsAdjacent = {
     previous?: OncallShift;
 };
 
+export type Organization = {
+    id: string;
+    name: string;
+};
+
 export type Playbook = {
     attributes: PlaybookAttributes;
     id: string;
@@ -2196,47 +2107,6 @@ export type Team = {
 export type TeamAttributes = {
     name: string;
     slug: string;
-};
-
-export type UpdateEnvironmentAttributes = {
-    archived?: boolean;
-    name?: string;
-};
-
-export type UpdateEnvironmentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateEnvironmentAttributes;
-};
-
-export type UpdateEnvironmentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Environment;
-};
-
-export type UpdateFunctionalityAttributes = {
-    name: string;
-};
-
-export type UpdateFunctionalityRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateFunctionalityAttributes;
-};
-
-export type UpdateFunctionalityResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Functionality;
 };
 
 export type UpdateIncidentAttributes = {
@@ -2873,6 +2743,7 @@ export type UserAttributes = {
 
 export type UserAuthSession = {
     expiresAt: string;
+    organization: Organization;
     user: User;
 };
 
@@ -3468,478 +3339,6 @@ export type VerifyDocumentEditorSessionResponses = {
 };
 
 export type VerifyDocumentEditorSessionResponse = VerifyDocumentEditorSessionResponses[keyof VerifyDocumentEditorSessionResponses];
-
-export type ListEnvironmentsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/environments';
-};
-
-export type ListEnvironmentsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListEnvironmentsError = ListEnvironmentsErrors[keyof ListEnvironmentsErrors];
-
-export type ListEnvironmentsResponses = {
-    /**
-     * OK
-     */
-    200: ListEnvironmentsResponseBody;
-};
-
-export type ListEnvironmentsResponse = ListEnvironmentsResponses[keyof ListEnvironmentsResponses];
-
-export type CreateEnvironmentData = {
-    body: CreateEnvironmentRequestBody;
-    path?: never;
-    query?: never;
-    url: '/environments';
-};
-
-export type CreateEnvironmentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateEnvironmentError = CreateEnvironmentErrors[keyof CreateEnvironmentErrors];
-
-export type CreateEnvironmentResponses = {
-    /**
-     * OK
-     */
-    200: CreateEnvironmentResponseBody;
-};
-
-export type CreateEnvironmentResponse = CreateEnvironmentResponses[keyof CreateEnvironmentResponses];
-
-export type ArchiveEnvironmentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/environments/{id}';
-};
-
-export type ArchiveEnvironmentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveEnvironmentError = ArchiveEnvironmentErrors[keyof ArchiveEnvironmentErrors];
-
-export type ArchiveEnvironmentResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveEnvironmentResponse = ArchiveEnvironmentResponses[keyof ArchiveEnvironmentResponses];
-
-export type GetEnvironmentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/environments/{id}';
-};
-
-export type GetEnvironmentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetEnvironmentError = GetEnvironmentErrors[keyof GetEnvironmentErrors];
-
-export type GetEnvironmentResponses = {
-    /**
-     * OK
-     */
-    200: GetEnvironmentResponseBody;
-};
-
-export type GetEnvironmentResponse = GetEnvironmentResponses[keyof GetEnvironmentResponses];
-
-export type UpdateEnvironmentData = {
-    body: UpdateEnvironmentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/environments/{id}';
-};
-
-export type UpdateEnvironmentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateEnvironmentError = UpdateEnvironmentErrors[keyof UpdateEnvironmentErrors];
-
-export type UpdateEnvironmentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateEnvironmentResponseBody;
-};
-
-export type UpdateEnvironmentResponse = UpdateEnvironmentResponses[keyof UpdateEnvironmentResponses];
-
-export type ListFunctionalitiesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/functionalities';
-};
-
-export type ListFunctionalitiesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListFunctionalitiesError = ListFunctionalitiesErrors[keyof ListFunctionalitiesErrors];
-
-export type ListFunctionalitiesResponses = {
-    /**
-     * OK
-     */
-    200: ListFunctionalitiesResponseBody;
-};
-
-export type ListFunctionalitiesResponse = ListFunctionalitiesResponses[keyof ListFunctionalitiesResponses];
-
-export type CreateFunctionalityData = {
-    body: CreateFunctionalityRequestBody;
-    path?: never;
-    query?: never;
-    url: '/functionalities';
-};
-
-export type CreateFunctionalityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateFunctionalityError = CreateFunctionalityErrors[keyof CreateFunctionalityErrors];
-
-export type CreateFunctionalityResponses = {
-    /**
-     * OK
-     */
-    200: CreateFunctionalityResponseBody;
-};
-
-export type CreateFunctionalityResponse = CreateFunctionalityResponses[keyof CreateFunctionalityResponses];
-
-export type ArchiveFunctionalityData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/functionalities/{id}';
-};
-
-export type ArchiveFunctionalityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveFunctionalityError = ArchiveFunctionalityErrors[keyof ArchiveFunctionalityErrors];
-
-export type ArchiveFunctionalityResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveFunctionalityResponse = ArchiveFunctionalityResponses[keyof ArchiveFunctionalityResponses];
-
-export type GetFunctionalityData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/functionalities/{id}';
-};
-
-export type GetFunctionalityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetFunctionalityError = GetFunctionalityErrors[keyof GetFunctionalityErrors];
-
-export type GetFunctionalityResponses = {
-    /**
-     * OK
-     */
-    200: GetFunctionalityResponseBody;
-};
-
-export type GetFunctionalityResponse = GetFunctionalityResponses[keyof GetFunctionalityResponses];
-
-export type UpdateFunctionalityData = {
-    body: UpdateFunctionalityRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/functionalities/{id}';
-};
-
-export type UpdateFunctionalityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateFunctionalityError = UpdateFunctionalityErrors[keyof UpdateFunctionalityErrors];
-
-export type UpdateFunctionalityResponses = {
-    /**
-     * OK
-     */
-    200: UpdateFunctionalityResponseBody;
-};
-
-export type UpdateFunctionalityResponse = UpdateFunctionalityResponses[keyof UpdateFunctionalityResponses];
 
 export type GetIncidentDebriefData = {
     body?: never;
@@ -11258,5 +10657,5 @@ export type GetUserResponses = {
 export type GetUserResponse = GetUserResponses[keyof GetUserResponses];
 
 export type ClientOptions = {
-    baseUrl: 'http://localhost:8888' | (string & {});
+    baseUrl: `${string}://${string}` | (string & {});
 };

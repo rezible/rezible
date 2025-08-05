@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentevent"
@@ -216,21 +215,6 @@ func (iu *IncidentUpdate) ClearTypeID() *IncidentUpdate {
 	return iu
 }
 
-// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
-func (iu *IncidentUpdate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.AddEnvironmentIDs(ids...)
-	return iu
-}
-
-// AddEnvironments adds the "environments" edges to the Environment entity.
-func (iu *IncidentUpdate) AddEnvironments(e ...*Environment) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iu.AddEnvironmentIDs(ids...)
-}
-
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (iu *IncidentUpdate) SetSeverity(i *IncidentSeverity) *IncidentUpdate {
 	return iu.SetSeverityID(i.ID)
@@ -424,27 +408,6 @@ func (iu *IncidentUpdate) AddIncidentLinks(i ...*IncidentLink) *IncidentUpdate {
 // Mutation returns the IncidentMutation object of the builder.
 func (iu *IncidentUpdate) Mutation() *IncidentMutation {
 	return iu.mutation
-}
-
-// ClearEnvironments clears all "environments" edges to the Environment entity.
-func (iu *IncidentUpdate) ClearEnvironments() *IncidentUpdate {
-	iu.mutation.ClearEnvironments()
-	return iu
-}
-
-// RemoveEnvironmentIDs removes the "environments" edge to Environment entities by IDs.
-func (iu *IncidentUpdate) RemoveEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdate {
-	iu.mutation.RemoveEnvironmentIDs(ids...)
-	return iu
-}
-
-// RemoveEnvironments removes "environments" edges to Environment entities.
-func (iu *IncidentUpdate) RemoveEnvironments(e ...*Environment) *IncidentUpdate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iu.RemoveEnvironmentIDs(ids...)
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -782,51 +745,6 @@ func (iu *IncidentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if iu.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
-	}
-	if iu.mutation.EnvironmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.RemovedEnvironmentsIDs(); len(nodes) > 0 && !iu.mutation.EnvironmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iu.mutation.EnvironmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if iu.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1620,21 +1538,6 @@ func (iuo *IncidentUpdateOne) ClearTypeID() *IncidentUpdateOne {
 	return iuo
 }
 
-// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
-func (iuo *IncidentUpdateOne) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.AddEnvironmentIDs(ids...)
-	return iuo
-}
-
-// AddEnvironments adds the "environments" edges to the Environment entity.
-func (iuo *IncidentUpdateOne) AddEnvironments(e ...*Environment) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iuo.AddEnvironmentIDs(ids...)
-}
-
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (iuo *IncidentUpdateOne) SetSeverity(i *IncidentSeverity) *IncidentUpdateOne {
 	return iuo.SetSeverityID(i.ID)
@@ -1828,27 +1731,6 @@ func (iuo *IncidentUpdateOne) AddIncidentLinks(i ...*IncidentLink) *IncidentUpda
 // Mutation returns the IncidentMutation object of the builder.
 func (iuo *IncidentUpdateOne) Mutation() *IncidentMutation {
 	return iuo.mutation
-}
-
-// ClearEnvironments clears all "environments" edges to the Environment entity.
-func (iuo *IncidentUpdateOne) ClearEnvironments() *IncidentUpdateOne {
-	iuo.mutation.ClearEnvironments()
-	return iuo
-}
-
-// RemoveEnvironmentIDs removes the "environments" edge to Environment entities by IDs.
-func (iuo *IncidentUpdateOne) RemoveEnvironmentIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	iuo.mutation.RemoveEnvironmentIDs(ids...)
-	return iuo
-}
-
-// RemoveEnvironments removes "environments" edges to Environment entities.
-func (iuo *IncidentUpdateOne) RemoveEnvironments(e ...*Environment) *IncidentUpdateOne {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return iuo.RemoveEnvironmentIDs(ids...)
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -2216,51 +2098,6 @@ func (iuo *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err
 	}
 	if iuo.mutation.ChatChannelIDCleared() {
 		_spec.ClearField(incident.FieldChatChannelID, field.TypeString)
-	}
-	if iuo.mutation.EnvironmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.RemovedEnvironmentsIDs(); len(nodes) > 0 && !iuo.mutation.EnvironmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iuo.mutation.EnvironmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if iuo.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{

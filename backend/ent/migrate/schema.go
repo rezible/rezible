@@ -39,29 +39,6 @@ var (
 			},
 		},
 	}
-	// EnvironmentsColumns holds the columns for the "environments" table.
-	EnvironmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
-		{Name: "name", Type: field.TypeString, Unique: true},
-	}
-	// EnvironmentsTable holds the schema information for the "environments" table.
-	EnvironmentsTable = &schema.Table{
-		Name:       "environments",
-		Columns:    EnvironmentsColumns,
-		PrimaryKey: []*schema.Column{EnvironmentsColumns[0]},
-	}
-	// FunctionalitiesColumns holds the columns for the "functionalities" table.
-	FunctionalitiesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-	}
-	// FunctionalitiesTable holds the schema information for the "functionalities" table.
-	FunctionalitiesTable = &schema.Table{
-		Name:       "functionalities",
-		Columns:    FunctionalitiesColumns,
-		PrimaryKey: []*schema.Column{FunctionalitiesColumns[0]},
-	}
 	// IncidentsColumns holds the columns for the "incidents" table.
 	IncidentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1429,31 +1406,6 @@ var (
 			},
 		},
 	}
-	// IncidentEnvironmentsColumns holds the columns for the "incident_environments" table.
-	IncidentEnvironmentsColumns = []*schema.Column{
-		{Name: "incident_id", Type: field.TypeUUID},
-		{Name: "environment_id", Type: field.TypeUUID},
-	}
-	// IncidentEnvironmentsTable holds the schema information for the "incident_environments" table.
-	IncidentEnvironmentsTable = &schema.Table{
-		Name:       "incident_environments",
-		Columns:    IncidentEnvironmentsColumns,
-		PrimaryKey: []*schema.Column{IncidentEnvironmentsColumns[0], IncidentEnvironmentsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "incident_environments_incident_id",
-				Columns:    []*schema.Column{IncidentEnvironmentsColumns[0]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "incident_environments_environment_id",
-				Columns:    []*schema.Column{IncidentEnvironmentsColumns[1]},
-				RefColumns: []*schema.Column{EnvironmentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// IncidentFieldSelectionsColumns holds the columns for the "incident_field_selections" table.
 	IncidentFieldSelectionsColumns = []*schema.Column{
 		{Name: "incident_id", Type: field.TypeUUID},
@@ -1908,8 +1860,6 @@ var (
 	Tables = []*schema.Table{
 		AlertsTable,
 		AlertMetricsTable,
-		EnvironmentsTable,
-		FunctionalitiesTable,
 		IncidentsTable,
 		IncidentDebriefsTable,
 		IncidentDebriefMessagesTable,
@@ -1967,7 +1917,6 @@ var (
 		TenantsTable,
 		TicketsTable,
 		UsersTable,
-		IncidentEnvironmentsTable,
 		IncidentFieldSelectionsTable,
 		IncidentTagAssignmentsTable,
 		IncidentReviewSessionsTable,
@@ -2057,8 +2006,6 @@ func init() {
 	TasksTable.ForeignKeys[1].RefTable = UsersTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentEnvironmentsTable.ForeignKeys[0].RefTable = IncidentsTable
-	IncidentEnvironmentsTable.ForeignKeys[1].RefTable = EnvironmentsTable
 	IncidentFieldSelectionsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentFieldSelectionsTable.ForeignKeys[1].RefTable = IncidentFieldOptionsTable
 	IncidentTagAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable

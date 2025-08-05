@@ -15,8 +15,6 @@ type Handler struct {
 	*alertsHandler
 	*authSessionsHandler
 	*documentsHandler
-	*environmentsHandler
-	*functionalitiesHandler
 	*incidentDebriefsHandler
 	*incidentEventsHandler
 	*incidentFieldsHandler
@@ -37,7 +35,6 @@ type Handler struct {
 	*retrospectivesHandler
 	*systemAnalysisHandler
 	*systemComponentsHandler
-	*subscriptionsHandler
 	*teamsHandler
 	*usersHandler
 }
@@ -63,8 +60,6 @@ func NewHandler(
 		oncallMetricsHandler:      newOncallMetricsHandler(),
 		authSessionsHandler:       newAuthSessionsHandler(auth, users),
 		documentsHandler:          newDocumentsHandler(documents, auth, users),
-		environmentsHandler:       newEnvironmentsHandler(db.Environment),
-		functionalitiesHandler:    newFunctionalitiesHandler(),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, auth, users, debriefs),
 		incidentEventsHandler:     newIncidentEventsHandler(db, auth),
 		incidentFieldsHandler:     newIncidentFieldsHandler(db),
@@ -84,7 +79,6 @@ func NewHandler(
 		retrospectivesHandler:     newRetrospectivesHandler(auth, users, incidents, retros, documents),
 		systemAnalysisHandler:     newSystemAnalysisHandler(db, components),
 		systemComponentsHandler:   newSystemComponentsHandler(db, components),
-		subscriptionsHandler:      newSubscriptionsHandler(),
 		teamsHandler:              newTeamsHandler(db.Team),
 		usersHandler:              newUsersHandler(users),
 	}

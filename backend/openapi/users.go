@@ -23,6 +23,7 @@ type (
 		Id         uuid.UUID      `json:"id"`
 		Attributes UserAttributes `json:"attributes"`
 	}
+
 	UserAttributes struct {
 		Name  string `json:"name"`
 		Email string `json:"email"`
@@ -30,12 +31,14 @@ type (
 )
 
 func UserFromEnt(user *ent.User) User {
+	attr := UserAttributes{
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
 	return User{
-		Id: user.ID,
-		Attributes: UserAttributes{
-			Name:  user.Name,
-			Email: "",
-		},
+		Id:         user.ID,
+		Attributes: attr,
 	}
 }
 

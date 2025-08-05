@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentevent"
@@ -39,7 +38,6 @@ type IncidentQuery struct {
 	order               []incident.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.Incident
-	withEnvironments    *EnvironmentQuery
 	withSeverity        *IncidentSeverityQuery
 	withType            *IncidentTypeQuery
 	withTeamAssignments *IncidentTeamAssignmentQuery
@@ -89,28 +87,6 @@ func (iq *IncidentQuery) Unique(unique bool) *IncidentQuery {
 func (iq *IncidentQuery) Order(o ...incident.OrderOption) *IncidentQuery {
 	iq.order = append(iq.order, o...)
 	return iq
-}
-
-// QueryEnvironments chains the current query on the "environments" edge.
-func (iq *IncidentQuery) QueryEnvironments() *EnvironmentQuery {
-	query := (&EnvironmentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(environment.Table, environment.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incident.EnvironmentsTable, incident.EnvironmentsPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // QuerySeverity chains the current query on the "severity" edge.
@@ -613,7 +589,6 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		order:               append([]incident.OrderOption{}, iq.order...),
 		inters:              append([]Interceptor{}, iq.inters...),
 		predicates:          append([]predicate.Incident{}, iq.predicates...),
-		withEnvironments:    iq.withEnvironments.Clone(),
 		withSeverity:        iq.withSeverity.Clone(),
 		withType:            iq.withType.Clone(),
 		withTeamAssignments: iq.withTeamAssignments.Clone(),
@@ -633,17 +608,6 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		path:      iq.path,
 		modifiers: append([]func(*sql.Selector){}, iq.modifiers...),
 	}
-}
-
-// WithEnvironments tells the query-builder to eager-load the nodes that are connected to
-// the "environments" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithEnvironments(opts ...func(*EnvironmentQuery)) *IncidentQuery {
-	query := (&EnvironmentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withEnvironments = query
-	return iq
 }
 
 // WithSeverity tells the query-builder to eager-load the nodes that are connected to
@@ -884,8 +848,7 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [15]bool{
-			iq.withEnvironments != nil,
+		loadedTypes = [14]bool{
 			iq.withSeverity != nil,
 			iq.withType != nil,
 			iq.withTeamAssignments != nil,
@@ -922,13 +885,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
-	}
-	if query := iq.withEnvironments; query != nil {
-		if err := iq.loadEnvironments(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Environments = []*Environment{} },
-			func(n *Incident, e *Environment) { n.Edges.Environments = append(n.Edges.Environments, e) }); err != nil {
-			return nil, err
-		}
 	}
 	if query := iq.withSeverity; query != nil {
 		if err := iq.loadSeverity(ctx, query, nodes, nil,
@@ -1035,67 +991,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	return nodes, nil
 }
 
-func (iq *IncidentQuery) loadEnvironments(ctx context.Context, query *EnvironmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Environment)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*Incident)
-	nids := make(map[uuid.UUID]map[*Incident]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incident.EnvironmentsTable)
-		s.Join(joinT).On(s.C(environment.FieldID), joinT.C(incident.EnvironmentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incident.EnvironmentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incident.EnvironmentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*Environment](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "environments" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
 func (iq *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeverityQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSeverity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Incident)

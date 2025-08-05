@@ -39,7 +39,6 @@ func (Incident) Fields() []ent.Field {
 // Edges of the Incident.
 func (Incident) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("environments", Environment.Type),
 		edge.To("severity", IncidentSeverity.Type).
 			Unique().Field("severity_id"),
 		edge.To("type", IncidentType.Type).

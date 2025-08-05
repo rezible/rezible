@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/environment"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentevent"
@@ -148,21 +147,6 @@ func (ic *IncidentCreate) SetNillableID(u *uuid.UUID) *IncidentCreate {
 		ic.SetID(*u)
 	}
 	return ic
-}
-
-// AddEnvironmentIDs adds the "environments" edge to the Environment entity by IDs.
-func (ic *IncidentCreate) AddEnvironmentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddEnvironmentIDs(ids...)
-	return ic
-}
-
-// AddEnvironments adds the "environments" edges to the Environment entity.
-func (ic *IncidentCreate) AddEnvironments(e ...*Environment) *IncidentCreate {
-	ids := make([]uuid.UUID, len(e))
-	for i := range e {
-		ids[i] = e[i].ID
-	}
-	return ic.AddEnvironmentIDs(ids...)
 }
 
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
@@ -503,22 +487,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := ic.mutation.ChatChannelID(); ok {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
-	}
-	if nodes := ic.mutation.EnvironmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incident.EnvironmentsTable,
-			Columns: incident.EnvironmentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(environment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ic.mutation.SeverityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

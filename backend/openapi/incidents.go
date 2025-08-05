@@ -42,9 +42,8 @@ type (
 		ClosedAt        time.Time                `json:"closedAt"`
 		Severity        IncidentSeverity         `json:"severity"`
 		Type            IncidentType             `json:"type"`
-		Environments    []Environment            `json:"environments"`
 		Tags            []IncidentTag            `json:"tags"`
-		Ticket          ExternalTicket           `json:"ticket"`
+		Ticket          *ExternalTicket          `json:"ticket,omitempty"`
 		Tasks           []Task                   `json:"tasks"`
 		RoleAssignments []IncidentRoleAssignment `json:"roles"`
 		TeamAssignments []IncidentTeamAssignment `json:"teams"`
@@ -117,11 +116,6 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		for i, t := range teams {
 			attributes.TeamAssignments[i] = IncidentTeamAssignmentFromEnt(t)
 		}
-	}
-
-	attributes.Environments = make([]Environment, len(inc.Edges.Environments))
-	for i, env := range inc.Edges.Environments {
-		attributes.Environments[i] = EnvironmentFromEnt(env)
 	}
 
 	attributes.LinkedIncidents = make([]IncidentLink, 0)

@@ -33,30 +33,6 @@ func (f AlertMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMetricsMutation", m)
 }
 
-// The EnvironmentFunc type is an adapter to allow the use of ordinary
-// function as Environment mutator.
-type EnvironmentFunc func(context.Context, *ent.EnvironmentMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f EnvironmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.EnvironmentMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EnvironmentMutation", m)
-}
-
-// The FunctionalityFunc type is an adapter to allow the use of ordinary
-// function as Functionality mutator.
-type FunctionalityFunc func(context.Context, *ent.FunctionalityMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f FunctionalityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.FunctionalityMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.FunctionalityMutation", m)
-}
-
 // The IncidentFunc type is an adapter to allow the use of ordinary
 // function as Incident mutator.
 type IncidentFunc func(context.Context, *ent.IncidentMutation) (ent.Value, error)

@@ -35,9 +35,15 @@ func (h *authSessionsHandler) GetCurrentUserAuthSession(ctx context.Context, inp
 		return nil, detailError("failed to get user", userErr)
 	}
 
+	tenant, tenantErr := user.QueryTenant().First(ctx)
+	if tenantErr != nil {
+		return nil, detailError("failed to get tenant", tenantErr)
+	}
+
 	resp.Body.Data = oapi.UserAuthSession{
-		ExpiresAt: sess.ExpiresAt,
-		User:      oapi.UserFromEnt(user),
+		ExpiresAt:    sess.ExpiresAt,
+		Organization: oapi.Organization{Id: tenant.PublicID, Name: tenant.Name},
+		User:         oapi.UserFromEnt(user),
 	}
 
 	return &resp, nil

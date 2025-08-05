@@ -20,22 +20,6 @@ func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	return &AlertMetricsClient{config: cfg}
 }
 
-func (c *EnvironmentClient) Debug() *EnvironmentClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &EnvironmentClient{config: cfg}
-}
-
-func (c *FunctionalityClient) Debug() *FunctionalityClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &FunctionalityClient{config: cfg}
-}
-
 func (c *IncidentClient) Debug() *IncidentClient {
 	if c.debug {
 		return c
