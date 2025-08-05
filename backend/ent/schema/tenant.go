@@ -5,7 +5,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/privacy"
-	"github.com/rezible/rezible/ent/schema/privacyrules"
+	"github.com/rezible/rezible/ent/schema/rules"
 )
 
 type Tenant struct {
@@ -28,7 +28,7 @@ func (Tenant) Fields() []ent.Field {
 func (Tenant) Policy() ent.Policy {
 	return privacy.Policy{
 		Mutation: privacy.MutationPolicy{
-			privacyrules.AllowIfSystemRole(),
+			rules.AllowIfSystemRole(),
 			privacy.AlwaysDenyRule(),
 		},
 	}

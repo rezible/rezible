@@ -1,4 +1,4 @@
-package privacyrules
+package rules
 
 import (
 	"context"

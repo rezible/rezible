@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/hook"
 	"github.com/rezible/rezible/ent/intercept"
 	"github.com/rezible/rezible/ent/privacy"
-	"github.com/rezible/rezible/ent/schema/privacyrules"
+	"github.com/rezible/rezible/ent/schema/rules"
 )
 
 type BaseMixin struct {
@@ -25,11 +25,11 @@ type BaseMixin struct {
 func (BaseMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
-			privacyrules.DenyIfNoAccessContext(),
-			privacyrules.AllowIfSystemRole(),
+			rules.DenyIfNoAccessContext(),
+			rules.AllowIfSystemRole(),
 		},
 		Mutation: privacy.MutationPolicy{
-			privacyrules.DenyIfNoAccessContext(),
+			rules.DenyIfNoAccessContext(),
 		},
 	}
 }
@@ -55,7 +55,7 @@ func (TenantMixin) Edges() []ent.Edge {
 }
 
 func (TenantMixin) Policy() ent.Policy {
-	return privacyrules.FilterTenantRule()
+	return rules.FilterTenantRule()
 }
 
 // ArchiveMixin implements the soft delete pattern for schemas.
