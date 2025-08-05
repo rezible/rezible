@@ -29,7 +29,7 @@ type AuthSessionService struct {
 
 var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
-func NewAuthSessionService(ctx context.Context, users rez.UserService, sessProv rez.AuthSessionProvider, sessionSecretKey string) (*AuthSessionService, error) {
+func NewAuthSessionService(users rez.UserService, sessProv rez.AuthSessionProvider, sessionSecretKey string) (*AuthSessionService, error) {
 	return &AuthSessionService{
 		users:         users,
 		sessProvider:  sessProv,

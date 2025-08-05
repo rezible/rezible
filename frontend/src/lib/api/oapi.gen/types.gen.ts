@@ -1933,8 +1933,8 @@ export type OncallShiftMetricsIncidents = {
 };
 
 export type OncallShiftsAdjacent = {
-    next: OncallShift;
-    previous: OncallShift;
+    next?: OncallShift;
+    previous?: OncallShift;
 };
 
 export type Playbook = {

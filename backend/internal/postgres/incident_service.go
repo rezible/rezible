@@ -21,7 +21,7 @@ type IncidentService struct {
 	chat  rez.ChatService
 }
 
-func NewIncidentService(ctx context.Context, db *ent.Client, jobs rez.JobsService, lms rez.LanguageModelService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
+func NewIncidentService(db *ent.Client, jobs rez.JobsService, lms rez.LanguageModelService, chat rez.ChatService, users rez.UserService) (*IncidentService, error) {
 	svc := &IncidentService{
 		db:    db,
 		jobs:  jobs,

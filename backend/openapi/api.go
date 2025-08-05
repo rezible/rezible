@@ -5,7 +5,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-	rez "github.com/rezible/rezible"
 )
 
 type (
@@ -62,7 +61,7 @@ func MakeConfig() huma.Config {
 	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
 	cfg.DocsPath = ""
 	cfg.Servers = []*huma.Server{
-		{URL: rez.BackendUrl},
+		//{URL: rez.BackendUrl},
 	}
 	cfg.Info.Description = "Rezible API Specification"
 
@@ -73,17 +72,16 @@ func MakeConfig() huma.Config {
 }
 
 func RegisterRoutes(api huma.API, handler Handler) {
-	huma.AutoRegister(api, operations{handler})
+	huma.AutoRegister(api, operations{Handler: handler})
 }
 
 func MakeApi(s Handler, prefix string, mw ...Middleware) huma.API {
 	cfg := MakeConfig()
-	/*
-		cfg.Transformers = append([]huma.Transformer{
-			interceptErrors(s)},
-			cfg.Transformers...,
-		)
-	*/
+
+	//tranformers := []huma.Transformer{
+	//	interceptErrors(s),
+	//}
+	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
 	adapter := humago.NewAdapter(http.NewServeMux(), prefix)
 	api := huma.NewAPI(cfg, adapter)

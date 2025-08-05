@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/danielgtaylor/huma/v2/humacli"
-	"time"
 )
 
 type Options struct {
@@ -19,17 +18,9 @@ type Options struct {
 
 func main() {
 	onOptionsParsed := func(hooks humacli.Hooks, opts *Options) {
-		ctx := context.Background()
-		rezSrv := newRezibleServer(opts)
-		hooks.OnStart(func() {
-			rezSrv.Start(ctx)
-		})
-		hooks.OnStop(func() {
-			timeout := time.Duration(opts.StopTimeoutSeconds) * time.Second
-			timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, timeout)
-			defer cancelStopCtx()
-			rezSrv.Stop(timeoutCtx)
-		})
+		s := newRezibleServer(opts)
+		hooks.OnStart(s.Start)
+		hooks.OnStop(s.Stop)
 	}
 	cli := humacli.New(onOptionsParsed)
 

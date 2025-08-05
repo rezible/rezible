@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/access"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/internal/postgres/datasync"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
+	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -24,7 +25,8 @@ func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts 
 		Use:   name,
 		Short: desc,
 		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
-			if cmdErr := cmdFn(cmd.Context(), o); cmdErr != nil {
+			systemCtx := access.SystemContext(cmd.Context())
+			if cmdErr := cmdFn(systemCtx, o); cmdErr != nil {
 				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("Failed to execute command")
 			}
 		}),

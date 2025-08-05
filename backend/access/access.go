@@ -15,6 +15,14 @@ func (r Roles) Has(role Role) bool {
 	return has
 }
 
+func MakeRoles(roles ...Role) Roles {
+	r := Roles{}
+	for _, role := range roles {
+		r[role] = struct{}{}
+	}
+	return r
+}
+
 const (
 	RoleSystem Role = "system"
 	RoleUser   Role = "user"
@@ -45,4 +53,8 @@ func StoreAuthContext(parent context.Context, ac *AuthContext) context.Context {
 func GetAuthContext(ctx context.Context) *AuthContext {
 	c, _ := ctx.Value(ctxKey{}).(*AuthContext)
 	return c
+}
+
+func SystemContext(ctx context.Context) context.Context {
+	return StoreAuthContext(ctx, &AuthContext{roles: MakeRoles(RoleSystem)})
 }

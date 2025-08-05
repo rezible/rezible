@@ -18,7 +18,7 @@ type LanguageModelService struct {
 	prov rez.LanguageModelProvider
 }
 
-func NewLanguageModelService(ctx context.Context, prov rez.LanguageModelProvider) (*LanguageModelService, error) {
+func NewLanguageModelService(prov rez.LanguageModelProvider) (*LanguageModelService, error) {
 	return &LanguageModelService{prov: prov}, nil
 }
 

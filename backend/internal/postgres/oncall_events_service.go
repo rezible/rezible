@@ -19,7 +19,7 @@ type OncallEventsService struct {
 	incidents rez.IncidentService
 }
 
-func NewOncallEventsService(ctx context.Context, db *ent.Client, users rez.UserService, oncall rez.OncallService, incidents rez.IncidentService) (*OncallEventsService, error) {
+func NewOncallEventsService(db *ent.Client, users rez.UserService, oncall rez.OncallService, incidents rez.IncidentService) (*OncallEventsService, error) {
 	s := &OncallEventsService{
 		db:        db,
 		users:     users,

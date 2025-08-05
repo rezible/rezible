@@ -119,7 +119,6 @@ func (s *JobService) Start(ctx context.Context) error {
 		return fmt.Errorf("could not create river client: %w", clientErr)
 	}
 	s.client = client
-
 	return s.client.Start(ctx)
 }
 

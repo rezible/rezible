@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
@@ -16,6 +17,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"net"
 	"os"
+	"time"
 )
 
 type rezServer struct {
@@ -36,9 +38,11 @@ func newRezibleServer(opts *Options) *rezServer {
 	return &rezServer{opts: opts}
 }
 
-func (s *rezServer) Start(ctx context.Context) {
+func (s *rezServer) Start() {
+	ctx := access.SystemContext(context.Background())
+
 	if setupErr := s.setup(ctx); setupErr != nil {
-		s.Stop(ctx)
+		s.Stop()
 		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
 	}
 
@@ -81,7 +85,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(ctx, users, provs.AuthSession, s.opts.AuthSessionSecretKey)
+	auth, authErr := http.NewAuthSessionService(users, provs.AuthSession, s.opts.AuthSessionSecretKey)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
@@ -96,7 +100,7 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
-	lms, lmsErr := eino.NewLanguageModelService(ctx, provs.LanguageModel)
+	lms, lmsErr := eino.NewLanguageModelService(provs.LanguageModel)
 	if lmsErr != nil {
 		return fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}
@@ -106,17 +110,17 @@ func (s *rezServer) setup(ctx context.Context) error {
 		return fmt.Errorf("prosemirror.NewDocumentsService: %w", docsErr)
 	}
 
-	incidents, incidentsErr := postgres.NewIncidentService(ctx, dbc, jobSvc, lms, chat, users)
+	incidents, incidentsErr := postgres.NewIncidentService(dbc, jobSvc, lms, chat, users)
 	if incidentsErr != nil {
 		return fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
 	}
 
-	oncall, oncallErr := postgres.NewOncallService(ctx, dbc, jobSvc, docs, chat, users, incidents)
+	oncall, oncallErr := postgres.NewOncallService(dbc, jobSvc, docs, chat, users, incidents)
 	if oncallErr != nil {
 		return fmt.Errorf("postgres.NewOncallService: %w", oncallErr)
 	}
 
-	oncallEvents, eventsErr := postgres.NewOncallEventsService(ctx, dbc, users, oncall, incidents)
+	oncallEvents, eventsErr := postgres.NewOncallEventsService(dbc, users, oncall, incidents)
 	if eventsErr != nil {
 		return fmt.Errorf("postgres.NewOncallEventsService: %w", eventsErr)
 	}
@@ -203,7 +207,11 @@ func (s *rezServer) start(ctx context.Context) error {
 	return nil
 }
 
-func (s *rezServer) Stop(ctx context.Context) {
+func (s *rezServer) Stop() {
+	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
+	ctx, cancelStopCtx := context.WithTimeout(access.SystemContext(context.Background()), timeout)
+	defer cancelStopCtx()
+
 	if s.httpServer != nil {
 		if dbErr := s.httpServer.Stop(ctx); dbErr != nil {
 			log.Error().Err(dbErr).Msg("failed to stop http server")

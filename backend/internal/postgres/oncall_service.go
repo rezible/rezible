@@ -33,7 +33,7 @@ type OncallService struct {
 	incidents rez.IncidentService
 }
 
-func NewOncallService(ctx context.Context, db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
+func NewOncallService(db *ent.Client, jobs rez.JobsService, docs rez.DocumentsService, chat rez.ChatService, users rez.UserService, incidents rez.IncidentService) (*OncallService, error) {
 	s := &OncallService{
 		db:        db,
 		jobs:      jobs,

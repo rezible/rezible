@@ -56,10 +56,10 @@ func NewServer(
 	router.Mount("/auth", auth.AuthHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
+	// Serve static files for any other route
 	frontendRouter := chi.
 		Chain(auth.FrontendMiddleware()).
 		Handler(makeEmbeddedFrontendFilesServer(feFiles))
-	// Serve static files for any other route
 	router.Handle("/*", frontendRouter)
 
 	s.httpServer = &http.Server{
