@@ -11,6 +11,12 @@ type OncallEvent struct {
 	ent.Schema
 }
 
+func (OncallEvent) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 var oncallEventKind = []string{"alert", "page", "message", "other"}
 
 func (OncallEvent) Fields() []ent.Field {

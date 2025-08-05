@@ -12,6 +12,12 @@ type SystemAnalysisRelationship struct {
 	ent.Schema
 }
 
+func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemAnalysisRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -30,11 +36,6 @@ func (SystemAnalysisRelationship) Edges() []ent.Edge {
 		edge.To("component_relationship", SystemComponentRelationship.Type).
 			Unique().Required().Field("component_relationship_id"),
 
-		//edge.To("source_component", SystemComponent.Type).
-		//	Required().Unique().Field("source_component_id"),
-		//edge.To("target_component", SystemComponent.Type).
-		//	Required().Unique().Field("target_component_id"),
-
 		edge.To("controls", SystemComponentControl.Type).
 			Through("control_actions", SystemRelationshipControlAction.Type),
 		edge.To("signals", SystemComponentSignal.Type).
@@ -44,6 +45,12 @@ func (SystemAnalysisRelationship) Edges() []ent.Edge {
 
 type SystemRelationshipControlAction struct {
 	ent.Schema
+}
+
+func (SystemRelationshipControlAction) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (SystemRelationshipControlAction) Fields() []ent.Field {
@@ -72,6 +79,12 @@ func (SystemRelationshipControlAction) Edges() []ent.Edge {
 
 type SystemRelationshipFeedbackSignal struct {
 	ent.Schema
+}
+
+func (SystemRelationshipFeedbackSignal) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (SystemRelationshipFeedbackSignal) Fields() []ent.Field {

@@ -13,6 +13,12 @@ type Ticket struct {
 	ent.Schema
 }
 
+func (Ticket) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the Ticket.
 func (Ticket) Fields() []ent.Field {
 	return []ent.Field{

@@ -12,6 +12,12 @@ type Incident struct {
 	ent.Schema
 }
 
+func (Incident) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the Incident.
 func (Incident) Fields() []ent.Field {
 	return []ent.Field{
@@ -65,6 +71,12 @@ type IncidentTeamAssignment struct {
 	ent.Schema
 }
 
+func (IncidentTeamAssignment) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (IncidentTeamAssignment) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("incident_id", uuid.UUID{}),
@@ -81,6 +93,12 @@ func (IncidentTeamAssignment) Edges() []ent.Edge {
 
 type IncidentRoleAssignment struct {
 	ent.Schema
+}
+
+func (IncidentRoleAssignment) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (IncidentRoleAssignment) Fields() []ent.Field {

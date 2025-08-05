@@ -12,6 +12,12 @@ type IncidentDebrief struct {
 	ent.Schema
 }
 
+func (IncidentDebrief) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (IncidentDebrief) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
@@ -35,6 +41,12 @@ func (IncidentDebrief) Edges() []ent.Edge {
 
 type IncidentDebriefMessage struct {
 	ent.Schema
+}
+
+func (IncidentDebriefMessage) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (IncidentDebriefMessage) Fields() []ent.Field {
@@ -62,6 +74,12 @@ type IncidentDebriefQuestion struct {
 	ent.Schema
 }
 
+func (IncidentDebriefQuestion) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the IncidentDebriefQuestion.
 func (IncidentDebriefQuestion) Fields() []ent.Field {
 	return []ent.Field{
@@ -85,6 +103,12 @@ func (IncidentDebriefQuestion) Edges() []ent.Edge {
 
 type IncidentDebriefSuggestion struct {
 	ent.Schema
+}
+
+func (IncidentDebriefSuggestion) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 // Fields of the IncidentDebriefSuggestion.

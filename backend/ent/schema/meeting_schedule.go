@@ -8,11 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// MeetingSchedule holds the schema definition for the MeetingSchedule entity.
-type MeetingSchedule struct {
-	ent.Schema
-}
-
 var (
 	weekdays = map[string]bool{"sun": true, "mon": true, "tue": true, "wed": true, "thu": true, "fri": true, "sat": true}
 )
@@ -24,6 +19,18 @@ func validateWeekdaysValue(v []string) error {
 		}
 	}
 	return nil
+}
+
+// MeetingSchedule holds the schema definition for the MeetingSchedule entity.
+type MeetingSchedule struct {
+	ent.Schema
+}
+
+func (MeetingSchedule) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
 }
 
 // Fields of the MeetingSchedule.

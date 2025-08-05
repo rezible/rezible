@@ -12,18 +12,18 @@ type IncidentType struct {
 	ent.Schema
 }
 
+func (IncidentType) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentType.
 func (IncidentType) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
-	}
-}
-
-// Mixin of the IncidentType.
-func (IncidentType) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 

@@ -12,6 +12,12 @@ type SystemHazard struct {
 	ent.Schema
 }
 
+func (SystemHazard) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemHazard) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),

@@ -12,6 +12,13 @@ type OncallSchedule struct {
 	ent.Schema
 }
 
+func (OncallSchedule) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the OncallSchedule.
 func (OncallSchedule) Fields() []ent.Field {
 	return []ent.Field{
@@ -21,13 +28,6 @@ func (OncallSchedule) Fields() []ent.Field {
 		field.String("timezone").Optional(),
 		field.String("provider_id").Unique(),
 		// start, end, cadence, etc
-	}
-}
-
-// Mixin of the OncallSchedule.
-func (OncallSchedule) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 
@@ -42,6 +42,12 @@ func (OncallSchedule) Edges() []ent.Edge {
 
 type OncallScheduleParticipant struct {
 	ent.Schema
+}
+
+func (OncallScheduleParticipant) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (OncallScheduleParticipant) Fields() []ent.Field {

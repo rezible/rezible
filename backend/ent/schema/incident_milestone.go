@@ -12,6 +12,12 @@ type IncidentMilestone struct {
 	ent.Schema
 }
 
+func (IncidentMilestone) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the IncidentMilestone.
 func (IncidentMilestone) Fields() []ent.Field {
 	return []ent.Field{

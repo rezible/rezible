@@ -12,6 +12,12 @@ type OncallAnnotation struct {
 	ent.Schema
 }
 
+func (OncallAnnotation) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (OncallAnnotation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -39,6 +45,12 @@ func (OncallAnnotation) Edges() []ent.Edge {
 // OncallAnnotationAlertFeedback holds the schema definition for the OncallAnnotationAlertFeedback entity.
 type OncallAnnotationAlertFeedback struct {
 	ent.Schema
+}
+
+func (OncallAnnotationAlertFeedback) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 // Fields of the OncallAnnotationAlertFeedback.

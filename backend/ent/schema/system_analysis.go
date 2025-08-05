@@ -12,6 +12,12 @@ type SystemAnalysis struct {
 	ent.Schema
 }
 
+func (SystemAnalysis) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemAnalysis) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -38,6 +44,12 @@ func (SystemAnalysis) Edges() []ent.Edge {
 
 type SystemAnalysisComponent struct {
 	ent.Schema
+}
+
+func (SystemAnalysisComponent) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (SystemAnalysisComponent) Fields() []ent.Field {

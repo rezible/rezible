@@ -12,6 +12,12 @@ type ProviderSyncHistory struct {
 	ent.Schema
 }
 
+func (ProviderSyncHistory) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the ProviderSyncHistory.
 func (ProviderSyncHistory) Fields() []ent.Field {
 	return []ent.Field{

@@ -12,18 +12,18 @@ type IncidentField struct {
 	ent.Schema
 }
 
+func (IncidentField) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentField.
 func (IncidentField) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("name"),
-	}
-}
-
-// Mixin of the IncidentField.
-func (IncidentField) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 
@@ -41,6 +41,13 @@ type IncidentFieldOption struct {
 	ent.Schema
 }
 
+func (IncidentFieldOption) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentFieldOption.
 func (IncidentFieldOption) Fields() []ent.Field {
 	return []ent.Field{
@@ -48,13 +55,6 @@ func (IncidentFieldOption) Fields() []ent.Field {
 		field.UUID("incident_field_id", uuid.UUID{}),
 		field.Enum("type").Values("custom", "derived"),
 		field.String("value"),
-	}
-}
-
-// Mixin of the IncidentFieldOption.
-func (IncidentFieldOption) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 

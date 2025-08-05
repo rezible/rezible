@@ -13,6 +13,12 @@ type Playbook struct {
 	ent.Schema
 }
 
+func (Playbook) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the Playbook.
 func (Playbook) Fields() []ent.Field {
 	return []ent.Field{

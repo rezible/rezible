@@ -13,6 +13,12 @@ type Retrospective struct {
 	ent.Schema
 }
 
+func (Retrospective) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the Retrospective.
 func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{

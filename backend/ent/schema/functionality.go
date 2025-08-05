@@ -20,6 +20,12 @@ func (Functionality) Fields() []ent.Field {
 	}
 }
 
+func (Functionality) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Edges of the Functionality.
 func (Functionality) Edges() []ent.Edge {
 	return []ent.Edge{

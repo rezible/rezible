@@ -13,6 +13,12 @@ type OncallUserShift struct {
 	ent.Schema
 }
 
+func (OncallUserShift) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the OncallUserShift.
 func (OncallUserShift) Fields() []ent.Field {
 	return []ent.Field{
@@ -45,6 +51,12 @@ type OncallUserShiftHandover struct {
 	ent.Schema
 }
 
+func (OncallUserShiftHandover) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (OncallUserShiftHandover) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -67,6 +79,12 @@ func (OncallUserShiftHandover) Edges() []ent.Edge {
 
 type OncallUserShiftMetrics struct {
 	ent.Schema
+}
+
+func (OncallUserShiftMetrics) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (OncallUserShiftMetrics) Fields() []ent.Field {

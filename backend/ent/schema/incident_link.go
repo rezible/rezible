@@ -12,6 +12,12 @@ type IncidentLink struct {
 	ent.Schema
 }
 
+func (IncidentLink) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the IncidentLink.
 func (IncidentLink) Fields() []ent.Field {
 	return []ent.Field{

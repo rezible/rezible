@@ -12,6 +12,13 @@ type OncallRoster struct {
 	ent.Schema
 }
 
+func (OncallRoster) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the OncallRoster.
 func (OncallRoster) Fields() []ent.Field {
 	return []ent.Field{
@@ -24,13 +31,6 @@ func (OncallRoster) Fields() []ent.Field {
 		field.String("chat_channel_id").Optional(),
 		field.UUID("handover_template_id", uuid.UUID{}).Optional(),
 		//field.UUID("parent_id", uuid.UUID{}).Optional(),
-	}
-}
-
-// Mixin of the OncallRoster.
-func (OncallRoster) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 
@@ -62,6 +62,12 @@ func (OncallRoster) Edges() []ent.Edge {
 
 type OncallRosterMetrics struct {
 	ent.Schema
+}
+
+func (OncallRosterMetrics) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (OncallRosterMetrics) Fields() []ent.Field {

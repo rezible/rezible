@@ -14,6 +14,12 @@ type IncidentEvent struct {
 	ent.Schema
 }
 
+func (IncidentEvent) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the IncidentEvent.
 func (IncidentEvent) Fields() []ent.Field {
 	return []ent.Field{
@@ -68,6 +74,12 @@ type IncidentEventSystemComponent struct {
 	ent.Schema
 }
 
+func (IncidentEventSystemComponent) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (IncidentEventSystemComponent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
@@ -92,6 +104,12 @@ type IncidentEventContext struct {
 	ent.Schema
 }
 
+func (IncidentEventContext) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (IncidentEventContext) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -113,6 +131,12 @@ type IncidentEventContributingFactor struct {
 	ent.Schema
 }
 
+func (IncidentEventContributingFactor) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (IncidentEventContributingFactor) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -130,6 +154,12 @@ func (IncidentEventContributingFactor) Edges() []ent.Edge {
 
 type IncidentEventEvidence struct {
 	ent.Schema
+}
+
+func (IncidentEventEvidence) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (IncidentEventEvidence) Fields() []ent.Field {

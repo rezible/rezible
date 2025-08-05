@@ -12,6 +12,12 @@ type Team struct {
 	ent.Schema
 }
 
+func (Team) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the Team.
 func (Team) Fields() []ent.Field {
 	return []ent.Field{

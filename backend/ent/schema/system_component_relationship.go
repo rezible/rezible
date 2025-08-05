@@ -12,6 +12,12 @@ type SystemComponentRelationship struct {
 	ent.Schema
 }
 
+func (SystemComponentRelationship) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemComponentRelationship) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),

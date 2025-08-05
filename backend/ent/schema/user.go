@@ -12,6 +12,12 @@ type User struct {
 	ent.Schema
 }
 
+func (User) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the User.
 func (User) Fields() []ent.Field {
 	return []ent.Field{

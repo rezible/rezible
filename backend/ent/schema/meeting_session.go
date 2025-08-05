@@ -13,6 +13,12 @@ type MeetingSession struct {
 	ent.Schema
 }
 
+func (MeetingSession) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the MeetingSession.
 func (MeetingSession) Fields() []ent.Field {
 	return []ent.Field{

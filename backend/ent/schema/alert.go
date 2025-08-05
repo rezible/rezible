@@ -22,6 +22,12 @@ func (Alert) Fields() []ent.Field {
 	}
 }
 
+func (Alert) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Edges of the Alert.
 func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
@@ -41,6 +47,12 @@ func (AlertMetrics) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("alert_id", uuid.UUID{}),
+	}
+}
+
+func (AlertMetrics) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
 	}
 }
 

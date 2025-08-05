@@ -13,6 +13,12 @@ type OncallHandoverTemplate struct {
 	ent.Schema
 }
 
+func (OncallHandoverTemplate) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the OncallHandoverTemplate.
 func (OncallHandoverTemplate) Fields() []ent.Field {
 	return []ent.Field{

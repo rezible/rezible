@@ -12,6 +12,12 @@ type SystemComponent struct {
 	ent.Schema
 }
 
+func (SystemComponent) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemComponent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -66,6 +72,12 @@ type SystemComponentKind struct {
 	ent.Schema
 }
 
+func (SystemComponentKind) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemComponentKind) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -84,6 +96,12 @@ func (SystemComponentKind) Edges() []ent.Edge {
 
 type SystemComponentConstraint struct {
 	ent.Schema
+}
+
+func (SystemComponentConstraint) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (SystemComponentConstraint) Fields() []ent.Field {
@@ -109,6 +127,12 @@ type SystemComponentSignal struct {
 	ent.Schema
 }
 
+func (SystemComponentSignal) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 func (SystemComponentSignal) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
@@ -131,6 +155,12 @@ func (SystemComponentSignal) Edges() []ent.Edge {
 
 type SystemComponentControl struct {
 	ent.Schema
+}
+
+func (SystemComponentControl) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 func (SystemComponentControl) Fields() []ent.Field {

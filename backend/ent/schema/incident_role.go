@@ -12,6 +12,13 @@ type IncidentRole struct {
 	ent.Schema
 }
 
+func (IncidentRole) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentRole.
 func (IncidentRole) Fields() []ent.Field {
 	return []ent.Field{
@@ -19,13 +26,6 @@ func (IncidentRole) Fields() []ent.Field {
 		field.String("name"),
 		field.String("provider_id"),
 		field.Bool("required").Default(false),
-	}
-}
-
-// Mixin of the IncidentRole.
-func (IncidentRole) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 

@@ -12,19 +12,19 @@ type IncidentTag struct {
 	ent.Schema
 }
 
+func (IncidentTag) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentTag.
 func (IncidentTag) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("key"),
 		field.String("value"),
-	}
-}
-
-// Mixin of the IncidentTag.
-func (IncidentTag) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 

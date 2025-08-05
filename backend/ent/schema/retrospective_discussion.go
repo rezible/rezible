@@ -12,6 +12,12 @@ type RetrospectiveDiscussion struct {
 	ent.Schema
 }
 
+func (RetrospectiveDiscussion) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 // Fields of the RetrospectiveDiscussion.
 func (RetrospectiveDiscussion) Fields() []ent.Field {
 	return []ent.Field{
@@ -38,6 +44,12 @@ func (RetrospectiveDiscussion) Edges() []ent.Edge {
 // RetrospectiveDiscussionReply holds the schema definition for the RetrospectiveDiscussionReply entity.
 type RetrospectiveDiscussionReply struct {
 	ent.Schema
+}
+
+func (RetrospectiveDiscussionReply) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
 }
 
 // Fields of the RetrospectiveDiscussionReply.

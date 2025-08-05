@@ -13,6 +13,12 @@ type ProviderConfig struct {
 	ent.Schema
 }
 
+func (ProviderConfig) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 var ProviderTypes = []string{"auth_session", "users", "teams", "chat", "incidents", "oncall", "alerts", "ai", "system_components", "tickets", "playbooks"}
 
 // Fields of the ProviderConfig.

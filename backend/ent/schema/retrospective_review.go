@@ -12,6 +12,12 @@ type RetrospectiveReview struct {
 	ent.Schema
 }
 
+func (RetrospectiveReview) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+	}
+}
+
 var (
 	retroReviewStates = []string{"waiting", "request_changes", "approved"}
 )

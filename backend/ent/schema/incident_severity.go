@@ -12,6 +12,13 @@ type IncidentSeverity struct {
 	ent.Schema
 }
 
+func (IncidentSeverity) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		ArchiveMixin{},
+	}
+}
+
 // Fields of the IncidentSeverity.
 func (IncidentSeverity) Fields() []ent.Field {
 	return []ent.Field{
@@ -21,13 +28,6 @@ func (IncidentSeverity) Fields() []ent.Field {
 		field.Int("rank"),
 		field.String("color").Optional(),
 		field.String("description").Optional(),
-	}
-}
-
-// Mixin of the IncidentSeverity.
-func (IncidentSeverity) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		ArchiveMixin{},
 	}
 }
 

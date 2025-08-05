@@ -24,6 +24,7 @@ func (Environment) Fields() []ent.Field {
 // Mixin of the Environment.
 func (Environment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
+		BaseMixin{},
 		ArchiveMixin{},
 	}
 }

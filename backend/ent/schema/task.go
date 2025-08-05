@@ -8,19 +8,23 @@ import (
 	"entgo.io/ent/schema/field"
 )
 
+var taskTypes = []string{
+	"cleanup",
+	"detect",
+	"mitigate",
+	"prevent",
+}
+
 // Task holds the schema definition for the Task entity.
 type Task struct {
 	ent.Schema
 }
 
-var (
-	taskTypes = []string{
-		"cleanup",
-		"detect",
-		"mitigate",
-		"prevent",
+func (Task) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
 	}
-)
+}
 
 // Fields of the Task.
 func (Task) Fields() []ent.Field {
