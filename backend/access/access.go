@@ -2,7 +2,6 @@ package access
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
 )
 
 type (
@@ -29,8 +28,8 @@ const (
 )
 
 type AuthContext struct {
-	roles  Roles
-	tenant *ent.Tenant
+	roles    Roles
+	tenantId int
 }
 
 func (v AuthContext) HasRole(r Role) bool {
@@ -38,8 +37,8 @@ func (v AuthContext) HasRole(r Role) bool {
 }
 
 func (v AuthContext) TenantId() (int, bool) {
-	if v.tenant != nil {
-		return v.tenant.ID, true
+	if v.tenantId != -1 {
+		return v.tenantId, true
 	}
 	return -1, false
 }
@@ -55,14 +54,18 @@ func GetAuthContext(ctx context.Context) *AuthContext {
 	return c
 }
 
+func AnonymousContext(ctx context.Context) context.Context {
+	return storeAuthContext(ctx, &AuthContext{roles: MakeRoles()})
+}
+
 func SystemContext(ctx context.Context) context.Context {
 	return storeAuthContext(ctx, &AuthContext{roles: MakeRoles(RoleSystem)})
 }
 
-func TenantSystemContext(ctx context.Context, tenant *ent.Tenant) context.Context {
+func TenantContext(ctx context.Context, role Role, tenantId int) context.Context {
 	c := &AuthContext{
-		roles:  MakeRoles(RoleSystem),
-		tenant: tenant,
+		roles:    MakeRoles(role),
+		tenantId: tenantId,
 	}
 	return storeAuthContext(ctx, c)
 }

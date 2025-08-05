@@ -39,19 +39,19 @@ func newRezibleServer(opts *Options) *rezServer {
 }
 
 func (s *rezServer) Start() {
-	ctx := access.SystemContext(context.Background())
-
-	if setupErr := s.setup(ctx); setupErr != nil {
+	if setupErr := s.setup(); setupErr != nil {
 		s.Stop()
 		log.Fatal().Err(setupErr).Msg("failed to setup rezible server")
 	}
 
-	if startErr := s.start(ctx); startErr != nil {
+	if startErr := s.start(); startErr != nil {
 		log.Fatal().Err(startErr).Msg("rezServer.start")
 	}
 }
 
-func (s *rezServer) setup(ctx context.Context) error {
+func (s *rezServer) setup() error {
+	ctx := access.SystemContext(context.Background())
+
 	db, poolErr := postgres.Open(ctx, s.opts.DatabaseUrl)
 	if poolErr != nil {
 		return fmt.Errorf("failed to open db: %w", poolErr)
@@ -195,12 +195,13 @@ func (s *rezServer) registerJobs(
 	return nil
 }
 
-func (s *rezServer) start(ctx context.Context) error {
-	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
+func (s *rezServer) start() error {
+	jobsCtx := access.SystemContext(context.Background())
+	if jobsErr := s.jobs.Start(jobsCtx); jobsErr != nil {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
 	}
 
-	if serverErr := s.httpServer.Start(ctx); serverErr != nil {
+	if serverErr := s.httpServer.Start(); serverErr != nil {
 		return fmt.Errorf("http Server error: %w", serverErr)
 	}
 

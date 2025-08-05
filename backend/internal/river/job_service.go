@@ -163,7 +163,6 @@ func convertInsertOpts(p jobs.InsertJobParams) *river.InsertOpts {
 }
 
 func (s *JobService) Insert(ctx context.Context, params jobs.InsertJobParams) error {
-
 	_, insertErr := s.client.Insert(ctx, params.Args, convertInsertOpts(params))
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job: %w", insertErr)

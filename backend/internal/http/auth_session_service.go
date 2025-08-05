@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent/privacy"
 	"net/http"
 	"os"
 	"time"
@@ -47,8 +49,15 @@ func newUserAuthSession(userId uuid.UUID, expiresAt time.Time) *rez.UserAuthSess
 	return &rez.UserAuthSession{UserId: userId, ExpiresAt: expiresAt}
 }
 
-func (s *AuthSessionService) CreateAuthContext(ctx context.Context, sess *rez.UserAuthSession) context.Context {
-	return context.WithValue(ctx, authUserSessionContextKey{}, sess)
+func (s *AuthSessionService) CreateUserAuthContext(ctx context.Context, sess *rez.UserAuthSession) (context.Context, error) {
+	user, userErr := s.users.GetById(privacy.DecisionContext(ctx, privacy.Allow), sess.UserId)
+	if userErr != nil {
+		return ctx, fmt.Errorf("get user by id: %w", userErr)
+	}
+	accessCtx := access.TenantContext(ctx, access.RoleUser, user.TenantID)
+
+	authCtx := context.WithValue(accessCtx, authUserSessionContextKey{}, sess)
+	return authCtx, nil
 }
 
 func (s *AuthSessionService) GetUserAuthSession(ctx context.Context) (*rez.UserAuthSession, error) {
@@ -63,8 +72,8 @@ func isRedirectableError(err error) bool {
 	return errors.Is(err, rez.ErrAuthSessionExpired) || errors.Is(err, rez.ErrNoAuthSession)
 }
 
-func (s *AuthSessionService) wrapAuthenticatedUserRequest(r *http.Request, sess *rez.UserAuthSession) *http.Request {
-	return r.WithContext(s.CreateAuthContext(r.Context(), sess))
+func (s *AuthSessionService) wrapUserAuthRequest(r *http.Request, sess *rez.UserAuthSession) *http.Request {
+	return r.WithContext(context.WithValue(r.Context(), authUserSessionContextKey{}, sess))
 }
 
 func (s *AuthSessionService) FrontendMiddleware() func(http.Handler) http.Handler {
@@ -75,7 +84,7 @@ func (s *AuthSessionService) FrontendMiddleware() func(http.Handler) http.Handle
 				return
 			}
 
-			sess, sessErr := s.getVerifiedUserAuthSession(r)
+			_, sessErr := s.getVerifiedUserAuthSession(r)
 			if sessErr != nil {
 				if isRedirectableError(sessErr) {
 					s.sessProvider.StartAuthFlow(w, r)
@@ -84,7 +93,7 @@ func (s *AuthSessionService) FrontendMiddleware() func(http.Handler) http.Handle
 				}
 				return
 			}
-			next.ServeHTTP(w, s.wrapAuthenticatedUserRequest(r, sess))
+			next.ServeHTTP(w, r) //s.wrapUserAuthRequest(r, sess))
 		})
 	}
 }
@@ -98,7 +107,7 @@ func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handl
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			next.ServeHTTP(w, s.wrapAuthenticatedUserRequest(r, sess))
+			next.ServeHTTP(w, s.wrapUserAuthRequest(r, sess))
 		})
 	}
 }
@@ -124,8 +133,8 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 }
 
 func (s *AuthSessionService) handleLogoutRequest(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
 	s.sessProvider.ClearSession(w, r)
+	http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
 	http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 }
 
@@ -140,7 +149,7 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 			expiresAt = time.Now().Add(defaultSessionDuration)
 		}
 
-		userId, matchIdErr := s.matchUserIdFromProvider(ctx, provUser)
+		userId, matchIdErr := s.lookupProviderUser(ctx, provUser)
 		if matchIdErr != nil {
 			createSessionErr = fmt.Errorf("failed to match user id from provider details: %w", matchIdErr)
 			return
@@ -172,7 +181,7 @@ func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Req
 	return true
 }
 
-func (s *AuthSessionService) matchUserIdFromProvider(ctx context.Context, provUser *ent.User) (uuid.UUID, error) {
+func (s *AuthSessionService) lookupProviderUser(ctx context.Context, provUser *ent.User) (uuid.UUID, error) {
 	// TODO: use provider mapping to match user details, not just by email
 	email := provUser.Email
 	if rez.DebugMode && os.Getenv("REZ_DEBUG_DEFAULT_USER_EMAIL") != "" {
@@ -180,12 +189,13 @@ func (s *AuthSessionService) matchUserIdFromProvider(ctx context.Context, provUs
 		log.Debug().Str("email", email).Msg("using debug auth email")
 	}
 
-	user, lookupErr := s.users.GetByEmail(ctx, email)
+	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
+	user, lookupErr := s.users.GetByEmail(allowQueryCtx, email)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return uuid.Nil, nil
 		}
-		return uuid.Nil, lookupErr
+		return uuid.Nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
 	}
 	return user.ID, nil
 }

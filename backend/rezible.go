@@ -85,8 +85,8 @@ type (
 
 type (
 	JobsService interface {
-		Start(ctx context.Context) error
-		Stop(ctx context.Context) error
+		Start(context.Context) error
+		Stop(context.Context) error
 
 		Insert(ctx context.Context, params jobs.InsertJobParams) error
 		InsertTx(ctx context.Context, tx *ent.Tx, params jobs.InsertJobParams) error
@@ -117,7 +117,7 @@ type (
 		FrontendMiddleware() func(http.Handler) http.Handler
 		MCPServerMiddleware() func(http.Handler) http.Handler
 
-		CreateAuthContext(context.Context, *UserAuthSession) context.Context
+		CreateUserAuthContext(context.Context, *UserAuthSession) (context.Context, error)
 		GetUserAuthSession(context.Context) (*UserAuthSession, error)
 		IssueUserAuthSessionToken(*UserAuthSession) (string, error)
 		VerifyUserAuthSessionToken(tokenStr string) (*UserAuthSession, error)

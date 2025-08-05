@@ -50,7 +50,6 @@ func (b *usersBatcher) createBatchMutations(ctx context.Context, batch []*ent.Us
 		u := usr
 		dbEmailMap[u.Email] = usr
 	}
-
 	var mutations []ent.Mutation
 	for _, provUser := range batch {
 		dbUser, exists := dbEmailMap[provUser.Email]

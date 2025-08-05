@@ -60,9 +60,20 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 	})
 }
 
+func debugLogQueryAccessAuthContext() ent.Interceptor {
+	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
+		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
+			authCtx := access.GetAuthContext(ctx)
+			log.Debug().Bool("isSystem", authCtx.HasRole(access.RoleSystem)).Msg("query")
+			return q.Query(ctx, query)
+		})
+	})
+}
+
 func (d *Database) Client() *ent.Client {
 	c := ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
 	c.Use(ensureTenantIdSetHook)
+	// c.Intercept(debugLogQueryAccessAuthContext())
 	return c
 }
 

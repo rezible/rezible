@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/access"
 	"io/fs"
 	"net"
 	"net/http"
@@ -38,10 +39,10 @@ func NewServer(
 	oapiMw := []oapi.Middleware{
 		oapi.MakeSecurityMiddleware(auth),
 	}
-	oapiAdapter := oapi.MakeApi(oapiHandler, "/api/v1", oapiMw...).Adapter()
+	oapiServer := oapi.MakeApi(oapiHandler, "/api/v1", oapiMw...)
 	apiV1Router := chi.
 		Chain(middleware.Logger).
-		Handler(oapiAdapter)
+		Handler(oapiServer.Adapter())
 	router.Mount("/api/v1", apiV1Router)
 
 	router.Get("/api/docs", serveApiDocs)
@@ -56,25 +57,24 @@ func NewServer(
 	router.Mount("/auth", auth.AuthHandler())
 	router.Get("/health", makeHealthCheckHandler())
 
-	// Serve static files for any other route
 	frontendRouter := chi.
 		Chain(auth.FrontendMiddleware()).
 		Handler(makeEmbeddedFrontendFilesServer(feFiles))
 	router.Handle("/*", frontendRouter)
 
+	baseCtx := access.SystemContext(context.Background())
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: router,
+		BaseContext: func(l net.Listener) context.Context {
+			return baseCtx
+		},
 	}
 
 	return &s
 }
 
-func (s *Server) Start(ctx context.Context) error {
-	s.httpServer.BaseContext = func(l net.Listener) context.Context {
-		return ctx
-	}
-
+func (s *Server) Start() error {
 	log.Info().Msgf("Serving on %s", s.httpServer.Addr)
 
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

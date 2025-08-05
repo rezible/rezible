@@ -126,11 +126,10 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 			security = DefaultSecurity
 		}
 
-		var userSess *rez.UserAuthSession
+		ctx := r.Context()
 		if !explicitNoAuth {
 			token, requiredScopes := getRequestSecurityTokenAndScopes(security, r)
-			var verifyErr error
-			userSess, verifyErr = auth.VerifyUserAuthSessionToken(token)
+			userSess, verifyErr := auth.VerifyUserAuthSessionToken(token)
 			if verifyErr != nil {
 				log.Debug().Err(verifyErr).Msg("failed to verify session token")
 				writeAuthSessionError(w, verifyErr)
@@ -141,10 +140,15 @@ func MakeSecurityMiddleware(auth rez.AuthSessionService) Middleware {
 			for _, scope := range requiredScopes {
 				log.Warn().Str("scope", scope).Msg("TODO: verify request security scopes")
 			}
+			userAuthCtx, authErr := auth.CreateUserAuthContext(r.Context(), userSess)
+			if authErr != nil {
+				writeAuthSessionError(w, authErr)
+				return
+			}
+			ctx = userAuthCtx
 		}
-		authCtx := auth.CreateAuthContext(r.Context(), userSess)
 
-		next(huma.WithContext(c, authCtx))
+		next(huma.WithContext(c, ctx))
 	}
 }
 
