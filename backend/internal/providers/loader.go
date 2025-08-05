@@ -33,10 +33,15 @@ var (
 
 type Loader struct {
 	client *ent.ProviderConfigClient
+
+	cfgCache map[int]map[providerconfig.ProviderType]*ent.ProviderConfig
 }
 
 func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
-	l := &Loader{client: client}
+	l := &Loader{
+		client:   client,
+		cfgCache: make(map[int]map[providerconfig.ProviderType]*ent.ProviderConfig),
+	}
 
 	return l
 }
@@ -135,7 +140,19 @@ func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(ctx c
 	return loadProvider(constructorFnCtx, lc)
 }
 
-func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*loadedConfig, error) {
+func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.ProviderType) (*ent.ProviderConfig, error) {
+	/*
+		tenantId, idExists := access.GetContextTenantId(ctx)
+		if !idExists {
+			return nil, errors.New("no tenant id found in context")
+		}
+		if _, cacheExists := l.cfgCache[tenantId]; !cacheExists {
+			l.cfgCache[tenantId] = make(map[providerconfig.ProviderType]*ent.ProviderConfig)
+		}
+		if cached, exists := l.cfgCache[tenantId][t]; exists {
+			return cached, nil
+		}
+	*/
 	pc, queryErr := l.client.Query().
 		Where(providerconfig.ProviderTypeEQ(t)).
 		Where(providerconfig.EnabledEQ(true)).
@@ -147,6 +164,14 @@ func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) 
 			return nil, ErrMultipleEnabledStoredConfigs
 		}
 		return nil, fmt.Errorf("failed to load %s provider config: %w", t, queryErr)
+	}
+	return pc, nil
+}
+
+func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*loadedConfig, error) {
+	pc, pcErr := l.loadProviderConfig(ctx, t)
+	if pcErr != nil {
+		return nil, pcErr
 	}
 
 	cfg := &loadedConfig{
