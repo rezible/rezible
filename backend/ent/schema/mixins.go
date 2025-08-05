@@ -5,22 +5,64 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/schema/edge"
+	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/mixin"
+
 	gen "github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/hook"
 	"github.com/rezible/rezible/ent/intercept"
-
-	"entgo.io/ent"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/schema/field"
-	"entgo.io/ent/schema/mixin"
+	"github.com/rezible/rezible/ent/privacy"
+	"github.com/rezible/rezible/ent/privacyrules"
 )
+
+type BaseMixin struct {
+	mixin.Schema
+}
+
+func (BaseMixin) Policy() ent.Policy {
+	return privacy.Policy{
+		Query: privacy.QueryPolicy{
+			privacyrules.DenyIfNoAccessContext(),
+			privacyrules.AllowIfSystem(),
+		},
+		Mutation: privacy.MutationPolicy{
+			privacyrules.DenyIfNoAccessContext(),
+		},
+	}
+}
+
+type TenantMixin struct {
+	mixin.Schema
+}
+
+func (TenantMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int("tenant_id").Immutable(),
+	}
+}
+
+func (TenantMixin) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("tenant", Tenant.Type).
+			Field("tenant_id").
+			Unique().
+			Required().
+			Immutable(),
+	}
+}
+
+func (TenantMixin) Policy() ent.Policy {
+	return privacyrules.FilterTenantRule()
+}
 
 // ArchiveMixin implements the soft delete pattern for schemas.
 type ArchiveMixin struct {
 	mixin.Schema
 }
 
-// Fields of the ArchiveMixin.
 func (ArchiveMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("archive_time").
@@ -30,12 +72,10 @@ func (ArchiveMixin) Fields() []ent.Field {
 
 const archiveKey = "include_archived"
 
-// IncludeArchived returns a new context that skips the archive interceptor/mutators.
 func IncludeArchived(parent context.Context) context.Context {
 	return context.WithValue(parent, archiveKey, true)
 }
 
-// Interceptors of the ArchiveMixin.
 func (d ArchiveMixin) Interceptors() []ent.Interceptor {
 	return []ent.Interceptor{
 		intercept.TraverseFunc(func(ctx context.Context, q intercept.Query) error {
@@ -49,15 +89,13 @@ func (d ArchiveMixin) Interceptors() []ent.Interceptor {
 	}
 }
 
-type ArchiveableMutation interface {
-	SetOp(ent.Op)
-	Client() *gen.Client
-	SetArchiveTime(time.Time)
-	WhereP(...func(*sql.Selector))
-}
-
-// Hooks of the ArchiveMixin.
 func (d ArchiveMixin) Hooks() []ent.Hook {
+	type ArchiveableMutation interface {
+		SetOp(ent.Op)
+		Client() *gen.Client
+		SetArchiveTime(time.Time)
+		WhereP(...func(*sql.Selector))
+	}
 	return []ent.Hook{
 		hook.On(
 			func(next ent.Mutator) ent.Mutator {
@@ -81,7 +119,6 @@ func (d ArchiveMixin) Hooks() []ent.Hook {
 	}
 }
 
-// P adds a storage-level predicate to the queries and mutations.
 func (d ArchiveMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 	w.WhereP(
 		sql.FieldIsNull(d.Fields()[0].Descriptor().Name),

@@ -1381,6 +1381,18 @@ var (
 		Columns:    TeamsColumns,
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
 	}
+	// TenantsColumns holds the columns for the "tenants" table.
+	TenantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "name", Type: field.TypeString},
+		{Name: "public_id", Type: field.TypeUUID},
+	}
+	// TenantsTable holds the schema information for the "tenants" table.
+	TenantsTable = &schema.Table{
+		Name:       "tenants",
+		Columns:    TenantsColumns,
+		PrimaryKey: []*schema.Column{TenantsColumns[0]},
+	}
 	// TicketsColumns holds the columns for the "tickets" table.
 	TicketsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1942,6 +1954,7 @@ var (
 		SystemRelationshipFeedbackSignalsTable,
 		TasksTable,
 		TeamsTable,
+		TenantsTable,
 		TicketsTable,
 		UsersTable,
 		IncidentEnvironmentsTable,

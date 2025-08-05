@@ -67,6 +67,7 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -1693,6 +1694,33 @@ func (f TraverseTeam) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.TeamQuery", q)
 }
 
+// The TenantFunc type is an adapter to allow the use of ordinary function as a Querier.
+type TenantFunc func(context.Context, *ent.TenantQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f TenantFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.TenantQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.TenantQuery", q)
+}
+
+// The TraverseTenant type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseTenant func(context.Context, *ent.TenantQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseTenant) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseTenant) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TenantQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.TenantQuery", q)
+}
+
 // The TicketFunc type is an adapter to allow the use of ordinary function as a Querier.
 type TicketFunc func(context.Context, *ent.TicketQuery) (ent.Value, error)
 
@@ -1866,6 +1894,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.TaskQuery, predicate.Task, task.OrderOption]{typ: ent.TypeTask, tq: q}, nil
 	case *ent.TeamQuery:
 		return &query[*ent.TeamQuery, predicate.Team, team.OrderOption]{typ: ent.TypeTeam, tq: q}, nil
+	case *ent.TenantQuery:
+		return &query[*ent.TenantQuery, predicate.Tenant, tenant.OrderOption]{typ: ent.TypeTenant, tq: q}, nil
 	case *ent.TicketQuery:
 		return &query[*ent.TicketQuery, predicate.Ticket, ticket.OrderOption]{typ: ent.TypeTicket, tq: q}, nil
 	case *ent.UserQuery:

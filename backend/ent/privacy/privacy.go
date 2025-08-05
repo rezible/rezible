@@ -7,6 +7,7 @@ import (
 
 	"github.com/rezible/rezible/ent"
 
+	"entgo.io/ent/entql"
 	"entgo.io/ent/privacy"
 )
 
@@ -1502,6 +1503,30 @@ func (f TeamMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TeamMutation", m)
 }
 
+// The TenantQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type TenantQueryRuleFunc func(context.Context, *ent.TenantQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f TenantQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.TenantQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.TenantQuery", q)
+}
+
+// The TenantMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type TenantMutationRuleFunc func(context.Context, *ent.TenantMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f TenantMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.TenantMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.TenantMutation", m)
+}
+
 // The TicketQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type TicketQueryRuleFunc func(context.Context, *ent.TicketQuery) error
@@ -1548,4 +1573,295 @@ func (f UserMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) 
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.UserMutation", m)
+}
+
+type (
+	// Filter is the interface that wraps the Where function
+	// for filtering nodes in queries and mutations.
+	Filter interface {
+		// Where applies a filter on the executed query/mutation.
+		Where(entql.P)
+	}
+
+	// The FilterFunc type is an adapter that allows the use of ordinary
+	// functions as filters for query and mutation types.
+	FilterFunc func(context.Context, Filter) error
+)
+
+// EvalQuery calls f(ctx, q) if the query implements the Filter interface, otherwise it is denied.
+func (f FilterFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	fr, err := queryFilter(q)
+	if err != nil {
+		return err
+	}
+	return f(ctx, fr)
+}
+
+// EvalMutation calls f(ctx, q) if the mutation implements the Filter interface, otherwise it is denied.
+func (f FilterFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	fr, err := mutationFilter(m)
+	if err != nil {
+		return err
+	}
+	return f(ctx, fr)
+}
+
+var _ QueryMutationRule = FilterFunc(nil)
+
+func queryFilter(q ent.Query) (Filter, error) {
+	switch q := q.(type) {
+	case *ent.AlertQuery:
+		return q.Filter(), nil
+	case *ent.AlertMetricsQuery:
+		return q.Filter(), nil
+	case *ent.EnvironmentQuery:
+		return q.Filter(), nil
+	case *ent.FunctionalityQuery:
+		return q.Filter(), nil
+	case *ent.IncidentQuery:
+		return q.Filter(), nil
+	case *ent.IncidentDebriefQuery:
+		return q.Filter(), nil
+	case *ent.IncidentDebriefMessageQuery:
+		return q.Filter(), nil
+	case *ent.IncidentDebriefQuestionQuery:
+		return q.Filter(), nil
+	case *ent.IncidentDebriefSuggestionQuery:
+		return q.Filter(), nil
+	case *ent.IncidentEventQuery:
+		return q.Filter(), nil
+	case *ent.IncidentEventContextQuery:
+		return q.Filter(), nil
+	case *ent.IncidentEventContributingFactorQuery:
+		return q.Filter(), nil
+	case *ent.IncidentEventEvidenceQuery:
+		return q.Filter(), nil
+	case *ent.IncidentEventSystemComponentQuery:
+		return q.Filter(), nil
+	case *ent.IncidentFieldQuery:
+		return q.Filter(), nil
+	case *ent.IncidentFieldOptionQuery:
+		return q.Filter(), nil
+	case *ent.IncidentLinkQuery:
+		return q.Filter(), nil
+	case *ent.IncidentMilestoneQuery:
+		return q.Filter(), nil
+	case *ent.IncidentRoleQuery:
+		return q.Filter(), nil
+	case *ent.IncidentRoleAssignmentQuery:
+		return q.Filter(), nil
+	case *ent.IncidentSeverityQuery:
+		return q.Filter(), nil
+	case *ent.IncidentTagQuery:
+		return q.Filter(), nil
+	case *ent.IncidentTeamAssignmentQuery:
+		return q.Filter(), nil
+	case *ent.IncidentTypeQuery:
+		return q.Filter(), nil
+	case *ent.MeetingScheduleQuery:
+		return q.Filter(), nil
+	case *ent.MeetingSessionQuery:
+		return q.Filter(), nil
+	case *ent.OncallAnnotationQuery:
+		return q.Filter(), nil
+	case *ent.OncallAnnotationAlertFeedbackQuery:
+		return q.Filter(), nil
+	case *ent.OncallEventQuery:
+		return q.Filter(), nil
+	case *ent.OncallHandoverTemplateQuery:
+		return q.Filter(), nil
+	case *ent.OncallRosterQuery:
+		return q.Filter(), nil
+	case *ent.OncallRosterMetricsQuery:
+		return q.Filter(), nil
+	case *ent.OncallScheduleQuery:
+		return q.Filter(), nil
+	case *ent.OncallScheduleParticipantQuery:
+		return q.Filter(), nil
+	case *ent.OncallUserShiftQuery:
+		return q.Filter(), nil
+	case *ent.OncallUserShiftHandoverQuery:
+		return q.Filter(), nil
+	case *ent.OncallUserShiftMetricsQuery:
+		return q.Filter(), nil
+	case *ent.PlaybookQuery:
+		return q.Filter(), nil
+	case *ent.ProviderConfigQuery:
+		return q.Filter(), nil
+	case *ent.ProviderSyncHistoryQuery:
+		return q.Filter(), nil
+	case *ent.RetrospectiveQuery:
+		return q.Filter(), nil
+	case *ent.RetrospectiveDiscussionQuery:
+		return q.Filter(), nil
+	case *ent.RetrospectiveDiscussionReplyQuery:
+		return q.Filter(), nil
+	case *ent.RetrospectiveReviewQuery:
+		return q.Filter(), nil
+	case *ent.SystemAnalysisQuery:
+		return q.Filter(), nil
+	case *ent.SystemAnalysisComponentQuery:
+		return q.Filter(), nil
+	case *ent.SystemAnalysisRelationshipQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentConstraintQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentControlQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentKindQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentRelationshipQuery:
+		return q.Filter(), nil
+	case *ent.SystemComponentSignalQuery:
+		return q.Filter(), nil
+	case *ent.SystemHazardQuery:
+		return q.Filter(), nil
+	case *ent.SystemRelationshipControlActionQuery:
+		return q.Filter(), nil
+	case *ent.SystemRelationshipFeedbackSignalQuery:
+		return q.Filter(), nil
+	case *ent.TaskQuery:
+		return q.Filter(), nil
+	case *ent.TeamQuery:
+		return q.Filter(), nil
+	case *ent.TenantQuery:
+		return q.Filter(), nil
+	case *ent.TicketQuery:
+		return q.Filter(), nil
+	case *ent.UserQuery:
+		return q.Filter(), nil
+	default:
+		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
+	}
+}
+
+func mutationFilter(m ent.Mutation) (Filter, error) {
+	switch m := m.(type) {
+	case *ent.AlertMutation:
+		return m.Filter(), nil
+	case *ent.AlertMetricsMutation:
+		return m.Filter(), nil
+	case *ent.EnvironmentMutation:
+		return m.Filter(), nil
+	case *ent.FunctionalityMutation:
+		return m.Filter(), nil
+	case *ent.IncidentMutation:
+		return m.Filter(), nil
+	case *ent.IncidentDebriefMutation:
+		return m.Filter(), nil
+	case *ent.IncidentDebriefMessageMutation:
+		return m.Filter(), nil
+	case *ent.IncidentDebriefQuestionMutation:
+		return m.Filter(), nil
+	case *ent.IncidentDebriefSuggestionMutation:
+		return m.Filter(), nil
+	case *ent.IncidentEventMutation:
+		return m.Filter(), nil
+	case *ent.IncidentEventContextMutation:
+		return m.Filter(), nil
+	case *ent.IncidentEventContributingFactorMutation:
+		return m.Filter(), nil
+	case *ent.IncidentEventEvidenceMutation:
+		return m.Filter(), nil
+	case *ent.IncidentEventSystemComponentMutation:
+		return m.Filter(), nil
+	case *ent.IncidentFieldMutation:
+		return m.Filter(), nil
+	case *ent.IncidentFieldOptionMutation:
+		return m.Filter(), nil
+	case *ent.IncidentLinkMutation:
+		return m.Filter(), nil
+	case *ent.IncidentMilestoneMutation:
+		return m.Filter(), nil
+	case *ent.IncidentRoleMutation:
+		return m.Filter(), nil
+	case *ent.IncidentRoleAssignmentMutation:
+		return m.Filter(), nil
+	case *ent.IncidentSeverityMutation:
+		return m.Filter(), nil
+	case *ent.IncidentTagMutation:
+		return m.Filter(), nil
+	case *ent.IncidentTeamAssignmentMutation:
+		return m.Filter(), nil
+	case *ent.IncidentTypeMutation:
+		return m.Filter(), nil
+	case *ent.MeetingScheduleMutation:
+		return m.Filter(), nil
+	case *ent.MeetingSessionMutation:
+		return m.Filter(), nil
+	case *ent.OncallAnnotationMutation:
+		return m.Filter(), nil
+	case *ent.OncallAnnotationAlertFeedbackMutation:
+		return m.Filter(), nil
+	case *ent.OncallEventMutation:
+		return m.Filter(), nil
+	case *ent.OncallHandoverTemplateMutation:
+		return m.Filter(), nil
+	case *ent.OncallRosterMutation:
+		return m.Filter(), nil
+	case *ent.OncallRosterMetricsMutation:
+		return m.Filter(), nil
+	case *ent.OncallScheduleMutation:
+		return m.Filter(), nil
+	case *ent.OncallScheduleParticipantMutation:
+		return m.Filter(), nil
+	case *ent.OncallUserShiftMutation:
+		return m.Filter(), nil
+	case *ent.OncallUserShiftHandoverMutation:
+		return m.Filter(), nil
+	case *ent.OncallUserShiftMetricsMutation:
+		return m.Filter(), nil
+	case *ent.PlaybookMutation:
+		return m.Filter(), nil
+	case *ent.ProviderConfigMutation:
+		return m.Filter(), nil
+	case *ent.ProviderSyncHistoryMutation:
+		return m.Filter(), nil
+	case *ent.RetrospectiveMutation:
+		return m.Filter(), nil
+	case *ent.RetrospectiveDiscussionMutation:
+		return m.Filter(), nil
+	case *ent.RetrospectiveDiscussionReplyMutation:
+		return m.Filter(), nil
+	case *ent.RetrospectiveReviewMutation:
+		return m.Filter(), nil
+	case *ent.SystemAnalysisMutation:
+		return m.Filter(), nil
+	case *ent.SystemAnalysisComponentMutation:
+		return m.Filter(), nil
+	case *ent.SystemAnalysisRelationshipMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentConstraintMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentControlMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentKindMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentRelationshipMutation:
+		return m.Filter(), nil
+	case *ent.SystemComponentSignalMutation:
+		return m.Filter(), nil
+	case *ent.SystemHazardMutation:
+		return m.Filter(), nil
+	case *ent.SystemRelationshipControlActionMutation:
+		return m.Filter(), nil
+	case *ent.SystemRelationshipFeedbackSignalMutation:
+		return m.Filter(), nil
+	case *ent.TaskMutation:
+		return m.Filter(), nil
+	case *ent.TeamMutation:
+		return m.Filter(), nil
+	case *ent.TenantMutation:
+		return m.Filter(), nil
+	case *ent.TicketMutation:
+		return m.Filter(), nil
+	case *ent.UserMutation:
+		return m.Filter(), nil
+	default:
+		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)
+	}
 }

@@ -128,6 +128,8 @@ type Tx struct {
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
 	Team *TeamClient
+	// Tenant is the client for interacting with the Tenant builders.
+	Tenant *TenantClient
 	// Ticket is the client for interacting with the Ticket builders.
 	Ticket *TicketClient
 	// User is the client for interacting with the User builders.
@@ -321,6 +323,7 @@ func (tx *Tx) init() {
 	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
+	tx.Tenant = NewTenantClient(tx.config)
 	tx.Ticket = NewTicketClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }

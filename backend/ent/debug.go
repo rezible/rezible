@@ -468,6 +468,14 @@ func (c *TeamClient) Debug() *TeamClient {
 	return &TeamClient{config: cfg}
 }
 
+func (c *TenantClient) Debug() *TenantClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &TenantClient{config: cfg}
+}
+
 func (c *TicketClient) Debug() *TicketClient {
 	if c.debug {
 		return c

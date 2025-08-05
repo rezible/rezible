@@ -27,7 +27,6 @@ func (Incident) Fields() []ent.Field {
 		field.String("chat_channel_id").Optional(),
 		field.UUID("severity_id", uuid.UUID{}).Optional(),
 		field.UUID("type_id", uuid.UUID{}).Optional(),
-		// field.UUID("retrospective_id", uuid.UUID{}),
 	}
 }
 

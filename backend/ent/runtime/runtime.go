@@ -3,6 +3,7 @@
 package runtime
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -63,8 +64,12 @@ import (
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+
+	"entgo.io/ent"
+	"entgo.io/ent/privacy"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -660,6 +665,26 @@ func init() {
 	teamDescID := teamFields[0].Descriptor()
 	// team.DefaultID holds the default value on creation for the id field.
 	team.DefaultID = teamDescID.Default.(func() uuid.UUID)
+	tenantMixin := schema.Tenant{}.Mixin()
+	tenant.Policy = privacy.NewPolicies(tenantMixin[0], schema.Tenant{})
+	tenant.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := tenant.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	tenantFields := schema.Tenant{}.Fields()
+	_ = tenantFields
+	// tenantDescName is the schema descriptor for name field.
+	tenantDescName := tenantFields[0].Descriptor()
+	// tenant.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tenant.NameValidator = tenantDescName.Validators[0].(func(string) error)
+	// tenantDescPublicID is the schema descriptor for public_id field.
+	tenantDescPublicID := tenantFields[1].Descriptor()
+	// tenant.DefaultPublicID holds the default value on creation for the public_id field.
+	tenant.DefaultPublicID = tenantDescPublicID.Default.(func() uuid.UUID)
 	ticketFields := schema.Ticket{}.Fields()
 	_ = ticketFields
 	// ticketDescID is the schema descriptor for id field.
