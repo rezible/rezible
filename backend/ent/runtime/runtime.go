@@ -788,7 +788,7 @@ func init() {
 	// playbook.DefaultID holds the default value on creation for the id field.
 	playbook.DefaultID = playbookDescID.Default.(func() uuid.UUID)
 	providerconfigMixin := schema.ProviderConfig{}.Mixin()
-	providerconfig.Policy = privacy.NewPolicies(providerconfigMixin[0], schema.ProviderConfig{})
+	providerconfig.Policy = privacy.NewPolicies(providerconfigMixin[0], providerconfigMixin[1], schema.ProviderConfig{})
 	providerconfig.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := providerconfig.Policy.EvalMutation(ctx, m); err != nil {
@@ -812,7 +812,7 @@ func init() {
 	// providerconfig.DefaultID holds the default value on creation for the id field.
 	providerconfig.DefaultID = providerconfigDescID.Default.(func() uuid.UUID)
 	providersynchistoryMixin := schema.ProviderSyncHistory{}.Mixin()
-	providersynchistory.Policy = privacy.NewPolicies(providersynchistoryMixin[0], schema.ProviderSyncHistory{})
+	providersynchistory.Policy = privacy.NewPolicies(providersynchistoryMixin[0], providersynchistoryMixin[1], schema.ProviderSyncHistory{})
 	providersynchistory.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 			if err := providersynchistory.Policy.EvalMutation(ctx, m); err != nil {

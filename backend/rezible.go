@@ -45,34 +45,17 @@ type (
 	ProviderLoader interface {
 		WebhookHandler() http.Handler
 
-		LoadProviders(context.Context) (*Providers, error)
-
-		LoadLanguageModelProvider(context.Context) (LanguageModelProvider, error)
-		LoadChatProvider(context.Context) (ChatProvider, error)
-		LoadAuthSessionProvider(context.Context) (AuthSessionProvider, error)
-
-		LoadIncidentDataProvider(context.Context) (IncidentDataProvider, error)
-		LoadOncallDataProvider(context.Context) (OncallDataProvider, error)
-		LoadSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
-		LoadTeamDataProvider(context.Context) (TeamDataProvider, error)
-		LoadUserDataProvider(context.Context) (UserDataProvider, error)
-		LoadTicketDataProvider(context.Context) (TicketDataProvider, error)
-		LoadAlertDataProvider(context.Context) (AlertDataProvider, error)
-		LoadPlaybookDataProvider(context.Context) (PlaybookDataProvider, error)
-	}
-
-	Providers struct {
-		LanguageModel        LanguageModelProvider
-		AuthSession          AuthSessionProvider
-		Chat                 ChatProvider
-		IncidentData         IncidentDataProvider
-		OncallData           OncallDataProvider
-		SystemComponentsData SystemComponentsDataProvider
-		TeamData             TeamDataProvider
-		UserData             UserDataProvider
-		TicketData           TicketDataProvider
-		AlertsData           AlertDataProvider
-		PlaybooksData        PlaybookDataProvider
+		GetLanguageModelProvider(context.Context) (LanguageModelProvider, error)
+		GetChatProvider(context.Context) (ChatProvider, error)
+		GetAuthSessionProvider(context.Context) (AuthSessionProvider, error)
+		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
+		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
+		GetSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
+		GetTeamDataProvider(context.Context) (TeamDataProvider, error)
+		GetUserDataProvider(context.Context) (UserDataProvider, error)
+		GetTicketDataProvider(context.Context) (TicketDataProvider, error)
+		GetAlertDataProvider(context.Context) (AlertDataProvider, error)
+		GetPlaybookDataProvider(context.Context) (PlaybookDataProvider, error)
 	}
 
 	DataProviderResourceUpdatedCallback = func(providerID string, updatedAt time.Time)
@@ -111,7 +94,7 @@ type (
 	}
 
 	AuthSessionService interface {
-		ProviderName() string
+		ProviderName(context.Context) (string, error)
 
 		AuthHandler() http.Handler
 		FrontendMiddleware() func(http.Handler) http.Handler

@@ -47,8 +47,8 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 		SetTenantID(int)
 	}
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-		if m.Op() == ent.OpCreate {
-			if tm, ok := m.(tenantedMutation); ok {
+		if tm, ok := m.(tenantedMutation); ok {
+			if _, alreadySet := m.Field("tenant_id"); !alreadySet {
 				tid, tenantExists := access.GetAuthContext(ctx).TenantId()
 				if !tenantExists {
 					return nil, errors.New("tenant not found in auth context")

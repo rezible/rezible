@@ -124,6 +124,14 @@ func (pshu *ProviderSyncHistoryUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pshu *ProviderSyncHistoryUpdate) check() error {
+	if pshu.mutation.TenantCleared() && len(pshu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProviderSyncHistory.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (pshu *ProviderSyncHistoryUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdate {
 	pshu.modifiers = append(pshu.modifiers, modifiers...)
@@ -131,6 +139,9 @@ func (pshu *ProviderSyncHistoryUpdate) Modify(modifiers ...func(u *sql.UpdateBui
 }
 
 func (pshu *ProviderSyncHistoryUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := pshu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(providersynchistory.Table, providersynchistory.Columns, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
 	if ps := pshu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -284,6 +295,14 @@ func (pshuo *ProviderSyncHistoryUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pshuo *ProviderSyncHistoryUpdateOne) check() error {
+	if pshuo.mutation.TenantCleared() && len(pshuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProviderSyncHistory.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (pshuo *ProviderSyncHistoryUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *ProviderSyncHistoryUpdateOne {
 	pshuo.modifiers = append(pshuo.modifiers, modifiers...)
@@ -291,6 +310,9 @@ func (pshuo *ProviderSyncHistoryUpdateOne) Modify(modifiers ...func(u *sql.Updat
 }
 
 func (pshuo *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *ProviderSyncHistory, err error) {
+	if err := pshuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(providersynchistory.Table, providersynchistory.Columns, sqlgraph.NewFieldSpec(providersynchistory.FieldID, field.TypeUUID))
 	id, ok := pshuo.mutation.ID()
 	if !ok {

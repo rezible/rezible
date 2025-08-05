@@ -130,6 +130,9 @@ func (pcu *ProviderConfigUpdate) check() error {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
 	}
+	if pcu.mutation.TenantCleared() && len(pcu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProviderConfig.tenant"`)
+	}
 	return nil
 }
 
@@ -301,6 +304,9 @@ func (pcuo *ProviderConfigUpdateOne) check() error {
 		if err := providerconfig.ProviderTypeValidator(v); err != nil {
 			return &ValidationError{Name: "provider_type", err: fmt.Errorf(`ent: validator failed for field "ProviderConfig.provider_type": %w`, err)}
 		}
+	}
+	if pcuo.mutation.TenantCleared() && len(pcuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProviderConfig.tenant"`)
 	}
 	return nil
 }

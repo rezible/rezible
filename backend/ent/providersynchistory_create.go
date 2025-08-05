@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // ProviderSyncHistoryCreate is the builder for creating a ProviderSyncHistory entity.
@@ -22,6 +23,12 @@ type ProviderSyncHistoryCreate struct {
 	mutation *ProviderSyncHistoryMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (pshc *ProviderSyncHistoryCreate) SetTenantID(i int) *ProviderSyncHistoryCreate {
+	pshc.mutation.SetTenantID(i)
+	return pshc
 }
 
 // SetDataType sets the "data_type" field.
@@ -76,6 +83,11 @@ func (pshc *ProviderSyncHistoryCreate) SetNillableID(u *uuid.UUID) *ProviderSync
 		pshc.SetID(*u)
 	}
 	return pshc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (pshc *ProviderSyncHistoryCreate) SetTenant(t *Tenant) *ProviderSyncHistoryCreate {
+	return pshc.SetTenantID(t.ID)
 }
 
 // Mutation returns the ProviderSyncHistoryMutation object of the builder.
@@ -141,6 +153,9 @@ func (pshc *ProviderSyncHistoryCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (pshc *ProviderSyncHistoryCreate) check() error {
+	if _, ok := pshc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "ProviderSyncHistory.tenant_id"`)}
+	}
 	if _, ok := pshc.mutation.DataType(); !ok {
 		return &ValidationError{Name: "data_type", err: errors.New(`ent: missing required field "ProviderSyncHistory.data_type"`)}
 	}
@@ -152,6 +167,9 @@ func (pshc *ProviderSyncHistoryCreate) check() error {
 	}
 	if _, ok := pshc.mutation.NumMutations(); !ok {
 		return &ValidationError{Name: "num_mutations", err: errors.New(`ent: missing required field "ProviderSyncHistory.num_mutations"`)}
+	}
+	if len(pshc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "ProviderSyncHistory.tenant"`)}
 	}
 	return nil
 }
@@ -205,6 +223,23 @@ func (pshc *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlg
 		_spec.SetField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 		_node.NumMutations = value
 	}
+	if nodes := pshc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   providersynchistory.TenantTable,
+			Columns: []string{providersynchistory.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -212,7 +247,7 @@ func (pshc *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlg
 // of the `INSERT` statement. For example:
 //
 //	client.ProviderSyncHistory.Create().
-//		SetDataType(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -221,7 +256,7 @@ func (pshc *ProviderSyncHistoryCreate) createSpec() (*ProviderSyncHistory, *sqlg
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ProviderSyncHistoryUpsert) {
-//			SetDataType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (pshc *ProviderSyncHistoryCreate) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertOne {
@@ -327,6 +362,9 @@ func (u *ProviderSyncHistoryUpsertOne) UpdateNewValues() *ProviderSyncHistoryUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(providersynchistory.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(providersynchistory.FieldTenantID)
 		}
 	}))
 	return u
@@ -558,7 +596,7 @@ func (pshcb *ProviderSyncHistoryCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ProviderSyncHistoryUpsert) {
-//			SetDataType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (pshcb *ProviderSyncHistoryCreateBulk) OnConflict(opts ...sql.ConflictOption) *ProviderSyncHistoryUpsertBulk {
@@ -604,6 +642,9 @@ func (u *ProviderSyncHistoryUpsertBulk) UpdateNewValues() *ProviderSyncHistoryUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(providersynchistory.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(providersynchistory.FieldTenantID)
 			}
 		}
 	}))

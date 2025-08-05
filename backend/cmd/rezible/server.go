@@ -73,24 +73,17 @@ func (s *rezServer) setup() error {
 
 	pl := providers.NewProviderLoader(dbc.ProviderConfig)
 
-	syncSvc := datasync.NewProviderSyncService(dbc, pl)
-
-	provs, provsErr := pl.LoadProviders(ctx)
-	if provsErr != nil {
-		return fmt.Errorf("failed to load providers: %w", provsErr)
-	}
-
 	users, usersErr := postgres.NewUserService(dbc)
 	if usersErr != nil {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(users, provs.AuthSession, s.opts.AuthSessionSecretKey)
+	auth, authErr := http.NewAuthSessionService(users, pl, s.opts.AuthSessionSecretKey)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
-	chat, chatErr := postgres.NewChatService(dbc, provs.Chat)
+	chat, chatErr := postgres.NewChatService(dbc, pl)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -100,7 +93,7 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
-	lms, lmsErr := eino.NewLanguageModelService(provs.LanguageModel)
+	lms, lmsErr := eino.NewLanguageModelService(pl)
 	if lmsErr != nil {
 		return fmt.Errorf("eino.NewLanguageModelService: %w", lmsErr)
 	}
@@ -140,22 +133,22 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
 	}
 
-	alerts, alertsErr := postgres.NewAlertService(dbc, provs.AlertsData)
+	alerts, alertsErr := postgres.NewAlertService(dbc, pl)
 	if alertsErr != nil {
 		return fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
 	}
 
-	playbooks, playbooksErr := postgres.NewPlaybookService(dbc, provs.PlaybooksData)
+	playbooks, playbooksErr := postgres.NewPlaybookService(dbc, pl)
 	if playbooksErr != nil {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
-		LookupChatUserFn:         users.GetByChatId,
-		AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
-		LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
-	})
-	provs.Chat.SetEventHandler(chat)
+	//provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
+	//	LookupChatUserFn:         users.GetByChatId,
+	//	AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
+	//	LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
+	//})
+	//provs.Chat.SetEventHandler(chat)
 
 	webhookHandler := pl.WebhookHandler()
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
@@ -164,6 +157,7 @@ func (s *rezServer) setup() error {
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
 	s.httpServer = http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
 
+	syncSvc := datasync.NewProviderSyncService(dbc, pl)
 	if jobsErr := s.registerJobs(ctx, syncSvc, oncall, debriefs); jobsErr != nil {
 		return fmt.Errorf("registering jobs: %w", jobsErr)
 	}

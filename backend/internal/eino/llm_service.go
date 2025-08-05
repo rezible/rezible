@@ -15,11 +15,11 @@ import (
 )
 
 type LanguageModelService struct {
-	prov rez.LanguageModelProvider
+	pl rez.ProviderLoader
 }
 
-func NewLanguageModelService(prov rez.LanguageModelProvider) (*LanguageModelService, error) {
-	return &LanguageModelService{prov: prov}, nil
+func NewLanguageModelService(pl rez.ProviderLoader) (*LanguageModelService, error) {
+	return &LanguageModelService{pl: pl}, nil
 }
 
 var (
@@ -43,7 +43,11 @@ func (s *LanguageModelService) GenerateDebriefResponse(ctx context.Context, debr
 		return nil, msgErr
 	}
 
-	model := s.prov.Model()
+	prov, provErr := s.pl.GetLanguageModelProvider(ctx)
+	if provErr != nil {
+		return nil, fmt.Errorf("getting language model provider: %w", provErr)
+	}
+	model := prov.Model()
 	resp, genErr := model.Generate(ctx, createDebriefThread(debriefMessages))
 	if genErr != nil {
 		return nil, fmt.Errorf("generate content: %w", genErr)

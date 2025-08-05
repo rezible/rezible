@@ -19,8 +19,13 @@ func newAuthSessionsHandler(auth rez.AuthSessionService, users rez.UserService) 
 func (h *authSessionsHandler) GetAuthSessionsConfig(ctx context.Context, req *oapi.GetAuthSessionsConfigRequest) (*oapi.GetAuthSessionsConfigResponse, error) {
 	var resp oapi.GetAuthSessionsConfigResponse
 
+	providerName, provErr := h.auth.ProviderName(ctx)
+	if provErr != nil {
+		return &resp, provErr
+	}
+
 	resp.Body.Data = oapi.AuthSessionsConfig{
-		ProviderName: h.auth.ProviderName(),
+		ProviderName: providerName,
 	}
 
 	return &resp, nil

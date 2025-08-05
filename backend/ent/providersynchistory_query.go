@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // ProviderSyncHistoryQuery is the builder for querying ProviderSyncHistory entities.
@@ -24,6 +25,7 @@ type ProviderSyncHistoryQuery struct {
 	order      []providersynchistory.OrderOption
 	inters     []Interceptor
 	predicates []predicate.ProviderSyncHistory
+	withTenant *TenantQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -59,6 +61,28 @@ func (pshq *ProviderSyncHistoryQuery) Unique(unique bool) *ProviderSyncHistoryQu
 func (pshq *ProviderSyncHistoryQuery) Order(o ...providersynchistory.OrderOption) *ProviderSyncHistoryQuery {
 	pshq.order = append(pshq.order, o...)
 	return pshq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (pshq *ProviderSyncHistoryQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: pshq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pshq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pshq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providersynchistory.Table, providersynchistory.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providersynchistory.TenantTable, providersynchistory.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pshq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first ProviderSyncHistory entity from the query.
@@ -253,11 +277,23 @@ func (pshq *ProviderSyncHistoryQuery) Clone() *ProviderSyncHistoryQuery {
 		order:      append([]providersynchistory.OrderOption{}, pshq.order...),
 		inters:     append([]Interceptor{}, pshq.inters...),
 		predicates: append([]predicate.ProviderSyncHistory{}, pshq.predicates...),
+		withTenant: pshq.withTenant.Clone(),
 		// clone intermediate query.
 		sql:       pshq.sql.Clone(),
 		path:      pshq.path,
 		modifiers: append([]func(*sql.Selector){}, pshq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (pshq *ProviderSyncHistoryQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderSyncHistoryQuery {
+	query := (&TenantClient{config: pshq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pshq.withTenant = query
+	return pshq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -266,12 +302,12 @@ func (pshq *ProviderSyncHistoryQuery) Clone() *ProviderSyncHistoryQuery {
 // Example:
 //
 //	var v []struct {
-//		DataType string `json:"data_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ProviderSyncHistory.Query().
-//		GroupBy(providersynchistory.FieldDataType).
+//		GroupBy(providersynchistory.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pshq *ProviderSyncHistoryQuery) GroupBy(field string, fields ...string) *ProviderSyncHistoryGroupBy {
@@ -289,11 +325,11 @@ func (pshq *ProviderSyncHistoryQuery) GroupBy(field string, fields ...string) *P
 // Example:
 //
 //	var v []struct {
-//		DataType string `json:"data_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.ProviderSyncHistory.Query().
-//		Select(providersynchistory.FieldDataType).
+//		Select(providersynchistory.FieldTenantID).
 //		Scan(ctx, &v)
 func (pshq *ProviderSyncHistoryQuery) Select(fields ...string) *ProviderSyncHistorySelect {
 	pshq.ctx.Fields = append(pshq.ctx.Fields, fields...)
@@ -342,8 +378,11 @@ func (pshq *ProviderSyncHistoryQuery) prepareQuery(ctx context.Context) error {
 
 func (pshq *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderSyncHistory, error) {
 	var (
-		nodes = []*ProviderSyncHistory{}
-		_spec = pshq.querySpec()
+		nodes       = []*ProviderSyncHistory{}
+		_spec       = pshq.querySpec()
+		loadedTypes = [1]bool{
+			pshq.withTenant != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProviderSyncHistory).scanValues(nil, columns)
@@ -351,6 +390,7 @@ func (pshq *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...query
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ProviderSyncHistory{config: pshq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(pshq.modifiers) > 0 {
@@ -365,7 +405,43 @@ func (pshq *ProviderSyncHistoryQuery) sqlAll(ctx context.Context, hooks ...query
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := pshq.withTenant; query != nil {
+		if err := pshq.loadTenant(ctx, query, nodes, nil,
+			func(n *ProviderSyncHistory, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (pshq *ProviderSyncHistoryQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderSyncHistory, init func(*ProviderSyncHistory), assign func(*ProviderSyncHistory, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*ProviderSyncHistory)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (pshq *ProviderSyncHistoryQuery) sqlCount(ctx context.Context) (int, error) {
@@ -395,6 +471,9 @@ func (pshq *ProviderSyncHistoryQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != providersynchistory.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if pshq.withTenant != nil {
+			_spec.Node.AddColumnOnce(providersynchistory.FieldTenantID)
 		}
 	}
 	if ps := pshq.predicates; len(ps) > 0 {

@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // ProviderConfigQuery is the builder for querying ProviderConfig entities.
@@ -24,6 +25,7 @@ type ProviderConfigQuery struct {
 	order      []providerconfig.OrderOption
 	inters     []Interceptor
 	predicates []predicate.ProviderConfig
+	withTenant *TenantQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -59,6 +61,28 @@ func (pcq *ProviderConfigQuery) Unique(unique bool) *ProviderConfigQuery {
 func (pcq *ProviderConfigQuery) Order(o ...providerconfig.OrderOption) *ProviderConfigQuery {
 	pcq.order = append(pcq.order, o...)
 	return pcq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (pcq *ProviderConfigQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: pcq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pcq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pcq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providerconfig.Table, providerconfig.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providerconfig.TenantTable, providerconfig.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pcq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first ProviderConfig entity from the query.
@@ -253,11 +277,23 @@ func (pcq *ProviderConfigQuery) Clone() *ProviderConfigQuery {
 		order:      append([]providerconfig.OrderOption{}, pcq.order...),
 		inters:     append([]Interceptor{}, pcq.inters...),
 		predicates: append([]predicate.ProviderConfig{}, pcq.predicates...),
+		withTenant: pcq.withTenant.Clone(),
 		// clone intermediate query.
 		sql:       pcq.sql.Clone(),
 		path:      pcq.path,
 		modifiers: append([]func(*sql.Selector){}, pcq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (pcq *ProviderConfigQuery) WithTenant(opts ...func(*TenantQuery)) *ProviderConfigQuery {
+	query := (&TenantClient{config: pcq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pcq.withTenant = query
+	return pcq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -266,12 +302,12 @@ func (pcq *ProviderConfigQuery) Clone() *ProviderConfigQuery {
 // Example:
 //
 //	var v []struct {
-//		ProviderType providerconfig.ProviderType `json:"provider_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.ProviderConfig.Query().
-//		GroupBy(providerconfig.FieldProviderType).
+//		GroupBy(providerconfig.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pcq *ProviderConfigQuery) GroupBy(field string, fields ...string) *ProviderConfigGroupBy {
@@ -289,11 +325,11 @@ func (pcq *ProviderConfigQuery) GroupBy(field string, fields ...string) *Provide
 // Example:
 //
 //	var v []struct {
-//		ProviderType providerconfig.ProviderType `json:"provider_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.ProviderConfig.Query().
-//		Select(providerconfig.FieldProviderType).
+//		Select(providerconfig.FieldTenantID).
 //		Scan(ctx, &v)
 func (pcq *ProviderConfigQuery) Select(fields ...string) *ProviderConfigSelect {
 	pcq.ctx.Fields = append(pcq.ctx.Fields, fields...)
@@ -342,8 +378,11 @@ func (pcq *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
 
 func (pcq *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProviderConfig, error) {
 	var (
-		nodes = []*ProviderConfig{}
-		_spec = pcq.querySpec()
+		nodes       = []*ProviderConfig{}
+		_spec       = pcq.querySpec()
+		loadedTypes = [1]bool{
+			pcq.withTenant != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProviderConfig).scanValues(nil, columns)
@@ -351,6 +390,7 @@ func (pcq *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ProviderConfig{config: pcq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(pcq.modifiers) > 0 {
@@ -365,7 +405,43 @@ func (pcq *ProviderConfigQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := pcq.withTenant; query != nil {
+		if err := pcq.loadTenant(ctx, query, nodes, nil,
+			func(n *ProviderConfig, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (pcq *ProviderConfigQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*ProviderConfig, init func(*ProviderConfig), assign func(*ProviderConfig, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*ProviderConfig)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (pcq *ProviderConfigQuery) sqlCount(ctx context.Context) (int, error) {
@@ -395,6 +471,9 @@ func (pcq *ProviderConfigQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != providerconfig.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if pcq.withTenant != nil {
+			_spec.Node.AddColumnOnce(providerconfig.FieldTenantID)
 		}
 	}
 	if ps := pcq.predicates; len(ps) > 0 {

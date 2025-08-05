@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent/tenant"
 	"io"
 	"net/http"
 	"os"
@@ -27,7 +29,6 @@ import (
 )
 
 var (
-	ErrNoProviderConfigured         = errors.New("no provider configured")
 	ErrNoStoredConfigs              = errors.New("no stored configs")
 	ErrMultipleEnabledStoredConfigs = errors.New("multiple stored configs enabled")
 )
@@ -68,32 +69,38 @@ func (l *Loader) updateWebhooks(provKey string, hooks rez.Webhooks) {
 }
 
 type providerConfigFile struct {
-	Configs []struct {
-		Type         providerconfig.ProviderType `json:"type"`
-		ProviderName string                      `json:"provider_name"`
-		Disabled     bool                        `json:"disabled"`
-		Config       json.RawMessage             `json:"config"`
-	} `json:"configs"`
+	TenantName string                    `json:"tenant_name"`
+	Configs    []providerConfigFileEntry `json:"configs"`
 }
 
-func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string) error {
-	f, openErr := os.Open(fileName)
+type providerConfigFileEntry struct {
+	Type         providerconfig.ProviderType `json:"type"`
+	ProviderName string                      `json:"provider_name"`
+	Disabled     bool                        `json:"disabled"`
+	Config       json.RawMessage             `json:"config"`
+}
+
+func readProviderConfigFile(filename string) (*providerConfigFile, error) {
+	f, openErr := os.Open(filename)
 	if openErr != nil {
-		return fmt.Errorf("opening file: %w", openErr)
+		return nil, fmt.Errorf("opening file: %w", openErr)
 	}
 	defer f.Close()
 	fileContents, readErr := io.ReadAll(f)
 	if readErr != nil {
-		return fmt.Errorf("reading file: %w", readErr)
+		return nil, fmt.Errorf("reading file: %w", readErr)
 	}
 
 	var cfg providerConfigFile
 	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
-		return fmt.Errorf("unmarshalling file: %w", cfgErr)
+		return nil, fmt.Errorf("unmarshalling file: %w", cfgErr)
 	}
+	return &cfg, nil
+}
 
-	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
-		for _, c := range cfg.Configs {
+func makeUpsertProviderConfigTx(ctx context.Context, cfgs []providerConfigFileEntry) func(tx *ent.Tx) error {
+	return func(tx *ent.Tx) error {
+		for _, c := range cfgs {
 			log.Info().Str("name", c.ProviderName).Str("type", string(c.Type)).Msg("loading provider")
 			upsert := tx.ProviderConfig.Create().
 				SetProviderName(c.ProviderName).
@@ -112,64 +119,25 @@ func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string
 			}
 		}
 		return nil
-	})
+	}
 }
 
-func (l *Loader) LoadProviders(ctx context.Context) (*rez.Providers, error) {
-	var provs rez.Providers
-	var loadErr error
-
-	provs.LanguageModel, loadErr = l.LoadLanguageModelProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("language model: %w", loadErr)
+func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string) error {
+	cfg, cfgErr := readProviderConfigFile(fileName)
+	if cfgErr != nil {
+		return cfgErr
 	}
 
-	provs.AuthSession, loadErr = l.LoadAuthSessionProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("auth: %w", loadErr)
+	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(cfg.TenantName)).Only(ctx)
+	if ent.IsNotFound(tenantErr) {
+		tnt, tenantErr = client.Tenant.Create().SetName(cfg.TenantName).Save(ctx)
 	}
-
-	provs.TeamData, loadErr = l.LoadTeamDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("teams: %w", loadErr)
+	if tenantErr != nil {
+		return fmt.Errorf("querying tenant %q: %w", cfg.TenantName, tenantErr)
 	}
+	tenantCtx := access.TenantContext(ctx, access.RoleSystem, tnt.ID)
 
-	provs.UserData, loadErr = l.LoadUserDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("users: %w", loadErr)
-	}
-
-	provs.Chat, loadErr = l.LoadChatProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("chat: %w", loadErr)
-	}
-
-	provs.AlertsData, loadErr = l.LoadAlertDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("alerts: %w", loadErr)
-	}
-
-	provs.IncidentData, loadErr = l.LoadIncidentDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("incidents: %w", loadErr)
-	}
-
-	provs.OncallData, loadErr = l.LoadOncallDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("oncall: %w", loadErr)
-	}
-
-	provs.SystemComponentsData, loadErr = l.LoadSystemComponentsDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("system components: %w", loadErr)
-	}
-
-	provs.TicketData, loadErr = l.LoadTicketDataProvider(ctx)
-	if loadErr != nil {
-		return nil, fmt.Errorf("tickets: %w", loadErr)
-	}
-
-	return &provs, nil
+	return ent.WithTx(tenantCtx, client, makeUpsertProviderConfigTx(tenantCtx, cfg.Configs))
 }
 
 type loadedConfig struct {
@@ -216,7 +184,7 @@ func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) 
 	return cfg, nil
 }
 
-func (l *Loader) LoadLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
+func (l *Loader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -229,7 +197,7 @@ func (l *Loader) LoadLanguageModelProvider(ctx context.Context) (rez.LanguageMod
 	}
 }
 
-func (l *Loader) LoadChatProvider(ctx context.Context) (rez.ChatProvider, error) {
+func (l *Loader) GetChatProvider(ctx context.Context) (rez.ChatProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeChat)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -251,7 +219,7 @@ func (l *Loader) LoadChatProvider(ctx context.Context) (rez.ChatProvider, error)
 	return prov, provErr
 }
 
-func (l *Loader) LoadOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
+func (l *Loader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeOncall)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -275,7 +243,7 @@ func (l *Loader) LoadOncallDataProvider(ctx context.Context) (rez.OncallDataProv
 	return prov, provErr
 }
 
-func (l *Loader) LoadAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
+func (l *Loader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -297,7 +265,7 @@ func (l *Loader) LoadAlertDataProvider(ctx context.Context) (rez.AlertDataProvid
 	return prov, provErr
 }
 
-func (l *Loader) LoadIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
+func (l *Loader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeIncidents)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -320,7 +288,7 @@ func (l *Loader) LoadIncidentDataProvider(ctx context.Context) (rez.IncidentData
 	return prov, provErr
 }
 
-func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
+func (l *Loader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -334,7 +302,7 @@ func (l *Loader) LoadUserDataProvider(ctx context.Context) (rez.UserDataProvider
 	}
 }
 
-func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
+func (l *Loader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTeams)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -350,7 +318,7 @@ func (l *Loader) LoadTeamDataProvider(ctx context.Context) (rez.TeamDataProvider
 	}
 }
 
-func (l *Loader) LoadSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
+func (l *Loader) GetSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeSystemComponents)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -364,7 +332,7 @@ func (l *Loader) LoadSystemComponentsDataProvider(ctx context.Context) (rez.Syst
 	}
 }
 
-func (l *Loader) LoadAuthSessionProvider(ctx context.Context) (rez.AuthSessionProvider, error) {
+func (l *Loader) GetAuthSessionProvider(ctx context.Context) (rez.AuthSessionProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAuthSession)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -380,7 +348,7 @@ func (l *Loader) LoadAuthSessionProvider(ctx context.Context) (rez.AuthSessionPr
 	}
 }
 
-func (l *Loader) LoadTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
+func (l *Loader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTickets)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -396,7 +364,7 @@ func (l *Loader) LoadTicketDataProvider(ctx context.Context) (rez.TicketDataProv
 	}
 }
 
-func (l *Loader) LoadPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
+func (l *Loader) GetPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
 	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypePlaybooks)
 	if cfgErr != nil {
 		return nil, cfgErr

@@ -68,7 +68,6 @@ _default:
     just start-db
     createdb rezible
     just run-migrations
-    just run-backend seed
     just run-backend load-configs
 
 @run-migrations:

@@ -10,14 +10,14 @@ import (
 )
 
 type PlaybookService struct {
-	db   *ent.Client
-	prov rez.PlaybookDataProvider
+	db *ent.Client
+	pl rez.ProviderLoader
 }
 
-func NewPlaybookService(db *ent.Client, prov rez.PlaybookDataProvider) (*PlaybookService, error) {
+func NewPlaybookService(db *ent.Client, pl rez.ProviderLoader) (*PlaybookService, error) {
 	s := &PlaybookService{
-		db:   db,
-		prov: prov,
+		db: db,
+		pl: pl,
 	}
 
 	return s, nil

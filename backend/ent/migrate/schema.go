@@ -860,12 +860,21 @@ var (
 		{Name: "provider_config", Type: field.TypeBytes},
 		{Name: "enabled", Type: field.TypeBool, Default: true},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// ProviderConfigsTable holds the schema information for the "provider_configs" table.
 	ProviderConfigsTable = &schema.Table{
 		Name:       "provider_configs",
 		Columns:    ProviderConfigsColumns,
 		PrimaryKey: []*schema.Column{ProviderConfigsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "provider_configs_tenants_tenant",
+				Columns:    []*schema.Column{ProviderConfigsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "providerconfig_provider_name_provider_type",
@@ -881,12 +890,21 @@ var (
 		{Name: "started_at", Type: field.TypeTime},
 		{Name: "finished_at", Type: field.TypeTime},
 		{Name: "num_mutations", Type: field.TypeInt},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// ProviderSyncHistoriesTable holds the schema information for the "provider_sync_histories" table.
 	ProviderSyncHistoriesTable = &schema.Table{
 		Name:       "provider_sync_histories",
 		Columns:    ProviderSyncHistoriesColumns,
 		PrimaryKey: []*schema.Column{ProviderSyncHistoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "provider_sync_histories_tenants_tenant",
+				Columns:    []*schema.Column{ProviderSyncHistoriesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
@@ -1979,6 +1997,8 @@ func init() {
 	OncallUserShiftsTable.ForeignKeys[2].RefTable = OncallUserShiftsTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
 	OncallUserShiftMetricsTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
+	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
+	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
 	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = RetrospectivesTable

@@ -16,6 +16,7 @@ type ProviderConfig struct {
 func (ProviderConfig) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

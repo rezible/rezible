@@ -713,6 +713,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "ProviderConfig",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			providerconfig.FieldTenantID:       {Type: field.TypeInt, Column: providerconfig.FieldTenantID},
 			providerconfig.FieldProviderType:   {Type: field.TypeEnum, Column: providerconfig.FieldProviderType},
 			providerconfig.FieldProviderName:   {Type: field.TypeString, Column: providerconfig.FieldProviderName},
 			providerconfig.FieldProviderConfig: {Type: field.TypeBytes, Column: providerconfig.FieldProviderConfig},
@@ -731,6 +732,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "ProviderSyncHistory",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			providersynchistory.FieldTenantID:     {Type: field.TypeInt, Column: providersynchistory.FieldTenantID},
 			providersynchistory.FieldDataType:     {Type: field.TypeString, Column: providersynchistory.FieldDataType},
 			providersynchistory.FieldStartedAt:    {Type: field.TypeTime, Column: providersynchistory.FieldStartedAt},
 			providersynchistory.FieldFinishedAt:   {Type: field.TypeTime, Column: providersynchistory.FieldFinishedAt},
@@ -2258,6 +2260,30 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Playbook",
 		"Alert",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   providerconfig.TenantTable,
+			Columns: []string{providerconfig.TenantColumn},
+			Bidi:    false,
+		},
+		"ProviderConfig",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   providersynchistory.TenantTable,
+			Columns: []string{providersynchistory.TenantColumn},
+			Bidi:    false,
+		},
+		"ProviderSyncHistory",
+		"Tenant",
 	)
 	graph.MustAddE(
 		"incident",
@@ -6835,6 +6861,11 @@ func (f *ProviderConfigFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(providerconfig.FieldID))
 }
 
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *ProviderConfigFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(providerconfig.FieldTenantID))
+}
+
 // WhereProviderType applies the entql string predicate on the provider_type field.
 func (f *ProviderConfigFilter) WhereProviderType(p entql.StringP) {
 	f.Where(p.Field(providerconfig.FieldProviderType))
@@ -6858,6 +6889,20 @@ func (f *ProviderConfigFilter) WhereEnabled(p entql.BoolP) {
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
 func (f *ProviderConfigFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(providerconfig.FieldUpdatedAt))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *ProviderConfigFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *ProviderConfigFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
 }
 
 // addPredicate implements the predicateAdder interface.
@@ -6900,6 +6945,11 @@ func (f *ProviderSyncHistoryFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(providersynchistory.FieldID))
 }
 
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *ProviderSyncHistoryFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(providersynchistory.FieldTenantID))
+}
+
 // WhereDataType applies the entql string predicate on the data_type field.
 func (f *ProviderSyncHistoryFilter) WhereDataType(p entql.StringP) {
 	f.Where(p.Field(providersynchistory.FieldDataType))
@@ -6918,6 +6968,20 @@ func (f *ProviderSyncHistoryFilter) WhereFinishedAt(p entql.TimeP) {
 // WhereNumMutations applies the entql int predicate on the num_mutations field.
 func (f *ProviderSyncHistoryFilter) WhereNumMutations(p entql.IntP) {
 	f.Where(p.Field(providersynchistory.FieldNumMutations))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *ProviderSyncHistoryFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *ProviderSyncHistoryFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
 }
 
 // addPredicate implements the predicateAdder interface.

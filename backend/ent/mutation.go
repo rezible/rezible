@@ -26991,6 +26991,8 @@ type ProviderConfigMutation struct {
 	enabled         *bool
 	updated_at      *time.Time
 	clearedFields   map[string]struct{}
+	tenant          *int
+	clearedtenant   bool
 	done            bool
 	oldValue        func(context.Context) (*ProviderConfig, error)
 	predicates      []predicate.ProviderConfig
@@ -27098,6 +27100,42 @@ func (m *ProviderConfigMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *ProviderConfigMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *ProviderConfigMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the ProviderConfig entity.
+// If the ProviderConfig object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderConfigMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *ProviderConfigMutation) ResetTenantID() {
+	m.tenant = nil
 }
 
 // SetProviderType sets the "provider_type" field.
@@ -27280,6 +27318,33 @@ func (m *ProviderConfigMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *ProviderConfigMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[providerconfig.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *ProviderConfigMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *ProviderConfigMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *ProviderConfigMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
 // Where appends a list predicates to the ProviderConfigMutation builder.
 func (m *ProviderConfigMutation) Where(ps ...predicate.ProviderConfig) {
 	m.predicates = append(m.predicates, ps...)
@@ -27314,7 +27379,10 @@ func (m *ProviderConfigMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProviderConfigMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
+	if m.tenant != nil {
+		fields = append(fields, providerconfig.FieldTenantID)
+	}
 	if m.provider_type != nil {
 		fields = append(fields, providerconfig.FieldProviderType)
 	}
@@ -27338,6 +27406,8 @@ func (m *ProviderConfigMutation) Fields() []string {
 // schema.
 func (m *ProviderConfigMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case providerconfig.FieldTenantID:
+		return m.TenantID()
 	case providerconfig.FieldProviderType:
 		return m.ProviderType()
 	case providerconfig.FieldProviderName:
@@ -27357,6 +27427,8 @@ func (m *ProviderConfigMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProviderConfigMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case providerconfig.FieldTenantID:
+		return m.OldTenantID(ctx)
 	case providerconfig.FieldProviderType:
 		return m.OldProviderType(ctx)
 	case providerconfig.FieldProviderName:
@@ -27376,6 +27448,13 @@ func (m *ProviderConfigMutation) OldField(ctx context.Context, name string) (ent
 // type.
 func (m *ProviderConfigMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case providerconfig.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
 	case providerconfig.FieldProviderType:
 		v, ok := value.(providerconfig.ProviderType)
 		if !ok {
@@ -27418,13 +27497,16 @@ func (m *ProviderConfigMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ProviderConfigMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ProviderConfigMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -27460,6 +27542,9 @@ func (m *ProviderConfigMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProviderConfigMutation) ResetField(name string) error {
 	switch name {
+	case providerconfig.FieldTenantID:
+		m.ResetTenantID()
+		return nil
 	case providerconfig.FieldProviderType:
 		m.ResetProviderType()
 		return nil
@@ -27481,19 +27566,28 @@ func (m *ProviderConfigMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProviderConfigMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.tenant != nil {
+		edges = append(edges, providerconfig.EdgeTenant)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ProviderConfigMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case providerconfig.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProviderConfigMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -27505,25 +27599,42 @@ func (m *ProviderConfigMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProviderConfigMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedtenant {
+		edges = append(edges, providerconfig.EdgeTenant)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ProviderConfigMutation) EdgeCleared(name string) bool {
+	switch name {
+	case providerconfig.EdgeTenant:
+		return m.clearedtenant
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ProviderConfigMutation) ClearEdge(name string) error {
+	switch name {
+	case providerconfig.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	}
 	return fmt.Errorf("unknown ProviderConfig unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ProviderConfigMutation) ResetEdge(name string) error {
+	switch name {
+	case providerconfig.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	}
 	return fmt.Errorf("unknown ProviderConfig edge %s", name)
 }
 
@@ -27539,6 +27650,8 @@ type ProviderSyncHistoryMutation struct {
 	num_mutations    *int
 	addnum_mutations *int
 	clearedFields    map[string]struct{}
+	tenant           *int
+	clearedtenant    bool
 	done             bool
 	oldValue         func(context.Context) (*ProviderSyncHistory, error)
 	predicates       []predicate.ProviderSyncHistory
@@ -27646,6 +27759,42 @@ func (m *ProviderSyncHistoryMutation) IDs(ctx context.Context) ([]uuid.UUID, err
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *ProviderSyncHistoryMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *ProviderSyncHistoryMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the ProviderSyncHistory entity.
+// If the ProviderSyncHistory object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ProviderSyncHistoryMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *ProviderSyncHistoryMutation) ResetTenantID() {
+	m.tenant = nil
 }
 
 // SetDataType sets the "data_type" field.
@@ -27812,6 +27961,33 @@ func (m *ProviderSyncHistoryMutation) ResetNumMutations() {
 	m.addnum_mutations = nil
 }
 
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *ProviderSyncHistoryMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[providersynchistory.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *ProviderSyncHistoryMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *ProviderSyncHistoryMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *ProviderSyncHistoryMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
 // Where appends a list predicates to the ProviderSyncHistoryMutation builder.
 func (m *ProviderSyncHistoryMutation) Where(ps ...predicate.ProviderSyncHistory) {
 	m.predicates = append(m.predicates, ps...)
@@ -27846,7 +28022,10 @@ func (m *ProviderSyncHistoryMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ProviderSyncHistoryMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
+	if m.tenant != nil {
+		fields = append(fields, providersynchistory.FieldTenantID)
+	}
 	if m.data_type != nil {
 		fields = append(fields, providersynchistory.FieldDataType)
 	}
@@ -27867,6 +28046,8 @@ func (m *ProviderSyncHistoryMutation) Fields() []string {
 // schema.
 func (m *ProviderSyncHistoryMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case providersynchistory.FieldTenantID:
+		return m.TenantID()
 	case providersynchistory.FieldDataType:
 		return m.DataType()
 	case providersynchistory.FieldStartedAt:
@@ -27884,6 +28065,8 @@ func (m *ProviderSyncHistoryMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ProviderSyncHistoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case providersynchistory.FieldTenantID:
+		return m.OldTenantID(ctx)
 	case providersynchistory.FieldDataType:
 		return m.OldDataType(ctx)
 	case providersynchistory.FieldStartedAt:
@@ -27901,6 +28084,13 @@ func (m *ProviderSyncHistoryMutation) OldField(ctx context.Context, name string)
 // type.
 func (m *ProviderSyncHistoryMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case providersynchistory.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
 	case providersynchistory.FieldDataType:
 		v, ok := value.(string)
 		if !ok {
@@ -27993,6 +28183,9 @@ func (m *ProviderSyncHistoryMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ProviderSyncHistoryMutation) ResetField(name string) error {
 	switch name {
+	case providersynchistory.FieldTenantID:
+		m.ResetTenantID()
+		return nil
 	case providersynchistory.FieldDataType:
 		m.ResetDataType()
 		return nil
@@ -28011,19 +28204,28 @@ func (m *ProviderSyncHistoryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ProviderSyncHistoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.tenant != nil {
+		edges = append(edges, providersynchistory.EdgeTenant)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ProviderSyncHistoryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case providersynchistory.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ProviderSyncHistoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -28035,25 +28237,42 @@ func (m *ProviderSyncHistoryMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ProviderSyncHistoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedtenant {
+		edges = append(edges, providersynchistory.EdgeTenant)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ProviderSyncHistoryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case providersynchistory.EdgeTenant:
+		return m.clearedtenant
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ProviderSyncHistoryMutation) ClearEdge(name string) error {
+	switch name {
+	case providersynchistory.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	}
 	return fmt.Errorf("unknown ProviderSyncHistory unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ProviderSyncHistoryMutation) ResetEdge(name string) error {
+	switch name {
+	case providersynchistory.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	}
 	return fmt.Errorf("unknown ProviderSyncHistory edge %s", name)
 }
 

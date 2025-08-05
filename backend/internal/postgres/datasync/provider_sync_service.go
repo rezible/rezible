@@ -61,7 +61,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		s.db.ProviderSyncHistory.Delete().ExecX(ctx)
 	}
 
-	users, usersErr := s.pl.LoadUserDataProvider(ctx)
+	users, usersErr := s.pl.GetUserDataProvider(ctx)
 	if usersErr != nil {
 		return fmt.Errorf("users data provider: %w", usersErr)
 	}
@@ -69,7 +69,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("users: %w", syncErr)
 	}
 
-	teams, teamsErr := s.pl.LoadTeamDataProvider(ctx)
+	teams, teamsErr := s.pl.GetTeamDataProvider(ctx)
 	if teamsErr != nil {
 		return fmt.Errorf("teams data provider: %w", teamsErr)
 	}
@@ -77,7 +77,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("teams: %w", syncErr)
 	}
 
-	oncall, oncallErr := s.pl.LoadOncallDataProvider(ctx)
+	oncall, oncallErr := s.pl.GetOncallDataProvider(ctx)
 	if oncallErr != nil {
 		return fmt.Errorf("oncall data provider: %w", oncallErr)
 	}
@@ -88,7 +88,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("oncall shifts: %w", syncErr)
 	}
 
-	components, componentsErr := s.pl.LoadSystemComponentsDataProvider(ctx)
+	components, componentsErr := s.pl.GetSystemComponentsDataProvider(ctx)
 	if componentsErr != nil {
 		return fmt.Errorf("system components data provider: %w", componentsErr)
 	}
@@ -96,7 +96,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("system components: %w", syncErr)
 	}
 
-	alerts, alertsErr := s.pl.LoadAlertDataProvider(ctx)
+	alerts, alertsErr := s.pl.GetAlertDataProvider(ctx)
 	if alertsErr != nil {
 		return fmt.Errorf("alert data provider: %w", alertsErr)
 	}
@@ -104,7 +104,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("alerts: %w", syncErr)
 	}
 
-	playbooks, playbooksErr := s.pl.LoadPlaybookDataProvider(ctx)
+	playbooks, playbooksErr := s.pl.GetPlaybookDataProvider(ctx)
 	if playbooksErr != nil {
 		return fmt.Errorf("playbooks data provider: %w", playbooksErr)
 	}
@@ -112,7 +112,7 @@ func (s *ProviderSyncService) syncProviderData(ctx context.Context, hard bool) e
 		return fmt.Errorf("playbooks: %w", syncErr)
 	}
 
-	incidents, incidentsErr := s.pl.LoadIncidentDataProvider(ctx)
+	incidents, incidentsErr := s.pl.GetIncidentDataProvider(ctx)
 	if incidentsErr != nil {
 		return fmt.Errorf("incidents data provider: %w", incidentsErr)
 	}

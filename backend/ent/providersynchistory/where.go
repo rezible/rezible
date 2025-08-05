@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -55,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.ProviderSyncHistory {
 	return predicate.ProviderSyncHistory(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(sql.FieldEQ(FieldTenantID, v))
+}
+
 // DataType applies equality check predicate on the "data_type" field. It's identical to DataTypeEQ.
 func DataType(v string) predicate.ProviderSyncHistory {
 	return predicate.ProviderSyncHistory(sql.FieldEQ(FieldDataType, v))
@@ -73,6 +79,26 @@ func FinishedAt(v time.Time) predicate.ProviderSyncHistory {
 // NumMutations applies equality check predicate on the "num_mutations" field. It's identical to NumMutationsEQ.
 func NumMutations(v int) predicate.ProviderSyncHistory {
 	return predicate.ProviderSyncHistory(sql.FieldEQ(FieldNumMutations, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // DataTypeEQ applies the EQ predicate on the "data_type" field.
@@ -258,6 +284,29 @@ func NumMutationsLT(v int) predicate.ProviderSyncHistory {
 // NumMutationsLTE applies the LTE predicate on the "num_mutations" field.
 func NumMutationsLTE(v int) predicate.ProviderSyncHistory {
 	return predicate.ProviderSyncHistory(sql.FieldLTE(FieldNumMutations, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.ProviderSyncHistory {
+	return predicate.ProviderSyncHistory(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

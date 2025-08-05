@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -55,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ProviderName applies equality check predicate on the "provider_name" field. It's identical to ProviderNameEQ.
 func ProviderName(v string) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldEQ(FieldProviderName, v))
@@ -73,6 +79,26 @@ func Enabled(v bool) predicate.ProviderConfig {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.ProviderConfig {
+	return predicate.ProviderConfig(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ProviderTypeEQ applies the EQ predicate on the "provider_type" field.
@@ -248,6 +274,29 @@ func UpdatedAtLT(v time.Time) predicate.ProviderConfig {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.ProviderConfig {
 	return predicate.ProviderConfig(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.ProviderConfig {
+	return predicate.ProviderConfig(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.ProviderConfig {
+	return predicate.ProviderConfig(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

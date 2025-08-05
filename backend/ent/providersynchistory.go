@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/providersynchistory"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // ProviderSyncHistory is the model entity for the ProviderSyncHistory schema.
@@ -18,6 +19,8 @@ type ProviderSyncHistory struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// DataType holds the value of the "data_type" field.
 	DataType string `json:"data_type,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -26,7 +29,30 @@ type ProviderSyncHistory struct {
 	FinishedAt time.Time `json:"finished_at,omitempty"`
 	// NumMutations holds the value of the "num_mutations" field.
 	NumMutations int `json:"num_mutations,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ProviderSyncHistoryQuery when eager-loading is set.
+	Edges        ProviderSyncHistoryEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ProviderSyncHistoryEdges holds the relations/edges for other nodes in the graph.
+type ProviderSyncHistoryEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProviderSyncHistoryEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -34,7 +60,7 @@ func (*ProviderSyncHistory) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case providersynchistory.FieldNumMutations:
+		case providersynchistory.FieldTenantID, providersynchistory.FieldNumMutations:
 			values[i] = new(sql.NullInt64)
 		case providersynchistory.FieldDataType:
 			values[i] = new(sql.NullString)
@@ -62,6 +88,12 @@ func (psh *ProviderSyncHistory) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				psh.ID = *value
+			}
+		case providersynchistory.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				psh.TenantID = int(value.Int64)
 			}
 		case providersynchistory.FieldDataType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -100,6 +132,11 @@ func (psh *ProviderSyncHistory) Value(name string) (ent.Value, error) {
 	return psh.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the ProviderSyncHistory entity.
+func (psh *ProviderSyncHistory) QueryTenant() *TenantQuery {
+	return NewProviderSyncHistoryClient(psh.config).QueryTenant(psh)
+}
+
 // Update returns a builder for updating this ProviderSyncHistory.
 // Note that you need to call ProviderSyncHistory.Unwrap() before calling this method if this ProviderSyncHistory
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -123,6 +160,9 @@ func (psh *ProviderSyncHistory) String() string {
 	var builder strings.Builder
 	builder.WriteString("ProviderSyncHistory(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", psh.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", psh.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("data_type=")
 	builder.WriteString(psh.DataType)
 	builder.WriteString(", ")

@@ -27,7 +27,7 @@ func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts 
 		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
 			systemCtx := access.SystemContext(cmd.Context())
 			if cmdErr := cmdFn(systemCtx, o); cmdErr != nil {
-				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("Failed to execute command")
+				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("command failed")
 			}
 		}),
 	}
@@ -93,9 +93,5 @@ func seedCmd(ctx context.Context, opts *Options) error {
 }
 
 func seedDatabase(ctx context.Context, db *postgres.Database) error {
-	devTenantErr := db.Client().Tenant.Create().SetName("dev tenant").Exec(ctx)
-	if devTenantErr != nil {
-		return devTenantErr
-	}
 	return nil
 }

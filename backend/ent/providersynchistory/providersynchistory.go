@@ -7,6 +7,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -15,6 +16,8 @@ const (
 	Label = "provider_sync_history"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldDataType holds the string denoting the data_type field in the database.
 	FieldDataType = "data_type"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -23,13 +26,23 @@ const (
 	FieldFinishedAt = "finished_at"
 	// FieldNumMutations holds the string denoting the num_mutations field in the database.
 	FieldNumMutations = "num_mutations"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// Table holds the table name of the providersynchistory in the database.
 	Table = "provider_sync_histories"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "provider_sync_histories"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 )
 
 // Columns holds all SQL columns for providersynchistory fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldDataType,
 	FieldStartedAt,
 	FieldFinishedAt,
@@ -70,6 +83,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByDataType orders the results by the data_type field.
 func ByDataType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDataType, opts...).ToFunc()
@@ -88,4 +106,18 @@ func ByFinishedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByNumMutations orders the results by the num_mutations field.
 func ByNumMutations(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNumMutations, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }

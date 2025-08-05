@@ -7197,6 +7197,22 @@ func (c *ProviderConfigClient) GetX(ctx context.Context, id uuid.UUID) *Provider
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a ProviderConfig.
+func (c *ProviderConfigClient) QueryTenant(pc *ProviderConfig) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providerconfig.Table, providerconfig.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providerconfig.TenantTable, providerconfig.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(pc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProviderConfigClient) Hooks() []Hook {
 	hooks := c.hooks.ProviderConfig
@@ -7329,6 +7345,22 @@ func (c *ProviderSyncHistoryClient) GetX(ctx context.Context, id uuid.UUID) *Pro
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a ProviderSyncHistory.
+func (c *ProviderSyncHistoryClient) QueryTenant(psh *ProviderSyncHistory) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := psh.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providersynchistory.Table, providersynchistory.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providersynchistory.TenantTable, providersynchistory.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(psh.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
