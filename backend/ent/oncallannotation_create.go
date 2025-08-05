@@ -149,7 +149,9 @@ func (oac *OncallAnnotationCreate) Mutation() *OncallAnnotationMutation {
 
 // Save creates the OncallAnnotation in the database.
 func (oac *OncallAnnotationCreate) Save(ctx context.Context) (*OncallAnnotation, error) {
-	oac.defaults()
+	if err := oac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, oac.sqlSave, oac.mutation, oac.hooks)
 }
 
@@ -176,15 +178,22 @@ func (oac *OncallAnnotationCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (oac *OncallAnnotationCreate) defaults() {
+func (oac *OncallAnnotationCreate) defaults() error {
 	if _, ok := oac.mutation.CreatedAt(); !ok {
+		if oncallannotation.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized oncallannotation.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := oncallannotation.DefaultCreatedAt()
 		oac.mutation.SetCreatedAt(v)
 	}
 	if _, ok := oac.mutation.ID(); !ok {
+		if oncallannotation.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallannotation.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallannotation.DefaultID()
 		oac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

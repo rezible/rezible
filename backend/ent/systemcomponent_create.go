@@ -292,7 +292,9 @@ func (scc *SystemComponentCreate) Mutation() *SystemComponentMutation {
 
 // Save creates the SystemComponent in the database.
 func (scc *SystemComponentCreate) Save(ctx context.Context) (*SystemComponent, error) {
-	scc.defaults()
+	if err := scc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, scc.sqlSave, scc.mutation, scc.hooks)
 }
 
@@ -319,19 +321,29 @@ func (scc *SystemComponentCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (scc *SystemComponentCreate) defaults() {
+func (scc *SystemComponentCreate) defaults() error {
 	if _, ok := scc.mutation.CreatedAt(); !ok {
+		if systemcomponent.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponent.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponent.DefaultCreatedAt()
 		scc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := scc.mutation.UpdatedAt(); !ok {
+		if systemcomponent.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponent.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponent.DefaultUpdatedAt()
 		scc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := scc.mutation.ID(); !ok {
+		if systemcomponent.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponent.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponent.DefaultID()
 		scc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -442,7 +454,7 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemComponentRelationshipCreate{config: scc.config, mutation: newSystemComponentRelationshipMutation(scc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -465,7 +477,7 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: scc.config, mutation: newSystemAnalysisComponentMutation(scc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -488,7 +500,7 @@ func (scc *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Crea
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scc.config, mutation: newIncidentEventSystemComponentMutation(scc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

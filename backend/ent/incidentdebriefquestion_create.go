@@ -146,7 +146,9 @@ func (idqc *IncidentDebriefQuestionCreate) Mutation() *IncidentDebriefQuestionMu
 
 // Save creates the IncidentDebriefQuestion in the database.
 func (idqc *IncidentDebriefQuestionCreate) Save(ctx context.Context) (*IncidentDebriefQuestion, error) {
-	idqc.defaults()
+	if err := idqc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, idqc.sqlSave, idqc.mutation, idqc.hooks)
 }
 
@@ -173,11 +175,15 @@ func (idqc *IncidentDebriefQuestionCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (idqc *IncidentDebriefQuestionCreate) defaults() {
+func (idqc *IncidentDebriefQuestionCreate) defaults() error {
 	if _, ok := idqc.mutation.ID(); !ok {
+		if incidentdebriefquestion.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentdebriefquestion.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentdebriefquestion.DefaultID()
 		idqc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -133,7 +133,9 @@ func (shc *SystemHazardCreate) Mutation() *SystemHazardMutation {
 
 // Save creates the SystemHazard in the database.
 func (shc *SystemHazardCreate) Save(ctx context.Context) (*SystemHazard, error) {
-	shc.defaults()
+	if err := shc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, shc.sqlSave, shc.mutation, shc.hooks)
 }
 
@@ -160,19 +162,29 @@ func (shc *SystemHazardCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (shc *SystemHazardCreate) defaults() {
+func (shc *SystemHazardCreate) defaults() error {
 	if _, ok := shc.mutation.CreatedAt(); !ok {
+		if systemhazard.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemhazard.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemhazard.DefaultCreatedAt()
 		shc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := shc.mutation.UpdatedAt(); !ok {
+		if systemhazard.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemhazard.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemhazard.DefaultUpdatedAt()
 		shc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := shc.mutation.ID(); !ok {
+		if systemhazard.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemhazard.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemhazard.DefaultID()
 		shc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -382,7 +382,9 @@ func (ieu *IncidentEventUpdate) RemoveEventComponents(i ...*IncidentEventSystemC
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ieu *IncidentEventUpdate) Save(ctx context.Context) (int, error) {
-	ieu.defaults()
+	if err := ieu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, ieu.sqlSave, ieu.mutation, ieu.hooks)
 }
 
@@ -409,11 +411,15 @@ func (ieu *IncidentEventUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ieu *IncidentEventUpdate) defaults() {
+func (ieu *IncidentEventUpdate) defaults() error {
 	if _, ok := ieu.mutation.UpdatedAt(); !ok {
+		if incidentevent.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidentevent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidentevent.UpdateDefaultUpdatedAt()
 		ieu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -648,7 +654,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			},
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -671,7 +677,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -694,7 +700,7 @@ func (ieu *IncidentEventUpdate) sqlSave(ctx context.Context) (n int, err error) 
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieu.config, mutation: newIncidentEventSystemComponentMutation(ieu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1128,7 +1134,9 @@ func (ieuo *IncidentEventUpdateOne) Select(field string, fields ...string) *Inci
 
 // Save executes the query and returns the updated IncidentEvent entity.
 func (ieuo *IncidentEventUpdateOne) Save(ctx context.Context) (*IncidentEvent, error) {
-	ieuo.defaults()
+	if err := ieuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ieuo.sqlSave, ieuo.mutation, ieuo.hooks)
 }
 
@@ -1155,11 +1163,15 @@ func (ieuo *IncidentEventUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ieuo *IncidentEventUpdateOne) defaults() {
+func (ieuo *IncidentEventUpdateOne) defaults() error {
 	if _, ok := ieuo.mutation.UpdatedAt(); !ok {
+		if incidentevent.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidentevent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidentevent.UpdateDefaultUpdatedAt()
 		ieuo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1411,7 +1423,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			},
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1434,7 +1446,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1457,7 +1469,7 @@ func (ieuo *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *Inciden
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: ieuo.config, mutation: newIncidentEventSystemComponentMutation(ieuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

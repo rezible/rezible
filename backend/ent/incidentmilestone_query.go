@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -365,6 +366,12 @@ func (imq *IncidentMilestoneQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		imq.sql = prev
+	}
+	if incidentmilestone.Policy == nil {
+		return errors.New("ent: uninitialized incidentmilestone.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentmilestone.Policy.EvalQuery(ctx, imq); err != nil {
+		return err
 	}
 	return nil
 }

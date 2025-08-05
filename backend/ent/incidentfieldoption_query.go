@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -402,6 +403,12 @@ func (ifoq *IncidentFieldOptionQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		ifoq.sql = prev
+	}
+	if incidentfieldoption.Policy == nil {
+		return errors.New("ent: uninitialized incidentfieldoption.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentfieldoption.Policy.EvalQuery(ctx, ifoq); err != nil {
+		return err
 	}
 	return nil
 }

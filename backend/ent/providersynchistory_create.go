@@ -85,7 +85,9 @@ func (pshc *ProviderSyncHistoryCreate) Mutation() *ProviderSyncHistoryMutation {
 
 // Save creates the ProviderSyncHistory in the database.
 func (pshc *ProviderSyncHistoryCreate) Save(ctx context.Context) (*ProviderSyncHistory, error) {
-	pshc.defaults()
+	if err := pshc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pshc.sqlSave, pshc.mutation, pshc.hooks)
 }
 
@@ -112,19 +114,29 @@ func (pshc *ProviderSyncHistoryCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pshc *ProviderSyncHistoryCreate) defaults() {
+func (pshc *ProviderSyncHistoryCreate) defaults() error {
 	if _, ok := pshc.mutation.StartedAt(); !ok {
+		if providersynchistory.DefaultStartedAt == nil {
+			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultStartedAt (forgotten import ent/runtime?)")
+		}
 		v := providersynchistory.DefaultStartedAt()
 		pshc.mutation.SetStartedAt(v)
 	}
 	if _, ok := pshc.mutation.FinishedAt(); !ok {
+		if providersynchistory.DefaultFinishedAt == nil {
+			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultFinishedAt (forgotten import ent/runtime?)")
+		}
 		v := providersynchistory.DefaultFinishedAt()
 		pshc.mutation.SetFinishedAt(v)
 	}
 	if _, ok := pshc.mutation.ID(); !ok {
+		if providersynchistory.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized providersynchistory.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := providersynchistory.DefaultID()
 		pshc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

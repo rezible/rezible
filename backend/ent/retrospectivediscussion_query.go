@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -438,6 +439,12 @@ func (rdq *RetrospectiveDiscussionQuery) prepareQuery(ctx context.Context) error
 			return err
 		}
 		rdq.sql = prev
+	}
+	if retrospectivediscussion.Policy == nil {
+		return errors.New("ent: uninitialized retrospectivediscussion.Policy (forgotten import ent/runtime?)")
+	}
+	if err := retrospectivediscussion.Policy.EvalQuery(ctx, rdq); err != nil {
+		return err
 	}
 	return nil
 }

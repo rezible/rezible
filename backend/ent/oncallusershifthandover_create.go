@@ -127,7 +127,9 @@ func (oushc *OncallUserShiftHandoverCreate) Mutation() *OncallUserShiftHandoverM
 
 // Save creates the OncallUserShiftHandover in the database.
 func (oushc *OncallUserShiftHandoverCreate) Save(ctx context.Context) (*OncallUserShiftHandover, error) {
-	oushc.defaults()
+	if err := oushc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, oushc.sqlSave, oushc.mutation, oushc.hooks)
 }
 
@@ -154,19 +156,26 @@ func (oushc *OncallUserShiftHandoverCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (oushc *OncallUserShiftHandoverCreate) defaults() {
+func (oushc *OncallUserShiftHandoverCreate) defaults() error {
 	if _, ok := oushc.mutation.ReminderSent(); !ok {
 		v := oncallusershifthandover.DefaultReminderSent
 		oushc.mutation.SetReminderSent(v)
 	}
 	if _, ok := oushc.mutation.UpdatedAt(); !ok {
+		if oncallusershifthandover.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized oncallusershifthandover.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := oncallusershifthandover.DefaultUpdatedAt()
 		oushc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := oushc.mutation.ID(); !ok {
+		if oncallusershifthandover.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallusershifthandover.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallusershifthandover.DefaultID()
 		oushc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

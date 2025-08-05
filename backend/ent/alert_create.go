@@ -104,7 +104,9 @@ func (ac *AlertCreate) Mutation() *AlertMutation {
 
 // Save creates the Alert in the database.
 func (ac *AlertCreate) Save(ctx context.Context) (*Alert, error) {
-	ac.defaults()
+	if err := ac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ac.sqlSave, ac.mutation, ac.hooks)
 }
 
@@ -131,11 +133,15 @@ func (ac *AlertCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ac *AlertCreate) defaults() {
+func (ac *AlertCreate) defaults() error {
 	if _, ok := ac.mutation.ID(); !ok {
+		if alert.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized alert.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := alert.DefaultID()
 		ac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

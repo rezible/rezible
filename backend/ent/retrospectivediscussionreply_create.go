@@ -96,7 +96,9 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) Mutation() *RetrospectiveDiscuss
 
 // Save creates the RetrospectiveDiscussionReply in the database.
 func (rdrc *RetrospectiveDiscussionReplyCreate) Save(ctx context.Context) (*RetrospectiveDiscussionReply, error) {
-	rdrc.defaults()
+	if err := rdrc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, rdrc.sqlSave, rdrc.mutation, rdrc.hooks)
 }
 
@@ -123,11 +125,15 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (rdrc *RetrospectiveDiscussionReplyCreate) defaults() {
+func (rdrc *RetrospectiveDiscussionReplyCreate) defaults() error {
 	if _, ok := rdrc.mutation.ID(); !ok {
+		if retrospectivediscussionreply.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized retrospectivediscussionreply.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := retrospectivediscussionreply.DefaultID()
 		rdrc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

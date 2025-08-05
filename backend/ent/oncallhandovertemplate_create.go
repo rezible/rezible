@@ -109,7 +109,9 @@ func (ohtc *OncallHandoverTemplateCreate) Mutation() *OncallHandoverTemplateMuta
 
 // Save creates the OncallHandoverTemplate in the database.
 func (ohtc *OncallHandoverTemplateCreate) Save(ctx context.Context) (*OncallHandoverTemplate, error) {
-	ohtc.defaults()
+	if err := ohtc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ohtc.sqlSave, ohtc.mutation, ohtc.hooks)
 }
 
@@ -136,12 +138,18 @@ func (ohtc *OncallHandoverTemplateCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ohtc *OncallHandoverTemplateCreate) defaults() {
+func (ohtc *OncallHandoverTemplateCreate) defaults() error {
 	if _, ok := ohtc.mutation.CreatedAt(); !ok {
+		if oncallhandovertemplate.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := oncallhandovertemplate.DefaultCreatedAt()
 		ohtc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := ohtc.mutation.UpdatedAt(); !ok {
+		if oncallhandovertemplate.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := oncallhandovertemplate.DefaultUpdatedAt()
 		ohtc.mutation.SetUpdatedAt(v)
 	}
@@ -150,9 +158,13 @@ func (ohtc *OncallHandoverTemplateCreate) defaults() {
 		ohtc.mutation.SetIsDefault(v)
 	}
 	if _, ok := ohtc.mutation.ID(); !ok {
+		if oncallhandovertemplate.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallhandovertemplate.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallhandovertemplate.DefaultID()
 		ohtc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

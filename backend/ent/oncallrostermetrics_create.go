@@ -56,7 +56,9 @@ func (ormc *OncallRosterMetricsCreate) Mutation() *OncallRosterMetricsMutation {
 
 // Save creates the OncallRosterMetrics in the database.
 func (ormc *OncallRosterMetricsCreate) Save(ctx context.Context) (*OncallRosterMetrics, error) {
-	ormc.defaults()
+	if err := ormc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ormc.sqlSave, ormc.mutation, ormc.hooks)
 }
 
@@ -83,11 +85,15 @@ func (ormc *OncallRosterMetricsCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ormc *OncallRosterMetricsCreate) defaults() {
+func (ormc *OncallRosterMetricsCreate) defaults() error {
 	if _, ok := ormc.mutation.ID(); !ok {
+		if oncallrostermetrics.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallrostermetrics.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallrostermetrics.DefaultID()
 		ormc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -78,7 +78,9 @@ func (pc *PlaybookCreate) Mutation() *PlaybookMutation {
 
 // Save creates the Playbook in the database.
 func (pc *PlaybookCreate) Save(ctx context.Context) (*Playbook, error) {
-	pc.defaults()
+	if err := pc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -105,11 +107,15 @@ func (pc *PlaybookCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pc *PlaybookCreate) defaults() {
+func (pc *PlaybookCreate) defaults() error {
 	if _, ok := pc.mutation.ID(); !ok {
+		if playbook.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized playbook.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := playbook.DefaultID()
 		pc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

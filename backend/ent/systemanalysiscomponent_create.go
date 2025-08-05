@@ -125,7 +125,9 @@ func (sacc *SystemAnalysisComponentCreate) Mutation() *SystemAnalysisComponentMu
 
 // Save creates the SystemAnalysisComponent in the database.
 func (sacc *SystemAnalysisComponentCreate) Save(ctx context.Context) (*SystemAnalysisComponent, error) {
-	sacc.defaults()
+	if err := sacc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sacc.sqlSave, sacc.mutation, sacc.hooks)
 }
 
@@ -152,7 +154,7 @@ func (sacc *SystemAnalysisComponentCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sacc *SystemAnalysisComponentCreate) defaults() {
+func (sacc *SystemAnalysisComponentCreate) defaults() error {
 	if _, ok := sacc.mutation.PosX(); !ok {
 		v := systemanalysiscomponent.DefaultPosX
 		sacc.mutation.SetPosX(v)
@@ -162,13 +164,20 @@ func (sacc *SystemAnalysisComponentCreate) defaults() {
 		sacc.mutation.SetPosY(v)
 	}
 	if _, ok := sacc.mutation.CreatedAt(); !ok {
+		if systemanalysiscomponent.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysiscomponent.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysiscomponent.DefaultCreatedAt()
 		sacc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sacc.mutation.ID(); !ok {
+		if systemanalysiscomponent.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysiscomponent.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemanalysiscomponent.DefaultID()
 		sacc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

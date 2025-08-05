@@ -123,7 +123,9 @@ func (scsc *SystemComponentSignalCreate) Mutation() *SystemComponentSignalMutati
 
 // Save creates the SystemComponentSignal in the database.
 func (scsc *SystemComponentSignalCreate) Save(ctx context.Context) (*SystemComponentSignal, error) {
-	scsc.defaults()
+	if err := scsc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, scsc.sqlSave, scsc.mutation, scsc.hooks)
 }
 
@@ -150,15 +152,22 @@ func (scsc *SystemComponentSignalCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (scsc *SystemComponentSignalCreate) defaults() {
+func (scsc *SystemComponentSignalCreate) defaults() error {
 	if _, ok := scsc.mutation.CreatedAt(); !ok {
+		if systemcomponentsignal.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentsignal.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentsignal.DefaultCreatedAt()
 		scsc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := scsc.mutation.ID(); !ok {
+		if systemcomponentsignal.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentsignal.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentsignal.DefaultID()
 		scsc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -255,7 +264,7 @@ func (scsc *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsc.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

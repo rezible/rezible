@@ -103,7 +103,9 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) Mutation() *SystemRelations
 
 // Save creates the SystemRelationshipFeedbackSignal in the database.
 func (srfsc *SystemRelationshipFeedbackSignalCreate) Save(ctx context.Context) (*SystemRelationshipFeedbackSignal, error) {
-	srfsc.defaults()
+	if err := srfsc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, srfsc.sqlSave, srfsc.mutation, srfsc.hooks)
 }
 
@@ -130,15 +132,22 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) ExecX(ctx context.Context) 
 }
 
 // defaults sets the default values of the builder before save.
-func (srfsc *SystemRelationshipFeedbackSignalCreate) defaults() {
+func (srfsc *SystemRelationshipFeedbackSignalCreate) defaults() error {
 	if _, ok := srfsc.mutation.CreatedAt(); !ok {
+		if systemrelationshipfeedbacksignal.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemrelationshipfeedbacksignal.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemrelationshipfeedbacksignal.DefaultCreatedAt()
 		srfsc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := srfsc.mutation.ID(); !ok {
+		if systemrelationshipfeedbacksignal.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemrelationshipfeedbacksignal.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemrelationshipfeedbacksignal.DefaultID()
 		srfsc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

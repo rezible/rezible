@@ -19,6 +19,8 @@ type MeetingSchedule struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// ArchiveTime holds the value of the "archive_time" field.
+	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
@@ -87,7 +89,7 @@ func (*MeetingSchedule) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case meetingschedule.FieldName, meetingschedule.FieldDescription, meetingschedule.FieldRepeats, meetingschedule.FieldMonthlyOn:
 			values[i] = new(sql.NullString)
-		case meetingschedule.FieldStartDate, meetingschedule.FieldUntilDate:
+		case meetingschedule.FieldArchiveTime, meetingschedule.FieldStartDate, meetingschedule.FieldUntilDate:
 			values[i] = new(sql.NullTime)
 		case meetingschedule.FieldID:
 			values[i] = new(uuid.UUID)
@@ -111,6 +113,12 @@ func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ms.ID = *value
+			}
+		case meetingschedule.FieldArchiveTime:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
+			} else if value.Valid {
+				ms.ArchiveTime = value.Time
 			}
 		case meetingschedule.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -226,6 +234,9 @@ func (ms *MeetingSchedule) String() string {
 	var builder strings.Builder
 	builder.WriteString("MeetingSchedule(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ms.ID))
+	builder.WriteString("archive_time=")
+	builder.WriteString(ms.ArchiveTime.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(ms.Name)
 	builder.WriteString(", ")

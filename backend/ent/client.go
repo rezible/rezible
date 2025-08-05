@@ -878,7 +878,8 @@ func (c *AlertClient) QueryInstances(a *Alert) *OncallEventQuery {
 
 // Hooks returns the client hooks.
 func (c *AlertClient) Hooks() []Hook {
-	return c.hooks.Alert
+	hooks := c.hooks.Alert
+	return append(hooks[:len(hooks):len(hooks)], alert.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1027,7 +1028,8 @@ func (c *AlertMetricsClient) QueryAlert(am *AlertMetrics) *AlertQuery {
 
 // Hooks returns the client hooks.
 func (c *AlertMetricsClient) Hooks() []Hook {
-	return c.hooks.AlertMetrics
+	hooks := c.hooks.AlertMetrics
+	return append(hooks[:len(hooks):len(hooks)], alertmetrics.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1311,7 +1313,8 @@ func (c *FunctionalityClient) GetX(ctx context.Context, id uuid.UUID) *Functiona
 
 // Hooks returns the client hooks.
 func (c *FunctionalityClient) Hooks() []Hook {
-	return c.hooks.Functionality
+	hooks := c.hooks.Functionality
+	return append(hooks[:len(hooks):len(hooks)], functionality.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1684,7 +1687,8 @@ func (c *IncidentClient) QueryIncidentLinks(i *Incident) *IncidentLinkQuery {
 
 // Hooks returns the client hooks.
 func (c *IncidentClient) Hooks() []Hook {
-	return c.hooks.Incident
+	hooks := c.hooks.Incident
+	return append(hooks[:len(hooks):len(hooks)], incident.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -1881,7 +1885,8 @@ func (c *IncidentDebriefClient) QuerySuggestions(node *IncidentDebrief) *Inciden
 
 // Hooks returns the client hooks.
 func (c *IncidentDebriefClient) Hooks() []Hook {
-	return c.hooks.IncidentDebrief
+	hooks := c.hooks.IncidentDebrief
+	return append(hooks[:len(hooks):len(hooks)], incidentdebrief.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2046,7 +2051,8 @@ func (c *IncidentDebriefMessageClient) QueryFromQuestion(idm *IncidentDebriefMes
 
 // Hooks returns the client hooks.
 func (c *IncidentDebriefMessageClient) Hooks() []Hook {
-	return c.hooks.IncidentDebriefMessage
+	hooks := c.hooks.IncidentDebriefMessage
+	return append(hooks[:len(hooks):len(hooks)], incidentdebriefmessage.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2275,7 +2281,8 @@ func (c *IncidentDebriefQuestionClient) QueryIncidentTypes(idq *IncidentDebriefQ
 
 // Hooks returns the client hooks.
 func (c *IncidentDebriefQuestionClient) Hooks() []Hook {
-	return c.hooks.IncidentDebriefQuestion
+	hooks := c.hooks.IncidentDebriefQuestion
+	return append(hooks[:len(hooks):len(hooks)], incidentdebriefquestion.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2424,7 +2431,8 @@ func (c *IncidentDebriefSuggestionClient) QueryDebrief(ids *IncidentDebriefSugge
 
 // Hooks returns the client hooks.
 func (c *IncidentDebriefSuggestionClient) Hooks() []Hook {
-	return c.hooks.IncidentDebriefSuggestion
+	hooks := c.hooks.IncidentDebriefSuggestion
+	return append(hooks[:len(hooks):len(hooks)], incidentdebriefsuggestion.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2653,7 +2661,8 @@ func (c *IncidentEventClient) QueryEventComponents(ie *IncidentEvent) *IncidentE
 
 // Hooks returns the client hooks.
 func (c *IncidentEventClient) Hooks() []Hook {
-	return c.hooks.IncidentEvent
+	hooks := c.hooks.IncidentEvent
+	return append(hooks[:len(hooks):len(hooks)], incidentevent.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2802,7 +2811,8 @@ func (c *IncidentEventContextClient) QueryEvent(iec *IncidentEventContext) *Inci
 
 // Hooks returns the client hooks.
 func (c *IncidentEventContextClient) Hooks() []Hook {
-	return c.hooks.IncidentEventContext
+	hooks := c.hooks.IncidentEventContext
+	return append(hooks[:len(hooks):len(hooks)], incidenteventcontext.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -2951,7 +2961,8 @@ func (c *IncidentEventContributingFactorClient) QueryEvent(iecf *IncidentEventCo
 
 // Hooks returns the client hooks.
 func (c *IncidentEventContributingFactorClient) Hooks() []Hook {
-	return c.hooks.IncidentEventContributingFactor
+	hooks := c.hooks.IncidentEventContributingFactor
+	return append(hooks[:len(hooks):len(hooks)], incidenteventcontributingfactor.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -3100,7 +3111,8 @@ func (c *IncidentEventEvidenceClient) QueryEvent(iee *IncidentEventEvidence) *In
 
 // Hooks returns the client hooks.
 func (c *IncidentEventEvidenceClient) Hooks() []Hook {
-	return c.hooks.IncidentEventEvidence
+	hooks := c.hooks.IncidentEventEvidence
+	return append(hooks[:len(hooks):len(hooks)], incidenteventevidence.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -3265,7 +3277,8 @@ func (c *IncidentEventSystemComponentClient) QuerySystemComponent(iesc *Incident
 
 // Hooks returns the client hooks.
 func (c *IncidentEventSystemComponentClient) Hooks() []Hook {
-	return c.hooks.IncidentEventSystemComponent
+	hooks := c.hooks.IncidentEventSystemComponent
+	return append(hooks[:len(hooks):len(hooks)], incidenteventsystemcomponent.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -3764,7 +3777,8 @@ func (c *IncidentLinkClient) QueryLinkedIncident(il *IncidentLink) *IncidentQuer
 
 // Hooks returns the client hooks.
 func (c *IncidentLinkClient) Hooks() []Hook {
-	return c.hooks.IncidentLink
+	hooks := c.hooks.IncidentLink
+	return append(hooks[:len(hooks):len(hooks)], incidentlink.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -3913,7 +3927,8 @@ func (c *IncidentMilestoneClient) QueryIncident(im *IncidentMilestone) *Incident
 
 // Hooks returns the client hooks.
 func (c *IncidentMilestoneClient) Hooks() []Hook {
-	return c.hooks.IncidentMilestone
+	hooks := c.hooks.IncidentMilestone
+	return append(hooks[:len(hooks):len(hooks)], incidentmilestone.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -4261,7 +4276,8 @@ func (c *IncidentRoleAssignmentClient) QueryUser(ira *IncidentRoleAssignment) *U
 
 // Hooks returns the client hooks.
 func (c *IncidentRoleAssignmentClient) Hooks() []Hook {
-	return c.hooks.IncidentRoleAssignment
+	hooks := c.hooks.IncidentRoleAssignment
+	return append(hooks[:len(hooks):len(hooks)], incidentroleassignment.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -4760,7 +4776,8 @@ func (c *IncidentTeamAssignmentClient) QueryTeam(ita *IncidentTeamAssignment) *T
 
 // Hooks returns the client hooks.
 func (c *IncidentTeamAssignmentClient) Hooks() []Hook {
-	return c.hooks.IncidentTeamAssignment
+	hooks := c.hooks.IncidentTeamAssignment
+	return append(hooks[:len(hooks):len(hooks)], incidentteamassignment.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -5092,12 +5109,14 @@ func (c *MeetingScheduleClient) QueryOwningTeam(ms *MeetingSchedule) *TeamQuery 
 
 // Hooks returns the client hooks.
 func (c *MeetingScheduleClient) Hooks() []Hook {
-	return c.hooks.MeetingSchedule
+	hooks := c.hooks.MeetingSchedule
+	return append(hooks[:len(hooks):len(hooks)], meetingschedule.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
 func (c *MeetingScheduleClient) Interceptors() []Interceptor {
-	return c.inters.MeetingSchedule
+	inters := c.inters.MeetingSchedule
+	return append(inters[:len(inters):len(inters)], meetingschedule.Interceptors[:]...)
 }
 
 func (c *MeetingScheduleClient) mutate(ctx context.Context, m *MeetingScheduleMutation) (Value, error) {
@@ -5241,7 +5260,8 @@ func (c *MeetingSessionClient) QueryIncidents(ms *MeetingSession) *IncidentQuery
 
 // Hooks returns the client hooks.
 func (c *MeetingSessionClient) Hooks() []Hook {
-	return c.hooks.MeetingSession
+	hooks := c.hooks.MeetingSession
+	return append(hooks[:len(hooks):len(hooks)], meetingsession.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -5454,7 +5474,8 @@ func (c *OncallAnnotationClient) QueryHandovers(oa *OncallAnnotation) *OncallUse
 
 // Hooks returns the client hooks.
 func (c *OncallAnnotationClient) Hooks() []Hook {
-	return c.hooks.OncallAnnotation
+	hooks := c.hooks.OncallAnnotation
+	return append(hooks[:len(hooks):len(hooks)], oncallannotation.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -5603,7 +5624,8 @@ func (c *OncallAnnotationAlertFeedbackClient) QueryAnnotation(oaaf *OncallAnnota
 
 // Hooks returns the client hooks.
 func (c *OncallAnnotationAlertFeedbackClient) Hooks() []Hook {
-	return c.hooks.OncallAnnotationAlertFeedback
+	hooks := c.hooks.OncallAnnotationAlertFeedback
+	return append(hooks[:len(hooks):len(hooks)], oncallannotationalertfeedback.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -5784,7 +5806,8 @@ func (c *OncallEventClient) QueryAnnotations(oe *OncallEvent) *OncallAnnotationQ
 
 // Hooks returns the client hooks.
 func (c *OncallEventClient) Hooks() []Hook {
-	return c.hooks.OncallEvent
+	hooks := c.hooks.OncallEvent
+	return append(hooks[:len(hooks):len(hooks)], oncallevent.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -5933,7 +5956,8 @@ func (c *OncallHandoverTemplateClient) QueryRoster(oht *OncallHandoverTemplate) 
 
 // Hooks returns the client hooks.
 func (c *OncallHandoverTemplateClient) Hooks() []Hook {
-	return c.hooks.OncallHandoverTemplate
+	hooks := c.hooks.OncallHandoverTemplate
+	return append(hooks[:len(hooks):len(hooks)], oncallhandovertemplate.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -6345,7 +6369,8 @@ func (c *OncallRosterMetricsClient) QueryRoster(orm *OncallRosterMetrics) *Oncal
 
 // Hooks returns the client hooks.
 func (c *OncallRosterMetricsClient) Hooks() []Hook {
-	return c.hooks.OncallRosterMetrics
+	hooks := c.hooks.OncallRosterMetrics
+	return append(hooks[:len(hooks):len(hooks)], oncallrostermetrics.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -6677,7 +6702,8 @@ func (c *OncallScheduleParticipantClient) QueryUser(osp *OncallScheduleParticipa
 
 // Hooks returns the client hooks.
 func (c *OncallScheduleParticipantClient) Hooks() []Hook {
-	return c.hooks.OncallScheduleParticipant
+	hooks := c.hooks.OncallScheduleParticipant
+	return append(hooks[:len(hooks):len(hooks)], oncallscheduleparticipant.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -6890,7 +6916,8 @@ func (c *OncallUserShiftClient) QueryMetrics(ous *OncallUserShift) *OncallUserSh
 
 // Hooks returns the client hooks.
 func (c *OncallUserShiftClient) Hooks() []Hook {
-	return c.hooks.OncallUserShift
+	hooks := c.hooks.OncallUserShift
+	return append(hooks[:len(hooks):len(hooks)], oncallusershift.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7055,7 +7082,8 @@ func (c *OncallUserShiftHandoverClient) QueryPinnedAnnotations(oush *OncallUserS
 
 // Hooks returns the client hooks.
 func (c *OncallUserShiftHandoverClient) Hooks() []Hook {
-	return c.hooks.OncallUserShiftHandover
+	hooks := c.hooks.OncallUserShiftHandover
+	return append(hooks[:len(hooks):len(hooks)], oncallusershifthandover.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7204,7 +7232,8 @@ func (c *OncallUserShiftMetricsClient) QueryShift(ousm *OncallUserShiftMetrics) 
 
 // Hooks returns the client hooks.
 func (c *OncallUserShiftMetricsClient) Hooks() []Hook {
-	return c.hooks.OncallUserShiftMetrics
+	hooks := c.hooks.OncallUserShiftMetrics
+	return append(hooks[:len(hooks):len(hooks)], oncallusershiftmetrics.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7353,7 +7382,8 @@ func (c *PlaybookClient) QueryAlerts(pl *Playbook) *AlertQuery {
 
 // Hooks returns the client hooks.
 func (c *PlaybookClient) Hooks() []Hook {
-	return c.hooks.Playbook
+	hooks := c.hooks.Playbook
+	return append(hooks[:len(hooks):len(hooks)], playbook.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7486,7 +7516,8 @@ func (c *ProviderConfigClient) GetX(ctx context.Context, id uuid.UUID) *Provider
 
 // Hooks returns the client hooks.
 func (c *ProviderConfigClient) Hooks() []Hook {
-	return c.hooks.ProviderConfig
+	hooks := c.hooks.ProviderConfig
+	return append(hooks[:len(hooks):len(hooks)], providerconfig.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7619,7 +7650,8 @@ func (c *ProviderSyncHistoryClient) GetX(ctx context.Context, id uuid.UUID) *Pro
 
 // Hooks returns the client hooks.
 func (c *ProviderSyncHistoryClient) Hooks() []Hook {
-	return c.hooks.ProviderSyncHistory
+	hooks := c.hooks.ProviderSyncHistory
+	return append(hooks[:len(hooks):len(hooks)], providersynchistory.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7800,7 +7832,8 @@ func (c *RetrospectiveClient) QuerySystemAnalysis(r *Retrospective) *SystemAnaly
 
 // Hooks returns the client hooks.
 func (c *RetrospectiveClient) Hooks() []Hook {
-	return c.hooks.Retrospective
+	hooks := c.hooks.Retrospective
+	return append(hooks[:len(hooks):len(hooks)], retrospective.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -7981,7 +8014,8 @@ func (c *RetrospectiveDiscussionClient) QueryReview(rd *RetrospectiveDiscussion)
 
 // Hooks returns the client hooks.
 func (c *RetrospectiveDiscussionClient) Hooks() []Hook {
-	return c.hooks.RetrospectiveDiscussion
+	hooks := c.hooks.RetrospectiveDiscussion
+	return append(hooks[:len(hooks):len(hooks)], retrospectivediscussion.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -8162,7 +8196,8 @@ func (c *RetrospectiveDiscussionReplyClient) QueryReplies(rdr *RetrospectiveDisc
 
 // Hooks returns the client hooks.
 func (c *RetrospectiveDiscussionReplyClient) Hooks() []Hook {
-	return c.hooks.RetrospectiveDiscussionReply
+	hooks := c.hooks.RetrospectiveDiscussionReply
+	return append(hooks[:len(hooks):len(hooks)], retrospectivediscussionreply.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -8359,7 +8394,8 @@ func (c *RetrospectiveReviewClient) QueryDiscussion(rr *RetrospectiveReview) *Re
 
 // Hooks returns the client hooks.
 func (c *RetrospectiveReviewClient) Hooks() []Hook {
-	return c.hooks.RetrospectiveReview
+	hooks := c.hooks.RetrospectiveReview
+	return append(hooks[:len(hooks):len(hooks)], retrospectivereview.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -8556,7 +8592,8 @@ func (c *SystemAnalysisClient) QueryAnalysisComponents(sa *SystemAnalysis) *Syst
 
 // Hooks returns the client hooks.
 func (c *SystemAnalysisClient) Hooks() []Hook {
-	return c.hooks.SystemAnalysis
+	hooks := c.hooks.SystemAnalysis
+	return append(hooks[:len(hooks):len(hooks)], systemanalysis.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -8721,7 +8758,8 @@ func (c *SystemAnalysisComponentClient) QueryComponent(sac *SystemAnalysisCompon
 
 // Hooks returns the client hooks.
 func (c *SystemAnalysisComponentClient) Hooks() []Hook {
-	return c.hooks.SystemAnalysisComponent
+	hooks := c.hooks.SystemAnalysisComponent
+	return append(hooks[:len(hooks):len(hooks)], systemanalysiscomponent.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -8950,7 +8988,8 @@ func (c *SystemAnalysisRelationshipClient) QueryFeedbackSignals(sar *SystemAnaly
 
 // Hooks returns the client hooks.
 func (c *SystemAnalysisRelationshipClient) Hooks() []Hook {
-	return c.hooks.SystemAnalysisRelationship
+	hooks := c.hooks.SystemAnalysisRelationship
+	return append(hooks[:len(hooks):len(hooks)], systemanalysisrelationship.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -9259,7 +9298,8 @@ func (c *SystemComponentClient) QueryEventComponents(sc *SystemComponent) *Incid
 
 // Hooks returns the client hooks.
 func (c *SystemComponentClient) Hooks() []Hook {
-	return c.hooks.SystemComponent
+	hooks := c.hooks.SystemComponent
+	return append(hooks[:len(hooks):len(hooks)], systemcomponent.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -9424,7 +9464,8 @@ func (c *SystemComponentConstraintClient) QueryHazards(scc *SystemComponentConst
 
 // Hooks returns the client hooks.
 func (c *SystemComponentConstraintClient) Hooks() []Hook {
-	return c.hooks.SystemComponentConstraint
+	hooks := c.hooks.SystemComponentConstraint
+	return append(hooks[:len(hooks):len(hooks)], systemcomponentconstraint.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -9605,7 +9646,8 @@ func (c *SystemComponentControlClient) QueryControlActions(scc *SystemComponentC
 
 // Hooks returns the client hooks.
 func (c *SystemComponentControlClient) Hooks() []Hook {
-	return c.hooks.SystemComponentControl
+	hooks := c.hooks.SystemComponentControl
+	return append(hooks[:len(hooks):len(hooks)], systemcomponentcontrol.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -9754,7 +9796,8 @@ func (c *SystemComponentKindClient) QueryComponents(sck *SystemComponentKind) *S
 
 // Hooks returns the client hooks.
 func (c *SystemComponentKindClient) Hooks() []Hook {
-	return c.hooks.SystemComponentKind
+	hooks := c.hooks.SystemComponentKind
+	return append(hooks[:len(hooks):len(hooks)], systemcomponentkind.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -9951,7 +9994,8 @@ func (c *SystemComponentRelationshipClient) QueryHazards(scr *SystemComponentRel
 
 // Hooks returns the client hooks.
 func (c *SystemComponentRelationshipClient) Hooks() []Hook {
-	return c.hooks.SystemComponentRelationship
+	hooks := c.hooks.SystemComponentRelationship
+	return append(hooks[:len(hooks):len(hooks)], systemcomponentrelationship.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -10132,7 +10176,8 @@ func (c *SystemComponentSignalClient) QueryFeedbackSignals(scs *SystemComponentS
 
 // Hooks returns the client hooks.
 func (c *SystemComponentSignalClient) Hooks() []Hook {
-	return c.hooks.SystemComponentSignal
+	hooks := c.hooks.SystemComponentSignal
+	return append(hooks[:len(hooks):len(hooks)], systemcomponentsignal.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -10313,7 +10358,8 @@ func (c *SystemHazardClient) QueryRelationships(sh *SystemHazard) *SystemCompone
 
 // Hooks returns the client hooks.
 func (c *SystemHazardClient) Hooks() []Hook {
-	return c.hooks.SystemHazard
+	hooks := c.hooks.SystemHazard
+	return append(hooks[:len(hooks):len(hooks)], systemhazard.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -10478,7 +10524,8 @@ func (c *SystemRelationshipControlActionClient) QueryControl(srca *SystemRelatio
 
 // Hooks returns the client hooks.
 func (c *SystemRelationshipControlActionClient) Hooks() []Hook {
-	return c.hooks.SystemRelationshipControlAction
+	hooks := c.hooks.SystemRelationshipControlAction
+	return append(hooks[:len(hooks):len(hooks)], systemrelationshipcontrolaction.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -10643,7 +10690,8 @@ func (c *SystemRelationshipFeedbackSignalClient) QuerySignal(srfs *SystemRelatio
 
 // Hooks returns the client hooks.
 func (c *SystemRelationshipFeedbackSignalClient) Hooks() []Hook {
-	return c.hooks.SystemRelationshipFeedbackSignal
+	hooks := c.hooks.SystemRelationshipFeedbackSignal
+	return append(hooks[:len(hooks):len(hooks)], systemrelationshipfeedbacksignal.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -10840,7 +10888,8 @@ func (c *TaskClient) QueryCreator(t *Task) *UserQuery {
 
 // Hooks returns the client hooks.
 func (c *TaskClient) Hooks() []Hook {
-	return c.hooks.Task
+	hooks := c.hooks.Task
+	return append(hooks[:len(hooks):len(hooks)], task.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -11037,7 +11086,8 @@ func (c *TeamClient) QueryScheduledMeetings(t *Team) *MeetingScheduleQuery {
 
 // Hooks returns the client hooks.
 func (c *TeamClient) Hooks() []Hook {
-	return c.hooks.Team
+	hooks := c.hooks.Team
+	return append(hooks[:len(hooks):len(hooks)], team.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -11320,7 +11370,8 @@ func (c *TicketClient) QueryTasks(t *Ticket) *TaskQuery {
 
 // Hooks returns the client hooks.
 func (c *TicketClient) Hooks() []Hook {
-	return c.hooks.Ticket
+	hooks := c.hooks.Ticket
+	return append(hooks[:len(hooks):len(hooks)], ticket.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
@@ -11629,7 +11680,8 @@ func (c *UserClient) QueryRetrospectiveReviewResponses(u *User) *RetrospectiveRe
 
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
-	return c.hooks.User
+	hooks := c.hooks.User
+	return append(hooks[:len(hooks):len(hooks)], user.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.

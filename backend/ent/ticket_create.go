@@ -72,7 +72,9 @@ func (tc *TicketCreate) Mutation() *TicketMutation {
 
 // Save creates the Ticket in the database.
 func (tc *TicketCreate) Save(ctx context.Context) (*Ticket, error) {
-	tc.defaults()
+	if err := tc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
 }
 
@@ -99,11 +101,15 @@ func (tc *TicketCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (tc *TicketCreate) defaults() {
+func (tc *TicketCreate) defaults() error {
 	if _, ok := tc.mutation.ID(); !ok {
+		if ticket.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized ticket.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := ticket.DefaultID()
 		tc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

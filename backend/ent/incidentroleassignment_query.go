@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -437,6 +438,12 @@ func (iraq *IncidentRoleAssignmentQuery) prepareQuery(ctx context.Context) error
 			return err
 		}
 		iraq.sql = prev
+	}
+	if incidentroleassignment.Policy == nil {
+		return errors.New("ent: uninitialized incidentroleassignment.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentroleassignment.Policy.EvalQuery(ctx, iraq); err != nil {
+		return err
 	}
 	return nil
 }

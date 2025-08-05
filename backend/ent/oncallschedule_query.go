@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -402,6 +403,12 @@ func (osq *OncallScheduleQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		osq.sql = prev
+	}
+	if oncallschedule.Policy == nil {
+		return errors.New("ent: uninitialized oncallschedule.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallschedule.Policy.EvalQuery(ctx, osq); err != nil {
+		return err
 	}
 	return nil
 }

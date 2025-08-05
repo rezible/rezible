@@ -196,7 +196,9 @@ func (shu *SystemHazardUpdate) RemoveRelationships(s ...*SystemComponentRelation
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (shu *SystemHazardUpdate) Save(ctx context.Context) (int, error) {
-	shu.defaults()
+	if err := shu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, shu.sqlSave, shu.mutation, shu.hooks)
 }
 
@@ -223,11 +225,15 @@ func (shu *SystemHazardUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (shu *SystemHazardUpdate) defaults() {
+func (shu *SystemHazardUpdate) defaults() error {
 	if _, ok := shu.mutation.UpdatedAt(); !ok {
+		if systemhazard.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemhazard.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemhazard.UpdateDefaultUpdatedAt()
 		shu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -603,7 +609,9 @@ func (shuo *SystemHazardUpdateOne) Select(field string, fields ...string) *Syste
 
 // Save executes the query and returns the updated SystemHazard entity.
 func (shuo *SystemHazardUpdateOne) Save(ctx context.Context) (*SystemHazard, error) {
-	shuo.defaults()
+	if err := shuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, shuo.sqlSave, shuo.mutation, shuo.hooks)
 }
 
@@ -630,11 +638,15 @@ func (shuo *SystemHazardUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (shuo *SystemHazardUpdateOne) defaults() {
+func (shuo *SystemHazardUpdateOne) defaults() error {
 	if _, ok := shuo.mutation.UpdatedAt(); !ok {
+		if systemhazard.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemhazard.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemhazard.UpdateDefaultUpdatedAt()
 		shuo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

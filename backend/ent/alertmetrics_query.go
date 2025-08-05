@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -365,6 +366,12 @@ func (amq *AlertMetricsQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		amq.sql = prev
+	}
+	if alertmetrics.Policy == nil {
+		return errors.New("ent: uninitialized alertmetrics.Policy (forgotten import ent/runtime?)")
+	}
+	if err := alertmetrics.Policy.EvalQuery(ctx, amq); err != nil {
+		return err
 	}
 	return nil
 }

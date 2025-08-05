@@ -80,7 +80,9 @@ func (irac *IncidentRoleAssignmentCreate) Mutation() *IncidentRoleAssignmentMuta
 
 // Save creates the IncidentRoleAssignment in the database.
 func (irac *IncidentRoleAssignmentCreate) Save(ctx context.Context) (*IncidentRoleAssignment, error) {
-	irac.defaults()
+	if err := irac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, irac.sqlSave, irac.mutation, irac.hooks)
 }
 
@@ -107,11 +109,15 @@ func (irac *IncidentRoleAssignmentCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (irac *IncidentRoleAssignmentCreate) defaults() {
+func (irac *IncidentRoleAssignmentCreate) defaults() error {
 	if _, ok := irac.mutation.ID(); !ok {
+		if incidentroleassignment.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentroleassignment.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentroleassignment.DefaultID()
 		irac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

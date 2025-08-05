@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -365,6 +366,12 @@ func (ormq *OncallRosterMetricsQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		ormq.sql = prev
+	}
+	if oncallrostermetrics.Policy == nil {
+		return errors.New("ent: uninitialized oncallrostermetrics.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallrostermetrics.Policy.EvalQuery(ctx, ormq); err != nil {
+		return err
 	}
 	return nil
 }

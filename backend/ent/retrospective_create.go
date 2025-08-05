@@ -110,7 +110,9 @@ func (rc *RetrospectiveCreate) Mutation() *RetrospectiveMutation {
 
 // Save creates the Retrospective in the database.
 func (rc *RetrospectiveCreate) Save(ctx context.Context) (*Retrospective, error) {
-	rc.defaults()
+	if err := rc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
 }
 
@@ -137,11 +139,15 @@ func (rc *RetrospectiveCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (rc *RetrospectiveCreate) defaults() {
+func (rc *RetrospectiveCreate) defaults() error {
 	if _, ok := rc.mutation.ID(); !ok {
+		if retrospective.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized retrospective.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := retrospective.DefaultID()
 		rc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -142,7 +142,9 @@ func (scrc *SystemComponentRelationshipCreate) Mutation() *SystemComponentRelati
 
 // Save creates the SystemComponentRelationship in the database.
 func (scrc *SystemComponentRelationshipCreate) Save(ctx context.Context) (*SystemComponentRelationship, error) {
-	scrc.defaults()
+	if err := scrc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, scrc.sqlSave, scrc.mutation, scrc.hooks)
 }
 
@@ -169,15 +171,22 @@ func (scrc *SystemComponentRelationshipCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (scrc *SystemComponentRelationshipCreate) defaults() {
+func (scrc *SystemComponentRelationshipCreate) defaults() error {
 	if _, ok := scrc.mutation.CreatedAt(); !ok {
+		if systemcomponentrelationship.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentrelationship.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentrelationship.DefaultCreatedAt()
 		scrc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := scrc.mutation.ID(); !ok {
+		if systemcomponentrelationship.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentrelationship.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentrelationship.DefaultID()
 		scrc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

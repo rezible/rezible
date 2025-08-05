@@ -133,7 +133,9 @@ func (sac *SystemAnalysisCreate) Mutation() *SystemAnalysisMutation {
 
 // Save creates the SystemAnalysis in the database.
 func (sac *SystemAnalysisCreate) Save(ctx context.Context) (*SystemAnalysis, error) {
-	sac.defaults()
+	if err := sac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sac.sqlSave, sac.mutation, sac.hooks)
 }
 
@@ -160,19 +162,29 @@ func (sac *SystemAnalysisCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sac *SystemAnalysisCreate) defaults() {
+func (sac *SystemAnalysisCreate) defaults() error {
 	if _, ok := sac.mutation.CreatedAt(); !ok {
+		if systemanalysis.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysis.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysis.DefaultCreatedAt()
 		sac.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sac.mutation.UpdatedAt(); !ok {
+		if systemanalysis.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysis.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysis.DefaultUpdatedAt()
 		sac.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := sac.mutation.ID(); !ok {
+		if systemanalysis.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysis.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemanalysis.DefaultID()
 		sac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -261,7 +273,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: sac.config, mutation: newSystemAnalysisComponentMutation(sac.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

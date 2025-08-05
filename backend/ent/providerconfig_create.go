@@ -91,7 +91,9 @@ func (pcc *ProviderConfigCreate) Mutation() *ProviderConfigMutation {
 
 // Save creates the ProviderConfig in the database.
 func (pcc *ProviderConfigCreate) Save(ctx context.Context) (*ProviderConfig, error) {
-	pcc.defaults()
+	if err := pcc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, pcc.sqlSave, pcc.mutation, pcc.hooks)
 }
 
@@ -118,19 +120,26 @@ func (pcc *ProviderConfigCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (pcc *ProviderConfigCreate) defaults() {
+func (pcc *ProviderConfigCreate) defaults() error {
 	if _, ok := pcc.mutation.Enabled(); !ok {
 		v := providerconfig.DefaultEnabled
 		pcc.mutation.SetEnabled(v)
 	}
 	if _, ok := pcc.mutation.UpdatedAt(); !ok {
+		if providerconfig.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized providerconfig.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := providerconfig.DefaultUpdatedAt()
 		pcc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := pcc.mutation.ID(); !ok {
+		if providerconfig.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized providerconfig.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := providerconfig.DefaultID()
 		pcc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

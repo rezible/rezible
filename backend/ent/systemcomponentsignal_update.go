@@ -289,7 +289,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -312,7 +312,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -335,7 +335,7 @@ func (scsu *SystemComponentSignalUpdate) sqlSave(ctx context.Context) (n int, er
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsu.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -696,7 +696,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -719,7 +719,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -742,7 +742,7 @@ func (scsuo *SystemComponentSignalUpdateOne) sqlSave(ctx context.Context) (_node
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: scsuo.config, mutation: newSystemRelationshipFeedbackSignalMutation(scsuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

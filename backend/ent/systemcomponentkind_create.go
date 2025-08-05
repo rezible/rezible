@@ -109,7 +109,9 @@ func (sckc *SystemComponentKindCreate) Mutation() *SystemComponentKindMutation {
 
 // Save creates the SystemComponentKind in the database.
 func (sckc *SystemComponentKindCreate) Save(ctx context.Context) (*SystemComponentKind, error) {
-	sckc.defaults()
+	if err := sckc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sckc.sqlSave, sckc.mutation, sckc.hooks)
 }
 
@@ -136,15 +138,22 @@ func (sckc *SystemComponentKindCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sckc *SystemComponentKindCreate) defaults() {
+func (sckc *SystemComponentKindCreate) defaults() error {
 	if _, ok := sckc.mutation.CreatedAt(); !ok {
+		if systemcomponentkind.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentkind.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentkind.DefaultCreatedAt()
 		sckc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sckc.mutation.ID(); !ok {
+		if systemcomponentkind.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentkind.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentkind.DefaultID()
 		sckc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

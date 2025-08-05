@@ -123,7 +123,9 @@ func (sccc *SystemComponentControlCreate) Mutation() *SystemComponentControlMuta
 
 // Save creates the SystemComponentControl in the database.
 func (sccc *SystemComponentControlCreate) Save(ctx context.Context) (*SystemComponentControl, error) {
-	sccc.defaults()
+	if err := sccc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sccc.sqlSave, sccc.mutation, sccc.hooks)
 }
 
@@ -150,15 +152,22 @@ func (sccc *SystemComponentControlCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sccc *SystemComponentControlCreate) defaults() {
+func (sccc *SystemComponentControlCreate) defaults() error {
 	if _, ok := sccc.mutation.CreatedAt(); !ok {
+		if systemcomponentcontrol.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentcontrol.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentcontrol.DefaultCreatedAt()
 		sccc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sccc.mutation.ID(); !ok {
+		if systemcomponentcontrol.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentcontrol.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentcontrol.DefaultID()
 		sccc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -255,7 +264,7 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccc.config, mutation: newSystemRelationshipControlActionMutation(sccc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

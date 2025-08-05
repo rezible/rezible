@@ -5,6 +5,7 @@ package meetingschedule
 import (
 	"fmt"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -15,6 +16,8 @@ const (
 	Label = "meeting_schedule"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldArchiveTime holds the string denoting the archive_time field in the database.
+	FieldArchiveTime = "archive_time"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -60,6 +63,7 @@ const (
 // Columns holds all SQL columns for meetingschedule fields.
 var Columns = []string{
 	FieldID,
+	FieldArchiveTime,
 	FieldName,
 	FieldDescription,
 	FieldBeginMinute,
@@ -89,7 +93,15 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+// Note that the variables below are initialized by the runtime
+// package on the initialization of the application. Therefore,
+// it should be imported in the main as follows:
+//
+//	import _ "github.com/rezible/rezible/ent/runtime"
 var (
+	Hooks        [2]ent.Hook
+	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultRepetitionStep holds the default value on creation for the "repetition_step" field.
 	DefaultRepetitionStep int
 	// WeekDaysValidator is a validator for the "week_days" field. It is called by the builders before save.
@@ -151,6 +163,11 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByArchiveTime orders the results by the archive_time field.
+func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -329,6 +330,12 @@ func (pshq *ProviderSyncHistoryQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		pshq.sql = prev
+	}
+	if providersynchistory.Policy == nil {
+		return errors.New("ent: uninitialized providersynchistory.Policy (forgotten import ent/runtime?)")
+	}
+	if err := providersynchistory.Policy.EvalQuery(ctx, pshq); err != nil {
+		return err
 	}
 	return nil
 }

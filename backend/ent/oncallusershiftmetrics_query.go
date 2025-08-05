@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -365,6 +366,12 @@ func (ousmq *OncallUserShiftMetricsQuery) prepareQuery(ctx context.Context) erro
 			return err
 		}
 		ousmq.sql = prev
+	}
+	if oncallusershiftmetrics.Policy == nil {
+		return errors.New("ent: uninitialized oncallusershiftmetrics.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallusershiftmetrics.Policy.EvalQuery(ctx, ousmq); err != nil {
+		return err
 	}
 	return nil
 }

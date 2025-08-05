@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -473,6 +474,12 @@ func (rrq *RetrospectiveReviewQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		rrq.sql = prev
+	}
+	if retrospectivereview.Policy == nil {
+		return errors.New("ent: uninitialized retrospectivereview.Policy (forgotten import ent/runtime?)")
+	}
+	if err := retrospectivereview.Policy.EvalQuery(ctx, rrq); err != nil {
+		return err
 	}
 	return nil
 }

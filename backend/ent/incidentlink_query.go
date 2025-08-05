@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -400,6 +401,12 @@ func (ilq *IncidentLinkQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		ilq.sql = prev
+	}
+	if incidentlink.Policy == nil {
+		return errors.New("ent: uninitialized incidentlink.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentlink.Policy.EvalQuery(ctx, ilq); err != nil {
+		return err
 	}
 	return nil
 }

@@ -131,7 +131,9 @@ func (idmc *IncidentDebriefMessageCreate) Mutation() *IncidentDebriefMessageMuta
 
 // Save creates the IncidentDebriefMessage in the database.
 func (idmc *IncidentDebriefMessageCreate) Save(ctx context.Context) (*IncidentDebriefMessage, error) {
-	idmc.defaults()
+	if err := idmc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, idmc.sqlSave, idmc.mutation, idmc.hooks)
 }
 
@@ -158,15 +160,22 @@ func (idmc *IncidentDebriefMessageCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (idmc *IncidentDebriefMessageCreate) defaults() {
+func (idmc *IncidentDebriefMessageCreate) defaults() error {
 	if _, ok := idmc.mutation.CreatedAt(); !ok {
+		if incidentdebriefmessage.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidentdebriefmessage.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidentdebriefmessage.DefaultCreatedAt()
 		idmc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := idmc.mutation.ID(); !ok {
+		if incidentdebriefmessage.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentdebriefmessage.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentdebriefmessage.DefaultID()
 		idmc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

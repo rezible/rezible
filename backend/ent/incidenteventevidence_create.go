@@ -103,7 +103,9 @@ func (ieec *IncidentEventEvidenceCreate) Mutation() *IncidentEventEvidenceMutati
 
 // Save creates the IncidentEventEvidence in the database.
 func (ieec *IncidentEventEvidenceCreate) Save(ctx context.Context) (*IncidentEventEvidence, error) {
-	ieec.defaults()
+	if err := ieec.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ieec.sqlSave, ieec.mutation, ieec.hooks)
 }
 
@@ -130,15 +132,22 @@ func (ieec *IncidentEventEvidenceCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ieec *IncidentEventEvidenceCreate) defaults() {
+func (ieec *IncidentEventEvidenceCreate) defaults() error {
 	if _, ok := ieec.mutation.CreatedAt(); !ok {
+		if incidenteventevidence.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventevidence.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidenteventevidence.DefaultCreatedAt()
 		ieec.mutation.SetCreatedAt(v)
 	}
 	if _, ok := ieec.mutation.ID(); !ok {
+		if incidenteventevidence.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventevidence.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidenteventevidence.DefaultID()
 		ieec.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

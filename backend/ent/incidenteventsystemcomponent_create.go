@@ -94,7 +94,9 @@ func (iescc *IncidentEventSystemComponentCreate) Mutation() *IncidentEventSystem
 
 // Save creates the IncidentEventSystemComponent in the database.
 func (iescc *IncidentEventSystemComponentCreate) Save(ctx context.Context) (*IncidentEventSystemComponent, error) {
-	iescc.defaults()
+	if err := iescc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, iescc.sqlSave, iescc.mutation, iescc.hooks)
 }
 
@@ -121,15 +123,22 @@ func (iescc *IncidentEventSystemComponentCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (iescc *IncidentEventSystemComponentCreate) defaults() {
+func (iescc *IncidentEventSystemComponentCreate) defaults() error {
 	if _, ok := iescc.mutation.CreatedAt(); !ok {
+		if incidenteventsystemcomponent.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventsystemcomponent.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidenteventsystemcomponent.DefaultCreatedAt()
 		iescc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := iescc.mutation.ID(); !ok {
+		if incidenteventsystemcomponent.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventsystemcomponent.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidenteventsystemcomponent.DefaultID()
 		iescc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

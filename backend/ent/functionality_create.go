@@ -50,7 +50,9 @@ func (fc *FunctionalityCreate) Mutation() *FunctionalityMutation {
 
 // Save creates the Functionality in the database.
 func (fc *FunctionalityCreate) Save(ctx context.Context) (*Functionality, error) {
-	fc.defaults()
+	if err := fc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, fc.sqlSave, fc.mutation, fc.hooks)
 }
 
@@ -77,11 +79,15 @@ func (fc *FunctionalityCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (fc *FunctionalityCreate) defaults() {
+func (fc *FunctionalityCreate) defaults() error {
 	if _, ok := fc.mutation.ID(); !ok {
+		if functionality.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized functionality.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := functionality.DefaultID()
 		fc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -473,6 +474,12 @@ func (tq *TaskQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		tq.sql = prev
+	}
+	if task.Policy == nil {
+		return errors.New("ent: uninitialized task.Policy (forgotten import ent/runtime?)")
+	}
+	if err := task.Policy.EvalQuery(ctx, tq); err != nil {
+		return err
 	}
 	return nil
 }

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -401,6 +402,12 @@ func (srcaq *SystemRelationshipControlActionQuery) prepareQuery(ctx context.Cont
 			return err
 		}
 		srcaq.sql = prev
+	}
+	if systemrelationshipcontrolaction.Policy == nil {
+		return errors.New("ent: uninitialized systemrelationshipcontrolaction.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemrelationshipcontrolaction.Policy.EvalQuery(ctx, srcaq); err != nil {
+		return err
 	}
 	return nil
 }

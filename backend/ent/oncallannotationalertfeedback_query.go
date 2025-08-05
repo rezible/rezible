@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -365,6 +366,12 @@ func (oaafq *OncallAnnotationAlertFeedbackQuery) prepareQuery(ctx context.Contex
 			return err
 		}
 		oaafq.sql = prev
+	}
+	if oncallannotationalertfeedback.Policy == nil {
+		return errors.New("ent: uninitialized oncallannotationalertfeedback.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallannotationalertfeedback.Policy.EvalQuery(ctx, oaafq); err != nil {
+		return err
 	}
 	return nil
 }

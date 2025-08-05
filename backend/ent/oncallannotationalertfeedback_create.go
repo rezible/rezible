@@ -74,7 +74,9 @@ func (oaafc *OncallAnnotationAlertFeedbackCreate) Mutation() *OncallAnnotationAl
 
 // Save creates the OncallAnnotationAlertFeedback in the database.
 func (oaafc *OncallAnnotationAlertFeedbackCreate) Save(ctx context.Context) (*OncallAnnotationAlertFeedback, error) {
-	oaafc.defaults()
+	if err := oaafc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, oaafc.sqlSave, oaafc.mutation, oaafc.hooks)
 }
 
@@ -101,11 +103,15 @@ func (oaafc *OncallAnnotationAlertFeedbackCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (oaafc *OncallAnnotationAlertFeedbackCreate) defaults() {
+func (oaafc *OncallAnnotationAlertFeedbackCreate) defaults() error {
 	if _, ok := oaafc.mutation.ID(); !ok {
+		if oncallannotationalertfeedback.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallannotationalertfeedback.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallannotationalertfeedback.DefaultID()
 		oaafc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

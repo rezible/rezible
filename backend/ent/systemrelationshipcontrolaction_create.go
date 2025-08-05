@@ -103,7 +103,9 @@ func (srcac *SystemRelationshipControlActionCreate) Mutation() *SystemRelationsh
 
 // Save creates the SystemRelationshipControlAction in the database.
 func (srcac *SystemRelationshipControlActionCreate) Save(ctx context.Context) (*SystemRelationshipControlAction, error) {
-	srcac.defaults()
+	if err := srcac.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, srcac.sqlSave, srcac.mutation, srcac.hooks)
 }
 
@@ -130,15 +132,22 @@ func (srcac *SystemRelationshipControlActionCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (srcac *SystemRelationshipControlActionCreate) defaults() {
+func (srcac *SystemRelationshipControlActionCreate) defaults() error {
 	if _, ok := srcac.mutation.CreatedAt(); !ok {
+		if systemrelationshipcontrolaction.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemrelationshipcontrolaction.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemrelationshipcontrolaction.DefaultCreatedAt()
 		srcac.mutation.SetCreatedAt(v)
 	}
 	if _, ok := srcac.mutation.ID(); !ok {
+		if systemrelationshipcontrolaction.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemrelationshipcontrolaction.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemrelationshipcontrolaction.DefaultID()
 		srcac.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

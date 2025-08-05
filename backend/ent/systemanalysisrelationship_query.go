@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -546,6 +547,12 @@ func (sarq *SystemAnalysisRelationshipQuery) prepareQuery(ctx context.Context) e
 			return err
 		}
 		sarq.sql = prev
+	}
+	if systemanalysisrelationship.Policy == nil {
+		return errors.New("ent: uninitialized systemanalysisrelationship.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemanalysisrelationship.Policy.EvalQuery(ctx, sarq); err != nil {
+		return err
 	}
 	return nil
 }

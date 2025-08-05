@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -366,6 +367,12 @@ func (ohtq *OncallHandoverTemplateQuery) prepareQuery(ctx context.Context) error
 			return err
 		}
 		ohtq.sql = prev
+	}
+	if oncallhandovertemplate.Policy == nil {
+		return errors.New("ent: uninitialized oncallhandovertemplate.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallhandovertemplate.Policy.EvalQuery(ctx, ohtq); err != nil {
+		return err
 	}
 	return nil
 }

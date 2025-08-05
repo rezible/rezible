@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -438,6 +439,12 @@ func (oeq *OncallEventQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		oeq.sql = prev
+	}
+	if oncallevent.Policy == nil {
+		return errors.New("ent: uninitialized oncallevent.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallevent.Policy.EvalQuery(ctx, oeq); err != nil {
+		return err
 	}
 	return nil
 }

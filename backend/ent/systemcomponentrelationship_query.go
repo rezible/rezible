@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -473,6 +474,12 @@ func (scrq *SystemComponentRelationshipQuery) prepareQuery(ctx context.Context) 
 			return err
 		}
 		scrq.sql = prev
+	}
+	if systemcomponentrelationship.Policy == nil {
+		return errors.New("ent: uninitialized systemcomponentrelationship.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemcomponentrelationship.Policy.EvalQuery(ctx, scrq); err != nil {
+		return err
 	}
 	return nil
 }

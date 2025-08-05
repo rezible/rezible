@@ -56,7 +56,9 @@ func (ousmc *OncallUserShiftMetricsCreate) Mutation() *OncallUserShiftMetricsMut
 
 // Save creates the OncallUserShiftMetrics in the database.
 func (ousmc *OncallUserShiftMetricsCreate) Save(ctx context.Context) (*OncallUserShiftMetrics, error) {
-	ousmc.defaults()
+	if err := ousmc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ousmc.sqlSave, ousmc.mutation, ousmc.hooks)
 }
 
@@ -83,11 +85,15 @@ func (ousmc *OncallUserShiftMetricsCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ousmc *OncallUserShiftMetricsCreate) defaults() {
+func (ousmc *OncallUserShiftMetricsCreate) defaults() error {
 	if _, ok := ousmc.mutation.ID(); !ok {
+		if oncallusershiftmetrics.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallusershiftmetrics.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallusershiftmetrics.DefaultID()
 		ousmc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

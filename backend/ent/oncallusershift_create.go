@@ -168,7 +168,9 @@ func (ousc *OncallUserShiftCreate) Mutation() *OncallUserShiftMutation {
 
 // Save creates the OncallUserShift in the database.
 func (ousc *OncallUserShiftCreate) Save(ctx context.Context) (*OncallUserShift, error) {
-	ousc.defaults()
+	if err := ousc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ousc.sqlSave, ousc.mutation, ousc.hooks)
 }
 
@@ -195,15 +197,19 @@ func (ousc *OncallUserShiftCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ousc *OncallUserShiftCreate) defaults() {
+func (ousc *OncallUserShiftCreate) defaults() error {
 	if _, ok := ousc.mutation.Role(); !ok {
 		v := oncallusershift.DefaultRole
 		ousc.mutation.SetRole(v)
 	}
 	if _, ok := ousc.mutation.ID(); !ok {
+		if oncallusershift.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallusershift.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallusershift.DefaultID()
 		ousc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

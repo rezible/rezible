@@ -289,7 +289,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 			},
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -312,7 +312,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -335,7 +335,7 @@ func (sccu *SystemComponentControlUpdate) sqlSave(ctx context.Context) (n int, e
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccu.config, mutation: newSystemRelationshipControlActionMutation(sccu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -696,7 +696,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 			},
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -719,7 +719,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -742,7 +742,7 @@ func (sccuo *SystemComponentControlUpdateOne) sqlSave(ctx context.Context) (_nod
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sccuo.config, mutation: newSystemRelationshipControlActionMutation(sccuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -329,6 +330,12 @@ func (pcq *ProviderConfigQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		pcq.sql = prev
+	}
+	if providerconfig.Policy == nil {
+		return errors.New("ent: uninitialized providerconfig.Policy (forgotten import ent/runtime?)")
+	}
+	if err := providerconfig.Policy.EvalQuery(ctx, pcq); err != nil {
+		return err
 	}
 	return nil
 }

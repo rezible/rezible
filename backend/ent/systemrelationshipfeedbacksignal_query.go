@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -401,6 +402,12 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) prepareQuery(ctx context.Con
 			return err
 		}
 		srfsq.sql = prev
+	}
+	if systemrelationshipfeedbacksignal.Policy == nil {
+		return errors.New("ent: uninitialized systemrelationshipfeedbacksignal.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemrelationshipfeedbacksignal.Policy.EvalQuery(ctx, srfsq); err != nil {
+		return err
 	}
 	return nil
 }

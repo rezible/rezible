@@ -101,7 +101,9 @@ func (msc *MeetingSessionCreate) Mutation() *MeetingSessionMutation {
 
 // Save creates the MeetingSession in the database.
 func (msc *MeetingSessionCreate) Save(ctx context.Context) (*MeetingSession, error) {
-	msc.defaults()
+	if err := msc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, msc.sqlSave, msc.mutation, msc.hooks)
 }
 
@@ -128,15 +130,22 @@ func (msc *MeetingSessionCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (msc *MeetingSessionCreate) defaults() {
+func (msc *MeetingSessionCreate) defaults() error {
 	if _, ok := msc.mutation.StartedAt(); !ok {
+		if meetingsession.DefaultStartedAt == nil {
+			return fmt.Errorf("ent: uninitialized meetingsession.DefaultStartedAt (forgotten import ent/runtime?)")
+		}
 		v := meetingsession.DefaultStartedAt()
 		msc.mutation.SetStartedAt(v)
 	}
 	if _, ok := msc.mutation.ID(); !ok {
+		if meetingsession.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized meetingsession.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := meetingsession.DefaultID()
 		msc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

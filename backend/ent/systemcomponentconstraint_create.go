@@ -107,7 +107,9 @@ func (sccc *SystemComponentConstraintCreate) Mutation() *SystemComponentConstrai
 
 // Save creates the SystemComponentConstraint in the database.
 func (sccc *SystemComponentConstraintCreate) Save(ctx context.Context) (*SystemComponentConstraint, error) {
-	sccc.defaults()
+	if err := sccc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sccc.sqlSave, sccc.mutation, sccc.hooks)
 }
 
@@ -134,15 +136,22 @@ func (sccc *SystemComponentConstraintCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sccc *SystemComponentConstraintCreate) defaults() {
+func (sccc *SystemComponentConstraintCreate) defaults() error {
 	if _, ok := sccc.mutation.CreatedAt(); !ok {
+		if systemcomponentconstraint.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentconstraint.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentconstraint.DefaultCreatedAt()
 		sccc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sccc.mutation.ID(); !ok {
+		if systemcomponentconstraint.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponentconstraint.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemcomponentconstraint.DefaultID()
 		sccc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

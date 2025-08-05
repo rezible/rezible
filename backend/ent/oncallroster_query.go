@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -618,6 +619,12 @@ func (orq *OncallRosterQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		orq.sql = prev
+	}
+	if oncallroster.Policy == nil {
+		return errors.New("ent: uninitialized oncallroster.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallroster.Policy.EvalQuery(ctx, orq); err != nil {
+		return err
 	}
 	return nil
 }

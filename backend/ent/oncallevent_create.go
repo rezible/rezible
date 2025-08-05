@@ -137,7 +137,9 @@ func (oec *OncallEventCreate) Mutation() *OncallEventMutation {
 
 // Save creates the OncallEvent in the database.
 func (oec *OncallEventCreate) Save(ctx context.Context) (*OncallEvent, error) {
-	oec.defaults()
+	if err := oec.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, oec.sqlSave, oec.mutation, oec.hooks)
 }
 
@@ -164,11 +166,15 @@ func (oec *OncallEventCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (oec *OncallEventCreate) defaults() {
+func (oec *OncallEventCreate) defaults() error {
 	if _, ok := oec.mutation.ID(); !ok {
+		if oncallevent.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallevent.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallevent.DefaultID()
 		oec.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

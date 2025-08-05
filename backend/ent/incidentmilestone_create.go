@@ -83,7 +83,9 @@ func (imc *IncidentMilestoneCreate) Mutation() *IncidentMilestoneMutation {
 
 // Save creates the IncidentMilestone in the database.
 func (imc *IncidentMilestoneCreate) Save(ctx context.Context) (*IncidentMilestone, error) {
-	imc.defaults()
+	if err := imc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, imc.sqlSave, imc.mutation, imc.hooks)
 }
 
@@ -110,11 +112,15 @@ func (imc *IncidentMilestoneCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (imc *IncidentMilestoneCreate) defaults() {
+func (imc *IncidentMilestoneCreate) defaults() error {
 	if _, ok := imc.mutation.ID(); !ok {
+		if incidentmilestone.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentmilestone.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentmilestone.DefaultID()
 		imc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

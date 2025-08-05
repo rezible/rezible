@@ -79,8 +79,9 @@ func ValidColumn(column string) bool {
 //
 //	import _ "github.com/rezible/rezible/ent/runtime"
 var (
-	Hooks        [1]ent.Hook
+	Hooks        [2]ent.Hook
 	Interceptors [1]ent.Interceptor
+	Policy       ent.Policy
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

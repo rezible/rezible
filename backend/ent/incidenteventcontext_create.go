@@ -111,7 +111,9 @@ func (iecc *IncidentEventContextCreate) Mutation() *IncidentEventContextMutation
 
 // Save creates the IncidentEventContext in the database.
 func (iecc *IncidentEventContextCreate) Save(ctx context.Context) (*IncidentEventContext, error) {
-	iecc.defaults()
+	if err := iecc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, iecc.sqlSave, iecc.mutation, iecc.hooks)
 }
 
@@ -138,15 +140,22 @@ func (iecc *IncidentEventContextCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (iecc *IncidentEventContextCreate) defaults() {
+func (iecc *IncidentEventContextCreate) defaults() error {
 	if _, ok := iecc.mutation.CreatedAt(); !ok {
+		if incidenteventcontext.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventcontext.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidenteventcontext.DefaultCreatedAt()
 		iecc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := iecc.mutation.ID(); !ok {
+		if incidenteventcontext.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventcontext.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidenteventcontext.DefaultID()
 		iecc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

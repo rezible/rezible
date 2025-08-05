@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -401,6 +402,12 @@ func (sacq *SystemAnalysisComponentQuery) prepareQuery(ctx context.Context) erro
 			return err
 		}
 		sacq.sql = prev
+	}
+	if systemanalysiscomponent.Policy == nil {
+		return errors.New("ent: uninitialized systemanalysiscomponent.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemanalysiscomponent.Policy.EvalQuery(ctx, sacq); err != nil {
+		return err
 	}
 	return nil
 }

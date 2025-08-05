@@ -162,7 +162,9 @@ func (tc *TeamCreate) Mutation() *TeamMutation {
 
 // Save creates the Team in the database.
 func (tc *TeamCreate) Save(ctx context.Context) (*Team, error) {
-	tc.defaults()
+	if err := tc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, tc.sqlSave, tc.mutation, tc.hooks)
 }
 
@@ -189,11 +191,15 @@ func (tc *TeamCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (tc *TeamCreate) defaults() {
+func (tc *TeamCreate) defaults() error {
 	if _, ok := tc.mutation.ID(); !ok {
+		if team.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized team.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := team.DefaultID()
 		tc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -338,12 +339,12 @@ func (msq *MeetingScheduleQuery) WithOwningTeam(opts ...func(*TeamQuery)) *Meeti
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		ArchiveTime time.Time `json:"archive_time,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MeetingSchedule.Query().
-//		GroupBy(meetingschedule.FieldName).
+//		GroupBy(meetingschedule.FieldArchiveTime).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (msq *MeetingScheduleQuery) GroupBy(field string, fields ...string) *MeetingScheduleGroupBy {
@@ -361,11 +362,11 @@ func (msq *MeetingScheduleQuery) GroupBy(field string, fields ...string) *Meetin
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		ArchiveTime time.Time `json:"archive_time,omitempty"`
 //	}
 //
 //	client.MeetingSchedule.Query().
-//		Select(meetingschedule.FieldName).
+//		Select(meetingschedule.FieldArchiveTime).
 //		Scan(ctx, &v)
 func (msq *MeetingScheduleQuery) Select(fields ...string) *MeetingScheduleSelect {
 	msq.ctx.Fields = append(msq.ctx.Fields, fields...)
@@ -402,6 +403,12 @@ func (msq *MeetingScheduleQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		msq.sql = prev
+	}
+	if meetingschedule.Policy == nil {
+		return errors.New("ent: uninitialized meetingschedule.Policy (forgotten import ent/runtime?)")
+	}
+	if err := meetingschedule.Policy.EvalQuery(ctx, msq); err != nil {
+		return err
 	}
 	return nil
 }

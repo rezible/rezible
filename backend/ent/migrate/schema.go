@@ -540,6 +540,7 @@ var (
 	// MeetingSchedulesColumns holds the columns for the "meeting_schedules" table.
 	MeetingSchedulesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "begin_minute", Type: field.TypeInt},

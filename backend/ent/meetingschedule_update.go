@@ -33,6 +33,26 @@ func (msu *MeetingScheduleUpdate) Where(ps ...predicate.MeetingSchedule) *Meetin
 	return msu
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (msu *MeetingScheduleUpdate) SetArchiveTime(t time.Time) *MeetingScheduleUpdate {
+	msu.mutation.SetArchiveTime(t)
+	return msu
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (msu *MeetingScheduleUpdate) SetNillableArchiveTime(t *time.Time) *MeetingScheduleUpdate {
+	if t != nil {
+		msu.SetArchiveTime(*t)
+	}
+	return msu
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (msu *MeetingScheduleUpdate) ClearArchiveTime() *MeetingScheduleUpdate {
+	msu.mutation.ClearArchiveTime()
+	return msu
+}
+
 // SetName sets the "name" field.
 func (msu *MeetingScheduleUpdate) SetName(s string) *MeetingScheduleUpdate {
 	msu.mutation.SetName(s)
@@ -385,6 +405,12 @@ func (msu *MeetingScheduleUpdate) sqlSave(ctx context.Context) (n int, err error
 			}
 		}
 	}
+	if value, ok := msu.mutation.ArchiveTime(); ok {
+		_spec.SetField(meetingschedule.FieldArchiveTime, field.TypeTime, value)
+	}
+	if msu.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(meetingschedule.FieldArchiveTime, field.TypeTime)
+	}
 	if value, ok := msu.mutation.Name(); ok {
 		_spec.SetField(meetingschedule.FieldName, field.TypeString, value)
 	}
@@ -560,6 +586,26 @@ type MeetingScheduleUpdateOne struct {
 	hooks     []Hook
 	mutation  *MeetingScheduleMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (msuo *MeetingScheduleUpdateOne) SetArchiveTime(t time.Time) *MeetingScheduleUpdateOne {
+	msuo.mutation.SetArchiveTime(t)
+	return msuo
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (msuo *MeetingScheduleUpdateOne) SetNillableArchiveTime(t *time.Time) *MeetingScheduleUpdateOne {
+	if t != nil {
+		msuo.SetArchiveTime(*t)
+	}
+	return msuo
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (msuo *MeetingScheduleUpdateOne) ClearArchiveTime() *MeetingScheduleUpdateOne {
+	msuo.mutation.ClearArchiveTime()
+	return msuo
 }
 
 // SetName sets the "name" field.
@@ -943,6 +989,12 @@ func (msuo *MeetingScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Meeti
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := msuo.mutation.ArchiveTime(); ok {
+		_spec.SetField(meetingschedule.FieldArchiveTime, field.TypeTime, value)
+	}
+	if msuo.mutation.ArchiveTimeCleared() {
+		_spec.ClearField(meetingschedule.FieldArchiveTime, field.TypeTime)
 	}
 	if value, ok := msuo.mutation.Name(); ok {
 		_spec.SetField(meetingschedule.FieldName, field.TypeString, value)

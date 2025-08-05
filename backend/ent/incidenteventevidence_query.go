@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -366,6 +367,12 @@ func (ieeq *IncidentEventEvidenceQuery) prepareQuery(ctx context.Context) error 
 			return err
 		}
 		ieeq.sql = prev
+	}
+	if incidenteventevidence.Policy == nil {
+		return errors.New("ent: uninitialized incidenteventevidence.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidenteventevidence.Policy.EvalQuery(ctx, ieeq); err != nil {
+		return err
 	}
 	return nil
 }

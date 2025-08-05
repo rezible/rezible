@@ -362,7 +362,9 @@ func (ic *IncidentCreate) Mutation() *IncidentMutation {
 
 // Save creates the Incident in the database.
 func (ic *IncidentCreate) Save(ctx context.Context) (*Incident, error) {
-	ic.defaults()
+	if err := ic.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ic.sqlSave, ic.mutation, ic.hooks)
 }
 
@@ -389,15 +391,19 @@ func (ic *IncidentCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ic *IncidentCreate) defaults() {
+func (ic *IncidentCreate) defaults() error {
 	if _, ok := ic.mutation.Private(); !ok {
 		v := incident.DefaultPrivate
 		ic.mutation.SetPrivate(v)
 	}
 	if _, ok := ic.mutation.ID(); !ok {
+		if incident.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incident.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incident.DefaultID()
 		ic.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

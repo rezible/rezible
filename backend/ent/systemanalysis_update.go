@@ -186,7 +186,9 @@ func (sau *SystemAnalysisUpdate) RemoveAnalysisComponents(s ...*SystemAnalysisCo
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (sau *SystemAnalysisUpdate) Save(ctx context.Context) (int, error) {
-	sau.defaults()
+	if err := sau.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, sau.sqlSave, sau.mutation, sau.hooks)
 }
 
@@ -213,11 +215,15 @@ func (sau *SystemAnalysisUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sau *SystemAnalysisUpdate) defaults() {
+func (sau *SystemAnalysisUpdate) defaults() error {
 	if _, ok := sau.mutation.UpdatedAt(); !ok {
+		if systemanalysis.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysis.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysis.UpdateDefaultUpdatedAt()
 		sau.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -293,7 +299,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 			},
 		}
 		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -316,7 +322,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -339,7 +345,7 @@ func (sau *SystemAnalysisUpdate) sqlSave(ctx context.Context) (n int, err error)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: sau.config, mutation: newSystemAnalysisComponentMutation(sau.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -624,7 +630,9 @@ func (sauo *SystemAnalysisUpdateOne) Select(field string, fields ...string) *Sys
 
 // Save executes the query and returns the updated SystemAnalysis entity.
 func (sauo *SystemAnalysisUpdateOne) Save(ctx context.Context) (*SystemAnalysis, error) {
-	sauo.defaults()
+	if err := sauo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sauo.sqlSave, sauo.mutation, sauo.hooks)
 }
 
@@ -651,11 +659,15 @@ func (sauo *SystemAnalysisUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sauo *SystemAnalysisUpdateOne) defaults() {
+func (sauo *SystemAnalysisUpdateOne) defaults() error {
 	if _, ok := sauo.mutation.UpdatedAt(); !ok {
+		if systemanalysis.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysis.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysis.UpdateDefaultUpdatedAt()
 		sauo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -748,7 +760,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 			},
 		}
 		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -771,7 +783,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -794,7 +806,7 @@ func (sauo *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *System
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: sauo.config, mutation: newSystemAnalysisComponentMutation(sauo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

@@ -26,6 +26,20 @@ type MeetingScheduleCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetArchiveTime sets the "archive_time" field.
+func (msc *MeetingScheduleCreate) SetArchiveTime(t time.Time) *MeetingScheduleCreate {
+	msc.mutation.SetArchiveTime(t)
+	return msc
+}
+
+// SetNillableArchiveTime sets the "archive_time" field if the given value is not nil.
+func (msc *MeetingScheduleCreate) SetNillableArchiveTime(t *time.Time) *MeetingScheduleCreate {
+	if t != nil {
+		msc.SetArchiveTime(*t)
+	}
+	return msc
+}
+
 // SetName sets the "name" field.
 func (msc *MeetingScheduleCreate) SetName(s string) *MeetingScheduleCreate {
 	msc.mutation.SetName(s)
@@ -183,7 +197,9 @@ func (msc *MeetingScheduleCreate) Mutation() *MeetingScheduleMutation {
 
 // Save creates the MeetingSchedule in the database.
 func (msc *MeetingScheduleCreate) Save(ctx context.Context) (*MeetingSchedule, error) {
-	msc.defaults()
+	if err := msc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, msc.sqlSave, msc.mutation, msc.hooks)
 }
 
@@ -210,15 +226,19 @@ func (msc *MeetingScheduleCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (msc *MeetingScheduleCreate) defaults() {
+func (msc *MeetingScheduleCreate) defaults() error {
 	if _, ok := msc.mutation.RepetitionStep(); !ok {
 		v := meetingschedule.DefaultRepetitionStep
 		msc.mutation.SetRepetitionStep(v)
 	}
 	if _, ok := msc.mutation.ID(); !ok {
+		if meetingschedule.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized meetingschedule.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := meetingschedule.DefaultID()
 		msc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -291,6 +311,10 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 	if id, ok := msc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
+	}
+	if value, ok := msc.mutation.ArchiveTime(); ok {
+		_spec.SetField(meetingschedule.FieldArchiveTime, field.TypeTime, value)
+		_node.ArchiveTime = value
 	}
 	if value, ok := msc.mutation.Name(); ok {
 		_spec.SetField(meetingschedule.FieldName, field.TypeString, value)
@@ -375,7 +399,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 // of the `INSERT` statement. For example:
 //
 //	client.MeetingSchedule.Create().
-//		SetName(v).
+//		SetArchiveTime(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -384,7 +408,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingScheduleUpsert) {
-//			SetName(v+v).
+//			SetArchiveTime(v+v).
 //		}).
 //		Exec(ctx)
 func (msc *MeetingScheduleCreate) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertOne {
@@ -419,6 +443,24 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *MeetingScheduleUpsert) SetArchiveTime(v time.Time) *MeetingScheduleUpsert {
+	u.Set(meetingschedule.FieldArchiveTime, v)
+	return u
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *MeetingScheduleUpsert) UpdateArchiveTime() *MeetingScheduleUpsert {
+	u.SetExcluded(meetingschedule.FieldArchiveTime)
+	return u
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *MeetingScheduleUpsert) ClearArchiveTime() *MeetingScheduleUpsert {
+	u.SetNull(meetingschedule.FieldArchiveTime)
+	return u
+}
 
 // SetName sets the "name" field.
 func (u *MeetingScheduleUpsert) SetName(v string) *MeetingScheduleUpsert {
@@ -652,6 +694,27 @@ func (u *MeetingScheduleUpsertOne) Update(set func(*MeetingScheduleUpsert)) *Mee
 		set(&MeetingScheduleUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *MeetingScheduleUpsertOne) SetArchiveTime(v time.Time) *MeetingScheduleUpsertOne {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *MeetingScheduleUpsertOne) UpdateArchiveTime() *MeetingScheduleUpsertOne {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *MeetingScheduleUpsertOne) ClearArchiveTime() *MeetingScheduleUpsertOne {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.ClearArchiveTime()
+	})
 }
 
 // SetName sets the "name" field.
@@ -1007,7 +1070,7 @@ func (mscb *MeetingScheduleCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingScheduleUpsert) {
-//			SetName(v+v).
+//			SetArchiveTime(v+v).
 //		}).
 //		Exec(ctx)
 func (mscb *MeetingScheduleCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertBulk {
@@ -1084,6 +1147,27 @@ func (u *MeetingScheduleUpsertBulk) Update(set func(*MeetingScheduleUpsert)) *Me
 		set(&MeetingScheduleUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (u *MeetingScheduleUpsertBulk) SetArchiveTime(v time.Time) *MeetingScheduleUpsertBulk {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.SetArchiveTime(v)
+	})
+}
+
+// UpdateArchiveTime sets the "archive_time" field to the value that was provided on create.
+func (u *MeetingScheduleUpsertBulk) UpdateArchiveTime() *MeetingScheduleUpsertBulk {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.UpdateArchiveTime()
+	})
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (u *MeetingScheduleUpsertBulk) ClearArchiveTime() *MeetingScheduleUpsertBulk {
+	return u.Update(func(s *MeetingScheduleUpsert) {
+		s.ClearArchiveTime()
+	})
 }
 
 // SetName sets the "name" field.

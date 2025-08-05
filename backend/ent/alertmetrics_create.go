@@ -56,7 +56,9 @@ func (amc *AlertMetricsCreate) Mutation() *AlertMetricsMutation {
 
 // Save creates the AlertMetrics in the database.
 func (amc *AlertMetricsCreate) Save(ctx context.Context) (*AlertMetrics, error) {
-	amc.defaults()
+	if err := amc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, amc.sqlSave, amc.mutation, amc.hooks)
 }
 
@@ -83,11 +85,15 @@ func (amc *AlertMetricsCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (amc *AlertMetricsCreate) defaults() {
+func (amc *AlertMetricsCreate) defaults() error {
 	if _, ok := amc.mutation.ID(); !ok {
+		if alertmetrics.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized alertmetrics.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := alertmetrics.DefaultID()
 		amc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

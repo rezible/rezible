@@ -410,7 +410,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			},
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -433,7 +433,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -456,7 +456,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saru.config, mutation: newSystemRelationshipControlActionMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -476,7 +476,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -499,7 +499,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -522,7 +522,7 @@ func (saru *SystemAnalysisRelationshipUpdate) sqlSave(ctx context.Context) (n in
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saru.config, mutation: newSystemRelationshipFeedbackSignalMutation(saru.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1046,7 +1046,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			},
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1069,7 +1069,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1092,7 +1092,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: saruo.config, mutation: newSystemRelationshipControlActionMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1112,7 +1112,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			},
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1135,7 +1135,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1158,7 +1158,7 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) sqlSave(ctx context.Context) (
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: saruo.config, mutation: newSystemRelationshipFeedbackSignalMutation(saruo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

@@ -489,6 +489,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "MeetingSchedule",
 		Fields: map[string]*sqlgraph.FieldSpec{
+			meetingschedule.FieldArchiveTime:     {Type: field.TypeTime, Column: meetingschedule.FieldArchiveTime},
 			meetingschedule.FieldName:            {Type: field.TypeString, Column: meetingschedule.FieldName},
 			meetingschedule.FieldDescription:     {Type: field.TypeString, Column: meetingschedule.FieldDescription},
 			meetingschedule.FieldBeginMinute:     {Type: field.TypeInt, Column: meetingschedule.FieldBeginMinute},
@@ -5582,6 +5583,11 @@ func (f *MeetingScheduleFilter) Where(p entql.P) {
 // WhereID applies the entql [16]byte predicate on the id field.
 func (f *MeetingScheduleFilter) WhereID(p entql.ValueP) {
 	f.Where(p.Field(meetingschedule.FieldID))
+}
+
+// WhereArchiveTime applies the entql time.Time predicate on the archive_time field.
+func (f *MeetingScheduleFilter) WhereArchiveTime(p entql.TimeP) {
+	f.Where(p.Field(meetingschedule.FieldArchiveTime))
 }
 
 // WhereName applies the entql string predicate on the name field.

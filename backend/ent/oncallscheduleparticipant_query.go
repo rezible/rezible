@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -401,6 +402,12 @@ func (ospq *OncallScheduleParticipantQuery) prepareQuery(ctx context.Context) er
 			return err
 		}
 		ospq.sql = prev
+	}
+	if oncallscheduleparticipant.Policy == nil {
+		return errors.New("ent: uninitialized oncallscheduleparticipant.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallscheduleparticipant.Policy.EvalQuery(ctx, ospq); err != nil {
+		return err
 	}
 	return nil
 }

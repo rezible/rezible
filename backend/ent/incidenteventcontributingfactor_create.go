@@ -91,7 +91,9 @@ func (iecfc *IncidentEventContributingFactorCreate) Mutation() *IncidentEventCon
 
 // Save creates the IncidentEventContributingFactor in the database.
 func (iecfc *IncidentEventContributingFactorCreate) Save(ctx context.Context) (*IncidentEventContributingFactor, error) {
-	iecfc.defaults()
+	if err := iecfc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, iecfc.sqlSave, iecfc.mutation, iecfc.hooks)
 }
 
@@ -118,15 +120,22 @@ func (iecfc *IncidentEventContributingFactorCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (iecfc *IncidentEventContributingFactorCreate) defaults() {
+func (iecfc *IncidentEventContributingFactorCreate) defaults() error {
 	if _, ok := iecfc.mutation.CreatedAt(); !ok {
+		if incidenteventcontributingfactor.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventcontributingfactor.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidenteventcontributingfactor.DefaultCreatedAt()
 		iecfc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := iecfc.mutation.ID(); !ok {
+		if incidenteventcontributingfactor.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidenteventcontributingfactor.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidenteventcontributingfactor.DefaultID()
 		iecfc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

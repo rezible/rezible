@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -402,6 +403,12 @@ func (oushq *OncallUserShiftHandoverQuery) prepareQuery(ctx context.Context) err
 			return err
 		}
 		oushq.sql = prev
+	}
+	if oncallusershifthandover.Policy == nil {
+		return errors.New("ent: uninitialized oncallusershifthandover.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallusershifthandover.Policy.EvalQuery(ctx, oushq); err != nil {
+		return err
 	}
 	return nil
 }

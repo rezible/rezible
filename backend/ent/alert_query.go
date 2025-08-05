@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -438,6 +439,12 @@ func (aq *AlertQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		aq.sql = prev
+	}
+	if alert.Policy == nil {
+		return errors.New("ent: uninitialized alert.Policy (forgotten import ent/runtime?)")
+	}
+	if err := alert.Policy.EvalQuery(ctx, aq); err != nil {
+		return err
 	}
 	return nil
 }

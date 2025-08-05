@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -401,6 +402,12 @@ func (itaq *IncidentTeamAssignmentQuery) prepareQuery(ctx context.Context) error
 			return err
 		}
 		itaq.sql = prev
+	}
+	if incidentteamassignment.Policy == nil {
+		return errors.New("ent: uninitialized incidentteamassignment.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentteamassignment.Policy.EvalQuery(ctx, itaq); err != nil {
+		return err
 	}
 	return nil
 }

@@ -249,7 +249,9 @@ func (iec *IncidentEventCreate) Mutation() *IncidentEventMutation {
 
 // Save creates the IncidentEvent in the database.
 func (iec *IncidentEventCreate) Save(ctx context.Context) (*IncidentEvent, error) {
-	iec.defaults()
+	if err := iec.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, iec.sqlSave, iec.mutation, iec.hooks)
 }
 
@@ -276,16 +278,22 @@ func (iec *IncidentEventCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (iec *IncidentEventCreate) defaults() {
+func (iec *IncidentEventCreate) defaults() error {
 	if _, ok := iec.mutation.IsKey(); !ok {
 		v := incidentevent.DefaultIsKey
 		iec.mutation.SetIsKey(v)
 	}
 	if _, ok := iec.mutation.CreatedAt(); !ok {
+		if incidentevent.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidentevent.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidentevent.DefaultCreatedAt()
 		iec.mutation.SetCreatedAt(v)
 	}
 	if _, ok := iec.mutation.UpdatedAt(); !ok {
+		if incidentevent.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized incidentevent.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := incidentevent.DefaultUpdatedAt()
 		iec.mutation.SetUpdatedAt(v)
 	}
@@ -298,9 +306,13 @@ func (iec *IncidentEventCreate) defaults() {
 		iec.mutation.SetIsDraft(v)
 	}
 	if _, ok := iec.mutation.ID(); !ok {
+		if incidentevent.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentevent.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentevent.DefaultID()
 		iec.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -504,7 +516,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: iec.config, mutation: newIncidentEventSystemComponentMutation(iec.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

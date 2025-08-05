@@ -112,7 +112,9 @@ func (idc *IncidentDebriefCreate) Mutation() *IncidentDebriefMutation {
 
 // Save creates the IncidentDebrief in the database.
 func (idc *IncidentDebriefCreate) Save(ctx context.Context) (*IncidentDebrief, error) {
-	idc.defaults()
+	if err := idc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, idc.sqlSave, idc.mutation, idc.hooks)
 }
 
@@ -139,11 +141,15 @@ func (idc *IncidentDebriefCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (idc *IncidentDebriefCreate) defaults() {
+func (idc *IncidentDebriefCreate) defaults() error {
 	if _, ok := idc.mutation.ID(); !ok {
+		if incidentdebrief.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized incidentdebrief.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := incidentdebrief.DefaultID()
 		idc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

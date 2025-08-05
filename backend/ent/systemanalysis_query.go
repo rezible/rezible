@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -474,6 +475,12 @@ func (saq *SystemAnalysisQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		saq.sql = prev
+	}
+	if systemanalysis.Policy == nil {
+		return errors.New("ent: uninitialized systemanalysis.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemanalysis.Policy.EvalQuery(ctx, saq); err != nil {
+		return err
 	}
 	return nil
 }

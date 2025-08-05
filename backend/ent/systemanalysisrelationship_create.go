@@ -167,7 +167,9 @@ func (sarc *SystemAnalysisRelationshipCreate) Mutation() *SystemAnalysisRelation
 
 // Save creates the SystemAnalysisRelationship in the database.
 func (sarc *SystemAnalysisRelationshipCreate) Save(ctx context.Context) (*SystemAnalysisRelationship, error) {
-	sarc.defaults()
+	if err := sarc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, sarc.sqlSave, sarc.mutation, sarc.hooks)
 }
 
@@ -194,15 +196,22 @@ func (sarc *SystemAnalysisRelationshipCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (sarc *SystemAnalysisRelationshipCreate) defaults() {
+func (sarc *SystemAnalysisRelationshipCreate) defaults() error {
 	if _, ok := sarc.mutation.CreatedAt(); !ok {
+		if systemanalysisrelationship.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysisrelationship.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemanalysisrelationship.DefaultCreatedAt()
 		sarc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := sarc.mutation.ID(); !ok {
+		if systemanalysisrelationship.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized systemanalysisrelationship.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := systemanalysisrelationship.DefaultID()
 		sarc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -315,7 +324,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipControlActionCreate{config: sarc.config, mutation: newSystemRelationshipControlActionMutation(sarc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -338,7 +347,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemRelationshipFeedbackSignalCreate{config: sarc.config, mutation: newSystemRelationshipFeedbackSignalMutation(sarc.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

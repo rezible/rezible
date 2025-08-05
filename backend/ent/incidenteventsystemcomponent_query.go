@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 
@@ -400,6 +401,12 @@ func (iescq *IncidentEventSystemComponentQuery) prepareQuery(ctx context.Context
 			return err
 		}
 		iescq.sql = prev
+	}
+	if incidenteventsystemcomponent.Policy == nil {
+		return errors.New("ent: uninitialized incidenteventsystemcomponent.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidenteventsystemcomponent.Policy.EvalQuery(ctx, iescq); err != nil {
+		return err
 	}
 	return nil
 }

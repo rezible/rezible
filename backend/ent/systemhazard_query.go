@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -438,6 +439,12 @@ func (shq *SystemHazardQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		shq.sql = prev
+	}
+	if systemhazard.Policy == nil {
+		return errors.New("ent: uninitialized systemhazard.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemhazard.Policy.EvalQuery(ctx, shq); err != nil {
+		return err
 	}
 	return nil
 }

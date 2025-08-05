@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -509,6 +510,12 @@ func (ousq *OncallUserShiftQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		ousq.sql = prev
+	}
+	if oncallusershift.Policy == nil {
+		return errors.New("ent: uninitialized oncallusershift.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallusershift.Policy.EvalQuery(ctx, ousq); err != nil {
+		return err
 	}
 	return nil
 }

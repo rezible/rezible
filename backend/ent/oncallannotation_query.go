@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -510,6 +511,12 @@ func (oaq *OncallAnnotationQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		oaq.sql = prev
+	}
+	if oncallannotation.Policy == nil {
+		return errors.New("ent: uninitialized oncallannotation.Policy (forgotten import ent/runtime?)")
+	}
+	if err := oncallannotation.Policy.EvalQuery(ctx, oaq); err != nil {
+		return err
 	}
 	return nil
 }

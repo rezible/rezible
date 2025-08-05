@@ -17058,6 +17058,7 @@ type MeetingScheduleMutation struct {
 	op                  Op
 	typ                 string
 	id                  *uuid.UUID
+	archive_time        *time.Time
 	name                *string
 	description         *string
 	begin_minute        *int
@@ -17188,6 +17189,55 @@ func (m *MeetingScheduleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) 
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetArchiveTime sets the "archive_time" field.
+func (m *MeetingScheduleMutation) SetArchiveTime(t time.Time) {
+	m.archive_time = &t
+}
+
+// ArchiveTime returns the value of the "archive_time" field in the mutation.
+func (m *MeetingScheduleMutation) ArchiveTime() (r time.Time, exists bool) {
+	v := m.archive_time
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldArchiveTime returns the old "archive_time" field's value of the MeetingSchedule entity.
+// If the MeetingSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MeetingScheduleMutation) OldArchiveTime(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldArchiveTime is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldArchiveTime requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldArchiveTime: %w", err)
+	}
+	return oldValue.ArchiveTime, nil
+}
+
+// ClearArchiveTime clears the value of the "archive_time" field.
+func (m *MeetingScheduleMutation) ClearArchiveTime() {
+	m.archive_time = nil
+	m.clearedFields[meetingschedule.FieldArchiveTime] = struct{}{}
+}
+
+// ArchiveTimeCleared returns if the "archive_time" field was cleared in this mutation.
+func (m *MeetingScheduleMutation) ArchiveTimeCleared() bool {
+	_, ok := m.clearedFields[meetingschedule.FieldArchiveTime]
+	return ok
+}
+
+// ResetArchiveTime resets all changes to the "archive_time" field.
+func (m *MeetingScheduleMutation) ResetArchiveTime() {
+	m.archive_time = nil
+	delete(m.clearedFields, meetingschedule.FieldArchiveTime)
 }
 
 // SetName sets the "name" field.
@@ -17890,7 +17940,10 @@ func (m *MeetingScheduleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MeetingScheduleMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
+	if m.archive_time != nil {
+		fields = append(fields, meetingschedule.FieldArchiveTime)
+	}
 	if m.name != nil {
 		fields = append(fields, meetingschedule.FieldName)
 	}
@@ -17932,6 +17985,8 @@ func (m *MeetingScheduleMutation) Fields() []string {
 // schema.
 func (m *MeetingScheduleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
+	case meetingschedule.FieldArchiveTime:
+		return m.ArchiveTime()
 	case meetingschedule.FieldName:
 		return m.Name()
 	case meetingschedule.FieldDescription:
@@ -17963,6 +18018,8 @@ func (m *MeetingScheduleMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *MeetingScheduleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
+	case meetingschedule.FieldArchiveTime:
+		return m.OldArchiveTime(ctx)
 	case meetingschedule.FieldName:
 		return m.OldName(ctx)
 	case meetingschedule.FieldDescription:
@@ -17994,6 +18051,13 @@ func (m *MeetingScheduleMutation) OldField(ctx context.Context, name string) (en
 // type.
 func (m *MeetingScheduleMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case meetingschedule.FieldArchiveTime:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetArchiveTime(v)
+		return nil
 	case meetingschedule.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -18152,6 +18216,9 @@ func (m *MeetingScheduleMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *MeetingScheduleMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(meetingschedule.FieldArchiveTime) {
+		fields = append(fields, meetingschedule.FieldArchiveTime)
+	}
 	if m.FieldCleared(meetingschedule.FieldDescription) {
 		fields = append(fields, meetingschedule.FieldDescription)
 	}
@@ -18181,6 +18248,9 @@ func (m *MeetingScheduleMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *MeetingScheduleMutation) ClearField(name string) error {
 	switch name {
+	case meetingschedule.FieldArchiveTime:
+		m.ClearArchiveTime()
+		return nil
 	case meetingschedule.FieldDescription:
 		m.ClearDescription()
 		return nil
@@ -18204,6 +18274,9 @@ func (m *MeetingScheduleMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *MeetingScheduleMutation) ResetField(name string) error {
 	switch name {
+	case meetingschedule.FieldArchiveTime:
+		m.ResetArchiveTime()
+		return nil
 	case meetingschedule.FieldName:
 		m.ResetName()
 		return nil

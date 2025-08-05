@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -402,6 +403,12 @@ func (sccq *SystemComponentConstraintQuery) prepareQuery(ctx context.Context) er
 			return err
 		}
 		sccq.sql = prev
+	}
+	if systemcomponentconstraint.Policy == nil {
+		return errors.New("ent: uninitialized systemcomponentconstraint.Policy (forgotten import ent/runtime?)")
+	}
+	if err := systemcomponentconstraint.Policy.EvalQuery(ctx, sccq); err != nil {
+		return err
 	}
 	return nil
 }

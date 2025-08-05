@@ -105,7 +105,9 @@ func (rrc *RetrospectiveReviewCreate) Mutation() *RetrospectiveReviewMutation {
 
 // Save creates the RetrospectiveReview in the database.
 func (rrc *RetrospectiveReviewCreate) Save(ctx context.Context) (*RetrospectiveReview, error) {
-	rrc.defaults()
+	if err := rrc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, rrc.sqlSave, rrc.mutation, rrc.hooks)
 }
 
@@ -132,11 +134,15 @@ func (rrc *RetrospectiveReviewCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (rrc *RetrospectiveReviewCreate) defaults() {
+func (rrc *RetrospectiveReviewCreate) defaults() error {
 	if _, ok := rrc.mutation.ID(); !ok {
+		if retrospectivereview.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized retrospectivereview.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := retrospectivereview.DefaultID()
 		rrc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.

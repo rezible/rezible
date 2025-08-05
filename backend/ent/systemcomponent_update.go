@@ -524,7 +524,9 @@ func (scu *SystemComponentUpdate) RemoveEventComponents(i ...*IncidentEventSyste
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (scu *SystemComponentUpdate) Save(ctx context.Context) (int, error) {
-	scu.defaults()
+	if err := scu.defaults(); err != nil {
+		return 0, err
+	}
 	return withHooks(ctx, scu.sqlSave, scu.mutation, scu.hooks)
 }
 
@@ -551,11 +553,15 @@ func (scu *SystemComponentUpdate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (scu *SystemComponentUpdate) defaults() {
+func (scu *SystemComponentUpdate) defaults() error {
 	if _, ok := scu.mutation.UpdatedAt(); !ok {
+		if systemcomponent.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponent.UpdateDefaultUpdatedAt()
 		scu.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -654,7 +660,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			},
 		}
 		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -677,7 +683,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -700,7 +706,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemComponentRelationshipCreate{config: scu.config, mutation: newSystemComponentRelationshipMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -720,7 +726,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			},
 		}
 		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -743,7 +749,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -766,7 +772,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: scu.config, mutation: newSystemAnalysisComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -786,7 +792,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			},
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scu.config, mutation: newIncidentEventSystemComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -809,7 +815,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scu.config, mutation: newIncidentEventSystemComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -832,7 +838,7 @@ func (scu *SystemComponentUpdate) sqlSave(ctx context.Context) (n int, err error
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scu.config, mutation: newIncidentEventSystemComponentMutation(scu.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1674,7 +1680,9 @@ func (scuo *SystemComponentUpdateOne) Select(field string, fields ...string) *Sy
 
 // Save executes the query and returns the updated SystemComponent entity.
 func (scuo *SystemComponentUpdateOne) Save(ctx context.Context) (*SystemComponent, error) {
-	scuo.defaults()
+	if err := scuo.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, scuo.sqlSave, scuo.mutation, scuo.hooks)
 }
 
@@ -1701,11 +1709,15 @@ func (scuo *SystemComponentUpdateOne) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (scuo *SystemComponentUpdateOne) defaults() {
+func (scuo *SystemComponentUpdateOne) defaults() error {
 	if _, ok := scuo.mutation.UpdatedAt(); !ok {
+		if systemcomponent.UpdateDefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized systemcomponent.UpdateDefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
 		v := systemcomponent.UpdateDefaultUpdatedAt()
 		scuo.mutation.SetUpdatedAt(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -1821,7 +1833,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			},
 		}
 		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1844,7 +1856,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1867,7 +1879,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemComponentRelationshipCreate{config: scuo.config, mutation: newSystemComponentRelationshipMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1887,7 +1899,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			},
 		}
 		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1910,7 +1922,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1933,7 +1945,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &SystemAnalysisComponentCreate{config: scuo.config, mutation: newSystemAnalysisComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1953,7 +1965,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			},
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scuo.config, mutation: newIncidentEventSystemComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1976,7 +1988,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scuo.config, mutation: newIncidentEventSystemComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {
@@ -1999,7 +2011,7 @@ func (scuo *SystemComponentUpdateOne) sqlSave(ctx context.Context) (_node *Syste
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		createE := &IncidentEventSystemComponentCreate{config: scuo.config, mutation: newIncidentEventSystemComponentMutation(scuo.config, OpCreate)}
-		createE.defaults()
+		_ = createE.defaults()
 		_, specE := createE.createSpec()
 		edge.Target.Fields = specE.Fields
 		if specE.ID.Value != nil {

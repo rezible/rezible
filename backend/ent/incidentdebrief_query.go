@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -474,6 +475,12 @@ func (idq *IncidentDebriefQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		idq.sql = prev
+	}
+	if incidentdebrief.Policy == nil {
+		return errors.New("ent: uninitialized incidentdebrief.Policy (forgotten import ent/runtime?)")
+	}
+	if err := incidentdebrief.Policy.EvalQuery(ctx, idq); err != nil {
+		return err
 	}
 	return nil
 }

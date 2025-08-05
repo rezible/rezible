@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldLTE(FieldID, id))
 }
 
+// ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
+func ArchiveTime(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldEQ(FieldArchiveTime, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldEQ(FieldName, v))
@@ -94,6 +99,56 @@ func UntilDate(v time.Time) predicate.MeetingSchedule {
 // NumRepetitions applies equality check predicate on the "num_repetitions" field. It's identical to NumRepetitionsEQ.
 func NumRepetitions(v int) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldEQ(FieldNumRepetitions, v))
+}
+
+// ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
+func ArchiveTimeEQ(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldEQ(FieldArchiveTime, v))
+}
+
+// ArchiveTimeNEQ applies the NEQ predicate on the "archive_time" field.
+func ArchiveTimeNEQ(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldNEQ(FieldArchiveTime, v))
+}
+
+// ArchiveTimeIn applies the In predicate on the "archive_time" field.
+func ArchiveTimeIn(vs ...time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldIn(FieldArchiveTime, vs...))
+}
+
+// ArchiveTimeNotIn applies the NotIn predicate on the "archive_time" field.
+func ArchiveTimeNotIn(vs ...time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldNotIn(FieldArchiveTime, vs...))
+}
+
+// ArchiveTimeGT applies the GT predicate on the "archive_time" field.
+func ArchiveTimeGT(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldGT(FieldArchiveTime, v))
+}
+
+// ArchiveTimeGTE applies the GTE predicate on the "archive_time" field.
+func ArchiveTimeGTE(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldGTE(FieldArchiveTime, v))
+}
+
+// ArchiveTimeLT applies the LT predicate on the "archive_time" field.
+func ArchiveTimeLT(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldLT(FieldArchiveTime, v))
+}
+
+// ArchiveTimeLTE applies the LTE predicate on the "archive_time" field.
+func ArchiveTimeLTE(v time.Time) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldLTE(FieldArchiveTime, v))
+}
+
+// ArchiveTimeIsNil applies the IsNil predicate on the "archive_time" field.
+func ArchiveTimeIsNil() predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldIsNull(FieldArchiveTime))
+}
+
+// ArchiveTimeNotNil applies the NotNil predicate on the "archive_time" field.
+func ArchiveTimeNotNil() predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldNotNull(FieldArchiveTime))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.

@@ -5,6 +5,7 @@ package ent
 import (
 	"context"
 	"database/sql/driver"
+	"errors"
 	"fmt"
 	"math"
 
@@ -367,6 +368,12 @@ func (msq *MeetingSessionQuery) prepareQuery(ctx context.Context) error {
 			return err
 		}
 		msq.sql = prev
+	}
+	if meetingsession.Policy == nil {
+		return errors.New("ent: uninitialized meetingsession.Policy (forgotten import ent/runtime?)")
+	}
+	if err := meetingsession.Policy.EvalQuery(ctx, msq); err != nil {
+		return err
 	}
 	return nil
 }

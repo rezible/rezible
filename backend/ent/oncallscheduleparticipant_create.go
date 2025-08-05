@@ -74,7 +74,9 @@ func (ospc *OncallScheduleParticipantCreate) Mutation() *OncallScheduleParticipa
 
 // Save creates the OncallScheduleParticipant in the database.
 func (ospc *OncallScheduleParticipantCreate) Save(ctx context.Context) (*OncallScheduleParticipant, error) {
-	ospc.defaults()
+	if err := ospc.defaults(); err != nil {
+		return nil, err
+	}
 	return withHooks(ctx, ospc.sqlSave, ospc.mutation, ospc.hooks)
 }
 
@@ -101,11 +103,15 @@ func (ospc *OncallScheduleParticipantCreate) ExecX(ctx context.Context) {
 }
 
 // defaults sets the default values of the builder before save.
-func (ospc *OncallScheduleParticipantCreate) defaults() {
+func (ospc *OncallScheduleParticipantCreate) defaults() error {
 	if _, ok := ospc.mutation.ID(); !ok {
+		if oncallscheduleparticipant.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized oncallscheduleparticipant.DefaultID (forgotten import ent/runtime?)")
+		}
 		v := oncallscheduleparticipant.DefaultID()
 		ospc.mutation.SetID(v)
 	}
+	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
