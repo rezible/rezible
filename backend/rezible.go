@@ -32,10 +32,7 @@ type (
 )
 
 type (
-	Webhooks = map[string]http.Handler
-
 	Server interface {
-		RegisterWebhooks(...Webhooks)
 		Start(ctx context.Context) error
 		Stop(ctx context.Context) error
 	}
@@ -43,10 +40,7 @@ type (
 
 type (
 	ProviderLoader interface {
-		WebhookHandler() http.Handler
-
 		GetLanguageModelProvider(context.Context) (LanguageModelProvider, error)
-		GetChatProvider(context.Context) (ChatProvider, error)
 		GetAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
@@ -188,28 +182,18 @@ type (
 )
 
 type (
-	ChatMessageContextProvider struct {
-		AnnotateMessageFn        func(ctx context.Context, anno *ent.OncallAnnotation) (*ent.OncallAnnotation, error)
-		LookupChatUserFn         func(ctx context.Context, chatId string) (*ent.User, error)
-		LookupChatMessageEventFn func(ctx context.Context, msgId string) (*ent.OncallEvent, error)
-	}
+	ChatService interface {
+		GetWebhooksHandler() http.Handler
 
-	ChatEventHandler interface {
-		HandleMentionEvent(chatId, threadId, userId, msgText string)
-	}
-
-	ChatProvider interface {
-		GetWebhooks() Webhooks
-
-		SetMessageContextProvider(ChatMessageContextProvider)
-		SetEventHandler(ChatEventHandler)
+		SetOncallEventsService(OncallEventsService)
 
 		SendMessage(ctx context.Context, id string, msg *ContentNode) error
 		SendReply(ctx context.Context, channelId string, threadId string, text string) error
 		SendTextMessage(ctx context.Context, id string, text string) error
 
-		// TODO: this should just be converted to *ContentNode by ChatService
+		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
+		SendOncallHandoverReminder(context.Context, *ent.OncallUserShift) error
 	}
 
 	SendOncallHandoverParams struct {
@@ -217,12 +201,6 @@ type (
 		EndingShift       *ent.OncallUserShift
 		StartingShift     *ent.OncallUserShift
 		PinnedAnnotations []*ent.OncallAnnotation
-	}
-
-	ChatService interface {
-		ChatEventHandler
-		SendOncallHandoverReminder(context.Context, *ent.OncallUserShift) error
-		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
 	}
 )
 
@@ -257,7 +235,6 @@ type (
 
 type (
 	AlertDataProvider interface {
-		GetWebhooks() Webhooks
 		PullAlerts(context.Context) iter.Seq2[*ent.Alert, error]
 		PullAlertEventsBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.OncallEvent, error]
 	}
@@ -290,8 +267,6 @@ type (
 
 type (
 	IncidentDataProvider interface {
-		GetWebhooks() Webhooks
-
 		IncidentDataMapping() *ent.Incident
 		IncidentRoleDataMapping() *ent.IncidentRole
 
@@ -386,6 +361,8 @@ type (
 		WithEvent         bool
 	}
 
+	LookupOncallProviderEventFn func(ctx context.Context, id string) (*ent.OncallEvent, error)
+
 	OncallEventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.OncallEvent, error)
 		ListEvents(ctx context.Context, params ListOncallEventsParams) ([]*ent.OncallEvent, int, error)
@@ -401,8 +378,6 @@ type (
 
 type (
 	OncallDataProvider interface {
-		GetWebhooks() Webhooks
-
 		RosterDataMapping() *ent.OncallRoster
 		UserShiftDataMapping() *ent.OncallUserShift
 

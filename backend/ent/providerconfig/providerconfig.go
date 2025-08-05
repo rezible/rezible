@@ -87,7 +87,6 @@ const (
 	ProviderTypeAuthSession      ProviderType = "auth_session"
 	ProviderTypeUsers            ProviderType = "users"
 	ProviderTypeTeams            ProviderType = "teams"
-	ProviderTypeChat             ProviderType = "chat"
 	ProviderTypeIncidents        ProviderType = "incidents"
 	ProviderTypeOncall           ProviderType = "oncall"
 	ProviderTypeAlerts           ProviderType = "alerts"
@@ -104,7 +103,7 @@ func (pt ProviderType) String() string {
 // ProviderTypeValidator is a validator for the "provider_type" field enum values. It is called by the builders before save.
 func ProviderTypeValidator(pt ProviderType) error {
 	switch pt {
-	case ProviderTypeAuthSession, ProviderTypeUsers, ProviderTypeTeams, ProviderTypeChat, ProviderTypeIncidents, ProviderTypeOncall, ProviderTypeAlerts, ProviderTypeAi, ProviderTypeSystemComponents, ProviderTypeTickets, ProviderTypePlaybooks:
+	case ProviderTypeAuthSession, ProviderTypeUsers, ProviderTypeTeams, ProviderTypeIncidents, ProviderTypeOncall, ProviderTypeAlerts, ProviderTypeAi, ProviderTypeSystemComponents, ProviderTypeTickets, ProviderTypePlaybooks:
 		return nil
 	default:
 		return fmt.Errorf("providerconfig: invalid enum value for provider_type field: %q", pt)

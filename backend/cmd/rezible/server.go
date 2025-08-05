@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
+	"os"
+	"time"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal/api"
@@ -13,11 +17,10 @@ import (
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
+	"github.com/rezible/rezible/internal/slack"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"net"
-	"os"
-	"time"
 )
 
 type rezServer struct {
@@ -78,12 +81,12 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(users, pl, s.opts.AuthSessionSecretKey)
+	auth, authErr := http.NewAuthSessionService(users, pl)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}
 
-	chat, chatErr := postgres.NewChatService(dbc, pl)
+	chat, chatErr := slack.NewChatService(users)
 	if chatErr != nil {
 		return fmt.Errorf("postgres.NewChatService: %w", chatErr)
 	}
@@ -143,19 +146,14 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	//provs.Chat.SetMessageContextProvider(rez.ChatMessageContextProvider{
-	//	LookupChatUserFn:         users.GetByChatId,
-	//	AnnotateMessageFn:        oncallEvents.UpdateAnnotation,
-	//	LookupChatMessageEventFn: oncallEvents.GetProviderEvent,
-	//})
-	//provs.Chat.SetEventHandler(chat)
+	chat.SetOncallEventsService(oncallEvents)
 
-	webhookHandler := pl.WebhookHandler()
+	webhookHandler := http.NewWebhooksHandler(chat)
 	apiHandler := api.NewHandler(dbc, auth, users, incidents, debriefs, oncall, oncallEvents, docs, retros, components, alerts, playbooks)
 	mcpHandler := eino.NewMCPHandler(auth)
 
 	listenAddr := net.JoinHostPort(s.opts.Host, s.opts.Port)
-	s.httpServer = http.NewServer(listenAddr, auth, apiHandler, frontendFiles, webhookHandler, mcpHandler)
+	s.httpServer = http.NewServer(listenAddr, auth, frontendFiles, apiHandler, webhookHandler, mcpHandler)
 
 	syncSvc := datasync.NewProviderSyncService(dbc, pl)
 	if jobsErr := s.registerJobs(ctx, syncSvc, oncall, debriefs); jobsErr != nil {

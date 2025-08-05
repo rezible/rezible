@@ -26,9 +26,9 @@ type Server struct {
 func NewServer(
 	addr string,
 	auth rez.AuthSessionService,
-	oapiHandler oapi.Handler,
 	feFiles fs.FS,
-	webhooksRouter http.Handler,
+	oapiHandler oapi.Handler,
+	webhooksHandler http.Handler,
 	mcpHandler mcp.Handler,
 ) *Server {
 	var s Server
@@ -47,7 +47,7 @@ func NewServer(
 
 	router.Get("/api/docs", serveApiDocs)
 
-	router.Mount("/api/webhooks", webhooksRouter)
+	router.Mount("/api/webhooks", http.StripPrefix("/api/webhooks", webhooksHandler))
 
 	mcpRouter := chi.
 		Chain(auth.MCPServerMiddleware()).

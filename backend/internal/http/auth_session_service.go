@@ -31,11 +31,15 @@ type AuthSessionService struct {
 
 var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
-func NewAuthSessionService(users rez.UserService, pl rez.ProviderLoader, sessionSecretKey string) (*AuthSessionService, error) {
+func NewAuthSessionService(users rez.UserService, pl rez.ProviderLoader) (*AuthSessionService, error) {
+	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
+	if secretKey == "" {
+		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
+	}
 	return &AuthSessionService{
 		users:         users,
 		pl:            pl,
-		sessionSecret: []byte(sessionSecretKey),
+		sessionSecret: []byte(secretKey),
 	}, nil
 }
 

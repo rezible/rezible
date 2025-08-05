@@ -20,7 +20,7 @@ func (ProviderConfig) Mixin() []ent.Mixin {
 	}
 }
 
-var ProviderTypes = []string{"auth_session", "users", "teams", "chat", "incidents", "oncall", "alerts", "ai", "system_components", "tickets", "playbooks"}
+var ProviderTypes = []string{"auth_session", "users", "teams", "incidents", "oncall", "alerts", "ai", "system_components", "tickets", "playbooks"}
 
 // Fields of the ProviderConfig.
 func (ProviderConfig) Fields() []ent.Field {

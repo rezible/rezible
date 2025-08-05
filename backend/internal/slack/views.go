@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rs/zerolog/log"
 	"strconv"
 	"strings"
@@ -13,6 +11,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/slack-go/slack"
 )
 
@@ -84,15 +83,7 @@ func getSelectedAnnotationRoster(state *slack.ViewState) (string, uuid.UUID) {
 	return "", uuid.Nil
 }
 
-func makeAnnotationViewContext(
-	ctx context.Context,
-	ic *slack.InteractionCallback,
-	msgCtxProv *rez.ChatMessageContextProvider,
-) (*annotationViewContext, error) {
-	if msgCtxProv == nil {
-		return nil, fmt.Errorf("no ChatMessageContextProvider")
-	}
-
+func (s *ChatService) makeAnnotationViewContext(ctx context.Context, ic *slack.InteractionCallback) (*annotationViewContext, error) {
 	d := &annotationViewContext{}
 	if ic.View.PrivateMetadata != "" {
 		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &d.meta); jsonErr != nil {
@@ -106,7 +97,7 @@ func makeAnnotationViewContext(
 		}
 	}
 
-	user, userErr := msgCtxProv.LookupChatUserFn(ctx, d.meta.UserId)
+	user, userErr := s.users.GetByChatId(ctx, d.meta.UserId)
 	if userErr != nil {
 		return nil, userErr
 	}
@@ -125,7 +116,7 @@ func makeAnnotationViewContext(
 		_, d.selectedRosterId = getSelectedAnnotationRoster(ic.View.State)
 	}
 	if d.selectedRosterId != uuid.Nil {
-		event, eventErr := msgCtxProv.LookupChatMessageEventFn(ctx, d.meta.MsgId.String())
+		event, eventErr := s.events.GetProviderEvent(ctx, d.meta.MsgId.String())
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to lookup message event: %w", eventErr)
 		}
@@ -196,8 +187,8 @@ func makeAnnotationModalViewBlocks(c *annotationViewContext) []slack.Block {
 	return blockSet
 }
 
-func makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback, ctxProv *rez.ChatMessageContextProvider) (*slack.ModalViewRequest, error) {
-	c, ctxErr := makeAnnotationViewContext(ctx, ic, ctxProv)
+func (s *ChatService) makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback) (*slack.ModalViewRequest, error) {
+	c, ctxErr := s.makeAnnotationViewContext(ctx, ic)
 	if ctxErr != nil {
 		return nil, fmt.Errorf("failed to get message annotation context: %w", ctxErr)
 	}
@@ -240,17 +231,13 @@ func makeAnnotationModalView(ctx context.Context, ic *slack.InteractionCallback,
 	}, nil
 }
 
-func getAnnotationModalAnnotation(ctx context.Context, view slack.View, msgCtxProv *rez.ChatMessageContextProvider) (*ent.OncallAnnotation, error) {
-	if msgCtxProv == nil {
-		return nil, fmt.Errorf("no ChatMessageContextProvider")
-	}
-
+func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.OncallAnnotation, error) {
 	var meta annotationViewMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	user, userErr := msgCtxProv.LookupChatUserFn(ctx, meta.UserId)
+	user, userErr := s.users.GetByChatId(ctx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}

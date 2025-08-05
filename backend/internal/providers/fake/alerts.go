@@ -31,10 +31,6 @@ func NewAlertDataProvider(cfg AlertDataProviderConfig) (*AlertDataProvider, erro
 	return p, nil
 }
 
-func (p *AlertDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{}
-}
-
 var fakeAlerts = []*ent.Alert{
 	{
 		Title: "Search API Response Time High",

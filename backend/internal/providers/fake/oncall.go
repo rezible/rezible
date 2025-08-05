@@ -2,7 +2,6 @@ package fakeprovider
 
 import (
 	"context"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"iter"
 	"time"
@@ -20,10 +19,6 @@ func NewOncallDataProvider(cfg OncallDataProviderConfig) (*OncallDataProvider, e
 	}
 
 	return p, nil
-}
-
-func (p *OncallDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{}
 }
 
 func (p *OncallDataProvider) RosterDataMapping() *ent.OncallRoster {

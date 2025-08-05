@@ -2,7 +2,6 @@ package grafana
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 	"time"
 
@@ -40,23 +39,6 @@ func NewAlertsDataProvider(cfg AlertsDataProviderConfig) (*AlertsDataProvider, e
 	}
 
 	return p, nil
-}
-
-func (p *AlertsDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{
-		"alerts": p.makeAlertsWebhookHandler(p.webhookSecret),
-	}
-}
-
-func (p *AlertsDataProvider) makeAlertsWebhookHandler(secret string) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		w.WriteHeader(http.StatusOK)
-	})
-}
-
-func (p *AlertsDataProvider) SetOnAlertInstanceUpdatedCallback(cb rez.DataProviderResourceUpdatedCallback) {
-	p.webhookCallback = cb
 }
 
 /*

@@ -20,19 +20,7 @@ var (
 	createAnnotationActionCallbackID = "create_annotation"
 )
 
-type webhookHandler struct {
-	signingSecret string
-	prov          *ChatProvider
-}
-
-func newWebhookHandler(signingSecret string, prov *ChatProvider) *webhookHandler {
-	return &webhookHandler{
-		signingSecret: signingSecret,
-		prov:          prov,
-	}
-}
-
-func (h *webhookHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
+func (s *ChatService) verifyWebhook(w http.ResponseWriter, r *http.Request) error {
 	bodyReader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
 	body, bodyErr := io.ReadAll(bodyReader)
 	if bodyErr != nil {
@@ -40,7 +28,7 @@ func (h *webhookHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) e
 		return bodyErr
 	}
 
-	sv, svErr := slack.NewSecretsVerifier(r.Header, h.signingSecret)
+	sv, svErr := slack.NewSecretsVerifier(r.Header, s.webhookSigningSecret)
 	if svErr != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return svErr
@@ -61,8 +49,8 @@ func (h *webhookHandler) verifyWebhook(w http.ResponseWriter, r *http.Request) e
 	return nil
 }
 
-func (h *webhookHandler) handleOptions(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
+func (s *ChatService) handleOptionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -72,8 +60,8 @@ func (h *webhookHandler) handleOptions(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *webhookHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
+func (s *ChatService) handleEventsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -108,23 +96,23 @@ func (h *webhookHandler) handleEvents(w http.ResponseWriter, r *http.Request) {
 	} else if ev.Type == slackevents.CallbackEvent {
 		w.WriteHeader(http.StatusOK)
 		// TODO: task queue?
-		go handleCallbackEvent(h.prov, ev)
+		go s.handleCallbackEvent(ev)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Warn().Str("type", ev.Type).Msg("failed to handle event")
 	}
 }
 
-func handleCallbackEvent(p *ChatProvider, ev slackevents.EventsAPIEvent) {
+func (s *ChatService) handleCallbackEvent(ev slackevents.EventsAPIEvent) {
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:
-		p.onUserHomeOpenedEvent(data)
+		s.onUserHomeOpenedEvent(data)
 	case *slackevents.AppMentionEvent:
-		p.onMentionEvent(data)
+		s.onMentionEvent(data)
 	case *slackevents.AssistantThreadStartedEvent:
-		p.onAssistantThreadStartedEvent(data)
+		s.onAssistantThreadStartedEvent(data)
 	case *slackevents.MessageEvent:
-		p.onMessageEvent(data)
+		s.onMessageEvent(data)
 	default:
 		log.Debug().
 			Str("innerEventType", ev.InnerEvent.Type).
@@ -132,8 +120,8 @@ func handleCallbackEvent(p *ChatProvider, ev slackevents.EventsAPIEvent) {
 	}
 }
 
-func (h *webhookHandler) handleInteractions(w http.ResponseWriter, r *http.Request) {
-	if verifyErr := h.verifyWebhook(w, r); verifyErr != nil {
+func (s *ChatService) handleInteractionsWebhook(w http.ResponseWriter, r *http.Request) {
+	if verifyErr := s.verifyWebhook(w, r); verifyErr != nil {
 		log.Error().Err(verifyErr).Msg("failed to verify webhook body")
 		return
 	}
@@ -157,11 +145,11 @@ func (h *webhookHandler) handleInteractions(w http.ResponseWriter, r *http.Reque
 	var handlerErr error
 	switch ic.Type {
 	case slack.InteractionTypeMessageAction:
-		handlerErr = h.handleMessageActionInteraction(ctx, &ic)
+		handlerErr = s.handleMessageActionInteraction(ctx, &ic)
 	case slack.InteractionTypeBlockActions:
-		handlerErr = h.handleBlockActionInteraction(ctx, &ic)
+		handlerErr = s.handleBlockActionInteraction(ctx, &ic)
 	case slack.InteractionTypeViewSubmission:
-		handlerErr = h.handleViewSubmissionInteraction(ctx, &ic)
+		handlerErr = s.handleViewSubmissionInteraction(ctx, &ic)
 	default:
 		handlerErr = fmt.Errorf("unknown interaction type: %s", string(ic.Type))
 	}
@@ -173,26 +161,26 @@ func (h *webhookHandler) handleInteractions(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (h *webhookHandler) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+func (s *ChatService) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.CallbackID {
 	case createAnnotationActionCallbackID:
-		return h.prov.handleAnnotationModalInteraction(ctx, ic)
+		return s.handleAnnotationModalInteraction(ctx, ic)
 	default:
 		return fmt.Errorf("unknown message action callback ID: %s", ic.CallbackID)
 	}
 }
 
-func (h *webhookHandler) handleBlockActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+func (s *ChatService) handleBlockActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	if ic.View.CallbackID == createAnnotationModalViewCallbackID {
-		return h.prov.handleAnnotationModalInteraction(ctx, ic)
+		return s.handleAnnotationModalInteraction(ctx, ic)
 	}
 	return nil
 }
 
-func (h *webhookHandler) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 	switch ic.View.CallbackID {
 	case createAnnotationModalViewCallbackID:
-		return h.prov.handleAnnotationModalSubmission(ctx, ic)
+		return s.handleAnnotationModalSubmission(ctx, ic)
 	default:
 		return fmt.Errorf("unknown view submission callback ID: %s", ic.View.CallbackID)
 	}

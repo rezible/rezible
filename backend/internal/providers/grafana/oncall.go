@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	rez "github.com/rezible/rezible"
 	"io"
 	"iter"
 	"net/http"
@@ -43,10 +42,6 @@ func NewOncallDataProvider(cfg OncallDataProviderConfig) (*OncallDataProvider, e
 	}()
 
 	return p, nil
-}
-
-func (p *OncallDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{}
 }
 
 func (p *OncallDataProvider) RosterDataMapping() *ent.OncallRoster {

@@ -5,20 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent/tenant"
 	"io"
-	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providerconfig"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/internal/providers/anthropic"
 	"github.com/rezible/rezible/internal/providers/fake"
 	"github.com/rezible/rezible/internal/providers/grafana"
@@ -35,37 +33,12 @@ var (
 
 type Loader struct {
 	client *ent.ProviderConfigClient
-
-	webhookMux       *chi.Mux
-	providerWebhooks map[string]rez.Webhooks
 }
 
 func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
 	l := &Loader{client: client}
 
-	l.providerWebhooks = make(map[string]rez.Webhooks)
-	l.webhookMux = chi.NewMux()
-
 	return l
-}
-
-func (l *Loader) WebhookHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		l.webhookMux.ServeHTTP(w, r)
-	})
-}
-
-func (l *Loader) updateWebhooks(provKey string, hooks rez.Webhooks) {
-	l.providerWebhooks[provKey] = hooks
-
-	m := chi.NewMux()
-	for _, provHooks := range l.providerWebhooks {
-		for route, handler := range provHooks {
-			m.Handle("/"+route, handler)
-		}
-	}
-
-	l.webhookMux = m
 }
 
 type providerConfigFile struct {
@@ -185,195 +158,140 @@ func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) 
 }
 
 func (l *Loader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "anthropic":
-		return loadProviderCtx(ctx, anthropic.NewClaudeLanguageModelProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid ai model provider config: %s", pCfg.Name)
+		return loadProviderCtx(ctx, anthropic.NewClaudeLanguageModelProvider, cfg)
 	}
-}
-
-func (l *Loader) GetChatProvider(ctx context.Context) (rez.ChatProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeChat)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-
-	var prov rez.ChatProvider
-	var provErr error
-	switch pCfg.Name {
-	case "slack":
-		prov, provErr = loadProvider(slack.NewChatProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid chat provider: %s", pCfg.Name)
-	}
-
-	if prov != nil && provErr == nil {
-		l.updateWebhooks("chat", prov.GetWebhooks())
-	}
-
-	return prov, provErr
+	return nil, fmt.Errorf("invalid ai model provider config: %s", cfg.Name)
 }
 
 func (l *Loader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeOncall)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeOncall)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	var prov rez.OncallDataProvider
-	var provErr error
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "grafana":
-		prov, provErr = loadProvider(grafana.NewOncallDataProvider, pCfg)
+		return loadProvider(grafana.NewOncallDataProvider, cfg)
 	case "fake":
-		prov, provErr = loadProvider(fakeprovider.NewOncallDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid oncall data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewOncallDataProvider, cfg)
 	}
-
-	if prov != nil && provErr == nil {
-		l.updateWebhooks("oncall", prov.GetWebhooks())
-	}
-
-	return prov, provErr
+	return nil, fmt.Errorf("invalid oncall data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	var prov rez.AlertDataProvider
-	var provErr error
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "fake":
-		prov, provErr = loadProvider(fakeprovider.NewAlertDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid alerts data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewAlertDataProvider, cfg)
 	}
-
-	if prov != nil && provErr == nil {
-		l.updateWebhooks("alerts", prov.GetWebhooks())
-	}
-
-	return prov, provErr
+	return nil, fmt.Errorf("invalid alerts data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeIncidents)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeIncidents)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	var prov rez.IncidentDataProvider
-	var provErr error
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "grafana":
-		prov, provErr = loadProvider(grafana.NewIncidentDataProvider, pCfg)
+		return loadProvider(grafana.NewIncidentDataProvider, cfg)
 	case "fake":
-		prov, provErr = loadProvider(fakeprovider.NewIncidentDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid incident data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewIncidentDataProvider, cfg)
 	}
-
-	if prov != nil && provErr == nil {
-		l.updateWebhooks("incidents", prov.GetWebhooks())
-	}
-	return prov, provErr
+	return nil, fmt.Errorf("invalid incident data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "slack":
-		return loadProvider(slack.NewUserDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid user data provider: %s", pCfg.Name)
+		return loadProvider(slack.NewUserDataProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid user data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTeams)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTeams)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "slack":
-		return loadProvider(slack.NewTeamDataProvider, pCfg)
+		return loadProvider(slack.NewTeamDataProvider, cfg)
 	case "fake":
-		return loadProvider(fakeprovider.NewTeamsDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid team data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewTeamsDataProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid team data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeSystemComponents)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeSystemComponents)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "fake":
-		return loadProvider(fakeprovider.NewSystemComponentsDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid system components data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewSystemComponentsDataProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid system components data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetAuthSessionProvider(ctx context.Context) (rez.AuthSessionProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAuthSession)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAuthSession)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "saml":
-		return loadProviderCtx(ctx, saml.NewAuthSessionProvider, pCfg)
+		return loadProviderCtx(ctx, saml.NewAuthSessionProvider, cfg)
 	case "oauth2":
-		return loadProvider(oauth2.NewAuthSessionProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid auth session provider: %s", pCfg.Name)
+		return loadProvider(oauth2.NewAuthSessionProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid auth session provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTickets)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTickets)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "jira":
-		return loadProviderCtx(ctx, jira.NewTicketDataProvider, pCfg)
+		return loadProviderCtx(ctx, jira.NewTicketDataProvider, cfg)
 	case "fake":
-		return loadProvider(fakeprovider.NewTicketDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid ticket data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewTicketDataProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid ticket data provider: %s", cfg.Name)
 }
 
 func (l *Loader) GetPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
-	pCfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypePlaybooks)
+	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypePlaybooks)
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
 
-	switch pCfg.Name {
+	switch cfg.Name {
 	case "fake":
-		return loadProvider(fakeprovider.NewPlaybookDataProvider, pCfg)
-	default:
-		return nil, fmt.Errorf("invalid playbooks data provider: %s", pCfg.Name)
+		return loadProvider(fakeprovider.NewPlaybookDataProvider, cfg)
 	}
+	return nil, fmt.Errorf("invalid playbooks data provider: %s", cfg.Name)
 }

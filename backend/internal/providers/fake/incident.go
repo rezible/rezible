@@ -122,10 +122,6 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 	}
 }
 
-func (p *IncidentDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{}
-}
-
 func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.DataProviderResourceUpdatedCallback) {
 	p.onIncidentUpdatedFn = cb
 }

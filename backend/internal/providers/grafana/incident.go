@@ -55,12 +55,6 @@ func NewIncidentDataProvider(cfg IncidentDataProviderConfig) (*IncidentDataProvi
 	return p, nil
 }
 
-func (p *IncidentDataProvider) GetWebhooks() rez.Webhooks {
-	return rez.Webhooks{
-		"grafana_incident": http.HandlerFunc(p.makeWebhookHandler),
-	}
-}
-
 func (p *IncidentDataProvider) SetOnIncidentUpdatedCallback(cb rez.DataProviderResourceUpdatedCallback) {
 	p.onIncidentUpdatedFn = cb
 }

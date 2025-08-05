@@ -3,10 +3,13 @@ package slack
 import (
 	"context"
 	"fmt"
+	"iter"
+
+	"github.com/slack-go/slack"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/slack-go/slack"
-	"iter"
+	rezslack "github.com/rezible/rezible/internal/slack"
 )
 
 type UserDataProvider struct {
@@ -15,12 +18,13 @@ type UserDataProvider struct {
 
 var _ rez.UserDataProvider = (*UserDataProvider)(nil)
 
-type UserDataProviderConfig struct {
-	BotApiKey string `json:"bot_api_key"`
-}
+type UserDataProviderConfig struct{}
 
 func NewUserDataProvider(cfg UserDataProviderConfig) (*UserDataProvider, error) {
-	client := slack.New(cfg.BotApiKey)
+	client, clientErr := rezslack.LoadClient()
+	if clientErr != nil {
+		return nil, clientErr
+	}
 	return &UserDataProvider{client: client}, nil
 }
 
