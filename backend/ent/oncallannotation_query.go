@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -36,7 +36,7 @@ type OncallAnnotationQuery struct {
 	withRoster        *OncallRosterQuery
 	withCreator       *UserQuery
 	withAlertFeedback *AlertFeedbackQuery
-	withHandovers     *OncallUserShiftHandoverQuery
+	withHandovers     *OncallShiftHandoverQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -185,8 +185,8 @@ func (oaq *OncallAnnotationQuery) QueryAlertFeedback() *AlertFeedbackQuery {
 }
 
 // QueryHandovers chains the current query on the "handovers" edge.
-func (oaq *OncallAnnotationQuery) QueryHandovers() *OncallUserShiftHandoverQuery {
-	query := (&OncallUserShiftHandoverClient{config: oaq.config}).Query()
+func (oaq *OncallAnnotationQuery) QueryHandovers() *OncallShiftHandoverQuery {
+	query := (&OncallShiftHandoverClient{config: oaq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oaq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -197,7 +197,7 @@ func (oaq *OncallAnnotationQuery) QueryHandovers() *OncallUserShiftHandoverQuery
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
-			sqlgraph.To(oncallusershifthandover.Table, oncallusershifthandover.FieldID),
+			sqlgraph.To(oncallshifthandover.Table, oncallshifthandover.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallannotation.HandoversTable, oncallannotation.HandoversPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
@@ -468,8 +468,8 @@ func (oaq *OncallAnnotationQuery) WithAlertFeedback(opts ...func(*AlertFeedbackQ
 
 // WithHandovers tells the query-builder to eager-load the nodes that are connected to
 // the "handovers" edge. The optional arguments are used to configure the query builder of the edge.
-func (oaq *OncallAnnotationQuery) WithHandovers(opts ...func(*OncallUserShiftHandoverQuery)) *OncallAnnotationQuery {
-	query := (&OncallUserShiftHandoverClient{config: oaq.config}).Query()
+func (oaq *OncallAnnotationQuery) WithHandovers(opts ...func(*OncallShiftHandoverQuery)) *OncallAnnotationQuery {
+	query := (&OncallShiftHandoverClient{config: oaq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -623,10 +623,8 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	}
 	if query := oaq.withHandovers; query != nil {
 		if err := oaq.loadHandovers(ctx, query, nodes,
-			func(n *OncallAnnotation) { n.Edges.Handovers = []*OncallUserShiftHandover{} },
-			func(n *OncallAnnotation, e *OncallUserShiftHandover) {
-				n.Edges.Handovers = append(n.Edges.Handovers, e)
-			}); err != nil {
+			func(n *OncallAnnotation) { n.Edges.Handovers = []*OncallShiftHandover{} },
+			func(n *OncallAnnotation, e *OncallShiftHandover) { n.Edges.Handovers = append(n.Edges.Handovers, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -776,7 +774,7 @@ func (oaq *OncallAnnotationQuery) loadAlertFeedback(ctx context.Context, query *
 	}
 	return nil
 }
-func (oaq *OncallAnnotationQuery) loadHandovers(ctx context.Context, query *OncallUserShiftHandoverQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallUserShiftHandover)) error {
+func (oaq *OncallAnnotationQuery) loadHandovers(ctx context.Context, query *OncallShiftHandoverQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallShiftHandover)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*OncallAnnotation)
 	nids := make(map[uuid.UUID]map[*OncallAnnotation]struct{})
@@ -789,7 +787,7 @@ func (oaq *OncallAnnotationQuery) loadHandovers(ctx context.Context, query *Onca
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(oncallannotation.HandoversTable)
-		s.Join(joinT).On(s.C(oncallusershifthandover.FieldID), joinT.C(oncallannotation.HandoversPrimaryKey[0]))
+		s.Join(joinT).On(s.C(oncallshifthandover.FieldID), joinT.C(oncallannotation.HandoversPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(oncallannotation.HandoversPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(oncallannotation.HandoversPrimaryKey[1]))
@@ -822,7 +820,7 @@ func (oaq *OncallAnnotationQuery) loadHandovers(ctx context.Context, query *Onca
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*OncallUserShiftHandover](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*OncallShiftHandover](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

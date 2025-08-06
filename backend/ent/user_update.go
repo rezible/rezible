@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
@@ -152,14 +152,14 @@ func (uu *UserUpdate) AddOncallSchedules(o ...*OncallScheduleParticipant) *UserU
 	return uu.AddOncallScheduleIDs(ids...)
 }
 
-// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallUserShift entity by IDs.
+// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallShift entity by IDs.
 func (uu *UserUpdate) AddOncallShiftIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.AddOncallShiftIDs(ids...)
 	return uu
 }
 
-// AddOncallShifts adds the "oncall_shifts" edges to the OncallUserShift entity.
-func (uu *UserUpdate) AddOncallShifts(o ...*OncallUserShift) *UserUpdate {
+// AddOncallShifts adds the "oncall_shifts" edges to the OncallShift entity.
+func (uu *UserUpdate) AddOncallShifts(o ...*OncallShift) *UserUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -355,20 +355,20 @@ func (uu *UserUpdate) RemoveOncallSchedules(o ...*OncallScheduleParticipant) *Us
 	return uu.RemoveOncallScheduleIDs(ids...)
 }
 
-// ClearOncallShifts clears all "oncall_shifts" edges to the OncallUserShift entity.
+// ClearOncallShifts clears all "oncall_shifts" edges to the OncallShift entity.
 func (uu *UserUpdate) ClearOncallShifts() *UserUpdate {
 	uu.mutation.ClearOncallShifts()
 	return uu
 }
 
-// RemoveOncallShiftIDs removes the "oncall_shifts" edge to OncallUserShift entities by IDs.
+// RemoveOncallShiftIDs removes the "oncall_shifts" edge to OncallShift entities by IDs.
 func (uu *UserUpdate) RemoveOncallShiftIDs(ids ...uuid.UUID) *UserUpdate {
 	uu.mutation.RemoveOncallShiftIDs(ids...)
 	return uu
 }
 
-// RemoveOncallShifts removes "oncall_shifts" edges to OncallUserShift entities.
-func (uu *UserUpdate) RemoveOncallShifts(o ...*OncallUserShift) *UserUpdate {
+// RemoveOncallShifts removes "oncall_shifts" edges to OncallShift entities.
+func (uu *UserUpdate) RemoveOncallShifts(o ...*OncallShift) *UserUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -758,7 +758,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -771,7 +771,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -787,7 +787,7 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1311,14 +1311,14 @@ func (uuo *UserUpdateOne) AddOncallSchedules(o ...*OncallScheduleParticipant) *U
 	return uuo.AddOncallScheduleIDs(ids...)
 }
 
-// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallUserShift entity by IDs.
+// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallShift entity by IDs.
 func (uuo *UserUpdateOne) AddOncallShiftIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.AddOncallShiftIDs(ids...)
 	return uuo
 }
 
-// AddOncallShifts adds the "oncall_shifts" edges to the OncallUserShift entity.
-func (uuo *UserUpdateOne) AddOncallShifts(o ...*OncallUserShift) *UserUpdateOne {
+// AddOncallShifts adds the "oncall_shifts" edges to the OncallShift entity.
+func (uuo *UserUpdateOne) AddOncallShifts(o ...*OncallShift) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -1514,20 +1514,20 @@ func (uuo *UserUpdateOne) RemoveOncallSchedules(o ...*OncallScheduleParticipant)
 	return uuo.RemoveOncallScheduleIDs(ids...)
 }
 
-// ClearOncallShifts clears all "oncall_shifts" edges to the OncallUserShift entity.
+// ClearOncallShifts clears all "oncall_shifts" edges to the OncallShift entity.
 func (uuo *UserUpdateOne) ClearOncallShifts() *UserUpdateOne {
 	uuo.mutation.ClearOncallShifts()
 	return uuo
 }
 
-// RemoveOncallShiftIDs removes the "oncall_shifts" edge to OncallUserShift entities by IDs.
+// RemoveOncallShiftIDs removes the "oncall_shifts" edge to OncallShift entities by IDs.
 func (uuo *UserUpdateOne) RemoveOncallShiftIDs(ids ...uuid.UUID) *UserUpdateOne {
 	uuo.mutation.RemoveOncallShiftIDs(ids...)
 	return uuo
 }
 
-// RemoveOncallShifts removes "oncall_shifts" edges to OncallUserShift entities.
-func (uuo *UserUpdateOne) RemoveOncallShifts(o ...*OncallUserShift) *UserUpdateOne {
+// RemoveOncallShifts removes "oncall_shifts" edges to OncallShift entities.
+func (uuo *UserUpdateOne) RemoveOncallShifts(o ...*OncallShift) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -1947,7 +1947,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1960,7 +1960,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1976,7 +1976,7 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Columns: []string{user.OncallShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

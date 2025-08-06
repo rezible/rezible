@@ -43,9 +43,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
-	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
@@ -113,9 +113,9 @@ const (
 	TypeOncallRosterMetrics              = "OncallRosterMetrics"
 	TypeOncallSchedule                   = "OncallSchedule"
 	TypeOncallScheduleParticipant        = "OncallScheduleParticipant"
-	TypeOncallUserShift                  = "OncallUserShift"
-	TypeOncallUserShiftHandover          = "OncallUserShiftHandover"
-	TypeOncallUserShiftMetrics           = "OncallUserShiftMetrics"
+	TypeOncallShift                      = "OncallShift"
+	TypeOncallShiftHandover              = "OncallShiftHandover"
+	TypeOncallShiftMetrics               = "OncallShiftMetrics"
 	TypePlaybook                         = "Playbook"
 	TypeProviderConfig                   = "ProviderConfig"
 	TypeProviderSyncHistory              = "ProviderSyncHistory"
@@ -21389,7 +21389,7 @@ func (m *OncallAnnotationMutation) ResetAlertFeedback() {
 	m.clearedalert_feedback = false
 }
 
-// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by ids.
+// AddHandoverIDs adds the "handovers" edge to the OncallShiftHandover entity by ids.
 func (m *OncallAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
 	if m.handovers == nil {
 		m.handovers = make(map[uuid.UUID]struct{})
@@ -21399,17 +21399,17 @@ func (m *OncallAnnotationMutation) AddHandoverIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearHandovers clears the "handovers" edge to the OncallUserShiftHandover entity.
+// ClearHandovers clears the "handovers" edge to the OncallShiftHandover entity.
 func (m *OncallAnnotationMutation) ClearHandovers() {
 	m.clearedhandovers = true
 }
 
-// HandoversCleared reports if the "handovers" edge to the OncallUserShiftHandover entity was cleared.
+// HandoversCleared reports if the "handovers" edge to the OncallShiftHandover entity was cleared.
 func (m *OncallAnnotationMutation) HandoversCleared() bool {
 	return m.clearedhandovers
 }
 
-// RemoveHandoverIDs removes the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+// RemoveHandoverIDs removes the "handovers" edge to the OncallShiftHandover entity by IDs.
 func (m *OncallAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
 	if m.removedhandovers == nil {
 		m.removedhandovers = make(map[uuid.UUID]struct{})
@@ -21420,7 +21420,7 @@ func (m *OncallAnnotationMutation) RemoveHandoverIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedHandovers returns the removed IDs of the "handovers" edge to the OncallUserShiftHandover entity.
+// RemovedHandovers returns the removed IDs of the "handovers" edge to the OncallShiftHandover entity.
 func (m *OncallAnnotationMutation) RemovedHandoversIDs() (ids []uuid.UUID) {
 	for id := range m.removedhandovers {
 		ids = append(ids, id)
@@ -24418,7 +24418,7 @@ func (m *OncallRosterMutation) ResetTeams() {
 	m.removedteams = nil
 }
 
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by ids.
+// AddShiftIDs adds the "shifts" edge to the OncallShift entity by ids.
 func (m *OncallRosterMutation) AddShiftIDs(ids ...uuid.UUID) {
 	if m.shifts == nil {
 		m.shifts = make(map[uuid.UUID]struct{})
@@ -24428,17 +24428,17 @@ func (m *OncallRosterMutation) AddShiftIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearShifts clears the "shifts" edge to the OncallUserShift entity.
+// ClearShifts clears the "shifts" edge to the OncallShift entity.
 func (m *OncallRosterMutation) ClearShifts() {
 	m.clearedshifts = true
 }
 
-// ShiftsCleared reports if the "shifts" edge to the OncallUserShift entity was cleared.
+// ShiftsCleared reports if the "shifts" edge to the OncallShift entity was cleared.
 func (m *OncallRosterMutation) ShiftsCleared() bool {
 	return m.clearedshifts
 }
 
-// RemoveShiftIDs removes the "shifts" edge to the OncallUserShift entity by IDs.
+// RemoveShiftIDs removes the "shifts" edge to the OncallShift entity by IDs.
 func (m *OncallRosterMutation) RemoveShiftIDs(ids ...uuid.UUID) {
 	if m.removedshifts == nil {
 		m.removedshifts = make(map[uuid.UUID]struct{})
@@ -24449,7 +24449,7 @@ func (m *OncallRosterMutation) RemoveShiftIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedShifts returns the removed IDs of the "shifts" edge to the OncallUserShift entity.
+// RemovedShifts returns the removed IDs of the "shifts" edge to the OncallShift entity.
 func (m *OncallRosterMutation) RemovedShiftsIDs() (ids []uuid.UUID) {
 	for id := range m.removedshifts {
 		ids = append(ids, id)
@@ -27155,14 +27155,14 @@ func (m *OncallScheduleParticipantMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown OncallScheduleParticipant edge %s", name)
 }
 
-// OncallUserShiftMutation represents an operation that mutates the OncallUserShift nodes in the graph.
-type OncallUserShiftMutation struct {
+// OncallShiftMutation represents an operation that mutates the OncallShift nodes in the graph.
+type OncallShiftMutation struct {
 	config
 	op                   Op
 	typ                  string
 	id                   *uuid.UUID
 	provider_id          *string
-	role                 *oncallusershift.Role
+	role                 *oncallshift.Role
 	start_at             *time.Time
 	end_at               *time.Time
 	clearedFields        map[string]struct{}
@@ -27179,21 +27179,21 @@ type OncallUserShiftMutation struct {
 	metrics              *uuid.UUID
 	clearedmetrics       bool
 	done                 bool
-	oldValue             func(context.Context) (*OncallUserShift, error)
-	predicates           []predicate.OncallUserShift
+	oldValue             func(context.Context) (*OncallShift, error)
+	predicates           []predicate.OncallShift
 }
 
-var _ ent.Mutation = (*OncallUserShiftMutation)(nil)
+var _ ent.Mutation = (*OncallShiftMutation)(nil)
 
-// oncallusershiftOption allows management of the mutation configuration using functional options.
-type oncallusershiftOption func(*OncallUserShiftMutation)
+// oncallshiftOption allows management of the mutation configuration using functional options.
+type oncallshiftOption func(*OncallShiftMutation)
 
-// newOncallUserShiftMutation creates new mutation for the OncallUserShift entity.
-func newOncallUserShiftMutation(c config, op Op, opts ...oncallusershiftOption) *OncallUserShiftMutation {
-	m := &OncallUserShiftMutation{
+// newOncallShiftMutation creates new mutation for the OncallShift entity.
+func newOncallShiftMutation(c config, op Op, opts ...oncallshiftOption) *OncallShiftMutation {
+	m := &OncallShiftMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeOncallUserShift,
+		typ:           TypeOncallShift,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -27202,20 +27202,20 @@ func newOncallUserShiftMutation(c config, op Op, opts ...oncallusershiftOption) 
 	return m
 }
 
-// withOncallUserShiftID sets the ID field of the mutation.
-func withOncallUserShiftID(id uuid.UUID) oncallusershiftOption {
-	return func(m *OncallUserShiftMutation) {
+// withOncallShiftID sets the ID field of the mutation.
+func withOncallShiftID(id uuid.UUID) oncallshiftOption {
+	return func(m *OncallShiftMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *OncallUserShift
+			value *OncallShift
 		)
-		m.oldValue = func(ctx context.Context) (*OncallUserShift, error) {
+		m.oldValue = func(ctx context.Context) (*OncallShift, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().OncallUserShift.Get(ctx, id)
+					value, err = m.Client().OncallShift.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -27224,10 +27224,10 @@ func withOncallUserShiftID(id uuid.UUID) oncallusershiftOption {
 	}
 }
 
-// withOncallUserShift sets the old OncallUserShift of the mutation.
-func withOncallUserShift(node *OncallUserShift) oncallusershiftOption {
-	return func(m *OncallUserShiftMutation) {
-		m.oldValue = func(context.Context) (*OncallUserShift, error) {
+// withOncallShift sets the old OncallShift of the mutation.
+func withOncallShift(node *OncallShift) oncallshiftOption {
+	return func(m *OncallShiftMutation) {
+		m.oldValue = func(context.Context) (*OncallShift, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -27236,7 +27236,7 @@ func withOncallUserShift(node *OncallUserShift) oncallusershiftOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OncallUserShiftMutation) Client() *Client {
+func (m OncallShiftMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -27244,7 +27244,7 @@ func (m OncallUserShiftMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m OncallUserShiftMutation) Tx() (*Tx, error) {
+func (m OncallShiftMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -27254,14 +27254,14 @@ func (m OncallUserShiftMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of OncallUserShift entities.
-func (m *OncallUserShiftMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of OncallShift entities.
+func (m *OncallShiftMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *OncallUserShiftMutation) ID() (id uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -27272,7 +27272,7 @@ func (m *OncallUserShiftMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *OncallUserShiftMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *OncallShiftMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -27281,19 +27281,19 @@ func (m *OncallUserShiftMutation) IDs(ctx context.Context) ([]uuid.UUID, error) 
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OncallUserShift.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().OncallShift.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *OncallUserShiftMutation) SetTenantID(i int) {
+func (m *OncallShiftMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *OncallUserShiftMutation) TenantID() (r int, exists bool) {
+func (m *OncallShiftMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -27301,10 +27301,10 @@ func (m *OncallUserShiftMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *OncallShiftMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -27319,17 +27319,17 @@ func (m *OncallUserShiftMutation) OldTenantID(ctx context.Context) (v int, err e
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *OncallUserShiftMutation) ResetTenantID() {
+func (m *OncallShiftMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetUserID sets the "user_id" field.
-func (m *OncallUserShiftMutation) SetUserID(u uuid.UUID) {
+func (m *OncallShiftMutation) SetUserID(u uuid.UUID) {
 	m.user = &u
 }
 
 // UserID returns the value of the "user_id" field in the mutation.
-func (m *OncallUserShiftMutation) UserID() (r uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) UserID() (r uuid.UUID, exists bool) {
 	v := m.user
 	if v == nil {
 		return
@@ -27337,10 +27337,10 @@ func (m *OncallUserShiftMutation) UserID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldUserID returns the old "user_id" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldUserID returns the old "user_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallShiftMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
 	}
@@ -27355,17 +27355,17 @@ func (m *OncallUserShiftMutation) OldUserID(ctx context.Context) (v uuid.UUID, e
 }
 
 // ResetUserID resets all changes to the "user_id" field.
-func (m *OncallUserShiftMutation) ResetUserID() {
+func (m *OncallShiftMutation) ResetUserID() {
 	m.user = nil
 }
 
 // SetRosterID sets the "roster_id" field.
-func (m *OncallUserShiftMutation) SetRosterID(u uuid.UUID) {
+func (m *OncallShiftMutation) SetRosterID(u uuid.UUID) {
 	m.roster = &u
 }
 
 // RosterID returns the value of the "roster_id" field in the mutation.
-func (m *OncallUserShiftMutation) RosterID() (r uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) RosterID() (r uuid.UUID, exists bool) {
 	v := m.roster
 	if v == nil {
 		return
@@ -27373,10 +27373,10 @@ func (m *OncallUserShiftMutation) RosterID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldRosterID returns the old "roster_id" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldRosterID returns the old "roster_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallShiftMutation) OldRosterID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRosterID is only allowed on UpdateOne operations")
 	}
@@ -27391,17 +27391,17 @@ func (m *OncallUserShiftMutation) OldRosterID(ctx context.Context) (v uuid.UUID,
 }
 
 // ResetRosterID resets all changes to the "roster_id" field.
-func (m *OncallUserShiftMutation) ResetRosterID() {
+func (m *OncallShiftMutation) ResetRosterID() {
 	m.roster = nil
 }
 
 // SetProviderID sets the "provider_id" field.
-func (m *OncallUserShiftMutation) SetProviderID(s string) {
+func (m *OncallShiftMutation) SetProviderID(s string) {
 	m.provider_id = &s
 }
 
 // ProviderID returns the value of the "provider_id" field in the mutation.
-func (m *OncallUserShiftMutation) ProviderID() (r string, exists bool) {
+func (m *OncallShiftMutation) ProviderID() (r string, exists bool) {
 	v := m.provider_id
 	if v == nil {
 		return
@@ -27409,10 +27409,10 @@ func (m *OncallUserShiftMutation) ProviderID() (r string, exists bool) {
 	return *v, true
 }
 
-// OldProviderID returns the old "provider_id" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldProviderID returns the old "provider_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldProviderID(ctx context.Context) (v string, err error) {
+func (m *OncallShiftMutation) OldProviderID(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProviderID is only allowed on UpdateOne operations")
 	}
@@ -27427,30 +27427,30 @@ func (m *OncallUserShiftMutation) OldProviderID(ctx context.Context) (v string, 
 }
 
 // ClearProviderID clears the value of the "provider_id" field.
-func (m *OncallUserShiftMutation) ClearProviderID() {
+func (m *OncallShiftMutation) ClearProviderID() {
 	m.provider_id = nil
-	m.clearedFields[oncallusershift.FieldProviderID] = struct{}{}
+	m.clearedFields[oncallshift.FieldProviderID] = struct{}{}
 }
 
 // ProviderIDCleared returns if the "provider_id" field was cleared in this mutation.
-func (m *OncallUserShiftMutation) ProviderIDCleared() bool {
-	_, ok := m.clearedFields[oncallusershift.FieldProviderID]
+func (m *OncallShiftMutation) ProviderIDCleared() bool {
+	_, ok := m.clearedFields[oncallshift.FieldProviderID]
 	return ok
 }
 
 // ResetProviderID resets all changes to the "provider_id" field.
-func (m *OncallUserShiftMutation) ResetProviderID() {
+func (m *OncallShiftMutation) ResetProviderID() {
 	m.provider_id = nil
-	delete(m.clearedFields, oncallusershift.FieldProviderID)
+	delete(m.clearedFields, oncallshift.FieldProviderID)
 }
 
 // SetRole sets the "role" field.
-func (m *OncallUserShiftMutation) SetRole(o oncallusershift.Role) {
+func (m *OncallShiftMutation) SetRole(o oncallshift.Role) {
 	m.role = &o
 }
 
 // Role returns the value of the "role" field in the mutation.
-func (m *OncallUserShiftMutation) Role() (r oncallusershift.Role, exists bool) {
+func (m *OncallShiftMutation) Role() (r oncallshift.Role, exists bool) {
 	v := m.role
 	if v == nil {
 		return
@@ -27458,10 +27458,10 @@ func (m *OncallUserShiftMutation) Role() (r oncallusershift.Role, exists bool) {
 	return *v, true
 }
 
-// OldRole returns the old "role" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldRole returns the old "role" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldRole(ctx context.Context) (v oncallusershift.Role, err error) {
+func (m *OncallShiftMutation) OldRole(ctx context.Context) (v oncallshift.Role, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldRole is only allowed on UpdateOne operations")
 	}
@@ -27476,30 +27476,30 @@ func (m *OncallUserShiftMutation) OldRole(ctx context.Context) (v oncallusershif
 }
 
 // ClearRole clears the value of the "role" field.
-func (m *OncallUserShiftMutation) ClearRole() {
+func (m *OncallShiftMutation) ClearRole() {
 	m.role = nil
-	m.clearedFields[oncallusershift.FieldRole] = struct{}{}
+	m.clearedFields[oncallshift.FieldRole] = struct{}{}
 }
 
 // RoleCleared returns if the "role" field was cleared in this mutation.
-func (m *OncallUserShiftMutation) RoleCleared() bool {
-	_, ok := m.clearedFields[oncallusershift.FieldRole]
+func (m *OncallShiftMutation) RoleCleared() bool {
+	_, ok := m.clearedFields[oncallshift.FieldRole]
 	return ok
 }
 
 // ResetRole resets all changes to the "role" field.
-func (m *OncallUserShiftMutation) ResetRole() {
+func (m *OncallShiftMutation) ResetRole() {
 	m.role = nil
-	delete(m.clearedFields, oncallusershift.FieldRole)
+	delete(m.clearedFields, oncallshift.FieldRole)
 }
 
 // SetPrimaryShiftID sets the "primary_shift_id" field.
-func (m *OncallUserShiftMutation) SetPrimaryShiftID(u uuid.UUID) {
+func (m *OncallShiftMutation) SetPrimaryShiftID(u uuid.UUID) {
 	m.primary_shift = &u
 }
 
 // PrimaryShiftID returns the value of the "primary_shift_id" field in the mutation.
-func (m *OncallUserShiftMutation) PrimaryShiftID() (r uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) PrimaryShiftID() (r uuid.UUID, exists bool) {
 	v := m.primary_shift
 	if v == nil {
 		return
@@ -27507,10 +27507,10 @@ func (m *OncallUserShiftMutation) PrimaryShiftID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldPrimaryShiftID returns the old "primary_shift_id" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldPrimaryShiftID returns the old "primary_shift_id" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldPrimaryShiftID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallShiftMutation) OldPrimaryShiftID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPrimaryShiftID is only allowed on UpdateOne operations")
 	}
@@ -27525,30 +27525,30 @@ func (m *OncallUserShiftMutation) OldPrimaryShiftID(ctx context.Context) (v uuid
 }
 
 // ClearPrimaryShiftID clears the value of the "primary_shift_id" field.
-func (m *OncallUserShiftMutation) ClearPrimaryShiftID() {
+func (m *OncallShiftMutation) ClearPrimaryShiftID() {
 	m.primary_shift = nil
-	m.clearedFields[oncallusershift.FieldPrimaryShiftID] = struct{}{}
+	m.clearedFields[oncallshift.FieldPrimaryShiftID] = struct{}{}
 }
 
 // PrimaryShiftIDCleared returns if the "primary_shift_id" field was cleared in this mutation.
-func (m *OncallUserShiftMutation) PrimaryShiftIDCleared() bool {
-	_, ok := m.clearedFields[oncallusershift.FieldPrimaryShiftID]
+func (m *OncallShiftMutation) PrimaryShiftIDCleared() bool {
+	_, ok := m.clearedFields[oncallshift.FieldPrimaryShiftID]
 	return ok
 }
 
 // ResetPrimaryShiftID resets all changes to the "primary_shift_id" field.
-func (m *OncallUserShiftMutation) ResetPrimaryShiftID() {
+func (m *OncallShiftMutation) ResetPrimaryShiftID() {
 	m.primary_shift = nil
-	delete(m.clearedFields, oncallusershift.FieldPrimaryShiftID)
+	delete(m.clearedFields, oncallshift.FieldPrimaryShiftID)
 }
 
 // SetStartAt sets the "start_at" field.
-func (m *OncallUserShiftMutation) SetStartAt(t time.Time) {
+func (m *OncallShiftMutation) SetStartAt(t time.Time) {
 	m.start_at = &t
 }
 
 // StartAt returns the value of the "start_at" field in the mutation.
-func (m *OncallUserShiftMutation) StartAt() (r time.Time, exists bool) {
+func (m *OncallShiftMutation) StartAt() (r time.Time, exists bool) {
 	v := m.start_at
 	if v == nil {
 		return
@@ -27556,10 +27556,10 @@ func (m *OncallUserShiftMutation) StartAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldStartAt returns the old "start_at" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldStartAt returns the old "start_at" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldStartAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallShiftMutation) OldStartAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStartAt is only allowed on UpdateOne operations")
 	}
@@ -27574,17 +27574,17 @@ func (m *OncallUserShiftMutation) OldStartAt(ctx context.Context) (v time.Time, 
 }
 
 // ResetStartAt resets all changes to the "start_at" field.
-func (m *OncallUserShiftMutation) ResetStartAt() {
+func (m *OncallShiftMutation) ResetStartAt() {
 	m.start_at = nil
 }
 
 // SetEndAt sets the "end_at" field.
-func (m *OncallUserShiftMutation) SetEndAt(t time.Time) {
+func (m *OncallShiftMutation) SetEndAt(t time.Time) {
 	m.end_at = &t
 }
 
 // EndAt returns the value of the "end_at" field in the mutation.
-func (m *OncallUserShiftMutation) EndAt() (r time.Time, exists bool) {
+func (m *OncallShiftMutation) EndAt() (r time.Time, exists bool) {
 	v := m.end_at
 	if v == nil {
 		return
@@ -27592,10 +27592,10 @@ func (m *OncallUserShiftMutation) EndAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldEndAt returns the old "end_at" field's value of the OncallUserShift entity.
-// If the OncallUserShift object wasn't provided to the builder, the object is fetched from the database.
+// OldEndAt returns the old "end_at" field's value of the OncallShift entity.
+// If the OncallShift object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallShiftMutation) OldEndAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldEndAt is only allowed on UpdateOne operations")
 	}
@@ -27610,25 +27610,25 @@ func (m *OncallUserShiftMutation) OldEndAt(ctx context.Context) (v time.Time, er
 }
 
 // ResetEndAt resets all changes to the "end_at" field.
-func (m *OncallUserShiftMutation) ResetEndAt() {
+func (m *OncallShiftMutation) ResetEndAt() {
 	m.end_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *OncallUserShiftMutation) ClearTenant() {
+func (m *OncallShiftMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[oncallusershift.FieldTenantID] = struct{}{}
+	m.clearedFields[oncallshift.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *OncallUserShiftMutation) TenantCleared() bool {
+func (m *OncallShiftMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) TenantIDs() (ids []int) {
+func (m *OncallShiftMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27636,26 +27636,26 @@ func (m *OncallUserShiftMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *OncallUserShiftMutation) ResetTenant() {
+func (m *OncallShiftMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
 // ClearUser clears the "user" edge to the User entity.
-func (m *OncallUserShiftMutation) ClearUser() {
+func (m *OncallShiftMutation) ClearUser() {
 	m.cleareduser = true
-	m.clearedFields[oncallusershift.FieldUserID] = struct{}{}
+	m.clearedFields[oncallshift.FieldUserID] = struct{}{}
 }
 
 // UserCleared reports if the "user" edge to the User entity was cleared.
-func (m *OncallUserShiftMutation) UserCleared() bool {
+func (m *OncallShiftMutation) UserCleared() bool {
 	return m.cleareduser
 }
 
 // UserIDs returns the "user" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // UserID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) UserIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMutation) UserIDs() (ids []uuid.UUID) {
 	if id := m.user; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27663,26 +27663,26 @@ func (m *OncallUserShiftMutation) UserIDs() (ids []uuid.UUID) {
 }
 
 // ResetUser resets all changes to the "user" edge.
-func (m *OncallUserShiftMutation) ResetUser() {
+func (m *OncallShiftMutation) ResetUser() {
 	m.user = nil
 	m.cleareduser = false
 }
 
 // ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (m *OncallUserShiftMutation) ClearRoster() {
+func (m *OncallShiftMutation) ClearRoster() {
 	m.clearedroster = true
-	m.clearedFields[oncallusershift.FieldRosterID] = struct{}{}
+	m.clearedFields[oncallshift.FieldRosterID] = struct{}{}
 }
 
 // RosterCleared reports if the "roster" edge to the OncallRoster entity was cleared.
-func (m *OncallUserShiftMutation) RosterCleared() bool {
+func (m *OncallShiftMutation) RosterCleared() bool {
 	return m.clearedroster
 }
 
 // RosterIDs returns the "roster" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // RosterID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) RosterIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMutation) RosterIDs() (ids []uuid.UUID) {
 	if id := m.roster; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27690,26 +27690,26 @@ func (m *OncallUserShiftMutation) RosterIDs() (ids []uuid.UUID) {
 }
 
 // ResetRoster resets all changes to the "roster" edge.
-func (m *OncallUserShiftMutation) ResetRoster() {
+func (m *OncallShiftMutation) ResetRoster() {
 	m.roster = nil
 	m.clearedroster = false
 }
 
-// ClearPrimaryShift clears the "primary_shift" edge to the OncallUserShift entity.
-func (m *OncallUserShiftMutation) ClearPrimaryShift() {
+// ClearPrimaryShift clears the "primary_shift" edge to the OncallShift entity.
+func (m *OncallShiftMutation) ClearPrimaryShift() {
 	m.clearedprimary_shift = true
-	m.clearedFields[oncallusershift.FieldPrimaryShiftID] = struct{}{}
+	m.clearedFields[oncallshift.FieldPrimaryShiftID] = struct{}{}
 }
 
-// PrimaryShiftCleared reports if the "primary_shift" edge to the OncallUserShift entity was cleared.
-func (m *OncallUserShiftMutation) PrimaryShiftCleared() bool {
+// PrimaryShiftCleared reports if the "primary_shift" edge to the OncallShift entity was cleared.
+func (m *OncallShiftMutation) PrimaryShiftCleared() bool {
 	return m.PrimaryShiftIDCleared() || m.clearedprimary_shift
 }
 
 // PrimaryShiftIDs returns the "primary_shift" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // PrimaryShiftID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) PrimaryShiftIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMutation) PrimaryShiftIDs() (ids []uuid.UUID) {
 	if id := m.primary_shift; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27717,28 +27717,28 @@ func (m *OncallUserShiftMutation) PrimaryShiftIDs() (ids []uuid.UUID) {
 }
 
 // ResetPrimaryShift resets all changes to the "primary_shift" edge.
-func (m *OncallUserShiftMutation) ResetPrimaryShift() {
+func (m *OncallShiftMutation) ResetPrimaryShift() {
 	m.primary_shift = nil
 	m.clearedprimary_shift = false
 }
 
-// SetHandoverID sets the "handover" edge to the OncallUserShiftHandover entity by id.
-func (m *OncallUserShiftMutation) SetHandoverID(id uuid.UUID) {
+// SetHandoverID sets the "handover" edge to the OncallShiftHandover entity by id.
+func (m *OncallShiftMutation) SetHandoverID(id uuid.UUID) {
 	m.handover = &id
 }
 
-// ClearHandover clears the "handover" edge to the OncallUserShiftHandover entity.
-func (m *OncallUserShiftMutation) ClearHandover() {
+// ClearHandover clears the "handover" edge to the OncallShiftHandover entity.
+func (m *OncallShiftMutation) ClearHandover() {
 	m.clearedhandover = true
 }
 
-// HandoverCleared reports if the "handover" edge to the OncallUserShiftHandover entity was cleared.
-func (m *OncallUserShiftMutation) HandoverCleared() bool {
+// HandoverCleared reports if the "handover" edge to the OncallShiftHandover entity was cleared.
+func (m *OncallShiftMutation) HandoverCleared() bool {
 	return m.clearedhandover
 }
 
 // HandoverID returns the "handover" edge ID in the mutation.
-func (m *OncallUserShiftMutation) HandoverID() (id uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) HandoverID() (id uuid.UUID, exists bool) {
 	if m.handover != nil {
 		return *m.handover, true
 	}
@@ -27748,7 +27748,7 @@ func (m *OncallUserShiftMutation) HandoverID() (id uuid.UUID, exists bool) {
 // HandoverIDs returns the "handover" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // HandoverID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) HandoverIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMutation) HandoverIDs() (ids []uuid.UUID) {
 	if id := m.handover; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27756,28 +27756,28 @@ func (m *OncallUserShiftMutation) HandoverIDs() (ids []uuid.UUID) {
 }
 
 // ResetHandover resets all changes to the "handover" edge.
-func (m *OncallUserShiftMutation) ResetHandover() {
+func (m *OncallShiftMutation) ResetHandover() {
 	m.handover = nil
 	m.clearedhandover = false
 }
 
-// SetMetricsID sets the "metrics" edge to the OncallUserShiftMetrics entity by id.
-func (m *OncallUserShiftMutation) SetMetricsID(id uuid.UUID) {
+// SetMetricsID sets the "metrics" edge to the OncallShiftMetrics entity by id.
+func (m *OncallShiftMutation) SetMetricsID(id uuid.UUID) {
 	m.metrics = &id
 }
 
-// ClearMetrics clears the "metrics" edge to the OncallUserShiftMetrics entity.
-func (m *OncallUserShiftMutation) ClearMetrics() {
+// ClearMetrics clears the "metrics" edge to the OncallShiftMetrics entity.
+func (m *OncallShiftMutation) ClearMetrics() {
 	m.clearedmetrics = true
 }
 
-// MetricsCleared reports if the "metrics" edge to the OncallUserShiftMetrics entity was cleared.
-func (m *OncallUserShiftMutation) MetricsCleared() bool {
+// MetricsCleared reports if the "metrics" edge to the OncallShiftMetrics entity was cleared.
+func (m *OncallShiftMutation) MetricsCleared() bool {
 	return m.clearedmetrics
 }
 
 // MetricsID returns the "metrics" edge ID in the mutation.
-func (m *OncallUserShiftMutation) MetricsID() (id uuid.UUID, exists bool) {
+func (m *OncallShiftMutation) MetricsID() (id uuid.UUID, exists bool) {
 	if m.metrics != nil {
 		return *m.metrics, true
 	}
@@ -27787,7 +27787,7 @@ func (m *OncallUserShiftMutation) MetricsID() (id uuid.UUID, exists bool) {
 // MetricsIDs returns the "metrics" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // MetricsID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMutation) MetricsIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMutation) MetricsIDs() (ids []uuid.UUID) {
 	if id := m.metrics; id != nil {
 		ids = append(ids, *id)
 	}
@@ -27795,20 +27795,20 @@ func (m *OncallUserShiftMutation) MetricsIDs() (ids []uuid.UUID) {
 }
 
 // ResetMetrics resets all changes to the "metrics" edge.
-func (m *OncallUserShiftMutation) ResetMetrics() {
+func (m *OncallShiftMutation) ResetMetrics() {
 	m.metrics = nil
 	m.clearedmetrics = false
 }
 
-// Where appends a list predicates to the OncallUserShiftMutation builder.
-func (m *OncallUserShiftMutation) Where(ps ...predicate.OncallUserShift) {
+// Where appends a list predicates to the OncallShiftMutation builder.
+func (m *OncallShiftMutation) Where(ps ...predicate.OncallShift) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the OncallUserShiftMutation builder. Using this method,
+// WhereP appends storage-level predicates to the OncallShiftMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OncallUserShiftMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OncallUserShift, len(ps))
+func (m *OncallShiftMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallShift, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -27816,48 +27816,48 @@ func (m *OncallUserShiftMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *OncallUserShiftMutation) Op() Op {
+func (m *OncallShiftMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *OncallUserShiftMutation) SetOp(op Op) {
+func (m *OncallShiftMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (OncallUserShift).
-func (m *OncallUserShiftMutation) Type() string {
+// Type returns the node type of this mutation (OncallShift).
+func (m *OncallShiftMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *OncallUserShiftMutation) Fields() []string {
+func (m *OncallShiftMutation) Fields() []string {
 	fields := make([]string, 0, 8)
 	if m.tenant != nil {
-		fields = append(fields, oncallusershift.FieldTenantID)
+		fields = append(fields, oncallshift.FieldTenantID)
 	}
 	if m.user != nil {
-		fields = append(fields, oncallusershift.FieldUserID)
+		fields = append(fields, oncallshift.FieldUserID)
 	}
 	if m.roster != nil {
-		fields = append(fields, oncallusershift.FieldRosterID)
+		fields = append(fields, oncallshift.FieldRosterID)
 	}
 	if m.provider_id != nil {
-		fields = append(fields, oncallusershift.FieldProviderID)
+		fields = append(fields, oncallshift.FieldProviderID)
 	}
 	if m.role != nil {
-		fields = append(fields, oncallusershift.FieldRole)
+		fields = append(fields, oncallshift.FieldRole)
 	}
 	if m.primary_shift != nil {
-		fields = append(fields, oncallusershift.FieldPrimaryShiftID)
+		fields = append(fields, oncallshift.FieldPrimaryShiftID)
 	}
 	if m.start_at != nil {
-		fields = append(fields, oncallusershift.FieldStartAt)
+		fields = append(fields, oncallshift.FieldStartAt)
 	}
 	if m.end_at != nil {
-		fields = append(fields, oncallusershift.FieldEndAt)
+		fields = append(fields, oncallshift.FieldEndAt)
 	}
 	return fields
 }
@@ -27865,23 +27865,23 @@ func (m *OncallUserShiftMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *OncallUserShiftMutation) Field(name string) (ent.Value, bool) {
+func (m *OncallShiftMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oncallusershift.FieldTenantID:
+	case oncallshift.FieldTenantID:
 		return m.TenantID()
-	case oncallusershift.FieldUserID:
+	case oncallshift.FieldUserID:
 		return m.UserID()
-	case oncallusershift.FieldRosterID:
+	case oncallshift.FieldRosterID:
 		return m.RosterID()
-	case oncallusershift.FieldProviderID:
+	case oncallshift.FieldProviderID:
 		return m.ProviderID()
-	case oncallusershift.FieldRole:
+	case oncallshift.FieldRole:
 		return m.Role()
-	case oncallusershift.FieldPrimaryShiftID:
+	case oncallshift.FieldPrimaryShiftID:
 		return m.PrimaryShiftID()
-	case oncallusershift.FieldStartAt:
+	case oncallshift.FieldStartAt:
 		return m.StartAt()
-	case oncallusershift.FieldEndAt:
+	case oncallshift.FieldEndAt:
 		return m.EndAt()
 	}
 	return nil, false
@@ -27890,83 +27890,83 @@ func (m *OncallUserShiftMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *OncallUserShiftMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *OncallShiftMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oncallusershift.FieldTenantID:
+	case oncallshift.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case oncallusershift.FieldUserID:
+	case oncallshift.FieldUserID:
 		return m.OldUserID(ctx)
-	case oncallusershift.FieldRosterID:
+	case oncallshift.FieldRosterID:
 		return m.OldRosterID(ctx)
-	case oncallusershift.FieldProviderID:
+	case oncallshift.FieldProviderID:
 		return m.OldProviderID(ctx)
-	case oncallusershift.FieldRole:
+	case oncallshift.FieldRole:
 		return m.OldRole(ctx)
-	case oncallusershift.FieldPrimaryShiftID:
+	case oncallshift.FieldPrimaryShiftID:
 		return m.OldPrimaryShiftID(ctx)
-	case oncallusershift.FieldStartAt:
+	case oncallshift.FieldStartAt:
 		return m.OldStartAt(ctx)
-	case oncallusershift.FieldEndAt:
+	case oncallshift.FieldEndAt:
 		return m.OldEndAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown OncallUserShift field %s", name)
+	return nil, fmt.Errorf("unknown OncallShift field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftMutation) SetField(name string, value ent.Value) error {
+func (m *OncallShiftMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oncallusershift.FieldTenantID:
+	case oncallshift.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case oncallusershift.FieldUserID:
+	case oncallshift.FieldUserID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUserID(v)
 		return nil
-	case oncallusershift.FieldRosterID:
+	case oncallshift.FieldRosterID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRosterID(v)
 		return nil
-	case oncallusershift.FieldProviderID:
+	case oncallshift.FieldProviderID:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProviderID(v)
 		return nil
-	case oncallusershift.FieldRole:
-		v, ok := value.(oncallusershift.Role)
+	case oncallshift.FieldRole:
+		v, ok := value.(oncallshift.Role)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRole(v)
 		return nil
-	case oncallusershift.FieldPrimaryShiftID:
+	case oncallshift.FieldPrimaryShiftID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPrimaryShiftID(v)
 		return nil
-	case oncallusershift.FieldStartAt:
+	case oncallshift.FieldStartAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStartAt(v)
 		return nil
-	case oncallusershift.FieldEndAt:
+	case oncallshift.FieldEndAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -27974,12 +27974,12 @@ func (m *OncallUserShiftMutation) SetField(name string, value ent.Value) error {
 		m.SetEndAt(v)
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShift field %s", name)
+	return fmt.Errorf("unknown OncallShift field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *OncallUserShiftMutation) AddedFields() []string {
+func (m *OncallShiftMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -27987,7 +27987,7 @@ func (m *OncallUserShiftMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *OncallUserShiftMutation) AddedField(name string) (ent.Value, bool) {
+func (m *OncallShiftMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -27996,133 +27996,133 @@ func (m *OncallUserShiftMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftMutation) AddField(name string, value ent.Value) error {
+func (m *OncallShiftMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown OncallUserShift numeric field %s", name)
+	return fmt.Errorf("unknown OncallShift numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *OncallUserShiftMutation) ClearedFields() []string {
+func (m *OncallShiftMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(oncallusershift.FieldProviderID) {
-		fields = append(fields, oncallusershift.FieldProviderID)
+	if m.FieldCleared(oncallshift.FieldProviderID) {
+		fields = append(fields, oncallshift.FieldProviderID)
 	}
-	if m.FieldCleared(oncallusershift.FieldRole) {
-		fields = append(fields, oncallusershift.FieldRole)
+	if m.FieldCleared(oncallshift.FieldRole) {
+		fields = append(fields, oncallshift.FieldRole)
 	}
-	if m.FieldCleared(oncallusershift.FieldPrimaryShiftID) {
-		fields = append(fields, oncallusershift.FieldPrimaryShiftID)
+	if m.FieldCleared(oncallshift.FieldPrimaryShiftID) {
+		fields = append(fields, oncallshift.FieldPrimaryShiftID)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *OncallUserShiftMutation) FieldCleared(name string) bool {
+func (m *OncallShiftMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *OncallUserShiftMutation) ClearField(name string) error {
+func (m *OncallShiftMutation) ClearField(name string) error {
 	switch name {
-	case oncallusershift.FieldProviderID:
+	case oncallshift.FieldProviderID:
 		m.ClearProviderID()
 		return nil
-	case oncallusershift.FieldRole:
+	case oncallshift.FieldRole:
 		m.ClearRole()
 		return nil
-	case oncallusershift.FieldPrimaryShiftID:
+	case oncallshift.FieldPrimaryShiftID:
 		m.ClearPrimaryShiftID()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShift nullable field %s", name)
+	return fmt.Errorf("unknown OncallShift nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *OncallUserShiftMutation) ResetField(name string) error {
+func (m *OncallShiftMutation) ResetField(name string) error {
 	switch name {
-	case oncallusershift.FieldTenantID:
+	case oncallshift.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case oncallusershift.FieldUserID:
+	case oncallshift.FieldUserID:
 		m.ResetUserID()
 		return nil
-	case oncallusershift.FieldRosterID:
+	case oncallshift.FieldRosterID:
 		m.ResetRosterID()
 		return nil
-	case oncallusershift.FieldProviderID:
+	case oncallshift.FieldProviderID:
 		m.ResetProviderID()
 		return nil
-	case oncallusershift.FieldRole:
+	case oncallshift.FieldRole:
 		m.ResetRole()
 		return nil
-	case oncallusershift.FieldPrimaryShiftID:
+	case oncallshift.FieldPrimaryShiftID:
 		m.ResetPrimaryShiftID()
 		return nil
-	case oncallusershift.FieldStartAt:
+	case oncallshift.FieldStartAt:
 		m.ResetStartAt()
 		return nil
-	case oncallusershift.FieldEndAt:
+	case oncallshift.FieldEndAt:
 		m.ResetEndAt()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShift field %s", name)
+	return fmt.Errorf("unknown OncallShift field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OncallUserShiftMutation) AddedEdges() []string {
+func (m *OncallShiftMutation) AddedEdges() []string {
 	edges := make([]string, 0, 6)
 	if m.tenant != nil {
-		edges = append(edges, oncallusershift.EdgeTenant)
+		edges = append(edges, oncallshift.EdgeTenant)
 	}
 	if m.user != nil {
-		edges = append(edges, oncallusershift.EdgeUser)
+		edges = append(edges, oncallshift.EdgeUser)
 	}
 	if m.roster != nil {
-		edges = append(edges, oncallusershift.EdgeRoster)
+		edges = append(edges, oncallshift.EdgeRoster)
 	}
 	if m.primary_shift != nil {
-		edges = append(edges, oncallusershift.EdgePrimaryShift)
+		edges = append(edges, oncallshift.EdgePrimaryShift)
 	}
 	if m.handover != nil {
-		edges = append(edges, oncallusershift.EdgeHandover)
+		edges = append(edges, oncallshift.EdgeHandover)
 	}
 	if m.metrics != nil {
-		edges = append(edges, oncallusershift.EdgeMetrics)
+		edges = append(edges, oncallshift.EdgeMetrics)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *OncallUserShiftMutation) AddedIDs(name string) []ent.Value {
+func (m *OncallShiftMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case oncallusershift.EdgeTenant:
+	case oncallshift.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershift.EdgeUser:
+	case oncallshift.EdgeUser:
 		if id := m.user; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershift.EdgeRoster:
+	case oncallshift.EdgeRoster:
 		if id := m.roster; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershift.EdgePrimaryShift:
+	case oncallshift.EdgePrimaryShift:
 		if id := m.primary_shift; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershift.EdgeHandover:
+	case oncallshift.EdgeHandover:
 		if id := m.handover; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershift.EdgeMetrics:
+	case oncallshift.EdgeMetrics:
 		if id := m.metrics; id != nil {
 			return []ent.Value{*id}
 		}
@@ -28131,56 +28131,56 @@ func (m *OncallUserShiftMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OncallUserShiftMutation) RemovedEdges() []string {
+func (m *OncallShiftMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 6)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *OncallUserShiftMutation) RemovedIDs(name string) []ent.Value {
+func (m *OncallShiftMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OncallUserShiftMutation) ClearedEdges() []string {
+func (m *OncallShiftMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 6)
 	if m.clearedtenant {
-		edges = append(edges, oncallusershift.EdgeTenant)
+		edges = append(edges, oncallshift.EdgeTenant)
 	}
 	if m.cleareduser {
-		edges = append(edges, oncallusershift.EdgeUser)
+		edges = append(edges, oncallshift.EdgeUser)
 	}
 	if m.clearedroster {
-		edges = append(edges, oncallusershift.EdgeRoster)
+		edges = append(edges, oncallshift.EdgeRoster)
 	}
 	if m.clearedprimary_shift {
-		edges = append(edges, oncallusershift.EdgePrimaryShift)
+		edges = append(edges, oncallshift.EdgePrimaryShift)
 	}
 	if m.clearedhandover {
-		edges = append(edges, oncallusershift.EdgeHandover)
+		edges = append(edges, oncallshift.EdgeHandover)
 	}
 	if m.clearedmetrics {
-		edges = append(edges, oncallusershift.EdgeMetrics)
+		edges = append(edges, oncallshift.EdgeMetrics)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *OncallUserShiftMutation) EdgeCleared(name string) bool {
+func (m *OncallShiftMutation) EdgeCleared(name string) bool {
 	switch name {
-	case oncallusershift.EdgeTenant:
+	case oncallshift.EdgeTenant:
 		return m.clearedtenant
-	case oncallusershift.EdgeUser:
+	case oncallshift.EdgeUser:
 		return m.cleareduser
-	case oncallusershift.EdgeRoster:
+	case oncallshift.EdgeRoster:
 		return m.clearedroster
-	case oncallusershift.EdgePrimaryShift:
+	case oncallshift.EdgePrimaryShift:
 		return m.clearedprimary_shift
-	case oncallusershift.EdgeHandover:
+	case oncallshift.EdgeHandover:
 		return m.clearedhandover
-	case oncallusershift.EdgeMetrics:
+	case oncallshift.EdgeMetrics:
 		return m.clearedmetrics
 	}
 	return false
@@ -28188,58 +28188,58 @@ func (m *OncallUserShiftMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *OncallUserShiftMutation) ClearEdge(name string) error {
+func (m *OncallShiftMutation) ClearEdge(name string) error {
 	switch name {
-	case oncallusershift.EdgeTenant:
+	case oncallshift.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case oncallusershift.EdgeUser:
+	case oncallshift.EdgeUser:
 		m.ClearUser()
 		return nil
-	case oncallusershift.EdgeRoster:
+	case oncallshift.EdgeRoster:
 		m.ClearRoster()
 		return nil
-	case oncallusershift.EdgePrimaryShift:
+	case oncallshift.EdgePrimaryShift:
 		m.ClearPrimaryShift()
 		return nil
-	case oncallusershift.EdgeHandover:
+	case oncallshift.EdgeHandover:
 		m.ClearHandover()
 		return nil
-	case oncallusershift.EdgeMetrics:
+	case oncallshift.EdgeMetrics:
 		m.ClearMetrics()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShift unique edge %s", name)
+	return fmt.Errorf("unknown OncallShift unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *OncallUserShiftMutation) ResetEdge(name string) error {
+func (m *OncallShiftMutation) ResetEdge(name string) error {
 	switch name {
-	case oncallusershift.EdgeTenant:
+	case oncallshift.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case oncallusershift.EdgeUser:
+	case oncallshift.EdgeUser:
 		m.ResetUser()
 		return nil
-	case oncallusershift.EdgeRoster:
+	case oncallshift.EdgeRoster:
 		m.ResetRoster()
 		return nil
-	case oncallusershift.EdgePrimaryShift:
+	case oncallshift.EdgePrimaryShift:
 		m.ResetPrimaryShift()
 		return nil
-	case oncallusershift.EdgeHandover:
+	case oncallshift.EdgeHandover:
 		m.ResetHandover()
 		return nil
-	case oncallusershift.EdgeMetrics:
+	case oncallshift.EdgeMetrics:
 		m.ResetMetrics()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShift edge %s", name)
+	return fmt.Errorf("unknown OncallShift edge %s", name)
 }
 
-// OncallUserShiftHandoverMutation represents an operation that mutates the OncallUserShiftHandover nodes in the graph.
-type OncallUserShiftHandoverMutation struct {
+// OncallShiftHandoverMutation represents an operation that mutates the OncallShiftHandover nodes in the graph.
+type OncallShiftHandoverMutation struct {
 	config
 	op                        Op
 	typ                       string
@@ -28258,21 +28258,21 @@ type OncallUserShiftHandoverMutation struct {
 	removedpinned_annotations map[uuid.UUID]struct{}
 	clearedpinned_annotations bool
 	done                      bool
-	oldValue                  func(context.Context) (*OncallUserShiftHandover, error)
-	predicates                []predicate.OncallUserShiftHandover
+	oldValue                  func(context.Context) (*OncallShiftHandover, error)
+	predicates                []predicate.OncallShiftHandover
 }
 
-var _ ent.Mutation = (*OncallUserShiftHandoverMutation)(nil)
+var _ ent.Mutation = (*OncallShiftHandoverMutation)(nil)
 
-// oncallusershifthandoverOption allows management of the mutation configuration using functional options.
-type oncallusershifthandoverOption func(*OncallUserShiftHandoverMutation)
+// oncallshifthandoverOption allows management of the mutation configuration using functional options.
+type oncallshifthandoverOption func(*OncallShiftHandoverMutation)
 
-// newOncallUserShiftHandoverMutation creates new mutation for the OncallUserShiftHandover entity.
-func newOncallUserShiftHandoverMutation(c config, op Op, opts ...oncallusershifthandoverOption) *OncallUserShiftHandoverMutation {
-	m := &OncallUserShiftHandoverMutation{
+// newOncallShiftHandoverMutation creates new mutation for the OncallShiftHandover entity.
+func newOncallShiftHandoverMutation(c config, op Op, opts ...oncallshifthandoverOption) *OncallShiftHandoverMutation {
+	m := &OncallShiftHandoverMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeOncallUserShiftHandover,
+		typ:           TypeOncallShiftHandover,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -28281,20 +28281,20 @@ func newOncallUserShiftHandoverMutation(c config, op Op, opts ...oncallusershift
 	return m
 }
 
-// withOncallUserShiftHandoverID sets the ID field of the mutation.
-func withOncallUserShiftHandoverID(id uuid.UUID) oncallusershifthandoverOption {
-	return func(m *OncallUserShiftHandoverMutation) {
+// withOncallShiftHandoverID sets the ID field of the mutation.
+func withOncallShiftHandoverID(id uuid.UUID) oncallshifthandoverOption {
+	return func(m *OncallShiftHandoverMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *OncallUserShiftHandover
+			value *OncallShiftHandover
 		)
-		m.oldValue = func(ctx context.Context) (*OncallUserShiftHandover, error) {
+		m.oldValue = func(ctx context.Context) (*OncallShiftHandover, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().OncallUserShiftHandover.Get(ctx, id)
+					value, err = m.Client().OncallShiftHandover.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -28303,10 +28303,10 @@ func withOncallUserShiftHandoverID(id uuid.UUID) oncallusershifthandoverOption {
 	}
 }
 
-// withOncallUserShiftHandover sets the old OncallUserShiftHandover of the mutation.
-func withOncallUserShiftHandover(node *OncallUserShiftHandover) oncallusershifthandoverOption {
-	return func(m *OncallUserShiftHandoverMutation) {
-		m.oldValue = func(context.Context) (*OncallUserShiftHandover, error) {
+// withOncallShiftHandover sets the old OncallShiftHandover of the mutation.
+func withOncallShiftHandover(node *OncallShiftHandover) oncallshifthandoverOption {
+	return func(m *OncallShiftHandoverMutation) {
+		m.oldValue = func(context.Context) (*OncallShiftHandover, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -28315,7 +28315,7 @@ func withOncallUserShiftHandover(node *OncallUserShiftHandover) oncallusershifth
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OncallUserShiftHandoverMutation) Client() *Client {
+func (m OncallShiftHandoverMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -28323,7 +28323,7 @@ func (m OncallUserShiftHandoverMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m OncallUserShiftHandoverMutation) Tx() (*Tx, error) {
+func (m OncallShiftHandoverMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -28333,14 +28333,14 @@ func (m OncallUserShiftHandoverMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of OncallUserShiftHandover entities.
-func (m *OncallUserShiftHandoverMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of OncallShiftHandover entities.
+func (m *OncallShiftHandoverMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *OncallUserShiftHandoverMutation) ID() (id uuid.UUID, exists bool) {
+func (m *OncallShiftHandoverMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -28351,7 +28351,7 @@ func (m *OncallUserShiftHandoverMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *OncallUserShiftHandoverMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *OncallShiftHandoverMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -28360,19 +28360,19 @@ func (m *OncallUserShiftHandoverMutation) IDs(ctx context.Context) ([]uuid.UUID,
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OncallUserShiftHandover.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().OncallShiftHandover.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *OncallUserShiftHandoverMutation) SetTenantID(i int) {
+func (m *OncallShiftHandoverMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) TenantID() (r int, exists bool) {
+func (m *OncallShiftHandoverMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -28380,10 +28380,10 @@ func (m *OncallUserShiftHandoverMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *OncallShiftHandoverMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -28398,17 +28398,17 @@ func (m *OncallUserShiftHandoverMutation) OldTenantID(ctx context.Context) (v in
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *OncallUserShiftHandoverMutation) ResetTenantID() {
+func (m *OncallShiftHandoverMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetShiftID sets the "shift_id" field.
-func (m *OncallUserShiftHandoverMutation) SetShiftID(u uuid.UUID) {
+func (m *OncallShiftHandoverMutation) SetShiftID(u uuid.UUID) {
 	m.shift = &u
 }
 
 // ShiftID returns the value of the "shift_id" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) ShiftID() (r uuid.UUID, exists bool) {
+func (m *OncallShiftHandoverMutation) ShiftID() (r uuid.UUID, exists bool) {
 	v := m.shift
 	if v == nil {
 		return
@@ -28416,10 +28416,10 @@ func (m *OncallUserShiftHandoverMutation) ShiftID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldShiftID returns the old "shift_id" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldShiftID returns the old "shift_id" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallShiftHandoverMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShiftID is only allowed on UpdateOne operations")
 	}
@@ -28434,17 +28434,17 @@ func (m *OncallUserShiftHandoverMutation) OldShiftID(ctx context.Context) (v uui
 }
 
 // ResetShiftID resets all changes to the "shift_id" field.
-func (m *OncallUserShiftHandoverMutation) ResetShiftID() {
+func (m *OncallShiftHandoverMutation) ResetShiftID() {
 	m.shift = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *OncallUserShiftHandoverMutation) SetCreatedAt(t time.Time) {
+func (m *OncallShiftHandoverMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *OncallShiftHandoverMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -28452,10 +28452,10 @@ func (m *OncallUserShiftHandoverMutation) CreatedAt() (r time.Time, exists bool)
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallShiftHandoverMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -28470,17 +28470,17 @@ func (m *OncallUserShiftHandoverMutation) OldCreatedAt(ctx context.Context) (v t
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *OncallUserShiftHandoverMutation) ResetCreatedAt() {
+func (m *OncallShiftHandoverMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetReminderSent sets the "reminder_sent" field.
-func (m *OncallUserShiftHandoverMutation) SetReminderSent(b bool) {
+func (m *OncallShiftHandoverMutation) SetReminderSent(b bool) {
 	m.reminder_sent = &b
 }
 
 // ReminderSent returns the value of the "reminder_sent" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) ReminderSent() (r bool, exists bool) {
+func (m *OncallShiftHandoverMutation) ReminderSent() (r bool, exists bool) {
 	v := m.reminder_sent
 	if v == nil {
 		return
@@ -28488,10 +28488,10 @@ func (m *OncallUserShiftHandoverMutation) ReminderSent() (r bool, exists bool) {
 	return *v, true
 }
 
-// OldReminderSent returns the old "reminder_sent" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldReminderSent returns the old "reminder_sent" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldReminderSent(ctx context.Context) (v bool, err error) {
+func (m *OncallShiftHandoverMutation) OldReminderSent(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldReminderSent is only allowed on UpdateOne operations")
 	}
@@ -28506,17 +28506,17 @@ func (m *OncallUserShiftHandoverMutation) OldReminderSent(ctx context.Context) (
 }
 
 // ResetReminderSent resets all changes to the "reminder_sent" field.
-func (m *OncallUserShiftHandoverMutation) ResetReminderSent() {
+func (m *OncallShiftHandoverMutation) ResetReminderSent() {
 	m.reminder_sent = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *OncallUserShiftHandoverMutation) SetUpdatedAt(t time.Time) {
+func (m *OncallShiftHandoverMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *OncallShiftHandoverMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -28524,10 +28524,10 @@ func (m *OncallUserShiftHandoverMutation) UpdatedAt() (r time.Time, exists bool)
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallShiftHandoverMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -28542,17 +28542,17 @@ func (m *OncallUserShiftHandoverMutation) OldUpdatedAt(ctx context.Context) (v t
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *OncallUserShiftHandoverMutation) ResetUpdatedAt() {
+func (m *OncallShiftHandoverMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
 // SetSentAt sets the "sent_at" field.
-func (m *OncallUserShiftHandoverMutation) SetSentAt(t time.Time) {
+func (m *OncallShiftHandoverMutation) SetSentAt(t time.Time) {
 	m.sent_at = &t
 }
 
 // SentAt returns the value of the "sent_at" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) SentAt() (r time.Time, exists bool) {
+func (m *OncallShiftHandoverMutation) SentAt() (r time.Time, exists bool) {
 	v := m.sent_at
 	if v == nil {
 		return
@@ -28560,10 +28560,10 @@ func (m *OncallUserShiftHandoverMutation) SentAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldSentAt returns the old "sent_at" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldSentAt returns the old "sent_at" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldSentAt(ctx context.Context) (v time.Time, err error) {
+func (m *OncallShiftHandoverMutation) OldSentAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSentAt is only allowed on UpdateOne operations")
 	}
@@ -28578,30 +28578,30 @@ func (m *OncallUserShiftHandoverMutation) OldSentAt(ctx context.Context) (v time
 }
 
 // ClearSentAt clears the value of the "sent_at" field.
-func (m *OncallUserShiftHandoverMutation) ClearSentAt() {
+func (m *OncallShiftHandoverMutation) ClearSentAt() {
 	m.sent_at = nil
-	m.clearedFields[oncallusershifthandover.FieldSentAt] = struct{}{}
+	m.clearedFields[oncallshifthandover.FieldSentAt] = struct{}{}
 }
 
 // SentAtCleared returns if the "sent_at" field was cleared in this mutation.
-func (m *OncallUserShiftHandoverMutation) SentAtCleared() bool {
-	_, ok := m.clearedFields[oncallusershifthandover.FieldSentAt]
+func (m *OncallShiftHandoverMutation) SentAtCleared() bool {
+	_, ok := m.clearedFields[oncallshifthandover.FieldSentAt]
 	return ok
 }
 
 // ResetSentAt resets all changes to the "sent_at" field.
-func (m *OncallUserShiftHandoverMutation) ResetSentAt() {
+func (m *OncallShiftHandoverMutation) ResetSentAt() {
 	m.sent_at = nil
-	delete(m.clearedFields, oncallusershifthandover.FieldSentAt)
+	delete(m.clearedFields, oncallshifthandover.FieldSentAt)
 }
 
 // SetContents sets the "contents" field.
-func (m *OncallUserShiftHandoverMutation) SetContents(b []byte) {
+func (m *OncallShiftHandoverMutation) SetContents(b []byte) {
 	m.contents = &b
 }
 
 // Contents returns the value of the "contents" field in the mutation.
-func (m *OncallUserShiftHandoverMutation) Contents() (r []byte, exists bool) {
+func (m *OncallShiftHandoverMutation) Contents() (r []byte, exists bool) {
 	v := m.contents
 	if v == nil {
 		return
@@ -28609,10 +28609,10 @@ func (m *OncallUserShiftHandoverMutation) Contents() (r []byte, exists bool) {
 	return *v, true
 }
 
-// OldContents returns the old "contents" field's value of the OncallUserShiftHandover entity.
-// If the OncallUserShiftHandover object wasn't provided to the builder, the object is fetched from the database.
+// OldContents returns the old "contents" field's value of the OncallShiftHandover entity.
+// If the OncallShiftHandover object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftHandoverMutation) OldContents(ctx context.Context) (v []byte, err error) {
+func (m *OncallShiftHandoverMutation) OldContents(ctx context.Context) (v []byte, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldContents is only allowed on UpdateOne operations")
 	}
@@ -28627,25 +28627,25 @@ func (m *OncallUserShiftHandoverMutation) OldContents(ctx context.Context) (v []
 }
 
 // ResetContents resets all changes to the "contents" field.
-func (m *OncallUserShiftHandoverMutation) ResetContents() {
+func (m *OncallShiftHandoverMutation) ResetContents() {
 	m.contents = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *OncallUserShiftHandoverMutation) ClearTenant() {
+func (m *OncallShiftHandoverMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[oncallusershifthandover.FieldTenantID] = struct{}{}
+	m.clearedFields[oncallshifthandover.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *OncallUserShiftHandoverMutation) TenantCleared() bool {
+func (m *OncallShiftHandoverMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftHandoverMutation) TenantIDs() (ids []int) {
+func (m *OncallShiftHandoverMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -28653,26 +28653,26 @@ func (m *OncallUserShiftHandoverMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *OncallUserShiftHandoverMutation) ResetTenant() {
+func (m *OncallShiftHandoverMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// ClearShift clears the "shift" edge to the OncallUserShift entity.
-func (m *OncallUserShiftHandoverMutation) ClearShift() {
+// ClearShift clears the "shift" edge to the OncallShift entity.
+func (m *OncallShiftHandoverMutation) ClearShift() {
 	m.clearedshift = true
-	m.clearedFields[oncallusershifthandover.FieldShiftID] = struct{}{}
+	m.clearedFields[oncallshifthandover.FieldShiftID] = struct{}{}
 }
 
-// ShiftCleared reports if the "shift" edge to the OncallUserShift entity was cleared.
-func (m *OncallUserShiftHandoverMutation) ShiftCleared() bool {
+// ShiftCleared reports if the "shift" edge to the OncallShift entity was cleared.
+func (m *OncallShiftHandoverMutation) ShiftCleared() bool {
 	return m.clearedshift
 }
 
 // ShiftIDs returns the "shift" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShiftID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftHandoverMutation) ShiftIDs() (ids []uuid.UUID) {
+func (m *OncallShiftHandoverMutation) ShiftIDs() (ids []uuid.UUID) {
 	if id := m.shift; id != nil {
 		ids = append(ids, *id)
 	}
@@ -28680,13 +28680,13 @@ func (m *OncallUserShiftHandoverMutation) ShiftIDs() (ids []uuid.UUID) {
 }
 
 // ResetShift resets all changes to the "shift" edge.
-func (m *OncallUserShiftHandoverMutation) ResetShift() {
+func (m *OncallShiftHandoverMutation) ResetShift() {
 	m.shift = nil
 	m.clearedshift = false
 }
 
 // AddPinnedAnnotationIDs adds the "pinned_annotations" edge to the OncallAnnotation entity by ids.
-func (m *OncallUserShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUID) {
+func (m *OncallShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUID) {
 	if m.pinned_annotations == nil {
 		m.pinned_annotations = make(map[uuid.UUID]struct{})
 	}
@@ -28696,17 +28696,17 @@ func (m *OncallUserShiftHandoverMutation) AddPinnedAnnotationIDs(ids ...uuid.UUI
 }
 
 // ClearPinnedAnnotations clears the "pinned_annotations" edge to the OncallAnnotation entity.
-func (m *OncallUserShiftHandoverMutation) ClearPinnedAnnotations() {
+func (m *OncallShiftHandoverMutation) ClearPinnedAnnotations() {
 	m.clearedpinned_annotations = true
 }
 
 // PinnedAnnotationsCleared reports if the "pinned_annotations" edge to the OncallAnnotation entity was cleared.
-func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsCleared() bool {
+func (m *OncallShiftHandoverMutation) PinnedAnnotationsCleared() bool {
 	return m.clearedpinned_annotations
 }
 
 // RemovePinnedAnnotationIDs removes the "pinned_annotations" edge to the OncallAnnotation entity by IDs.
-func (m *OncallUserShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.UUID) {
+func (m *OncallShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.UUID) {
 	if m.removedpinned_annotations == nil {
 		m.removedpinned_annotations = make(map[uuid.UUID]struct{})
 	}
@@ -28717,7 +28717,7 @@ func (m *OncallUserShiftHandoverMutation) RemovePinnedAnnotationIDs(ids ...uuid.
 }
 
 // RemovedPinnedAnnotations returns the removed IDs of the "pinned_annotations" edge to the OncallAnnotation entity.
-func (m *OncallUserShiftHandoverMutation) RemovedPinnedAnnotationsIDs() (ids []uuid.UUID) {
+func (m *OncallShiftHandoverMutation) RemovedPinnedAnnotationsIDs() (ids []uuid.UUID) {
 	for id := range m.removedpinned_annotations {
 		ids = append(ids, id)
 	}
@@ -28725,7 +28725,7 @@ func (m *OncallUserShiftHandoverMutation) RemovedPinnedAnnotationsIDs() (ids []u
 }
 
 // PinnedAnnotationsIDs returns the "pinned_annotations" edge IDs in the mutation.
-func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsIDs() (ids []uuid.UUID) {
+func (m *OncallShiftHandoverMutation) PinnedAnnotationsIDs() (ids []uuid.UUID) {
 	for id := range m.pinned_annotations {
 		ids = append(ids, id)
 	}
@@ -28733,21 +28733,21 @@ func (m *OncallUserShiftHandoverMutation) PinnedAnnotationsIDs() (ids []uuid.UUI
 }
 
 // ResetPinnedAnnotations resets all changes to the "pinned_annotations" edge.
-func (m *OncallUserShiftHandoverMutation) ResetPinnedAnnotations() {
+func (m *OncallShiftHandoverMutation) ResetPinnedAnnotations() {
 	m.pinned_annotations = nil
 	m.clearedpinned_annotations = false
 	m.removedpinned_annotations = nil
 }
 
-// Where appends a list predicates to the OncallUserShiftHandoverMutation builder.
-func (m *OncallUserShiftHandoverMutation) Where(ps ...predicate.OncallUserShiftHandover) {
+// Where appends a list predicates to the OncallShiftHandoverMutation builder.
+func (m *OncallShiftHandoverMutation) Where(ps ...predicate.OncallShiftHandover) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the OncallUserShiftHandoverMutation builder. Using this method,
+// WhereP appends storage-level predicates to the OncallShiftHandoverMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OncallUserShiftHandoverMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OncallUserShiftHandover, len(ps))
+func (m *OncallShiftHandoverMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallShiftHandover, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -28755,45 +28755,45 @@ func (m *OncallUserShiftHandoverMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *OncallUserShiftHandoverMutation) Op() Op {
+func (m *OncallShiftHandoverMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *OncallUserShiftHandoverMutation) SetOp(op Op) {
+func (m *OncallShiftHandoverMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (OncallUserShiftHandover).
-func (m *OncallUserShiftHandoverMutation) Type() string {
+// Type returns the node type of this mutation (OncallShiftHandover).
+func (m *OncallShiftHandoverMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *OncallUserShiftHandoverMutation) Fields() []string {
+func (m *OncallShiftHandoverMutation) Fields() []string {
 	fields := make([]string, 0, 7)
 	if m.tenant != nil {
-		fields = append(fields, oncallusershifthandover.FieldTenantID)
+		fields = append(fields, oncallshifthandover.FieldTenantID)
 	}
 	if m.shift != nil {
-		fields = append(fields, oncallusershifthandover.FieldShiftID)
+		fields = append(fields, oncallshifthandover.FieldShiftID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, oncallusershifthandover.FieldCreatedAt)
+		fields = append(fields, oncallshifthandover.FieldCreatedAt)
 	}
 	if m.reminder_sent != nil {
-		fields = append(fields, oncallusershifthandover.FieldReminderSent)
+		fields = append(fields, oncallshifthandover.FieldReminderSent)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, oncallusershifthandover.FieldUpdatedAt)
+		fields = append(fields, oncallshifthandover.FieldUpdatedAt)
 	}
 	if m.sent_at != nil {
-		fields = append(fields, oncallusershifthandover.FieldSentAt)
+		fields = append(fields, oncallshifthandover.FieldSentAt)
 	}
 	if m.contents != nil {
-		fields = append(fields, oncallusershifthandover.FieldContents)
+		fields = append(fields, oncallshifthandover.FieldContents)
 	}
 	return fields
 }
@@ -28801,21 +28801,21 @@ func (m *OncallUserShiftHandoverMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *OncallUserShiftHandoverMutation) Field(name string) (ent.Value, bool) {
+func (m *OncallShiftHandoverMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oncallusershifthandover.FieldTenantID:
+	case oncallshifthandover.FieldTenantID:
 		return m.TenantID()
-	case oncallusershifthandover.FieldShiftID:
+	case oncallshifthandover.FieldShiftID:
 		return m.ShiftID()
-	case oncallusershifthandover.FieldCreatedAt:
+	case oncallshifthandover.FieldCreatedAt:
 		return m.CreatedAt()
-	case oncallusershifthandover.FieldReminderSent:
+	case oncallshifthandover.FieldReminderSent:
 		return m.ReminderSent()
-	case oncallusershifthandover.FieldUpdatedAt:
+	case oncallshifthandover.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case oncallusershifthandover.FieldSentAt:
+	case oncallshifthandover.FieldSentAt:
 		return m.SentAt()
-	case oncallusershifthandover.FieldContents:
+	case oncallshifthandover.FieldContents:
 		return m.Contents()
 	}
 	return nil, false
@@ -28824,74 +28824,74 @@ func (m *OncallUserShiftHandoverMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *OncallUserShiftHandoverMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *OncallShiftHandoverMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oncallusershifthandover.FieldTenantID:
+	case oncallshifthandover.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case oncallusershifthandover.FieldShiftID:
+	case oncallshifthandover.FieldShiftID:
 		return m.OldShiftID(ctx)
-	case oncallusershifthandover.FieldCreatedAt:
+	case oncallshifthandover.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case oncallusershifthandover.FieldReminderSent:
+	case oncallshifthandover.FieldReminderSent:
 		return m.OldReminderSent(ctx)
-	case oncallusershifthandover.FieldUpdatedAt:
+	case oncallshifthandover.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case oncallusershifthandover.FieldSentAt:
+	case oncallshifthandover.FieldSentAt:
 		return m.OldSentAt(ctx)
-	case oncallusershifthandover.FieldContents:
+	case oncallshifthandover.FieldContents:
 		return m.OldContents(ctx)
 	}
-	return nil, fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
+	return nil, fmt.Errorf("unknown OncallShiftHandover field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftHandoverMutation) SetField(name string, value ent.Value) error {
+func (m *OncallShiftHandoverMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oncallusershifthandover.FieldTenantID:
+	case oncallshifthandover.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case oncallusershifthandover.FieldShiftID:
+	case oncallshifthandover.FieldShiftID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetShiftID(v)
 		return nil
-	case oncallusershifthandover.FieldCreatedAt:
+	case oncallshifthandover.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case oncallusershifthandover.FieldReminderSent:
+	case oncallshifthandover.FieldReminderSent:
 		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReminderSent(v)
 		return nil
-	case oncallusershifthandover.FieldUpdatedAt:
+	case oncallshifthandover.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case oncallusershifthandover.FieldSentAt:
+	case oncallshifthandover.FieldSentAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSentAt(v)
 		return nil
-	case oncallusershifthandover.FieldContents:
+	case oncallshifthandover.FieldContents:
 		v, ok := value.([]byte)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -28899,12 +28899,12 @@ func (m *OncallUserShiftHandoverMutation) SetField(name string, value ent.Value)
 		m.SetContents(v)
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *OncallUserShiftHandoverMutation) AddedFields() []string {
+func (m *OncallShiftHandoverMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -28912,7 +28912,7 @@ func (m *OncallUserShiftHandoverMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *OncallUserShiftHandoverMutation) AddedField(name string) (ent.Value, bool) {
+func (m *OncallShiftHandoverMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -28921,97 +28921,97 @@ func (m *OncallUserShiftHandoverMutation) AddedField(name string) (ent.Value, bo
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftHandoverMutation) AddField(name string, value ent.Value) error {
+func (m *OncallShiftHandoverMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover numeric field %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *OncallUserShiftHandoverMutation) ClearedFields() []string {
+func (m *OncallShiftHandoverMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(oncallusershifthandover.FieldSentAt) {
-		fields = append(fields, oncallusershifthandover.FieldSentAt)
+	if m.FieldCleared(oncallshifthandover.FieldSentAt) {
+		fields = append(fields, oncallshifthandover.FieldSentAt)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *OncallUserShiftHandoverMutation) FieldCleared(name string) bool {
+func (m *OncallShiftHandoverMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *OncallUserShiftHandoverMutation) ClearField(name string) error {
+func (m *OncallShiftHandoverMutation) ClearField(name string) error {
 	switch name {
-	case oncallusershifthandover.FieldSentAt:
+	case oncallshifthandover.FieldSentAt:
 		m.ClearSentAt()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover nullable field %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *OncallUserShiftHandoverMutation) ResetField(name string) error {
+func (m *OncallShiftHandoverMutation) ResetField(name string) error {
 	switch name {
-	case oncallusershifthandover.FieldTenantID:
+	case oncallshifthandover.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case oncallusershifthandover.FieldShiftID:
+	case oncallshifthandover.FieldShiftID:
 		m.ResetShiftID()
 		return nil
-	case oncallusershifthandover.FieldCreatedAt:
+	case oncallshifthandover.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case oncallusershifthandover.FieldReminderSent:
+	case oncallshifthandover.FieldReminderSent:
 		m.ResetReminderSent()
 		return nil
-	case oncallusershifthandover.FieldUpdatedAt:
+	case oncallshifthandover.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case oncallusershifthandover.FieldSentAt:
+	case oncallshifthandover.FieldSentAt:
 		m.ResetSentAt()
 		return nil
-	case oncallusershifthandover.FieldContents:
+	case oncallshifthandover.FieldContents:
 		m.ResetContents()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover field %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OncallUserShiftHandoverMutation) AddedEdges() []string {
+func (m *OncallShiftHandoverMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.tenant != nil {
-		edges = append(edges, oncallusershifthandover.EdgeTenant)
+		edges = append(edges, oncallshifthandover.EdgeTenant)
 	}
 	if m.shift != nil {
-		edges = append(edges, oncallusershifthandover.EdgeShift)
+		edges = append(edges, oncallshifthandover.EdgeShift)
 	}
 	if m.pinned_annotations != nil {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
+		edges = append(edges, oncallshifthandover.EdgePinnedAnnotations)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *OncallUserShiftHandoverMutation) AddedIDs(name string) []ent.Value {
+func (m *OncallShiftHandoverMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case oncallusershifthandover.EdgeTenant:
+	case oncallshifthandover.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershifthandover.EdgeShift:
+	case oncallshifthandover.EdgeShift:
 		if id := m.shift; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershifthandover.EdgePinnedAnnotations:
+	case oncallshifthandover.EdgePinnedAnnotations:
 		ids := make([]ent.Value, 0, len(m.pinned_annotations))
 		for id := range m.pinned_annotations {
 			ids = append(ids, id)
@@ -29022,19 +29022,19 @@ func (m *OncallUserShiftHandoverMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OncallUserShiftHandoverMutation) RemovedEdges() []string {
+func (m *OncallShiftHandoverMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.removedpinned_annotations != nil {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
+		edges = append(edges, oncallshifthandover.EdgePinnedAnnotations)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *OncallUserShiftHandoverMutation) RemovedIDs(name string) []ent.Value {
+func (m *OncallShiftHandoverMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case oncallusershifthandover.EdgePinnedAnnotations:
+	case oncallshifthandover.EdgePinnedAnnotations:
 		ids := make([]ent.Value, 0, len(m.removedpinned_annotations))
 		for id := range m.removedpinned_annotations {
 			ids = append(ids, id)
@@ -29045,29 +29045,29 @@ func (m *OncallUserShiftHandoverMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OncallUserShiftHandoverMutation) ClearedEdges() []string {
+func (m *OncallShiftHandoverMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
 	if m.clearedtenant {
-		edges = append(edges, oncallusershifthandover.EdgeTenant)
+		edges = append(edges, oncallshifthandover.EdgeTenant)
 	}
 	if m.clearedshift {
-		edges = append(edges, oncallusershifthandover.EdgeShift)
+		edges = append(edges, oncallshifthandover.EdgeShift)
 	}
 	if m.clearedpinned_annotations {
-		edges = append(edges, oncallusershifthandover.EdgePinnedAnnotations)
+		edges = append(edges, oncallshifthandover.EdgePinnedAnnotations)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *OncallUserShiftHandoverMutation) EdgeCleared(name string) bool {
+func (m *OncallShiftHandoverMutation) EdgeCleared(name string) bool {
 	switch name {
-	case oncallusershifthandover.EdgeTenant:
+	case oncallshifthandover.EdgeTenant:
 		return m.clearedtenant
-	case oncallusershifthandover.EdgeShift:
+	case oncallshifthandover.EdgeShift:
 		return m.clearedshift
-	case oncallusershifthandover.EdgePinnedAnnotations:
+	case oncallshifthandover.EdgePinnedAnnotations:
 		return m.clearedpinned_annotations
 	}
 	return false
@@ -29075,37 +29075,37 @@ func (m *OncallUserShiftHandoverMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *OncallUserShiftHandoverMutation) ClearEdge(name string) error {
+func (m *OncallShiftHandoverMutation) ClearEdge(name string) error {
 	switch name {
-	case oncallusershifthandover.EdgeTenant:
+	case oncallshifthandover.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case oncallusershifthandover.EdgeShift:
+	case oncallshifthandover.EdgeShift:
 		m.ClearShift()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover unique edge %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *OncallUserShiftHandoverMutation) ResetEdge(name string) error {
+func (m *OncallShiftHandoverMutation) ResetEdge(name string) error {
 	switch name {
-	case oncallusershifthandover.EdgeTenant:
+	case oncallshifthandover.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case oncallusershifthandover.EdgeShift:
+	case oncallshifthandover.EdgeShift:
 		m.ResetShift()
 		return nil
-	case oncallusershifthandover.EdgePinnedAnnotations:
+	case oncallshifthandover.EdgePinnedAnnotations:
 		m.ResetPinnedAnnotations()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftHandover edge %s", name)
+	return fmt.Errorf("unknown OncallShiftHandover edge %s", name)
 }
 
-// OncallUserShiftMetricsMutation represents an operation that mutates the OncallUserShiftMetrics nodes in the graph.
-type OncallUserShiftMetricsMutation struct {
+// OncallShiftMetricsMutation represents an operation that mutates the OncallShiftMetrics nodes in the graph.
+type OncallShiftMetricsMutation struct {
 	config
 	op            Op
 	typ           string
@@ -29116,21 +29116,21 @@ type OncallUserShiftMetricsMutation struct {
 	shift         *uuid.UUID
 	clearedshift  bool
 	done          bool
-	oldValue      func(context.Context) (*OncallUserShiftMetrics, error)
-	predicates    []predicate.OncallUserShiftMetrics
+	oldValue      func(context.Context) (*OncallShiftMetrics, error)
+	predicates    []predicate.OncallShiftMetrics
 }
 
-var _ ent.Mutation = (*OncallUserShiftMetricsMutation)(nil)
+var _ ent.Mutation = (*OncallShiftMetricsMutation)(nil)
 
-// oncallusershiftmetricsOption allows management of the mutation configuration using functional options.
-type oncallusershiftmetricsOption func(*OncallUserShiftMetricsMutation)
+// oncallshiftmetricsOption allows management of the mutation configuration using functional options.
+type oncallshiftmetricsOption func(*OncallShiftMetricsMutation)
 
-// newOncallUserShiftMetricsMutation creates new mutation for the OncallUserShiftMetrics entity.
-func newOncallUserShiftMetricsMutation(c config, op Op, opts ...oncallusershiftmetricsOption) *OncallUserShiftMetricsMutation {
-	m := &OncallUserShiftMetricsMutation{
+// newOncallShiftMetricsMutation creates new mutation for the OncallShiftMetrics entity.
+func newOncallShiftMetricsMutation(c config, op Op, opts ...oncallshiftmetricsOption) *OncallShiftMetricsMutation {
+	m := &OncallShiftMetricsMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeOncallUserShiftMetrics,
+		typ:           TypeOncallShiftMetrics,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -29139,20 +29139,20 @@ func newOncallUserShiftMetricsMutation(c config, op Op, opts ...oncallusershiftm
 	return m
 }
 
-// withOncallUserShiftMetricsID sets the ID field of the mutation.
-func withOncallUserShiftMetricsID(id uuid.UUID) oncallusershiftmetricsOption {
-	return func(m *OncallUserShiftMetricsMutation) {
+// withOncallShiftMetricsID sets the ID field of the mutation.
+func withOncallShiftMetricsID(id uuid.UUID) oncallshiftmetricsOption {
+	return func(m *OncallShiftMetricsMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *OncallUserShiftMetrics
+			value *OncallShiftMetrics
 		)
-		m.oldValue = func(ctx context.Context) (*OncallUserShiftMetrics, error) {
+		m.oldValue = func(ctx context.Context) (*OncallShiftMetrics, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().OncallUserShiftMetrics.Get(ctx, id)
+					value, err = m.Client().OncallShiftMetrics.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -29161,10 +29161,10 @@ func withOncallUserShiftMetricsID(id uuid.UUID) oncallusershiftmetricsOption {
 	}
 }
 
-// withOncallUserShiftMetrics sets the old OncallUserShiftMetrics of the mutation.
-func withOncallUserShiftMetrics(node *OncallUserShiftMetrics) oncallusershiftmetricsOption {
-	return func(m *OncallUserShiftMetricsMutation) {
-		m.oldValue = func(context.Context) (*OncallUserShiftMetrics, error) {
+// withOncallShiftMetrics sets the old OncallShiftMetrics of the mutation.
+func withOncallShiftMetrics(node *OncallShiftMetrics) oncallshiftmetricsOption {
+	return func(m *OncallShiftMetricsMutation) {
+		m.oldValue = func(context.Context) (*OncallShiftMetrics, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -29173,7 +29173,7 @@ func withOncallUserShiftMetrics(node *OncallUserShiftMetrics) oncallusershiftmet
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OncallUserShiftMetricsMutation) Client() *Client {
+func (m OncallShiftMetricsMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -29181,7 +29181,7 @@ func (m OncallUserShiftMetricsMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m OncallUserShiftMetricsMutation) Tx() (*Tx, error) {
+func (m OncallShiftMetricsMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -29191,14 +29191,14 @@ func (m OncallUserShiftMetricsMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of OncallUserShiftMetrics entities.
-func (m *OncallUserShiftMetricsMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of OncallShiftMetrics entities.
+func (m *OncallShiftMetricsMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *OncallUserShiftMetricsMutation) ID() (id uuid.UUID, exists bool) {
+func (m *OncallShiftMetricsMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -29209,7 +29209,7 @@ func (m *OncallUserShiftMetricsMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *OncallUserShiftMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *OncallShiftMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -29218,19 +29218,19 @@ func (m *OncallUserShiftMetricsMutation) IDs(ctx context.Context) ([]uuid.UUID, 
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OncallUserShiftMetrics.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().OncallShiftMetrics.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *OncallUserShiftMetricsMutation) SetTenantID(i int) {
+func (m *OncallShiftMetricsMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *OncallUserShiftMetricsMutation) TenantID() (r int, exists bool) {
+func (m *OncallShiftMetricsMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -29238,10 +29238,10 @@ func (m *OncallUserShiftMetricsMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the OncallUserShiftMetrics entity.
-// If the OncallUserShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMetricsMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *OncallShiftMetricsMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -29256,17 +29256,17 @@ func (m *OncallUserShiftMetricsMutation) OldTenantID(ctx context.Context) (v int
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *OncallUserShiftMetricsMutation) ResetTenantID() {
+func (m *OncallShiftMetricsMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetShiftID sets the "shift_id" field.
-func (m *OncallUserShiftMetricsMutation) SetShiftID(u uuid.UUID) {
+func (m *OncallShiftMetricsMutation) SetShiftID(u uuid.UUID) {
 	m.shift = &u
 }
 
 // ShiftID returns the value of the "shift_id" field in the mutation.
-func (m *OncallUserShiftMetricsMutation) ShiftID() (r uuid.UUID, exists bool) {
+func (m *OncallShiftMetricsMutation) ShiftID() (r uuid.UUID, exists bool) {
 	v := m.shift
 	if v == nil {
 		return
@@ -29274,10 +29274,10 @@ func (m *OncallUserShiftMetricsMutation) ShiftID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldShiftID returns the old "shift_id" field's value of the OncallUserShiftMetrics entity.
-// If the OncallUserShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
+// OldShiftID returns the old "shift_id" field's value of the OncallShiftMetrics entity.
+// If the OncallShiftMetrics object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OncallUserShiftMetricsMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OncallShiftMetricsMutation) OldShiftID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShiftID is only allowed on UpdateOne operations")
 	}
@@ -29292,25 +29292,25 @@ func (m *OncallUserShiftMetricsMutation) OldShiftID(ctx context.Context) (v uuid
 }
 
 // ResetShiftID resets all changes to the "shift_id" field.
-func (m *OncallUserShiftMetricsMutation) ResetShiftID() {
+func (m *OncallShiftMetricsMutation) ResetShiftID() {
 	m.shift = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *OncallUserShiftMetricsMutation) ClearTenant() {
+func (m *OncallShiftMetricsMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[oncallusershiftmetrics.FieldTenantID] = struct{}{}
+	m.clearedFields[oncallshiftmetrics.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *OncallUserShiftMetricsMutation) TenantCleared() bool {
+func (m *OncallShiftMetricsMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMetricsMutation) TenantIDs() (ids []int) {
+func (m *OncallShiftMetricsMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -29318,26 +29318,26 @@ func (m *OncallUserShiftMetricsMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *OncallUserShiftMetricsMutation) ResetTenant() {
+func (m *OncallShiftMetricsMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// ClearShift clears the "shift" edge to the OncallUserShift entity.
-func (m *OncallUserShiftMetricsMutation) ClearShift() {
+// ClearShift clears the "shift" edge to the OncallShift entity.
+func (m *OncallShiftMetricsMutation) ClearShift() {
 	m.clearedshift = true
-	m.clearedFields[oncallusershiftmetrics.FieldShiftID] = struct{}{}
+	m.clearedFields[oncallshiftmetrics.FieldShiftID] = struct{}{}
 }
 
-// ShiftCleared reports if the "shift" edge to the OncallUserShift entity was cleared.
-func (m *OncallUserShiftMetricsMutation) ShiftCleared() bool {
+// ShiftCleared reports if the "shift" edge to the OncallShift entity was cleared.
+func (m *OncallShiftMetricsMutation) ShiftCleared() bool {
 	return m.clearedshift
 }
 
 // ShiftIDs returns the "shift" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // ShiftID instead. It exists only for internal usage by the builders.
-func (m *OncallUserShiftMetricsMutation) ShiftIDs() (ids []uuid.UUID) {
+func (m *OncallShiftMetricsMutation) ShiftIDs() (ids []uuid.UUID) {
 	if id := m.shift; id != nil {
 		ids = append(ids, *id)
 	}
@@ -29345,20 +29345,20 @@ func (m *OncallUserShiftMetricsMutation) ShiftIDs() (ids []uuid.UUID) {
 }
 
 // ResetShift resets all changes to the "shift" edge.
-func (m *OncallUserShiftMetricsMutation) ResetShift() {
+func (m *OncallShiftMetricsMutation) ResetShift() {
 	m.shift = nil
 	m.clearedshift = false
 }
 
-// Where appends a list predicates to the OncallUserShiftMetricsMutation builder.
-func (m *OncallUserShiftMetricsMutation) Where(ps ...predicate.OncallUserShiftMetrics) {
+// Where appends a list predicates to the OncallShiftMetricsMutation builder.
+func (m *OncallShiftMetricsMutation) Where(ps ...predicate.OncallShiftMetrics) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the OncallUserShiftMetricsMutation builder. Using this method,
+// WhereP appends storage-level predicates to the OncallShiftMetricsMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OncallUserShiftMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OncallUserShiftMetrics, len(ps))
+func (m *OncallShiftMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.OncallShiftMetrics, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -29366,30 +29366,30 @@ func (m *OncallUserShiftMetricsMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *OncallUserShiftMetricsMutation) Op() Op {
+func (m *OncallShiftMetricsMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *OncallUserShiftMetricsMutation) SetOp(op Op) {
+func (m *OncallShiftMetricsMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (OncallUserShiftMetrics).
-func (m *OncallUserShiftMetricsMutation) Type() string {
+// Type returns the node type of this mutation (OncallShiftMetrics).
+func (m *OncallShiftMetricsMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *OncallUserShiftMetricsMutation) Fields() []string {
+func (m *OncallShiftMetricsMutation) Fields() []string {
 	fields := make([]string, 0, 2)
 	if m.tenant != nil {
-		fields = append(fields, oncallusershiftmetrics.FieldTenantID)
+		fields = append(fields, oncallshiftmetrics.FieldTenantID)
 	}
 	if m.shift != nil {
-		fields = append(fields, oncallusershiftmetrics.FieldShiftID)
+		fields = append(fields, oncallshiftmetrics.FieldShiftID)
 	}
 	return fields
 }
@@ -29397,11 +29397,11 @@ func (m *OncallUserShiftMetricsMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *OncallUserShiftMetricsMutation) Field(name string) (ent.Value, bool) {
+func (m *OncallShiftMetricsMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case oncallusershiftmetrics.FieldTenantID:
+	case oncallshiftmetrics.FieldTenantID:
 		return m.TenantID()
-	case oncallusershiftmetrics.FieldShiftID:
+	case oncallshiftmetrics.FieldShiftID:
 		return m.ShiftID()
 	}
 	return nil, false
@@ -29410,29 +29410,29 @@ func (m *OncallUserShiftMetricsMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *OncallUserShiftMetricsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *OncallShiftMetricsMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case oncallusershiftmetrics.FieldTenantID:
+	case oncallshiftmetrics.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case oncallusershiftmetrics.FieldShiftID:
+	case oncallshiftmetrics.FieldShiftID:
 		return m.OldShiftID(ctx)
 	}
-	return nil, fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+	return nil, fmt.Errorf("unknown OncallShiftMetrics field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftMetricsMutation) SetField(name string, value ent.Value) error {
+func (m *OncallShiftMetricsMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case oncallusershiftmetrics.FieldTenantID:
+	case oncallshiftmetrics.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case oncallusershiftmetrics.FieldShiftID:
+	case oncallshiftmetrics.FieldShiftID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -29440,12 +29440,12 @@ func (m *OncallUserShiftMetricsMutation) SetField(name string, value ent.Value) 
 		m.SetShiftID(v)
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+	return fmt.Errorf("unknown OncallShiftMetrics field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *OncallUserShiftMetricsMutation) AddedFields() []string {
+func (m *OncallShiftMetricsMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -29453,7 +29453,7 @@ func (m *OncallUserShiftMetricsMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *OncallUserShiftMetricsMutation) AddedField(name string) (ent.Value, bool) {
+func (m *OncallShiftMetricsMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -29462,66 +29462,66 @@ func (m *OncallUserShiftMetricsMutation) AddedField(name string) (ent.Value, boo
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *OncallUserShiftMetricsMutation) AddField(name string, value ent.Value) error {
+func (m *OncallShiftMetricsMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown OncallUserShiftMetrics numeric field %s", name)
+	return fmt.Errorf("unknown OncallShiftMetrics numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *OncallUserShiftMetricsMutation) ClearedFields() []string {
+func (m *OncallShiftMetricsMutation) ClearedFields() []string {
 	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *OncallUserShiftMetricsMutation) FieldCleared(name string) bool {
+func (m *OncallShiftMetricsMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *OncallUserShiftMetricsMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown OncallUserShiftMetrics nullable field %s", name)
+func (m *OncallShiftMetricsMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown OncallShiftMetrics nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *OncallUserShiftMetricsMutation) ResetField(name string) error {
+func (m *OncallShiftMetricsMutation) ResetField(name string) error {
 	switch name {
-	case oncallusershiftmetrics.FieldTenantID:
+	case oncallshiftmetrics.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case oncallusershiftmetrics.FieldShiftID:
+	case oncallshiftmetrics.FieldShiftID:
 		m.ResetShiftID()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftMetrics field %s", name)
+	return fmt.Errorf("unknown OncallShiftMetrics field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OncallUserShiftMetricsMutation) AddedEdges() []string {
+func (m *OncallShiftMetricsMutation) AddedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.tenant != nil {
-		edges = append(edges, oncallusershiftmetrics.EdgeTenant)
+		edges = append(edges, oncallshiftmetrics.EdgeTenant)
 	}
 	if m.shift != nil {
-		edges = append(edges, oncallusershiftmetrics.EdgeShift)
+		edges = append(edges, oncallshiftmetrics.EdgeShift)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *OncallUserShiftMetricsMutation) AddedIDs(name string) []ent.Value {
+func (m *OncallShiftMetricsMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case oncallusershiftmetrics.EdgeTenant:
+	case oncallshiftmetrics.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case oncallusershiftmetrics.EdgeShift:
+	case oncallshiftmetrics.EdgeShift:
 		if id := m.shift; id != nil {
 			return []ent.Value{*id}
 		}
@@ -29530,36 +29530,36 @@ func (m *OncallUserShiftMetricsMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OncallUserShiftMetricsMutation) RemovedEdges() []string {
+func (m *OncallShiftMetricsMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *OncallUserShiftMetricsMutation) RemovedIDs(name string) []ent.Value {
+func (m *OncallShiftMetricsMutation) RemovedIDs(name string) []ent.Value {
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OncallUserShiftMetricsMutation) ClearedEdges() []string {
+func (m *OncallShiftMetricsMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 2)
 	if m.clearedtenant {
-		edges = append(edges, oncallusershiftmetrics.EdgeTenant)
+		edges = append(edges, oncallshiftmetrics.EdgeTenant)
 	}
 	if m.clearedshift {
-		edges = append(edges, oncallusershiftmetrics.EdgeShift)
+		edges = append(edges, oncallshiftmetrics.EdgeShift)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *OncallUserShiftMetricsMutation) EdgeCleared(name string) bool {
+func (m *OncallShiftMetricsMutation) EdgeCleared(name string) bool {
 	switch name {
-	case oncallusershiftmetrics.EdgeTenant:
+	case oncallshiftmetrics.EdgeTenant:
 		return m.clearedtenant
-	case oncallusershiftmetrics.EdgeShift:
+	case oncallshiftmetrics.EdgeShift:
 		return m.clearedshift
 	}
 	return false
@@ -29567,30 +29567,30 @@ func (m *OncallUserShiftMetricsMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *OncallUserShiftMetricsMutation) ClearEdge(name string) error {
+func (m *OncallShiftMetricsMutation) ClearEdge(name string) error {
 	switch name {
-	case oncallusershiftmetrics.EdgeTenant:
+	case oncallshiftmetrics.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case oncallusershiftmetrics.EdgeShift:
+	case oncallshiftmetrics.EdgeShift:
 		m.ClearShift()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftMetrics unique edge %s", name)
+	return fmt.Errorf("unknown OncallShiftMetrics unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *OncallUserShiftMetricsMutation) ResetEdge(name string) error {
+func (m *OncallShiftMetricsMutation) ResetEdge(name string) error {
 	switch name {
-	case oncallusershiftmetrics.EdgeTenant:
+	case oncallshiftmetrics.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case oncallusershiftmetrics.EdgeShift:
+	case oncallshiftmetrics.EdgeShift:
 		m.ResetShift()
 		return nil
 	}
-	return fmt.Errorf("unknown OncallUserShiftMetrics edge %s", name)
+	return fmt.Errorf("unknown OncallShiftMetrics edge %s", name)
 }
 
 // PlaybookMutation represents an operation that mutates the Playbook nodes in the graph.
@@ -48993,7 +48993,7 @@ func (m *UserMutation) ResetOncallSchedules() {
 	m.removedoncall_schedules = nil
 }
 
-// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallUserShift entity by ids.
+// AddOncallShiftIDs adds the "oncall_shifts" edge to the OncallShift entity by ids.
 func (m *UserMutation) AddOncallShiftIDs(ids ...uuid.UUID) {
 	if m.oncall_shifts == nil {
 		m.oncall_shifts = make(map[uuid.UUID]struct{})
@@ -49003,17 +49003,17 @@ func (m *UserMutation) AddOncallShiftIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearOncallShifts clears the "oncall_shifts" edge to the OncallUserShift entity.
+// ClearOncallShifts clears the "oncall_shifts" edge to the OncallShift entity.
 func (m *UserMutation) ClearOncallShifts() {
 	m.clearedoncall_shifts = true
 }
 
-// OncallShiftsCleared reports if the "oncall_shifts" edge to the OncallUserShift entity was cleared.
+// OncallShiftsCleared reports if the "oncall_shifts" edge to the OncallShift entity was cleared.
 func (m *UserMutation) OncallShiftsCleared() bool {
 	return m.clearedoncall_shifts
 }
 
-// RemoveOncallShiftIDs removes the "oncall_shifts" edge to the OncallUserShift entity by IDs.
+// RemoveOncallShiftIDs removes the "oncall_shifts" edge to the OncallShift entity by IDs.
 func (m *UserMutation) RemoveOncallShiftIDs(ids ...uuid.UUID) {
 	if m.removedoncall_shifts == nil {
 		m.removedoncall_shifts = make(map[uuid.UUID]struct{})
@@ -49024,7 +49024,7 @@ func (m *UserMutation) RemoveOncallShiftIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedOncallShifts returns the removed IDs of the "oncall_shifts" edge to the OncallUserShift entity.
+// RemovedOncallShifts returns the removed IDs of the "oncall_shifts" edge to the OncallShift entity.
 func (m *UserMutation) RemovedOncallShiftsIDs() (ids []uuid.UUID) {
 	for id := range m.removedoncall_shifts {
 		ids = append(ids, id)

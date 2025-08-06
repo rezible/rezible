@@ -99,14 +99,14 @@ type OncallSchedule func(*sql.Selector)
 // OncallScheduleParticipant is the predicate function for oncallscheduleparticipant builders.
 type OncallScheduleParticipant func(*sql.Selector)
 
-// OncallUserShift is the predicate function for oncallusershift builders.
-type OncallUserShift func(*sql.Selector)
+// OncallShift is the predicate function for oncallshift builders.
+type OncallShift func(*sql.Selector)
 
-// OncallUserShiftHandover is the predicate function for oncallusershifthandover builders.
-type OncallUserShiftHandover func(*sql.Selector)
+// OncallShiftHandover is the predicate function for oncallshifthandover builders.
+type OncallShiftHandover func(*sql.Selector)
 
-// OncallUserShiftMetrics is the predicate function for oncallusershiftmetrics builders.
-type OncallUserShiftMetrics func(*sql.Selector)
+// OncallShiftMetrics is the predicate function for oncallshiftmetrics builders.
+type OncallShiftMetrics func(*sql.Selector)
 
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)

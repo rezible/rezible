@@ -9,20 +9,19 @@ import (
 	"github.com/google/uuid"
 )
 
-// OncallUserShift holds the schema definition for the OncallUserShift entity.
-type OncallUserShift struct {
+type OncallShift struct {
 	ent.Schema
 }
 
-func (OncallUserShift) Mixin() []ent.Mixin {
+func (OncallShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-// Fields of the OncallUserShift.
-func (OncallUserShift) Fields() []ent.Field {
+// Fields of the OncallShift.
+func (OncallShift) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("user_id", uuid.UUID{}),
@@ -35,32 +34,40 @@ func (OncallUserShift) Fields() []ent.Field {
 	}
 }
 
-// Edges of the OncallUserShift.
-func (OncallUserShift) Edges() []ent.Edge {
+// Edges of the OncallShift.
+func (OncallShift) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("user", User.Type).
-			Unique().Required().Field("user_id"),
-		edge.To("roster", OncallRoster.Type).
-			Unique().Required().Field("roster_id"),
-		edge.To("primary_shift", OncallUserShift.Type).Field("primary_shift_id").Unique(),
+			Unique().
+			Required().
+			Field("user_id"),
 
-		edge.To("handover", OncallUserShiftHandover.Type).Unique(),
-		edge.To("metrics", OncallUserShiftMetrics.Type).Unique(),
+		edge.To("roster", OncallRoster.Type).
+			Unique().
+			Required().
+			Field("roster_id"),
+
+		edge.To("primary_shift", OncallShift.Type).
+			Unique().
+			Field("primary_shift_id"),
+
+		edge.To("handover", OncallShiftHandover.Type).Unique(),
+		edge.To("metrics", OncallShiftMetrics.Type).Unique(),
 	}
 }
 
-type OncallUserShiftHandover struct {
+type OncallShiftHandover struct {
 	ent.Schema
 }
 
-func (OncallUserShiftHandover) Mixin() []ent.Mixin {
+func (OncallShiftHandover) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (OncallUserShiftHandover) Fields() []ent.Field {
+func (OncallShiftHandover) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
@@ -72,34 +79,41 @@ func (OncallUserShiftHandover) Fields() []ent.Field {
 	}
 }
 
-func (OncallUserShiftHandover) Edges() []ent.Edge {
+func (OncallShiftHandover) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("shift", OncallUserShift.Type).
-			Ref("handover").Unique().Required().Field("shift_id"),
+		edge.From("shift", OncallShift.Type).
+			Ref("handover").
+			Unique().
+			Required().
+			Field("shift_id"),
 		edge.To("pinned_annotations", OncallAnnotation.Type),
 	}
 }
 
-type OncallUserShiftMetrics struct {
+type OncallShiftMetrics struct {
 	ent.Schema
 }
 
-func (OncallUserShiftMetrics) Mixin() []ent.Mixin {
+func (OncallShiftMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (OncallUserShiftMetrics) Fields() []ent.Field {
+func (OncallShiftMetrics) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("shift_id", uuid.UUID{}),
 	}
 }
 
-func (OncallUserShiftMetrics) Edges() []ent.Edge {
+func (OncallShiftMetrics) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("shift", OncallUserShift.Type).Ref("metrics").Unique().Required().Field("shift_id"),
+		edge.From("shift", OncallShift.Type).
+			Ref("metrics").
+			Unique().
+			Required().
+			Field("shift_id"),
 	}
 }

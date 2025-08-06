@@ -82,10 +82,10 @@ const (
 	// AlertFeedbackColumn is the table column denoting the alert_feedback relation/edge.
 	AlertFeedbackColumn = "annotation_id"
 	// HandoversTable is the table that holds the handovers relation/edge. The primary key declared below.
-	HandoversTable = "oncall_user_shift_handover_pinned_annotations"
-	// HandoversInverseTable is the table name for the OncallUserShiftHandover entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershifthandover" package.
-	HandoversInverseTable = "oncall_user_shift_handovers"
+	HandoversTable = "oncall_shift_handover_pinned_annotations"
+	// HandoversInverseTable is the table name for the OncallShiftHandover entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallshifthandover" package.
+	HandoversInverseTable = "oncall_shift_handovers"
 )
 
 // Columns holds all SQL columns for oncallannotation fields.
@@ -104,7 +104,7 @@ var Columns = []string{
 var (
 	// HandoversPrimaryKey and HandoversColumn2 are the table columns denoting the
 	// primary key for the handovers relation (M2M).
-	HandoversPrimaryKey = []string{"oncall_user_shift_handover_id", "oncall_annotation_id"}
+	HandoversPrimaryKey = []string{"oncall_shift_handover_id", "oncall_annotation_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

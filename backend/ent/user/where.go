@@ -483,7 +483,7 @@ func HasOncallShifts() predicate.User {
 }
 
 // HasOncallShiftsWith applies the HasEdge predicate on the "oncall_shifts" edge with a given conditions (other predicates).
-func HasOncallShiftsWith(preds ...predicate.OncallUserShift) predicate.User {
+func HasOncallShiftsWith(preds ...predicate.OncallShift) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newOncallShiftsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

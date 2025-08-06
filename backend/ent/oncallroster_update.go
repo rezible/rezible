@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -245,14 +245,14 @@ func (oru *OncallRosterUpdate) AddTeams(t ...*Team) *OncallRosterUpdate {
 	return oru.AddTeamIDs(ids...)
 }
 
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
+// AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
 func (oru *OncallRosterUpdate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
 	oru.mutation.AddShiftIDs(ids...)
 	return oru
 }
 
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (oru *OncallRosterUpdate) AddShifts(o ...*OncallUserShift) *OncallRosterUpdate {
+// AddShifts adds the "shifts" edges to the OncallShift entity.
+func (oru *OncallRosterUpdate) AddShifts(o ...*OncallShift) *OncallRosterUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -385,20 +385,20 @@ func (oru *OncallRosterUpdate) RemoveTeams(t ...*Team) *OncallRosterUpdate {
 	return oru.RemoveTeamIDs(ids...)
 }
 
-// ClearShifts clears all "shifts" edges to the OncallUserShift entity.
+// ClearShifts clears all "shifts" edges to the OncallShift entity.
 func (oru *OncallRosterUpdate) ClearShifts() *OncallRosterUpdate {
 	oru.mutation.ClearShifts()
 	return oru
 }
 
-// RemoveShiftIDs removes the "shifts" edge to OncallUserShift entities by IDs.
+// RemoveShiftIDs removes the "shifts" edge to OncallShift entities by IDs.
 func (oru *OncallRosterUpdate) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdate {
 	oru.mutation.RemoveShiftIDs(ids...)
 	return oru
 }
 
-// RemoveShifts removes "shifts" edges to OncallUserShift entities.
-func (oru *OncallRosterUpdate) RemoveShifts(o ...*OncallUserShift) *OncallRosterUpdate {
+// RemoveShifts removes "shifts" edges to OncallShift entities.
+func (oru *OncallRosterUpdate) RemoveShifts(o ...*OncallShift) *OncallRosterUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -751,7 +751,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -764,7 +764,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -780,7 +780,7 @@ func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1107,14 +1107,14 @@ func (oruo *OncallRosterUpdateOne) AddTeams(t ...*Team) *OncallRosterUpdateOne {
 	return oruo.AddTeamIDs(ids...)
 }
 
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
+// AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
 func (oruo *OncallRosterUpdateOne) AddShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
 	oruo.mutation.AddShiftIDs(ids...)
 	return oruo
 }
 
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (oruo *OncallRosterUpdateOne) AddShifts(o ...*OncallUserShift) *OncallRosterUpdateOne {
+// AddShifts adds the "shifts" edges to the OncallShift entity.
+func (oruo *OncallRosterUpdateOne) AddShifts(o ...*OncallShift) *OncallRosterUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -1247,20 +1247,20 @@ func (oruo *OncallRosterUpdateOne) RemoveTeams(t ...*Team) *OncallRosterUpdateOn
 	return oruo.RemoveTeamIDs(ids...)
 }
 
-// ClearShifts clears all "shifts" edges to the OncallUserShift entity.
+// ClearShifts clears all "shifts" edges to the OncallShift entity.
 func (oruo *OncallRosterUpdateOne) ClearShifts() *OncallRosterUpdateOne {
 	oruo.mutation.ClearShifts()
 	return oruo
 }
 
-// RemoveShiftIDs removes the "shifts" edge to OncallUserShift entities by IDs.
+// RemoveShiftIDs removes the "shifts" edge to OncallShift entities by IDs.
 func (oruo *OncallRosterUpdateOne) RemoveShiftIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
 	oruo.mutation.RemoveShiftIDs(ids...)
 	return oruo
 }
 
-// RemoveShifts removes "shifts" edges to OncallUserShift entities.
-func (oruo *OncallRosterUpdateOne) RemoveShifts(o ...*OncallUserShift) *OncallRosterUpdateOne {
+// RemoveShifts removes "shifts" edges to OncallShift entities.
+func (oruo *OncallRosterUpdateOne) RemoveShifts(o ...*OncallShift) *OncallRosterUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -1643,7 +1643,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1656,7 +1656,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1672,7 +1672,7 @@ func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRo
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

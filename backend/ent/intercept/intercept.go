@@ -39,9 +39,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
-	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
@@ -962,85 +962,85 @@ func (f TraverseOncallScheduleParticipant) Traverse(ctx context.Context, q ent.Q
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallScheduleParticipantQuery", q)
 }
 
-// The OncallUserShiftFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallUserShiftFunc func(context.Context, *ent.OncallUserShiftQuery) (ent.Value, error)
+// The OncallShiftFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallShiftFunc func(context.Context, *ent.OncallShiftQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f OncallUserShiftFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallUserShiftQuery); ok {
+func (f OncallShiftFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallShiftQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftQuery", q)
 }
 
-// The TraverseOncallUserShift type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallUserShift func(context.Context, *ent.OncallUserShiftQuery) error
+// The TraverseOncallShift type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallShift func(context.Context, *ent.OncallShiftQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallUserShift) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOncallShift) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseOncallUserShift) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftQuery); ok {
+func (f TraverseOncallShift) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftQuery", q)
 }
 
-// The OncallUserShiftHandoverFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallUserShiftHandoverFunc func(context.Context, *ent.OncallUserShiftHandoverQuery) (ent.Value, error)
+// The OncallShiftHandoverFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallShiftHandoverFunc func(context.Context, *ent.OncallShiftHandoverQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f OncallUserShiftHandoverFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallUserShiftHandoverQuery); ok {
+func (f OncallShiftHandoverFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallShiftHandoverQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftHandoverQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftHandoverQuery", q)
 }
 
-// The TraverseOncallUserShiftHandover type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallUserShiftHandover func(context.Context, *ent.OncallUserShiftHandoverQuery) error
+// The TraverseOncallShiftHandover type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallShiftHandover func(context.Context, *ent.OncallShiftHandoverQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallUserShiftHandover) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOncallShiftHandover) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseOncallUserShiftHandover) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftHandoverQuery); ok {
+func (f TraverseOncallShiftHandover) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftHandoverQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftHandoverQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftHandoverQuery", q)
 }
 
-// The OncallUserShiftMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallUserShiftMetricsFunc func(context.Context, *ent.OncallUserShiftMetricsQuery) (ent.Value, error)
+// The OncallShiftMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OncallShiftMetricsFunc func(context.Context, *ent.OncallShiftMetricsQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f OncallUserShiftMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallUserShiftMetricsQuery); ok {
+func (f OncallShiftMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OncallShiftMetricsQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftMetricsQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftMetricsQuery", q)
 }
 
-// The TraverseOncallUserShiftMetrics type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallUserShiftMetrics func(context.Context, *ent.OncallUserShiftMetricsQuery) error
+// The TraverseOncallShiftMetrics type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOncallShiftMetrics func(context.Context, *ent.OncallShiftMetricsQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallUserShiftMetrics) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseOncallShiftMetrics) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseOncallUserShiftMetrics) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftMetricsQuery); ok {
+func (f TraverseOncallShiftMetrics) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftMetricsQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallUserShiftMetricsQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.OncallShiftMetricsQuery", q)
 }
 
 // The PlaybookFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1756,12 +1756,12 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallScheduleQuery, predicate.OncallSchedule, oncallschedule.OrderOption]{typ: ent.TypeOncallSchedule, tq: q}, nil
 	case *ent.OncallScheduleParticipantQuery:
 		return &query[*ent.OncallScheduleParticipantQuery, predicate.OncallScheduleParticipant, oncallscheduleparticipant.OrderOption]{typ: ent.TypeOncallScheduleParticipant, tq: q}, nil
-	case *ent.OncallUserShiftQuery:
-		return &query[*ent.OncallUserShiftQuery, predicate.OncallUserShift, oncallusershift.OrderOption]{typ: ent.TypeOncallUserShift, tq: q}, nil
-	case *ent.OncallUserShiftHandoverQuery:
-		return &query[*ent.OncallUserShiftHandoverQuery, predicate.OncallUserShiftHandover, oncallusershifthandover.OrderOption]{typ: ent.TypeOncallUserShiftHandover, tq: q}, nil
-	case *ent.OncallUserShiftMetricsQuery:
-		return &query[*ent.OncallUserShiftMetricsQuery, predicate.OncallUserShiftMetrics, oncallusershiftmetrics.OrderOption]{typ: ent.TypeOncallUserShiftMetrics, tq: q}, nil
+	case *ent.OncallShiftQuery:
+		return &query[*ent.OncallShiftQuery, predicate.OncallShift, oncallshift.OrderOption]{typ: ent.TypeOncallShift, tq: q}, nil
+	case *ent.OncallShiftHandoverQuery:
+		return &query[*ent.OncallShiftHandoverQuery, predicate.OncallShiftHandover, oncallshifthandover.OrderOption]{typ: ent.TypeOncallShiftHandover, tq: q}, nil
+	case *ent.OncallShiftMetricsQuery:
+		return &query[*ent.OncallShiftMetricsQuery, predicate.OncallShiftMetrics, oncallshiftmetrics.OrderOption]{typ: ent.TypeOncallShiftMetrics, tq: q}, nil
 	case *ent.PlaybookQuery:
 		return &query[*ent.PlaybookQuery, predicate.Playbook, playbook.OrderOption]{typ: ent.TypePlaybook, tq: q}, nil
 	case *ent.ProviderConfigQuery:

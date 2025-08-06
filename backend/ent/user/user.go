@@ -77,10 +77,10 @@ const (
 	// OncallSchedulesColumn is the table column denoting the oncall_schedules relation/edge.
 	OncallSchedulesColumn = "user_id"
 	// OncallShiftsTable is the table that holds the oncall_shifts relation/edge.
-	OncallShiftsTable = "oncall_user_shifts"
-	// OncallShiftsInverseTable is the table name for the OncallUserShift entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershift" package.
-	OncallShiftsInverseTable = "oncall_user_shifts"
+	OncallShiftsTable = "oncall_shifts"
+	// OncallShiftsInverseTable is the table name for the OncallShift entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallshift" package.
+	OncallShiftsInverseTable = "oncall_shifts"
 	// OncallShiftsColumn is the table column denoting the oncall_shifts relation/edge.
 	OncallShiftsColumn = "user_id"
 	// OncallAnnotationsTable is the table that holds the oncall_annotations relation/edge.

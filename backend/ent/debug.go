@@ -252,28 +252,28 @@ func (c *OncallScheduleParticipantClient) Debug() *OncallScheduleParticipantClie
 	return &OncallScheduleParticipantClient{config: cfg}
 }
 
-func (c *OncallUserShiftClient) Debug() *OncallUserShiftClient {
+func (c *OncallShiftClient) Debug() *OncallShiftClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallUserShiftClient{config: cfg}
+	return &OncallShiftClient{config: cfg}
 }
 
-func (c *OncallUserShiftHandoverClient) Debug() *OncallUserShiftHandoverClient {
+func (c *OncallShiftHandoverClient) Debug() *OncallShiftHandoverClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallUserShiftHandoverClient{config: cfg}
+	return &OncallShiftHandoverClient{config: cfg}
 }
 
-func (c *OncallUserShiftMetricsClient) Debug() *OncallUserShiftMetricsClient {
+func (c *OncallShiftMetricsClient) Debug() *OncallShiftMetricsClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallUserShiftMetricsClient{config: cfg}
+	return &OncallShiftMetricsClient{config: cfg}
 }
 
 func (c *PlaybookClient) Debug() *PlaybookClient {

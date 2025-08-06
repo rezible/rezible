@@ -59,7 +59,7 @@ type OncallRosterEdges struct {
 	// Teams holds the value of the teams edge.
 	Teams []*Team `json:"teams,omitempty"`
 	// Shifts holds the value of the shifts edge.
-	Shifts []*OncallUserShift `json:"shifts,omitempty"`
+	Shifts []*OncallShift `json:"shifts,omitempty"`
 	// UserWatchers holds the value of the user_watchers edge.
 	UserWatchers []*User `json:"user_watchers,omitempty"`
 	// Metrics holds the value of the metrics edge.
@@ -129,7 +129,7 @@ func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
 
 // ShiftsOrErr returns the Shifts value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
+func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallShift, error) {
 	if e.loadedTypes[6] {
 		return e.Shifts, nil
 	}
@@ -286,7 +286,7 @@ func (or *OncallRoster) QueryTeams() *TeamQuery {
 }
 
 // QueryShifts queries the "shifts" edge of the OncallRoster entity.
-func (or *OncallRoster) QueryShifts() *OncallUserShiftQuery {
+func (or *OncallRoster) QueryShifts() *OncallShiftQuery {
 	return NewOncallRosterClient(or.config).QueryShifts(or)
 }
 

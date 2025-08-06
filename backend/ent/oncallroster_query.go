@@ -20,7 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/tenant"
@@ -40,7 +40,7 @@ type OncallRosterQuery struct {
 	withEvents           *OncallEventQuery
 	withAnnotations      *OncallAnnotationQuery
 	withTeams            *TeamQuery
-	withShifts           *OncallUserShiftQuery
+	withShifts           *OncallShiftQuery
 	withUserWatchers     *UserQuery
 	withMetrics          *OncallRosterMetricsQuery
 	modifiers            []func(*sql.Selector)
@@ -213,8 +213,8 @@ func (orq *OncallRosterQuery) QueryTeams() *TeamQuery {
 }
 
 // QueryShifts chains the current query on the "shifts" edge.
-func (orq *OncallRosterQuery) QueryShifts() *OncallUserShiftQuery {
-	query := (&OncallUserShiftClient{config: orq.config}).Query()
+func (orq *OncallRosterQuery) QueryShifts() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: orq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := orq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -225,7 +225,7 @@ func (orq *OncallRosterQuery) QueryShifts() *OncallUserShiftQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
-			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
+			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.ShiftsTable, oncallroster.ShiftsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
@@ -554,8 +554,8 @@ func (orq *OncallRosterQuery) WithTeams(opts ...func(*TeamQuery)) *OncallRosterQ
 
 // WithShifts tells the query-builder to eager-load the nodes that are connected to
 // the "shifts" edge. The optional arguments are used to configure the query builder of the edge.
-func (orq *OncallRosterQuery) WithShifts(opts ...func(*OncallUserShiftQuery)) *OncallRosterQuery {
-	query := (&OncallUserShiftClient{config: orq.config}).Query()
+func (orq *OncallRosterQuery) WithShifts(opts ...func(*OncallShiftQuery)) *OncallRosterQuery {
+	query := (&OncallShiftClient{config: orq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -744,8 +744,8 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	}
 	if query := orq.withShifts; query != nil {
 		if err := orq.loadShifts(ctx, query, nodes,
-			func(n *OncallRoster) { n.Edges.Shifts = []*OncallUserShift{} },
-			func(n *OncallRoster, e *OncallUserShift) { n.Edges.Shifts = append(n.Edges.Shifts, e) }); err != nil {
+			func(n *OncallRoster) { n.Edges.Shifts = []*OncallShift{} },
+			func(n *OncallRoster, e *OncallShift) { n.Edges.Shifts = append(n.Edges.Shifts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -975,7 +975,7 @@ func (orq *OncallRosterQuery) loadTeams(ctx context.Context, query *TeamQuery, n
 	}
 	return nil
 }
-func (orq *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallUserShiftQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallUserShift)) error {
+func (orq *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallShiftQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallShift)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
 	for i := range nodes {
@@ -986,9 +986,9 @@ func (orq *OncallRosterQuery) loadShifts(ctx context.Context, query *OncallUserS
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallusershift.FieldRosterID)
+		query.ctx.AppendFieldOnce(oncallshift.FieldRosterID)
 	}
-	query.Where(predicate.OncallUserShift(func(s *sql.Selector) {
+	query.Where(predicate.OncallShift(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(oncallroster.ShiftsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)

@@ -93,10 +93,10 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "team" package.
 	TeamsInverseTable = "teams"
 	// ShiftsTable is the table that holds the shifts relation/edge.
-	ShiftsTable = "oncall_user_shifts"
-	// ShiftsInverseTable is the table name for the OncallUserShift entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallusershift" package.
-	ShiftsInverseTable = "oncall_user_shifts"
+	ShiftsTable = "oncall_shifts"
+	// ShiftsInverseTable is the table name for the OncallShift entity.
+	// It exists in this package in order to avoid circular dependency with the "oncallshift" package.
+	ShiftsInverseTable = "oncall_shifts"
 	// ShiftsColumn is the table column denoting the shifts relation/edge.
 	ShiftsColumn = "roster_id"
 	// UserWatchersTable is the table that holds the user_watchers relation/edge. The primary key declared below.

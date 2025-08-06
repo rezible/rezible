@@ -11,15 +11,15 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
-	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
-// OncallUserShift is the model entity for the OncallUserShift schema.
-type OncallUserShift struct {
+// OncallShift is the model entity for the OncallShift schema.
+type OncallShift struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -32,7 +32,7 @@ type OncallUserShift struct {
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
 	// Role holds the value of the "role" field.
-	Role oncallusershift.Role `json:"role,omitempty"`
+	Role oncallshift.Role `json:"role,omitempty"`
 	// PrimaryShiftID holds the value of the "primary_shift_id" field.
 	PrimaryShiftID uuid.UUID `json:"primary_shift_id,omitempty"`
 	// StartAt holds the value of the "start_at" field.
@@ -40,13 +40,13 @@ type OncallUserShift struct {
 	// EndAt holds the value of the "end_at" field.
 	EndAt time.Time `json:"end_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the OncallUserShiftQuery when eager-loading is set.
-	Edges        OncallUserShiftEdges `json:"edges"`
+	// The values are being populated by the OncallShiftQuery when eager-loading is set.
+	Edges        OncallShiftEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// OncallUserShiftEdges holds the relations/edges for other nodes in the graph.
-type OncallUserShiftEdges struct {
+// OncallShiftEdges holds the relations/edges for other nodes in the graph.
+type OncallShiftEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// User holds the value of the user edge.
@@ -54,11 +54,11 @@ type OncallUserShiftEdges struct {
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// PrimaryShift holds the value of the primary_shift edge.
-	PrimaryShift *OncallUserShift `json:"primary_shift,omitempty"`
+	PrimaryShift *OncallShift `json:"primary_shift,omitempty"`
 	// Handover holds the value of the handover edge.
-	Handover *OncallUserShiftHandover `json:"handover,omitempty"`
+	Handover *OncallShiftHandover `json:"handover,omitempty"`
 	// Metrics holds the value of the metrics edge.
-	Metrics *OncallUserShiftMetrics `json:"metrics,omitempty"`
+	Metrics *OncallShiftMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -66,7 +66,7 @@ type OncallUserShiftEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) TenantOrErr() (*Tenant, error) {
+func (e OncallShiftEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -77,7 +77,7 @@ func (e OncallUserShiftEdges) TenantOrErr() (*Tenant, error) {
 
 // UserOrErr returns the User value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) UserOrErr() (*User, error) {
+func (e OncallShiftEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
 	} else if e.loadedTypes[1] {
@@ -88,7 +88,7 @@ func (e OncallUserShiftEdges) UserOrErr() (*User, error) {
 
 // RosterOrErr returns the Roster value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) RosterOrErr() (*OncallRoster, error) {
+func (e OncallShiftEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
 	} else if e.loadedTypes[2] {
@@ -99,49 +99,49 @@ func (e OncallUserShiftEdges) RosterOrErr() (*OncallRoster, error) {
 
 // PrimaryShiftOrErr returns the PrimaryShift value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) PrimaryShiftOrErr() (*OncallUserShift, error) {
+func (e OncallShiftEdges) PrimaryShiftOrErr() (*OncallShift, error) {
 	if e.PrimaryShift != nil {
 		return e.PrimaryShift, nil
 	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: oncallusershift.Label}
+		return nil, &NotFoundError{label: oncallshift.Label}
 	}
 	return nil, &NotLoadedError{edge: "primary_shift"}
 }
 
 // HandoverOrErr returns the Handover value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) HandoverOrErr() (*OncallUserShiftHandover, error) {
+func (e OncallShiftEdges) HandoverOrErr() (*OncallShiftHandover, error) {
 	if e.Handover != nil {
 		return e.Handover, nil
 	} else if e.loadedTypes[4] {
-		return nil, &NotFoundError{label: oncallusershifthandover.Label}
+		return nil, &NotFoundError{label: oncallshifthandover.Label}
 	}
 	return nil, &NotLoadedError{edge: "handover"}
 }
 
 // MetricsOrErr returns the Metrics value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftEdges) MetricsOrErr() (*OncallUserShiftMetrics, error) {
+func (e OncallShiftEdges) MetricsOrErr() (*OncallShiftMetrics, error) {
 	if e.Metrics != nil {
 		return e.Metrics, nil
 	} else if e.loadedTypes[5] {
-		return nil, &NotFoundError{label: oncallusershiftmetrics.Label}
+		return nil, &NotFoundError{label: oncallshiftmetrics.Label}
 	}
 	return nil, &NotLoadedError{edge: "metrics"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*OncallUserShift) scanValues(columns []string) ([]any, error) {
+func (*OncallShift) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershift.FieldTenantID:
+		case oncallshift.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case oncallusershift.FieldProviderID, oncallusershift.FieldRole:
+		case oncallshift.FieldProviderID, oncallshift.FieldRole:
 			values[i] = new(sql.NullString)
-		case oncallusershift.FieldStartAt, oncallusershift.FieldEndAt:
+		case oncallshift.FieldStartAt, oncallshift.FieldEndAt:
 			values[i] = new(sql.NullTime)
-		case oncallusershift.FieldID, oncallusershift.FieldUserID, oncallusershift.FieldRosterID, oncallusershift.FieldPrimaryShiftID:
+		case oncallshift.FieldID, oncallshift.FieldUserID, oncallshift.FieldRosterID, oncallshift.FieldPrimaryShiftID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -151,159 +151,159 @@ func (*OncallUserShift) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the OncallUserShift fields.
-func (ous *OncallUserShift) assignValues(columns []string, values []any) error {
+// to the OncallShift fields.
+func (os *OncallShift) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershift.FieldID:
+		case oncallshift.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				ous.ID = *value
+				os.ID = *value
 			}
-		case oncallusershift.FieldTenantID:
+		case oncallshift.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				ous.TenantID = int(value.Int64)
+				os.TenantID = int(value.Int64)
 			}
-		case oncallusershift.FieldUserID:
+		case oncallshift.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field user_id", values[i])
 			} else if value != nil {
-				ous.UserID = *value
+				os.UserID = *value
 			}
-		case oncallusershift.FieldRosterID:
+		case oncallshift.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
 			} else if value != nil {
-				ous.RosterID = *value
+				os.RosterID = *value
 			}
-		case oncallusershift.FieldProviderID:
+		case oncallshift.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
 			} else if value.Valid {
-				ous.ProviderID = value.String
+				os.ProviderID = value.String
 			}
-		case oncallusershift.FieldRole:
+		case oncallshift.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
-				ous.Role = oncallusershift.Role(value.String)
+				os.Role = oncallshift.Role(value.String)
 			}
-		case oncallusershift.FieldPrimaryShiftID:
+		case oncallshift.FieldPrimaryShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field primary_shift_id", values[i])
 			} else if value != nil {
-				ous.PrimaryShiftID = *value
+				os.PrimaryShiftID = *value
 			}
-		case oncallusershift.FieldStartAt:
+		case oncallshift.FieldStartAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field start_at", values[i])
 			} else if value.Valid {
-				ous.StartAt = value.Time
+				os.StartAt = value.Time
 			}
-		case oncallusershift.FieldEndAt:
+		case oncallshift.FieldEndAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field end_at", values[i])
 			} else if value.Valid {
-				ous.EndAt = value.Time
+				os.EndAt = value.Time
 			}
 		default:
-			ous.selectValues.Set(columns[i], values[i])
+			os.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the OncallUserShift.
+// Value returns the ent.Value that was dynamically selected and assigned to the OncallShift.
 // This includes values selected through modifiers, order, etc.
-func (ous *OncallUserShift) Value(name string) (ent.Value, error) {
-	return ous.selectValues.Get(name)
+func (os *OncallShift) Value(name string) (ent.Value, error) {
+	return os.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryTenant() *TenantQuery {
-	return NewOncallUserShiftClient(ous.config).QueryTenant(ous)
+// QueryTenant queries the "tenant" edge of the OncallShift entity.
+func (os *OncallShift) QueryTenant() *TenantQuery {
+	return NewOncallShiftClient(os.config).QueryTenant(os)
 }
 
-// QueryUser queries the "user" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryUser() *UserQuery {
-	return NewOncallUserShiftClient(ous.config).QueryUser(ous)
+// QueryUser queries the "user" edge of the OncallShift entity.
+func (os *OncallShift) QueryUser() *UserQuery {
+	return NewOncallShiftClient(os.config).QueryUser(os)
 }
 
-// QueryRoster queries the "roster" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryRoster() *OncallRosterQuery {
-	return NewOncallUserShiftClient(ous.config).QueryRoster(ous)
+// QueryRoster queries the "roster" edge of the OncallShift entity.
+func (os *OncallShift) QueryRoster() *OncallRosterQuery {
+	return NewOncallShiftClient(os.config).QueryRoster(os)
 }
 
-// QueryPrimaryShift queries the "primary_shift" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryPrimaryShift() *OncallUserShiftQuery {
-	return NewOncallUserShiftClient(ous.config).QueryPrimaryShift(ous)
+// QueryPrimaryShift queries the "primary_shift" edge of the OncallShift entity.
+func (os *OncallShift) QueryPrimaryShift() *OncallShiftQuery {
+	return NewOncallShiftClient(os.config).QueryPrimaryShift(os)
 }
 
-// QueryHandover queries the "handover" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryHandover() *OncallUserShiftHandoverQuery {
-	return NewOncallUserShiftClient(ous.config).QueryHandover(ous)
+// QueryHandover queries the "handover" edge of the OncallShift entity.
+func (os *OncallShift) QueryHandover() *OncallShiftHandoverQuery {
+	return NewOncallShiftClient(os.config).QueryHandover(os)
 }
 
-// QueryMetrics queries the "metrics" edge of the OncallUserShift entity.
-func (ous *OncallUserShift) QueryMetrics() *OncallUserShiftMetricsQuery {
-	return NewOncallUserShiftClient(ous.config).QueryMetrics(ous)
+// QueryMetrics queries the "metrics" edge of the OncallShift entity.
+func (os *OncallShift) QueryMetrics() *OncallShiftMetricsQuery {
+	return NewOncallShiftClient(os.config).QueryMetrics(os)
 }
 
-// Update returns a builder for updating this OncallUserShift.
-// Note that you need to call OncallUserShift.Unwrap() before calling this method if this OncallUserShift
+// Update returns a builder for updating this OncallShift.
+// Note that you need to call OncallShift.Unwrap() before calling this method if this OncallShift
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (ous *OncallUserShift) Update() *OncallUserShiftUpdateOne {
-	return NewOncallUserShiftClient(ous.config).UpdateOne(ous)
+func (os *OncallShift) Update() *OncallShiftUpdateOne {
+	return NewOncallShiftClient(os.config).UpdateOne(os)
 }
 
-// Unwrap unwraps the OncallUserShift entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the OncallShift entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (ous *OncallUserShift) Unwrap() *OncallUserShift {
-	_tx, ok := ous.config.driver.(*txDriver)
+func (os *OncallShift) Unwrap() *OncallShift {
+	_tx, ok := os.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: OncallUserShift is not a transactional entity")
+		panic("ent: OncallShift is not a transactional entity")
 	}
-	ous.config.driver = _tx.drv
-	return ous
+	os.config.driver = _tx.drv
+	return os
 }
 
 // String implements the fmt.Stringer.
-func (ous *OncallUserShift) String() string {
+func (os *OncallShift) String() string {
 	var builder strings.Builder
-	builder.WriteString("OncallUserShift(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", ous.ID))
+	builder.WriteString("OncallShift(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", os.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", ous.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", os.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", ous.UserID))
+	builder.WriteString(fmt.Sprintf("%v", os.UserID))
 	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
-	builder.WriteString(fmt.Sprintf("%v", ous.RosterID))
+	builder.WriteString(fmt.Sprintf("%v", os.RosterID))
 	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
-	builder.WriteString(ous.ProviderID)
+	builder.WriteString(os.ProviderID)
 	builder.WriteString(", ")
 	builder.WriteString("role=")
-	builder.WriteString(fmt.Sprintf("%v", ous.Role))
+	builder.WriteString(fmt.Sprintf("%v", os.Role))
 	builder.WriteString(", ")
 	builder.WriteString("primary_shift_id=")
-	builder.WriteString(fmt.Sprintf("%v", ous.PrimaryShiftID))
+	builder.WriteString(fmt.Sprintf("%v", os.PrimaryShiftID))
 	builder.WriteString(", ")
 	builder.WriteString("start_at=")
-	builder.WriteString(ous.StartAt.Format(time.ANSIC))
+	builder.WriteString(os.StartAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("end_at=")
-	builder.WriteString(ous.EndAt.Format(time.ANSIC))
+	builder.WriteString(os.EndAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// OncallUserShifts is a parsable slice of OncallUserShift.
-type OncallUserShifts []*OncallUserShift
+// OncallShifts is a parsable slice of OncallShift.
+type OncallShifts []*OncallShift

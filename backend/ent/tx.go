@@ -74,12 +74,12 @@ type Tx struct {
 	OncallSchedule *OncallScheduleClient
 	// OncallScheduleParticipant is the client for interacting with the OncallScheduleParticipant builders.
 	OncallScheduleParticipant *OncallScheduleParticipantClient
-	// OncallUserShift is the client for interacting with the OncallUserShift builders.
-	OncallUserShift *OncallUserShiftClient
-	// OncallUserShiftHandover is the client for interacting with the OncallUserShiftHandover builders.
-	OncallUserShiftHandover *OncallUserShiftHandoverClient
-	// OncallUserShiftMetrics is the client for interacting with the OncallUserShiftMetrics builders.
-	OncallUserShiftMetrics *OncallUserShiftMetricsClient
+	// OncallShift is the client for interacting with the OncallShift builders.
+	OncallShift *OncallShiftClient
+	// OncallShiftHandover is the client for interacting with the OncallShiftHandover builders.
+	OncallShiftHandover *OncallShiftHandoverClient
+	// OncallShiftMetrics is the client for interacting with the OncallShiftMetrics builders.
+	OncallShiftMetrics *OncallShiftMetricsClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
 	// ProviderConfig is the client for interacting with the ProviderConfig builders.
@@ -290,9 +290,9 @@ func (tx *Tx) init() {
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)
 	tx.OncallSchedule = NewOncallScheduleClient(tx.config)
 	tx.OncallScheduleParticipant = NewOncallScheduleParticipantClient(tx.config)
-	tx.OncallUserShift = NewOncallUserShiftClient(tx.config)
-	tx.OncallUserShiftHandover = NewOncallUserShiftHandoverClient(tx.config)
-	tx.OncallUserShiftMetrics = NewOncallUserShiftMetricsClient(tx.config)
+	tx.OncallShift = NewOncallShiftClient(tx.config)
+	tx.OncallShiftHandover = NewOncallShiftHandoverClient(tx.config)
+	tx.OncallShiftMetrics = NewOncallShiftMetricsClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
 	tx.ProviderConfig = NewProviderConfigClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)

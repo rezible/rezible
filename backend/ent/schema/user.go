@@ -38,7 +38,7 @@ func (User) Edges() []ent.Edge {
 		edge.To("watched_oncall_rosters", OncallRoster.Type),
 
 		edge.From("oncall_schedules", OncallScheduleParticipant.Type).Ref("user"),
-		edge.From("oncall_shifts", OncallUserShift.Type).Ref("user"),
+		edge.From("oncall_shifts", OncallShift.Type).Ref("user"),
 		edge.From("oncall_annotations", OncallAnnotation.Type).Ref("creator"),
 
 		edge.To("incidents", Incident.Type).

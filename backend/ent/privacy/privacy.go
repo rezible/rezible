@@ -855,76 +855,76 @@ func (f OncallScheduleParticipantMutationRuleFunc) EvalMutation(ctx context.Cont
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallScheduleParticipantMutation", m)
 }
 
-// The OncallUserShiftQueryRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type OncallUserShiftQueryRuleFunc func(context.Context, *ent.OncallUserShiftQuery) error
+type OncallShiftQueryRuleFunc func(context.Context, *ent.OncallShiftQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f OncallUserShiftQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftQuery); ok {
+func (f OncallShiftQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallUserShiftQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallShiftQuery", q)
 }
 
-// The OncallUserShiftMutationRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type OncallUserShiftMutationRuleFunc func(context.Context, *ent.OncallUserShiftMutation) error
+type OncallShiftMutationRuleFunc func(context.Context, *ent.OncallShiftMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f OncallUserShiftMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallUserShiftMutation); ok {
+func (f OncallShiftMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OncallShiftMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallUserShiftMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallShiftMutation", m)
 }
 
-// The OncallUserShiftHandoverQueryRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftHandoverQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type OncallUserShiftHandoverQueryRuleFunc func(context.Context, *ent.OncallUserShiftHandoverQuery) error
+type OncallShiftHandoverQueryRuleFunc func(context.Context, *ent.OncallShiftHandoverQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f OncallUserShiftHandoverQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftHandoverQuery); ok {
+func (f OncallShiftHandoverQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftHandoverQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallUserShiftHandoverQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallShiftHandoverQuery", q)
 }
 
-// The OncallUserShiftHandoverMutationRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftHandoverMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type OncallUserShiftHandoverMutationRuleFunc func(context.Context, *ent.OncallUserShiftHandoverMutation) error
+type OncallShiftHandoverMutationRuleFunc func(context.Context, *ent.OncallShiftHandoverMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f OncallUserShiftHandoverMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallUserShiftHandoverMutation); ok {
+func (f OncallShiftHandoverMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OncallShiftHandoverMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallUserShiftHandoverMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallShiftHandoverMutation", m)
 }
 
-// The OncallUserShiftMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type OncallUserShiftMetricsQueryRuleFunc func(context.Context, *ent.OncallUserShiftMetricsQuery) error
+type OncallShiftMetricsQueryRuleFunc func(context.Context, *ent.OncallShiftMetricsQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f OncallUserShiftMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallUserShiftMetricsQuery); ok {
+func (f OncallShiftMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OncallShiftMetricsQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallUserShiftMetricsQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallShiftMetricsQuery", q)
 }
 
-// The OncallUserShiftMetricsMutationRuleFunc type is an adapter to allow the use of ordinary
+// The OncallShiftMetricsMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type OncallUserShiftMetricsMutationRuleFunc func(context.Context, *ent.OncallUserShiftMetricsMutation) error
+type OncallShiftMetricsMutationRuleFunc func(context.Context, *ent.OncallShiftMetricsMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f OncallUserShiftMetricsMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallUserShiftMetricsMutation); ok {
+func (f OncallShiftMetricsMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.OncallShiftMetricsMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallUserShiftMetricsMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallShiftMetricsMutation", m)
 }
 
 // The PlaybookQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1600,11 +1600,11 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.OncallScheduleParticipantQuery:
 		return q.Filter(), nil
-	case *ent.OncallUserShiftQuery:
+	case *ent.OncallShiftQuery:
 		return q.Filter(), nil
-	case *ent.OncallUserShiftHandoverQuery:
+	case *ent.OncallShiftHandoverQuery:
 		return q.Filter(), nil
-	case *ent.OncallUserShiftMetricsQuery:
+	case *ent.OncallShiftMetricsQuery:
 		return q.Filter(), nil
 	case *ent.PlaybookQuery:
 		return q.Filter(), nil
@@ -1723,11 +1723,11 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.OncallScheduleParticipantMutation:
 		return m.Filter(), nil
-	case *ent.OncallUserShiftMutation:
+	case *ent.OncallShiftMutation:
 		return m.Filter(), nil
-	case *ent.OncallUserShiftHandoverMutation:
+	case *ent.OncallShiftHandoverMutation:
 		return m.Filter(), nil
-	case *ent.OncallUserShiftMetricsMutation:
+	case *ent.OncallShiftMetricsMutation:
 		return m.Filter(), nil
 	case *ent.PlaybookMutation:
 		return m.Filter(), nil

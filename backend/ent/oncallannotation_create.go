@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -139,14 +139,14 @@ func (oac *OncallAnnotationCreate) SetAlertFeedback(a *AlertFeedback) *OncallAnn
 	return oac.SetAlertFeedbackID(a.ID)
 }
 
-// AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
+// AddHandoverIDs adds the "handovers" edge to the OncallShiftHandover entity by IDs.
 func (oac *OncallAnnotationCreate) AddHandoverIDs(ids ...uuid.UUID) *OncallAnnotationCreate {
 	oac.mutation.AddHandoverIDs(ids...)
 	return oac
 }
 
-// AddHandovers adds the "handovers" edges to the OncallUserShiftHandover entity.
-func (oac *OncallAnnotationCreate) AddHandovers(o ...*OncallUserShiftHandover) *OncallAnnotationCreate {
+// AddHandovers adds the "handovers" edges to the OncallShiftHandover entity.
+func (oac *OncallAnnotationCreate) AddHandovers(o ...*OncallShiftHandover) *OncallAnnotationCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -390,7 +390,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 			Columns: oncallannotation.HandoversPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershifthandover.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -19,7 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -211,14 +211,14 @@ func (orc *OncallRosterCreate) AddTeams(t ...*Team) *OncallRosterCreate {
 	return orc.AddTeamIDs(ids...)
 }
 
-// AddShiftIDs adds the "shifts" edge to the OncallUserShift entity by IDs.
+// AddShiftIDs adds the "shifts" edge to the OncallShift entity by IDs.
 func (orc *OncallRosterCreate) AddShiftIDs(ids ...uuid.UUID) *OncallRosterCreate {
 	orc.mutation.AddShiftIDs(ids...)
 	return orc
 }
 
-// AddShifts adds the "shifts" edges to the OncallUserShift entity.
-func (orc *OncallRosterCreate) AddShifts(o ...*OncallUserShift) *OncallRosterCreate {
+// AddShifts adds the "shifts" edges to the OncallShift entity.
+func (orc *OncallRosterCreate) AddShifts(o ...*OncallShift) *OncallRosterCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -490,7 +490,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 			Columns: []string{oncallroster.ShiftsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallusershift.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

@@ -10,13 +10,13 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// OncallUserShiftHandover is the model entity for the OncallUserShiftHandover schema.
-type OncallUserShiftHandover struct {
+// OncallShiftHandover is the model entity for the OncallShiftHandover schema.
+type OncallShiftHandover struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -35,17 +35,17 @@ type OncallUserShiftHandover struct {
 	// Contents holds the value of the "contents" field.
 	Contents []byte `json:"contents,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the OncallUserShiftHandoverQuery when eager-loading is set.
-	Edges        OncallUserShiftHandoverEdges `json:"edges"`
+	// The values are being populated by the OncallShiftHandoverQuery when eager-loading is set.
+	Edges        OncallShiftHandoverEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// OncallUserShiftHandoverEdges holds the relations/edges for other nodes in the graph.
-type OncallUserShiftHandoverEdges struct {
+// OncallShiftHandoverEdges holds the relations/edges for other nodes in the graph.
+type OncallShiftHandoverEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Shift holds the value of the shift edge.
-	Shift *OncallUserShift `json:"shift,omitempty"`
+	Shift *OncallShift `json:"shift,omitempty"`
 	// PinnedAnnotations holds the value of the pinned_annotations edge.
 	PinnedAnnotations []*OncallAnnotation `json:"pinned_annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -55,7 +55,7 @@ type OncallUserShiftHandoverEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftHandoverEdges) TenantOrErr() (*Tenant, error) {
+func (e OncallShiftHandoverEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -66,18 +66,18 @@ func (e OncallUserShiftHandoverEdges) TenantOrErr() (*Tenant, error) {
 
 // ShiftOrErr returns the Shift value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallUserShiftHandoverEdges) ShiftOrErr() (*OncallUserShift, error) {
+func (e OncallShiftHandoverEdges) ShiftOrErr() (*OncallShift, error) {
 	if e.Shift != nil {
 		return e.Shift, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: oncallusershift.Label}
+		return nil, &NotFoundError{label: oncallshift.Label}
 	}
 	return nil, &NotLoadedError{edge: "shift"}
 }
 
 // PinnedAnnotationsOrErr returns the PinnedAnnotations value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotation, error) {
+func (e OncallShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotation, error) {
 	if e.loadedTypes[2] {
 		return e.PinnedAnnotations, nil
 	}
@@ -85,19 +85,19 @@ func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotat
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*OncallUserShiftHandover) scanValues(columns []string) ([]any, error) {
+func (*OncallShiftHandover) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershifthandover.FieldContents:
+		case oncallshifthandover.FieldContents:
 			values[i] = new([]byte)
-		case oncallusershifthandover.FieldReminderSent:
+		case oncallshifthandover.FieldReminderSent:
 			values[i] = new(sql.NullBool)
-		case oncallusershifthandover.FieldTenantID:
+		case oncallshifthandover.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case oncallusershifthandover.FieldCreatedAt, oncallusershifthandover.FieldUpdatedAt, oncallusershifthandover.FieldSentAt:
+		case oncallshifthandover.FieldCreatedAt, oncallshifthandover.FieldUpdatedAt, oncallshifthandover.FieldSentAt:
 			values[i] = new(sql.NullTime)
-		case oncallusershifthandover.FieldID, oncallusershifthandover.FieldShiftID:
+		case oncallshifthandover.FieldID, oncallshifthandover.FieldShiftID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -107,135 +107,135 @@ func (*OncallUserShiftHandover) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the OncallUserShiftHandover fields.
-func (oush *OncallUserShiftHandover) assignValues(columns []string, values []any) error {
+// to the OncallShiftHandover fields.
+func (osh *OncallShiftHandover) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case oncallusershifthandover.FieldID:
+		case oncallshifthandover.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
-				oush.ID = *value
+				osh.ID = *value
 			}
-		case oncallusershifthandover.FieldTenantID:
+		case oncallshifthandover.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
-				oush.TenantID = int(value.Int64)
+				osh.TenantID = int(value.Int64)
 			}
-		case oncallusershifthandover.FieldShiftID:
+		case oncallshifthandover.FieldShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
 			} else if value != nil {
-				oush.ShiftID = *value
+				osh.ShiftID = *value
 			}
-		case oncallusershifthandover.FieldCreatedAt:
+		case oncallshifthandover.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
-				oush.CreatedAt = value.Time
+				osh.CreatedAt = value.Time
 			}
-		case oncallusershifthandover.FieldReminderSent:
+		case oncallshifthandover.FieldReminderSent:
 			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field reminder_sent", values[i])
 			} else if value.Valid {
-				oush.ReminderSent = value.Bool
+				osh.ReminderSent = value.Bool
 			}
-		case oncallusershifthandover.FieldUpdatedAt:
+		case oncallshifthandover.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
-				oush.UpdatedAt = value.Time
+				osh.UpdatedAt = value.Time
 			}
-		case oncallusershifthandover.FieldSentAt:
+		case oncallshifthandover.FieldSentAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field sent_at", values[i])
 			} else if value.Valid {
-				oush.SentAt = value.Time
+				osh.SentAt = value.Time
 			}
-		case oncallusershifthandover.FieldContents:
+		case oncallshifthandover.FieldContents:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field contents", values[i])
 			} else if value != nil {
-				oush.Contents = *value
+				osh.Contents = *value
 			}
 		default:
-			oush.selectValues.Set(columns[i], values[i])
+			osh.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the OncallUserShiftHandover.
+// Value returns the ent.Value that was dynamically selected and assigned to the OncallShiftHandover.
 // This includes values selected through modifiers, order, etc.
-func (oush *OncallUserShiftHandover) Value(name string) (ent.Value, error) {
-	return oush.selectValues.Get(name)
+func (osh *OncallShiftHandover) Value(name string) (ent.Value, error) {
+	return osh.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the OncallUserShiftHandover entity.
-func (oush *OncallUserShiftHandover) QueryTenant() *TenantQuery {
-	return NewOncallUserShiftHandoverClient(oush.config).QueryTenant(oush)
+// QueryTenant queries the "tenant" edge of the OncallShiftHandover entity.
+func (osh *OncallShiftHandover) QueryTenant() *TenantQuery {
+	return NewOncallShiftHandoverClient(osh.config).QueryTenant(osh)
 }
 
-// QueryShift queries the "shift" edge of the OncallUserShiftHandover entity.
-func (oush *OncallUserShiftHandover) QueryShift() *OncallUserShiftQuery {
-	return NewOncallUserShiftHandoverClient(oush.config).QueryShift(oush)
+// QueryShift queries the "shift" edge of the OncallShiftHandover entity.
+func (osh *OncallShiftHandover) QueryShift() *OncallShiftQuery {
+	return NewOncallShiftHandoverClient(osh.config).QueryShift(osh)
 }
 
-// QueryPinnedAnnotations queries the "pinned_annotations" edge of the OncallUserShiftHandover entity.
-func (oush *OncallUserShiftHandover) QueryPinnedAnnotations() *OncallAnnotationQuery {
-	return NewOncallUserShiftHandoverClient(oush.config).QueryPinnedAnnotations(oush)
+// QueryPinnedAnnotations queries the "pinned_annotations" edge of the OncallShiftHandover entity.
+func (osh *OncallShiftHandover) QueryPinnedAnnotations() *OncallAnnotationQuery {
+	return NewOncallShiftHandoverClient(osh.config).QueryPinnedAnnotations(osh)
 }
 
-// Update returns a builder for updating this OncallUserShiftHandover.
-// Note that you need to call OncallUserShiftHandover.Unwrap() before calling this method if this OncallUserShiftHandover
+// Update returns a builder for updating this OncallShiftHandover.
+// Note that you need to call OncallShiftHandover.Unwrap() before calling this method if this OncallShiftHandover
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (oush *OncallUserShiftHandover) Update() *OncallUserShiftHandoverUpdateOne {
-	return NewOncallUserShiftHandoverClient(oush.config).UpdateOne(oush)
+func (osh *OncallShiftHandover) Update() *OncallShiftHandoverUpdateOne {
+	return NewOncallShiftHandoverClient(osh.config).UpdateOne(osh)
 }
 
-// Unwrap unwraps the OncallUserShiftHandover entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the OncallShiftHandover entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (oush *OncallUserShiftHandover) Unwrap() *OncallUserShiftHandover {
-	_tx, ok := oush.config.driver.(*txDriver)
+func (osh *OncallShiftHandover) Unwrap() *OncallShiftHandover {
+	_tx, ok := osh.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: OncallUserShiftHandover is not a transactional entity")
+		panic("ent: OncallShiftHandover is not a transactional entity")
 	}
-	oush.config.driver = _tx.drv
-	return oush
+	osh.config.driver = _tx.drv
+	return osh
 }
 
 // String implements the fmt.Stringer.
-func (oush *OncallUserShiftHandover) String() string {
+func (osh *OncallShiftHandover) String() string {
 	var builder strings.Builder
-	builder.WriteString("OncallUserShiftHandover(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", oush.ID))
+	builder.WriteString("OncallShiftHandover(")
+	builder.WriteString(fmt.Sprintf("id=%v, ", osh.ID))
 	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", oush.TenantID))
+	builder.WriteString(fmt.Sprintf("%v", osh.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
-	builder.WriteString(fmt.Sprintf("%v", oush.ShiftID))
+	builder.WriteString(fmt.Sprintf("%v", osh.ShiftID))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
-	builder.WriteString(oush.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(osh.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("reminder_sent=")
-	builder.WriteString(fmt.Sprintf("%v", oush.ReminderSent))
+	builder.WriteString(fmt.Sprintf("%v", osh.ReminderSent))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
-	builder.WriteString(oush.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(osh.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("sent_at=")
-	builder.WriteString(oush.SentAt.Format(time.ANSIC))
+	builder.WriteString(osh.SentAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("contents=")
-	builder.WriteString(fmt.Sprintf("%v", oush.Contents))
+	builder.WriteString(fmt.Sprintf("%v", osh.Contents))
 	builder.WriteByte(')')
 	return builder.String()
 }
 
-// OncallUserShiftHandovers is a parsable slice of OncallUserShiftHandover.
-type OncallUserShiftHandovers []*OncallUserShiftHandover
+// OncallShiftHandovers is a parsable slice of OncallShiftHandover.
+type OncallShiftHandovers []*OncallShiftHandover

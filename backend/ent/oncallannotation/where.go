@@ -443,7 +443,7 @@ func HasHandovers() predicate.OncallAnnotation {
 }
 
 // HasHandoversWith applies the HasEdge predicate on the "handovers" edge with a given conditions (other predicates).
-func HasHandoversWith(preds ...predicate.OncallUserShiftHandover) predicate.OncallAnnotation {
+func HasHandoversWith(preds ...predicate.OncallShiftHandover) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(func(s *sql.Selector) {
 		step := newHandoversStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

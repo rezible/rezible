@@ -381,40 +381,40 @@ func (f OncallScheduleParticipantFunc) Mutate(ctx context.Context, m ent.Mutatio
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallScheduleParticipantMutation", m)
 }
 
-// The OncallUserShiftFunc type is an adapter to allow the use of ordinary
-// function as OncallUserShift mutator.
-type OncallUserShiftFunc func(context.Context, *ent.OncallUserShiftMutation) (ent.Value, error)
+// The OncallShiftFunc type is an adapter to allow the use of ordinary
+// function as OncallShift mutator.
+type OncallShiftFunc func(context.Context, *ent.OncallShiftMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f OncallUserShiftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallUserShiftMutation); ok {
+func (f OncallShiftFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallShiftMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallShiftMutation", m)
 }
 
-// The OncallUserShiftHandoverFunc type is an adapter to allow the use of ordinary
-// function as OncallUserShiftHandover mutator.
-type OncallUserShiftHandoverFunc func(context.Context, *ent.OncallUserShiftHandoverMutation) (ent.Value, error)
+// The OncallShiftHandoverFunc type is an adapter to allow the use of ordinary
+// function as OncallShiftHandover mutator.
+type OncallShiftHandoverFunc func(context.Context, *ent.OncallShiftHandoverMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f OncallUserShiftHandoverFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallUserShiftHandoverMutation); ok {
+func (f OncallShiftHandoverFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallShiftHandoverMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftHandoverMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallShiftHandoverMutation", m)
 }
 
-// The OncallUserShiftMetricsFunc type is an adapter to allow the use of ordinary
-// function as OncallUserShiftMetrics mutator.
-type OncallUserShiftMetricsFunc func(context.Context, *ent.OncallUserShiftMetricsMutation) (ent.Value, error)
+// The OncallShiftMetricsFunc type is an adapter to allow the use of ordinary
+// function as OncallShiftMetrics mutator.
+type OncallShiftMetricsFunc func(context.Context, *ent.OncallShiftMetricsMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f OncallUserShiftMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallUserShiftMetricsMutation); ok {
+func (f OncallShiftMetricsFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.OncallShiftMetricsMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallUserShiftMetricsMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallShiftMetricsMutation", m)
 }
 
 // The PlaybookFunc type is an adapter to allow the use of ordinary

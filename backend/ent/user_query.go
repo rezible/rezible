@@ -20,7 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
+	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
@@ -40,7 +40,7 @@ type UserQuery struct {
 	withTeams                        *TeamQuery
 	withWatchedOncallRosters         *OncallRosterQuery
 	withOncallSchedules              *OncallScheduleParticipantQuery
-	withOncallShifts                 *OncallUserShiftQuery
+	withOncallShifts                 *OncallShiftQuery
 	withOncallAnnotations            *OncallAnnotationQuery
 	withIncidents                    *IncidentQuery
 	withIncidentDebriefs             *IncidentDebriefQuery
@@ -175,8 +175,8 @@ func (uq *UserQuery) QueryOncallSchedules() *OncallScheduleParticipantQuery {
 }
 
 // QueryOncallShifts chains the current query on the "oncall_shifts" edge.
-func (uq *UserQuery) QueryOncallShifts() *OncallUserShiftQuery {
-	query := (&OncallUserShiftClient{config: uq.config}).Query()
+func (uq *UserQuery) QueryOncallShifts() *OncallShiftQuery {
+	query := (&OncallShiftClient{config: uq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := uq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -187,7 +187,7 @@ func (uq *UserQuery) QueryOncallShifts() *OncallUserShiftQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, selector),
-			sqlgraph.To(oncallusershift.Table, oncallusershift.FieldID),
+			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.OncallShiftsTable, user.OncallShiftsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(uq.driver.Dialect(), step)
@@ -630,8 +630,8 @@ func (uq *UserQuery) WithOncallSchedules(opts ...func(*OncallScheduleParticipant
 
 // WithOncallShifts tells the query-builder to eager-load the nodes that are connected to
 // the "oncall_shifts" edge. The optional arguments are used to configure the query builder of the edge.
-func (uq *UserQuery) WithOncallShifts(opts ...func(*OncallUserShiftQuery)) *UserQuery {
-	query := (&OncallUserShiftClient{config: uq.config}).Query()
+func (uq *UserQuery) WithOncallShifts(opts ...func(*OncallShiftQuery)) *UserQuery {
+	query := (&OncallShiftClient{config: uq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -879,8 +879,8 @@ func (uq *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	}
 	if query := uq.withOncallShifts; query != nil {
 		if err := uq.loadOncallShifts(ctx, query, nodes,
-			func(n *User) { n.Edges.OncallShifts = []*OncallUserShift{} },
-			func(n *User, e *OncallUserShift) { n.Edges.OncallShifts = append(n.Edges.OncallShifts, e) }); err != nil {
+			func(n *User) { n.Edges.OncallShifts = []*OncallShift{} },
+			func(n *User, e *OncallShift) { n.Edges.OncallShifts = append(n.Edges.OncallShifts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1128,7 +1128,7 @@ func (uq *UserQuery) loadOncallSchedules(ctx context.Context, query *OncallSched
 	}
 	return nil
 }
-func (uq *UserQuery) loadOncallShifts(ctx context.Context, query *OncallUserShiftQuery, nodes []*User, init func(*User), assign func(*User, *OncallUserShift)) error {
+func (uq *UserQuery) loadOncallShifts(ctx context.Context, query *OncallShiftQuery, nodes []*User, init func(*User), assign func(*User, *OncallShift)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*User)
 	for i := range nodes {
@@ -1139,9 +1139,9 @@ func (uq *UserQuery) loadOncallShifts(ctx context.Context, query *OncallUserShif
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallusershift.FieldUserID)
+		query.ctx.AppendFieldOnce(oncallshift.FieldUserID)
 	}
-	query.Where(predicate.OncallUserShift(func(s *sql.Selector) {
+	query.Where(predicate.OncallShift(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(user.OncallShiftsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)

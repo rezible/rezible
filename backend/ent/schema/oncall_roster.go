@@ -53,7 +53,7 @@ func (OncallRoster) Edges() []ent.Edge {
 			Ref("roster"),
 
 		edge.From("teams", Team.Type).Ref("oncall_rosters"),
-		edge.From("shifts", OncallUserShift.Type).Ref("roster"),
+		edge.From("shifts", OncallShift.Type).Ref("roster"),
 
 		edge.From("user_watchers", User.Type).Ref("watched_oncall_rosters"),
 

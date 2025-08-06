@@ -40,6 +40,6 @@ func (OncallAnnotation) Edges() []ent.Edge {
 		edge.To("creator", User.Type).Unique().Required().Field("creator_id"),
 
 		edge.To("alert_feedback", AlertFeedback.Type).Unique(),
-		edge.From("handovers", OncallUserShiftHandover.Type).Ref("pinned_annotations"),
+		edge.From("handovers", OncallShiftHandover.Type).Ref("pinned_annotations"),
 	}
 }

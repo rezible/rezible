@@ -59,7 +59,7 @@ type OncallAnnotationEdges struct {
 	// AlertFeedback holds the value of the alert_feedback edge.
 	AlertFeedback *AlertFeedback `json:"alert_feedback,omitempty"`
 	// Handovers holds the value of the handovers edge.
-	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
+	Handovers []*OncallShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -122,7 +122,7 @@ func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*AlertFeedback, error) {
 
 // HandoversOrErr returns the Handovers value or an error if the edge
 // was not loaded in eager-loading.
-func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
+func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallShiftHandover, error) {
 	if e.loadedTypes[5] {
 		return e.Handovers, nil
 	}
@@ -254,7 +254,7 @@ func (oa *OncallAnnotation) QueryAlertFeedback() *AlertFeedbackQuery {
 }
 
 // QueryHandovers queries the "handovers" edge of the OncallAnnotation entity.
-func (oa *OncallAnnotation) QueryHandovers() *OncallUserShiftHandoverQuery {
+func (oa *OncallAnnotation) QueryHandovers() *OncallShiftHandoverQuery {
 	return NewOncallAnnotationClient(oa.config).QueryHandovers(oa)
 }
 

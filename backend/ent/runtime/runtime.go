@@ -38,9 +38,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
-	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providerconfig"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -704,62 +704,62 @@ func init() {
 	oncallscheduleparticipantDescID := oncallscheduleparticipantFields[0].Descriptor()
 	// oncallscheduleparticipant.DefaultID holds the default value on creation for the id field.
 	oncallscheduleparticipant.DefaultID = oncallscheduleparticipantDescID.Default.(func() uuid.UUID)
-	oncallusershiftMixin := schema.OncallUserShift{}.Mixin()
-	oncallusershift.Policy = privacy.NewPolicies(oncallusershiftMixin[0], oncallusershiftMixin[1], schema.OncallUserShift{})
-	oncallusershift.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	oncallshiftMixin := schema.OncallShift{}.Mixin()
+	oncallshift.Policy = privacy.NewPolicies(oncallshiftMixin[0], oncallshiftMixin[1], schema.OncallShift{})
+	oncallshift.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := oncallusershift.Policy.EvalMutation(ctx, m); err != nil {
+			if err := oncallshift.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	oncallusershiftFields := schema.OncallUserShift{}.Fields()
-	_ = oncallusershiftFields
-	// oncallusershiftDescID is the schema descriptor for id field.
-	oncallusershiftDescID := oncallusershiftFields[0].Descriptor()
-	// oncallusershift.DefaultID holds the default value on creation for the id field.
-	oncallusershift.DefaultID = oncallusershiftDescID.Default.(func() uuid.UUID)
-	oncallusershifthandoverMixin := schema.OncallUserShiftHandover{}.Mixin()
-	oncallusershifthandover.Policy = privacy.NewPolicies(oncallusershifthandoverMixin[0], oncallusershifthandoverMixin[1], schema.OncallUserShiftHandover{})
-	oncallusershifthandover.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	oncallshiftFields := schema.OncallShift{}.Fields()
+	_ = oncallshiftFields
+	// oncallshiftDescID is the schema descriptor for id field.
+	oncallshiftDescID := oncallshiftFields[0].Descriptor()
+	// oncallshift.DefaultID holds the default value on creation for the id field.
+	oncallshift.DefaultID = oncallshiftDescID.Default.(func() uuid.UUID)
+	oncallshifthandoverMixin := schema.OncallShiftHandover{}.Mixin()
+	oncallshifthandover.Policy = privacy.NewPolicies(oncallshifthandoverMixin[0], oncallshifthandoverMixin[1], schema.OncallShiftHandover{})
+	oncallshifthandover.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := oncallusershifthandover.Policy.EvalMutation(ctx, m); err != nil {
+			if err := oncallshifthandover.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	oncallusershifthandoverFields := schema.OncallUserShiftHandover{}.Fields()
-	_ = oncallusershifthandoverFields
-	// oncallusershifthandoverDescReminderSent is the schema descriptor for reminder_sent field.
-	oncallusershifthandoverDescReminderSent := oncallusershifthandoverFields[3].Descriptor()
-	// oncallusershifthandover.DefaultReminderSent holds the default value on creation for the reminder_sent field.
-	oncallusershifthandover.DefaultReminderSent = oncallusershifthandoverDescReminderSent.Default.(bool)
-	// oncallusershifthandoverDescUpdatedAt is the schema descriptor for updated_at field.
-	oncallusershifthandoverDescUpdatedAt := oncallusershifthandoverFields[4].Descriptor()
-	// oncallusershifthandover.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	oncallusershifthandover.DefaultUpdatedAt = oncallusershifthandoverDescUpdatedAt.Default.(func() time.Time)
-	// oncallusershifthandoverDescID is the schema descriptor for id field.
-	oncallusershifthandoverDescID := oncallusershifthandoverFields[0].Descriptor()
-	// oncallusershifthandover.DefaultID holds the default value on creation for the id field.
-	oncallusershifthandover.DefaultID = oncallusershifthandoverDescID.Default.(func() uuid.UUID)
-	oncallusershiftmetricsMixin := schema.OncallUserShiftMetrics{}.Mixin()
-	oncallusershiftmetrics.Policy = privacy.NewPolicies(oncallusershiftmetricsMixin[0], oncallusershiftmetricsMixin[1], schema.OncallUserShiftMetrics{})
-	oncallusershiftmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	oncallshifthandoverFields := schema.OncallShiftHandover{}.Fields()
+	_ = oncallshifthandoverFields
+	// oncallshifthandoverDescReminderSent is the schema descriptor for reminder_sent field.
+	oncallshifthandoverDescReminderSent := oncallshifthandoverFields[3].Descriptor()
+	// oncallshifthandover.DefaultReminderSent holds the default value on creation for the reminder_sent field.
+	oncallshifthandover.DefaultReminderSent = oncallshifthandoverDescReminderSent.Default.(bool)
+	// oncallshifthandoverDescUpdatedAt is the schema descriptor for updated_at field.
+	oncallshifthandoverDescUpdatedAt := oncallshifthandoverFields[4].Descriptor()
+	// oncallshifthandover.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	oncallshifthandover.DefaultUpdatedAt = oncallshifthandoverDescUpdatedAt.Default.(func() time.Time)
+	// oncallshifthandoverDescID is the schema descriptor for id field.
+	oncallshifthandoverDescID := oncallshifthandoverFields[0].Descriptor()
+	// oncallshifthandover.DefaultID holds the default value on creation for the id field.
+	oncallshifthandover.DefaultID = oncallshifthandoverDescID.Default.(func() uuid.UUID)
+	oncallshiftmetricsMixin := schema.OncallShiftMetrics{}.Mixin()
+	oncallshiftmetrics.Policy = privacy.NewPolicies(oncallshiftmetricsMixin[0], oncallshiftmetricsMixin[1], schema.OncallShiftMetrics{})
+	oncallshiftmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := oncallusershiftmetrics.Policy.EvalMutation(ctx, m); err != nil {
+			if err := oncallshiftmetrics.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	oncallusershiftmetricsFields := schema.OncallUserShiftMetrics{}.Fields()
-	_ = oncallusershiftmetricsFields
-	// oncallusershiftmetricsDescID is the schema descriptor for id field.
-	oncallusershiftmetricsDescID := oncallusershiftmetricsFields[0].Descriptor()
-	// oncallusershiftmetrics.DefaultID holds the default value on creation for the id field.
-	oncallusershiftmetrics.DefaultID = oncallusershiftmetricsDescID.Default.(func() uuid.UUID)
+	oncallshiftmetricsFields := schema.OncallShiftMetrics{}.Fields()
+	_ = oncallshiftmetricsFields
+	// oncallshiftmetricsDescID is the schema descriptor for id field.
+	oncallshiftmetricsDescID := oncallshiftmetricsFields[0].Descriptor()
+	// oncallshiftmetrics.DefaultID holds the default value on creation for the id field.
+	oncallshiftmetrics.DefaultID = oncallshiftmetricsDescID.Default.(func() uuid.UUID)
 	playbookMixin := schema.Playbook{}.Mixin()
 	playbook.Policy = privacy.NewPolicies(playbookMixin[0], playbookMixin[1], schema.Playbook{})
 	playbook.Hooks[0] = func(next ent.Mutator) ent.Mutator {

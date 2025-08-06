@@ -45,7 +45,7 @@ type UserEdges struct {
 	// OncallSchedules holds the value of the oncall_schedules edge.
 	OncallSchedules []*OncallScheduleParticipant `json:"oncall_schedules,omitempty"`
 	// OncallShifts holds the value of the oncall_shifts edge.
-	OncallShifts []*OncallUserShift `json:"oncall_shifts,omitempty"`
+	OncallShifts []*OncallShift `json:"oncall_shifts,omitempty"`
 	// OncallAnnotations holds the value of the oncall_annotations edge.
 	OncallAnnotations []*OncallAnnotation `json:"oncall_annotations,omitempty"`
 	// Incidents holds the value of the incidents edge.
@@ -107,7 +107,7 @@ func (e UserEdges) OncallSchedulesOrErr() ([]*OncallScheduleParticipant, error) 
 
 // OncallShiftsOrErr returns the OncallShifts value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) OncallShiftsOrErr() ([]*OncallUserShift, error) {
+func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
 	if e.loadedTypes[4] {
 		return e.OncallShifts, nil
 	}
@@ -282,7 +282,7 @@ func (u *User) QueryOncallSchedules() *OncallScheduleParticipantQuery {
 }
 
 // QueryOncallShifts queries the "oncall_shifts" edge of the User entity.
-func (u *User) QueryOncallShifts() *OncallUserShiftQuery {
+func (u *User) QueryOncallShifts() *OncallShiftQuery {
 	return NewUserClient(u.config).QueryOncallShifts(u)
 }
 

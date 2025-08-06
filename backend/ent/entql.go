@@ -34,9 +34,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
-	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/oncallshifthandover"
+	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providerconfig"
@@ -650,58 +650,58 @@ var schemaGraph = func() *sqlgraph.Schema {
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   oncallusershift.Table,
-			Columns: oncallusershift.Columns,
+			Table:   oncallshift.Table,
+			Columns: oncallshift.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: oncallusershift.FieldID,
+				Column: oncallshift.FieldID,
 			},
 		},
-		Type: "OncallUserShift",
+		Type: "OncallShift",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			oncallusershift.FieldTenantID:       {Type: field.TypeInt, Column: oncallusershift.FieldTenantID},
-			oncallusershift.FieldUserID:         {Type: field.TypeUUID, Column: oncallusershift.FieldUserID},
-			oncallusershift.FieldRosterID:       {Type: field.TypeUUID, Column: oncallusershift.FieldRosterID},
-			oncallusershift.FieldProviderID:     {Type: field.TypeString, Column: oncallusershift.FieldProviderID},
-			oncallusershift.FieldRole:           {Type: field.TypeEnum, Column: oncallusershift.FieldRole},
-			oncallusershift.FieldPrimaryShiftID: {Type: field.TypeUUID, Column: oncallusershift.FieldPrimaryShiftID},
-			oncallusershift.FieldStartAt:        {Type: field.TypeTime, Column: oncallusershift.FieldStartAt},
-			oncallusershift.FieldEndAt:          {Type: field.TypeTime, Column: oncallusershift.FieldEndAt},
+			oncallshift.FieldTenantID:       {Type: field.TypeInt, Column: oncallshift.FieldTenantID},
+			oncallshift.FieldUserID:         {Type: field.TypeUUID, Column: oncallshift.FieldUserID},
+			oncallshift.FieldRosterID:       {Type: field.TypeUUID, Column: oncallshift.FieldRosterID},
+			oncallshift.FieldProviderID:     {Type: field.TypeString, Column: oncallshift.FieldProviderID},
+			oncallshift.FieldRole:           {Type: field.TypeEnum, Column: oncallshift.FieldRole},
+			oncallshift.FieldPrimaryShiftID: {Type: field.TypeUUID, Column: oncallshift.FieldPrimaryShiftID},
+			oncallshift.FieldStartAt:        {Type: field.TypeTime, Column: oncallshift.FieldStartAt},
+			oncallshift.FieldEndAt:          {Type: field.TypeTime, Column: oncallshift.FieldEndAt},
 		},
 	}
 	graph.Nodes[32] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   oncallusershifthandover.Table,
-			Columns: oncallusershifthandover.Columns,
+			Table:   oncallshifthandover.Table,
+			Columns: oncallshifthandover.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: oncallusershifthandover.FieldID,
+				Column: oncallshifthandover.FieldID,
 			},
 		},
-		Type: "OncallUserShiftHandover",
+		Type: "OncallShiftHandover",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			oncallusershifthandover.FieldTenantID:     {Type: field.TypeInt, Column: oncallusershifthandover.FieldTenantID},
-			oncallusershifthandover.FieldShiftID:      {Type: field.TypeUUID, Column: oncallusershifthandover.FieldShiftID},
-			oncallusershifthandover.FieldCreatedAt:    {Type: field.TypeTime, Column: oncallusershifthandover.FieldCreatedAt},
-			oncallusershifthandover.FieldReminderSent: {Type: field.TypeBool, Column: oncallusershifthandover.FieldReminderSent},
-			oncallusershifthandover.FieldUpdatedAt:    {Type: field.TypeTime, Column: oncallusershifthandover.FieldUpdatedAt},
-			oncallusershifthandover.FieldSentAt:       {Type: field.TypeTime, Column: oncallusershifthandover.FieldSentAt},
-			oncallusershifthandover.FieldContents:     {Type: field.TypeBytes, Column: oncallusershifthandover.FieldContents},
+			oncallshifthandover.FieldTenantID:     {Type: field.TypeInt, Column: oncallshifthandover.FieldTenantID},
+			oncallshifthandover.FieldShiftID:      {Type: field.TypeUUID, Column: oncallshifthandover.FieldShiftID},
+			oncallshifthandover.FieldCreatedAt:    {Type: field.TypeTime, Column: oncallshifthandover.FieldCreatedAt},
+			oncallshifthandover.FieldReminderSent: {Type: field.TypeBool, Column: oncallshifthandover.FieldReminderSent},
+			oncallshifthandover.FieldUpdatedAt:    {Type: field.TypeTime, Column: oncallshifthandover.FieldUpdatedAt},
+			oncallshifthandover.FieldSentAt:       {Type: field.TypeTime, Column: oncallshifthandover.FieldSentAt},
+			oncallshifthandover.FieldContents:     {Type: field.TypeBytes, Column: oncallshifthandover.FieldContents},
 		},
 	}
 	graph.Nodes[33] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
-			Table:   oncallusershiftmetrics.Table,
-			Columns: oncallusershiftmetrics.Columns,
+			Table:   oncallshiftmetrics.Table,
+			Columns: oncallshiftmetrics.Columns,
 			ID: &sqlgraph.FieldSpec{
 				Type:   field.TypeUUID,
-				Column: oncallusershiftmetrics.FieldID,
+				Column: oncallshiftmetrics.FieldID,
 			},
 		},
-		Type: "OncallUserShiftMetrics",
+		Type: "OncallShiftMetrics",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			oncallusershiftmetrics.FieldTenantID: {Type: field.TypeInt, Column: oncallusershiftmetrics.FieldTenantID},
-			oncallusershiftmetrics.FieldShiftID:  {Type: field.TypeUUID, Column: oncallusershiftmetrics.FieldShiftID},
+			oncallshiftmetrics.FieldTenantID: {Type: field.TypeInt, Column: oncallshiftmetrics.FieldTenantID},
+			oncallshiftmetrics.FieldShiftID:  {Type: field.TypeUUID, Column: oncallshiftmetrics.FieldShiftID},
 		},
 	}
 	graph.Nodes[34] = &sqlgraph.Node{
@@ -2285,7 +2285,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"OncallAnnotation",
-		"OncallUserShiftHandover",
+		"OncallShiftHandover",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -2441,7 +2441,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"OncallRoster",
-		"OncallUserShift",
+		"OncallShift",
 	)
 	graph.MustAddE(
 		"user_watchers",
@@ -2568,11 +2568,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   oncallusershift.TenantTable,
-			Columns: []string{oncallusershift.TenantColumn},
+			Table:   oncallshift.TenantTable,
+			Columns: []string{oncallshift.TenantColumn},
 			Bidi:    false,
 		},
-		"OncallUserShift",
+		"OncallShift",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -2580,11 +2580,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   oncallusershift.UserTable,
-			Columns: []string{oncallusershift.UserColumn},
+			Table:   oncallshift.UserTable,
+			Columns: []string{oncallshift.UserColumn},
 			Bidi:    false,
 		},
-		"OncallUserShift",
+		"OncallShift",
 		"User",
 	)
 	graph.MustAddE(
@@ -2592,11 +2592,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   oncallusershift.RosterTable,
-			Columns: []string{oncallusershift.RosterColumn},
+			Table:   oncallshift.RosterTable,
+			Columns: []string{oncallshift.RosterColumn},
 			Bidi:    false,
 		},
-		"OncallUserShift",
+		"OncallShift",
 		"OncallRoster",
 	)
 	graph.MustAddE(
@@ -2604,47 +2604,47 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.PrimaryShiftTable,
-			Columns: []string{oncallusershift.PrimaryShiftColumn},
+			Table:   oncallshift.PrimaryShiftTable,
+			Columns: []string{oncallshift.PrimaryShiftColumn},
 			Bidi:    true,
 		},
-		"OncallUserShift",
-		"OncallUserShift",
+		"OncallShift",
+		"OncallShift",
 	)
 	graph.MustAddE(
 		"handover",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.HandoverTable,
-			Columns: []string{oncallusershift.HandoverColumn},
+			Table:   oncallshift.HandoverTable,
+			Columns: []string{oncallshift.HandoverColumn},
 			Bidi:    false,
 		},
-		"OncallUserShift",
-		"OncallUserShiftHandover",
+		"OncallShift",
+		"OncallShiftHandover",
 	)
 	graph.MustAddE(
 		"metrics",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: false,
-			Table:   oncallusershift.MetricsTable,
-			Columns: []string{oncallusershift.MetricsColumn},
+			Table:   oncallshift.MetricsTable,
+			Columns: []string{oncallshift.MetricsColumn},
 			Bidi:    false,
 		},
-		"OncallUserShift",
-		"OncallUserShiftMetrics",
+		"OncallShift",
+		"OncallShiftMetrics",
 	)
 	graph.MustAddE(
 		"tenant",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   oncallusershifthandover.TenantTable,
-			Columns: []string{oncallusershifthandover.TenantColumn},
+			Table:   oncallshifthandover.TenantTable,
+			Columns: []string{oncallshifthandover.TenantColumn},
 			Bidi:    false,
 		},
-		"OncallUserShiftHandover",
+		"OncallShiftHandover",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -2652,23 +2652,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
-			Table:   oncallusershifthandover.ShiftTable,
-			Columns: []string{oncallusershifthandover.ShiftColumn},
+			Table:   oncallshifthandover.ShiftTable,
+			Columns: []string{oncallshifthandover.ShiftColumn},
 			Bidi:    false,
 		},
-		"OncallUserShiftHandover",
-		"OncallUserShift",
+		"OncallShiftHandover",
+		"OncallShift",
 	)
 	graph.MustAddE(
 		"pinned_annotations",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   oncallusershifthandover.PinnedAnnotationsTable,
-			Columns: oncallusershifthandover.PinnedAnnotationsPrimaryKey,
+			Table:   oncallshifthandover.PinnedAnnotationsTable,
+			Columns: oncallshifthandover.PinnedAnnotationsPrimaryKey,
 			Bidi:    false,
 		},
-		"OncallUserShiftHandover",
+		"OncallShiftHandover",
 		"OncallAnnotation",
 	)
 	graph.MustAddE(
@@ -2676,11 +2676,11 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   oncallusershiftmetrics.TenantTable,
-			Columns: []string{oncallusershiftmetrics.TenantColumn},
+			Table:   oncallshiftmetrics.TenantTable,
+			Columns: []string{oncallshiftmetrics.TenantColumn},
 			Bidi:    false,
 		},
-		"OncallUserShiftMetrics",
+		"OncallShiftMetrics",
 		"Tenant",
 	)
 	graph.MustAddE(
@@ -2688,12 +2688,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
 			Inverse: true,
-			Table:   oncallusershiftmetrics.ShiftTable,
-			Columns: []string{oncallusershiftmetrics.ShiftColumn},
+			Table:   oncallshiftmetrics.ShiftTable,
+			Columns: []string{oncallshiftmetrics.ShiftColumn},
 			Bidi:    false,
 		},
-		"OncallUserShiftMetrics",
-		"OncallUserShift",
+		"OncallShiftMetrics",
+		"OncallShift",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -3797,7 +3797,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			Bidi:    false,
 		},
 		"User",
-		"OncallUserShift",
+		"OncallShift",
 	)
 	graph.MustAddE(
 		"oncall_annotations",
@@ -6930,7 +6930,7 @@ func (f *OncallAnnotationFilter) WhereHasHandovers() {
 }
 
 // WhereHasHandoversWith applies a predicate to check if query has an edge handovers with a given conditions (other predicates).
-func (f *OncallAnnotationFilter) WhereHasHandoversWith(preds ...predicate.OncallUserShiftHandover) {
+func (f *OncallAnnotationFilter) WhereHasHandoversWith(preds ...predicate.OncallShiftHandover) {
 	f.Where(entql.HasEdgeWith("handovers", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7347,7 +7347,7 @@ func (f *OncallRosterFilter) WhereHasShifts() {
 }
 
 // WhereHasShiftsWith applies a predicate to check if query has an edge shifts with a given conditions (other predicates).
-func (f *OncallRosterFilter) WhereHasShiftsWith(preds ...predicate.OncallUserShift) {
+func (f *OncallRosterFilter) WhereHasShiftsWith(preds ...predicate.OncallShift) {
 	f.Where(entql.HasEdgeWith("shifts", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7676,33 +7676,33 @@ func (f *OncallScheduleParticipantFilter) WhereHasUserWith(preds ...predicate.Us
 }
 
 // addPredicate implements the predicateAdder interface.
-func (ousq *OncallUserShiftQuery) addPredicate(pred func(s *sql.Selector)) {
-	ousq.predicates = append(ousq.predicates, pred)
+func (osq *OncallShiftQuery) addPredicate(pred func(s *sql.Selector)) {
+	osq.predicates = append(osq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the OncallUserShiftQuery builder.
-func (ousq *OncallUserShiftQuery) Filter() *OncallUserShiftFilter {
-	return &OncallUserShiftFilter{config: ousq.config, predicateAdder: ousq}
+// Filter returns a Filter implementation to apply filters on the OncallShiftQuery builder.
+func (osq *OncallShiftQuery) Filter() *OncallShiftFilter {
+	return &OncallShiftFilter{config: osq.config, predicateAdder: osq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *OncallUserShiftMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *OncallShiftMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the OncallUserShiftMutation builder.
-func (m *OncallUserShiftMutation) Filter() *OncallUserShiftFilter {
-	return &OncallUserShiftFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the OncallShiftMutation builder.
+func (m *OncallShiftMutation) Filter() *OncallShiftFilter {
+	return &OncallShiftFilter{config: m.config, predicateAdder: m}
 }
 
-// OncallUserShiftFilter provides a generic filtering capability at runtime for OncallUserShiftQuery.
-type OncallUserShiftFilter struct {
+// OncallShiftFilter provides a generic filtering capability at runtime for OncallShiftQuery.
+type OncallShiftFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *OncallUserShiftFilter) Where(p entql.P) {
+func (f *OncallShiftFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[31].Type, p, s); err != nil {
 			s.AddError(err)
@@ -7711,57 +7711,57 @@ func (f *OncallUserShiftFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *OncallUserShiftFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershift.FieldID))
+func (f *OncallShiftFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(oncallshift.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *OncallUserShiftFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(oncallusershift.FieldTenantID))
+func (f *OncallShiftFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(oncallshift.FieldTenantID))
 }
 
 // WhereUserID applies the entql [16]byte predicate on the user_id field.
-func (f *OncallUserShiftFilter) WhereUserID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershift.FieldUserID))
+func (f *OncallShiftFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(oncallshift.FieldUserID))
 }
 
 // WhereRosterID applies the entql [16]byte predicate on the roster_id field.
-func (f *OncallUserShiftFilter) WhereRosterID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershift.FieldRosterID))
+func (f *OncallShiftFilter) WhereRosterID(p entql.ValueP) {
+	f.Where(p.Field(oncallshift.FieldRosterID))
 }
 
 // WhereProviderID applies the entql string predicate on the provider_id field.
-func (f *OncallUserShiftFilter) WhereProviderID(p entql.StringP) {
-	f.Where(p.Field(oncallusershift.FieldProviderID))
+func (f *OncallShiftFilter) WhereProviderID(p entql.StringP) {
+	f.Where(p.Field(oncallshift.FieldProviderID))
 }
 
 // WhereRole applies the entql string predicate on the role field.
-func (f *OncallUserShiftFilter) WhereRole(p entql.StringP) {
-	f.Where(p.Field(oncallusershift.FieldRole))
+func (f *OncallShiftFilter) WhereRole(p entql.StringP) {
+	f.Where(p.Field(oncallshift.FieldRole))
 }
 
 // WherePrimaryShiftID applies the entql [16]byte predicate on the primary_shift_id field.
-func (f *OncallUserShiftFilter) WherePrimaryShiftID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershift.FieldPrimaryShiftID))
+func (f *OncallShiftFilter) WherePrimaryShiftID(p entql.ValueP) {
+	f.Where(p.Field(oncallshift.FieldPrimaryShiftID))
 }
 
 // WhereStartAt applies the entql time.Time predicate on the start_at field.
-func (f *OncallUserShiftFilter) WhereStartAt(p entql.TimeP) {
-	f.Where(p.Field(oncallusershift.FieldStartAt))
+func (f *OncallShiftFilter) WhereStartAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshift.FieldStartAt))
 }
 
 // WhereEndAt applies the entql time.Time predicate on the end_at field.
-func (f *OncallUserShiftFilter) WhereEndAt(p entql.TimeP) {
-	f.Where(p.Field(oncallusershift.FieldEndAt))
+func (f *OncallShiftFilter) WhereEndAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshift.FieldEndAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *OncallUserShiftFilter) WhereHasTenant() {
+func (f *OncallShiftFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *OncallShiftFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7770,12 +7770,12 @@ func (f *OncallUserShiftFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 }
 
 // WhereHasUser applies a predicate to check if query has an edge user.
-func (f *OncallUserShiftFilter) WhereHasUser() {
+func (f *OncallShiftFilter) WhereHasUser() {
 	f.Where(entql.HasEdge("user"))
 }
 
 // WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasUserWith(preds ...predicate.User) {
+func (f *OncallShiftFilter) WhereHasUserWith(preds ...predicate.User) {
 	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7784,12 +7784,12 @@ func (f *OncallUserShiftFilter) WhereHasUserWith(preds ...predicate.User) {
 }
 
 // WhereHasRoster applies a predicate to check if query has an edge roster.
-func (f *OncallUserShiftFilter) WhereHasRoster() {
+func (f *OncallShiftFilter) WhereHasRoster() {
 	f.Where(entql.HasEdge("roster"))
 }
 
 // WhereHasRosterWith applies a predicate to check if query has an edge roster with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasRosterWith(preds ...predicate.OncallRoster) {
+func (f *OncallShiftFilter) WhereHasRosterWith(preds ...predicate.OncallRoster) {
 	f.Where(entql.HasEdgeWith("roster", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7798,12 +7798,12 @@ func (f *OncallUserShiftFilter) WhereHasRosterWith(preds ...predicate.OncallRost
 }
 
 // WhereHasPrimaryShift applies a predicate to check if query has an edge primary_shift.
-func (f *OncallUserShiftFilter) WhereHasPrimaryShift() {
+func (f *OncallShiftFilter) WhereHasPrimaryShift() {
 	f.Where(entql.HasEdge("primary_shift"))
 }
 
 // WhereHasPrimaryShiftWith applies a predicate to check if query has an edge primary_shift with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasPrimaryShiftWith(preds ...predicate.OncallUserShift) {
+func (f *OncallShiftFilter) WhereHasPrimaryShiftWith(preds ...predicate.OncallShift) {
 	f.Where(entql.HasEdgeWith("primary_shift", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7812,12 +7812,12 @@ func (f *OncallUserShiftFilter) WhereHasPrimaryShiftWith(preds ...predicate.Onca
 }
 
 // WhereHasHandover applies a predicate to check if query has an edge handover.
-func (f *OncallUserShiftFilter) WhereHasHandover() {
+func (f *OncallShiftFilter) WhereHasHandover() {
 	f.Where(entql.HasEdge("handover"))
 }
 
 // WhereHasHandoverWith applies a predicate to check if query has an edge handover with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasHandoverWith(preds ...predicate.OncallUserShiftHandover) {
+func (f *OncallShiftFilter) WhereHasHandoverWith(preds ...predicate.OncallShiftHandover) {
 	f.Where(entql.HasEdgeWith("handover", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7826,12 +7826,12 @@ func (f *OncallUserShiftFilter) WhereHasHandoverWith(preds ...predicate.OncallUs
 }
 
 // WhereHasMetrics applies a predicate to check if query has an edge metrics.
-func (f *OncallUserShiftFilter) WhereHasMetrics() {
+func (f *OncallShiftFilter) WhereHasMetrics() {
 	f.Where(entql.HasEdge("metrics"))
 }
 
 // WhereHasMetricsWith applies a predicate to check if query has an edge metrics with a given conditions (other predicates).
-func (f *OncallUserShiftFilter) WhereHasMetricsWith(preds ...predicate.OncallUserShiftMetrics) {
+func (f *OncallShiftFilter) WhereHasMetricsWith(preds ...predicate.OncallShiftMetrics) {
 	f.Where(entql.HasEdgeWith("metrics", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7840,33 +7840,33 @@ func (f *OncallUserShiftFilter) WhereHasMetricsWith(preds ...predicate.OncallUse
 }
 
 // addPredicate implements the predicateAdder interface.
-func (oushq *OncallUserShiftHandoverQuery) addPredicate(pred func(s *sql.Selector)) {
-	oushq.predicates = append(oushq.predicates, pred)
+func (oshq *OncallShiftHandoverQuery) addPredicate(pred func(s *sql.Selector)) {
+	oshq.predicates = append(oshq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the OncallUserShiftHandoverQuery builder.
-func (oushq *OncallUserShiftHandoverQuery) Filter() *OncallUserShiftHandoverFilter {
-	return &OncallUserShiftHandoverFilter{config: oushq.config, predicateAdder: oushq}
+// Filter returns a Filter implementation to apply filters on the OncallShiftHandoverQuery builder.
+func (oshq *OncallShiftHandoverQuery) Filter() *OncallShiftHandoverFilter {
+	return &OncallShiftHandoverFilter{config: oshq.config, predicateAdder: oshq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *OncallUserShiftHandoverMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *OncallShiftHandoverMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the OncallUserShiftHandoverMutation builder.
-func (m *OncallUserShiftHandoverMutation) Filter() *OncallUserShiftHandoverFilter {
-	return &OncallUserShiftHandoverFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the OncallShiftHandoverMutation builder.
+func (m *OncallShiftHandoverMutation) Filter() *OncallShiftHandoverFilter {
+	return &OncallShiftHandoverFilter{config: m.config, predicateAdder: m}
 }
 
-// OncallUserShiftHandoverFilter provides a generic filtering capability at runtime for OncallUserShiftHandoverQuery.
-type OncallUserShiftHandoverFilter struct {
+// OncallShiftHandoverFilter provides a generic filtering capability at runtime for OncallShiftHandoverQuery.
+type OncallShiftHandoverFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *OncallUserShiftHandoverFilter) Where(p entql.P) {
+func (f *OncallShiftHandoverFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[32].Type, p, s); err != nil {
 			s.AddError(err)
@@ -7875,52 +7875,52 @@ func (f *OncallUserShiftHandoverFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *OncallUserShiftHandoverFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershifthandover.FieldID))
+func (f *OncallShiftHandoverFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(oncallshifthandover.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *OncallUserShiftHandoverFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(oncallusershifthandover.FieldTenantID))
+func (f *OncallShiftHandoverFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(oncallshifthandover.FieldTenantID))
 }
 
 // WhereShiftID applies the entql [16]byte predicate on the shift_id field.
-func (f *OncallUserShiftHandoverFilter) WhereShiftID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershifthandover.FieldShiftID))
+func (f *OncallShiftHandoverFilter) WhereShiftID(p entql.ValueP) {
+	f.Where(p.Field(oncallshifthandover.FieldShiftID))
 }
 
 // WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *OncallUserShiftHandoverFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(oncallusershifthandover.FieldCreatedAt))
+func (f *OncallShiftHandoverFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshifthandover.FieldCreatedAt))
 }
 
 // WhereReminderSent applies the entql bool predicate on the reminder_sent field.
-func (f *OncallUserShiftHandoverFilter) WhereReminderSent(p entql.BoolP) {
-	f.Where(p.Field(oncallusershifthandover.FieldReminderSent))
+func (f *OncallShiftHandoverFilter) WhereReminderSent(p entql.BoolP) {
+	f.Where(p.Field(oncallshifthandover.FieldReminderSent))
 }
 
 // WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *OncallUserShiftHandoverFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(oncallusershifthandover.FieldUpdatedAt))
+func (f *OncallShiftHandoverFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshifthandover.FieldUpdatedAt))
 }
 
 // WhereSentAt applies the entql time.Time predicate on the sent_at field.
-func (f *OncallUserShiftHandoverFilter) WhereSentAt(p entql.TimeP) {
-	f.Where(p.Field(oncallusershifthandover.FieldSentAt))
+func (f *OncallShiftHandoverFilter) WhereSentAt(p entql.TimeP) {
+	f.Where(p.Field(oncallshifthandover.FieldSentAt))
 }
 
 // WhereContents applies the entql []byte predicate on the contents field.
-func (f *OncallUserShiftHandoverFilter) WhereContents(p entql.BytesP) {
-	f.Where(p.Field(oncallusershifthandover.FieldContents))
+func (f *OncallShiftHandoverFilter) WhereContents(p entql.BytesP) {
+	f.Where(p.Field(oncallshifthandover.FieldContents))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *OncallUserShiftHandoverFilter) WhereHasTenant() {
+func (f *OncallShiftHandoverFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *OncallUserShiftHandoverFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *OncallShiftHandoverFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7929,12 +7929,12 @@ func (f *OncallUserShiftHandoverFilter) WhereHasTenantWith(preds ...predicate.Te
 }
 
 // WhereHasShift applies a predicate to check if query has an edge shift.
-func (f *OncallUserShiftHandoverFilter) WhereHasShift() {
+func (f *OncallShiftHandoverFilter) WhereHasShift() {
 	f.Where(entql.HasEdge("shift"))
 }
 
 // WhereHasShiftWith applies a predicate to check if query has an edge shift with a given conditions (other predicates).
-func (f *OncallUserShiftHandoverFilter) WhereHasShiftWith(preds ...predicate.OncallUserShift) {
+func (f *OncallShiftHandoverFilter) WhereHasShiftWith(preds ...predicate.OncallShift) {
 	f.Where(entql.HasEdgeWith("shift", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7943,12 +7943,12 @@ func (f *OncallUserShiftHandoverFilter) WhereHasShiftWith(preds ...predicate.Onc
 }
 
 // WhereHasPinnedAnnotations applies a predicate to check if query has an edge pinned_annotations.
-func (f *OncallUserShiftHandoverFilter) WhereHasPinnedAnnotations() {
+func (f *OncallShiftHandoverFilter) WhereHasPinnedAnnotations() {
 	f.Where(entql.HasEdge("pinned_annotations"))
 }
 
 // WhereHasPinnedAnnotationsWith applies a predicate to check if query has an edge pinned_annotations with a given conditions (other predicates).
-func (f *OncallUserShiftHandoverFilter) WhereHasPinnedAnnotationsWith(preds ...predicate.OncallAnnotation) {
+func (f *OncallShiftHandoverFilter) WhereHasPinnedAnnotationsWith(preds ...predicate.OncallAnnotation) {
 	f.Where(entql.HasEdgeWith("pinned_annotations", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -7957,33 +7957,33 @@ func (f *OncallUserShiftHandoverFilter) WhereHasPinnedAnnotationsWith(preds ...p
 }
 
 // addPredicate implements the predicateAdder interface.
-func (ousmq *OncallUserShiftMetricsQuery) addPredicate(pred func(s *sql.Selector)) {
-	ousmq.predicates = append(ousmq.predicates, pred)
+func (osmq *OncallShiftMetricsQuery) addPredicate(pred func(s *sql.Selector)) {
+	osmq.predicates = append(osmq.predicates, pred)
 }
 
-// Filter returns a Filter implementation to apply filters on the OncallUserShiftMetricsQuery builder.
-func (ousmq *OncallUserShiftMetricsQuery) Filter() *OncallUserShiftMetricsFilter {
-	return &OncallUserShiftMetricsFilter{config: ousmq.config, predicateAdder: ousmq}
+// Filter returns a Filter implementation to apply filters on the OncallShiftMetricsQuery builder.
+func (osmq *OncallShiftMetricsQuery) Filter() *OncallShiftMetricsFilter {
+	return &OncallShiftMetricsFilter{config: osmq.config, predicateAdder: osmq}
 }
 
 // addPredicate implements the predicateAdder interface.
-func (m *OncallUserShiftMetricsMutation) addPredicate(pred func(s *sql.Selector)) {
+func (m *OncallShiftMetricsMutation) addPredicate(pred func(s *sql.Selector)) {
 	m.predicates = append(m.predicates, pred)
 }
 
-// Filter returns an entql.Where implementation to apply filters on the OncallUserShiftMetricsMutation builder.
-func (m *OncallUserShiftMetricsMutation) Filter() *OncallUserShiftMetricsFilter {
-	return &OncallUserShiftMetricsFilter{config: m.config, predicateAdder: m}
+// Filter returns an entql.Where implementation to apply filters on the OncallShiftMetricsMutation builder.
+func (m *OncallShiftMetricsMutation) Filter() *OncallShiftMetricsFilter {
+	return &OncallShiftMetricsFilter{config: m.config, predicateAdder: m}
 }
 
-// OncallUserShiftMetricsFilter provides a generic filtering capability at runtime for OncallUserShiftMetricsQuery.
-type OncallUserShiftMetricsFilter struct {
+// OncallShiftMetricsFilter provides a generic filtering capability at runtime for OncallShiftMetricsQuery.
+type OncallShiftMetricsFilter struct {
 	predicateAdder
 	config
 }
 
 // Where applies the entql predicate on the query filter.
-func (f *OncallUserShiftMetricsFilter) Where(p entql.P) {
+func (f *OncallShiftMetricsFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
 		if err := schemaGraph.EvalP(schemaGraph.Nodes[33].Type, p, s); err != nil {
 			s.AddError(err)
@@ -7992,27 +7992,27 @@ func (f *OncallUserShiftMetricsFilter) Where(p entql.P) {
 }
 
 // WhereID applies the entql [16]byte predicate on the id field.
-func (f *OncallUserShiftMetricsFilter) WhereID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershiftmetrics.FieldID))
+func (f *OncallShiftMetricsFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(oncallshiftmetrics.FieldID))
 }
 
 // WhereTenantID applies the entql int predicate on the tenant_id field.
-func (f *OncallUserShiftMetricsFilter) WhereTenantID(p entql.IntP) {
-	f.Where(p.Field(oncallusershiftmetrics.FieldTenantID))
+func (f *OncallShiftMetricsFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(oncallshiftmetrics.FieldTenantID))
 }
 
 // WhereShiftID applies the entql [16]byte predicate on the shift_id field.
-func (f *OncallUserShiftMetricsFilter) WhereShiftID(p entql.ValueP) {
-	f.Where(p.Field(oncallusershiftmetrics.FieldShiftID))
+func (f *OncallShiftMetricsFilter) WhereShiftID(p entql.ValueP) {
+	f.Where(p.Field(oncallshiftmetrics.FieldShiftID))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
-func (f *OncallUserShiftMetricsFilter) WhereHasTenant() {
+func (f *OncallShiftMetricsFilter) WhereHasTenant() {
 	f.Where(entql.HasEdge("tenant"))
 }
 
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
-func (f *OncallUserShiftMetricsFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+func (f *OncallShiftMetricsFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -8021,12 +8021,12 @@ func (f *OncallUserShiftMetricsFilter) WhereHasTenantWith(preds ...predicate.Ten
 }
 
 // WhereHasShift applies a predicate to check if query has an edge shift.
-func (f *OncallUserShiftMetricsFilter) WhereHasShift() {
+func (f *OncallShiftMetricsFilter) WhereHasShift() {
 	f.Where(entql.HasEdge("shift"))
 }
 
 // WhereHasShiftWith applies a predicate to check if query has an edge shift with a given conditions (other predicates).
-func (f *OncallUserShiftMetricsFilter) WhereHasShiftWith(preds ...predicate.OncallUserShift) {
+func (f *OncallShiftMetricsFilter) WhereHasShiftWith(preds ...predicate.OncallShift) {
 	f.Where(entql.HasEdgeWith("shift", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
@@ -10869,7 +10869,7 @@ func (f *UserFilter) WhereHasOncallShifts() {
 }
 
 // WhereHasOncallShiftsWith applies a predicate to check if query has an edge oncall_shifts with a given conditions (other predicates).
-func (f *UserFilter) WhereHasOncallShiftsWith(preds ...predicate.OncallUserShift) {
+func (f *UserFilter) WhereHasOncallShiftsWith(preds ...predicate.OncallShift) {
 	f.Where(entql.HasEdgeWith("oncall_shifts", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
