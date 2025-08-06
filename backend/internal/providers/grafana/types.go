@@ -329,7 +329,7 @@ type (
 		StartRotationFromIndex int        `json:"start_rotation_from_user_index"`
 	}
 
-	oncallUserShift struct {
+	OncallShift struct {
 		UserPk       string `json:"user_pk"`
 		UserEmail    string `json:"user_email"`
 		UserUsername string `json:"user_username"`

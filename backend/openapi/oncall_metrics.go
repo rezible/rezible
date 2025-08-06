@@ -63,11 +63,11 @@ type (
 	}
 
 	OncallShiftMetricsAlertInstance struct {
-		AlertId          uuid.UUID                      `json:"alertId"`
-		Timestamp        time.Time                      `json:"timestamp"`
-		ResponseMinutes  float32                        `json:"responseMinutes"`
-		LinkedIncidentID *uuid.UUID                     `json:"linkedIncidentId,omitempty"`
-		Feedback         *OncallAnnotationAlertFeedback `json:"feedback"`
+		AlertId          uuid.UUID      `json:"alertId"`
+		Timestamp        time.Time      `json:"timestamp"`
+		ResponseMinutes  float32        `json:"responseMinutes"`
+		LinkedIncidentID *uuid.UUID     `json:"linkedIncidentId,omitempty"`
+		Feedback         *AlertFeedback `json:"feedback"`
 	}
 )
 

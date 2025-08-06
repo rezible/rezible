@@ -19,7 +19,7 @@ var (
 	dividerNode = prosemirror.Node{Type: prosemirror.NodeType{Name: "divider"}}
 )
 
-func (s *DocumentsService) CreateOncallShiftHandoverMessage(sections []rez.OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) (*rez.ContentNode, error) {
+func (s *DocumentsService) CreateOncallShiftHandoverMessage(sections []rez.OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*rez.ContentNode, error) {
 	var content []prosemirror.Node
 
 	content = append(content, buildHandoverHeaderSection(roster, endingShift, startingShift), dividerNode)
@@ -49,7 +49,7 @@ func headerNode(content ...prosemirror.Node) prosemirror.Node {
 	}
 }
 
-func buildHandoverHeaderSection(roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) prosemirror.Node {
+func buildHandoverHeaderSection(roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) prosemirror.Node {
 	titleNode := textNode(fmt.Sprintf(":pager: %s - Oncall Handover :pager:", roster.Name))
 
 	usersNode := prosemirror.Node{
@@ -85,7 +85,7 @@ func buildHandoverAnnotationsSection(annos []*ent.OncallAnnotation) []prosemirro
 	return nil
 }
 
-func buildHandoverFooterSection(endingShift *ent.OncallUserShift) prosemirror.Node {
+func buildHandoverFooterSection(endingShift *ent.OncallShift) prosemirror.Node {
 	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", rez.FrontendUrl, endingShift.ID)
 
 	linkText := prosemirror.Node{

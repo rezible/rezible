@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 )
 
@@ -154,7 +154,7 @@ func (s *OncallEventsService) createAnnotation(ctx context.Context, anno *ent.On
 		}
 
 		if alertFb := anno.Edges.AlertFeedback; alertFb != nil {
-			createdFb, fbErr := tx.OncallAnnotationAlertFeedback.Create().
+			createdFb, fbErr := tx.AlertFeedback.Create().
 				SetDocumentationAvailable(alertFb.DocumentationAvailable).
 				SetActionable(alertFb.Actionable).
 				SetAccurate(alertFb.Accurate).
@@ -199,7 +199,7 @@ func (s *OncallEventsService) UpdateAnnotation(ctx context.Context, anno *ent.On
 		}
 
 		if fb := anno.Edges.AlertFeedback; fb != nil {
-			upsert := tx.OncallAnnotationAlertFeedback.Create()
+			upsert := tx.AlertFeedback.Create()
 			if dbAlertFb != nil {
 				upsert.SetID(dbAlertFb.ID)
 			}
@@ -208,7 +208,7 @@ func (s *OncallEventsService) UpdateAnnotation(ctx context.Context, anno *ent.On
 				SetActionable(fb.Actionable).
 				SetDocumentationAvailable(fb.DocumentationAvailable).
 				SetAnnotationID(updatedAnno.ID).
-				OnConflictColumns(oncallannotationalertfeedback.FieldID).
+				OnConflictColumns(alertfeedback.FieldID).
 				UpdateNewValues()
 			fbId, updateErr := updateFb.ID(ctx)
 			if updateErr != nil {

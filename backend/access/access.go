@@ -2,6 +2,7 @@ package access
 
 import (
 	"context"
+
 	"github.com/rezible/rezible/ent"
 )
 
@@ -24,8 +25,9 @@ func MakeRoles(roles ...Role) Roles {
 }
 
 const (
-	RoleSystem Role = "system"
-	RoleUser   Role = "user"
+	RoleSystem    Role = "system"
+	RoleUser      Role = "user"
+	RoleAnonymous Role = "anonymous"
 )
 
 type AuthContext struct {

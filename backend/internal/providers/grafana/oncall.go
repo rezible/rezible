@@ -48,7 +48,7 @@ func (p *OncallDataProvider) RosterDataMapping() *ent.OncallRoster {
 	return &rosterMapping
 }
 
-func (p *OncallDataProvider) UserShiftDataMapping() *ent.OncallUserShift {
+func (p *OncallDataProvider) UserShiftDataMapping() *ent.OncallShift {
 	return &shiftMapping
 }
 
@@ -131,7 +131,7 @@ func (p *OncallDataProvider) FetchOncallersForRoster(ctx context.Context, roster
 	return users, nil
 }
 
-func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string, from, to time.Time) iter.Seq2[*ent.OncallUserShift, error] {
+func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string, from, to time.Time) iter.Seq2[*ent.OncallShift, error] {
 	formatFrom := formatOncallTime(from.UTC())
 	formatTo := formatOncallTime(to.UTC())
 
@@ -148,10 +148,10 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 		return formatTo == formatOncallTime(shiftEnd.UTC())
 	}
 
-	return func(yield func(*ent.OncallUserShift, error) bool) {
+	return func(yield func(*ent.OncallShift, error) bool) {
 		reqUrl := &initialUrl
 		for reqUrl != nil {
-			var resp oncallPaginatedResponse[oncallUserShift]
+			var resp oncallPaginatedResponse[OncallShift]
 			if getErr := oncallGet(ctx, *reqUrl, p.apiToken, &resp); getErr != nil {
 				yield(nil, getErr)
 				return
@@ -178,11 +178,11 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 					continue
 				}
 
-				shift := &ent.OncallUserShift{
+				shift := &ent.OncallShift{
 					ProviderID: fmt.Sprintf("%s_%s_%s_%s", id, res.UserPk, res.ShiftStart, res.ShiftEnd),
 					StartAt:    startsAt,
 					EndAt:      endsAt,
-					Edges: ent.OncallUserShiftEdges{
+					Edges: ent.OncallShiftEdges{
 						User: user,
 					},
 				}
@@ -196,16 +196,16 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 	}
 }
 
-func (p *OncallDataProvider) ListShiftsForRoster(ctx context.Context, id string, from, to time.Time) ([]*ent.OncallUserShift, error) {
+func (p *OncallDataProvider) ListShiftsForRoster(ctx context.Context, id string, from, to time.Time) ([]*ent.OncallShift, error) {
 	params := &url.Values{}
 	params.Set("start_date", formatOncallTime(from))
 	params.Set("end_date", formatOncallTime(to))
 	endpoint := fmt.Sprintf("schedules/%s/final_shifts", id)
 	reqUrl := oncallApiUrl(p.apiEndpoint, endpoint, params)
 
-	var shifts []*ent.OncallUserShift
+	var shifts []*ent.OncallShift
 	for {
-		var resp oncallPaginatedResponse[oncallUserShift]
+		var resp oncallPaginatedResponse[OncallShift]
 		if getErr := oncallGet(ctx, reqUrl, p.apiToken, &resp); getErr != nil {
 			return nil, fmt.Errorf("get schedules request: %w", getErr)
 		}
@@ -225,10 +225,10 @@ func (p *OncallDataProvider) ListShiftsForRoster(ctx context.Context, id string,
 			if endErr != nil {
 				log.Error().Err(endErr).Str("time", res.ShiftEnd).Msg("failed to parse shift end time")
 			}
-			shifts = append(shifts, &ent.OncallUserShift{
+			shifts = append(shifts, &ent.OncallShift{
 				StartAt: startsAt,
 				EndAt:   endsAt,
-				Edges: ent.OncallUserShiftEdges{
+				Edges: ent.OncallShiftEdges{
 					User: user,
 				},
 			})

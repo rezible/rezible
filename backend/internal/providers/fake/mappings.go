@@ -62,7 +62,7 @@ var (
 var (
 	rosterMapping = ent.OncallRoster{}
 
-	shiftMapping = ent.OncallUserShift{}
+	shiftMapping = ent.OncallShift{}
 )
 
 var (

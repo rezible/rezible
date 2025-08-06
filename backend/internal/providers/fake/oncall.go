@@ -25,7 +25,7 @@ func (p *OncallDataProvider) RosterDataMapping() *ent.OncallRoster {
 	return &rosterMapping
 }
 
-func (p *OncallDataProvider) UserShiftDataMapping() *ent.OncallUserShift {
+func (p *OncallDataProvider) UserShiftDataMapping() *ent.OncallShift {
 	return &shiftMapping
 }
 
@@ -35,8 +35,8 @@ func (p *OncallDataProvider) PullRosters(ctx context.Context) iter.Seq2[*ent.Onc
 	}
 }
 
-func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, rosterId string, from, to time.Time) iter.Seq2[*ent.OncallUserShift, error] {
-	return func(yield func(*ent.OncallUserShift, error) bool) {
+func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, rosterId string, from, to time.Time) iter.Seq2[*ent.OncallShift, error] {
+	return func(yield func(*ent.OncallShift, error) bool) {
 
 	}
 }

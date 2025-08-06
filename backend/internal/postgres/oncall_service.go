@@ -14,12 +14,12 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/OncallShift"
+	"github.com/rezible/rezible/ent/OncallShifthandover"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
-	"github.com/rezible/rezible/ent/oncallusershift"
-	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/jobs"
 )
@@ -139,38 +139,38 @@ func (s *OncallService) ListRosters(ctx context.Context, params rez.ListOncallRo
 	return rosters, queryErr
 }
 
-func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error) {
-	query := s.db.OncallUserShift.Query().
-		Where(oncallusershift.ID(id)).
+func (s *OncallService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
+	query := s.db.OncallShift.Query().
+		Where(OncallShift.ID(id)).
 		WithRoster().
 		WithUser()
 	return query.Only(ctx)
 }
 
-func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShift, error) {
-	return s.db.OncallUserShift.Query().
-		Where(oncallusershift.RosterID(shift.RosterID)).
-		Where(oncallusershift.IDNEQ(shift.ID)).
-		Where(oncallusershift.StartAtGTE(shift.StartAt)).
-		Order(oncallusershift.ByStartAt(sql.OrderAsc())).
+func (s *OncallService) getNextShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
+	return s.db.OncallShift.Query().
+		Where(OncallShift.RosterID(shift.RosterID)).
+		Where(OncallShift.IDNEQ(shift.ID)).
+		Where(OncallShift.StartAtGTE(shift.StartAt)).
+		Order(OncallShift.ByStartAt(sql.OrderAsc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
 }
 
-func (s *OncallService) getPreviousShift(ctx context.Context, shift *ent.OncallUserShift) (*ent.OncallUserShift, error) {
-	return s.db.OncallUserShift.Query().
-		Where(oncallusershift.RosterID(shift.RosterID)).
-		Where(oncallusershift.IDNEQ(shift.ID)).
-		Where(oncallusershift.EndAtLTE(shift.StartAt)).
-		Order(oncallusershift.ByEndAt(sql.OrderDesc())).
+func (s *OncallService) getPreviousShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
+	return s.db.OncallShift.Query().
+		Where(OncallShift.RosterID(shift.RosterID)).
+		Where(OncallShift.IDNEQ(shift.ID)).
+		Where(OncallShift.EndAtLTE(shift.StartAt)).
+		Order(OncallShift.ByEndAt(sql.OrderDesc())).
 		WithUser().
 		WithRoster().
 		First(ctx)
 }
 
-func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, *ent.OncallUserShift, error) {
-	shift, shiftErr := s.db.OncallUserShift.Get(ctx, id)
+func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error) {
+	shift, shiftErr := s.db.OncallShift.Get(ctx, id)
 	if shiftErr != nil {
 		return nil, nil, fmt.Errorf("lookup shift: %w", shiftErr)
 	}
@@ -188,23 +188,23 @@ func (s *OncallService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*e
 	return prevShift, nextShift, nil
 }
 
-func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallUserShift, error) {
-	query := s.db.OncallUserShift.Query().
-		Order(oncallusershift.ByEndAt(sql.OrderDesc())).
+func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) ([]*ent.OncallShift, error) {
+	query := s.db.OncallShift.Query().
+		Order(OncallShift.ByEndAt(sql.OrderDesc())).
 		Limit(params.GetLimit()).
 		Offset(params.Offset).
 		WithRoster().
 		WithUser()
 
-	var predicates []predicate.OncallUserShift
+	var predicates []predicate.OncallShift
 	if !params.Anchor.IsZero() && !(params.Window.Milliseconds() == 0) {
 		from := params.Anchor.Add(-params.Window)
 		to := params.Anchor.Add(params.Window)
-		withinWindow := oncallusershift.And(oncallusershift.EndAtGTE(from), oncallusershift.StartAtLTE(to))
+		withinWindow := OncallShift.And(OncallShift.EndAtGTE(from), OncallShift.StartAtLTE(to))
 		predicates = append(predicates, withinWindow)
 	}
 	if params.UserID != uuid.Nil {
-		predicates = append(predicates, oncallusershift.UserID(params.UserID))
+		predicates = append(predicates, OncallShift.UserID(params.UserID))
 	}
 	if len(predicates) > 0 {
 		query = query.Where(predicates...)
@@ -213,12 +213,12 @@ func (s *OncallService) ListShifts(ctx context.Context, params rez.ListOncallShi
 	return query.All(params.GetQueryContext(ctx))
 }
 
-func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallUserShift, error) {
-	shiftEndingWithinWindow := oncallusershift.And(
-		oncallusershift.EndAtGT(time.Now().Add(-window)),
-		oncallusershift.EndAtLT(time.Now().Add(window)))
+func (s *OncallService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallShift, error) {
+	shiftEndingWithinWindow := OncallShift.And(
+		OncallShift.EndAtGT(time.Now().Add(-window)),
+		OncallShift.EndAtLT(time.Now().Add(window)))
 
-	query := s.db.OncallUserShift.Query().
+	query := s.db.OncallShift.Query().
 		Where(shiftEndingWithinWindow).
 		WithHandover()
 
@@ -360,16 +360,16 @@ func (s *OncallService) getRosterHandoverTemplateContents(ctx context.Context, r
 	return tmpl.Contents, nil
 }
 
-func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	return s.db.OncallUserShiftHandover.Query().
-		Where(oncallusershifthandover.ID(id)).
+func (s *OncallService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error) {
+	return s.db.OncallShiftHandover.Query().
+		Where(OncallShifthandover.ID(id)).
 		WithPinnedAnnotations().
 		Only(ctx)
 }
 
-func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error) {
-	handover, queryErr := s.db.OncallUserShiftHandover.Query().
-		Where(oncallusershifthandover.ShiftID(shiftId)).
+func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallShiftHandover, error) {
+	handover, queryErr := s.db.OncallShiftHandover.Query().
+		Where(OncallShifthandover.ShiftID(shiftId)).
 		WithPinnedAnnotations().
 		Only(ctx)
 	if queryErr != nil {
@@ -381,7 +381,7 @@ func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UU
 		return handover, nil
 	}
 
-	shift, shiftErr := s.db.OncallUserShift.Get(ctx, shiftId)
+	shift, shiftErr := s.db.OncallShift.Get(ctx, shiftId)
 	if shiftErr != nil {
 		return nil, fmt.Errorf("failed to get shift: %w", shiftErr)
 	}
@@ -394,8 +394,8 @@ func (s *OncallService) GetHandoverForShift(ctx context.Context, shiftId uuid.UU
 	return s.createShiftHandover(ctx, shift.ID, contents)
 }
 
-func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UUID, contents []byte) (*ent.OncallUserShiftHandover, error) {
-	return s.db.OncallUserShiftHandover.Create().
+func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UUID, contents []byte) (*ent.OncallShiftHandover, error) {
+	return s.db.OncallShiftHandover.Create().
 		SetShiftID(shiftId).
 		SetContents(contents).
 		SetCreatedAt(time.Now()).
@@ -403,7 +403,7 @@ func (s *OncallService) createShiftHandover(ctx context.Context, shiftId uuid.UU
 		Save(ctx)
 }
 
-func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error) {
+func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error) {
 	curr, getErr := s.GetShiftHandover(ctx, update.ID)
 	if getErr != nil {
 		return nil, fmt.Errorf("failed to get handover: %w", getErr)
@@ -431,9 +431,9 @@ func (s *OncallService) UpdateShiftHandover(ctx context.Context, update *ent.Onc
 	return query.Save(ctx)
 }
 
-func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallUserShiftHandover, error) {
-	query := s.db.OncallUserShiftHandover.Query().
-		Where(oncallusershifthandover.ID(handoverId)).
+func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallShiftHandover, error) {
+	query := s.db.OncallShiftHandover.Query().
+		Where(OncallShifthandover.ID(handoverId)).
 		WithShift().
 		WithPinnedAnnotations(func(q *ent.OncallAnnotationQuery) {
 			q.WithEvent()
@@ -446,7 +446,7 @@ func (s *OncallService) SendShiftHandover(ctx context.Context, handoverId uuid.U
 	return s.sendShiftHandover(ctx, handover)
 }
 
-func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error) {
+func (s *OncallService) sendShiftHandover(ctx context.Context, ho *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error) {
 	if !ho.SentAt.IsZero() {
 		return ho, nil
 	}

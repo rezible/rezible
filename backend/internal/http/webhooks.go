@@ -1,10 +1,11 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	rez "github.com/rezible/rezible"
 	"github.com/rs/zerolog/log"
-	"net/http"
 )
 
 func NewWebhooksHandler(chat rez.ChatService) http.Handler {

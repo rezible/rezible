@@ -3,12 +3,13 @@ package openapi
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"time"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"time"
 )
 
 type OncallShiftsHandler interface {
@@ -90,7 +91,7 @@ type (
 	}
 )
 
-func OncallShiftFromEnt(shift *ent.OncallUserShift) OncallShift {
+func OncallShiftFromEnt(shift *ent.OncallShift) OncallShift {
 	attr := OncallShiftAttributes{
 		Role:    shift.Role.String(),
 		StartAt: shift.StartAt,
@@ -128,7 +129,7 @@ type unmarshalOncallShiftContentSection struct {
 	JsonContent json.RawMessage `json:"jsonContent,omitempty"`
 }
 
-func OncallShiftHandoverFromEnt(p *ent.OncallUserShiftHandover) OncallShiftHandover {
+func OncallShiftHandoverFromEnt(p *ent.OncallShiftHandover) OncallShiftHandover {
 	var rawContents []unmarshalOncallShiftContentSection
 	if jsonErr := json.Unmarshal(p.Contents, &rawContents); jsonErr != nil {
 		// TODO: just return an error

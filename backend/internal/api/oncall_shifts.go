@@ -152,7 +152,7 @@ func (h *oncallShiftsHandler) GetOncallShiftHandover(ctx context.Context, reques
 func (h *oncallShiftsHandler) UpdateOncallShiftHandover(ctx context.Context, request *oapi.UpdateOncallShiftHandoverRequest) (*oapi.UpdateOncallShiftHandoverResponse, error) {
 	var resp oapi.UpdateOncallShiftHandoverResponse
 
-	ho := &ent.OncallUserShiftHandover{
+	ho := &ent.OncallShiftHandover{
 		ID: request.Id,
 	}
 	attr := request.Body.Attributes

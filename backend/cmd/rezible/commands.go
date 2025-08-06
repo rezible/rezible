@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/rezible/rezible/access"
 
 	"github.com/danielgtaylor/huma/v2/humacli"
@@ -82,7 +83,7 @@ func syncCmd(ctx context.Context, opts *Options) error {
 
 func loadConfigCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		return providers.LoadConfigFromFile(ctx, db.Client(), ".dev_provider_configs.json")
+		return providers.LoadConfigFile(ctx, db.Client(), ".dev_provider_configs.json")
 	})
 }
 

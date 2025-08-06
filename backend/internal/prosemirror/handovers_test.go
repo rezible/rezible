@@ -41,7 +41,7 @@ func TestConvertContent(t *testing.T) {
 		},
 		senderId:    "foo",
 		receiverId:  "foo",
-		endingShift: &ent.OncallUserShift{},
+		endingShift: &ent.OncallShift{},
 	}
 
 	if convErr := builder.build(content); convErr != nil {

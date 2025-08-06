@@ -70,16 +70,13 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 	// TODO: use a view for this
 	query := h.incidents.Query().
 		Where(idPredicate).
+		WithRetrospective().
 		WithSeverity().
 		WithType().
 		WithFieldSelections().
 		WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
 			q.WithRole().WithUser()
-		}).
-		WithTeamAssignments(func(q *ent.IncidentTeamAssignmentQuery) {
-			q.WithTeam()
-		}).
-		WithRetrospective()
+		})
 
 	inc, queryErr := query.Only(ctx)
 	if queryErr != nil {

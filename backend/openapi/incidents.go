@@ -2,9 +2,10 @@ package openapi
 
 import (
 	"context"
-	"github.com/rezible/rezible/ent"
 	"net/http"
 	"time"
+
+	"github.com/rezible/rezible/ent"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -111,13 +112,6 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		}
 	}
 
-	if teams, teamsErr := inc.Edges.TeamAssignmentsOrErr(); teamsErr == nil {
-		attributes.TeamAssignments = make([]IncidentTeamAssignment, len(teams))
-		for i, t := range teams {
-			attributes.TeamAssignments[i] = IncidentTeamAssignmentFromEnt(t)
-		}
-	}
-
 	attributes.LinkedIncidents = make([]IncidentLink, 0)
 
 	return Incident{
@@ -130,15 +124,6 @@ func IncidentRoleAssignmentFromEnt(assn *ent.IncidentRoleAssignment) IncidentRol
 	return IncidentRoleAssignment{
 		User:      UserFromEnt(assn.Edges.User),
 		Role:      IncidentRoleFromEnt(assn.Edges.Role),
-		Active:    false,
-		StartedAt: time.Time{},
-		EndedAt:   time.Time{},
-	}
-}
-
-func IncidentTeamAssignmentFromEnt(assn *ent.IncidentTeamAssignment) IncidentTeamAssignment {
-	return IncidentTeamAssignment{
-		Team:      TeamFromEnt(assn.Edges.Team),
 		Active:    false,
 		StartedAt: time.Time{},
 		EndedAt:   time.Time{},

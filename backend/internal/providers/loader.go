@@ -31,34 +31,40 @@ var (
 	ErrMultipleEnabledStoredConfigs = errors.New("multiple stored configs enabled")
 )
 
-type Loader struct {
-	client *ent.ProviderConfigClient
+type (
+	providerConfig struct {
+		Name      string
+		UpdatedAt time.Time
+		RawConfig []byte
+	}
+	providerConfigCache map[int]map[providerconfig.ProviderType]providerConfig
 
-	cfgCache map[int]map[providerconfig.ProviderType]*ent.ProviderConfig
-}
-
-func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
-	l := &Loader{
-		client:   client,
-		cfgCache: make(map[int]map[providerconfig.ProviderType]*ent.ProviderConfig),
+	Loader struct {
+		client   *ent.ProviderConfigClient
+		cfgCache providerConfigCache
 	}
 
-	return l
+	configFile struct {
+		TenantName    string            `json:"tenant_name"`
+		ConfigEntries []configFileEntry `json:"configs"`
+	}
+
+	configFileEntry struct {
+		Type         providerconfig.ProviderType `json:"type"`
+		ProviderName string                      `json:"provider_name"`
+		Disabled     bool                        `json:"disabled"`
+		Config       json.RawMessage             `json:"config"`
+	}
+)
+
+func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
+	return &Loader{
+		client:   client,
+		cfgCache: make(providerConfigCache),
+	}
 }
 
-type providerConfigFile struct {
-	TenantName string                    `json:"tenant_name"`
-	Configs    []providerConfigFileEntry `json:"configs"`
-}
-
-type providerConfigFileEntry struct {
-	Type         providerconfig.ProviderType `json:"type"`
-	ProviderName string                      `json:"provider_name"`
-	Disabled     bool                        `json:"disabled"`
-	Config       json.RawMessage             `json:"config"`
-}
-
-func readProviderConfigFile(filename string) (*providerConfigFile, error) {
+func readProviderConfigFile(filename string) (*configFile, error) {
 	f, openErr := os.Open(filename)
 	if openErr != nil {
 		return nil, fmt.Errorf("opening file: %w", openErr)
@@ -69,38 +75,14 @@ func readProviderConfigFile(filename string) (*providerConfigFile, error) {
 		return nil, fmt.Errorf("reading file: %w", readErr)
 	}
 
-	var cfg providerConfigFile
+	var cfg configFile
 	if cfgErr := json.Unmarshal(fileContents, &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("unmarshalling file: %w", cfgErr)
 	}
 	return &cfg, nil
 }
 
-func makeUpsertProviderConfigTx(ctx context.Context, cfgs []providerConfigFileEntry) func(tx *ent.Tx) error {
-	return func(tx *ent.Tx) error {
-		for _, c := range cfgs {
-			log.Info().Str("name", c.ProviderName).Str("type", string(c.Type)).Msg("loading provider")
-			upsert := tx.ProviderConfig.Create().
-				SetProviderName(c.ProviderName).
-				SetProviderType(c.Type).
-				SetProviderConfig(c.Config).
-				SetEnabled(!c.Disabled).
-				SetUpdatedAt(time.Now()).
-				OnConflictColumns(
-					providerconfig.FieldProviderName,
-					providerconfig.FieldProviderType).
-				UpdateProviderConfig().
-				UpdateUpdatedAt()
-
-			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
-				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
-			}
-		}
-		return nil
-	}
-}
-
-func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string) error {
+func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) error {
 	cfg, cfgErr := readProviderConfigFile(fileName)
 	if cfgErr != nil {
 		return cfgErr
@@ -113,18 +95,35 @@ func LoadConfigFromFile(ctx context.Context, client *ent.Client, fileName string
 	if tenantErr != nil {
 		return fmt.Errorf("querying tenant %q: %w", cfg.TenantName, tenantErr)
 	}
-	tenantCtx := access.TenantContext(ctx, access.RoleSystem, tnt.ID)
 
-	return ent.WithTx(tenantCtx, client, makeUpsertProviderConfigTx(tenantCtx, cfg.Configs))
+	ctx = access.TenantContext(ctx, access.RoleSystem, tnt.ID)
+
+	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
+		for _, c := range cfg.ConfigEntries {
+			log.Info().
+				Str("name", c.ProviderName).
+				Str("type", string(c.Type)).
+				Msg("loading provider")
+
+			upsert := tx.ProviderConfig.Create().
+				SetProviderName(c.ProviderName).
+				SetProviderType(c.Type).
+				SetProviderConfig(c.Config).
+				SetEnabled(!c.Disabled).
+				SetUpdatedAt(time.Now()).
+				OnConflictColumns(providerconfig.FieldProviderName, providerconfig.FieldProviderType).
+				UpdateProviderConfig().
+				UpdateUpdatedAt()
+
+			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
+				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
+			}
+		}
+		return nil
+	})
 }
 
-type loadedConfig struct {
-	Name      string
-	UpdatedAt time.Time
-	RawConfig []byte
-}
-
-func loadProvider[C any, P any](constructorFn func(C) (P, error), lc *loadedConfig) (P, error) {
+func loadProvider[C any, P any](constructorFn func(C) (P, error), lc *providerConfig) (P, error) {
 	var cfg C
 	var p P
 	if jsonErr := json.Unmarshal(lc.RawConfig, &cfg); jsonErr != nil {
@@ -133,26 +132,14 @@ func loadProvider[C any, P any](constructorFn func(C) (P, error), lc *loadedConf
 	return constructorFn(cfg)
 }
 
-func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(ctx context.Context, cfg C) (P, error), lc *loadedConfig) (P, error) {
+func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(ctx context.Context, cfg C) (P, error), lc *providerConfig) (P, error) {
 	constructorFnCtx := func(c C) (P, error) {
 		return constructorFn(ctx, c)
 	}
 	return loadProvider(constructorFnCtx, lc)
 }
 
-func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.ProviderType) (*ent.ProviderConfig, error) {
-	/*
-		tenantId, idExists := access.GetContextTenantId(ctx)
-		if !idExists {
-			return nil, errors.New("no tenant id found in context")
-		}
-		if _, cacheExists := l.cfgCache[tenantId]; !cacheExists {
-			l.cfgCache[tenantId] = make(map[providerconfig.ProviderType]*ent.ProviderConfig)
-		}
-		if cached, exists := l.cfgCache[tenantId][t]; exists {
-			return cached, nil
-		}
-	*/
+func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
 	pc, queryErr := l.client.Query().
 		Where(providerconfig.ProviderTypeEQ(t)).
 		Where(providerconfig.EnabledEQ(true)).
@@ -165,20 +152,41 @@ func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.Provid
 		}
 		return nil, fmt.Errorf("failed to load %s provider config: %w", t, queryErr)
 	}
-	return pc, nil
-}
-
-func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*loadedConfig, error) {
-	pc, pcErr := l.loadProviderConfig(ctx, t)
-	if pcErr != nil {
-		return nil, pcErr
-	}
-
-	cfg := &loadedConfig{
+	cfg := &providerConfig{
 		Name:      strings.ToLower(pc.ProviderName),
 		UpdatedAt: pc.UpdatedAt,
 		RawConfig: pc.ProviderConfig,
 	}
+	return cfg, nil
+}
+
+func (l *Loader) loadCachedConfig(tenantId int, t providerconfig.ProviderType) *providerConfig {
+	if _, cacheExists := l.cfgCache[tenantId]; !cacheExists {
+		l.cfgCache[tenantId] = make(map[providerconfig.ProviderType]providerConfig)
+	}
+	if cached, exists := l.cfgCache[tenantId][t]; exists {
+		return &cached
+	}
+	return nil
+}
+
+func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
+	tenantId, idExists := access.GetContextTenantId(ctx)
+	if idExists {
+		if cached := l.loadCachedConfig(tenantId, t); cached != nil {
+			return cached, nil
+		}
+	}
+
+	cfg, loadErr := l.loadProviderConfig(ctx, t)
+	if loadErr != nil {
+		return nil, loadErr
+	}
+
+	if idExists {
+		l.cfgCache[tenantId][t] = *cfg
+	}
+
 	return cfg, nil
 }
 

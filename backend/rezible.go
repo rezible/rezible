@@ -177,7 +177,7 @@ type (
 		CheckUserDocumentAccess(ctx context.Context, userId uuid.UUID, documentName string) (readOnly bool, err error)
 		GetDocumentSchemaSpec(ctx context.Context, schemaName string) (*DocumentSchemaSpec, error)
 
-		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallUserShift, startingShift *ent.OncallUserShift) (*ContentNode, error)
+		CreateOncallShiftHandoverMessage(sections []OncallShiftHandoverSection, annotations []*ent.OncallAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*ContentNode, error)
 	}
 )
 
@@ -193,13 +193,13 @@ type (
 
 		// TODO: this should just be converted to *ContentNode by DocumentService
 		SendOncallHandover(ctx context.Context, params SendOncallHandoverParams) error
-		SendOncallHandoverReminder(context.Context, *ent.OncallUserShift) error
+		SendOncallHandoverReminder(context.Context, *ent.OncallShift) error
 	}
 
 	SendOncallHandoverParams struct {
 		Content           []OncallShiftHandoverSection
-		EndingShift       *ent.OncallUserShift
-		StartingShift     *ent.OncallUserShift
+		EndingShift       *ent.OncallShift
+		StartingShift     *ent.OncallShift
 		PinnedAnnotations []*ent.OncallAnnotation
 	}
 )
@@ -354,7 +354,7 @@ type (
 		From              time.Time
 		To                time.Time
 		RosterID          uuid.UUID
-		Shift             *ent.OncallUserShift
+		Shift             *ent.OncallShift
 		WithCreator       bool
 		WithRoster        bool
 		WithAlertFeedback bool
@@ -379,10 +379,10 @@ type (
 type (
 	OncallDataProvider interface {
 		RosterDataMapping() *ent.OncallRoster
-		UserShiftDataMapping() *ent.OncallUserShift
+		UserShiftDataMapping() *ent.OncallShift
 
 		PullRosters(context.Context) iter.Seq2[*ent.OncallRoster, error]
-		PullShiftsForRoster(ctx context.Context, rosterId string, from, to time.Time) iter.Seq2[*ent.OncallUserShift, error]
+		PullShiftsForRoster(ctx context.Context, rosterId string, from, to time.Time) iter.Seq2[*ent.OncallShift, error]
 		FetchOncallersForRoster(ctx context.Context, rosterId string) ([]*ent.User, error)
 	}
 
@@ -417,14 +417,14 @@ type (
 
 		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) ([]*ent.OncallSchedule, error)
 
-		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallUserShift, error)
-		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, error)
-		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallUserShift, *ent.OncallUserShift, error)
+		ListShifts(ctx context.Context, params ListOncallShiftsParams) ([]*ent.OncallShift, error)
+		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
+		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
 
-		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallUserShiftHandover, error)
-		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
-		UpdateShiftHandover(ctx context.Context, handover *ent.OncallUserShiftHandover) (*ent.OncallUserShiftHandover, error)
-		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallUserShiftHandover, error)
+		GetHandoverForShift(ctx context.Context, shiftId uuid.UUID, create bool) (*ent.OncallShiftHandover, error)
+		GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
+		UpdateShiftHandover(ctx context.Context, handover *ent.OncallShiftHandover) (*ent.OncallShiftHandover, error)
+		SendShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error)
 
 		HandleEnsureShiftHandoverSent(context.Context, jobs.EnsureShiftHandoverSent) error
 		HandleEnsureShiftHandoverReminderSent(context.Context, jobs.EnsureShiftHandoverReminderSent) error

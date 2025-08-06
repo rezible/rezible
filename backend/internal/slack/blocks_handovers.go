@@ -33,12 +33,12 @@ type handoverMessageBuilder struct {
 	roster            *ent.OncallRoster
 	senderId          string
 	receiverId        string
-	endingShift       *ent.OncallUserShift
-	startingShift     *ent.OncallUserShift
+	endingShift       *ent.OncallShift
+	startingShift     *ent.OncallShift
 	pinnedAnnotations []*ent.OncallAnnotation
 }
 
-func newHandoverMessageBuilder(ending, starting *ent.OncallUserShift, pinnedAnnotations []*ent.OncallAnnotation) (*handoverMessageBuilder, error) {
+func newHandoverMessageBuilder(ending, starting *ent.OncallShift, pinnedAnnotations []*ent.OncallAnnotation) (*handoverMessageBuilder, error) {
 	roster, rosterErr := ending.Edges.RosterOrErr()
 	if rosterErr != nil {
 		return nil, fmt.Errorf("get shift roster: %w", rosterErr)

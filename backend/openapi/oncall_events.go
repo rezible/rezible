@@ -2,10 +2,11 @@ package openapi
 
 import (
 	"context"
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
 )
@@ -58,10 +59,10 @@ type (
 		Notes           string                             `json:"notes"`
 		Tags            []string                           `json:"tags"`
 		MinutesOccupied int                                `json:"minutesOccupied"`
-		AlertFeedback   *OncallAnnotationAlertFeedback     `json:"alertFeedback,omitempty"`
+		AlertFeedback   *AlertFeedback                     `json:"alertFeedback,omitempty"`
 	}
 
-	OncallAnnotationAlertFeedback struct {
+	AlertFeedback struct {
 		Actionable             bool   `json:"actionable"`
 		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
 		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,no,needs_update"`
@@ -112,7 +113,7 @@ func OncallAnnotationFromEnt(e *ent.OncallAnnotation) OncallAnnotation {
 	}
 
 	if e.Edges.AlertFeedback != nil {
-		attr.AlertFeedback = &OncallAnnotationAlertFeedback{
+		attr.AlertFeedback = &AlertFeedback{
 			Accurate:               e.Edges.AlertFeedback.Accurate.String(),
 			Actionable:             e.Edges.AlertFeedback.Actionable,
 			DocumentationAvailable: e.Edges.AlertFeedback.DocumentationAvailable.String(),
@@ -194,12 +195,12 @@ var CreateOncallAnnotation = huma.Operation{
 }
 
 type CreateOncallAnnotationRequestAttributes struct {
-	EventId         uuid.UUID                      `json:"eventId"`
-	RosterId        uuid.UUID                      `json:"rosterId"`
-	Notes           string                         `json:"notes"`
-	MinutesOccupied int                            `json:"minutesOccupied"`
-	Tags            []string                       `json:"tags"`
-	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
+	EventId         uuid.UUID      `json:"eventId"`
+	RosterId        uuid.UUID      `json:"rosterId"`
+	Notes           string         `json:"notes"`
+	MinutesOccupied int            `json:"minutesOccupied"`
+	Tags            []string       `json:"tags"`
+	AlertFeedback   *AlertFeedback `json:"alertFeedback,omitempty"`
 }
 type CreateOncallAnnotationRequest RequestWithBodyAttributes[CreateOncallAnnotationRequestAttributes]
 type CreateOncallAnnotationResponse ItemResponse[OncallAnnotation]
@@ -214,10 +215,10 @@ var UpdateOncallAnnotation = huma.Operation{
 }
 
 type UpdateOncallAnnotationRequestAttributes struct {
-	Notes           *string                        `json:"notes,omitempty"`
-	MinutesOccupied *int                           `json:"minutesOccupied,omitempty"`
-	Tags            *[]string                      `json:"tags,omitempty"`
-	AlertFeedback   *OncallAnnotationAlertFeedback `json:"alertFeedback,omitempty"`
+	Notes           *string        `json:"notes,omitempty"`
+	MinutesOccupied *int           `json:"minutesOccupied,omitempty"`
+	Tags            *[]string      `json:"tags,omitempty"`
+	AlertFeedback   *AlertFeedback `json:"alertFeedback,omitempty"`
 }
 type UpdateOncallAnnotationRequest UpdateIdRequest[UpdateOncallAnnotationRequestAttributes]
 type UpdateOncallAnnotationResponse ItemResponse[OncallAnnotation]

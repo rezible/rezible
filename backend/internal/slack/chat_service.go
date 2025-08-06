@@ -90,7 +90,7 @@ func (s *ChatService) SendOncallHandover(ctx context.Context, params rez.SendOnc
 	return s.sendMessage(ctx, channel, msg)
 }
 
-func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallUserShift) error {
+func (s *ChatService) SendOncallHandoverReminder(ctx context.Context, shift *ent.OncallShift) error {
 	return nil
 }
 
