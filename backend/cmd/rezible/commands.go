@@ -60,7 +60,7 @@ func withDatabase(ctx context.Context, opts *Options, fn func(db *postgres.Datab
 
 func migrateCmd(ctx context.Context, opts *Options) error {
 	return withDatabase(ctx, opts, func(db *postgres.Database) error {
-		if dbErr := db.RunEntMigrations(ctx); dbErr != nil {
+		if dbErr := db.RunMigrations(ctx); dbErr != nil {
 			return fmt.Errorf("failed to run ent migrations: %w", dbErr)
 		}
 

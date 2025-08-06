@@ -5,22 +5,24 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 
 	"entgo.io/ent/dialect"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent/entpgx"
+	"github.com/rs/zerolog/log"
+
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/entpgx"
 	_ "github.com/rezible/rezible/ent/runtime"
 )
 
 type Database struct {
 	*pgxpool.Pool
+	client *ent.Client
 }
 
 func Open(ctx context.Context, uri string) (*Database, error) {
@@ -37,9 +39,42 @@ func Open(ctx context.Context, uri string) (*Database, error) {
 	return &Database{Pool: pool}, nil
 }
 
+func (d *Database) Client() *ent.Client {
+	if d.client == nil {
+		d.client = ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
+		d.client.Use(ensureTenantIdSetHook)
+		d.client.Intercept(setTenantContextInterceptor())
+	}
+	return d.client
+}
+
+func (d *Database) RunMigrations(ctx context.Context) error {
+	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(d.Pool)))
+	client := ent.NewClient(driver)
+	defer func(c *ent.Client) {
+		if closeErr := c.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("failed to close ent client")
+		}
+	}(client)
+
+	return client.Schema.Create(ctx)
+}
+
 func (d *Database) Close() error {
 	d.Pool.Close()
 	return nil
+}
+
+func setTenantContextInterceptor() ent.Interceptor {
+	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
+		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
+			authCtx := access.GetAuthContext(ctx)
+			if tenantId, idExists := authCtx.TenantId(); idExists {
+				ctx = entsql.WithIntVar(ctx, "app.current_tenant", tenantId)
+			}
+			return q.Query(ctx, query)
+		})
+	})
 }
 
 func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
@@ -68,30 +103,4 @@ func debugLogQueryAccessAuthContext() ent.Interceptor {
 			return q.Query(ctx, query)
 		})
 	})
-}
-
-func (d *Database) Client() *ent.Client {
-	c := ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
-	c.Use(ensureTenantIdSetHook)
-	// c.Intercept(debugLogQueryAccessAuthContext())
-	return c
-}
-
-func (d *Database) tryCloseClient(c *ent.Client) {
-	if closeErr := c.Close(); closeErr != nil {
-		log.Error().Err(closeErr).Msg("failed to close ent client")
-	}
-}
-
-func (d *Database) RunEntMigrations(ctx context.Context) error {
-	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(d.Pool)))
-	client := ent.NewClient(driver)
-	defer d.tryCloseClient(client)
-
-	schemaErr := client.Schema.Create(ctx)
-	if schemaErr != nil {
-		return fmt.Errorf("create schema: %w", schemaErr)
-	}
-
-	return nil
 }

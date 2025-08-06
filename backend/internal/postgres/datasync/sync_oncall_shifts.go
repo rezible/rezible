@@ -11,7 +11,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/OncallShift"
+	"github.com/rezible/rezible/ent/oncallshift"
 )
 
 func syncOncallShifts(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider) error {
@@ -81,8 +81,8 @@ func (b *oncallShiftsBatcher) createBatchMutations(ctx context.Context, batch []
 	}
 
 	dbShifts, queryErr := b.db.OncallShift.Query().
-		Where(OncallShift.ProviderIDIn(provIds...)).
-		Where(OncallShift.RosterID(b.batchParams.rosterID)).
+		Where(oncallshift.ProviderIDIn(provIds...)).
+		Where(oncallshift.RosterID(b.batchParams.rosterID)).
 		All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("querying roster shifts: %w", queryErr)
