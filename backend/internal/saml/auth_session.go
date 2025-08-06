@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"time"
 
 	"github.com/crewjam/saml"
@@ -21,6 +22,10 @@ import (
 
 const (
 	sessionCookieName = "saml_session"
+
+	IdPMetadataUrlEnv = "SAML_IDP_METADATA_URL"
+	CertFileEnv       = "SAML_CERT_FILE"
+	CertKeyFileEnv    = "SAML_CERT_KEY_FILE"
 )
 
 var (
@@ -31,9 +36,9 @@ var (
 )
 
 type Config struct {
-	IdPMetadataUrl string `json:"idp_metadata_url"`
-	CertFile       string `json:"cert_file"`
-	CertKeyFile    string `json:"cert_key_file"`
+	IdPMetadataUrl string
+	CertFile       string
+	CertKeyFile    string
 }
 
 type AuthSessionProvider struct {
@@ -41,7 +46,7 @@ type AuthSessionProvider struct {
 	mw     *samlsp.Middleware
 }
 
-func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvider, error) {
+func NewAuthSessionProvider(ctx context.Context) (*AuthSessionProvider, error) {
 	appUrl, appUrlErr := url.Parse(rez.BackendUrl)
 	if appUrlErr != nil {
 		return nil, fmt.Errorf("bad app url: %w", appUrlErr)
@@ -49,6 +54,11 @@ func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvid
 
 	p := &AuthSessionProvider{
 		appUrl: appUrl,
+	}
+
+	cfg, cfgErr := loadConfig()
+	if cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
 	mw, mwErr := p.createSamlMiddleware(ctx, cfg)
@@ -59,6 +69,22 @@ func NewAuthSessionProvider(ctx context.Context, cfg Config) (*AuthSessionProvid
 	return &AuthSessionProvider{
 		mw: mw,
 	}, nil
+}
+
+func loadConfig() (Config, error) {
+	var cfg Config
+
+	for _, v := range []string{IdPMetadataUrlEnv, CertFileEnv, CertKeyFileEnv} {
+		if os.Getenv(v) == "" {
+			return cfg, fmt.Errorf("missing environment variable: %s", v)
+		}
+	}
+
+	cfg.IdPMetadataUrl = os.Getenv(IdPMetadataUrlEnv)
+	cfg.CertFile = os.Getenv(CertFileEnv)
+	cfg.CertKeyFile = os.Getenv(CertKeyFileEnv)
+
+	return cfg, nil
 }
 
 func (p *AuthSessionProvider) Name() string {

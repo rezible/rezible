@@ -21,8 +21,6 @@ import (
 	"github.com/rezible/rezible/internal/providers/fake"
 	"github.com/rezible/rezible/internal/providers/grafana"
 	"github.com/rezible/rezible/internal/providers/jira"
-	"github.com/rezible/rezible/internal/providers/oauth2"
-	"github.com/rezible/rezible/internal/providers/saml"
 	"github.com/rezible/rezible/internal/providers/slack"
 )
 
@@ -39,7 +37,7 @@ type (
 	}
 	providerConfigCache map[int]map[providerconfig.ProviderType]providerConfig
 
-	Loader struct {
+	ProviderLoader struct {
 		client   *ent.ProviderConfigClient
 		cfgCache providerConfigCache
 	}
@@ -57,8 +55,8 @@ type (
 	}
 )
 
-func NewProviderLoader(client *ent.ProviderConfigClient) *Loader {
-	return &Loader{
+func NewProviderLoader(client *ent.ProviderConfigClient) *ProviderLoader {
+	return &ProviderLoader{
 		client:   client,
 		cfgCache: make(providerConfigCache),
 	}
@@ -144,7 +142,7 @@ func loadProviderCtx[C any, P any](ctx context.Context, constructorFn func(ctx c
 	return loadProvider(constructorFnCtx, lc)
 }
 
-func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
+func (l *ProviderLoader) loadProviderConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
 	pc, queryErr := l.client.Query().
 		Where(providerconfig.ProviderTypeEQ(t)).
 		Where(providerconfig.EnabledEQ(true)).
@@ -165,7 +163,7 @@ func (l *Loader) loadProviderConfig(ctx context.Context, t providerconfig.Provid
 	return cfg, nil
 }
 
-func (l *Loader) loadCachedConfig(tenantId int, t providerconfig.ProviderType) *providerConfig {
+func (l *ProviderLoader) loadCachedConfig(tenantId int, t providerconfig.ProviderType) *providerConfig {
 	if _, cacheExists := l.cfgCache[tenantId]; !cacheExists {
 		l.cfgCache[tenantId] = make(map[providerconfig.ProviderType]providerConfig)
 	}
@@ -175,7 +173,7 @@ func (l *Loader) loadCachedConfig(tenantId int, t providerconfig.ProviderType) *
 	return nil
 }
 
-func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
+func (l *ProviderLoader) loadConfig(ctx context.Context, t providerconfig.ProviderType) (*providerConfig, error) {
 	tenantId, idExists := access.GetContextTenantId(ctx)
 	if idExists {
 		if cached := l.loadCachedConfig(tenantId, t); cached != nil {
@@ -195,7 +193,7 @@ func (l *Loader) loadConfig(ctx context.Context, t providerconfig.ProviderType) 
 	return cfg, nil
 }
 
-func (l *Loader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
+func (l *ProviderLoader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageModelProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAi)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -207,7 +205,7 @@ func (l *Loader) GetLanguageModelProvider(ctx context.Context) (rez.LanguageMode
 	return nil, fmt.Errorf("invalid ai model provider config: %s", cfg.Name)
 }
 
-func (l *Loader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
+func (l *ProviderLoader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeOncall)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -222,7 +220,7 @@ func (l *Loader) GetOncallDataProvider(ctx context.Context) (rez.OncallDataProvi
 	return nil, fmt.Errorf("invalid oncall data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
+func (l *ProviderLoader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAlerts)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -235,7 +233,7 @@ func (l *Loader) GetAlertDataProvider(ctx context.Context) (rez.AlertDataProvide
 	return nil, fmt.Errorf("invalid alerts data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
+func (l *ProviderLoader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeIncidents)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -250,7 +248,7 @@ func (l *Loader) GetIncidentDataProvider(ctx context.Context) (rez.IncidentDataP
 	return nil, fmt.Errorf("invalid incident data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
+func (l *ProviderLoader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeUsers)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -263,7 +261,7 @@ func (l *Loader) GetUserDataProvider(ctx context.Context) (rez.UserDataProvider,
 	return nil, fmt.Errorf("invalid user data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
+func (l *ProviderLoader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTeams)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -278,7 +276,7 @@ func (l *Loader) GetTeamDataProvider(ctx context.Context) (rez.TeamDataProvider,
 	return nil, fmt.Errorf("invalid team data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
+func (l *ProviderLoader) GetSystemComponentsDataProvider(ctx context.Context) (rez.SystemComponentsDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeSystemComponents)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -291,22 +289,7 @@ func (l *Loader) GetSystemComponentsDataProvider(ctx context.Context) (rez.Syste
 	return nil, fmt.Errorf("invalid system components data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetAuthSessionProvider(ctx context.Context) (rez.AuthSessionProvider, error) {
-	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeAuthSession)
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
-
-	switch cfg.Name {
-	case "saml":
-		return loadProviderCtx(ctx, saml.NewAuthSessionProvider, cfg)
-	case "oauth2":
-		return loadProvider(oauth2.NewAuthSessionProvider, cfg)
-	}
-	return nil, fmt.Errorf("invalid auth session provider: %s", cfg.Name)
-}
-
-func (l *Loader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
+func (l *ProviderLoader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypeTickets)
 	if cfgErr != nil {
 		return nil, cfgErr
@@ -321,7 +304,7 @@ func (l *Loader) GetTicketDataProvider(ctx context.Context) (rez.TicketDataProvi
 	return nil, fmt.Errorf("invalid ticket data provider: %s", cfg.Name)
 }
 
-func (l *Loader) GetPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
+func (l *ProviderLoader) GetPlaybookDataProvider(ctx context.Context) (rez.PlaybookDataProvider, error) {
 	cfg, cfgErr := l.loadConfig(ctx, providerconfig.ProviderTypePlaybooks)
 	if cfgErr != nil {
 		return nil, cfgErr

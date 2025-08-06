@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/providers"
 	"github.com/rezible/rezible/internal/river"
+	"github.com/rezible/rezible/internal/saml"
 	"github.com/rezible/rezible/internal/slack"
 
 	"github.com/rs/zerolog"
@@ -81,7 +82,12 @@ func (s *rezServer) setup() error {
 		return fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := http.NewAuthSessionService(users, pl)
+	sp, spErr := saml.NewAuthSessionProvider(ctx)
+	if spErr != nil {
+		return fmt.Errorf("saml.NewAuthSessionProvider: %w", spErr)
+	}
+
+	auth, authErr := http.NewAuthSessionService(users, sp)
 	if authErr != nil {
 		return fmt.Errorf("http.NewAuthSessionService: %w", authErr)
 	}

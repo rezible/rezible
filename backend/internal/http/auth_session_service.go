@@ -26,30 +26,26 @@ const (
 
 type AuthSessionService struct {
 	users         rez.UserService
-	pl            rez.ProviderLoader
+	prov          rez.AuthSessionProvider
 	sessionSecret []byte
 }
 
 var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
-func NewAuthSessionService(users rez.UserService, pl rez.ProviderLoader) (*AuthSessionService, error) {
+func NewAuthSessionService(users rez.UserService, prov rez.AuthSessionProvider) (*AuthSessionService, error) {
 	secretKey := os.Getenv("AUTH_SESSION_SECRET_KEY")
 	if secretKey == "" {
 		return nil, errors.New("AUTH_SESSION_SECRET_KEY must be set")
 	}
 	return &AuthSessionService{
 		users:         users,
-		pl:            pl,
+		prov:          prov,
 		sessionSecret: []byte(secretKey),
 	}, nil
 }
 
 func (s *AuthSessionService) ProviderName(ctx context.Context) (string, error) {
-	asp, pErr := s.pl.GetAuthSessionProvider(ctx)
-	if pErr != nil {
-		return "", pErr
-	}
-	return asp.Name(), nil
+	return s.prov.Name(), nil
 }
 
 type authUserSessionContextKey struct{}
@@ -130,37 +126,27 @@ func (s *AuthSessionService) MCPServerMiddleware() func(http.Handler) http.Handl
 
 func (s *AuthSessionService) AuthHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sp, spErr := s.pl.GetAuthSessionProvider(r.Context())
-		if spErr != nil {
-			http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			return
-		}
-
 		if r.URL.Path == "/auth/logout" {
-			sp.ClearSession(w, r)
+			s.prov.ClearSession(w, r)
 			http.SetCookie(w, oapi.MakeSessionCookie(r, "", time.Now(), -1))
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 			return
 		}
 
-		if providerHandled := s.providerAuthFlow(sp, w, r); providerHandled {
+		if providerHandled := s.providerAuthFlow(w, r); providerHandled {
 			return
 		}
 
 		_, sessErr := s.getVerifiedUserAuthSession(r)
 		if sessErr != nil && isRedirectableError(sessErr) {
-			sp.StartAuthFlow(w, r)
+			s.prov.StartAuthFlow(w, r)
 		} else {
 			http.Redirect(w, r, rez.FrontendUrl, http.StatusFound)
 		}
 	})
 }
 
-func (s *AuthSessionService) handleLogoutRequest(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (s *AuthSessionService) providerAuthFlow(sp rez.AuthSessionProvider, w http.ResponseWriter, r *http.Request) bool {
+func (s *AuthSessionService) providerAuthFlow(w http.ResponseWriter, r *http.Request) bool {
 	var redirectUrl string
 	var createSessionErr error
 
@@ -188,7 +174,7 @@ func (s *AuthSessionService) providerAuthFlow(sp rez.AuthSessionProvider, w http
 		}
 	}
 
-	providerHandled := sp.HandleAuthFlowRequest(w, r, onUserSessionCreated)
+	providerHandled := s.prov.HandleAuthFlowRequest(w, r, onUserSessionCreated)
 	if !providerHandled {
 		return false
 	}

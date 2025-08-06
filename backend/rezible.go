@@ -32,7 +32,6 @@ type ListParams = ent.ListParams
 type (
 	ProviderLoader interface {
 		GetLanguageModelProvider(context.Context) (LanguageModelProvider, error)
-		GetAuthSessionProvider(context.Context) (AuthSessionProvider, error)
 		GetIncidentDataProvider(context.Context) (IncidentDataProvider, error)
 		GetOncallDataProvider(context.Context) (OncallDataProvider, error)
 		GetSystemComponentsDataProvider(context.Context) (SystemComponentsDataProvider, error)
@@ -69,7 +68,7 @@ type (
 		Name() string
 		GetUserMapping() *ent.User
 		StartAuthFlow(w http.ResponseWriter, r *http.Request)
-		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreatedFn AuthSessionCreatedFn) (handled bool)
+		HandleAuthFlowRequest(w http.ResponseWriter, r *http.Request, onCreated AuthSessionCreatedFn) (handled bool)
 		ClearSession(w http.ResponseWriter, r *http.Request)
 	}
 
