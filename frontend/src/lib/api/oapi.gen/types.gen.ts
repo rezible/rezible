@@ -80,6 +80,12 @@ export type AlertAttributes = {
     title: string;
 };
 
+export type AlertFeedback = {
+    accurate: 'yes' | 'no' | 'unknown';
+    actionable: boolean;
+    documentationAvailable: 'yes' | 'no' | 'needs_update';
+};
+
 export type AuthSessionsConfig = {
     providerName: string;
 };
@@ -351,7 +357,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallAnnotationRequestAttributes = {
-    alertFeedback?: OncallAnnotationAlertFeedback;
+    alertFeedback?: AlertFeedback;
     eventId: string;
     minutesOccupied: number;
     notes: string;
@@ -1696,14 +1702,8 @@ export type OncallAnnotation = {
     id: string;
 };
 
-export type OncallAnnotationAlertFeedback = {
-    accurate: 'yes' | 'no' | 'unknown';
-    actionable: boolean;
-    documentationAvailable: 'yes' | 'no' | 'needs_update';
-};
-
 export type OncallAnnotationAttributes = {
-    alertFeedback?: OncallAnnotationAlertFeedback;
+    alertFeedback?: AlertFeedback;
     creator: ExpandableUserAttributes;
     event: ExpandableOncallEventAttributes;
     minutesOccupied: number;
@@ -2396,7 +2396,7 @@ export type UpdateMeetingSessionResponseBody = {
 };
 
 export type UpdateOncallAnnotationRequestAttributes = {
-    alertFeedback?: OncallAnnotationAlertFeedback;
+    alertFeedback?: AlertFeedback;
     minutesOccupied?: number;
     notes?: string;
     tags?: Array<string>;
