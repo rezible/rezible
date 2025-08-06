@@ -27,16 +27,7 @@ var (
 	DebugMode   = true
 )
 
-type (
-	ListParams = ent.ListParams
-)
-
-type (
-	Server interface {
-		Start(ctx context.Context) error
-		Stop(ctx context.Context) error
-	}
-)
+type ListParams = ent.ListParams
 
 type (
 	ProviderLoader interface {

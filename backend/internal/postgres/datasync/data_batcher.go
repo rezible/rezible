@@ -2,11 +2,11 @@ package datasync
 
 import (
 	"context"
-	"entgo.io/ent/dialect/sql"
 	"fmt"
 	"iter"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/ent"

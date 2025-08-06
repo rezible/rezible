@@ -188,12 +188,13 @@ func (s *rezServer) registerJobs(
 }
 
 func (s *rezServer) start() error {
-	jobsCtx := access.SystemContext(context.Background())
-	if jobsErr := s.jobs.Start(jobsCtx); jobsErr != nil {
+	ctx := access.SystemContext(context.Background())
+
+	if jobsErr := s.jobs.Start(ctx); jobsErr != nil {
 		return fmt.Errorf("failed to start background jobs client: %w", jobsErr)
 	}
 
-	if serverErr := s.httpServer.Start(); serverErr != nil {
+	if serverErr := s.httpServer.Start(ctx); serverErr != nil {
 		return fmt.Errorf("http Server error: %w", serverErr)
 	}
 
@@ -202,7 +203,7 @@ func (s *rezServer) start() error {
 
 func (s *rezServer) Stop() {
 	timeout := time.Duration(s.opts.StopTimeoutSeconds) * time.Second
-	ctx, cancelStopCtx := context.WithTimeout(access.SystemContext(context.Background()), timeout)
+	ctx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
 	defer cancelStopCtx()
 
 	if s.httpServer != nil {
@@ -218,8 +219,6 @@ func (s *rezServer) Stop() {
 	}
 
 	if s.db != nil {
-		if dbErr := s.db.Close(); dbErr != nil {
-			log.Error().Err(dbErr).Msg("failed to close db")
-		}
+		s.db.Close()
 	}
 }

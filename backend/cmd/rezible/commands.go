@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rezible/rezible/access"
-
 	"github.com/danielgtaylor/huma/v2/humacli"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -26,8 +25,8 @@ func makeCommand(name string, desc string, cmdFn func(ctx context.Context, opts 
 		Use:   name,
 		Short: desc,
 		Run: humacli.WithOptions(func(cmd *cobra.Command, args []string, o *Options) {
-			systemCtx := access.SystemContext(cmd.Context())
-			if cmdErr := cmdFn(systemCtx, o); cmdErr != nil {
+			ctx := access.SystemContext(cmd.Context())
+			if cmdErr := cmdFn(ctx, o); cmdErr != nil {
 				log.Fatal().Err(cmdErr).Str("cmd", name).Msg("command failed")
 			}
 		}),
@@ -48,12 +47,7 @@ func withDatabase(ctx context.Context, opts *Options, fn func(db *postgres.Datab
 	if dbErr != nil {
 		return fmt.Errorf("failed to open database: %w", dbErr)
 	}
-
-	defer func(cdb *postgres.Database) {
-		if closeErr := cdb.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("failed to close database connection")
-		}
-	}(db)
+	defer db.Close()
 
 	return fn(db)
 }

@@ -11,7 +11,7 @@ import (
 
 func DenyIfNoAccessContext() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		ac := access.GetAuthContext(ctx)
+		ac := access.GetContext(ctx)
 		if ac == nil {
 			return privacy.Denyf("access context is missing")
 		}
@@ -21,7 +21,7 @@ func DenyIfNoAccessContext() privacy.QueryMutationRule {
 
 func DenyIfAnonymous() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		ac := access.GetAuthContext(ctx)
+		ac := access.GetContext(ctx)
 		if ac == nil {
 			return privacy.Denyf("access context is missing")
 		}
@@ -34,7 +34,7 @@ func DenyIfAnonymous() privacy.QueryMutationRule {
 
 func AllowIfSystemRole() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		ac := access.GetAuthContext(ctx)
+		ac := access.GetContext(ctx)
 		if ac.HasRole(access.RoleSystem) {
 			return privacy.Allow
 		}
@@ -47,7 +47,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 		WhereTenantID(entql.IntP)
 	}
 	return privacy.FilterFunc(func(ctx context.Context, f privacy.Filter) error {
-		ac := access.GetAuthContext(ctx)
+		ac := access.GetContext(ctx)
 		tenantId, hasTenant := ac.TenantId()
 		if !hasTenant {
 			return privacy.Denyf("missing tenant in access context")

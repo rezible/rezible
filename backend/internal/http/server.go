@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/access"
 	"io/fs"
 	"net"
 	"net/http"
@@ -62,19 +61,19 @@ func NewServer(
 		Handler(makeEmbeddedFrontendFilesServer(feFiles))
 	router.Handle("/*", frontendRouter)
 
-	baseCtx := access.SystemContext(context.Background())
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: router,
-		BaseContext: func(l net.Listener) context.Context {
-			return baseCtx
-		},
 	}
 
 	return &s
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx context.Context) error {
+	s.httpServer.BaseContext = func(l net.Listener) context.Context {
+		return ctx
+	}
+
 	log.Info().Msgf("Serving on %s", s.httpServer.Addr)
 
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

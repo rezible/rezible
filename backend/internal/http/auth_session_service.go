@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent/privacy"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent/privacy"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -62,10 +63,9 @@ func (s *AuthSessionService) CreateUserAuthContext(ctx context.Context, sess *re
 	if userErr != nil {
 		return ctx, fmt.Errorf("get user by id: %w", userErr)
 	}
-	accessCtx := access.TenantContext(ctx, access.RoleUser, user.TenantID)
-
-	authCtx := context.WithValue(accessCtx, authUserSessionContextKey{}, sess)
-	return authCtx, nil
+	ctx = access.TenantContext(ctx, access.RoleUser, user.TenantID)
+	ctx = context.WithValue(ctx, authUserSessionContextKey{}, sess)
+	return ctx, nil
 }
 
 func (s *AuthSessionService) GetUserAuthSession(ctx context.Context) (*rez.UserAuthSession, error) {

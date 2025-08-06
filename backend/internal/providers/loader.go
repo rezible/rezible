@@ -82,23 +82,28 @@ func readProviderConfigFile(filename string) (*configFile, error) {
 	return &cfg, nil
 }
 
+func getOrCreateTenantContext(ctx context.Context, client *ent.Client, tenantName string) (context.Context, error) {
+	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(tenantName)).Only(ctx)
+	if ent.IsNotFound(tenantErr) {
+		tnt, tenantErr = client.Tenant.Create().SetName(tenantName).Save(ctx)
+	}
+	if tenantErr != nil {
+		return nil, fmt.Errorf("querying tenant %q: %w", tenantName, tenantErr)
+	}
+	return access.TenantContext(ctx, access.RoleSystem, tnt.ID), nil
+}
+
 func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) error {
 	cfg, cfgErr := readProviderConfigFile(fileName)
 	if cfgErr != nil {
 		return cfgErr
 	}
-
-	tnt, tenantErr := client.Tenant.Query().Where(tenant.Name(cfg.TenantName)).Only(ctx)
-	if ent.IsNotFound(tenantErr) {
-		tnt, tenantErr = client.Tenant.Create().SetName(cfg.TenantName).Save(ctx)
-	}
-	if tenantErr != nil {
-		return fmt.Errorf("querying tenant %q: %w", cfg.TenantName, tenantErr)
+	tenantCtx, ctxErr := getOrCreateTenantContext(ctx, client, cfg.TenantName)
+	if ctxErr != nil {
+		return ctxErr
 	}
 
-	ctx = access.TenantContext(ctx, access.RoleSystem, tnt.ID)
-
-	return ent.WithTx(ctx, client, func(tx *ent.Tx) error {
+	return ent.WithTx(tenantCtx, client, func(tx *ent.Tx) error {
 		for _, c := range cfg.ConfigEntries {
 			log.Info().
 				Str("name", c.ProviderName).
@@ -115,7 +120,7 @@ func LoadConfigFile(ctx context.Context, client *ent.Client, fileName string) er
 				UpdateProviderConfig().
 				UpdateUpdatedAt()
 
-			if upsertErr := upsert.Exec(ctx); upsertErr != nil {
+			if upsertErr := upsert.Exec(tenantCtx); upsertErr != nil {
 				return fmt.Errorf("upserting (%s %s): %w", string(c.Type), c.ProviderName, upsertErr)
 			}
 		}

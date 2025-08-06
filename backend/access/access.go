@@ -30,16 +30,16 @@ const (
 	RoleAnonymous Role = "anonymous"
 )
 
-type AuthContext struct {
+type Context struct {
 	roles  Roles
 	tenant *ent.Tenant
 }
 
-func (v AuthContext) HasRole(r Role) bool {
+func (v Context) HasRole(r Role) bool {
 	return v.roles.Has(r)
 }
 
-func (v AuthContext) TenantId() (int, bool) {
+func (v Context) TenantId() (int, bool) {
 	if v.tenant != nil {
 		return v.tenant.ID, true
 	}
@@ -48,31 +48,31 @@ func (v AuthContext) TenantId() (int, bool) {
 
 type ctxKey struct{}
 
-func storeAuthContext(parent context.Context, ac *AuthContext) context.Context {
+func storeContext(parent context.Context, ac *Context) context.Context {
 	return context.WithValue(parent, ctxKey{}, ac)
 }
 
-func GetAuthContext(ctx context.Context) *AuthContext {
-	c, _ := ctx.Value(ctxKey{}).(*AuthContext)
+func SystemContext(ctx context.Context) context.Context {
+	return storeContext(ctx, &Context{roles: MakeRoles(RoleSystem)})
+}
+
+func TenantContext(ctx context.Context, role Role, tenantId int) context.Context {
+	c := &Context{
+		roles:  MakeRoles(role),
+		tenant: &ent.Tenant{ID: tenantId},
+	}
+	return storeContext(ctx, c)
+}
+
+func GetContext(ctx context.Context) *Context {
+	c, _ := ctx.Value(ctxKey{}).(*Context)
 	return c
 }
 
 func GetContextTenantId(ctx context.Context) (int, bool) {
-	ac := ctx.Value(ctxKey{}).(*AuthContext)
+	ac := ctx.Value(ctxKey{}).(*Context)
 	if ac == nil {
 		return -1, false
 	}
 	return ac.TenantId()
-}
-
-func SystemContext(ctx context.Context) context.Context {
-	return storeAuthContext(ctx, &AuthContext{roles: MakeRoles(RoleSystem)})
-}
-
-func TenantContext(ctx context.Context, role Role, tenantId int) context.Context {
-	c := &AuthContext{
-		roles:  MakeRoles(role),
-		tenant: &ent.Tenant{ID: tenantId},
-	}
-	return storeAuthContext(ctx, c)
 }

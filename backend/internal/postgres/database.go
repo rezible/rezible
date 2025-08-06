@@ -56,19 +56,22 @@ func (d *Database) RunMigrations(ctx context.Context) error {
 			log.Error().Err(closeErr).Msg("failed to close ent client")
 		}
 	}(client)
-
 	return client.Schema.Create(ctx)
 }
 
-func (d *Database) Close() error {
+func (d *Database) Close() {
 	d.Pool.Close()
-	return nil
+	if d.client != nil {
+		if clientErr := d.client.Close(); clientErr != nil {
+			log.Error().Err(clientErr).Msg("failed to close ent client")
+		}
+	}
 }
 
 func setTenantContextInterceptor() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			authCtx := access.GetAuthContext(ctx)
+			authCtx := access.GetContext(ctx)
 			if tenantId, idExists := authCtx.TenantId(); idExists {
 				ctx = entsql.WithIntVar(ctx, "app.current_tenant", tenantId)
 			}
@@ -84,7 +87,7 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		if tm, ok := m.(tenantedMutation); ok {
 			if _, alreadySet := m.Field("tenant_id"); !alreadySet {
-				tid, tenantExists := access.GetAuthContext(ctx).TenantId()
+				tid, tenantExists := access.GetContext(ctx).TenantId()
 				if !tenantExists {
 					return nil, errors.New("tenant not found in auth context")
 				}
@@ -98,7 +101,7 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 func debugLogQueryAccessAuthContext() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			authCtx := access.GetAuthContext(ctx)
+			authCtx := access.GetContext(ctx)
 			log.Debug().Bool("isSystem", authCtx.HasRole(access.RoleSystem)).Msg("query")
 			return q.Query(ctx, query)
 		})
