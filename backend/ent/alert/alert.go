@@ -14,10 +14,14 @@ const (
 	Label = "alert"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeMetrics holds the string denoting the metrics edge name in mutations.
 	EdgeMetrics = "metrics"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
@@ -26,6 +30,13 @@ const (
 	EdgeInstances = "instances"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "alerts"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// MetricsTable is the table that holds the metrics relation/edge.
 	MetricsTable = "alert_metrics"
 	// MetricsInverseTable is the table name for the AlertMetrics entity.
@@ -50,6 +61,7 @@ const (
 // Columns holds all SQL columns for alert fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldTitle,
 	FieldProviderID,
 }
@@ -90,6 +102,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
@@ -98,6 +115,13 @@ func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 // ByProviderID orders the results by the provider_id field.
 func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByMetricsCount orders the results by metrics count.
@@ -140,6 +164,13 @@ func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newMetricsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

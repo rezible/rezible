@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTenantID, v))
+}
+
 // AnalysisID applies equality check predicate on the "analysis_id" field. It's identical to AnalysisIDEQ.
 func AnalysisID(v uuid.UUID) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldAnalysisID, v))
@@ -74,6 +79,26 @@ func Description(v string) predicate.SystemAnalysisRelationship {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // AnalysisIDEQ applies the EQ predicate on the "analysis_id" field.
@@ -229,6 +254,29 @@ func CreatedAtLT(v time.Time) predicate.SystemAnalysisRelationship {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.SystemAnalysisRelationship {
 	return predicate.SystemAnalysisRelationship(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.SystemAnalysisRelationship {
+	return predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasSystemAnalysis applies the HasEdge predicate on the "system_analysis" edge.

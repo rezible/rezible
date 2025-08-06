@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentControlCreate is the builder for creating a SystemComponentControl entity.
@@ -25,6 +26,12 @@ type SystemComponentControlCreate struct {
 	mutation *SystemComponentControlMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (sccc *SystemComponentControlCreate) SetTenantID(i int) *SystemComponentControlCreate {
+	sccc.mutation.SetTenantID(i)
+	return sccc
 }
 
 // SetComponentID sets the "component_id" field.
@@ -79,6 +86,11 @@ func (sccc *SystemComponentControlCreate) SetNillableID(u *uuid.UUID) *SystemCom
 		sccc.SetID(*u)
 	}
 	return sccc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (sccc *SystemComponentControlCreate) SetTenant(t *Tenant) *SystemComponentControlCreate {
+	return sccc.SetTenantID(t.ID)
 }
 
 // SetComponent sets the "component" edge to the SystemComponent entity.
@@ -172,6 +184,9 @@ func (sccc *SystemComponentControlCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sccc *SystemComponentControlCreate) check() error {
+	if _, ok := sccc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentControl.tenant_id"`)}
+	}
 	if _, ok := sccc.mutation.ComponentID(); !ok {
 		return &ValidationError{Name: "component_id", err: errors.New(`ent: missing required field "SystemComponentControl.component_id"`)}
 	}
@@ -180,6 +195,9 @@ func (sccc *SystemComponentControlCreate) check() error {
 	}
 	if _, ok := sccc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentControl.created_at"`)}
+	}
+	if len(sccc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentControl.tenant"`)}
 	}
 	if len(sccc.mutation.ComponentIDs()) == 0 {
 		return &ValidationError{Name: "component", err: errors.New(`ent: missing required edge "SystemComponentControl.component"`)}
@@ -231,6 +249,23 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 	if value, ok := sccc.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentcontrol.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := sccc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponentcontrol.TenantTable,
+			Columns: []string{systemcomponentcontrol.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sccc.mutation.ComponentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -295,7 +330,7 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 // of the `INSERT` statement. For example:
 //
 //	client.SystemComponentControl.Create().
-//		SetComponentID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -304,7 +339,7 @@ func (sccc *SystemComponentControlCreate) createSpec() (*SystemComponentControl,
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentControlUpsert) {
-//			SetComponentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sccc *SystemComponentControlCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentControlUpsertOne {
@@ -410,6 +445,9 @@ func (u *SystemComponentControlUpsertOne) UpdateNewValues() *SystemComponentCont
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemcomponentcontrol.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemcomponentcontrol.FieldTenantID)
 		}
 	}))
 	return u
@@ -641,7 +679,7 @@ func (scccb *SystemComponentControlCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentControlUpsert) {
-//			SetComponentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (scccb *SystemComponentControlCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentControlUpsertBulk {
@@ -687,6 +725,9 @@ func (u *SystemComponentControlUpsertBulk) UpdateNewValues() *SystemComponentCon
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemcomponentcontrol.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemcomponentcontrol.FieldTenantID)
 			}
 		}
 	}))

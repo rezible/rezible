@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentLinkQuery is the builder for querying IncidentLink entities.
@@ -25,6 +26,7 @@ type IncidentLinkQuery struct {
 	order              []incidentlink.OrderOption
 	inters             []Interceptor
 	predicates         []predicate.IncidentLink
+	withTenant         *TenantQuery
 	withIncident       *IncidentQuery
 	withLinkedIncident *IncidentQuery
 	modifiers          []func(*sql.Selector)
@@ -62,6 +64,28 @@ func (ilq *IncidentLinkQuery) Unique(unique bool) *IncidentLinkQuery {
 func (ilq *IncidentLinkQuery) Order(o ...incidentlink.OrderOption) *IncidentLinkQuery {
 	ilq.order = append(ilq.order, o...)
 	return ilq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ilq *IncidentLinkQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ilq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ilq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ilq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentlink.Table, incidentlink.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.TenantTable, incidentlink.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ilq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryIncident chains the current query on the "incident" edge.
@@ -300,6 +324,7 @@ func (ilq *IncidentLinkQuery) Clone() *IncidentLinkQuery {
 		order:              append([]incidentlink.OrderOption{}, ilq.order...),
 		inters:             append([]Interceptor{}, ilq.inters...),
 		predicates:         append([]predicate.IncidentLink{}, ilq.predicates...),
+		withTenant:         ilq.withTenant.Clone(),
 		withIncident:       ilq.withIncident.Clone(),
 		withLinkedIncident: ilq.withLinkedIncident.Clone(),
 		// clone intermediate query.
@@ -307,6 +332,17 @@ func (ilq *IncidentLinkQuery) Clone() *IncidentLinkQuery {
 		path:      ilq.path,
 		modifiers: append([]func(*sql.Selector){}, ilq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ilq *IncidentLinkQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentLinkQuery {
+	query := (&TenantClient{config: ilq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ilq.withTenant = query
+	return ilq
 }
 
 // WithIncident tells the query-builder to eager-load the nodes that are connected to
@@ -337,12 +373,12 @@ func (ilq *IncidentLinkQuery) WithLinkedIncident(opts ...func(*IncidentQuery)) *
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentLink.Query().
-//		GroupBy(incidentlink.FieldIncidentID).
+//		GroupBy(incidentlink.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ilq *IncidentLinkQuery) GroupBy(field string, fields ...string) *IncidentLinkGroupBy {
@@ -360,11 +396,11 @@ func (ilq *IncidentLinkQuery) GroupBy(field string, fields ...string) *IncidentL
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentLink.Query().
-//		Select(incidentlink.FieldIncidentID).
+//		Select(incidentlink.FieldTenantID).
 //		Scan(ctx, &v)
 func (ilq *IncidentLinkQuery) Select(fields ...string) *IncidentLinkSelect {
 	ilq.ctx.Fields = append(ilq.ctx.Fields, fields...)
@@ -415,7 +451,8 @@ func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*IncidentLink{}
 		_spec       = ilq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			ilq.withTenant != nil,
 			ilq.withIncident != nil,
 			ilq.withLinkedIncident != nil,
 		}
@@ -441,6 +478,12 @@ func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ilq.withTenant; query != nil {
+		if err := ilq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentLink, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ilq.withIncident; query != nil {
 		if err := ilq.loadIncident(ctx, query, nodes, nil,
 			func(n *IncidentLink, e *Incident) { n.Edges.Incident = e }); err != nil {
@@ -456,6 +499,35 @@ func (ilq *IncidentLinkQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
+func (ilq *IncidentLinkQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentLink)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ilq *IncidentLinkQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentLink, init func(*IncidentLink), assign func(*IncidentLink, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentLink)
@@ -542,6 +614,9 @@ func (ilq *IncidentLinkQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidentlink.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ilq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentlink.FieldTenantID)
 		}
 		if ilq.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentlink.FieldIncidentID)

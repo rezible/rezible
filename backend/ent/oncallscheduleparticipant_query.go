@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -26,6 +27,7 @@ type OncallScheduleParticipantQuery struct {
 	order        []oncallscheduleparticipant.OrderOption
 	inters       []Interceptor
 	predicates   []predicate.OncallScheduleParticipant
+	withTenant   *TenantQuery
 	withSchedule *OncallScheduleQuery
 	withUser     *UserQuery
 	modifiers    []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (ospq *OncallScheduleParticipantQuery) Unique(unique bool) *OncallScheduleP
 func (ospq *OncallScheduleParticipantQuery) Order(o ...oncallscheduleparticipant.OrderOption) *OncallScheduleParticipantQuery {
 	ospq.order = append(ospq.order, o...)
 	return ospq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ospq *OncallScheduleParticipantQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ospq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ospq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ospq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallscheduleparticipant.Table, oncallscheduleparticipant.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallscheduleparticipant.TenantTable, oncallscheduleparticipant.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ospq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QuerySchedule chains the current query on the "schedule" edge.
@@ -301,6 +325,7 @@ func (ospq *OncallScheduleParticipantQuery) Clone() *OncallScheduleParticipantQu
 		order:        append([]oncallscheduleparticipant.OrderOption{}, ospq.order...),
 		inters:       append([]Interceptor{}, ospq.inters...),
 		predicates:   append([]predicate.OncallScheduleParticipant{}, ospq.predicates...),
+		withTenant:   ospq.withTenant.Clone(),
 		withSchedule: ospq.withSchedule.Clone(),
 		withUser:     ospq.withUser.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (ospq *OncallScheduleParticipantQuery) Clone() *OncallScheduleParticipantQu
 		path:      ospq.path,
 		modifiers: append([]func(*sql.Selector){}, ospq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ospq *OncallScheduleParticipantQuery) WithTenant(opts ...func(*TenantQuery)) *OncallScheduleParticipantQuery {
+	query := (&TenantClient{config: ospq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ospq.withTenant = query
+	return ospq
 }
 
 // WithSchedule tells the query-builder to eager-load the nodes that are connected to
@@ -338,12 +374,12 @@ func (ospq *OncallScheduleParticipantQuery) WithUser(opts ...func(*UserQuery)) *
 // Example:
 //
 //	var v []struct {
-//		ScheduleID uuid.UUID `json:"schedule_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallScheduleParticipant.Query().
-//		GroupBy(oncallscheduleparticipant.FieldScheduleID).
+//		GroupBy(oncallscheduleparticipant.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ospq *OncallScheduleParticipantQuery) GroupBy(field string, fields ...string) *OncallScheduleParticipantGroupBy {
@@ -361,11 +397,11 @@ func (ospq *OncallScheduleParticipantQuery) GroupBy(field string, fields ...stri
 // Example:
 //
 //	var v []struct {
-//		ScheduleID uuid.UUID `json:"schedule_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallScheduleParticipant.Query().
-//		Select(oncallscheduleparticipant.FieldScheduleID).
+//		Select(oncallscheduleparticipant.FieldTenantID).
 //		Scan(ctx, &v)
 func (ospq *OncallScheduleParticipantQuery) Select(fields ...string) *OncallScheduleParticipantSelect {
 	ospq.ctx.Fields = append(ospq.ctx.Fields, fields...)
@@ -416,7 +452,8 @@ func (ospq *OncallScheduleParticipantQuery) sqlAll(ctx context.Context, hooks ..
 	var (
 		nodes       = []*OncallScheduleParticipant{}
 		_spec       = ospq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			ospq.withTenant != nil,
 			ospq.withSchedule != nil,
 			ospq.withUser != nil,
 		}
@@ -442,6 +479,12 @@ func (ospq *OncallScheduleParticipantQuery) sqlAll(ctx context.Context, hooks ..
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ospq.withTenant; query != nil {
+		if err := ospq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallScheduleParticipant, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ospq.withSchedule; query != nil {
 		if err := ospq.loadSchedule(ctx, query, nodes, nil,
 			func(n *OncallScheduleParticipant, e *OncallSchedule) { n.Edges.Schedule = e }); err != nil {
@@ -457,6 +500,35 @@ func (ospq *OncallScheduleParticipantQuery) sqlAll(ctx context.Context, hooks ..
 	return nodes, nil
 }
 
+func (ospq *OncallScheduleParticipantQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallScheduleParticipant, init func(*OncallScheduleParticipant), assign func(*OncallScheduleParticipant, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallScheduleParticipant)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ospq *OncallScheduleParticipantQuery) loadSchedule(ctx context.Context, query *OncallScheduleQuery, nodes []*OncallScheduleParticipant, init func(*OncallScheduleParticipant), assign func(*OncallScheduleParticipant, *OncallSchedule)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallScheduleParticipant)
@@ -543,6 +615,9 @@ func (ospq *OncallScheduleParticipantQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallscheduleparticipant.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ospq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallscheduleparticipant.FieldTenantID)
 		}
 		if ospq.withSchedule != nil {
 			_spec.Node.AddColumnOnce(oncallscheduleparticipant.FieldScheduleID)

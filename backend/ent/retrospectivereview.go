@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -20,6 +21,8 @@ type RetrospectiveReview struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// RetrospectiveID holds the value of the "retrospective_id" field.
 	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
 	// RequesterID holds the value of the "requester_id" field.
@@ -37,6 +40,8 @@ type RetrospectiveReview struct {
 
 // RetrospectiveReviewEdges holds the relations/edges for other nodes in the graph.
 type RetrospectiveReviewEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
 	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// Requester holds the value of the requester edge.
@@ -47,7 +52,18 @@ type RetrospectiveReviewEdges struct {
 	Discussion *RetrospectiveDiscussion `json:"discussion,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveReviewEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // RetrospectiveOrErr returns the Retrospective value or an error if the edge
@@ -55,7 +71,7 @@ type RetrospectiveReviewEdges struct {
 func (e RetrospectiveReviewEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
@@ -66,7 +82,7 @@ func (e RetrospectiveReviewEdges) RetrospectiveOrErr() (*Retrospective, error) {
 func (e RetrospectiveReviewEdges) RequesterOrErr() (*User, error) {
 	if e.Requester != nil {
 		return e.Requester, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "requester"}
@@ -77,7 +93,7 @@ func (e RetrospectiveReviewEdges) RequesterOrErr() (*User, error) {
 func (e RetrospectiveReviewEdges) ReviewerOrErr() (*User, error) {
 	if e.Reviewer != nil {
 		return e.Reviewer, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "reviewer"}
@@ -88,7 +104,7 @@ func (e RetrospectiveReviewEdges) ReviewerOrErr() (*User, error) {
 func (e RetrospectiveReviewEdges) DiscussionOrErr() (*RetrospectiveDiscussion, error) {
 	if e.Discussion != nil {
 		return e.Discussion, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: retrospectivediscussion.Label}
 	}
 	return nil, &NotLoadedError{edge: "discussion"}
@@ -99,6 +115,8 @@ func (*RetrospectiveReview) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case retrospectivereview.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case retrospectivereview.FieldState:
 			values[i] = new(sql.NullString)
 		case retrospectivereview.FieldID, retrospectivereview.FieldRetrospectiveID, retrospectivereview.FieldRequesterID, retrospectivereview.FieldReviewerID:
@@ -125,6 +143,12 @@ func (rr *RetrospectiveReview) assignValues(columns []string, values []any) erro
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				rr.ID = *value
+			}
+		case retrospectivereview.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				rr.TenantID = int(value.Int64)
 			}
 		case retrospectivereview.FieldRetrospectiveID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -170,6 +194,11 @@ func (rr *RetrospectiveReview) Value(name string) (ent.Value, error) {
 	return rr.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the RetrospectiveReview entity.
+func (rr *RetrospectiveReview) QueryTenant() *TenantQuery {
+	return NewRetrospectiveReviewClient(rr.config).QueryTenant(rr)
+}
+
 // QueryRetrospective queries the "retrospective" edge of the RetrospectiveReview entity.
 func (rr *RetrospectiveReview) QueryRetrospective() *RetrospectiveQuery {
 	return NewRetrospectiveReviewClient(rr.config).QueryRetrospective(rr)
@@ -213,6 +242,9 @@ func (rr *RetrospectiveReview) String() string {
 	var builder strings.Builder
 	builder.WriteString("RetrospectiveReview(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", rr.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", rr.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("retrospective_id=")
 	builder.WriteString(fmt.Sprintf("%v", rr.RetrospectiveID))
 	builder.WriteString(", ")

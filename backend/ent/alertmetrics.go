@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // AlertMetrics is the model entity for the AlertMetrics schema.
@@ -18,6 +19,8 @@ type AlertMetrics struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// AlertID holds the value of the "alert_id" field.
 	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -28,11 +31,24 @@ type AlertMetrics struct {
 
 // AlertMetricsEdges holds the relations/edges for other nodes in the graph.
 type AlertMetricsEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Alert holds the value of the alert edge.
 	Alert *Alert `json:"alert,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertMetricsEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // AlertOrErr returns the Alert value or an error if the edge
@@ -40,7 +56,7 @@ type AlertMetricsEdges struct {
 func (e AlertMetricsEdges) AlertOrErr() (*Alert, error) {
 	if e.Alert != nil {
 		return e.Alert, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: alert.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert"}
@@ -51,6 +67,8 @@ func (*AlertMetrics) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case alertmetrics.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case alertmetrics.FieldID, alertmetrics.FieldAlertID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -74,6 +92,12 @@ func (am *AlertMetrics) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				am.ID = *value
 			}
+		case alertmetrics.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				am.TenantID = int(value.Int64)
+			}
 		case alertmetrics.FieldAlertID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
@@ -91,6 +115,11 @@ func (am *AlertMetrics) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (am *AlertMetrics) Value(name string) (ent.Value, error) {
 	return am.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the AlertMetrics entity.
+func (am *AlertMetrics) QueryTenant() *TenantQuery {
+	return NewAlertMetricsClient(am.config).QueryTenant(am)
 }
 
 // QueryAlert queries the "alert" edge of the AlertMetrics entity.
@@ -121,6 +150,9 @@ func (am *AlertMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("AlertMetrics(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", am.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", am.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("alert_id=")
 	builder.WriteString(fmt.Sprintf("%v", am.AlertID))
 	builder.WriteByte(')')

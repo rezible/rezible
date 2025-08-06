@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(sql.FieldEQ(FieldTenantID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(sql.FieldEQ(FieldCreatedAt, v))
@@ -74,6 +79,26 @@ func Contents(v []byte) predicate.OncallHandoverTemplate {
 // IsDefault applies equality check predicate on the "is_default" field. It's identical to IsDefaultEQ.
 func IsDefault(v bool) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(sql.FieldEQ(FieldIsDefault, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -204,6 +229,29 @@ func IsDefaultEQ(v bool) predicate.OncallHandoverTemplate {
 // IsDefaultNEQ applies the NEQ predicate on the "is_default" field.
 func IsDefaultNEQ(v bool) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(sql.FieldNEQ(FieldIsDefault, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.OncallHandoverTemplate {
+	return predicate.OncallHandoverTemplate(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasRoster applies the HasEdge predicate on the "roster" edge.

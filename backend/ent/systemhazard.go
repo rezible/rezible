@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemHazard is the model entity for the SystemHazard schema.
@@ -18,6 +19,8 @@ type SystemHazard struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
@@ -34,6 +37,8 @@ type SystemHazard struct {
 
 // SystemHazardEdges holds the relations/edges for other nodes in the graph.
 type SystemHazardEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Components holds the value of the components edge.
 	Components []*SystemComponent `json:"components,omitempty"`
 	// Constraints holds the value of the constraints edge.
@@ -42,13 +47,24 @@ type SystemHazardEdges struct {
 	Relationships []*SystemComponentRelationship `json:"relationships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemHazardEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ComponentsOrErr returns the Components value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemHazardEdges) ComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Components, nil
 	}
 	return nil, &NotLoadedError{edge: "components"}
@@ -57,7 +73,7 @@ func (e SystemHazardEdges) ComponentsOrErr() ([]*SystemComponent, error) {
 // ConstraintsOrErr returns the Constraints value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemHazardEdges) ConstraintsOrErr() ([]*SystemComponentConstraint, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Constraints, nil
 	}
 	return nil, &NotLoadedError{edge: "constraints"}
@@ -66,7 +82,7 @@ func (e SystemHazardEdges) ConstraintsOrErr() ([]*SystemComponentConstraint, err
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemHazardEdges) RelationshipsOrErr() ([]*SystemComponentRelationship, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Relationships, nil
 	}
 	return nil, &NotLoadedError{edge: "relationships"}
@@ -77,6 +93,8 @@ func (*SystemHazard) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemhazard.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemhazard.FieldName, systemhazard.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemhazard.FieldCreatedAt, systemhazard.FieldUpdatedAt:
@@ -103,6 +121,12 @@ func (sh *SystemHazard) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sh.ID = *value
+			}
+		case systemhazard.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				sh.TenantID = int(value.Int64)
 			}
 		case systemhazard.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -139,6 +163,11 @@ func (sh *SystemHazard) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (sh *SystemHazard) Value(name string) (ent.Value, error) {
 	return sh.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the SystemHazard entity.
+func (sh *SystemHazard) QueryTenant() *TenantQuery {
+	return NewSystemHazardClient(sh.config).QueryTenant(sh)
 }
 
 // QueryComponents queries the "components" edge of the SystemHazard entity.
@@ -179,6 +208,9 @@ func (sh *SystemHazard) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemHazard(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sh.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", sh.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(sh.Name)
 	builder.WriteString(", ")

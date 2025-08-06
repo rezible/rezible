@@ -54,6 +54,11 @@ func IDLTE(id uuid.UUID) predicate.Team {
 	return predicate.Team(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldTenantID, v))
+}
+
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldSlug, v))
@@ -77,6 +82,26 @@ func ChatChannelID(v string) predicate.Team {
 // Timezone applies equality check predicate on the "timezone" field. It's identical to TimezoneEQ.
 func Timezone(v string) predicate.Team {
 	return predicate.Team(sql.FieldEQ(FieldTimezone, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.Team {
+	return predicate.Team(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.Team {
+	return predicate.Team(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.Team {
+	return predicate.Team(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.Team {
+	return predicate.Team(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // SlugEQ applies the EQ predicate on the "slug" field.
@@ -434,6 +459,29 @@ func TimezoneContainsFold(v string) predicate.Team {
 	return predicate.Team(sql.FieldContainsFold(FieldTimezone, v))
 }
 
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.Team {
+	return predicate.Team(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasUsers applies the HasEdge predicate on the "users" edge.
 func HasUsers() predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
@@ -472,29 +520,6 @@ func HasOncallRosters() predicate.Team {
 func HasOncallRostersWith(preds ...predicate.OncallRoster) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newOncallRostersStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasIncidentAssignments applies the HasEdge predicate on the "incident_assignments" edge.
-func HasIncidentAssignments() predicate.Team {
-	return predicate.Team(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, IncidentAssignmentsTable, IncidentAssignmentsColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasIncidentAssignmentsWith applies the HasEdge predicate on the "incident_assignments" edge with a given conditions (other predicates).
-func HasIncidentAssignmentsWith(preds ...predicate.IncidentTeamAssignment) predicate.Team {
-	return predicate.Team(func(s *sql.Selector) {
-		step := newIncidentAssignmentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

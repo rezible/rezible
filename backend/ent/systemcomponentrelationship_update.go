@@ -243,6 +243,9 @@ func (scru *SystemComponentRelationshipUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (scru *SystemComponentRelationshipUpdate) check() error {
+	if scru.mutation.TenantCleared() && len(scru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentRelationship.tenant"`)
+	}
 	if scru.mutation.SourceCleared() && len(scru.mutation.SourceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentRelationship.source"`)
 	}
@@ -678,6 +681,9 @@ func (scruo *SystemComponentRelationshipUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (scruo *SystemComponentRelationshipUpdateOne) check() error {
+	if scruo.mutation.TenantCleared() && len(scruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentRelationship.tenant"`)
+	}
 	if scruo.mutation.SourceCleared() && len(scruo.mutation.SourceIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentRelationship.source"`)
 	}

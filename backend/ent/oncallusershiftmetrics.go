@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftMetrics is the model entity for the OncallUserShiftMetrics schema.
@@ -18,6 +19,8 @@ type OncallUserShiftMetrics struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -28,11 +31,24 @@ type OncallUserShiftMetrics struct {
 
 // OncallUserShiftMetricsEdges holds the relations/edges for other nodes in the graph.
 type OncallUserShiftMetricsEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Shift holds the value of the shift edge.
 	Shift *OncallUserShift `json:"shift,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallUserShiftMetricsEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ShiftOrErr returns the Shift value or an error if the edge
@@ -40,7 +56,7 @@ type OncallUserShiftMetricsEdges struct {
 func (e OncallUserShiftMetricsEdges) ShiftOrErr() (*OncallUserShift, error) {
 	if e.Shift != nil {
 		return e.Shift, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallusershift.Label}
 	}
 	return nil, &NotLoadedError{edge: "shift"}
@@ -51,6 +67,8 @@ func (*OncallUserShiftMetrics) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallusershiftmetrics.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallusershiftmetrics.FieldID, oncallusershiftmetrics.FieldShiftID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -74,6 +92,12 @@ func (ousm *OncallUserShiftMetrics) assignValues(columns []string, values []any)
 			} else if value != nil {
 				ousm.ID = *value
 			}
+		case oncallusershiftmetrics.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ousm.TenantID = int(value.Int64)
+			}
 		case oncallusershiftmetrics.FieldShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field shift_id", values[i])
@@ -91,6 +115,11 @@ func (ousm *OncallUserShiftMetrics) assignValues(columns []string, values []any)
 // This includes values selected through modifiers, order, etc.
 func (ousm *OncallUserShiftMetrics) Value(name string) (ent.Value, error) {
 	return ousm.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the OncallUserShiftMetrics entity.
+func (ousm *OncallUserShiftMetrics) QueryTenant() *TenantQuery {
+	return NewOncallUserShiftMetricsClient(ousm.config).QueryTenant(ousm)
 }
 
 // QueryShift queries the "shift" edge of the OncallUserShiftMetrics entity.
@@ -121,6 +150,9 @@ func (ousm *OncallUserShiftMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallUserShiftMetrics(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ousm.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ousm.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
 	builder.WriteString(fmt.Sprintf("%v", ousm.ShiftID))
 	builder.WriteByte(')')

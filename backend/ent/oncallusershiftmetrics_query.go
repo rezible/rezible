@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftMetricsQuery is the builder for querying OncallUserShiftMetrics entities.
@@ -25,6 +26,7 @@ type OncallUserShiftMetricsQuery struct {
 	order      []oncallusershiftmetrics.OrderOption
 	inters     []Interceptor
 	predicates []predicate.OncallUserShiftMetrics
+	withTenant *TenantQuery
 	withShift  *OncallUserShiftQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (ousmq *OncallUserShiftMetricsQuery) Unique(unique bool) *OncallUserShiftMe
 func (ousmq *OncallUserShiftMetricsQuery) Order(o ...oncallusershiftmetrics.OrderOption) *OncallUserShiftMetricsQuery {
 	ousmq.order = append(ousmq.order, o...)
 	return ousmq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ousmq *OncallUserShiftMetricsQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ousmq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ousmq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ousmq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershiftmetrics.Table, oncallusershiftmetrics.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershiftmetrics.TenantTable, oncallusershiftmetrics.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ousmq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryShift chains the current query on the "shift" edge.
@@ -277,12 +301,24 @@ func (ousmq *OncallUserShiftMetricsQuery) Clone() *OncallUserShiftMetricsQuery {
 		order:      append([]oncallusershiftmetrics.OrderOption{}, ousmq.order...),
 		inters:     append([]Interceptor{}, ousmq.inters...),
 		predicates: append([]predicate.OncallUserShiftMetrics{}, ousmq.predicates...),
+		withTenant: ousmq.withTenant.Clone(),
 		withShift:  ousmq.withShift.Clone(),
 		// clone intermediate query.
 		sql:       ousmq.sql.Clone(),
 		path:      ousmq.path,
 		modifiers: append([]func(*sql.Selector){}, ousmq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ousmq *OncallUserShiftMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallUserShiftMetricsQuery {
+	query := (&TenantClient{config: ousmq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ousmq.withTenant = query
+	return ousmq
 }
 
 // WithShift tells the query-builder to eager-load the nodes that are connected to
@@ -302,12 +338,12 @@ func (ousmq *OncallUserShiftMetricsQuery) WithShift(opts ...func(*OncallUserShif
 // Example:
 //
 //	var v []struct {
-//		ShiftID uuid.UUID `json:"shift_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallUserShiftMetrics.Query().
-//		GroupBy(oncallusershiftmetrics.FieldShiftID).
+//		GroupBy(oncallusershiftmetrics.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ousmq *OncallUserShiftMetricsQuery) GroupBy(field string, fields ...string) *OncallUserShiftMetricsGroupBy {
@@ -325,11 +361,11 @@ func (ousmq *OncallUserShiftMetricsQuery) GroupBy(field string, fields ...string
 // Example:
 //
 //	var v []struct {
-//		ShiftID uuid.UUID `json:"shift_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallUserShiftMetrics.Query().
-//		Select(oncallusershiftmetrics.FieldShiftID).
+//		Select(oncallusershiftmetrics.FieldTenantID).
 //		Scan(ctx, &v)
 func (ousmq *OncallUserShiftMetricsQuery) Select(fields ...string) *OncallUserShiftMetricsSelect {
 	ousmq.ctx.Fields = append(ousmq.ctx.Fields, fields...)
@@ -380,7 +416,8 @@ func (ousmq *OncallUserShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...q
 	var (
 		nodes       = []*OncallUserShiftMetrics{}
 		_spec       = ousmq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			ousmq.withTenant != nil,
 			ousmq.withShift != nil,
 		}
 	)
@@ -405,6 +442,12 @@ func (ousmq *OncallUserShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...q
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ousmq.withTenant; query != nil {
+		if err := ousmq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallUserShiftMetrics, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ousmq.withShift; query != nil {
 		if err := ousmq.loadShift(ctx, query, nodes, nil,
 			func(n *OncallUserShiftMetrics, e *OncallUserShift) { n.Edges.Shift = e }); err != nil {
@@ -414,6 +457,35 @@ func (ousmq *OncallUserShiftMetricsQuery) sqlAll(ctx context.Context, hooks ...q
 	return nodes, nil
 }
 
+func (ousmq *OncallUserShiftMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallUserShiftMetrics, init func(*OncallUserShiftMetrics), assign func(*OncallUserShiftMetrics, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallUserShiftMetrics)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ousmq *OncallUserShiftMetricsQuery) loadShift(ctx context.Context, query *OncallUserShiftQuery, nodes []*OncallUserShiftMetrics, init func(*OncallUserShiftMetrics), assign func(*OncallUserShiftMetrics, *OncallUserShift)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallUserShiftMetrics)
@@ -471,6 +543,9 @@ func (ousmq *OncallUserShiftMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallusershiftmetrics.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ousmq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallusershiftmetrics.FieldTenantID)
 		}
 		if ousmq.withShift != nil {
 			_spec.Node.AddColumnOnce(oncallusershiftmetrics.FieldShiftID)

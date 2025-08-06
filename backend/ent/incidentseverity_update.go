@@ -251,6 +251,14 @@ func (isu *IncidentSeverityUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (isu *IncidentSeverityUpdate) check() error {
+	if isu.mutation.TenantCleared() && len(isu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentSeverity.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (isu *IncidentSeverityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdate {
 	isu.modifiers = append(isu.modifiers, modifiers...)
@@ -258,6 +266,9 @@ func (isu *IncidentSeverityUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder
 }
 
 func (isu *IncidentSeverityUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := isu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentseverity.Table, incidentseverity.Columns, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
 	if ps := isu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -643,6 +654,14 @@ func (isuo *IncidentSeverityUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (isuo *IncidentSeverityUpdateOne) check() error {
+	if isuo.mutation.TenantCleared() && len(isuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentSeverity.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (isuo *IncidentSeverityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentSeverityUpdateOne {
 	isuo.modifiers = append(isuo.modifiers, modifiers...)
@@ -650,6 +669,9 @@ func (isuo *IncidentSeverityUpdateOne) Modify(modifiers ...func(u *sql.UpdateBui
 }
 
 func (isuo *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *IncidentSeverity, err error) {
+	if err := isuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentseverity.Table, incidentseverity.Columns, sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID))
 	id, ok := isuo.mutation.ID()
 	if !ok {

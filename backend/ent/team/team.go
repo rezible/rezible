@@ -14,6 +14,8 @@ const (
 	Label = "team"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
@@ -24,16 +26,23 @@ const (
 	FieldChatChannelID = "chat_channel_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
 	EdgeUsers = "users"
 	// EdgeOncallRosters holds the string denoting the oncall_rosters edge name in mutations.
 	EdgeOncallRosters = "oncall_rosters"
-	// EdgeIncidentAssignments holds the string denoting the incident_assignments edge name in mutations.
-	EdgeIncidentAssignments = "incident_assignments"
 	// EdgeScheduledMeetings holds the string denoting the scheduled_meetings edge name in mutations.
 	EdgeScheduledMeetings = "scheduled_meetings"
 	// Table holds the table name of the team in the database.
 	Table = "teams"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "teams"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// UsersTable is the table that holds the users relation/edge. The primary key declared below.
 	UsersTable = "team_users"
 	// UsersInverseTable is the table name for the User entity.
@@ -44,13 +53,6 @@ const (
 	// OncallRostersInverseTable is the table name for the OncallRoster entity.
 	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
 	OncallRostersInverseTable = "oncall_rosters"
-	// IncidentAssignmentsTable is the table that holds the incident_assignments relation/edge.
-	IncidentAssignmentsTable = "incident_team_assignments"
-	// IncidentAssignmentsInverseTable is the table name for the IncidentTeamAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentteamassignment" package.
-	IncidentAssignmentsInverseTable = "incident_team_assignments"
-	// IncidentAssignmentsColumn is the table column denoting the incident_assignments relation/edge.
-	IncidentAssignmentsColumn = "team_id"
 	// ScheduledMeetingsTable is the table that holds the scheduled_meetings relation/edge. The primary key declared below.
 	ScheduledMeetingsTable = "meeting_schedule_owning_team"
 	// ScheduledMeetingsInverseTable is the table name for the MeetingSchedule entity.
@@ -61,6 +63,7 @@ const (
 // Columns holds all SQL columns for team fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldSlug,
 	FieldProviderID,
 	FieldName,
@@ -110,6 +113,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // BySlug orders the results by the slug field.
 func BySlug(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSlug, opts...).ToFunc()
@@ -133,6 +141,13 @@ func ByChatChannelID(opts ...sql.OrderTermOption) OrderOption {
 // ByTimezone orders the results by the timezone field.
 func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByUsersCount orders the results by users count.
@@ -163,20 +178,6 @@ func ByOncallRosters(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByIncidentAssignmentsCount orders the results by incident_assignments count.
-func ByIncidentAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newIncidentAssignmentsStep(), opts...)
-	}
-}
-
-// ByIncidentAssignments orders the results by incident_assignments terms.
-func ByIncidentAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
 // ByScheduledMeetingsCount orders the results by scheduled_meetings count.
 func ByScheduledMeetingsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -190,6 +191,13 @@ func ByScheduledMeetings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 		sqlgraph.OrderByNeighborTerms(s, newScheduledMeetingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
 func newUsersStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -202,13 +210,6 @@ func newOncallRostersStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OncallRostersInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, OncallRostersTable, OncallRostersPrimaryKey...),
-	)
-}
-func newIncidentAssignmentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentAssignmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, IncidentAssignmentsTable, IncidentAssignmentsColumn),
 	)
 }
 func newScheduledMeetingsStep() *sqlgraph.Step {

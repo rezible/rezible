@@ -154,6 +154,9 @@ func (iescu *IncidentEventSystemComponentUpdate) check() error {
 			return &ValidationError{Name: "relationship", err: fmt.Errorf(`ent: validator failed for field "IncidentEventSystemComponent.relationship": %w`, err)}
 		}
 	}
+	if iescu.mutation.TenantCleared() && len(iescu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.tenant"`)
+	}
 	if iescu.mutation.EventCleared() && len(iescu.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.event"`)
 	}
@@ -402,6 +405,9 @@ func (iescuo *IncidentEventSystemComponentUpdateOne) check() error {
 		if err := incidenteventsystemcomponent.RelationshipValidator(v); err != nil {
 			return &ValidationError{Name: "relationship", err: fmt.Errorf(`ent: validator failed for field "IncidentEventSystemComponent.relationship": %w`, err)}
 		}
+	}
+	if iescuo.mutation.TenantCleared() && len(iescuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.tenant"`)
 	}
 	if iescuo.mutation.EventCleared() && len(iescuo.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventSystemComponent.event"`)

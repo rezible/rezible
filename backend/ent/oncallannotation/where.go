@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldEQ(FieldTenantID, v))
+}
+
 // EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
 func EventID(v uuid.UUID) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldEQ(FieldEventID, v))
@@ -84,6 +89,26 @@ func MinutesOccupied(v int) predicate.OncallAnnotation {
 // Notes applies equality check predicate on the "notes" field. It's identical to NotesEQ.
 func Notes(v string) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldEQ(FieldNotes, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // EventIDEQ applies the EQ predicate on the "event_id" field.
@@ -291,6 +316,29 @@ func NotesContainsFold(v string) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(sql.FieldContainsFold(FieldNotes, v))
 }
 
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.OncallAnnotation {
+	return predicate.OncallAnnotation(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasEvent applies the HasEdge predicate on the "event" edge.
 func HasEvent() predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(func(s *sql.Selector) {
@@ -372,7 +420,7 @@ func HasAlertFeedback() predicate.OncallAnnotation {
 }
 
 // HasAlertFeedbackWith applies the HasEdge predicate on the "alert_feedback" edge with a given conditions (other predicates).
-func HasAlertFeedbackWith(preds ...predicate.OncallAnnotationAlertFeedback) predicate.OncallAnnotation {
+func HasAlertFeedbackWith(preds ...predicate.AlertFeedback) predicate.OncallAnnotation {
 	return predicate.OncallAnnotation(func(s *sql.Selector) {
 		step := newAlertFeedbackStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

@@ -16,6 +16,8 @@ const (
 	Label = "oncall_annotation"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldEventID holds the string denoting the event_id field in the database.
 	FieldEventID = "event_id"
 	// FieldRosterID holds the string denoting the roster_id field in the database.
@@ -30,6 +32,8 @@ const (
 	FieldNotes = "notes"
 	// FieldTags holds the string denoting the tags field in the database.
 	FieldTags = "tags"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
@@ -42,6 +46,13 @@ const (
 	EdgeHandovers = "handovers"
 	// Table holds the table name of the oncallannotation in the database.
 	Table = "oncall_annotations"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_annotations"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// EventTable is the table that holds the event relation/edge.
 	EventTable = "oncall_annotations"
 	// EventInverseTable is the table name for the OncallEvent entity.
@@ -64,10 +75,10 @@ const (
 	// CreatorColumn is the table column denoting the creator relation/edge.
 	CreatorColumn = "creator_id"
 	// AlertFeedbackTable is the table that holds the alert_feedback relation/edge.
-	AlertFeedbackTable = "oncall_annotation_alert_feedbacks"
-	// AlertFeedbackInverseTable is the table name for the OncallAnnotationAlertFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallannotationalertfeedback" package.
-	AlertFeedbackInverseTable = "oncall_annotation_alert_feedbacks"
+	AlertFeedbackTable = "alert_feedbacks"
+	// AlertFeedbackInverseTable is the table name for the AlertFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
+	AlertFeedbackInverseTable = "alert_feedbacks"
 	// AlertFeedbackColumn is the table column denoting the alert_feedback relation/edge.
 	AlertFeedbackColumn = "annotation_id"
 	// HandoversTable is the table that holds the handovers relation/edge. The primary key declared below.
@@ -80,6 +91,7 @@ const (
 // Columns holds all SQL columns for oncallannotation fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldEventID,
 	FieldRosterID,
 	FieldCreatorID,
@@ -127,6 +139,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByEventID orders the results by the event_id field.
 func ByEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEventID, opts...).ToFunc()
@@ -155,6 +172,13 @@ func ByMinutesOccupied(opts ...sql.OrderTermOption) OrderOption {
 // ByNotes orders the results by the notes field.
 func ByNotes(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotes, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByEventField orders the results by event field.
@@ -197,6 +221,13 @@ func ByHandovers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newHandoversStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

@@ -16,6 +16,8 @@ const (
 	Label = "incident_field_option"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
 	// FieldIncidentFieldID holds the string denoting the incident_field_id field in the database.
@@ -24,12 +26,21 @@ const (
 	FieldType = "type"
 	// FieldValue holds the string denoting the value field in the database.
 	FieldValue = "value"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeIncidentField holds the string denoting the incident_field edge name in mutations.
 	EdgeIncidentField = "incident_field"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
 	// Table holds the table name of the incidentfieldoption in the database.
 	Table = "incident_field_options"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "incident_field_options"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// IncidentFieldTable is the table that holds the incident_field relation/edge.
 	IncidentFieldTable = "incident_field_options"
 	// IncidentFieldInverseTable is the table name for the IncidentField entity.
@@ -47,6 +58,7 @@ const (
 // Columns holds all SQL columns for incidentfieldoption fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldArchiveTime,
 	FieldIncidentFieldID,
 	FieldType,
@@ -113,6 +125,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByArchiveTime orders the results by the archive_time field.
 func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
@@ -131,6 +148,13 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByValue orders the results by the value field.
 func ByValue(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldValue, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByIncidentFieldField orders the results by incident_field field.
@@ -152,6 +176,13 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newIncidentFieldStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

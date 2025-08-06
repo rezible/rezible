@@ -228,6 +228,9 @@ func (tu *TaskUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
 		}
 	}
+	if tu.mutation.TenantCleared() && len(tu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Task.tenant"`)
+	}
 	return nil
 }
 
@@ -617,6 +620,9 @@ func (tuo *TaskUpdateOne) check() error {
 		if err := task.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Task.type": %w`, err)}
 		}
+	}
+	if tuo.mutation.TenantCleared() && len(tuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Task.tenant"`)
 	}
 	return nil
 }

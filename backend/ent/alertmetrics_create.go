@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // AlertMetricsCreate is the builder for creating a AlertMetrics entity.
@@ -22,6 +23,12 @@ type AlertMetricsCreate struct {
 	mutation *AlertMetricsMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (amc *AlertMetricsCreate) SetTenantID(i int) *AlertMetricsCreate {
+	amc.mutation.SetTenantID(i)
+	return amc
 }
 
 // SetAlertID sets the "alert_id" field.
@@ -42,6 +49,11 @@ func (amc *AlertMetricsCreate) SetNillableID(u *uuid.UUID) *AlertMetricsCreate {
 		amc.SetID(*u)
 	}
 	return amc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (amc *AlertMetricsCreate) SetTenant(t *Tenant) *AlertMetricsCreate {
+	return amc.SetTenantID(t.ID)
 }
 
 // SetAlert sets the "alert" edge to the Alert entity.
@@ -98,8 +110,14 @@ func (amc *AlertMetricsCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (amc *AlertMetricsCreate) check() error {
+	if _, ok := amc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertMetrics.tenant_id"`)}
+	}
 	if _, ok := amc.mutation.AlertID(); !ok {
 		return &ValidationError{Name: "alert_id", err: errors.New(`ent: missing required field "AlertMetrics.alert_id"`)}
+	}
+	if len(amc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertMetrics.tenant"`)}
 	}
 	if len(amc.mutation.AlertIDs()) == 0 {
 		return &ValidationError{Name: "alert", err: errors.New(`ent: missing required edge "AlertMetrics.alert"`)}
@@ -140,6 +158,23 @@ func (amc *AlertMetricsCreate) createSpec() (*AlertMetrics, *sqlgraph.CreateSpec
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if nodes := amc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alertmetrics.TenantTable,
+			Columns: []string{alertmetrics.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := amc.mutation.AlertIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -164,7 +199,7 @@ func (amc *AlertMetricsCreate) createSpec() (*AlertMetrics, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.AlertMetrics.Create().
-//		SetAlertID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -173,7 +208,7 @@ func (amc *AlertMetricsCreate) createSpec() (*AlertMetrics, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AlertMetricsUpsert) {
-//			SetAlertID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (amc *AlertMetricsCreate) OnConflict(opts ...sql.ConflictOption) *AlertMetricsUpsertOne {
@@ -237,6 +272,9 @@ func (u *AlertMetricsUpsertOne) UpdateNewValues() *AlertMetricsUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(alertmetrics.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(alertmetrics.FieldTenantID)
 		}
 	}))
 	return u
@@ -419,7 +457,7 @@ func (amcb *AlertMetricsCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AlertMetricsUpsert) {
-//			SetAlertID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (amcb *AlertMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertMetricsUpsertBulk {
@@ -465,6 +503,9 @@ func (u *AlertMetricsUpsertBulk) UpdateNewValues() *AlertMetricsUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(alertmetrics.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(alertmetrics.FieldTenantID)
 			}
 		}
 	}))

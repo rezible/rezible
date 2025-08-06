@@ -22,11 +22,12 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // IncidentCreate is the builder for creating a Incident entity.
@@ -35,6 +36,12 @@ type IncidentCreate struct {
 	mutation *IncidentMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ic *IncidentCreate) SetTenantID(i int) *IncidentCreate {
+	ic.mutation.SetTenantID(i)
+	return ic
 }
 
 // SetSlug sets the "slug" field.
@@ -149,6 +156,11 @@ func (ic *IncidentCreate) SetNillableID(u *uuid.UUID) *IncidentCreate {
 	return ic
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ic *IncidentCreate) SetTenant(t *Tenant) *IncidentCreate {
+	return ic.SetTenantID(t.ID)
+}
+
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (ic *IncidentCreate) SetSeverity(i *IncidentSeverity) *IncidentCreate {
 	return ic.SetSeverityID(i.ID)
@@ -157,36 +169,6 @@ func (ic *IncidentCreate) SetSeverity(i *IncidentSeverity) *IncidentCreate {
 // SetType sets the "type" edge to the IncidentType entity.
 func (ic *IncidentCreate) SetType(i *IncidentType) *IncidentCreate {
 	return ic.SetTypeID(i.ID)
-}
-
-// AddTeamAssignmentIDs adds the "team_assignments" edge to the IncidentTeamAssignment entity by IDs.
-func (ic *IncidentCreate) AddTeamAssignmentIDs(ids ...int) *IncidentCreate {
-	ic.mutation.AddTeamAssignmentIDs(ids...)
-	return ic
-}
-
-// AddTeamAssignments adds the "team_assignments" edges to the IncidentTeamAssignment entity.
-func (ic *IncidentCreate) AddTeamAssignments(i ...*IncidentTeamAssignment) *IncidentCreate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ic.AddTeamAssignmentIDs(ids...)
-}
-
-// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (ic *IncidentCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *IncidentCreate {
-	ic.mutation.AddRoleAssignmentIDs(ids...)
-	return ic
-}
-
-// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
-func (ic *IncidentCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *IncidentCreate {
-	ids := make([]uuid.UUID, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return ic.AddRoleAssignmentIDs(ids...)
 }
 
 // AddMilestoneIDs adds the "milestones" edge to the IncidentMilestone entity by IDs.
@@ -232,6 +214,36 @@ func (ic *IncidentCreate) AddRetrospective(r ...*Retrospective) *IncidentCreate 
 		ids[i] = r[i].ID
 	}
 	return ic.AddRetrospectiveIDs(ids...)
+}
+
+// AddUserIDs adds the "users" edge to the User entity by IDs.
+func (ic *IncidentCreate) AddUserIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddUserIDs(ids...)
+	return ic
+}
+
+// AddUsers adds the "users" edges to the User entity.
+func (ic *IncidentCreate) AddUsers(u ...*User) *IncidentCreate {
+	ids := make([]uuid.UUID, len(u))
+	for i := range u {
+		ids[i] = u[i].ID
+	}
+	return ic.AddUserIDs(ids...)
+}
+
+// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
+func (ic *IncidentCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddRoleAssignmentIDs(ids...)
+	return ic
+}
+
+// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
+func (ic *IncidentCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *IncidentCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ic.AddRoleAssignmentIDs(ids...)
 }
 
 // AddLinkedIncidentIDs adds the "linked_incidents" edge to the Incident entity by IDs.
@@ -324,6 +336,21 @@ func (ic *IncidentCreate) AddReviewSessions(m ...*MeetingSession) *IncidentCreat
 	return ic.AddReviewSessionIDs(ids...)
 }
 
+// AddUserRoleIDs adds the "user_roles" edge to the IncidentRoleAssignment entity by IDs.
+func (ic *IncidentCreate) AddUserRoleIDs(ids ...uuid.UUID) *IncidentCreate {
+	ic.mutation.AddUserRoleIDs(ids...)
+	return ic
+}
+
+// AddUserRoles adds the "user_roles" edges to the IncidentRoleAssignment entity.
+func (ic *IncidentCreate) AddUserRoles(i ...*IncidentRoleAssignment) *IncidentCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ic.AddUserRoleIDs(ids...)
+}
+
 // AddIncidentLinkIDs adds the "incident_links" edge to the IncidentLink entity by IDs.
 func (ic *IncidentCreate) AddIncidentLinkIDs(ids ...int) *IncidentCreate {
 	ic.mutation.AddIncidentLinkIDs(ids...)
@@ -392,6 +419,9 @@ func (ic *IncidentCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *IncidentCreate) check() error {
+	if _, ok := ic.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Incident.tenant_id"`)}
+	}
 	if _, ok := ic.mutation.Slug(); !ok {
 		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Incident.slug"`)}
 	}
@@ -415,6 +445,9 @@ func (ic *IncidentCreate) check() error {
 	}
 	if _, ok := ic.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Incident.provider_id"`)}
+	}
+	if len(ic.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Incident.tenant"`)}
 	}
 	return nil
 }
@@ -488,6 +521,23 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
 	}
+	if nodes := ic.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.TenantTable,
+			Columns: []string{incident.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ic.mutation.SeverityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -520,38 +570,6 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TypeID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.TeamAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.TeamAssignmentsTable,
-			Columns: []string{incident.TeamAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ic.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   incident.RoleAssignmentsTable,
-			Columns: []string{incident.RoleAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ic.mutation.MilestonesIDs(); len(nodes) > 0 {
@@ -595,6 +613,45 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.UsersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   incident.UsersTable,
+			Columns: incident.UsersPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentRoleAssignmentCreate{config: ic.config, mutation: newIncidentRoleAssignmentMutation(ic.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := ic.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.RoleAssignmentsTable,
+			Columns: []string{incident.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -698,6 +755,22 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := ic.mutation.UserRolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.UserRolesTable,
+			Columns: []string{incident.UserRolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ic.mutation.IncidentLinksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -721,7 +794,7 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Incident.Create().
-//		SetSlug(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -730,7 +803,7 @@ func (ic *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentUpsert) {
-//			SetSlug(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ic *IncidentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentUpsertOne {
@@ -932,6 +1005,9 @@ func (u *IncidentUpsertOne) UpdateNewValues() *IncidentUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incident.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incident.FieldTenantID)
 		}
 	}))
 	return u
@@ -1275,7 +1351,7 @@ func (icb *IncidentCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentUpsert) {
-//			SetSlug(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (icb *IncidentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentUpsertBulk {
@@ -1321,6 +1397,9 @@ func (u *IncidentUpsertBulk) UpdateNewValues() *IncidentUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incident.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incident.FieldTenantID)
 			}
 		}
 	}))

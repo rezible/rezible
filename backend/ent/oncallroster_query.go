@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -33,6 +34,7 @@ type OncallRosterQuery struct {
 	order                []oncallroster.OrderOption
 	inters               []Interceptor
 	predicates           []predicate.OncallRoster
+	withTenant           *TenantQuery
 	withSchedules        *OncallScheduleQuery
 	withHandoverTemplate *OncallHandoverTemplateQuery
 	withEvents           *OncallEventQuery
@@ -76,6 +78,28 @@ func (orq *OncallRosterQuery) Unique(unique bool) *OncallRosterQuery {
 func (orq *OncallRosterQuery) Order(o ...oncallroster.OrderOption) *OncallRosterQuery {
 	orq.order = append(orq.order, o...)
 	return orq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (orq *OncallRosterQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: orq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := orq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := orq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallroster.TenantTable, oncallroster.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(orq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QuerySchedules chains the current query on the "schedules" edge.
@@ -446,6 +470,7 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		order:                append([]oncallroster.OrderOption{}, orq.order...),
 		inters:               append([]Interceptor{}, orq.inters...),
 		predicates:           append([]predicate.OncallRoster{}, orq.predicates...),
+		withTenant:           orq.withTenant.Clone(),
 		withSchedules:        orq.withSchedules.Clone(),
 		withHandoverTemplate: orq.withHandoverTemplate.Clone(),
 		withEvents:           orq.withEvents.Clone(),
@@ -459,6 +484,17 @@ func (orq *OncallRosterQuery) Clone() *OncallRosterQuery {
 		path:      orq.path,
 		modifiers: append([]func(*sql.Selector){}, orq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (orq *OncallRosterQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterQuery {
+	query := (&TenantClient{config: orq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	orq.withTenant = query
+	return orq
 }
 
 // WithSchedules tells the query-builder to eager-load the nodes that are connected to
@@ -555,12 +591,12 @@ func (orq *OncallRosterQuery) WithMetrics(opts ...func(*OncallRosterMetricsQuery
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallRoster.Query().
-//		GroupBy(oncallroster.FieldArchiveTime).
+//		GroupBy(oncallroster.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (orq *OncallRosterQuery) GroupBy(field string, fields ...string) *OncallRosterGroupBy {
@@ -578,11 +614,11 @@ func (orq *OncallRosterQuery) GroupBy(field string, fields ...string) *OncallRos
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallRoster.Query().
-//		Select(oncallroster.FieldArchiveTime).
+//		Select(oncallroster.FieldTenantID).
 //		Scan(ctx, &v)
 func (orq *OncallRosterQuery) Select(fields ...string) *OncallRosterSelect {
 	orq.ctx.Fields = append(orq.ctx.Fields, fields...)
@@ -633,7 +669,8 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*OncallRoster{}
 		_spec       = orq.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [9]bool{
+			orq.withTenant != nil,
 			orq.withSchedules != nil,
 			orq.withHandoverTemplate != nil,
 			orq.withEvents != nil,
@@ -664,6 +701,12 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := orq.withTenant; query != nil {
+		if err := orq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallRoster, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := orq.withSchedules; query != nil {
 		if err := orq.loadSchedules(ctx, query, nodes,
@@ -723,6 +766,35 @@ func (orq *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
+func (orq *OncallRosterQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallRoster)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (orq *OncallRosterQuery) loadSchedules(ctx context.Context, query *OncallScheduleQuery, nodes []*OncallRoster, init func(*OncallRoster), assign func(*OncallRoster, *OncallSchedule)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallRoster)
@@ -1052,6 +1124,9 @@ func (orq *OncallRosterQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallroster.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if orq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallroster.FieldTenantID)
 		}
 		if orq.withHandoverTemplate != nil {
 			_spec.Node.AddColumnOnce(oncallroster.FieldHandoverTemplateID)

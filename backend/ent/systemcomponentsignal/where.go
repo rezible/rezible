@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ComponentID applies equality check predicate on the "component_id" field. It's identical to ComponentIDEQ.
 func ComponentID(v uuid.UUID) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldEQ(FieldComponentID, v))
@@ -69,6 +74,26 @@ func Description(v string) predicate.SystemComponentSignal {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ComponentIDEQ applies the EQ predicate on the "component_id" field.
@@ -269,6 +294,29 @@ func CreatedAtLT(v time.Time) predicate.SystemComponentSignal {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentSignal {
+	return predicate.SystemComponentSignal(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasComponent applies the HasEdge predicate on the "component" edge.

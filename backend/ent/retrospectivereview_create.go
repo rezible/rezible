@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -24,6 +25,12 @@ type RetrospectiveReviewCreate struct {
 	mutation *RetrospectiveReviewMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (rrc *RetrospectiveReviewCreate) SetTenantID(i int) *RetrospectiveReviewCreate {
+	rrc.mutation.SetTenantID(i)
+	return rrc
 }
 
 // SetRetrospectiveID sets the "retrospective_id" field.
@@ -62,6 +69,11 @@ func (rrc *RetrospectiveReviewCreate) SetNillableID(u *uuid.UUID) *Retrospective
 		rrc.SetID(*u)
 	}
 	return rrc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (rrc *RetrospectiveReviewCreate) SetTenant(t *Tenant) *RetrospectiveReviewCreate {
+	return rrc.SetTenantID(t.ID)
 }
 
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
@@ -147,6 +159,9 @@ func (rrc *RetrospectiveReviewCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (rrc *RetrospectiveReviewCreate) check() error {
+	if _, ok := rrc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "RetrospectiveReview.tenant_id"`)}
+	}
 	if _, ok := rrc.mutation.RetrospectiveID(); !ok {
 		return &ValidationError{Name: "retrospective_id", err: errors.New(`ent: missing required field "RetrospectiveReview.retrospective_id"`)}
 	}
@@ -163,6 +178,9 @@ func (rrc *RetrospectiveReviewCreate) check() error {
 		if err := retrospectivereview.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "RetrospectiveReview.state": %w`, err)}
 		}
+	}
+	if len(rrc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "RetrospectiveReview.tenant"`)}
 	}
 	if len(rrc.mutation.RetrospectiveIDs()) == 0 {
 		return &ValidationError{Name: "retrospective", err: errors.New(`ent: missing required edge "RetrospectiveReview.retrospective"`)}
@@ -212,6 +230,23 @@ func (rrc *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgr
 	if value, ok := rrc.mutation.State(); ok {
 		_spec.SetField(retrospectivereview.FieldState, field.TypeEnum, value)
 		_node.State = value
+	}
+	if nodes := rrc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospectivereview.TenantTable,
+			Columns: []string{retrospectivereview.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rrc.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -288,7 +323,7 @@ func (rrc *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgr
 // of the `INSERT` statement. For example:
 //
 //	client.RetrospectiveReview.Create().
-//		SetRetrospectiveID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -297,7 +332,7 @@ func (rrc *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgr
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveReviewUpsert) {
-//			SetRetrospectiveID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (rrc *RetrospectiveReviewCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveReviewUpsertOne {
@@ -397,6 +432,9 @@ func (u *RetrospectiveReviewUpsertOne) UpdateNewValues() *RetrospectiveReviewUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(retrospectivereview.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(retrospectivereview.FieldTenantID)
 		}
 	}))
 	return u
@@ -621,7 +659,7 @@ func (rrcb *RetrospectiveReviewCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveReviewUpsert) {
-//			SetRetrospectiveID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (rrcb *RetrospectiveReviewCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveReviewUpsertBulk {
@@ -667,6 +705,9 @@ func (u *RetrospectiveReviewUpsertBulk) UpdateNewValues() *RetrospectiveReviewUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(retrospectivereview.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(retrospectivereview.FieldTenantID)
 			}
 		}
 	}))

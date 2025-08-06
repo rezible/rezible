@@ -12,6 +12,14 @@ func (c *AlertClient) Debug() *AlertClient {
 	return &AlertClient{config: cfg}
 }
 
+func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertFeedbackClient{config: cfg}
+}
+
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -164,14 +172,6 @@ func (c *IncidentTagClient) Debug() *IncidentTagClient {
 	return &IncidentTagClient{config: cfg}
 }
 
-func (c *IncidentTeamAssignmentClient) Debug() *IncidentTeamAssignmentClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentTeamAssignmentClient{config: cfg}
-}
-
 func (c *IncidentTypeClient) Debug() *IncidentTypeClient {
 	if c.debug {
 		return c
@@ -202,14 +202,6 @@ func (c *OncallAnnotationClient) Debug() *OncallAnnotationClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &OncallAnnotationClient{config: cfg}
-}
-
-func (c *OncallAnnotationAlertFeedbackClient) Debug() *OncallAnnotationAlertFeedbackClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OncallAnnotationAlertFeedbackClient{config: cfg}
 }
 
 func (c *OncallEventClient) Debug() *OncallEventClient {

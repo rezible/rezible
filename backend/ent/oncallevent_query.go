@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallEventQuery is the builder for querying OncallEvent entities.
@@ -28,6 +29,7 @@ type OncallEventQuery struct {
 	order           []oncallevent.OrderOption
 	inters          []Interceptor
 	predicates      []predicate.OncallEvent
+	withTenant      *TenantQuery
 	withRoster      *OncallRosterQuery
 	withAlert       *AlertQuery
 	withAnnotations *OncallAnnotationQuery
@@ -66,6 +68,28 @@ func (oeq *OncallEventQuery) Unique(unique bool) *OncallEventQuery {
 func (oeq *OncallEventQuery) Order(o ...oncallevent.OrderOption) *OncallEventQuery {
 	oeq.order = append(oeq.order, o...)
 	return oeq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (oeq *OncallEventQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: oeq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oeq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oeq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.TenantTable, oncallevent.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oeq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
@@ -326,6 +350,7 @@ func (oeq *OncallEventQuery) Clone() *OncallEventQuery {
 		order:           append([]oncallevent.OrderOption{}, oeq.order...),
 		inters:          append([]Interceptor{}, oeq.inters...),
 		predicates:      append([]predicate.OncallEvent{}, oeq.predicates...),
+		withTenant:      oeq.withTenant.Clone(),
 		withRoster:      oeq.withRoster.Clone(),
 		withAlert:       oeq.withAlert.Clone(),
 		withAnnotations: oeq.withAnnotations.Clone(),
@@ -334,6 +359,17 @@ func (oeq *OncallEventQuery) Clone() *OncallEventQuery {
 		path:      oeq.path,
 		modifiers: append([]func(*sql.Selector){}, oeq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (oeq *OncallEventQuery) WithTenant(opts ...func(*TenantQuery)) *OncallEventQuery {
+	query := (&TenantClient{config: oeq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oeq.withTenant = query
+	return oeq
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
@@ -375,12 +411,12 @@ func (oeq *OncallEventQuery) WithAnnotations(opts ...func(*OncallAnnotationQuery
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallEvent.Query().
-//		GroupBy(oncallevent.FieldProviderID).
+//		GroupBy(oncallevent.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oeq *OncallEventQuery) GroupBy(field string, fields ...string) *OncallEventGroupBy {
@@ -398,11 +434,11 @@ func (oeq *OncallEventQuery) GroupBy(field string, fields ...string) *OncallEven
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallEvent.Query().
-//		Select(oncallevent.FieldProviderID).
+//		Select(oncallevent.FieldTenantID).
 //		Scan(ctx, &v)
 func (oeq *OncallEventQuery) Select(fields ...string) *OncallEventSelect {
 	oeq.ctx.Fields = append(oeq.ctx.Fields, fields...)
@@ -453,7 +489,8 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*OncallEvent{}
 		_spec       = oeq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
+			oeq.withTenant != nil,
 			oeq.withRoster != nil,
 			oeq.withAlert != nil,
 			oeq.withAnnotations != nil,
@@ -480,6 +517,12 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := oeq.withTenant; query != nil {
+		if err := oeq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallEvent, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := oeq.withRoster; query != nil {
 		if err := oeq.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallEvent, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
@@ -502,6 +545,35 @@ func (oeq *OncallEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
+func (oeq *OncallEventQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallEvent)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (oeq *OncallEventQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallEvent, init func(*OncallEvent), assign func(*OncallEvent, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallEvent)
@@ -618,6 +690,9 @@ func (oeq *OncallEventQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallevent.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oeq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallevent.FieldTenantID)
 		}
 		if oeq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallevent.FieldRosterID)

@@ -12,10 +12,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -25,6 +25,12 @@ type TeamCreate struct {
 	mutation *TeamMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (tc *TeamCreate) SetTenantID(i int) *TeamCreate {
+	tc.mutation.SetTenantID(i)
+	return tc
 }
 
 // SetSlug sets the "slug" field.
@@ -95,6 +101,11 @@ func (tc *TeamCreate) SetNillableID(u *uuid.UUID) *TeamCreate {
 	return tc
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (tc *TeamCreate) SetTenant(t *Tenant) *TeamCreate {
+	return tc.SetTenantID(t.ID)
+}
+
 // AddUserIDs adds the "users" edge to the User entity by IDs.
 func (tc *TeamCreate) AddUserIDs(ids ...uuid.UUID) *TeamCreate {
 	tc.mutation.AddUserIDs(ids...)
@@ -123,21 +134,6 @@ func (tc *TeamCreate) AddOncallRosters(o ...*OncallRoster) *TeamCreate {
 		ids[i] = o[i].ID
 	}
 	return tc.AddOncallRosterIDs(ids...)
-}
-
-// AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
-func (tc *TeamCreate) AddIncidentAssignmentIDs(ids ...int) *TeamCreate {
-	tc.mutation.AddIncidentAssignmentIDs(ids...)
-	return tc
-}
-
-// AddIncidentAssignments adds the "incident_assignments" edges to the IncidentTeamAssignment entity.
-func (tc *TeamCreate) AddIncidentAssignments(i ...*IncidentTeamAssignment) *TeamCreate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return tc.AddIncidentAssignmentIDs(ids...)
 }
 
 // AddScheduledMeetingIDs adds the "scheduled_meetings" edge to the MeetingSchedule entity by IDs.
@@ -204,11 +200,17 @@ func (tc *TeamCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TeamCreate) check() error {
+	if _, ok := tc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Team.tenant_id"`)}
+	}
 	if _, ok := tc.mutation.Slug(); !ok {
 		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Team.slug"`)}
 	}
 	if _, ok := tc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Team.name"`)}
+	}
+	if len(tc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Team.tenant"`)}
 	}
 	return nil
 }
@@ -266,6 +268,23 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		_spec.SetField(team.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
 	}
+	if nodes := tc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   team.TenantTable,
+			Columns: []string{team.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := tc.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -298,22 +317,6 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := tc.mutation.IncidentAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := tc.mutation.ScheduledMeetingsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -337,7 +340,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Team.Create().
-//		SetSlug(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -346,7 +349,7 @@ func (tc *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TeamUpsert) {
-//			SetSlug(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tc *TeamCreate) OnConflict(opts ...sql.ConflictOption) *TeamUpsertOne {
@@ -476,6 +479,9 @@ func (u *TeamUpsertOne) UpdateNewValues() *TeamUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(team.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(team.FieldTenantID)
 		}
 	}))
 	return u
@@ -735,7 +741,7 @@ func (tcb *TeamCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TeamUpsert) {
-//			SetSlug(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tcb *TeamCreateBulk) OnConflict(opts ...sql.ConflictOption) *TeamUpsertBulk {
@@ -781,6 +787,9 @@ func (u *TeamUpsertBulk) UpdateNewValues() *TeamUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(team.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(team.FieldTenantID)
 			}
 		}
 	}))

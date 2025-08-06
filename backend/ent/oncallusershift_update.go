@@ -272,6 +272,9 @@ func (ousu *OncallUserShiftUpdate) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallUserShift.role": %w`, err)}
 		}
 	}
+	if ousu.mutation.TenantCleared() && len(ousu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShift.tenant"`)
+	}
 	if ousu.mutation.UserCleared() && len(ousu.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShift.user"`)
 	}
@@ -734,6 +737,9 @@ func (ousuo *OncallUserShiftUpdateOne) check() error {
 		if err := oncallusershift.RoleValidator(v); err != nil {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OncallUserShift.role": %w`, err)}
 		}
+	}
+	if ousuo.mutation.TenantCleared() && len(ousuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShift.tenant"`)
 	}
 	if ousuo.mutation.UserCleared() && len(ousuo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShift.user"`)

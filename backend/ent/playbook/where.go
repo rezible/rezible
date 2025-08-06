@@ -54,6 +54,11 @@ func IDLTE(id uuid.UUID) predicate.Playbook {
 	return predicate.Playbook(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.Playbook {
+	return predicate.Playbook(sql.FieldEQ(FieldTenantID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Playbook {
 	return predicate.Playbook(sql.FieldEQ(FieldTitle, v))
@@ -67,6 +72,26 @@ func ProviderID(v string) predicate.Playbook {
 // Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
 func Content(v []byte) predicate.Playbook {
 	return predicate.Playbook(sql.FieldEQ(FieldContent, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.Playbook {
+	return predicate.Playbook(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.Playbook {
+	return predicate.Playbook(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.Playbook {
+	return predicate.Playbook(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.Playbook {
+	return predicate.Playbook(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -237,6 +262,29 @@ func ContentLT(v []byte) predicate.Playbook {
 // ContentLTE applies the LTE predicate on the "content" field.
 func ContentLTE(v []byte) predicate.Playbook {
 	return predicate.Playbook(sql.FieldLTE(FieldContent, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.Playbook {
+	return predicate.Playbook(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.Playbook {
+	return predicate.Playbook(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAlerts applies the HasEdge predicate on the "alerts" edge.

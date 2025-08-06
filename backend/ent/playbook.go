@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // Playbook is the model entity for the Playbook schema.
@@ -17,6 +18,8 @@ type Playbook struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
@@ -31,17 +34,30 @@ type Playbook struct {
 
 // PlaybookEdges holds the relations/edges for other nodes in the graph.
 type PlaybookEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Alerts holds the value of the alerts edge.
 	Alerts []*Alert `json:"alerts,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e PlaybookEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // AlertsOrErr returns the Alerts value or an error if the edge
 // was not loaded in eager-loading.
 func (e PlaybookEdges) AlertsOrErr() ([]*Alert, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Alerts, nil
 	}
 	return nil, &NotLoadedError{edge: "alerts"}
@@ -54,6 +70,8 @@ func (*Playbook) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case playbook.FieldContent:
 			values[i] = new([]byte)
+		case playbook.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case playbook.FieldTitle, playbook.FieldProviderID:
 			values[i] = new(sql.NullString)
 		case playbook.FieldID:
@@ -78,6 +96,12 @@ func (pl *Playbook) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				pl.ID = *value
+			}
+		case playbook.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				pl.TenantID = int(value.Int64)
 			}
 		case playbook.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -110,6 +134,11 @@ func (pl *Playbook) Value(name string) (ent.Value, error) {
 	return pl.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the Playbook entity.
+func (pl *Playbook) QueryTenant() *TenantQuery {
+	return NewPlaybookClient(pl.config).QueryTenant(pl)
+}
+
 // QueryAlerts queries the "alerts" edge of the Playbook entity.
 func (pl *Playbook) QueryAlerts() *AlertQuery {
 	return NewPlaybookClient(pl.config).QueryAlerts(pl)
@@ -138,6 +167,9 @@ func (pl *Playbook) String() string {
 	var builder strings.Builder
 	builder.WriteString("Playbook(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pl.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", pl.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(pl.Title)
 	builder.WriteString(", ")

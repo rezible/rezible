@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentSeverityQuery is the builder for querying IncidentSeverity entities.
@@ -27,6 +28,7 @@ type IncidentSeverityQuery struct {
 	order                []incidentseverity.OrderOption
 	inters               []Interceptor
 	predicates           []predicate.IncidentSeverity
+	withTenant           *TenantQuery
 	withIncidents        *IncidentQuery
 	withDebriefQuestions *IncidentDebriefQuestionQuery
 	modifiers            []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (isq *IncidentSeverityQuery) Unique(unique bool) *IncidentSeverityQuery {
 func (isq *IncidentSeverityQuery) Order(o ...incidentseverity.OrderOption) *IncidentSeverityQuery {
 	isq.order = append(isq.order, o...)
 	return isq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (isq *IncidentSeverityQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: isq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := isq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := isq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentseverity.Table, incidentseverity.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.TenantTable, incidentseverity.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(isq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryIncidents chains the current query on the "incidents" edge.
@@ -302,6 +326,7 @@ func (isq *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
 		order:                append([]incidentseverity.OrderOption{}, isq.order...),
 		inters:               append([]Interceptor{}, isq.inters...),
 		predicates:           append([]predicate.IncidentSeverity{}, isq.predicates...),
+		withTenant:           isq.withTenant.Clone(),
 		withIncidents:        isq.withIncidents.Clone(),
 		withDebriefQuestions: isq.withDebriefQuestions.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (isq *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
 		path:      isq.path,
 		modifiers: append([]func(*sql.Selector){}, isq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (isq *IncidentSeverityQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentSeverityQuery {
+	query := (&TenantClient{config: isq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	isq.withTenant = query
+	return isq
 }
 
 // WithIncidents tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (isq *IncidentSeverityQuery) WithDebriefQuestions(opts ...func(*IncidentDeb
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentSeverity.Query().
-//		GroupBy(incidentseverity.FieldArchiveTime).
+//		GroupBy(incidentseverity.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (isq *IncidentSeverityQuery) GroupBy(field string, fields ...string) *IncidentSeverityGroupBy {
@@ -362,11 +398,11 @@ func (isq *IncidentSeverityQuery) GroupBy(field string, fields ...string) *Incid
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentSeverity.Query().
-//		Select(incidentseverity.FieldArchiveTime).
+//		Select(incidentseverity.FieldTenantID).
 //		Scan(ctx, &v)
 func (isq *IncidentSeverityQuery) Select(fields ...string) *IncidentSeveritySelect {
 	isq.ctx.Fields = append(isq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (isq *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*IncidentSeverity{}
 		_spec       = isq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			isq.withTenant != nil,
 			isq.withIncidents != nil,
 			isq.withDebriefQuestions != nil,
 		}
@@ -443,6 +480,12 @@ func (isq *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := isq.withTenant; query != nil {
+		if err := isq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentSeverity, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := isq.withIncidents; query != nil {
 		if err := isq.loadIncidents(ctx, query, nodes,
 			func(n *IncidentSeverity) { n.Edges.Incidents = []*Incident{} },
@@ -462,6 +505,35 @@ func (isq *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	return nodes, nil
 }
 
+func (isq *IncidentSeverityQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentSeverity)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (isq *IncidentSeverityQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *Incident)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentSeverity)
@@ -581,6 +653,9 @@ func (isq *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidentseverity.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if isq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentseverity.FieldTenantID)
 		}
 	}
 	if ps := isq.predicates; len(ps) > 0 {

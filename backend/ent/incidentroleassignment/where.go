@@ -54,9 +54,9 @@ func IDLTE(id uuid.UUID) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(sql.FieldLTE(FieldID, id))
 }
 
-// RoleID applies equality check predicate on the "role_id" field. It's identical to RoleIDEQ.
-func RoleID(v uuid.UUID) predicate.IncidentRoleAssignment {
-	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldRoleID, v))
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldTenantID, v))
 }
 
 // IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
@@ -69,24 +69,29 @@ func UserID(v uuid.UUID) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldUserID, v))
 }
 
-// RoleIDEQ applies the EQ predicate on the "role_id" field.
-func RoleIDEQ(v uuid.UUID) predicate.IncidentRoleAssignment {
+// RoleID applies equality check predicate on the "role_id" field. It's identical to RoleIDEQ.
+func RoleID(v uuid.UUID) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldRoleID, v))
 }
 
-// RoleIDNEQ applies the NEQ predicate on the "role_id" field.
-func RoleIDNEQ(v uuid.UUID) predicate.IncidentRoleAssignment {
-	return predicate.IncidentRoleAssignment(sql.FieldNEQ(FieldRoleID, v))
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldTenantID, v))
 }
 
-// RoleIDIn applies the In predicate on the "role_id" field.
-func RoleIDIn(vs ...uuid.UUID) predicate.IncidentRoleAssignment {
-	return predicate.IncidentRoleAssignment(sql.FieldIn(FieldRoleID, vs...))
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldNEQ(FieldTenantID, v))
 }
 
-// RoleIDNotIn applies the NotIn predicate on the "role_id" field.
-func RoleIDNotIn(vs ...uuid.UUID) predicate.IncidentRoleAssignment {
-	return predicate.IncidentRoleAssignment(sql.FieldNotIn(FieldRoleID, vs...))
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // IncidentIDEQ applies the EQ predicate on the "incident_id" field.
@@ -129,21 +134,41 @@ func UserIDNotIn(vs ...uuid.UUID) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(sql.FieldNotIn(FieldUserID, vs...))
 }
 
-// HasRole applies the HasEdge predicate on the "role" edge.
-func HasRole() predicate.IncidentRoleAssignment {
+// RoleIDEQ applies the EQ predicate on the "role_id" field.
+func RoleIDEQ(v uuid.UUID) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldEQ(FieldRoleID, v))
+}
+
+// RoleIDNEQ applies the NEQ predicate on the "role_id" field.
+func RoleIDNEQ(v uuid.UUID) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldNEQ(FieldRoleID, v))
+}
+
+// RoleIDIn applies the In predicate on the "role_id" field.
+func RoleIDIn(vs ...uuid.UUID) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldIn(FieldRoleID, vs...))
+}
+
+// RoleIDNotIn applies the NotIn predicate on the "role_id" field.
+func RoleIDNotIn(vs ...uuid.UUID) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(sql.FieldNotIn(FieldRoleID, vs...))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, RoleTable, RoleColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasRoleWith applies the HasEdge predicate on the "role" edge with a given conditions (other predicates).
-func HasRoleWith(preds ...predicate.IncidentRole) predicate.IncidentRoleAssignment {
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(func(s *sql.Selector) {
-		step := newRoleStep()
+		step := newTenantStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -190,6 +215,29 @@ func HasUser() predicate.IncidentRoleAssignment {
 func HasUserWith(preds ...predicate.User) predicate.IncidentRoleAssignment {
 	return predicate.IncidentRoleAssignment(func(s *sql.Selector) {
 		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRole applies the HasEdge predicate on the "role" edge.
+func HasRole() predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, RoleTable, RoleColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoleWith applies the HasEdge predicate on the "role" edge with a given conditions (other predicates).
+func HasRoleWith(preds ...predicate.IncidentRole) predicate.IncidentRoleAssignment {
+	return predicate.IncidentRoleAssignment(func(s *sql.Selector) {
+		step := newRoleStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

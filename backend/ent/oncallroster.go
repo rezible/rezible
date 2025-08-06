@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallRoster is the model entity for the OncallRoster schema.
@@ -19,6 +20,8 @@ type OncallRoster struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
@@ -43,6 +46,8 @@ type OncallRoster struct {
 
 // OncallRosterEdges holds the relations/edges for other nodes in the graph.
 type OncallRosterEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Schedules holds the value of the schedules edge.
 	Schedules []*OncallSchedule `json:"schedules,omitempty"`
 	// HandoverTemplate holds the value of the handover_template edge.
@@ -61,13 +66,24 @@ type OncallRosterEdges struct {
 	Metrics []*OncallRosterMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallRosterEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // SchedulesOrErr returns the Schedules value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) SchedulesOrErr() ([]*OncallSchedule, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Schedules, nil
 	}
 	return nil, &NotLoadedError{edge: "schedules"}
@@ -78,7 +94,7 @@ func (e OncallRosterEdges) SchedulesOrErr() ([]*OncallSchedule, error) {
 func (e OncallRosterEdges) HandoverTemplateOrErr() (*OncallHandoverTemplate, error) {
 	if e.HandoverTemplate != nil {
 		return e.HandoverTemplate, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: oncallhandovertemplate.Label}
 	}
 	return nil, &NotLoadedError{edge: "handover_template"}
@@ -87,7 +103,7 @@ func (e OncallRosterEdges) HandoverTemplateOrErr() (*OncallHandoverTemplate, err
 // EventsOrErr returns the Events value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) EventsOrErr() ([]*OncallEvent, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Events, nil
 	}
 	return nil, &NotLoadedError{edge: "events"}
@@ -96,7 +112,7 @@ func (e OncallRosterEdges) EventsOrErr() ([]*OncallEvent, error) {
 // AnnotationsOrErr returns the Annotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Annotations, nil
 	}
 	return nil, &NotLoadedError{edge: "annotations"}
@@ -105,7 +121,7 @@ func (e OncallRosterEdges) AnnotationsOrErr() ([]*OncallAnnotation, error) {
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -114,7 +130,7 @@ func (e OncallRosterEdges) TeamsOrErr() ([]*Team, error) {
 // ShiftsOrErr returns the Shifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.Shifts, nil
 	}
 	return nil, &NotLoadedError{edge: "shifts"}
@@ -123,7 +139,7 @@ func (e OncallRosterEdges) ShiftsOrErr() ([]*OncallUserShift, error) {
 // UserWatchersOrErr returns the UserWatchers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.UserWatchers, nil
 	}
 	return nil, &NotLoadedError{edge: "user_watchers"}
@@ -132,7 +148,7 @@ func (e OncallRosterEdges) UserWatchersOrErr() ([]*User, error) {
 // MetricsOrErr returns the Metrics value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallRosterEdges) MetricsOrErr() ([]*OncallRosterMetrics, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.Metrics, nil
 	}
 	return nil, &NotLoadedError{edge: "metrics"}
@@ -143,6 +159,8 @@ func (*OncallRoster) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallroster.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallroster.FieldName, oncallroster.FieldSlug, oncallroster.FieldProviderID, oncallroster.FieldTimezone, oncallroster.FieldChatHandle, oncallroster.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case oncallroster.FieldArchiveTime:
@@ -169,6 +187,12 @@ func (or *OncallRoster) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				or.ID = *value
+			}
+		case oncallroster.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				or.TenantID = int(value.Int64)
 			}
 		case oncallroster.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -229,6 +253,11 @@ func (or *OncallRoster) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (or *OncallRoster) Value(name string) (ent.Value, error) {
 	return or.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the OncallRoster entity.
+func (or *OncallRoster) QueryTenant() *TenantQuery {
+	return NewOncallRosterClient(or.config).QueryTenant(or)
 }
 
 // QuerySchedules queries the "schedules" edge of the OncallRoster entity.
@@ -294,6 +323,9 @@ func (or *OncallRoster) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallRoster(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", or.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", or.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(or.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")

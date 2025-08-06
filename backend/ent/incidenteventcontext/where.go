@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentEventContext {
 	return predicate.IncidentEventContext(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(sql.FieldEQ(FieldTenantID, v))
+}
+
 // SystemState applies equality check predicate on the "system_state" field. It's identical to SystemStateEQ.
 func SystemState(v string) predicate.IncidentEventContext {
 	return predicate.IncidentEventContext(sql.FieldEQ(FieldSystemState, v))
@@ -69,6 +74,26 @@ func DecisionRationale(v string) predicate.IncidentEventContext {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.IncidentEventContext {
 	return predicate.IncidentEventContext(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // SystemStateEQ applies the EQ predicate on the "system_state" field.
@@ -279,6 +304,29 @@ func CreatedAtLT(v time.Time) predicate.IncidentEventContext {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.IncidentEventContext {
 	return predicate.IncidentEventContext(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentEventContext {
+	return predicate.IncidentEventContext(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasEvent applies the HasEdge predicate on the "event" edge.

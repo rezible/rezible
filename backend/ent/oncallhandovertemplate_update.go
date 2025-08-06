@@ -147,6 +147,14 @@ func (ohtu *OncallHandoverTemplateUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ohtu *OncallHandoverTemplateUpdate) check() error {
+	if ohtu.mutation.TenantCleared() && len(ohtu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallHandoverTemplate.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (ohtu *OncallHandoverTemplateUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdate {
 	ohtu.modifiers = append(ohtu.modifiers, modifiers...)
@@ -154,6 +162,9 @@ func (ohtu *OncallHandoverTemplateUpdate) Modify(modifiers ...func(u *sql.Update
 }
 
 func (ohtu *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := ohtu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallhandovertemplate.Table, oncallhandovertemplate.Columns, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
 	if ps := ohtu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -370,6 +381,14 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ohtuo *OncallHandoverTemplateUpdateOne) check() error {
+	if ohtuo.mutation.TenantCleared() && len(ohtuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallHandoverTemplate.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (ohtuo *OncallHandoverTemplateUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallHandoverTemplateUpdateOne {
 	ohtuo.modifiers = append(ohtuo.modifiers, modifiers...)
@@ -377,6 +396,9 @@ func (ohtuo *OncallHandoverTemplateUpdateOne) Modify(modifiers ...func(u *sql.Up
 }
 
 func (ohtuo *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *OncallHandoverTemplate, err error) {
+	if err := ohtuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallhandovertemplate.Table, oncallhandovertemplate.Columns, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
 	id, ok := ohtuo.mutation.ID()
 	if !ok {

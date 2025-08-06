@@ -16,6 +16,8 @@ const (
 	Label = "retrospective_review"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldRetrospectiveID holds the string denoting the retrospective_id field in the database.
 	FieldRetrospectiveID = "retrospective_id"
 	// FieldRequesterID holds the string denoting the requester_id field in the database.
@@ -24,6 +26,8 @@ const (
 	FieldReviewerID = "reviewer_id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeRequester holds the string denoting the requester edge name in mutations.
@@ -34,6 +38,13 @@ const (
 	EdgeDiscussion = "discussion"
 	// Table holds the table name of the retrospectivereview in the database.
 	Table = "retrospective_reviews"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "retrospective_reviews"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospective_reviews"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -67,6 +78,7 @@ const (
 // Columns holds all SQL columns for retrospectivereview fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldRetrospectiveID,
 	FieldRequesterID,
 	FieldReviewerID,
@@ -138,6 +150,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByRetrospectiveID orders the results by the retrospective_id field.
 func ByRetrospectiveID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRetrospectiveID, opts...).ToFunc()
@@ -156,6 +173,13 @@ func ByReviewerID(opts ...sql.OrderTermOption) OrderOption {
 // ByState orders the results by the state field.
 func ByState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldState, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByRetrospectiveField orders the results by retrospective field.
@@ -184,6 +208,13 @@ func ByDiscussionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newDiscussionStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

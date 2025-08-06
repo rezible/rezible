@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemHazardQuery is the builder for querying SystemHazard entities.
@@ -28,6 +29,7 @@ type SystemHazardQuery struct {
 	order             []systemhazard.OrderOption
 	inters            []Interceptor
 	predicates        []predicate.SystemHazard
+	withTenant        *TenantQuery
 	withComponents    *SystemComponentQuery
 	withConstraints   *SystemComponentConstraintQuery
 	withRelationships *SystemComponentRelationshipQuery
@@ -66,6 +68,28 @@ func (shq *SystemHazardQuery) Unique(unique bool) *SystemHazardQuery {
 func (shq *SystemHazardQuery) Order(o ...systemhazard.OrderOption) *SystemHazardQuery {
 	shq.order = append(shq.order, o...)
 	return shq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (shq *SystemHazardQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: shq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := shq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := shq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.TenantTable, systemhazard.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(shq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
@@ -326,6 +350,7 @@ func (shq *SystemHazardQuery) Clone() *SystemHazardQuery {
 		order:             append([]systemhazard.OrderOption{}, shq.order...),
 		inters:            append([]Interceptor{}, shq.inters...),
 		predicates:        append([]predicate.SystemHazard{}, shq.predicates...),
+		withTenant:        shq.withTenant.Clone(),
 		withComponents:    shq.withComponents.Clone(),
 		withConstraints:   shq.withConstraints.Clone(),
 		withRelationships: shq.withRelationships.Clone(),
@@ -334,6 +359,17 @@ func (shq *SystemHazardQuery) Clone() *SystemHazardQuery {
 		path:      shq.path,
 		modifiers: append([]func(*sql.Selector){}, shq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (shq *SystemHazardQuery) WithTenant(opts ...func(*TenantQuery)) *SystemHazardQuery {
+	query := (&TenantClient{config: shq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	shq.withTenant = query
+	return shq
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
@@ -375,12 +411,12 @@ func (shq *SystemHazardQuery) WithRelationships(opts ...func(*SystemComponentRel
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemHazard.Query().
-//		GroupBy(systemhazard.FieldName).
+//		GroupBy(systemhazard.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (shq *SystemHazardQuery) GroupBy(field string, fields ...string) *SystemHazardGroupBy {
@@ -398,11 +434,11 @@ func (shq *SystemHazardQuery) GroupBy(field string, fields ...string) *SystemHaz
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemHazard.Query().
-//		Select(systemhazard.FieldName).
+//		Select(systemhazard.FieldTenantID).
 //		Scan(ctx, &v)
 func (shq *SystemHazardQuery) Select(fields ...string) *SystemHazardSelect {
 	shq.ctx.Fields = append(shq.ctx.Fields, fields...)
@@ -453,7 +489,8 @@ func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*SystemHazard{}
 		_spec       = shq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
+			shq.withTenant != nil,
 			shq.withComponents != nil,
 			shq.withConstraints != nil,
 			shq.withRelationships != nil,
@@ -479,6 +516,12 @@ func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := shq.withTenant; query != nil {
+		if err := shq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemHazard, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := shq.withComponents; query != nil {
 		if err := shq.loadComponents(ctx, query, nodes,
@@ -508,6 +551,35 @@ func (shq *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
+func (shq *SystemHazardQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemHazard)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (shq *SystemHazardQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemHazard, init func(*SystemHazard), assign func(*SystemHazard, *SystemComponent)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*SystemHazard)
@@ -719,6 +791,9 @@ func (shq *SystemHazardQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemhazard.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if shq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemhazard.FieldTenantID)
 		}
 	}
 	if ps := shq.predicates; len(ps) > 0 {

@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentKindCreate is the builder for creating a SystemComponentKind entity.
@@ -23,6 +24,12 @@ type SystemComponentKindCreate struct {
 	mutation *SystemComponentKindMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (sckc *SystemComponentKindCreate) SetTenantID(i int) *SystemComponentKindCreate {
+	sckc.mutation.SetTenantID(i)
+	return sckc
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -85,6 +92,11 @@ func (sckc *SystemComponentKindCreate) SetNillableID(u *uuid.UUID) *SystemCompon
 		sckc.SetID(*u)
 	}
 	return sckc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (sckc *SystemComponentKindCreate) SetTenant(t *Tenant) *SystemComponentKindCreate {
+	return sckc.SetTenantID(t.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -158,11 +170,17 @@ func (sckc *SystemComponentKindCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sckc *SystemComponentKindCreate) check() error {
+	if _, ok := sckc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentKind.tenant_id"`)}
+	}
 	if _, ok := sckc.mutation.Label(); !ok {
 		return &ValidationError{Name: "label", err: errors.New(`ent: missing required field "SystemComponentKind.label"`)}
 	}
 	if _, ok := sckc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentKind.created_at"`)}
+	}
+	if len(sckc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentKind.tenant"`)}
 	}
 	return nil
 }
@@ -216,6 +234,23 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 		_spec.SetField(systemcomponentkind.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := sckc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponentkind.TenantTable,
+			Columns: []string{systemcomponentkind.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := sckc.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -239,7 +274,7 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 // of the `INSERT` statement. For example:
 //
 //	client.SystemComponentKind.Create().
-//		SetProviderID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -248,7 +283,7 @@ func (sckc *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlg
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentKindUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sckc *SystemComponentKindCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentKindUpsertOne {
@@ -360,6 +395,9 @@ func (u *SystemComponentKindUpsertOne) UpdateNewValues() *SystemComponentKindUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemcomponentkind.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemcomponentkind.FieldTenantID)
 		}
 	}))
 	return u
@@ -598,7 +636,7 @@ func (sckcb *SystemComponentKindCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentKindUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sckcb *SystemComponentKindCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentKindUpsertBulk {
@@ -644,6 +682,9 @@ func (u *SystemComponentKindUpsertBulk) UpdateNewValues() *SystemComponentKindUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemcomponentkind.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemcomponentkind.FieldTenantID)
 			}
 		}
 	}))

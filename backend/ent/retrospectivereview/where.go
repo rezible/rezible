@@ -54,6 +54,11 @@ func IDLTE(id uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldEQ(FieldTenantID, v))
+}
+
 // RetrospectiveID applies equality check predicate on the "retrospective_id" field. It's identical to RetrospectiveIDEQ.
 func RetrospectiveID(v uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldEQ(FieldRetrospectiveID, v))
@@ -67,6 +72,26 @@ func RequesterID(v uuid.UUID) predicate.RetrospectiveReview {
 // ReviewerID applies equality check predicate on the "reviewer_id" field. It's identical to ReviewerIDEQ.
 func ReviewerID(v uuid.UUID) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldEQ(FieldReviewerID, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // RetrospectiveIDEQ applies the EQ predicate on the "retrospective_id" field.
@@ -147,6 +172,29 @@ func StateIn(vs ...State) predicate.RetrospectiveReview {
 // StateNotIn applies the NotIn predicate on the "state" field.
 func StateNotIn(vs ...State) predicate.RetrospectiveReview {
 	return predicate.RetrospectiveReview(sql.FieldNotIn(FieldState, vs...))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.RetrospectiveReview {
+	return predicate.RetrospectiveReview(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasRetrospective applies the HasEdge predicate on the "retrospective" edge.

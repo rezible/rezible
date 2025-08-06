@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentLink is the model entity for the IncidentLink schema.
@@ -18,6 +19,8 @@ type IncidentLink struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// LinkedIncidentID holds the value of the "linked_incident_id" field.
@@ -34,13 +37,26 @@ type IncidentLink struct {
 
 // IncidentLinkEdges holds the relations/edges for other nodes in the graph.
 type IncidentLinkEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// LinkedIncident holds the value of the linked_incident edge.
 	LinkedIncident *Incident `json:"linked_incident,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentLinkEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -48,7 +64,7 @@ type IncidentLinkEdges struct {
 func (e IncidentLinkEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -59,7 +75,7 @@ func (e IncidentLinkEdges) IncidentOrErr() (*Incident, error) {
 func (e IncidentLinkEdges) LinkedIncidentOrErr() (*Incident, error) {
 	if e.LinkedIncident != nil {
 		return e.LinkedIncident, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "linked_incident"}
@@ -70,7 +86,7 @@ func (*IncidentLink) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case incidentlink.FieldID:
+		case incidentlink.FieldID, incidentlink.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case incidentlink.FieldDescription, incidentlink.FieldLinkType:
 			values[i] = new(sql.NullString)
@@ -97,6 +113,12 @@ func (il *IncidentLink) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			il.ID = int(value.Int64)
+		case incidentlink.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				il.TenantID = int(value.Int64)
+			}
 		case incidentlink.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field incident_id", values[i])
@@ -134,6 +156,11 @@ func (il *IncidentLink) Value(name string) (ent.Value, error) {
 	return il.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentLink entity.
+func (il *IncidentLink) QueryTenant() *TenantQuery {
+	return NewIncidentLinkClient(il.config).QueryTenant(il)
+}
+
 // QueryIncident queries the "incident" edge of the IncidentLink entity.
 func (il *IncidentLink) QueryIncident() *IncidentQuery {
 	return NewIncidentLinkClient(il.config).QueryIncident(il)
@@ -167,6 +194,9 @@ func (il *IncidentLink) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentLink(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", il.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", il.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", il.IncidentID))
 	builder.WriteString(", ")

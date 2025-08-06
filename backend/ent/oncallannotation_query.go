@@ -14,12 +14,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -30,10 +31,11 @@ type OncallAnnotationQuery struct {
 	order             []oncallannotation.OrderOption
 	inters            []Interceptor
 	predicates        []predicate.OncallAnnotation
+	withTenant        *TenantQuery
 	withEvent         *OncallEventQuery
 	withRoster        *OncallRosterQuery
 	withCreator       *UserQuery
-	withAlertFeedback *OncallAnnotationAlertFeedbackQuery
+	withAlertFeedback *AlertFeedbackQuery
 	withHandovers     *OncallUserShiftHandoverQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -70,6 +72,28 @@ func (oaq *OncallAnnotationQuery) Unique(unique bool) *OncallAnnotationQuery {
 func (oaq *OncallAnnotationQuery) Order(o ...oncallannotation.OrderOption) *OncallAnnotationQuery {
 	oaq.order = append(oaq.order, o...)
 	return oaq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (oaq *OncallAnnotationQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: oaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.TenantTable, oncallannotation.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
@@ -139,8 +163,8 @@ func (oaq *OncallAnnotationQuery) QueryCreator() *UserQuery {
 }
 
 // QueryAlertFeedback chains the current query on the "alert_feedback" edge.
-func (oaq *OncallAnnotationQuery) QueryAlertFeedback() *OncallAnnotationAlertFeedbackQuery {
-	query := (&OncallAnnotationAlertFeedbackClient{config: oaq.config}).Query()
+func (oaq *OncallAnnotationQuery) QueryAlertFeedback() *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: oaq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oaq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -151,7 +175,7 @@ func (oaq *OncallAnnotationQuery) QueryAlertFeedback() *OncallAnnotationAlertFee
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, selector),
-			sqlgraph.To(oncallannotationalertfeedback.Table, oncallannotationalertfeedback.FieldID),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallannotation.AlertFeedbackTable, oncallannotation.AlertFeedbackColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(oaq.driver.Dialect(), step)
@@ -374,6 +398,7 @@ func (oaq *OncallAnnotationQuery) Clone() *OncallAnnotationQuery {
 		order:             append([]oncallannotation.OrderOption{}, oaq.order...),
 		inters:            append([]Interceptor{}, oaq.inters...),
 		predicates:        append([]predicate.OncallAnnotation{}, oaq.predicates...),
+		withTenant:        oaq.withTenant.Clone(),
 		withEvent:         oaq.withEvent.Clone(),
 		withRoster:        oaq.withRoster.Clone(),
 		withCreator:       oaq.withCreator.Clone(),
@@ -384,6 +409,17 @@ func (oaq *OncallAnnotationQuery) Clone() *OncallAnnotationQuery {
 		path:      oaq.path,
 		modifiers: append([]func(*sql.Selector){}, oaq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (oaq *OncallAnnotationQuery) WithTenant(opts ...func(*TenantQuery)) *OncallAnnotationQuery {
+	query := (&TenantClient{config: oaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oaq.withTenant = query
+	return oaq
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
@@ -421,8 +457,8 @@ func (oaq *OncallAnnotationQuery) WithCreator(opts ...func(*UserQuery)) *OncallA
 
 // WithAlertFeedback tells the query-builder to eager-load the nodes that are connected to
 // the "alert_feedback" edge. The optional arguments are used to configure the query builder of the edge.
-func (oaq *OncallAnnotationQuery) WithAlertFeedback(opts ...func(*OncallAnnotationAlertFeedbackQuery)) *OncallAnnotationQuery {
-	query := (&OncallAnnotationAlertFeedbackClient{config: oaq.config}).Query()
+func (oaq *OncallAnnotationQuery) WithAlertFeedback(opts ...func(*AlertFeedbackQuery)) *OncallAnnotationQuery {
+	query := (&AlertFeedbackClient{config: oaq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -447,12 +483,12 @@ func (oaq *OncallAnnotationQuery) WithHandovers(opts ...func(*OncallUserShiftHan
 // Example:
 //
 //	var v []struct {
-//		EventID uuid.UUID `json:"event_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallAnnotation.Query().
-//		GroupBy(oncallannotation.FieldEventID).
+//		GroupBy(oncallannotation.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oaq *OncallAnnotationQuery) GroupBy(field string, fields ...string) *OncallAnnotationGroupBy {
@@ -470,11 +506,11 @@ func (oaq *OncallAnnotationQuery) GroupBy(field string, fields ...string) *Oncal
 // Example:
 //
 //	var v []struct {
-//		EventID uuid.UUID `json:"event_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallAnnotation.Query().
-//		Select(oncallannotation.FieldEventID).
+//		Select(oncallannotation.FieldTenantID).
 //		Scan(ctx, &v)
 func (oaq *OncallAnnotationQuery) Select(fields ...string) *OncallAnnotationSelect {
 	oaq.ctx.Fields = append(oaq.ctx.Fields, fields...)
@@ -525,7 +561,8 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*OncallAnnotation{}
 		_spec       = oaq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
+			oaq.withTenant != nil,
 			oaq.withEvent != nil,
 			oaq.withRoster != nil,
 			oaq.withCreator != nil,
@@ -554,6 +591,12 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := oaq.withTenant; query != nil {
+		if err := oaq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallAnnotation, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := oaq.withEvent; query != nil {
 		if err := oaq.loadEvent(ctx, query, nodes, nil,
 			func(n *OncallAnnotation, e *OncallEvent) { n.Edges.Event = e }); err != nil {
@@ -574,7 +617,7 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	}
 	if query := oaq.withAlertFeedback; query != nil {
 		if err := oaq.loadAlertFeedback(ctx, query, nodes, nil,
-			func(n *OncallAnnotation, e *OncallAnnotationAlertFeedback) { n.Edges.AlertFeedback = e }); err != nil {
+			func(n *OncallAnnotation, e *AlertFeedback) { n.Edges.AlertFeedback = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -590,6 +633,35 @@ func (oaq *OncallAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	return nodes, nil
 }
 
+func (oaq *OncallAnnotationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallAnnotation)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (oaq *OncallAnnotationQuery) loadEvent(ctx context.Context, query *OncallEventQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallAnnotation)
@@ -677,7 +749,7 @@ func (oaq *OncallAnnotationQuery) loadCreator(ctx context.Context, query *UserQu
 	}
 	return nil
 }
-func (oaq *OncallAnnotationQuery) loadAlertFeedback(ctx context.Context, query *OncallAnnotationAlertFeedbackQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *OncallAnnotationAlertFeedback)) error {
+func (oaq *OncallAnnotationQuery) loadAlertFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*OncallAnnotation, init func(*OncallAnnotation), assign func(*OncallAnnotation, *AlertFeedback)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallAnnotation)
 	for i := range nodes {
@@ -685,9 +757,9 @@ func (oaq *OncallAnnotationQuery) loadAlertFeedback(ctx context.Context, query *
 		nodeids[nodes[i].ID] = nodes[i]
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(oncallannotationalertfeedback.FieldAnnotationID)
+		query.ctx.AppendFieldOnce(alertfeedback.FieldAnnotationID)
 	}
-	query.Where(predicate.OncallAnnotationAlertFeedback(func(s *sql.Selector) {
+	query.Where(predicate.AlertFeedback(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(oncallannotation.AlertFeedbackColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
@@ -793,6 +865,9 @@ func (oaq *OncallAnnotationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallannotation.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oaq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallannotation.FieldTenantID)
 		}
 		if oaq.withEvent != nil {
 			_spec.Node.AddColumnOnce(oncallannotation.FieldEventID)

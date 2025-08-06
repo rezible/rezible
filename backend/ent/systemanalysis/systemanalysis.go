@@ -16,10 +16,14 @@ const (
 	Label = "system_analysis"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeComponents holds the string denoting the components edge name in mutations.
@@ -30,6 +34,13 @@ const (
 	EdgeAnalysisComponents = "analysis_components"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "system_analyses"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -61,6 +72,7 @@ const (
 // Columns holds all SQL columns for systemanalysis fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -107,6 +119,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -115,6 +132,13 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByRetrospectiveField orders the results by retrospective field.
@@ -164,6 +188,13 @@ func ByAnalysisComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOptio
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAnalysisComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newRetrospectiveStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

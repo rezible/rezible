@@ -32,20 +32,6 @@ func (irau *IncidentRoleAssignmentUpdate) Where(ps ...predicate.IncidentRoleAssi
 	return irau
 }
 
-// SetRoleID sets the "role_id" field.
-func (irau *IncidentRoleAssignmentUpdate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
-	irau.mutation.SetRoleID(u)
-	return irau
-}
-
-// SetNillableRoleID sets the "role_id" field if the given value is not nil.
-func (irau *IncidentRoleAssignmentUpdate) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdate {
-	if u != nil {
-		irau.SetRoleID(*u)
-	}
-	return irau
-}
-
 // SetIncidentID sets the "incident_id" field.
 func (irau *IncidentRoleAssignmentUpdate) SetIncidentID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
 	irau.mutation.SetIncidentID(u)
@@ -74,9 +60,18 @@ func (irau *IncidentRoleAssignmentUpdate) SetNillableUserID(u *uuid.UUID) *Incid
 	return irau
 }
 
-// SetRole sets the "role" edge to the IncidentRole entity.
-func (irau *IncidentRoleAssignmentUpdate) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdate {
-	return irau.SetRoleID(i.ID)
+// SetRoleID sets the "role_id" field.
+func (irau *IncidentRoleAssignmentUpdate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdate {
+	irau.mutation.SetRoleID(u)
+	return irau
+}
+
+// SetNillableRoleID sets the "role_id" field if the given value is not nil.
+func (irau *IncidentRoleAssignmentUpdate) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdate {
+	if u != nil {
+		irau.SetRoleID(*u)
+	}
+	return irau
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -89,15 +84,14 @@ func (irau *IncidentRoleAssignmentUpdate) SetUser(u *User) *IncidentRoleAssignme
 	return irau.SetUserID(u.ID)
 }
 
+// SetRole sets the "role" edge to the IncidentRole entity.
+func (irau *IncidentRoleAssignmentUpdate) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdate {
+	return irau.SetRoleID(i.ID)
+}
+
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
 func (irau *IncidentRoleAssignmentUpdate) Mutation() *IncidentRoleAssignmentMutation {
 	return irau.mutation
-}
-
-// ClearRole clears the "role" edge to the IncidentRole entity.
-func (irau *IncidentRoleAssignmentUpdate) ClearRole() *IncidentRoleAssignmentUpdate {
-	irau.mutation.ClearRole()
-	return irau
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -109,6 +103,12 @@ func (irau *IncidentRoleAssignmentUpdate) ClearIncident() *IncidentRoleAssignmen
 // ClearUser clears the "user" edge to the User entity.
 func (irau *IncidentRoleAssignmentUpdate) ClearUser() *IncidentRoleAssignmentUpdate {
 	irau.mutation.ClearUser()
+	return irau
+}
+
+// ClearRole clears the "role" edge to the IncidentRole entity.
+func (irau *IncidentRoleAssignmentUpdate) ClearRole() *IncidentRoleAssignmentUpdate {
+	irau.mutation.ClearRole()
 	return irau
 }
 
@@ -141,14 +141,17 @@ func (irau *IncidentRoleAssignmentUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (irau *IncidentRoleAssignmentUpdate) check() error {
-	if irau.mutation.RoleCleared() && len(irau.mutation.RoleIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
+	if irau.mutation.TenantCleared() && len(irau.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.tenant"`)
 	}
 	if irau.mutation.IncidentCleared() && len(irau.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.incident"`)
 	}
 	if irau.mutation.UserCleared() && len(irau.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.user"`)
+	}
+	if irau.mutation.RoleCleared() && len(irau.mutation.RoleIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
 	}
 	return nil
 }
@@ -170,35 +173,6 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 				ps[i](selector)
 			}
 		}
-	}
-	if irau.mutation.RoleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentroleassignment.RoleTable,
-			Columns: []string{incidentroleassignment.RoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := irau.mutation.RoleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentroleassignment.RoleTable,
-			Columns: []string{incidentroleassignment.RoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if irau.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -258,6 +232,35 @@ func (irau *IncidentRoleAssignmentUpdate) sqlSave(ctx context.Context) (n int, e
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if irau.mutation.RoleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentroleassignment.RoleTable,
+			Columns: []string{incidentroleassignment.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := irau.mutation.RoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentroleassignment.RoleTable,
+			Columns: []string{incidentroleassignment.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(irau.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, irau.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -278,20 +281,6 @@ type IncidentRoleAssignmentUpdateOne struct {
 	hooks     []Hook
 	mutation  *IncidentRoleAssignmentMutation
 	modifiers []func(*sql.UpdateBuilder)
-}
-
-// SetRoleID sets the "role_id" field.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.SetRoleID(u)
-	return irauo
-}
-
-// SetNillableRoleID sets the "role_id" field if the given value is not nil.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
-	if u != nil {
-		irauo.SetRoleID(*u)
-	}
-	return irauo
 }
 
 // SetIncidentID sets the "incident_id" field.
@@ -322,9 +311,18 @@ func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableUserID(u *uuid.UUID) *I
 	return irauo
 }
 
-// SetRole sets the "role" edge to the IncidentRole entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdateOne {
-	return irauo.SetRoleID(i.ID)
+// SetRoleID sets the "role_id" field.
+func (irauo *IncidentRoleAssignmentUpdateOne) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	irauo.mutation.SetRoleID(u)
+	return irauo
+}
+
+// SetNillableRoleID sets the "role_id" field if the given value is not nil.
+func (irauo *IncidentRoleAssignmentUpdateOne) SetNillableRoleID(u *uuid.UUID) *IncidentRoleAssignmentUpdateOne {
+	if u != nil {
+		irauo.SetRoleID(*u)
+	}
+	return irauo
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -337,15 +335,14 @@ func (irauo *IncidentRoleAssignmentUpdateOne) SetUser(u *User) *IncidentRoleAssi
 	return irauo.SetUserID(u.ID)
 }
 
+// SetRole sets the "role" edge to the IncidentRole entity.
+func (irauo *IncidentRoleAssignmentUpdateOne) SetRole(i *IncidentRole) *IncidentRoleAssignmentUpdateOne {
+	return irauo.SetRoleID(i.ID)
+}
+
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
 func (irauo *IncidentRoleAssignmentUpdateOne) Mutation() *IncidentRoleAssignmentMutation {
 	return irauo.mutation
-}
-
-// ClearRole clears the "role" edge to the IncidentRole entity.
-func (irauo *IncidentRoleAssignmentUpdateOne) ClearRole() *IncidentRoleAssignmentUpdateOne {
-	irauo.mutation.ClearRole()
-	return irauo
 }
 
 // ClearIncident clears the "incident" edge to the Incident entity.
@@ -357,6 +354,12 @@ func (irauo *IncidentRoleAssignmentUpdateOne) ClearIncident() *IncidentRoleAssig
 // ClearUser clears the "user" edge to the User entity.
 func (irauo *IncidentRoleAssignmentUpdateOne) ClearUser() *IncidentRoleAssignmentUpdateOne {
 	irauo.mutation.ClearUser()
+	return irauo
+}
+
+// ClearRole clears the "role" edge to the IncidentRole entity.
+func (irauo *IncidentRoleAssignmentUpdateOne) ClearRole() *IncidentRoleAssignmentUpdateOne {
+	irauo.mutation.ClearRole()
 	return irauo
 }
 
@@ -402,14 +405,17 @@ func (irauo *IncidentRoleAssignmentUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (irauo *IncidentRoleAssignmentUpdateOne) check() error {
-	if irauo.mutation.RoleCleared() && len(irauo.mutation.RoleIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
+	if irauo.mutation.TenantCleared() && len(irauo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.tenant"`)
 	}
 	if irauo.mutation.IncidentCleared() && len(irauo.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.incident"`)
 	}
 	if irauo.mutation.UserCleared() && len(irauo.mutation.UserIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.user"`)
+	}
+	if irauo.mutation.RoleCleared() && len(irauo.mutation.RoleIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRoleAssignment.role"`)
 	}
 	return nil
 }
@@ -448,35 +454,6 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 				ps[i](selector)
 			}
 		}
-	}
-	if irauo.mutation.RoleCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentroleassignment.RoleTable,
-			Columns: []string{incidentroleassignment.RoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := irauo.mutation.RoleIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentroleassignment.RoleTable,
-			Columns: []string{incidentroleassignment.RoleColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if irauo.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -529,6 +506,35 @@ func (irauo *IncidentRoleAssignmentUpdateOne) sqlSave(ctx context.Context) (_nod
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if irauo.mutation.RoleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentroleassignment.RoleTable,
+			Columns: []string{incidentroleassignment.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := irauo.mutation.RoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentroleassignment.RoleTable,
+			Columns: []string{incidentroleassignment.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

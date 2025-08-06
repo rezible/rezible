@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -151,21 +150,6 @@ func (tu *TeamUpdate) AddOncallRosters(o ...*OncallRoster) *TeamUpdate {
 	return tu.AddOncallRosterIDs(ids...)
 }
 
-// AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
-func (tu *TeamUpdate) AddIncidentAssignmentIDs(ids ...int) *TeamUpdate {
-	tu.mutation.AddIncidentAssignmentIDs(ids...)
-	return tu
-}
-
-// AddIncidentAssignments adds the "incident_assignments" edges to the IncidentTeamAssignment entity.
-func (tu *TeamUpdate) AddIncidentAssignments(i ...*IncidentTeamAssignment) *TeamUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return tu.AddIncidentAssignmentIDs(ids...)
-}
-
 // AddScheduledMeetingIDs adds the "scheduled_meetings" edge to the MeetingSchedule entity by IDs.
 func (tu *TeamUpdate) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdate {
 	tu.mutation.AddScheduledMeetingIDs(ids...)
@@ -228,27 +212,6 @@ func (tu *TeamUpdate) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdate {
 	return tu.RemoveOncallRosterIDs(ids...)
 }
 
-// ClearIncidentAssignments clears all "incident_assignments" edges to the IncidentTeamAssignment entity.
-func (tu *TeamUpdate) ClearIncidentAssignments() *TeamUpdate {
-	tu.mutation.ClearIncidentAssignments()
-	return tu
-}
-
-// RemoveIncidentAssignmentIDs removes the "incident_assignments" edge to IncidentTeamAssignment entities by IDs.
-func (tu *TeamUpdate) RemoveIncidentAssignmentIDs(ids ...int) *TeamUpdate {
-	tu.mutation.RemoveIncidentAssignmentIDs(ids...)
-	return tu
-}
-
-// RemoveIncidentAssignments removes "incident_assignments" edges to IncidentTeamAssignment entities.
-func (tu *TeamUpdate) RemoveIncidentAssignments(i ...*IncidentTeamAssignment) *TeamUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return tu.RemoveIncidentAssignmentIDs(ids...)
-}
-
 // ClearScheduledMeetings clears all "scheduled_meetings" edges to the MeetingSchedule entity.
 func (tu *TeamUpdate) ClearScheduledMeetings() *TeamUpdate {
 	tu.mutation.ClearScheduledMeetings()
@@ -297,6 +260,14 @@ func (tu *TeamUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *TeamUpdate) check() error {
+	if tu.mutation.TenantCleared() && len(tu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Team.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tu *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdate {
 	tu.modifiers = append(tu.modifiers, modifiers...)
@@ -304,6 +275,9 @@ func (tu *TeamUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdat
 }
 
 func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := tu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -419,51 +393,6 @@ func (tu *TeamUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tu.mutation.IncidentAssignmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.RemovedIncidentAssignmentsIDs(); len(nodes) > 0 && !tu.mutation.IncidentAssignmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.IncidentAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -656,21 +585,6 @@ func (tuo *TeamUpdateOne) AddOncallRosters(o ...*OncallRoster) *TeamUpdateOne {
 	return tuo.AddOncallRosterIDs(ids...)
 }
 
-// AddIncidentAssignmentIDs adds the "incident_assignments" edge to the IncidentTeamAssignment entity by IDs.
-func (tuo *TeamUpdateOne) AddIncidentAssignmentIDs(ids ...int) *TeamUpdateOne {
-	tuo.mutation.AddIncidentAssignmentIDs(ids...)
-	return tuo
-}
-
-// AddIncidentAssignments adds the "incident_assignments" edges to the IncidentTeamAssignment entity.
-func (tuo *TeamUpdateOne) AddIncidentAssignments(i ...*IncidentTeamAssignment) *TeamUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return tuo.AddIncidentAssignmentIDs(ids...)
-}
-
 // AddScheduledMeetingIDs adds the "scheduled_meetings" edge to the MeetingSchedule entity by IDs.
 func (tuo *TeamUpdateOne) AddScheduledMeetingIDs(ids ...uuid.UUID) *TeamUpdateOne {
 	tuo.mutation.AddScheduledMeetingIDs(ids...)
@@ -731,27 +645,6 @@ func (tuo *TeamUpdateOne) RemoveOncallRosters(o ...*OncallRoster) *TeamUpdateOne
 		ids[i] = o[i].ID
 	}
 	return tuo.RemoveOncallRosterIDs(ids...)
-}
-
-// ClearIncidentAssignments clears all "incident_assignments" edges to the IncidentTeamAssignment entity.
-func (tuo *TeamUpdateOne) ClearIncidentAssignments() *TeamUpdateOne {
-	tuo.mutation.ClearIncidentAssignments()
-	return tuo
-}
-
-// RemoveIncidentAssignmentIDs removes the "incident_assignments" edge to IncidentTeamAssignment entities by IDs.
-func (tuo *TeamUpdateOne) RemoveIncidentAssignmentIDs(ids ...int) *TeamUpdateOne {
-	tuo.mutation.RemoveIncidentAssignmentIDs(ids...)
-	return tuo
-}
-
-// RemoveIncidentAssignments removes "incident_assignments" edges to IncidentTeamAssignment entities.
-func (tuo *TeamUpdateOne) RemoveIncidentAssignments(i ...*IncidentTeamAssignment) *TeamUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
-	}
-	return tuo.RemoveIncidentAssignmentIDs(ids...)
 }
 
 // ClearScheduledMeetings clears all "scheduled_meetings" edges to the MeetingSchedule entity.
@@ -815,6 +708,14 @@ func (tuo *TeamUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tuo *TeamUpdateOne) check() error {
+	if tuo.mutation.TenantCleared() && len(tuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Team.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tuo *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamUpdateOne {
 	tuo.modifiers = append(tuo.modifiers, modifiers...)
@@ -822,6 +723,9 @@ func (tuo *TeamUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TeamU
 }
 
 func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
+	if err := tuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(team.Table, team.Columns, sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID))
 	id, ok := tuo.mutation.ID()
 	if !ok {
@@ -954,51 +858,6 @@ func (tuo *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if tuo.mutation.IncidentAssignmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.RemovedIncidentAssignmentsIDs(); len(nodes) > 0 && !tuo.mutation.IncidentAssignmentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.IncidentAssignmentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   team.IncidentAssignmentsTable,
-			Columns: []string{team.IncidentAssignmentsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentteamassignment.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

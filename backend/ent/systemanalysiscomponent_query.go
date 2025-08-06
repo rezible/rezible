@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisComponentQuery is the builder for querying SystemAnalysisComponent entities.
@@ -26,6 +27,7 @@ type SystemAnalysisComponentQuery struct {
 	order         []systemanalysiscomponent.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.SystemAnalysisComponent
+	withTenant    *TenantQuery
 	withAnalysis  *SystemAnalysisQuery
 	withComponent *SystemComponentQuery
 	modifiers     []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (sacq *SystemAnalysisComponentQuery) Unique(unique bool) *SystemAnalysisCom
 func (sacq *SystemAnalysisComponentQuery) Order(o ...systemanalysiscomponent.OrderOption) *SystemAnalysisComponentQuery {
 	sacq.order = append(sacq.order, o...)
 	return sacq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (sacq *SystemAnalysisComponentQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: sacq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sacq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sacq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.TenantTable, systemanalysiscomponent.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sacq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAnalysis chains the current query on the "analysis" edge.
@@ -301,6 +325,7 @@ func (sacq *SystemAnalysisComponentQuery) Clone() *SystemAnalysisComponentQuery 
 		order:         append([]systemanalysiscomponent.OrderOption{}, sacq.order...),
 		inters:        append([]Interceptor{}, sacq.inters...),
 		predicates:    append([]predicate.SystemAnalysisComponent{}, sacq.predicates...),
+		withTenant:    sacq.withTenant.Clone(),
 		withAnalysis:  sacq.withAnalysis.Clone(),
 		withComponent: sacq.withComponent.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (sacq *SystemAnalysisComponentQuery) Clone() *SystemAnalysisComponentQuery 
 		path:      sacq.path,
 		modifiers: append([]func(*sql.Selector){}, sacq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (sacq *SystemAnalysisComponentQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisComponentQuery {
+	query := (&TenantClient{config: sacq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sacq.withTenant = query
+	return sacq
 }
 
 // WithAnalysis tells the query-builder to eager-load the nodes that are connected to
@@ -338,12 +374,12 @@ func (sacq *SystemAnalysisComponentQuery) WithComponent(opts ...func(*SystemComp
 // Example:
 //
 //	var v []struct {
-//		AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemAnalysisComponent.Query().
-//		GroupBy(systemanalysiscomponent.FieldAnalysisID).
+//		GroupBy(systemanalysiscomponent.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sacq *SystemAnalysisComponentQuery) GroupBy(field string, fields ...string) *SystemAnalysisComponentGroupBy {
@@ -361,11 +397,11 @@ func (sacq *SystemAnalysisComponentQuery) GroupBy(field string, fields ...string
 // Example:
 //
 //	var v []struct {
-//		AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemAnalysisComponent.Query().
-//		Select(systemanalysiscomponent.FieldAnalysisID).
+//		Select(systemanalysiscomponent.FieldTenantID).
 //		Scan(ctx, &v)
 func (sacq *SystemAnalysisComponentQuery) Select(fields ...string) *SystemAnalysisComponentSelect {
 	sacq.ctx.Fields = append(sacq.ctx.Fields, fields...)
@@ -416,7 +452,8 @@ func (sacq *SystemAnalysisComponentQuery) sqlAll(ctx context.Context, hooks ...q
 	var (
 		nodes       = []*SystemAnalysisComponent{}
 		_spec       = sacq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			sacq.withTenant != nil,
 			sacq.withAnalysis != nil,
 			sacq.withComponent != nil,
 		}
@@ -442,6 +479,12 @@ func (sacq *SystemAnalysisComponentQuery) sqlAll(ctx context.Context, hooks ...q
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sacq.withTenant; query != nil {
+		if err := sacq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemAnalysisComponent, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := sacq.withAnalysis; query != nil {
 		if err := sacq.loadAnalysis(ctx, query, nodes, nil,
 			func(n *SystemAnalysisComponent, e *SystemAnalysis) { n.Edges.Analysis = e }); err != nil {
@@ -457,6 +500,35 @@ func (sacq *SystemAnalysisComponentQuery) sqlAll(ctx context.Context, hooks ...q
 	return nodes, nil
 }
 
+func (sacq *SystemAnalysisComponentQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisComponent, init func(*SystemAnalysisComponent), assign func(*SystemAnalysisComponent, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemAnalysisComponent)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (sacq *SystemAnalysisComponentQuery) loadAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisComponent, init func(*SystemAnalysisComponent), assign func(*SystemAnalysisComponent, *SystemAnalysis)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisComponent)
@@ -543,6 +615,9 @@ func (sacq *SystemAnalysisComponentQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemanalysiscomponent.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sacq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemanalysiscomponent.FieldTenantID)
 		}
 		if sacq.withAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysiscomponent.FieldAnalysisID)

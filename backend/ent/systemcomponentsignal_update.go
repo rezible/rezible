@@ -212,6 +212,9 @@ func (scsu *SystemComponentSignalUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (scsu *SystemComponentSignalUpdate) check() error {
+	if scsu.mutation.TenantCleared() && len(scsu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentSignal.tenant"`)
+	}
 	if scsu.mutation.ComponentCleared() && len(scsu.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentSignal.component"`)
 	}
@@ -602,6 +605,9 @@ func (scsuo *SystemComponentSignalUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (scsuo *SystemComponentSignalUpdateOne) check() error {
+	if scsuo.mutation.TenantCleared() && len(scsuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentSignal.tenant"`)
+	}
 	if scsuo.mutation.ComponentCleared() && len(scsuo.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentSignal.component"`)
 	}

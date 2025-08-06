@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventEvidenceCreate is the builder for creating a IncidentEventEvidence entity.
@@ -23,6 +24,12 @@ type IncidentEventEvidenceCreate struct {
 	mutation *IncidentEventEvidenceMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ieec *IncidentEventEvidenceCreate) SetTenantID(i int) *IncidentEventEvidenceCreate {
+	ieec.mutation.SetTenantID(i)
+	return ieec
 }
 
 // SetEvidenceType sets the "evidence_type" field.
@@ -83,6 +90,11 @@ func (ieec *IncidentEventEvidenceCreate) SetNillableID(u *uuid.UUID) *IncidentEv
 		ieec.SetID(*u)
 	}
 	return ieec
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ieec *IncidentEventEvidenceCreate) SetTenant(t *Tenant) *IncidentEventEvidenceCreate {
+	return ieec.SetTenantID(t.ID)
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
@@ -152,6 +164,9 @@ func (ieec *IncidentEventEvidenceCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ieec *IncidentEventEvidenceCreate) check() error {
+	if _, ok := ieec.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEventEvidence.tenant_id"`)}
+	}
 	if _, ok := ieec.mutation.EvidenceType(); !ok {
 		return &ValidationError{Name: "evidence_type", err: errors.New(`ent: missing required field "IncidentEventEvidence.evidence_type"`)}
 	}
@@ -178,6 +193,9 @@ func (ieec *IncidentEventEvidenceCreate) check() error {
 	}
 	if _, ok := ieec.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEventEvidence.created_at"`)}
+	}
+	if len(ieec.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEventEvidence.tenant"`)}
 	}
 	if len(ieec.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "IncidentEventEvidence.event"`)}
@@ -238,6 +256,23 @@ func (ieec *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *
 		_spec.SetField(incidenteventevidence.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := ieec.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenteventevidence.TenantTable,
+			Columns: []string{incidenteventevidence.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ieec.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -262,7 +297,7 @@ func (ieec *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEventEvidence.Create().
-//		SetEvidenceType(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -271,7 +306,7 @@ func (ieec *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventEvidenceUpsert) {
-//			SetEvidenceType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ieec *IncidentEventEvidenceCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventEvidenceUpsertOne {
@@ -389,6 +424,9 @@ func (u *IncidentEventEvidenceUpsertOne) UpdateNewValues() *IncidentEventEvidenc
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenteventevidence.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenteventevidence.FieldTenantID)
 		}
 	}))
 	return u
@@ -634,7 +672,7 @@ func (ieecb *IncidentEventEvidenceCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventEvidenceUpsert) {
-//			SetEvidenceType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ieecb *IncidentEventEvidenceCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventEvidenceUpsertBulk {
@@ -680,6 +718,9 @@ func (u *IncidentEventEvidenceUpsertBulk) UpdateNewValues() *IncidentEventEviden
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenteventevidence.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenteventevidence.FieldTenantID)
 			}
 		}
 	}))

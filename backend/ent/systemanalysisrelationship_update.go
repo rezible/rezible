@@ -304,6 +304,9 @@ func (saru *SystemAnalysisRelationshipUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (saru *SystemAnalysisRelationshipUpdate) check() error {
+	if saru.mutation.TenantCleared() && len(saru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.tenant"`)
+	}
 	if saru.mutation.SystemAnalysisCleared() && len(saru.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}
@@ -923,6 +926,9 @@ func (saruo *SystemAnalysisRelationshipUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (saruo *SystemAnalysisRelationshipUpdateOne) check() error {
+	if saruo.mutation.TenantCleared() && len(saruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.tenant"`)
+	}
 	if saruo.mutation.SystemAnalysisCleared() && len(saruo.mutation.SystemAnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisRelationship.system_analysis"`)
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentMilestoneQuery is the builder for querying IncidentMilestone entities.
@@ -25,6 +26,7 @@ type IncidentMilestoneQuery struct {
 	order        []incidentmilestone.OrderOption
 	inters       []Interceptor
 	predicates   []predicate.IncidentMilestone
+	withTenant   *TenantQuery
 	withIncident *IncidentQuery
 	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (imq *IncidentMilestoneQuery) Unique(unique bool) *IncidentMilestoneQuery {
 func (imq *IncidentMilestoneQuery) Order(o ...incidentmilestone.OrderOption) *IncidentMilestoneQuery {
 	imq.order = append(imq.order, o...)
 	return imq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (imq *IncidentMilestoneQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: imq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := imq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := imq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentmilestone.Table, incidentmilestone.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentmilestone.TenantTable, incidentmilestone.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(imq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryIncident chains the current query on the "incident" edge.
@@ -277,12 +301,24 @@ func (imq *IncidentMilestoneQuery) Clone() *IncidentMilestoneQuery {
 		order:        append([]incidentmilestone.OrderOption{}, imq.order...),
 		inters:       append([]Interceptor{}, imq.inters...),
 		predicates:   append([]predicate.IncidentMilestone{}, imq.predicates...),
+		withTenant:   imq.withTenant.Clone(),
 		withIncident: imq.withIncident.Clone(),
 		// clone intermediate query.
 		sql:       imq.sql.Clone(),
 		path:      imq.path,
 		modifiers: append([]func(*sql.Selector){}, imq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (imq *IncidentMilestoneQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentMilestoneQuery {
+	query := (&TenantClient{config: imq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	imq.withTenant = query
+	return imq
 }
 
 // WithIncident tells the query-builder to eager-load the nodes that are connected to
@@ -302,12 +338,12 @@ func (imq *IncidentMilestoneQuery) WithIncident(opts ...func(*IncidentQuery)) *I
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentMilestone.Query().
-//		GroupBy(incidentmilestone.FieldIncidentID).
+//		GroupBy(incidentmilestone.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (imq *IncidentMilestoneQuery) GroupBy(field string, fields ...string) *IncidentMilestoneGroupBy {
@@ -325,11 +361,11 @@ func (imq *IncidentMilestoneQuery) GroupBy(field string, fields ...string) *Inci
 // Example:
 //
 //	var v []struct {
-//		IncidentID uuid.UUID `json:"incident_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentMilestone.Query().
-//		Select(incidentmilestone.FieldIncidentID).
+//		Select(incidentmilestone.FieldTenantID).
 //		Scan(ctx, &v)
 func (imq *IncidentMilestoneQuery) Select(fields ...string) *IncidentMilestoneSelect {
 	imq.ctx.Fields = append(imq.ctx.Fields, fields...)
@@ -380,7 +416,8 @@ func (imq *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	var (
 		nodes       = []*IncidentMilestone{}
 		_spec       = imq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			imq.withTenant != nil,
 			imq.withIncident != nil,
 		}
 	)
@@ -405,6 +442,12 @@ func (imq *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := imq.withTenant; query != nil {
+		if err := imq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentMilestone, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := imq.withIncident; query != nil {
 		if err := imq.loadIncident(ctx, query, nodes, nil,
 			func(n *IncidentMilestone, e *Incident) { n.Edges.Incident = e }); err != nil {
@@ -414,6 +457,35 @@ func (imq *IncidentMilestoneQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	return nodes, nil
 }
 
+func (imq *IncidentMilestoneQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentMilestone)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (imq *IncidentMilestoneQuery) loadIncident(ctx context.Context, query *IncidentQuery, nodes []*IncidentMilestone, init func(*IncidentMilestone), assign func(*IncidentMilestone, *Incident)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentMilestone)
@@ -471,6 +543,9 @@ func (imq *IncidentMilestoneQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidentmilestone.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if imq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentmilestone.FieldTenantID)
 		}
 		if imq.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentmilestone.FieldIncidentID)

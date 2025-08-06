@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldTenantID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldCreatedAt, v))
@@ -64,6 +69,26 @@ func CreatedAt(v time.Time) predicate.SystemAnalysis {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -144,6 +169,29 @@ func UpdatedAtLT(v time.Time) predicate.SystemAnalysis {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasRetrospective applies the HasEdge predicate on the "retrospective" edge.

@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisRelationshipCreate is the builder for creating a SystemAnalysisRelationship entity.
@@ -28,6 +29,12 @@ type SystemAnalysisRelationshipCreate struct {
 	mutation *SystemAnalysisRelationshipMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (sarc *SystemAnalysisRelationshipCreate) SetTenantID(i int) *SystemAnalysisRelationshipCreate {
+	sarc.mutation.SetTenantID(i)
+	return sarc
 }
 
 // SetAnalysisID sets the "analysis_id" field.
@@ -82,6 +89,11 @@ func (sarc *SystemAnalysisRelationshipCreate) SetNillableID(u *uuid.UUID) *Syste
 		sarc.SetID(*u)
 	}
 	return sarc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (sarc *SystemAnalysisRelationshipCreate) SetTenant(t *Tenant) *SystemAnalysisRelationshipCreate {
+	return sarc.SetTenantID(t.ID)
 }
 
 // SetSystemAnalysisID sets the "system_analysis" edge to the SystemAnalysis entity by ID.
@@ -216,6 +228,9 @@ func (sarc *SystemAnalysisRelationshipCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sarc *SystemAnalysisRelationshipCreate) check() error {
+	if _, ok := sarc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.tenant_id"`)}
+	}
 	if _, ok := sarc.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.analysis_id"`)}
 	}
@@ -224,6 +239,9 @@ func (sarc *SystemAnalysisRelationshipCreate) check() error {
 	}
 	if _, ok := sarc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisRelationship.created_at"`)}
+	}
+	if len(sarc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.tenant"`)}
 	}
 	if len(sarc.mutation.SystemAnalysisIDs()) == 0 {
 		return &ValidationError{Name: "system_analysis", err: errors.New(`ent: missing required edge "SystemAnalysisRelationship.system_analysis"`)}
@@ -274,6 +292,23 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 	if value, ok := sarc.mutation.CreatedAt(); ok {
 		_spec.SetField(systemanalysisrelationship.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := sarc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysisrelationship.TenantTable,
+			Columns: []string{systemanalysisrelationship.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sarc.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -394,7 +429,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 // of the `INSERT` statement. For example:
 //
 //	client.SystemAnalysisRelationship.Create().
-//		SetAnalysisID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -403,7 +438,7 @@ func (sarc *SystemAnalysisRelationshipCreate) createSpec() (*SystemAnalysisRelat
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisRelationshipUpsert) {
-//			SetAnalysisID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sarc *SystemAnalysisRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertOne {
@@ -509,6 +544,9 @@ func (u *SystemAnalysisRelationshipUpsertOne) UpdateNewValues() *SystemAnalysisR
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemanalysisrelationship.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemanalysisrelationship.FieldTenantID)
 		}
 	}))
 	return u
@@ -740,7 +778,7 @@ func (sarcb *SystemAnalysisRelationshipCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisRelationshipUpsert) {
-//			SetAnalysisID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sarcb *SystemAnalysisRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisRelationshipUpsertBulk {
@@ -786,6 +824,9 @@ func (u *SystemAnalysisRelationshipUpsertBulk) UpdateNewValues() *SystemAnalysis
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemanalysisrelationship.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemanalysisrelationship.FieldTenantID)
 			}
 		}
 	}))

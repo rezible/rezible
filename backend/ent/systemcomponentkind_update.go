@@ -167,6 +167,14 @@ func (scku *SystemComponentKindUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (scku *SystemComponentKindUpdate) check() error {
+	if scku.mutation.TenantCleared() && len(scku.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentKind.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (scku *SystemComponentKindUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdate {
 	scku.modifiers = append(scku.modifiers, modifiers...)
@@ -174,6 +182,9 @@ func (scku *SystemComponentKindUpdate) Modify(modifiers ...func(u *sql.UpdateBui
 }
 
 func (scku *SystemComponentKindUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := scku.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentkind.Table, systemcomponentkind.Columns, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
 	if ps := scku.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -416,6 +427,14 @@ func (sckuo *SystemComponentKindUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (sckuo *SystemComponentKindUpdateOne) check() error {
+	if sckuo.mutation.TenantCleared() && len(sckuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentKind.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (sckuo *SystemComponentKindUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *SystemComponentKindUpdateOne {
 	sckuo.modifiers = append(sckuo.modifiers, modifiers...)
@@ -423,6 +442,9 @@ func (sckuo *SystemComponentKindUpdateOne) Modify(modifiers ...func(u *sql.Updat
 }
 
 func (sckuo *SystemComponentKindUpdateOne) sqlSave(ctx context.Context) (_node *SystemComponentKind, err error) {
+	if err := sckuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(systemcomponentkind.Table, systemcomponentkind.Columns, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
 	id, ok := sckuo.mutation.ID()
 	if !ok {

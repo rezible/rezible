@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentMilestone is the model entity for the IncidentMilestone schema.
@@ -19,6 +20,8 @@ type IncidentMilestone struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// Kind holds the value of the "kind" field.
@@ -35,11 +38,24 @@ type IncidentMilestone struct {
 
 // IncidentMilestoneEdges holds the relations/edges for other nodes in the graph.
 type IncidentMilestoneEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentMilestoneEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -47,7 +63,7 @@ type IncidentMilestoneEdges struct {
 func (e IncidentMilestoneEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -58,6 +74,8 @@ func (*IncidentMilestone) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentmilestone.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentmilestone.FieldKind, incidentmilestone.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentmilestone.FieldTime:
@@ -84,6 +102,12 @@ func (im *IncidentMilestone) assignValues(columns []string, values []any) error 
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				im.ID = *value
+			}
+		case incidentmilestone.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				im.TenantID = int(value.Int64)
 			}
 		case incidentmilestone.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -122,6 +146,11 @@ func (im *IncidentMilestone) Value(name string) (ent.Value, error) {
 	return im.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentMilestone entity.
+func (im *IncidentMilestone) QueryTenant() *TenantQuery {
+	return NewIncidentMilestoneClient(im.config).QueryTenant(im)
+}
+
 // QueryIncident queries the "incident" edge of the IncidentMilestone entity.
 func (im *IncidentMilestone) QueryIncident() *IncidentQuery {
 	return NewIncidentMilestoneClient(im.config).QueryIncident(im)
@@ -150,6 +179,9 @@ func (im *IncidentMilestone) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentMilestone(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", im.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", im.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", im.IncidentID))
 	builder.WriteString(", ")

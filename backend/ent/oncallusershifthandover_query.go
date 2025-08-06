@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftHandoverQuery is the builder for querying OncallUserShiftHandover entities.
@@ -27,6 +28,7 @@ type OncallUserShiftHandoverQuery struct {
 	order                 []oncallusershifthandover.OrderOption
 	inters                []Interceptor
 	predicates            []predicate.OncallUserShiftHandover
+	withTenant            *TenantQuery
 	withShift             *OncallUserShiftQuery
 	withPinnedAnnotations *OncallAnnotationQuery
 	modifiers             []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (oushq *OncallUserShiftHandoverQuery) Unique(unique bool) *OncallUserShiftH
 func (oushq *OncallUserShiftHandoverQuery) Order(o ...oncallusershifthandover.OrderOption) *OncallUserShiftHandoverQuery {
 	oushq.order = append(oushq.order, o...)
 	return oushq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (oushq *OncallUserShiftHandoverQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: oushq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := oushq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := oushq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershifthandover.TenantTable, oncallusershifthandover.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(oushq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryShift chains the current query on the "shift" edge.
@@ -302,6 +326,7 @@ func (oushq *OncallUserShiftHandoverQuery) Clone() *OncallUserShiftHandoverQuery
 		order:                 append([]oncallusershifthandover.OrderOption{}, oushq.order...),
 		inters:                append([]Interceptor{}, oushq.inters...),
 		predicates:            append([]predicate.OncallUserShiftHandover{}, oushq.predicates...),
+		withTenant:            oushq.withTenant.Clone(),
 		withShift:             oushq.withShift.Clone(),
 		withPinnedAnnotations: oushq.withPinnedAnnotations.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (oushq *OncallUserShiftHandoverQuery) Clone() *OncallUserShiftHandoverQuery
 		path:      oushq.path,
 		modifiers: append([]func(*sql.Selector){}, oushq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (oushq *OncallUserShiftHandoverQuery) WithTenant(opts ...func(*TenantQuery)) *OncallUserShiftHandoverQuery {
+	query := (&TenantClient{config: oushq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	oushq.withTenant = query
+	return oushq
 }
 
 // WithShift tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (oushq *OncallUserShiftHandoverQuery) WithPinnedAnnotations(opts ...func(*O
 // Example:
 //
 //	var v []struct {
-//		ShiftID uuid.UUID `json:"shift_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallUserShiftHandover.Query().
-//		GroupBy(oncallusershifthandover.FieldShiftID).
+//		GroupBy(oncallusershifthandover.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oushq *OncallUserShiftHandoverQuery) GroupBy(field string, fields ...string) *OncallUserShiftHandoverGroupBy {
@@ -362,11 +398,11 @@ func (oushq *OncallUserShiftHandoverQuery) GroupBy(field string, fields ...strin
 // Example:
 //
 //	var v []struct {
-//		ShiftID uuid.UUID `json:"shift_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallUserShiftHandover.Query().
-//		Select(oncallusershifthandover.FieldShiftID).
+//		Select(oncallusershifthandover.FieldTenantID).
 //		Scan(ctx, &v)
 func (oushq *OncallUserShiftHandoverQuery) Select(fields ...string) *OncallUserShiftHandoverSelect {
 	oushq.ctx.Fields = append(oushq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (oushq *OncallUserShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...
 	var (
 		nodes       = []*OncallUserShiftHandover{}
 		_spec       = oushq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			oushq.withTenant != nil,
 			oushq.withShift != nil,
 			oushq.withPinnedAnnotations != nil,
 		}
@@ -443,6 +480,12 @@ func (oushq *OncallUserShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := oushq.withTenant; query != nil {
+		if err := oushq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallUserShiftHandover, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := oushq.withShift; query != nil {
 		if err := oushq.loadShift(ctx, query, nodes, nil,
 			func(n *OncallUserShiftHandover, e *OncallUserShift) { n.Edges.Shift = e }); err != nil {
@@ -461,6 +504,35 @@ func (oushq *OncallUserShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...
 	return nodes, nil
 }
 
+func (oushq *OncallUserShiftHandoverQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallUserShiftHandover, init func(*OncallUserShiftHandover), assign func(*OncallUserShiftHandover, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallUserShiftHandover)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (oushq *OncallUserShiftHandoverQuery) loadShift(ctx context.Context, query *OncallUserShiftQuery, nodes []*OncallUserShiftHandover, init func(*OncallUserShiftHandover), assign func(*OncallUserShiftHandover, *OncallUserShift)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallUserShiftHandover)
@@ -579,6 +651,9 @@ func (oushq *OncallUserShiftHandoverQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallusershifthandover.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if oushq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallusershifthandover.FieldTenantID)
 		}
 		if oushq.withShift != nil {
 			_spec.Node.AddColumnOnce(oncallusershifthandover.FieldShiftID)

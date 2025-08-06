@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentSeverityCreate is the builder for creating a IncidentSeverity entity.
@@ -24,6 +25,12 @@ type IncidentSeverityCreate struct {
 	mutation *IncidentSeverityMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (isc *IncidentSeverityCreate) SetTenantID(i int) *IncidentSeverityCreate {
+	isc.mutation.SetTenantID(i)
+	return isc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -108,6 +115,11 @@ func (isc *IncidentSeverityCreate) SetNillableID(u *uuid.UUID) *IncidentSeverity
 	return isc
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (isc *IncidentSeverityCreate) SetTenant(t *Tenant) *IncidentSeverityCreate {
+	return isc.SetTenantID(t.ID)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (isc *IncidentSeverityCreate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityCreate {
 	isc.mutation.AddIncidentIDs(ids...)
@@ -187,11 +199,17 @@ func (isc *IncidentSeverityCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (isc *IncidentSeverityCreate) check() error {
+	if _, ok := isc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentSeverity.tenant_id"`)}
+	}
 	if _, ok := isc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentSeverity.name"`)}
 	}
 	if _, ok := isc.mutation.Rank(); !ok {
 		return &ValidationError{Name: "rank", err: errors.New(`ent: missing required field "IncidentSeverity.rank"`)}
+	}
+	if len(isc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentSeverity.tenant"`)}
 	}
 	return nil
 }
@@ -253,6 +271,23 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 		_spec.SetField(incidentseverity.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
+	if nodes := isc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentseverity.TenantTable,
+			Columns: []string{incidentseverity.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := isc.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -292,7 +327,7 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentSeverity.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -301,7 +336,7 @@ func (isc *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cr
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentSeverityUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (isc *IncidentSeverityCreate) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertOne {
@@ -455,6 +490,9 @@ func (u *IncidentSeverityUpsertOne) UpdateNewValues() *IncidentSeverityUpsertOne
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentseverity.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentseverity.FieldTenantID)
 		}
 	}))
 	return u
@@ -742,7 +780,7 @@ func (iscb *IncidentSeverityCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentSeverityUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iscb *IncidentSeverityCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentSeverityUpsertBulk {
@@ -788,6 +826,9 @@ func (u *IncidentSeverityUpsertBulk) UpdateNewValues() *IncidentSeverityUpsertBu
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentseverity.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentseverity.FieldTenantID)
 			}
 		}
 	}))

@@ -148,6 +148,9 @@ func (rdru *RetrospectiveDiscussionReplyUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rdru *RetrospectiveDiscussionReplyUpdate) check() error {
+	if rdru.mutation.TenantCleared() && len(rdru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "RetrospectiveDiscussionReply.tenant"`)
+	}
 	if rdru.mutation.DiscussionCleared() && len(rdru.mutation.DiscussionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveDiscussionReply.discussion"`)
 	}
@@ -431,6 +434,9 @@ func (rdruo *RetrospectiveDiscussionReplyUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (rdruo *RetrospectiveDiscussionReplyUpdateOne) check() error {
+	if rdruo.mutation.TenantCleared() && len(rdruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "RetrospectiveDiscussionReply.tenant"`)
+	}
 	if rdruo.mutation.DiscussionCleared() && len(rdruo.mutation.DiscussionIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "RetrospectiveDiscussionReply.discussion"`)
 	}

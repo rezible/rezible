@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentFieldOptionCreate is the builder for creating a IncidentFieldOption entity.
@@ -24,6 +25,12 @@ type IncidentFieldOptionCreate struct {
 	mutation *IncidentFieldOptionMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ifoc *IncidentFieldOptionCreate) SetTenantID(i int) *IncidentFieldOptionCreate {
+	ifoc.mutation.SetTenantID(i)
+	return ifoc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -70,6 +77,11 @@ func (ifoc *IncidentFieldOptionCreate) SetNillableID(u *uuid.UUID) *IncidentFiel
 		ifoc.SetID(*u)
 	}
 	return ifoc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ifoc *IncidentFieldOptionCreate) SetTenant(t *Tenant) *IncidentFieldOptionCreate {
+	return ifoc.SetTenantID(t.ID)
 }
 
 // SetIncidentField sets the "incident_field" edge to the IncidentField entity.
@@ -141,6 +153,9 @@ func (ifoc *IncidentFieldOptionCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ifoc *IncidentFieldOptionCreate) check() error {
+	if _, ok := ifoc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentFieldOption.tenant_id"`)}
+	}
 	if _, ok := ifoc.mutation.IncidentFieldID(); !ok {
 		return &ValidationError{Name: "incident_field_id", err: errors.New(`ent: missing required field "IncidentFieldOption.incident_field_id"`)}
 	}
@@ -154,6 +169,9 @@ func (ifoc *IncidentFieldOptionCreate) check() error {
 	}
 	if _, ok := ifoc.mutation.Value(); !ok {
 		return &ValidationError{Name: "value", err: errors.New(`ent: missing required field "IncidentFieldOption.value"`)}
+	}
+	if len(ifoc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentFieldOption.tenant"`)}
 	}
 	if len(ifoc.mutation.IncidentFieldIDs()) == 0 {
 		return &ValidationError{Name: "incident_field", err: errors.New(`ent: missing required edge "IncidentFieldOption.incident_field"`)}
@@ -206,6 +224,23 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 		_spec.SetField(incidentfieldoption.FieldValue, field.TypeString, value)
 		_node.Value = value
 	}
+	if nodes := ifoc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentfieldoption.TenantTable,
+			Columns: []string{incidentfieldoption.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ifoc.mutation.IncidentFieldIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -246,7 +281,7 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentFieldOption.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -255,7 +290,7 @@ func (ifoc *IncidentFieldOptionCreate) createSpec() (*IncidentFieldOption, *sqlg
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentFieldOptionUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ifoc *IncidentFieldOptionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertOne {
@@ -361,6 +396,9 @@ func (u *IncidentFieldOptionUpsertOne) UpdateNewValues() *IncidentFieldOptionUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentfieldoption.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentfieldoption.FieldTenantID)
 		}
 	}))
 	return u
@@ -592,7 +630,7 @@ func (ifocb *IncidentFieldOptionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentFieldOptionUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ifocb *IncidentFieldOptionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldOptionUpsertBulk {
@@ -638,6 +676,9 @@ func (u *IncidentFieldOptionUpsertBulk) UpdateNewValues() *IncidentFieldOptionUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentfieldoption.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentfieldoption.FieldTenantID)
 			}
 		}
 	}))

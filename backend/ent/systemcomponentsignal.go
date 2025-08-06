@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentSignal is the model entity for the SystemComponentSignal schema.
@@ -19,6 +20,8 @@ type SystemComponentSignal struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ComponentID holds the value of the "component_id" field.
 	ComponentID uuid.UUID `json:"component_id,omitempty"`
 	// Label holds the value of the "label" field.
@@ -35,6 +38,8 @@ type SystemComponentSignal struct {
 
 // SystemComponentSignalEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentSignalEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
 	// Relationships holds the value of the relationships edge.
@@ -43,7 +48,18 @@ type SystemComponentSignalEdges struct {
 	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemComponentSignalEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ComponentOrErr returns the Component value or an error if the edge
@@ -51,7 +67,7 @@ type SystemComponentSignalEdges struct {
 func (e SystemComponentSignalEdges) ComponentOrErr() (*SystemComponent, error) {
 	if e.Component != nil {
 		return e.Component, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "component"}
@@ -60,7 +76,7 @@ func (e SystemComponentSignalEdges) ComponentOrErr() (*SystemComponent, error) {
 // RelationshipsOrErr returns the Relationships value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Relationships, nil
 	}
 	return nil, &NotLoadedError{edge: "relationships"}
@@ -69,7 +85,7 @@ func (e SystemComponentSignalEdges) RelationshipsOrErr() ([]*SystemAnalysisRelat
 // FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentSignalEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.FeedbackSignals, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback_signals"}
@@ -80,6 +96,8 @@ func (*SystemComponentSignal) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemcomponentsignal.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemcomponentsignal.FieldLabel, systemcomponentsignal.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentsignal.FieldCreatedAt:
@@ -106,6 +124,12 @@ func (scs *SystemComponentSignal) assignValues(columns []string, values []any) e
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				scs.ID = *value
+			}
+		case systemcomponentsignal.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				scs.TenantID = int(value.Int64)
 			}
 		case systemcomponentsignal.FieldComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -142,6 +166,11 @@ func (scs *SystemComponentSignal) assignValues(columns []string, values []any) e
 // This includes values selected through modifiers, order, etc.
 func (scs *SystemComponentSignal) Value(name string) (ent.Value, error) {
 	return scs.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the SystemComponentSignal entity.
+func (scs *SystemComponentSignal) QueryTenant() *TenantQuery {
+	return NewSystemComponentSignalClient(scs.config).QueryTenant(scs)
 }
 
 // QueryComponent queries the "component" edge of the SystemComponentSignal entity.
@@ -182,6 +211,9 @@ func (scs *SystemComponentSignal) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentSignal(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", scs.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", scs.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("component_id=")
 	builder.WriteString(fmt.Sprintf("%v", scs.ComponentID))
 	builder.WriteString(", ")

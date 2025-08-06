@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentKindQuery is the builder for querying SystemComponentKind entities.
@@ -26,6 +27,7 @@ type SystemComponentKindQuery struct {
 	order          []systemcomponentkind.OrderOption
 	inters         []Interceptor
 	predicates     []predicate.SystemComponentKind
+	withTenant     *TenantQuery
 	withComponents *SystemComponentQuery
 	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -62,6 +64,28 @@ func (sckq *SystemComponentKindQuery) Unique(unique bool) *SystemComponentKindQu
 func (sckq *SystemComponentKindQuery) Order(o ...systemcomponentkind.OrderOption) *SystemComponentKindQuery {
 	sckq.order = append(sckq.order, o...)
 	return sckq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (sckq *SystemComponentKindQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: sckq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sckq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sckq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentkind.Table, systemcomponentkind.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentkind.TenantTable, systemcomponentkind.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sckq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryComponents chains the current query on the "components" edge.
@@ -278,12 +302,24 @@ func (sckq *SystemComponentKindQuery) Clone() *SystemComponentKindQuery {
 		order:          append([]systemcomponentkind.OrderOption{}, sckq.order...),
 		inters:         append([]Interceptor{}, sckq.inters...),
 		predicates:     append([]predicate.SystemComponentKind{}, sckq.predicates...),
+		withTenant:     sckq.withTenant.Clone(),
 		withComponents: sckq.withComponents.Clone(),
 		// clone intermediate query.
 		sql:       sckq.sql.Clone(),
 		path:      sckq.path,
 		modifiers: append([]func(*sql.Selector){}, sckq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (sckq *SystemComponentKindQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentKindQuery {
+	query := (&TenantClient{config: sckq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sckq.withTenant = query
+	return sckq
 }
 
 // WithComponents tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (sckq *SystemComponentKindQuery) WithComponents(opts ...func(*SystemCompone
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemComponentKind.Query().
-//		GroupBy(systemcomponentkind.FieldProviderID).
+//		GroupBy(systemcomponentkind.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *SystemComponentKindGroupBy {
@@ -326,11 +362,11 @@ func (sckq *SystemComponentKindQuery) GroupBy(field string, fields ...string) *S
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemComponentKind.Query().
-//		Select(systemcomponentkind.FieldProviderID).
+//		Select(systemcomponentkind.FieldTenantID).
 //		Scan(ctx, &v)
 func (sckq *SystemComponentKindQuery) Select(fields ...string) *SystemComponentKindSelect {
 	sckq.ctx.Fields = append(sckq.ctx.Fields, fields...)
@@ -381,7 +417,8 @@ func (sckq *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...query
 	var (
 		nodes       = []*SystemComponentKind{}
 		_spec       = sckq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			sckq.withTenant != nil,
 			sckq.withComponents != nil,
 		}
 	)
@@ -406,6 +443,12 @@ func (sckq *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...query
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sckq.withTenant; query != nil {
+		if err := sckq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemComponentKind, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := sckq.withComponents; query != nil {
 		if err := sckq.loadComponents(ctx, query, nodes,
 			func(n *SystemComponentKind) { n.Edges.Components = []*SystemComponent{} },
@@ -416,6 +459,35 @@ func (sckq *SystemComponentKindQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
+func (sckq *SystemComponentKindQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemComponentKind)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (sckq *SystemComponentKindQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentKind, init func(*SystemComponentKind), assign func(*SystemComponentKind, *SystemComponent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemComponentKind)
@@ -474,6 +546,9 @@ func (sckq *SystemComponentKindQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemcomponentkind.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sckq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemcomponentkind.FieldTenantID)
 		}
 	}
 	if ps := sckq.predicates; len(ps) > 0 {

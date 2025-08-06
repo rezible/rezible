@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallHandoverTemplate is the model entity for the OncallHandoverTemplate schema.
@@ -18,6 +19,8 @@ type OncallHandoverTemplate struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -34,17 +37,30 @@ type OncallHandoverTemplate struct {
 
 // OncallHandoverTemplateEdges holds the relations/edges for other nodes in the graph.
 type OncallHandoverTemplateEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster []*OncallRoster `json:"roster,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallHandoverTemplateEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallHandoverTemplateEdges) RosterOrErr() ([]*OncallRoster, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Roster, nil
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -59,6 +75,8 @@ func (*OncallHandoverTemplate) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case oncallhandovertemplate.FieldIsDefault:
 			values[i] = new(sql.NullBool)
+		case oncallhandovertemplate.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallhandovertemplate.FieldCreatedAt, oncallhandovertemplate.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case oncallhandovertemplate.FieldID:
@@ -83,6 +101,12 @@ func (oht *OncallHandoverTemplate) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				oht.ID = *value
+			}
+		case oncallhandovertemplate.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				oht.TenantID = int(value.Int64)
 			}
 		case oncallhandovertemplate.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -121,6 +145,11 @@ func (oht *OncallHandoverTemplate) Value(name string) (ent.Value, error) {
 	return oht.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the OncallHandoverTemplate entity.
+func (oht *OncallHandoverTemplate) QueryTenant() *TenantQuery {
+	return NewOncallHandoverTemplateClient(oht.config).QueryTenant(oht)
+}
+
 // QueryRoster queries the "roster" edge of the OncallHandoverTemplate entity.
 func (oht *OncallHandoverTemplate) QueryRoster() *OncallRosterQuery {
 	return NewOncallHandoverTemplateClient(oht.config).QueryRoster(oht)
@@ -149,6 +178,9 @@ func (oht *OncallHandoverTemplate) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallHandoverTemplate(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", oht.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", oht.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(oht.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")

@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallschedule"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallSchedule is the model entity for the OncallSchedule schema.
@@ -19,6 +20,8 @@ type OncallSchedule struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
@@ -37,19 +40,32 @@ type OncallSchedule struct {
 
 // OncallScheduleEdges holds the relations/edges for other nodes in the graph.
 type OncallScheduleEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Participants holds the value of the participants edge.
 	Participants []*OncallScheduleParticipant `json:"participants,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallScheduleEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ParticipantsOrErr returns the Participants value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallScheduleEdges) ParticipantsOrErr() ([]*OncallScheduleParticipant, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Participants, nil
 	}
 	return nil, &NotLoadedError{edge: "participants"}
@@ -60,7 +76,7 @@ func (e OncallScheduleEdges) ParticipantsOrErr() ([]*OncallScheduleParticipant, 
 func (e OncallScheduleEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -71,6 +87,8 @@ func (*OncallSchedule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallschedule.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallschedule.FieldName, oncallschedule.FieldTimezone, oncallschedule.FieldProviderID:
 			values[i] = new(sql.NullString)
 		case oncallschedule.FieldArchiveTime:
@@ -97,6 +115,12 @@ func (os *OncallSchedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				os.ID = *value
+			}
+		case oncallschedule.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				os.TenantID = int(value.Int64)
 			}
 		case oncallschedule.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -141,6 +165,11 @@ func (os *OncallSchedule) Value(name string) (ent.Value, error) {
 	return os.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the OncallSchedule entity.
+func (os *OncallSchedule) QueryTenant() *TenantQuery {
+	return NewOncallScheduleClient(os.config).QueryTenant(os)
+}
+
 // QueryParticipants queries the "participants" edge of the OncallSchedule entity.
 func (os *OncallSchedule) QueryParticipants() *OncallScheduleParticipantQuery {
 	return NewOncallScheduleClient(os.config).QueryParticipants(os)
@@ -174,6 +203,9 @@ func (os *OncallSchedule) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallSchedule(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", os.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", os.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(os.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")

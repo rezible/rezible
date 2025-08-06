@@ -200,6 +200,14 @@ func (au *AlertUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (au *AlertUpdate) check() error {
+	if au.mutation.TenantCleared() && len(au.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (au *AlertUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdate {
 	au.modifiers = append(au.modifiers, modifiers...)
@@ -207,6 +215,9 @@ func (au *AlertUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpd
 }
 
 func (au *AlertUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := au.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
 	if ps := au.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -559,6 +570,14 @@ func (auo *AlertUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (auo *AlertUpdateOne) check() error {
+	if auo.mutation.TenantCleared() && len(auo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Alert.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (auo *AlertUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *AlertUpdateOne {
 	auo.modifiers = append(auo.modifiers, modifiers...)
@@ -566,6 +585,9 @@ func (auo *AlertUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Aler
 }
 
 func (auo *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error) {
+	if err := auo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(alert.Table, alert.Columns, sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID))
 	id, ok := auo.mutation.ID()
 	if !ok {

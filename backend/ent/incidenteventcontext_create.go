@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventContextCreate is the builder for creating a IncidentEventContext entity.
@@ -23,6 +24,12 @@ type IncidentEventContextCreate struct {
 	mutation *IncidentEventContextMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (iecc *IncidentEventContextCreate) SetTenantID(i int) *IncidentEventContextCreate {
+	iecc.mutation.SetTenantID(i)
+	return iecc
 }
 
 // SetSystemState sets the "system_state" field.
@@ -93,6 +100,11 @@ func (iecc *IncidentEventContextCreate) SetNillableID(u *uuid.UUID) *IncidentEve
 	return iecc
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (iecc *IncidentEventContextCreate) SetTenant(t *Tenant) *IncidentEventContextCreate {
+	return iecc.SetTenantID(t.ID)
+}
+
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
 func (iecc *IncidentEventContextCreate) SetEventID(id uuid.UUID) *IncidentEventContextCreate {
 	iecc.mutation.SetEventID(id)
@@ -160,8 +172,14 @@ func (iecc *IncidentEventContextCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (iecc *IncidentEventContextCreate) check() error {
+	if _, ok := iecc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEventContext.tenant_id"`)}
+	}
 	if _, ok := iecc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEventContext.created_at"`)}
+	}
+	if len(iecc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEventContext.tenant"`)}
 	}
 	if len(iecc.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "IncidentEventContext.event"`)}
@@ -222,6 +240,23 @@ func (iecc *IncidentEventContextCreate) createSpec() (*IncidentEventContext, *sq
 		_spec.SetField(incidenteventcontext.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := iecc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenteventcontext.TenantTable,
+			Columns: []string{incidenteventcontext.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := iecc.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -246,7 +281,7 @@ func (iecc *IncidentEventContextCreate) createSpec() (*IncidentEventContext, *sq
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEventContext.Create().
-//		SetSystemState(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -255,7 +290,7 @@ func (iecc *IncidentEventContextCreate) createSpec() (*IncidentEventContext, *sq
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventContextUpsert) {
-//			SetSystemState(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iecc *IncidentEventContextCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventContextUpsertOne {
@@ -391,6 +426,9 @@ func (u *IncidentEventContextUpsertOne) UpdateNewValues() *IncidentEventContextU
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenteventcontext.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenteventcontext.FieldTenantID)
 		}
 	}))
 	return u
@@ -657,7 +695,7 @@ func (ieccb *IncidentEventContextCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventContextUpsert) {
-//			SetSystemState(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ieccb *IncidentEventContextCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventContextUpsertBulk {
@@ -703,6 +741,9 @@ func (u *IncidentEventContextUpsertBulk) UpdateNewValues() *IncidentEventContext
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenteventcontext.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenteventcontext.FieldTenantID)
 			}
 		}
 	}))

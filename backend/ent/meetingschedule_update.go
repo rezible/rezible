@@ -263,21 +263,6 @@ func (msu *MeetingScheduleUpdate) ClearNumRepetitions() *MeetingScheduleUpdate {
 	return msu
 }
 
-// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
-func (msu *MeetingScheduleUpdate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdate {
-	msu.mutation.AddSessionIDs(ids...)
-	return msu
-}
-
-// AddSessions adds the "sessions" edges to the MeetingSession entity.
-func (msu *MeetingScheduleUpdate) AddSessions(m ...*MeetingSession) *MeetingScheduleUpdate {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return msu.AddSessionIDs(ids...)
-}
-
 // AddOwningTeamIDs adds the "owning_team" edge to the Team entity by IDs.
 func (msu *MeetingScheduleUpdate) AddOwningTeamIDs(ids ...uuid.UUID) *MeetingScheduleUpdate {
 	msu.mutation.AddOwningTeamIDs(ids...)
@@ -293,30 +278,24 @@ func (msu *MeetingScheduleUpdate) AddOwningTeam(t ...*Team) *MeetingScheduleUpda
 	return msu.AddOwningTeamIDs(ids...)
 }
 
-// Mutation returns the MeetingScheduleMutation object of the builder.
-func (msu *MeetingScheduleUpdate) Mutation() *MeetingScheduleMutation {
-	return msu.mutation
-}
-
-// ClearSessions clears all "sessions" edges to the MeetingSession entity.
-func (msu *MeetingScheduleUpdate) ClearSessions() *MeetingScheduleUpdate {
-	msu.mutation.ClearSessions()
+// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
+func (msu *MeetingScheduleUpdate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdate {
+	msu.mutation.AddSessionIDs(ids...)
 	return msu
 }
 
-// RemoveSessionIDs removes the "sessions" edge to MeetingSession entities by IDs.
-func (msu *MeetingScheduleUpdate) RemoveSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdate {
-	msu.mutation.RemoveSessionIDs(ids...)
-	return msu
-}
-
-// RemoveSessions removes "sessions" edges to MeetingSession entities.
-func (msu *MeetingScheduleUpdate) RemoveSessions(m ...*MeetingSession) *MeetingScheduleUpdate {
+// AddSessions adds the "sessions" edges to the MeetingSession entity.
+func (msu *MeetingScheduleUpdate) AddSessions(m ...*MeetingSession) *MeetingScheduleUpdate {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return msu.RemoveSessionIDs(ids...)
+	return msu.AddSessionIDs(ids...)
+}
+
+// Mutation returns the MeetingScheduleMutation object of the builder.
+func (msu *MeetingScheduleUpdate) Mutation() *MeetingScheduleMutation {
+	return msu.mutation
 }
 
 // ClearOwningTeam clears all "owning_team" edges to the Team entity.
@@ -338,6 +317,27 @@ func (msu *MeetingScheduleUpdate) RemoveOwningTeam(t ...*Team) *MeetingScheduleU
 		ids[i] = t[i].ID
 	}
 	return msu.RemoveOwningTeamIDs(ids...)
+}
+
+// ClearSessions clears all "sessions" edges to the MeetingSession entity.
+func (msu *MeetingScheduleUpdate) ClearSessions() *MeetingScheduleUpdate {
+	msu.mutation.ClearSessions()
+	return msu
+}
+
+// RemoveSessionIDs removes the "sessions" edge to MeetingSession entities by IDs.
+func (msu *MeetingScheduleUpdate) RemoveSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdate {
+	msu.mutation.RemoveSessionIDs(ids...)
+	return msu
+}
+
+// RemoveSessions removes "sessions" edges to MeetingSession entities.
+func (msu *MeetingScheduleUpdate) RemoveSessions(m ...*MeetingSession) *MeetingScheduleUpdate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return msu.RemoveSessionIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -383,6 +383,9 @@ func (msu *MeetingScheduleUpdate) check() error {
 		if err := meetingschedule.MonthlyOnValidator(v); err != nil {
 			return &ValidationError{Name: "monthly_on", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.monthly_on": %w`, err)}
 		}
+	}
+	if msu.mutation.TenantCleared() && len(msu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "MeetingSchedule.tenant"`)
 	}
 	return nil
 }
@@ -476,51 +479,6 @@ func (msu *MeetingScheduleUpdate) sqlSave(ctx context.Context) (n int, err error
 	if msu.mutation.NumRepetitionsCleared() {
 		_spec.ClearField(meetingschedule.FieldNumRepetitions, field.TypeInt)
 	}
-	if msu.mutation.SessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := msu.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !msu.mutation.SessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := msu.mutation.SessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if msu.mutation.OwningTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -559,6 +517,51 @@ func (msu *MeetingScheduleUpdate) sqlSave(ctx context.Context) (n int, err error
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if msu.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msu.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !msu.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msu.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -818,21 +821,6 @@ func (msuo *MeetingScheduleUpdateOne) ClearNumRepetitions() *MeetingScheduleUpda
 	return msuo
 }
 
-// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
-func (msuo *MeetingScheduleUpdateOne) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdateOne {
-	msuo.mutation.AddSessionIDs(ids...)
-	return msuo
-}
-
-// AddSessions adds the "sessions" edges to the MeetingSession entity.
-func (msuo *MeetingScheduleUpdateOne) AddSessions(m ...*MeetingSession) *MeetingScheduleUpdateOne {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return msuo.AddSessionIDs(ids...)
-}
-
 // AddOwningTeamIDs adds the "owning_team" edge to the Team entity by IDs.
 func (msuo *MeetingScheduleUpdateOne) AddOwningTeamIDs(ids ...uuid.UUID) *MeetingScheduleUpdateOne {
 	msuo.mutation.AddOwningTeamIDs(ids...)
@@ -848,30 +836,24 @@ func (msuo *MeetingScheduleUpdateOne) AddOwningTeam(t ...*Team) *MeetingSchedule
 	return msuo.AddOwningTeamIDs(ids...)
 }
 
-// Mutation returns the MeetingScheduleMutation object of the builder.
-func (msuo *MeetingScheduleUpdateOne) Mutation() *MeetingScheduleMutation {
-	return msuo.mutation
-}
-
-// ClearSessions clears all "sessions" edges to the MeetingSession entity.
-func (msuo *MeetingScheduleUpdateOne) ClearSessions() *MeetingScheduleUpdateOne {
-	msuo.mutation.ClearSessions()
+// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
+func (msuo *MeetingScheduleUpdateOne) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdateOne {
+	msuo.mutation.AddSessionIDs(ids...)
 	return msuo
 }
 
-// RemoveSessionIDs removes the "sessions" edge to MeetingSession entities by IDs.
-func (msuo *MeetingScheduleUpdateOne) RemoveSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdateOne {
-	msuo.mutation.RemoveSessionIDs(ids...)
-	return msuo
-}
-
-// RemoveSessions removes "sessions" edges to MeetingSession entities.
-func (msuo *MeetingScheduleUpdateOne) RemoveSessions(m ...*MeetingSession) *MeetingScheduleUpdateOne {
+// AddSessions adds the "sessions" edges to the MeetingSession entity.
+func (msuo *MeetingScheduleUpdateOne) AddSessions(m ...*MeetingSession) *MeetingScheduleUpdateOne {
 	ids := make([]uuid.UUID, len(m))
 	for i := range m {
 		ids[i] = m[i].ID
 	}
-	return msuo.RemoveSessionIDs(ids...)
+	return msuo.AddSessionIDs(ids...)
+}
+
+// Mutation returns the MeetingScheduleMutation object of the builder.
+func (msuo *MeetingScheduleUpdateOne) Mutation() *MeetingScheduleMutation {
+	return msuo.mutation
 }
 
 // ClearOwningTeam clears all "owning_team" edges to the Team entity.
@@ -893,6 +875,27 @@ func (msuo *MeetingScheduleUpdateOne) RemoveOwningTeam(t ...*Team) *MeetingSched
 		ids[i] = t[i].ID
 	}
 	return msuo.RemoveOwningTeamIDs(ids...)
+}
+
+// ClearSessions clears all "sessions" edges to the MeetingSession entity.
+func (msuo *MeetingScheduleUpdateOne) ClearSessions() *MeetingScheduleUpdateOne {
+	msuo.mutation.ClearSessions()
+	return msuo
+}
+
+// RemoveSessionIDs removes the "sessions" edge to MeetingSession entities by IDs.
+func (msuo *MeetingScheduleUpdateOne) RemoveSessionIDs(ids ...uuid.UUID) *MeetingScheduleUpdateOne {
+	msuo.mutation.RemoveSessionIDs(ids...)
+	return msuo
+}
+
+// RemoveSessions removes "sessions" edges to MeetingSession entities.
+func (msuo *MeetingScheduleUpdateOne) RemoveSessions(m ...*MeetingSession) *MeetingScheduleUpdateOne {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return msuo.RemoveSessionIDs(ids...)
 }
 
 // Where appends a list predicates to the MeetingScheduleUpdate builder.
@@ -951,6 +954,9 @@ func (msuo *MeetingScheduleUpdateOne) check() error {
 		if err := meetingschedule.MonthlyOnValidator(v); err != nil {
 			return &ValidationError{Name: "monthly_on", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.monthly_on": %w`, err)}
 		}
+	}
+	if msuo.mutation.TenantCleared() && len(msuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "MeetingSchedule.tenant"`)
 	}
 	return nil
 }
@@ -1061,51 +1067,6 @@ func (msuo *MeetingScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Meeti
 	if msuo.mutation.NumRepetitionsCleared() {
 		_spec.ClearField(meetingschedule.FieldNumRepetitions, field.TypeInt)
 	}
-	if msuo.mutation.SessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := msuo.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !msuo.mutation.SessionsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := msuo.mutation.SessionsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if msuo.mutation.OwningTeamCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -1144,6 +1105,51 @@ func (msuo *MeetingScheduleUpdateOne) sqlSave(ctx context.Context) (_node *Meeti
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if msuo.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msuo.mutation.RemovedSessionsIDs(); len(nodes) > 0 && !msuo.mutation.SessionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msuo.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

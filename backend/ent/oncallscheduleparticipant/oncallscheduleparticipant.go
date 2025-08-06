@@ -14,18 +14,29 @@ const (
 	Label = "oncall_schedule_participant"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldScheduleID holds the string denoting the schedule_id field in the database.
 	FieldScheduleID = "schedule_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldIndex holds the string denoting the index field in the database.
 	FieldIndex = "index"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeSchedule holds the string denoting the schedule edge name in mutations.
 	EdgeSchedule = "schedule"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
 	// Table holds the table name of the oncallscheduleparticipant in the database.
 	Table = "oncall_schedule_participants"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_schedule_participants"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// ScheduleTable is the table that holds the schedule relation/edge.
 	ScheduleTable = "oncall_schedule_participants"
 	// ScheduleInverseTable is the table name for the OncallSchedule entity.
@@ -45,6 +56,7 @@ const (
 // Columns holds all SQL columns for oncallscheduleparticipant fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldScheduleID,
 	FieldUserID,
 	FieldIndex,
@@ -80,6 +92,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByScheduleID orders the results by the schedule_id field.
 func ByScheduleID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldScheduleID, opts...).ToFunc()
@@ -95,6 +112,13 @@ func ByIndex(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIndex, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByScheduleField orders the results by schedule field.
 func ByScheduleField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -107,6 +131,13 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newScheduleStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

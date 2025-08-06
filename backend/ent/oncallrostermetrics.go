@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallRosterMetrics is the model entity for the OncallRosterMetrics schema.
@@ -18,6 +19,8 @@ type OncallRosterMetrics struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
 	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -28,11 +31,24 @@ type OncallRosterMetrics struct {
 
 // OncallRosterMetricsEdges holds the relations/edges for other nodes in the graph.
 type OncallRosterMetricsEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Roster holds the value of the roster edge.
 	Roster *OncallRoster `json:"roster,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallRosterMetricsEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // RosterOrErr returns the Roster value or an error if the edge
@@ -40,7 +56,7 @@ type OncallRosterMetricsEdges struct {
 func (e OncallRosterMetricsEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -51,6 +67,8 @@ func (*OncallRosterMetrics) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallrostermetrics.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallrostermetrics.FieldID, oncallrostermetrics.FieldRosterID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -74,6 +92,12 @@ func (orm *OncallRosterMetrics) assignValues(columns []string, values []any) err
 			} else if value != nil {
 				orm.ID = *value
 			}
+		case oncallrostermetrics.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				orm.TenantID = int(value.Int64)
+			}
 		case oncallrostermetrics.FieldRosterID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
@@ -91,6 +115,11 @@ func (orm *OncallRosterMetrics) assignValues(columns []string, values []any) err
 // This includes values selected through modifiers, order, etc.
 func (orm *OncallRosterMetrics) Value(name string) (ent.Value, error) {
 	return orm.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the OncallRosterMetrics entity.
+func (orm *OncallRosterMetrics) QueryTenant() *TenantQuery {
+	return NewOncallRosterMetricsClient(orm.config).QueryTenant(orm)
 }
 
 // QueryRoster queries the "roster" edge of the OncallRosterMetrics entity.
@@ -121,6 +150,9 @@ func (orm *OncallRosterMetrics) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallRosterMetrics(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", orm.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", orm.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("roster_id=")
 	builder.WriteString(fmt.Sprintf("%v", orm.RosterID))
 	builder.WriteByte(')')

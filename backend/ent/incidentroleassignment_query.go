@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -27,9 +28,10 @@ type IncidentRoleAssignmentQuery struct {
 	order        []incidentroleassignment.OrderOption
 	inters       []Interceptor
 	predicates   []predicate.IncidentRoleAssignment
-	withRole     *IncidentRoleQuery
+	withTenant   *TenantQuery
 	withIncident *IncidentQuery
 	withUser     *UserQuery
+	withRole     *IncidentRoleQuery
 	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -67,9 +69,9 @@ func (iraq *IncidentRoleAssignmentQuery) Order(o ...incidentroleassignment.Order
 	return iraq
 }
 
-// QueryRole chains the current query on the "role" edge.
-func (iraq *IncidentRoleAssignmentQuery) QueryRole() *IncidentRoleQuery {
-	query := (&IncidentRoleClient{config: iraq.config}).Query()
+// QueryTenant chains the current query on the "tenant" edge.
+func (iraq *IncidentRoleAssignmentQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: iraq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iraq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -80,8 +82,8 @@ func (iraq *IncidentRoleAssignmentQuery) QueryRole() *IncidentRoleQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, selector),
-			sqlgraph.To(incidentrole.Table, incidentrole.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.RoleTable, incidentroleassignment.RoleColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.TenantTable, incidentroleassignment.TenantColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iraq.driver.Dialect(), step)
 		return fromU, nil
@@ -126,6 +128,28 @@ func (iraq *IncidentRoleAssignmentQuery) QueryUser() *UserQuery {
 			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.UserTable, incidentroleassignment.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iraq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRole chains the current query on the "role" edge.
+func (iraq *IncidentRoleAssignmentQuery) QueryRole() *IncidentRoleQuery {
+	query := (&IncidentRoleClient{config: iraq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iraq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iraq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, selector),
+			sqlgraph.To(incidentrole.Table, incidentrole.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.RoleTable, incidentroleassignment.RoleColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iraq.driver.Dialect(), step)
 		return fromU, nil
@@ -325,9 +349,10 @@ func (iraq *IncidentRoleAssignmentQuery) Clone() *IncidentRoleAssignmentQuery {
 		order:        append([]incidentroleassignment.OrderOption{}, iraq.order...),
 		inters:       append([]Interceptor{}, iraq.inters...),
 		predicates:   append([]predicate.IncidentRoleAssignment{}, iraq.predicates...),
-		withRole:     iraq.withRole.Clone(),
+		withTenant:   iraq.withTenant.Clone(),
 		withIncident: iraq.withIncident.Clone(),
 		withUser:     iraq.withUser.Clone(),
+		withRole:     iraq.withRole.Clone(),
 		// clone intermediate query.
 		sql:       iraq.sql.Clone(),
 		path:      iraq.path,
@@ -335,14 +360,14 @@ func (iraq *IncidentRoleAssignmentQuery) Clone() *IncidentRoleAssignmentQuery {
 	}
 }
 
-// WithRole tells the query-builder to eager-load the nodes that are connected to
-// the "role" edge. The optional arguments are used to configure the query builder of the edge.
-func (iraq *IncidentRoleAssignmentQuery) WithRole(opts ...func(*IncidentRoleQuery)) *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleClient{config: iraq.config}).Query()
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (iraq *IncidentRoleAssignmentQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentRoleAssignmentQuery {
+	query := (&TenantClient{config: iraq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	iraq.withRole = query
+	iraq.withTenant = query
 	return iraq
 }
 
@@ -368,18 +393,29 @@ func (iraq *IncidentRoleAssignmentQuery) WithUser(opts ...func(*UserQuery)) *Inc
 	return iraq
 }
 
+// WithRole tells the query-builder to eager-load the nodes that are connected to
+// the "role" edge. The optional arguments are used to configure the query builder of the edge.
+func (iraq *IncidentRoleAssignmentQuery) WithRole(opts ...func(*IncidentRoleQuery)) *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleClient{config: iraq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iraq.withRole = query
+	return iraq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		RoleID uuid.UUID `json:"role_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentRoleAssignment.Query().
-//		GroupBy(incidentroleassignment.FieldRoleID).
+//		GroupBy(incidentroleassignment.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iraq *IncidentRoleAssignmentQuery) GroupBy(field string, fields ...string) *IncidentRoleAssignmentGroupBy {
@@ -397,11 +433,11 @@ func (iraq *IncidentRoleAssignmentQuery) GroupBy(field string, fields ...string)
 // Example:
 //
 //	var v []struct {
-//		RoleID uuid.UUID `json:"role_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentRoleAssignment.Query().
-//		Select(incidentroleassignment.FieldRoleID).
+//		Select(incidentroleassignment.FieldTenantID).
 //		Scan(ctx, &v)
 func (iraq *IncidentRoleAssignmentQuery) Select(fields ...string) *IncidentRoleAssignmentSelect {
 	iraq.ctx.Fields = append(iraq.ctx.Fields, fields...)
@@ -452,10 +488,11 @@ func (iraq *IncidentRoleAssignmentQuery) sqlAll(ctx context.Context, hooks ...qu
 	var (
 		nodes       = []*IncidentRoleAssignment{}
 		_spec       = iraq.querySpec()
-		loadedTypes = [3]bool{
-			iraq.withRole != nil,
+		loadedTypes = [4]bool{
+			iraq.withTenant != nil,
 			iraq.withIncident != nil,
 			iraq.withUser != nil,
+			iraq.withRole != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -479,9 +516,9 @@ func (iraq *IncidentRoleAssignmentQuery) sqlAll(ctx context.Context, hooks ...qu
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := iraq.withRole; query != nil {
-		if err := iraq.loadRole(ctx, query, nodes, nil,
-			func(n *IncidentRoleAssignment, e *IncidentRole) { n.Edges.Role = e }); err != nil {
+	if query := iraq.withTenant; query != nil {
+		if err := iraq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentRoleAssignment, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -497,14 +534,20 @@ func (iraq *IncidentRoleAssignmentQuery) sqlAll(ctx context.Context, hooks ...qu
 			return nil, err
 		}
 	}
+	if query := iraq.withRole; query != nil {
+		if err := iraq.loadRole(ctx, query, nodes, nil,
+			func(n *IncidentRoleAssignment, e *IncidentRole) { n.Edges.Role = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (iraq *IncidentRoleAssignmentQuery) loadRole(ctx context.Context, query *IncidentRoleQuery, nodes []*IncidentRoleAssignment, init func(*IncidentRoleAssignment), assign func(*IncidentRoleAssignment, *IncidentRole)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*IncidentRoleAssignment)
+func (iraq *IncidentRoleAssignmentQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentRoleAssignment, init func(*IncidentRoleAssignment), assign func(*IncidentRoleAssignment, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentRoleAssignment)
 	for i := range nodes {
-		fk := nodes[i].RoleID
+		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -513,7 +556,7 @@ func (iraq *IncidentRoleAssignmentQuery) loadRole(ctx context.Context, query *In
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(incidentrole.IDIn(ids...))
+	query.Where(tenant.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -521,7 +564,7 @@ func (iraq *IncidentRoleAssignmentQuery) loadRole(ctx context.Context, query *In
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "role_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -587,6 +630,35 @@ func (iraq *IncidentRoleAssignmentQuery) loadUser(ctx context.Context, query *Us
 	}
 	return nil
 }
+func (iraq *IncidentRoleAssignmentQuery) loadRole(ctx context.Context, query *IncidentRoleQuery, nodes []*IncidentRoleAssignment, init func(*IncidentRoleAssignment), assign func(*IncidentRoleAssignment, *IncidentRole)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*IncidentRoleAssignment)
+	for i := range nodes {
+		fk := nodes[i].RoleID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(incidentrole.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "role_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (iraq *IncidentRoleAssignmentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := iraq.querySpec()
@@ -616,14 +688,17 @@ func (iraq *IncidentRoleAssignmentQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if iraq.withRole != nil {
-			_spec.Node.AddColumnOnce(incidentroleassignment.FieldRoleID)
+		if iraq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentroleassignment.FieldTenantID)
 		}
 		if iraq.withIncident != nil {
 			_spec.Node.AddColumnOnce(incidentroleassignment.FieldIncidentID)
 		}
 		if iraq.withUser != nil {
 			_spec.Node.AddColumnOnce(incidentroleassignment.FieldUserID)
+		}
+		if iraq.withRole != nil {
+			_spec.Node.AddColumnOnce(incidentroleassignment.FieldRoleID)
 		}
 	}
 	if ps := iraq.predicates; len(ps) > 0 {

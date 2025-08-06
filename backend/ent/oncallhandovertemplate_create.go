@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallHandoverTemplateCreate is the builder for creating a OncallHandoverTemplate entity.
@@ -23,6 +24,12 @@ type OncallHandoverTemplateCreate struct {
 	mutation *OncallHandoverTemplateMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ohtc *OncallHandoverTemplateCreate) SetTenantID(i int) *OncallHandoverTemplateCreate {
+	ohtc.mutation.SetTenantID(i)
+	return ohtc
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -85,6 +92,11 @@ func (ohtc *OncallHandoverTemplateCreate) SetNillableID(u *uuid.UUID) *OncallHan
 		ohtc.SetID(*u)
 	}
 	return ohtc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ohtc *OncallHandoverTemplateCreate) SetTenant(t *Tenant) *OncallHandoverTemplateCreate {
+	return ohtc.SetTenantID(t.ID)
 }
 
 // AddRosterIDs adds the "roster" edge to the OncallRoster entity by IDs.
@@ -169,6 +181,9 @@ func (ohtc *OncallHandoverTemplateCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ohtc *OncallHandoverTemplateCreate) check() error {
+	if _, ok := ohtc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallHandoverTemplate.tenant_id"`)}
+	}
 	if _, ok := ohtc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "OncallHandoverTemplate.created_at"`)}
 	}
@@ -180,6 +195,9 @@ func (ohtc *OncallHandoverTemplateCreate) check() error {
 	}
 	if _, ok := ohtc.mutation.IsDefault(); !ok {
 		return &ValidationError{Name: "is_default", err: errors.New(`ent: missing required field "OncallHandoverTemplate.is_default"`)}
+	}
+	if len(ohtc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallHandoverTemplate.tenant"`)}
 	}
 	return nil
 }
@@ -233,6 +251,23 @@ func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate,
 		_spec.SetField(oncallhandovertemplate.FieldIsDefault, field.TypeBool, value)
 		_node.IsDefault = value
 	}
+	if nodes := ohtc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallhandovertemplate.TenantTable,
+			Columns: []string{oncallhandovertemplate.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ohtc.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -256,7 +291,7 @@ func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate,
 // of the `INSERT` statement. For example:
 //
 //	client.OncallHandoverTemplate.Create().
-//		SetCreatedAt(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -265,7 +300,7 @@ func (ohtc *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate,
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallHandoverTemplateUpsert) {
-//			SetCreatedAt(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ohtc *OncallHandoverTemplateCreate) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertOne {
@@ -365,6 +400,9 @@ func (u *OncallHandoverTemplateUpsertOne) UpdateNewValues() *OncallHandoverTempl
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallhandovertemplate.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallhandovertemplate.FieldTenantID)
 		}
 	}))
 	return u
@@ -589,7 +627,7 @@ func (ohtcb *OncallHandoverTemplateCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallHandoverTemplateUpsert) {
-//			SetCreatedAt(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ohtcb *OncallHandoverTemplateCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallHandoverTemplateUpsertBulk {
@@ -635,6 +673,9 @@ func (u *OncallHandoverTemplateUpsertBulk) UpdateNewValues() *OncallHandoverTemp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallhandovertemplate.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallhandovertemplate.FieldTenantID)
 			}
 		}
 	}))

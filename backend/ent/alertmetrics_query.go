@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // AlertMetricsQuery is the builder for querying AlertMetrics entities.
@@ -25,6 +26,7 @@ type AlertMetricsQuery struct {
 	order      []alertmetrics.OrderOption
 	inters     []Interceptor
 	predicates []predicate.AlertMetrics
+	withTenant *TenantQuery
 	withAlert  *AlertQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (amq *AlertMetricsQuery) Unique(unique bool) *AlertMetricsQuery {
 func (amq *AlertMetricsQuery) Order(o ...alertmetrics.OrderOption) *AlertMetricsQuery {
 	amq.order = append(amq.order, o...)
 	return amq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (amq *AlertMetricsQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: amq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := amq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := amq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertmetrics.Table, alertmetrics.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertmetrics.TenantTable, alertmetrics.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(amq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAlert chains the current query on the "alert" edge.
@@ -277,12 +301,24 @@ func (amq *AlertMetricsQuery) Clone() *AlertMetricsQuery {
 		order:      append([]alertmetrics.OrderOption{}, amq.order...),
 		inters:     append([]Interceptor{}, amq.inters...),
 		predicates: append([]predicate.AlertMetrics{}, amq.predicates...),
+		withTenant: amq.withTenant.Clone(),
 		withAlert:  amq.withAlert.Clone(),
 		// clone intermediate query.
 		sql:       amq.sql.Clone(),
 		path:      amq.path,
 		modifiers: append([]func(*sql.Selector){}, amq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (amq *AlertMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *AlertMetricsQuery {
+	query := (&TenantClient{config: amq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	amq.withTenant = query
+	return amq
 }
 
 // WithAlert tells the query-builder to eager-load the nodes that are connected to
@@ -302,12 +338,12 @@ func (amq *AlertMetricsQuery) WithAlert(opts ...func(*AlertQuery)) *AlertMetrics
 // Example:
 //
 //	var v []struct {
-//		AlertID uuid.UUID `json:"alert_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.AlertMetrics.Query().
-//		GroupBy(alertmetrics.FieldAlertID).
+//		GroupBy(alertmetrics.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (amq *AlertMetricsQuery) GroupBy(field string, fields ...string) *AlertMetricsGroupBy {
@@ -325,11 +361,11 @@ func (amq *AlertMetricsQuery) GroupBy(field string, fields ...string) *AlertMetr
 // Example:
 //
 //	var v []struct {
-//		AlertID uuid.UUID `json:"alert_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.AlertMetrics.Query().
-//		Select(alertmetrics.FieldAlertID).
+//		Select(alertmetrics.FieldTenantID).
 //		Scan(ctx, &v)
 func (amq *AlertMetricsQuery) Select(fields ...string) *AlertMetricsSelect {
 	amq.ctx.Fields = append(amq.ctx.Fields, fields...)
@@ -380,7 +416,8 @@ func (amq *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*AlertMetrics{}
 		_spec       = amq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			amq.withTenant != nil,
 			amq.withAlert != nil,
 		}
 	)
@@ -405,6 +442,12 @@ func (amq *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := amq.withTenant; query != nil {
+		if err := amq.loadTenant(ctx, query, nodes, nil,
+			func(n *AlertMetrics, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := amq.withAlert; query != nil {
 		if err := amq.loadAlert(ctx, query, nodes, nil,
 			func(n *AlertMetrics, e *Alert) { n.Edges.Alert = e }); err != nil {
@@ -414,6 +457,35 @@ func (amq *AlertMetricsQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
+func (amq *AlertMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*AlertMetrics, init func(*AlertMetrics), assign func(*AlertMetrics, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*AlertMetrics)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (amq *AlertMetricsQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*AlertMetrics, init func(*AlertMetrics), assign func(*AlertMetrics, *Alert)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertMetrics)
@@ -471,6 +543,9 @@ func (amq *AlertMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != alertmetrics.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if amq.withTenant != nil {
+			_spec.Node.AddColumnOnce(alertmetrics.FieldTenantID)
 		}
 		if amq.withAlert != nil {
 			_spec.Node.AddColumnOnce(alertmetrics.FieldAlertID)

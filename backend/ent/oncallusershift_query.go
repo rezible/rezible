@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -29,6 +30,7 @@ type OncallUserShiftQuery struct {
 	order            []oncallusershift.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.OncallUserShift
+	withTenant       *TenantQuery
 	withUser         *UserQuery
 	withRoster       *OncallRosterQuery
 	withPrimaryShift *OncallUserShiftQuery
@@ -69,6 +71,28 @@ func (ousq *OncallUserShiftQuery) Unique(unique bool) *OncallUserShiftQuery {
 func (ousq *OncallUserShiftQuery) Order(o ...oncallusershift.OrderOption) *OncallUserShiftQuery {
 	ousq.order = append(ousq.order, o...)
 	return ousq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ousq *OncallUserShiftQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ousq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ousq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ousq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershift.TenantTable, oncallusershift.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ousq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryUser chains the current query on the "user" edge.
@@ -373,6 +397,7 @@ func (ousq *OncallUserShiftQuery) Clone() *OncallUserShiftQuery {
 		order:            append([]oncallusershift.OrderOption{}, ousq.order...),
 		inters:           append([]Interceptor{}, ousq.inters...),
 		predicates:       append([]predicate.OncallUserShift{}, ousq.predicates...),
+		withTenant:       ousq.withTenant.Clone(),
 		withUser:         ousq.withUser.Clone(),
 		withRoster:       ousq.withRoster.Clone(),
 		withPrimaryShift: ousq.withPrimaryShift.Clone(),
@@ -383,6 +408,17 @@ func (ousq *OncallUserShiftQuery) Clone() *OncallUserShiftQuery {
 		path:      ousq.path,
 		modifiers: append([]func(*sql.Selector){}, ousq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ousq *OncallUserShiftQuery) WithTenant(opts ...func(*TenantQuery)) *OncallUserShiftQuery {
+	query := (&TenantClient{config: ousq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ousq.withTenant = query
+	return ousq
 }
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
@@ -446,12 +482,12 @@ func (ousq *OncallUserShiftQuery) WithMetrics(opts ...func(*OncallUserShiftMetri
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallUserShift.Query().
-//		GroupBy(oncallusershift.FieldUserID).
+//		GroupBy(oncallusershift.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ousq *OncallUserShiftQuery) GroupBy(field string, fields ...string) *OncallUserShiftGroupBy {
@@ -469,11 +505,11 @@ func (ousq *OncallUserShiftQuery) GroupBy(field string, fields ...string) *Oncal
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallUserShift.Query().
-//		Select(oncallusershift.FieldUserID).
+//		Select(oncallusershift.FieldTenantID).
 //		Scan(ctx, &v)
 func (ousq *OncallUserShiftQuery) Select(fields ...string) *OncallUserShiftSelect {
 	ousq.ctx.Fields = append(ousq.ctx.Fields, fields...)
@@ -524,7 +560,8 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	var (
 		nodes       = []*OncallUserShift{}
 		_spec       = ousq.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [6]bool{
+			ousq.withTenant != nil,
 			ousq.withUser != nil,
 			ousq.withRoster != nil,
 			ousq.withPrimaryShift != nil,
@@ -552,6 +589,12 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := ousq.withTenant; query != nil {
+		if err := ousq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallUserShift, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := ousq.withUser; query != nil {
 		if err := ousq.loadUser(ctx, query, nodes, nil,
@@ -586,6 +629,35 @@ func (ousq *OncallUserShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook
 	return nodes, nil
 }
 
+func (ousq *OncallUserShiftQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallUserShift, init func(*OncallUserShift), assign func(*OncallUserShift, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallUserShift)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ousq *OncallUserShiftQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*OncallUserShift, init func(*OncallUserShift), assign func(*OncallUserShift, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallUserShift)
@@ -755,6 +827,9 @@ func (ousq *OncallUserShiftQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallusershift.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ousq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallusershift.FieldTenantID)
 		}
 		if ousq.withUser != nil {
 			_spec.Node.AddColumnOnce(oncallusershift.FieldUserID)

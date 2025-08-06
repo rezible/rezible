@@ -12,6 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // Retrospective is the model entity for the Retrospective schema.
@@ -19,6 +20,8 @@ type Retrospective struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// SystemAnalysisID holds the value of the "system_analysis_id" field.
@@ -37,6 +40,8 @@ type Retrospective struct {
 
 // RetrospectiveEdges holds the relations/edges for other nodes in the graph.
 type RetrospectiveEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// Discussions holds the value of the discussions edge.
@@ -45,7 +50,18 @@ type RetrospectiveEdges struct {
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -53,7 +69,7 @@ type RetrospectiveEdges struct {
 func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -62,7 +78,7 @@ func (e RetrospectiveEdges) IncidentOrErr() (*Incident, error) {
 // DiscussionsOrErr returns the Discussions value or an error if the edge
 // was not loaded in eager-loading.
 func (e RetrospectiveEdges) DiscussionsOrErr() ([]*RetrospectiveDiscussion, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Discussions, nil
 	}
 	return nil, &NotLoadedError{edge: "discussions"}
@@ -73,7 +89,7 @@ func (e RetrospectiveEdges) DiscussionsOrErr() ([]*RetrospectiveDiscussion, erro
 func (e RetrospectiveEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -84,6 +100,8 @@ func (*Retrospective) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case retrospective.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case retrospective.FieldDocumentName, retrospective.FieldType, retrospective.FieldState:
 			values[i] = new(sql.NullString)
 		case retrospective.FieldID, retrospective.FieldIncidentID, retrospective.FieldSystemAnalysisID:
@@ -108,6 +126,12 @@ func (r *Retrospective) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				r.ID = *value
+			}
+		case retrospective.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				r.TenantID = int(value.Int64)
 			}
 		case retrospective.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -152,6 +176,11 @@ func (r *Retrospective) Value(name string) (ent.Value, error) {
 	return r.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the Retrospective entity.
+func (r *Retrospective) QueryTenant() *TenantQuery {
+	return NewRetrospectiveClient(r.config).QueryTenant(r)
+}
+
 // QueryIncident queries the "incident" edge of the Retrospective entity.
 func (r *Retrospective) QueryIncident() *IncidentQuery {
 	return NewRetrospectiveClient(r.config).QueryIncident(r)
@@ -190,6 +219,9 @@ func (r *Retrospective) String() string {
 	var builder strings.Builder
 	builder.WriteString("Retrospective(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", r.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", r.IncidentID))
 	builder.WriteString(", ")

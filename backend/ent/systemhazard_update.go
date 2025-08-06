@@ -243,6 +243,9 @@ func (shu *SystemHazardUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemHazard.name": %w`, err)}
 		}
 	}
+	if shu.mutation.TenantCleared() && len(shu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemHazard.tenant"`)
+	}
 	return nil
 }
 
@@ -655,6 +658,9 @@ func (shuo *SystemHazardUpdateOne) check() error {
 		if err := systemhazard.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemHazard.name": %w`, err)}
 		}
+	}
+	if shuo.mutation.TenantCleared() && len(shuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemHazard.tenant"`)
 	}
 	return nil
 }

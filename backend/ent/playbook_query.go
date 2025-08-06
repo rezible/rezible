@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // PlaybookQuery is the builder for querying Playbook entities.
@@ -26,6 +27,7 @@ type PlaybookQuery struct {
 	order      []playbook.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Playbook
+	withTenant *TenantQuery
 	withAlerts *AlertQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -62,6 +64,28 @@ func (pq *PlaybookQuery) Unique(unique bool) *PlaybookQuery {
 func (pq *PlaybookQuery) Order(o ...playbook.OrderOption) *PlaybookQuery {
 	pq.order = append(pq.order, o...)
 	return pq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (pq *PlaybookQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: pq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := pq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := pq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(playbook.Table, playbook.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, playbook.TenantTable, playbook.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAlerts chains the current query on the "alerts" edge.
@@ -278,12 +302,24 @@ func (pq *PlaybookQuery) Clone() *PlaybookQuery {
 		order:      append([]playbook.OrderOption{}, pq.order...),
 		inters:     append([]Interceptor{}, pq.inters...),
 		predicates: append([]predicate.Playbook{}, pq.predicates...),
+		withTenant: pq.withTenant.Clone(),
 		withAlerts: pq.withAlerts.Clone(),
 		// clone intermediate query.
 		sql:       pq.sql.Clone(),
 		path:      pq.path,
 		modifiers: append([]func(*sql.Selector){}, pq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PlaybookQuery) WithTenant(opts ...func(*TenantQuery)) *PlaybookQuery {
+	query := (&TenantClient{config: pq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	pq.withTenant = query
+	return pq
 }
 
 // WithAlerts tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (pq *PlaybookQuery) WithAlerts(opts ...func(*AlertQuery)) *PlaybookQuery {
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Playbook.Query().
-//		GroupBy(playbook.FieldTitle).
+//		GroupBy(playbook.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupBy {
@@ -326,11 +362,11 @@ func (pq *PlaybookQuery) GroupBy(field string, fields ...string) *PlaybookGroupB
 // Example:
 //
 //	var v []struct {
-//		Title string `json:"title,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.Playbook.Query().
-//		Select(playbook.FieldTitle).
+//		Select(playbook.FieldTenantID).
 //		Scan(ctx, &v)
 func (pq *PlaybookQuery) Select(fields ...string) *PlaybookSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)
@@ -381,7 +417,8 @@ func (pq *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	var (
 		nodes       = []*Playbook{}
 		_spec       = pq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			pq.withTenant != nil,
 			pq.withAlerts != nil,
 		}
 	)
@@ -406,6 +443,12 @@ func (pq *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := pq.withTenant; query != nil {
+		if err := pq.loadTenant(ctx, query, nodes, nil,
+			func(n *Playbook, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := pq.withAlerts; query != nil {
 		if err := pq.loadAlerts(ctx, query, nodes,
 			func(n *Playbook) { n.Edges.Alerts = []*Alert{} },
@@ -416,6 +459,35 @@ func (pq *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	return nodes, nil
 }
 
+func (pq *PlaybookQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Playbook)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (pq *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, nodes []*Playbook, init func(*Playbook), assign func(*Playbook, *Alert)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Playbook)
@@ -505,6 +577,9 @@ func (pq *PlaybookQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != playbook.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if pq.withTenant != nil {
+			_spec.Node.AddColumnOnce(playbook.FieldTenantID)
 		}
 	}
 	if ps := pq.predicates; len(ps) > 0 {

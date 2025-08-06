@@ -195,6 +195,9 @@ func (osu *OncallScheduleUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (osu *OncallScheduleUpdate) check() error {
+	if osu.mutation.TenantCleared() && len(osu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallSchedule.tenant"`)
+	}
 	if osu.mutation.RosterCleared() && len(osu.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallSchedule.roster"`)
 	}
@@ -509,6 +512,9 @@ func (osuo *OncallScheduleUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (osuo *OncallScheduleUpdateOne) check() error {
+	if osuo.mutation.TenantCleared() && len(osuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallSchedule.tenant"`)
+	}
 	if osuo.mutation.RosterCleared() && len(osuo.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallSchedule.roster"`)
 	}

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentKind is the model entity for the SystemComponentKind schema.
@@ -18,6 +19,8 @@ type SystemComponentKind struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
 	// Label holds the value of the "label" field.
@@ -34,17 +37,30 @@ type SystemComponentKind struct {
 
 // SystemComponentKindEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentKindEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Components holds the value of the components edge.
 	Components []*SystemComponent `json:"components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemComponentKindEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ComponentsOrErr returns the Components value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentKindEdges) ComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Components, nil
 	}
 	return nil, &NotLoadedError{edge: "components"}
@@ -55,6 +71,8 @@ func (*SystemComponentKind) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemcomponentkind.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemcomponentkind.FieldProviderID, systemcomponentkind.FieldLabel, systemcomponentkind.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentkind.FieldCreatedAt:
@@ -81,6 +99,12 @@ func (sck *SystemComponentKind) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sck.ID = *value
+			}
+		case systemcomponentkind.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				sck.TenantID = int(value.Int64)
 			}
 		case systemcomponentkind.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -119,6 +143,11 @@ func (sck *SystemComponentKind) Value(name string) (ent.Value, error) {
 	return sck.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the SystemComponentKind entity.
+func (sck *SystemComponentKind) QueryTenant() *TenantQuery {
+	return NewSystemComponentKindClient(sck.config).QueryTenant(sck)
+}
+
 // QueryComponents queries the "components" edge of the SystemComponentKind entity.
 func (sck *SystemComponentKind) QueryComponents() *SystemComponentQuery {
 	return NewSystemComponentKindClient(sck.config).QueryComponents(sck)
@@ -147,6 +176,9 @@ func (sck *SystemComponentKind) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentKind(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sck.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", sck.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(sck.ProviderID)
 	builder.WriteString(", ")

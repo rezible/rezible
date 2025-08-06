@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefMessage is the model entity for the IncidentDebriefMessage schema.
@@ -20,6 +21,8 @@ type IncidentDebriefMessage struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// DebriefID holds the value of the "debrief_id" field.
 	DebriefID uuid.UUID `json:"debrief_id,omitempty"`
 	// QuestionID holds the value of the "question_id" field.
@@ -40,13 +43,26 @@ type IncidentDebriefMessage struct {
 
 // IncidentDebriefMessageEdges holds the relations/edges for other nodes in the graph.
 type IncidentDebriefMessageEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Debrief holds the value of the debrief edge.
 	Debrief *IncidentDebrief `json:"debrief,omitempty"`
 	// FromQuestion holds the value of the from_question edge.
 	FromQuestion *IncidentDebriefQuestion `json:"from_question,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentDebriefMessageEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // DebriefOrErr returns the Debrief value or an error if the edge
@@ -54,7 +70,7 @@ type IncidentDebriefMessageEdges struct {
 func (e IncidentDebriefMessageEdges) DebriefOrErr() (*IncidentDebrief, error) {
 	if e.Debrief != nil {
 		return e.Debrief, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentdebrief.Label}
 	}
 	return nil, &NotLoadedError{edge: "debrief"}
@@ -65,7 +81,7 @@ func (e IncidentDebriefMessageEdges) DebriefOrErr() (*IncidentDebrief, error) {
 func (e IncidentDebriefMessageEdges) FromQuestionOrErr() (*IncidentDebriefQuestion, error) {
 	if e.FromQuestion != nil {
 		return e.FromQuestion, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incidentdebriefquestion.Label}
 	}
 	return nil, &NotLoadedError{edge: "from_question"}
@@ -76,6 +92,8 @@ func (*IncidentDebriefMessage) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentdebriefmessage.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentdebriefmessage.FieldType, incidentdebriefmessage.FieldRequestedTool, incidentdebriefmessage.FieldBody:
 			values[i] = new(sql.NullString)
 		case incidentdebriefmessage.FieldCreatedAt:
@@ -102,6 +120,12 @@ func (idm *IncidentDebriefMessage) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				idm.ID = *value
+			}
+		case incidentdebriefmessage.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				idm.TenantID = int(value.Int64)
 			}
 		case incidentdebriefmessage.FieldDebriefID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -152,6 +176,11 @@ func (idm *IncidentDebriefMessage) Value(name string) (ent.Value, error) {
 	return idm.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentDebriefMessage entity.
+func (idm *IncidentDebriefMessage) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefMessageClient(idm.config).QueryTenant(idm)
+}
+
 // QueryDebrief queries the "debrief" edge of the IncidentDebriefMessage entity.
 func (idm *IncidentDebriefMessage) QueryDebrief() *IncidentDebriefQuery {
 	return NewIncidentDebriefMessageClient(idm.config).QueryDebrief(idm)
@@ -185,6 +214,9 @@ func (idm *IncidentDebriefMessage) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebriefMessage(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", idm.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", idm.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("debrief_id=")
 	builder.WriteString(fmt.Sprintf("%v", idm.DebriefID))
 	builder.WriteString(", ")

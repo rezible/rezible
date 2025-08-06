@@ -175,6 +175,9 @@ func (sccu *SystemComponentConstraintUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sccu *SystemComponentConstraintUpdate) check() error {
+	if sccu.mutation.TenantCleared() && len(sccu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.tenant"`)
+	}
 	if sccu.mutation.ComponentCleared() && len(sccu.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.component"`)
 	}
@@ -463,6 +466,9 @@ func (sccuo *SystemComponentConstraintUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sccuo *SystemComponentConstraintUpdateOne) check() error {
+	if sccuo.mutation.TenantCleared() && len(sccuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.tenant"`)
+	}
 	if sccuo.mutation.ComponentCleared() && len(sccuo.mutation.ComponentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemComponentConstraint.component"`)
 	}

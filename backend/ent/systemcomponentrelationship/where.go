@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ProviderID applies equality check predicate on the "provider_id" field. It's identical to ProviderIDEQ.
 func ProviderID(v string) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(sql.FieldEQ(FieldProviderID, v))
@@ -79,6 +84,26 @@ func Description(v string) predicate.SystemComponentRelationship {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ProviderIDEQ applies the EQ predicate on the "provider_id" field.
@@ -309,6 +334,29 @@ func CreatedAtLT(v time.Time) predicate.SystemComponentRelationship {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentRelationship {
+	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasSource applies the HasEdge predicate on the "source" edge.

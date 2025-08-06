@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
 func ArchiveTime(v time.Time) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldArchiveTime, v))
@@ -84,6 +89,26 @@ func Color(v string) predicate.IncidentSeverity {
 // Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
 func Description(v string) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldDescription, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
@@ -464,6 +489,29 @@ func DescriptionEqualFold(v string) predicate.IncidentSeverity {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldContainsFold(FieldDescription, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasIncidents applies the HasEdge predicate on the "incidents" edge.

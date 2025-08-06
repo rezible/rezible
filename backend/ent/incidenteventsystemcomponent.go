@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventSystemComponent is the model entity for the IncidentEventSystemComponent schema.
@@ -19,6 +20,8 @@ type IncidentEventSystemComponent struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentEventID holds the value of the "incident_event_id" field.
 	IncidentEventID uuid.UUID `json:"incident_event_id,omitempty"`
 	// SystemComponentID holds the value of the "system_component_id" field.
@@ -35,13 +38,26 @@ type IncidentEventSystemComponent struct {
 
 // IncidentEventSystemComponentEdges holds the relations/edges for other nodes in the graph.
 type IncidentEventSystemComponentEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *IncidentEventSystemComponent `json:"event,omitempty"`
 	// SystemComponent holds the value of the system_component edge.
 	SystemComponent *SystemComponent `json:"system_component,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventSystemComponentEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // EventOrErr returns the Event value or an error if the edge
@@ -49,7 +65,7 @@ type IncidentEventSystemComponentEdges struct {
 func (e IncidentEventSystemComponentEdges) EventOrErr() (*IncidentEventSystemComponent, error) {
 	if e.Event != nil {
 		return e.Event, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidenteventsystemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
@@ -60,7 +76,7 @@ func (e IncidentEventSystemComponentEdges) EventOrErr() (*IncidentEventSystemCom
 func (e IncidentEventSystemComponentEdges) SystemComponentOrErr() (*SystemComponent, error) {
 	if e.SystemComponent != nil {
 		return e.SystemComponent, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_component"}
@@ -71,6 +87,8 @@ func (*IncidentEventSystemComponent) scanValues(columns []string) ([]any, error)
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidenteventsystemcomponent.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidenteventsystemcomponent.FieldRelationship:
 			values[i] = new(sql.NullString)
 		case incidenteventsystemcomponent.FieldCreatedAt:
@@ -97,6 +115,12 @@ func (iesc *IncidentEventSystemComponent) assignValues(columns []string, values 
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				iesc.ID = *value
+			}
+		case incidenteventsystemcomponent.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				iesc.TenantID = int(value.Int64)
 			}
 		case incidenteventsystemcomponent.FieldIncidentEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -135,6 +159,11 @@ func (iesc *IncidentEventSystemComponent) Value(name string) (ent.Value, error) 
 	return iesc.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentEventSystemComponent entity.
+func (iesc *IncidentEventSystemComponent) QueryTenant() *TenantQuery {
+	return NewIncidentEventSystemComponentClient(iesc.config).QueryTenant(iesc)
+}
+
 // QueryEvent queries the "event" edge of the IncidentEventSystemComponent entity.
 func (iesc *IncidentEventSystemComponent) QueryEvent() *IncidentEventSystemComponentQuery {
 	return NewIncidentEventSystemComponentClient(iesc.config).QueryEvent(iesc)
@@ -168,6 +197,9 @@ func (iesc *IncidentEventSystemComponent) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventSystemComponent(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", iesc.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", iesc.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_event_id=")
 	builder.WriteString(fmt.Sprintf("%v", iesc.IncidentEventID))
 	builder.WriteString(", ")

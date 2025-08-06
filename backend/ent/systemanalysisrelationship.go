@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisRelationship is the model entity for the SystemAnalysisRelationship schema.
@@ -20,6 +21,8 @@ type SystemAnalysisRelationship struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
 	// ComponentRelationshipID holds the value of the "component_relationship_id" field.
@@ -36,6 +39,8 @@ type SystemAnalysisRelationship struct {
 
 // SystemAnalysisRelationshipEdges holds the relations/edges for other nodes in the graph.
 type SystemAnalysisRelationshipEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// SystemAnalysis holds the value of the system_analysis edge.
 	SystemAnalysis *SystemAnalysis `json:"system_analysis,omitempty"`
 	// ComponentRelationship holds the value of the component_relationship edge.
@@ -50,7 +55,18 @@ type SystemAnalysisRelationshipEdges struct {
 	FeedbackSignals []*SystemRelationshipFeedbackSignal `json:"feedback_signals,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisRelationshipEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // SystemAnalysisOrErr returns the SystemAnalysis value or an error if the edge
@@ -58,7 +74,7 @@ type SystemAnalysisRelationshipEdges struct {
 func (e SystemAnalysisRelationshipEdges) SystemAnalysisOrErr() (*SystemAnalysis, error) {
 	if e.SystemAnalysis != nil {
 		return e.SystemAnalysis, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "system_analysis"}
@@ -69,7 +85,7 @@ func (e SystemAnalysisRelationshipEdges) SystemAnalysisOrErr() (*SystemAnalysis,
 func (e SystemAnalysisRelationshipEdges) ComponentRelationshipOrErr() (*SystemComponentRelationship, error) {
 	if e.ComponentRelationship != nil {
 		return e.ComponentRelationship, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponentrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "component_relationship"}
@@ -78,7 +94,7 @@ func (e SystemAnalysisRelationshipEdges) ComponentRelationshipOrErr() (*SystemCo
 // ControlsOrErr returns the Controls value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) ControlsOrErr() ([]*SystemComponentControl, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Controls, nil
 	}
 	return nil, &NotLoadedError{edge: "controls"}
@@ -87,7 +103,7 @@ func (e SystemAnalysisRelationshipEdges) ControlsOrErr() ([]*SystemComponentCont
 // SignalsOrErr returns the Signals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) SignalsOrErr() ([]*SystemComponentSignal, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Signals, nil
 	}
 	return nil, &NotLoadedError{edge: "signals"}
@@ -96,7 +112,7 @@ func (e SystemAnalysisRelationshipEdges) SignalsOrErr() ([]*SystemComponentSigna
 // ControlActionsOrErr returns the ControlActions value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) ControlActionsOrErr() ([]*SystemRelationshipControlAction, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.ControlActions, nil
 	}
 	return nil, &NotLoadedError{edge: "control_actions"}
@@ -105,7 +121,7 @@ func (e SystemAnalysisRelationshipEdges) ControlActionsOrErr() ([]*SystemRelatio
 // FeedbackSignalsOrErr returns the FeedbackSignals value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemAnalysisRelationshipEdges) FeedbackSignalsOrErr() ([]*SystemRelationshipFeedbackSignal, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.FeedbackSignals, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback_signals"}
@@ -116,6 +132,8 @@ func (*SystemAnalysisRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemanalysisrelationship.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemanalysisrelationship.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemanalysisrelationship.FieldCreatedAt:
@@ -142,6 +160,12 @@ func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []a
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sar.ID = *value
+			}
+		case systemanalysisrelationship.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				sar.TenantID = int(value.Int64)
 			}
 		case systemanalysisrelationship.FieldAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -178,6 +202,11 @@ func (sar *SystemAnalysisRelationship) assignValues(columns []string, values []a
 // This includes values selected through modifiers, order, etc.
 func (sar *SystemAnalysisRelationship) Value(name string) (ent.Value, error) {
 	return sar.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the SystemAnalysisRelationship entity.
+func (sar *SystemAnalysisRelationship) QueryTenant() *TenantQuery {
+	return NewSystemAnalysisRelationshipClient(sar.config).QueryTenant(sar)
 }
 
 // QuerySystemAnalysis queries the "system_analysis" edge of the SystemAnalysisRelationship entity.
@@ -233,6 +262,9 @@ func (sar *SystemAnalysisRelationship) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysisRelationship(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sar.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", sar.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", sar.AnalysisID))
 	builder.WriteString(", ")

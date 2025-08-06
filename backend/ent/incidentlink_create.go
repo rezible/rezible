@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentlink"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentLinkCreate is the builder for creating a IncidentLink entity.
@@ -21,6 +22,12 @@ type IncidentLinkCreate struct {
 	mutation *IncidentLinkMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ilc *IncidentLinkCreate) SetTenantID(i int) *IncidentLinkCreate {
+	ilc.mutation.SetTenantID(i)
+	return ilc
 }
 
 // SetIncidentID sets the "incident_id" field.
@@ -53,6 +60,11 @@ func (ilc *IncidentLinkCreate) SetNillableDescription(s *string) *IncidentLinkCr
 func (ilc *IncidentLinkCreate) SetLinkType(it incidentlink.LinkType) *IncidentLinkCreate {
 	ilc.mutation.SetLinkType(it)
 	return ilc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ilc *IncidentLinkCreate) SetTenant(t *Tenant) *IncidentLinkCreate {
+	return ilc.SetTenantID(t.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -99,6 +111,9 @@ func (ilc *IncidentLinkCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ilc *IncidentLinkCreate) check() error {
+	if _, ok := ilc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentLink.tenant_id"`)}
+	}
 	if _, ok := ilc.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentLink.incident_id"`)}
 	}
@@ -112,6 +127,9 @@ func (ilc *IncidentLinkCreate) check() error {
 		if err := incidentlink.LinkTypeValidator(v); err != nil {
 			return &ValidationError{Name: "link_type", err: fmt.Errorf(`ent: validator failed for field "IncidentLink.link_type": %w`, err)}
 		}
+	}
+	if len(ilc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentLink.tenant"`)}
 	}
 	if len(ilc.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentLink.incident"`)}
@@ -154,6 +172,23 @@ func (ilc *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec
 		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 		_node.LinkType = value
 	}
+	if nodes := ilc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentlink.TenantTable,
+			Columns: []string{incidentlink.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ilc.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -195,7 +230,7 @@ func (ilc *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentLink.Create().
-//		SetIncidentID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -204,7 +239,7 @@ func (ilc *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentLinkUpsert) {
-//			SetIncidentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ilc *IncidentLinkCreate) OnConflict(opts ...sql.ConflictOption) *IncidentLinkUpsertOne {
@@ -304,6 +339,11 @@ func (u *IncidentLinkUpsert) UpdateLinkType() *IncidentLinkUpsert {
 //		Exec(ctx)
 func (u *IncidentLinkUpsertOne) UpdateNewValues() *IncidentLinkUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentlink.FieldTenantID)
+		}
+	}))
 	return u
 }
 
@@ -531,7 +571,7 @@ func (ilcb *IncidentLinkCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentLinkUpsert) {
-//			SetIncidentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ilcb *IncidentLinkCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentLinkUpsertBulk {
@@ -570,6 +610,13 @@ type IncidentLinkUpsertBulk struct {
 //		Exec(ctx)
 func (u *IncidentLinkUpsertBulk) UpdateNewValues() *IncidentLinkUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentlink.FieldTenantID)
+			}
+		}
+	}))
 	return u
 }
 

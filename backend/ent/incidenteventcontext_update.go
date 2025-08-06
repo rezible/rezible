@@ -173,6 +173,9 @@ func (iecu *IncidentEventContextUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iecu *IncidentEventContextUpdate) check() error {
+	if iecu.mutation.TenantCleared() && len(iecu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.tenant"`)
+	}
 	if iecu.mutation.EventCleared() && len(iecu.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.event"`)
 	}
@@ -439,6 +442,9 @@ func (iecuo *IncidentEventContextUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iecuo *IncidentEventContextUpdateOne) check() error {
+	if iecuo.mutation.TenantCleared() && len(iecuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.tenant"`)
+	}
 	if iecuo.mutation.EventCleared() && len(iecuo.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContext.event"`)
 	}

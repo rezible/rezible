@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentType {
 	return predicate.IncidentType(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentType {
+	return predicate.IncidentType(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
 func ArchiveTime(v time.Time) predicate.IncidentType {
 	return predicate.IncidentType(sql.FieldEQ(FieldArchiveTime, v))
@@ -64,6 +69,26 @@ func ArchiveTime(v time.Time) predicate.IncidentType {
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.IncidentType {
 	return predicate.IncidentType(sql.FieldEQ(FieldName, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentType {
+	return predicate.IncidentType(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentType {
+	return predicate.IncidentType(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentType {
+	return predicate.IncidentType(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentType {
+	return predicate.IncidentType(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
@@ -179,6 +204,29 @@ func NameEqualFold(v string) predicate.IncidentType {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.IncidentType {
 	return predicate.IncidentType(sql.FieldContainsFold(FieldName, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentType {
+	return predicate.IncidentType(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentType {
+	return predicate.IncidentType(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasIncidents applies the HasEdge predicate on the "incidents" edge.

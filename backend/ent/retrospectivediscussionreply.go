@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // RetrospectiveDiscussionReply is the model entity for the RetrospectiveDiscussionReply schema.
@@ -18,6 +19,8 @@ type RetrospectiveDiscussionReply struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content []byte `json:"content,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -30,6 +33,8 @@ type RetrospectiveDiscussionReply struct {
 
 // RetrospectiveDiscussionReplyEdges holds the relations/edges for other nodes in the graph.
 type RetrospectiveDiscussionReplyEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Discussion holds the value of the discussion edge.
 	Discussion *RetrospectiveDiscussion `json:"discussion,omitempty"`
 	// ParentReply holds the value of the parent_reply edge.
@@ -38,7 +43,18 @@ type RetrospectiveDiscussionReplyEdges struct {
 	Replies []*RetrospectiveDiscussionReply `json:"replies,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e RetrospectiveDiscussionReplyEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // DiscussionOrErr returns the Discussion value or an error if the edge
@@ -46,7 +62,7 @@ type RetrospectiveDiscussionReplyEdges struct {
 func (e RetrospectiveDiscussionReplyEdges) DiscussionOrErr() (*RetrospectiveDiscussion, error) {
 	if e.Discussion != nil {
 		return e.Discussion, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: retrospectivediscussion.Label}
 	}
 	return nil, &NotLoadedError{edge: "discussion"}
@@ -57,7 +73,7 @@ func (e RetrospectiveDiscussionReplyEdges) DiscussionOrErr() (*RetrospectiveDisc
 func (e RetrospectiveDiscussionReplyEdges) ParentReplyOrErr() (*RetrospectiveDiscussionReply, error) {
 	if e.ParentReply != nil {
 		return e.ParentReply, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: retrospectivediscussionreply.Label}
 	}
 	return nil, &NotLoadedError{edge: "parent_reply"}
@@ -66,7 +82,7 @@ func (e RetrospectiveDiscussionReplyEdges) ParentReplyOrErr() (*RetrospectiveDis
 // RepliesOrErr returns the Replies value or an error if the edge
 // was not loaded in eager-loading.
 func (e RetrospectiveDiscussionReplyEdges) RepliesOrErr() ([]*RetrospectiveDiscussionReply, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Replies, nil
 	}
 	return nil, &NotLoadedError{edge: "replies"}
@@ -79,6 +95,8 @@ func (*RetrospectiveDiscussionReply) scanValues(columns []string) ([]any, error)
 		switch columns[i] {
 		case retrospectivediscussionreply.FieldContent:
 			values[i] = new([]byte)
+		case retrospectivediscussionreply.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case retrospectivediscussionreply.FieldID:
 			values[i] = new(uuid.UUID)
 		case retrospectivediscussionreply.ForeignKeys[0]: // retrospective_discussion_reply_discussion
@@ -105,6 +123,12 @@ func (rdr *RetrospectiveDiscussionReply) assignValues(columns []string, values [
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				rdr.ID = *value
+			}
+		case retrospectivediscussionreply.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				rdr.TenantID = int(value.Int64)
 			}
 		case retrospectivediscussionreply.FieldContent:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -137,6 +161,11 @@ func (rdr *RetrospectiveDiscussionReply) assignValues(columns []string, values [
 // This includes values selected through modifiers, order, etc.
 func (rdr *RetrospectiveDiscussionReply) Value(name string) (ent.Value, error) {
 	return rdr.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the RetrospectiveDiscussionReply entity.
+func (rdr *RetrospectiveDiscussionReply) QueryTenant() *TenantQuery {
+	return NewRetrospectiveDiscussionReplyClient(rdr.config).QueryTenant(rdr)
 }
 
 // QueryDiscussion queries the "discussion" edge of the RetrospectiveDiscussionReply entity.
@@ -177,6 +206,9 @@ func (rdr *RetrospectiveDiscussionReply) String() string {
 	var builder strings.Builder
 	builder.WriteString("RetrospectiveDiscussionReply(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", rdr.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", rdr.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(fmt.Sprintf("%v", rdr.Content))
 	builder.WriteByte(')')

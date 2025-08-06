@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncallannotation"
@@ -181,19 +182,19 @@ func (uu *UserUpdate) AddOncallAnnotations(o ...*OncallAnnotation) *UserUpdate {
 	return uu.AddOncallAnnotationIDs(ids...)
 }
 
-// AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (uu *UserUpdate) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.AddIncidentRoleAssignmentIDs(ids...)
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (uu *UserUpdate) AddIncidentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddIncidentIDs(ids...)
 	return uu
 }
 
-// AddIncidentRoleAssignments adds the "incident_role_assignments" edges to the IncidentRoleAssignment entity.
-func (uu *UserUpdate) AddIncidentRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdate {
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (uu *UserUpdate) AddIncidents(i ...*Incident) *UserUpdate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return uu.AddIncidentRoleAssignmentIDs(ids...)
+	return uu.AddIncidentIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
@@ -269,6 +270,21 @@ func (uu *UserUpdate) AddRetrospectiveReviewResponses(r ...*RetrospectiveReview)
 		ids[i] = r[i].ID
 	}
 	return uu.AddRetrospectiveReviewResponseIDs(ids...)
+}
+
+// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
+func (uu *UserUpdate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.AddRoleAssignmentIDs(ids...)
+	return uu
+}
+
+// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
+func (uu *UserUpdate) AddRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.AddRoleAssignmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -381,25 +397,25 @@ func (uu *UserUpdate) RemoveOncallAnnotations(o ...*OncallAnnotation) *UserUpdat
 	return uu.RemoveOncallAnnotationIDs(ids...)
 }
 
-// ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
-func (uu *UserUpdate) ClearIncidentRoleAssignments() *UserUpdate {
-	uu.mutation.ClearIncidentRoleAssignments()
+// ClearIncidents clears all "incidents" edges to the Incident entity.
+func (uu *UserUpdate) ClearIncidents() *UserUpdate {
+	uu.mutation.ClearIncidents()
 	return uu
 }
 
-// RemoveIncidentRoleAssignmentIDs removes the "incident_role_assignments" edge to IncidentRoleAssignment entities by IDs.
-func (uu *UserUpdate) RemoveIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdate {
-	uu.mutation.RemoveIncidentRoleAssignmentIDs(ids...)
+// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
+func (uu *UserUpdate) RemoveIncidentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveIncidentIDs(ids...)
 	return uu
 }
 
-// RemoveIncidentRoleAssignments removes "incident_role_assignments" edges to IncidentRoleAssignment entities.
-func (uu *UserUpdate) RemoveIncidentRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdate {
+// RemoveIncidents removes "incidents" edges to Incident entities.
+func (uu *UserUpdate) RemoveIncidents(i ...*Incident) *UserUpdate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return uu.RemoveIncidentRoleAssignmentIDs(ids...)
+	return uu.RemoveIncidentIDs(ids...)
 }
 
 // ClearIncidentDebriefs clears all "incident_debriefs" edges to the IncidentDebrief entity.
@@ -505,6 +521,27 @@ func (uu *UserUpdate) RemoveRetrospectiveReviewResponses(r ...*RetrospectiveRevi
 		ids[i] = r[i].ID
 	}
 	return uu.RemoveRetrospectiveReviewResponseIDs(ids...)
+}
+
+// ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
+func (uu *UserUpdate) ClearRoleAssignments() *UserUpdate {
+	uu.mutation.ClearRoleAssignments()
+	return uu
+}
+
+// RemoveRoleAssignmentIDs removes the "role_assignments" edge to IncidentRoleAssignment entities by IDs.
+func (uu *UserUpdate) RemoveRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdate {
+	uu.mutation.RemoveRoleAssignmentIDs(ids...)
+	return uu
+}
+
+// RemoveRoleAssignments removes "role_assignments" edges to IncidentRoleAssignment entities.
+func (uu *UserUpdate) RemoveRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uu.RemoveRoleAssignmentIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -803,48 +840,69 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uu.mutation.IncidentRoleAssignmentsCleared() {
+	if uu.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
+		}
+		createE := &IncidentRoleAssignmentCreate{config: uu.config, mutation: newIncidentRoleAssignmentMutation(uu.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.RemovedIncidentRoleAssignmentsIDs(); len(nodes) > 0 && !uu.mutation.IncidentRoleAssignmentsCleared() {
+	if nodes := uu.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !uu.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &IncidentRoleAssignmentCreate{config: uu.config, mutation: newIncidentRoleAssignmentMutation(uu.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uu.mutation.IncidentRoleAssignmentsIDs(); len(nodes) > 0 {
+	if nodes := uu.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentRoleAssignmentCreate{config: uu.config, mutation: newIncidentRoleAssignmentMutation(uu.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -1073,6 +1131,51 @@ func (uu *UserUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if uu.mutation.RoleAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RemovedRoleAssignmentsIDs(); len(nodes) > 0 && !uu.mutation.RoleAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uu.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	_spec.AddModifiers(uu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, uu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1238,19 +1341,19 @@ func (uuo *UserUpdateOne) AddOncallAnnotations(o ...*OncallAnnotation) *UserUpda
 	return uuo.AddOncallAnnotationIDs(ids...)
 }
 
-// AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (uuo *UserUpdateOne) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.AddIncidentRoleAssignmentIDs(ids...)
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (uuo *UserUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddIncidentIDs(ids...)
 	return uuo
 }
 
-// AddIncidentRoleAssignments adds the "incident_role_assignments" edges to the IncidentRoleAssignment entity.
-func (uuo *UserUpdateOne) AddIncidentRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdateOne {
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (uuo *UserUpdateOne) AddIncidents(i ...*Incident) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return uuo.AddIncidentRoleAssignmentIDs(ids...)
+	return uuo.AddIncidentIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
@@ -1326,6 +1429,21 @@ func (uuo *UserUpdateOne) AddRetrospectiveReviewResponses(r ...*RetrospectiveRev
 		ids[i] = r[i].ID
 	}
 	return uuo.AddRetrospectiveReviewResponseIDs(ids...)
+}
+
+// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
+func (uuo *UserUpdateOne) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.AddRoleAssignmentIDs(ids...)
+	return uuo
+}
+
+// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
+func (uuo *UserUpdateOne) AddRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.AddRoleAssignmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -1438,25 +1556,25 @@ func (uuo *UserUpdateOne) RemoveOncallAnnotations(o ...*OncallAnnotation) *UserU
 	return uuo.RemoveOncallAnnotationIDs(ids...)
 }
 
-// ClearIncidentRoleAssignments clears all "incident_role_assignments" edges to the IncidentRoleAssignment entity.
-func (uuo *UserUpdateOne) ClearIncidentRoleAssignments() *UserUpdateOne {
-	uuo.mutation.ClearIncidentRoleAssignments()
+// ClearIncidents clears all "incidents" edges to the Incident entity.
+func (uuo *UserUpdateOne) ClearIncidents() *UserUpdateOne {
+	uuo.mutation.ClearIncidents()
 	return uuo
 }
 
-// RemoveIncidentRoleAssignmentIDs removes the "incident_role_assignments" edge to IncidentRoleAssignment entities by IDs.
-func (uuo *UserUpdateOne) RemoveIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
-	uuo.mutation.RemoveIncidentRoleAssignmentIDs(ids...)
+// RemoveIncidentIDs removes the "incidents" edge to Incident entities by IDs.
+func (uuo *UserUpdateOne) RemoveIncidentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveIncidentIDs(ids...)
 	return uuo
 }
 
-// RemoveIncidentRoleAssignments removes "incident_role_assignments" edges to IncidentRoleAssignment entities.
-func (uuo *UserUpdateOne) RemoveIncidentRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdateOne {
+// RemoveIncidents removes "incidents" edges to Incident entities.
+func (uuo *UserUpdateOne) RemoveIncidents(i ...*Incident) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return uuo.RemoveIncidentRoleAssignmentIDs(ids...)
+	return uuo.RemoveIncidentIDs(ids...)
 }
 
 // ClearIncidentDebriefs clears all "incident_debriefs" edges to the IncidentDebrief entity.
@@ -1562,6 +1680,27 @@ func (uuo *UserUpdateOne) RemoveRetrospectiveReviewResponses(r ...*Retrospective
 		ids[i] = r[i].ID
 	}
 	return uuo.RemoveRetrospectiveReviewResponseIDs(ids...)
+}
+
+// ClearRoleAssignments clears all "role_assignments" edges to the IncidentRoleAssignment entity.
+func (uuo *UserUpdateOne) ClearRoleAssignments() *UserUpdateOne {
+	uuo.mutation.ClearRoleAssignments()
+	return uuo
+}
+
+// RemoveRoleAssignmentIDs removes the "role_assignments" edge to IncidentRoleAssignment entities by IDs.
+func (uuo *UserUpdateOne) RemoveRoleAssignmentIDs(ids ...uuid.UUID) *UserUpdateOne {
+	uuo.mutation.RemoveRoleAssignmentIDs(ids...)
+	return uuo
+}
+
+// RemoveRoleAssignments removes "role_assignments" edges to IncidentRoleAssignment entities.
+func (uuo *UserUpdateOne) RemoveRoleAssignments(i ...*IncidentRoleAssignment) *UserUpdateOne {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uuo.RemoveRoleAssignmentIDs(ids...)
 }
 
 // Where appends a list predicates to the UserUpdate builder.
@@ -1890,48 +2029,69 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if uuo.mutation.IncidentRoleAssignmentsCleared() {
+	if uuo.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
+		}
+		createE := &IncidentRoleAssignmentCreate{config: uuo.config, mutation: newIncidentRoleAssignmentMutation(uuo.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.RemovedIncidentRoleAssignmentsIDs(); len(nodes) > 0 && !uuo.mutation.IncidentRoleAssignmentsCleared() {
+	if nodes := uuo.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !uuo.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		createE := &IncidentRoleAssignmentCreate{config: uuo.config, mutation: newIncidentRoleAssignmentMutation(uuo.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := uuo.mutation.IncidentRoleAssignmentsIDs(); len(nodes) > 0 {
+	if nodes := uuo.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentRoleAssignmentCreate{config: uuo.config, mutation: newIncidentRoleAssignmentMutation(uuo.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -2153,6 +2313,51 @@ func (uuo *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if uuo.mutation.RoleAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RemovedRoleAssignmentsIDs(); len(nodes) > 0 && !uuo.mutation.RoleAssignmentsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := uuo.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

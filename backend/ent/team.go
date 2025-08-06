@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // Team is the model entity for the Team schema.
@@ -17,6 +18,8 @@ type Team struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
@@ -35,12 +38,12 @@ type Team struct {
 
 // TeamEdges holds the relations/edges for other nodes in the graph.
 type TeamEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Users holds the value of the users edge.
 	Users []*User `json:"users,omitempty"`
 	// OncallRosters holds the value of the oncall_rosters edge.
 	OncallRosters []*OncallRoster `json:"oncall_rosters,omitempty"`
-	// IncidentAssignments holds the value of the incident_assignments edge.
-	IncidentAssignments []*IncidentTeamAssignment `json:"incident_assignments,omitempty"`
 	// ScheduledMeetings holds the value of the scheduled_meetings edge.
 	ScheduledMeetings []*MeetingSchedule `json:"scheduled_meetings,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -48,10 +51,21 @@ type TeamEdges struct {
 	loadedTypes [4]bool
 }
 
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TeamEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
+}
+
 // UsersOrErr returns the Users value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) UsersOrErr() ([]*User, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Users, nil
 	}
 	return nil, &NotLoadedError{edge: "users"}
@@ -60,19 +74,10 @@ func (e TeamEdges) UsersOrErr() ([]*User, error) {
 // OncallRostersOrErr returns the OncallRosters value or an error if the edge
 // was not loaded in eager-loading.
 func (e TeamEdges) OncallRostersOrErr() ([]*OncallRoster, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.OncallRosters, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_rosters"}
-}
-
-// IncidentAssignmentsOrErr returns the IncidentAssignments value or an error if the edge
-// was not loaded in eager-loading.
-func (e TeamEdges) IncidentAssignmentsOrErr() ([]*IncidentTeamAssignment, error) {
-	if e.loadedTypes[2] {
-		return e.IncidentAssignments, nil
-	}
-	return nil, &NotLoadedError{edge: "incident_assignments"}
 }
 
 // ScheduledMeetingsOrErr returns the ScheduledMeetings value or an error if the edge
@@ -89,6 +94,8 @@ func (*Team) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case team.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case team.FieldSlug, team.FieldProviderID, team.FieldName, team.FieldChatChannelID, team.FieldTimezone:
 			values[i] = new(sql.NullString)
 		case team.FieldID:
@@ -113,6 +120,12 @@ func (t *Team) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				t.ID = *value
+			}
+		case team.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				t.TenantID = int(value.Int64)
 			}
 		case team.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -157,6 +170,11 @@ func (t *Team) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the Team entity.
+func (t *Team) QueryTenant() *TenantQuery {
+	return NewTeamClient(t.config).QueryTenant(t)
+}
+
 // QueryUsers queries the "users" edge of the Team entity.
 func (t *Team) QueryUsers() *UserQuery {
 	return NewTeamClient(t.config).QueryUsers(t)
@@ -165,11 +183,6 @@ func (t *Team) QueryUsers() *UserQuery {
 // QueryOncallRosters queries the "oncall_rosters" edge of the Team entity.
 func (t *Team) QueryOncallRosters() *OncallRosterQuery {
 	return NewTeamClient(t.config).QueryOncallRosters(t)
-}
-
-// QueryIncidentAssignments queries the "incident_assignments" edge of the Team entity.
-func (t *Team) QueryIncidentAssignments() *IncidentTeamAssignmentQuery {
-	return NewTeamClient(t.config).QueryIncidentAssignments(t)
 }
 
 // QueryScheduledMeetings queries the "scheduled_meetings" edge of the Team entity.
@@ -200,6 +213,9 @@ func (t *Team) String() string {
 	var builder strings.Builder
 	builder.WriteString("Team(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("slug=")
 	builder.WriteString(t.Slug)
 	builder.WriteString(", ")

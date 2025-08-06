@@ -169,6 +169,9 @@ func (srcau *SystemRelationshipControlActionUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
 		}
 	}
+	if srcau.mutation.TenantCleared() && len(srcau.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.tenant"`)
+	}
 	if srcau.mutation.RelationshipCleared() && len(srcau.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.relationship"`)
 	}
@@ -437,6 +440,9 @@ func (srcauo *SystemRelationshipControlActionUpdateOne) check() error {
 		if err := systemrelationshipcontrolaction.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipControlAction.type": %w`, err)}
 		}
+	}
+	if srcauo.mutation.TenantCleared() && len(srcauo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.tenant"`)
 	}
 	if srcauo.mutation.RelationshipCleared() && len(srcauo.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipControlAction.relationship"`)

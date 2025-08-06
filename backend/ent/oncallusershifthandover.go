@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftHandover is the model entity for the OncallUserShiftHandover schema.
@@ -19,6 +20,8 @@ type OncallUserShiftHandover struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ShiftID holds the value of the "shift_id" field.
 	ShiftID uuid.UUID `json:"shift_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
@@ -39,13 +42,26 @@ type OncallUserShiftHandover struct {
 
 // OncallUserShiftHandoverEdges holds the relations/edges for other nodes in the graph.
 type OncallUserShiftHandoverEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Shift holds the value of the shift edge.
 	Shift *OncallUserShift `json:"shift,omitempty"`
 	// PinnedAnnotations holds the value of the pinned_annotations edge.
 	PinnedAnnotations []*OncallAnnotation `json:"pinned_annotations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallUserShiftHandoverEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ShiftOrErr returns the Shift value or an error if the edge
@@ -53,7 +69,7 @@ type OncallUserShiftHandoverEdges struct {
 func (e OncallUserShiftHandoverEdges) ShiftOrErr() (*OncallUserShift, error) {
 	if e.Shift != nil {
 		return e.Shift, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallusershift.Label}
 	}
 	return nil, &NotLoadedError{edge: "shift"}
@@ -62,7 +78,7 @@ func (e OncallUserShiftHandoverEdges) ShiftOrErr() (*OncallUserShift, error) {
 // PinnedAnnotationsOrErr returns the PinnedAnnotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallUserShiftHandoverEdges) PinnedAnnotationsOrErr() ([]*OncallAnnotation, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.PinnedAnnotations, nil
 	}
 	return nil, &NotLoadedError{edge: "pinned_annotations"}
@@ -77,6 +93,8 @@ func (*OncallUserShiftHandover) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case oncallusershifthandover.FieldReminderSent:
 			values[i] = new(sql.NullBool)
+		case oncallusershifthandover.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallusershifthandover.FieldCreatedAt, oncallusershifthandover.FieldUpdatedAt, oncallusershifthandover.FieldSentAt:
 			values[i] = new(sql.NullTime)
 		case oncallusershifthandover.FieldID, oncallusershifthandover.FieldShiftID:
@@ -101,6 +119,12 @@ func (oush *OncallUserShiftHandover) assignValues(columns []string, values []any
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				oush.ID = *value
+			}
+		case oncallusershifthandover.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				oush.TenantID = int(value.Int64)
 			}
 		case oncallusershifthandover.FieldShiftID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -151,6 +175,11 @@ func (oush *OncallUserShiftHandover) Value(name string) (ent.Value, error) {
 	return oush.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the OncallUserShiftHandover entity.
+func (oush *OncallUserShiftHandover) QueryTenant() *TenantQuery {
+	return NewOncallUserShiftHandoverClient(oush.config).QueryTenant(oush)
+}
+
 // QueryShift queries the "shift" edge of the OncallUserShiftHandover entity.
 func (oush *OncallUserShiftHandover) QueryShift() *OncallUserShiftQuery {
 	return NewOncallUserShiftHandoverClient(oush.config).QueryShift(oush)
@@ -184,6 +213,9 @@ func (oush *OncallUserShiftHandover) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallUserShiftHandover(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", oush.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", oush.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("shift_id=")
 	builder.WriteString(fmt.Sprintf("%v", oush.ShiftID))
 	builder.WriteString(", ")

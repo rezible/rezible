@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentSignalQuery is the builder for querying SystemComponentSignal entities.
@@ -28,6 +29,7 @@ type SystemComponentSignalQuery struct {
 	order               []systemcomponentsignal.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.SystemComponentSignal
+	withTenant          *TenantQuery
 	withComponent       *SystemComponentQuery
 	withRelationships   *SystemAnalysisRelationshipQuery
 	withFeedbackSignals *SystemRelationshipFeedbackSignalQuery
@@ -66,6 +68,28 @@ func (scsq *SystemComponentSignalQuery) Unique(unique bool) *SystemComponentSign
 func (scsq *SystemComponentSignalQuery) Order(o ...systemcomponentsignal.OrderOption) *SystemComponentSignalQuery {
 	scsq.order = append(scsq.order, o...)
 	return scsq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (scsq *SystemComponentSignalQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: scsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.TenantTable, systemcomponentsignal.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(scsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryComponent chains the current query on the "component" edge.
@@ -326,6 +350,7 @@ func (scsq *SystemComponentSignalQuery) Clone() *SystemComponentSignalQuery {
 		order:               append([]systemcomponentsignal.OrderOption{}, scsq.order...),
 		inters:              append([]Interceptor{}, scsq.inters...),
 		predicates:          append([]predicate.SystemComponentSignal{}, scsq.predicates...),
+		withTenant:          scsq.withTenant.Clone(),
 		withComponent:       scsq.withComponent.Clone(),
 		withRelationships:   scsq.withRelationships.Clone(),
 		withFeedbackSignals: scsq.withFeedbackSignals.Clone(),
@@ -334,6 +359,17 @@ func (scsq *SystemComponentSignalQuery) Clone() *SystemComponentSignalQuery {
 		path:      scsq.path,
 		modifiers: append([]func(*sql.Selector){}, scsq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (scsq *SystemComponentSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentSignalQuery {
+	query := (&TenantClient{config: scsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	scsq.withTenant = query
+	return scsq
 }
 
 // WithComponent tells the query-builder to eager-load the nodes that are connected to
@@ -375,12 +411,12 @@ func (scsq *SystemComponentSignalQuery) WithFeedbackSignals(opts ...func(*System
 // Example:
 //
 //	var v []struct {
-//		ComponentID uuid.UUID `json:"component_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemComponentSignal.Query().
-//		GroupBy(systemcomponentsignal.FieldComponentID).
+//		GroupBy(systemcomponentsignal.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (scsq *SystemComponentSignalQuery) GroupBy(field string, fields ...string) *SystemComponentSignalGroupBy {
@@ -398,11 +434,11 @@ func (scsq *SystemComponentSignalQuery) GroupBy(field string, fields ...string) 
 // Example:
 //
 //	var v []struct {
-//		ComponentID uuid.UUID `json:"component_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemComponentSignal.Query().
-//		Select(systemcomponentsignal.FieldComponentID).
+//		Select(systemcomponentsignal.FieldTenantID).
 //		Scan(ctx, &v)
 func (scsq *SystemComponentSignalQuery) Select(fields ...string) *SystemComponentSignalSelect {
 	scsq.ctx.Fields = append(scsq.ctx.Fields, fields...)
@@ -453,7 +489,8 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 	var (
 		nodes       = []*SystemComponentSignal{}
 		_spec       = scsq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
+			scsq.withTenant != nil,
 			scsq.withComponent != nil,
 			scsq.withRelationships != nil,
 			scsq.withFeedbackSignals != nil,
@@ -479,6 +516,12 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := scsq.withTenant; query != nil {
+		if err := scsq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemComponentSignal, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := scsq.withComponent; query != nil {
 		if err := scsq.loadComponent(ctx, query, nodes, nil,
@@ -507,6 +550,35 @@ func (scsq *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...que
 	return nodes, nil
 }
 
+func (scsq *SystemComponentSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemComponentSignal)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (scsq *SystemComponentSignalQuery) loadComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentSignal, init func(*SystemComponentSignal), assign func(*SystemComponentSignal, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentSignal)
@@ -655,6 +727,9 @@ func (scsq *SystemComponentSignalQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemcomponentsignal.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if scsq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemcomponentsignal.FieldTenantID)
 		}
 		if scsq.withComponent != nil {
 			_spec.Node.AddColumnOnce(systemcomponentsignal.FieldComponentID)

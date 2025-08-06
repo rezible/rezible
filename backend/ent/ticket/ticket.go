@@ -14,14 +14,25 @@ const (
 	Label = "ticket"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeTasks holds the string denoting the tasks edge name in mutations.
 	EdgeTasks = "tasks"
 	// Table holds the table name of the ticket in the database.
 	Table = "tickets"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "tickets"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// TasksTable is the table that holds the tasks relation/edge. The primary key declared below.
 	TasksTable = "task_tickets"
 	// TasksInverseTable is the table name for the Task entity.
@@ -32,6 +43,7 @@ const (
 // Columns holds all SQL columns for ticket fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldProviderID,
 	FieldTitle,
 }
@@ -72,6 +84,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByProviderID orders the results by the provider_id field.
 func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
@@ -80,6 +97,13 @@ func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByTasksCount orders the results by tasks count.
@@ -94,6 +118,13 @@ func ByTasks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTasksStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newTasksStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

@@ -143,6 +143,9 @@ func (imu *IncidentMilestoneUpdate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
 	}
+	if imu.mutation.TenantCleared() && len(imu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.tenant"`)
+	}
 	if imu.mutation.IncidentCleared() && len(imu.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)
 	}
@@ -354,6 +357,9 @@ func (imuo *IncidentMilestoneUpdateOne) check() error {
 		if err := incidentmilestone.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "IncidentMilestone.kind": %w`, err)}
 		}
+	}
+	if imuo.mutation.TenantCleared() && len(imuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.tenant"`)
 	}
 	if imuo.mutation.IncidentCleared() && len(imuo.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentMilestone.incident"`)

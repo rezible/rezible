@@ -23,12 +23,13 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
+	"github.com/rezible/rezible/ent/user"
 )
 
 // IncidentQuery is the builder for querying Incident entities.
@@ -38,19 +39,21 @@ type IncidentQuery struct {
 	order               []incident.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.Incident
+	withTenant          *TenantQuery
 	withSeverity        *IncidentSeverityQuery
 	withType            *IncidentTypeQuery
-	withTeamAssignments *IncidentTeamAssignmentQuery
-	withRoleAssignments *IncidentRoleAssignmentQuery
 	withMilestones      *IncidentMilestoneQuery
 	withEvents          *IncidentEventQuery
 	withRetrospective   *RetrospectiveQuery
+	withUsers           *UserQuery
+	withRoleAssignments *IncidentRoleAssignmentQuery
 	withLinkedIncidents *IncidentQuery
 	withFieldSelections *IncidentFieldOptionQuery
 	withTasks           *TaskQuery
 	withTagAssignments  *IncidentTagQuery
 	withDebriefs        *IncidentDebriefQuery
 	withReviewSessions  *MeetingSessionQuery
+	withUserRoles       *IncidentRoleAssignmentQuery
 	withIncidentLinks   *IncidentLinkQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -87,6 +90,28 @@ func (iq *IncidentQuery) Unique(unique bool) *IncidentQuery {
 func (iq *IncidentQuery) Order(o ...incident.OrderOption) *IncidentQuery {
 	iq.order = append(iq.order, o...)
 	return iq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (iq *IncidentQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.TenantTable, incident.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QuerySeverity chains the current query on the "severity" edge.
@@ -126,50 +151,6 @@ func (iq *IncidentQuery) QueryType() *IncidentTypeQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryTeamAssignments chains the current query on the "team_assignments" edge.
-func (iq *IncidentQuery) QueryTeamAssignments() *IncidentTeamAssignmentQuery {
-	query := (&IncidentTeamAssignmentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentteamassignment.Table, incidentteamassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.TeamAssignmentsTable, incident.TeamAssignmentsColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryRoleAssignments chains the current query on the "role_assignments" edge.
-func (iq *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := iq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := iq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -236,6 +217,50 @@ func (iq *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUsers chains the current query on the "users" edge.
+func (iq *IncidentQuery) QueryUsers() *UserQuery {
+	query := (&UserClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, incident.UsersTable, incident.UsersPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRoleAssignments chains the current query on the "role_assignments" edge.
+func (iq *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -368,6 +393,28 @@ func (iq *IncidentQuery) QueryReviewSessions() *MeetingSessionQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUserRoles chains the current query on the "user_roles" edge.
+func (iq *IncidentQuery) QueryUserRoles() *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.UserRolesTable, incident.UserRolesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iq.driver.Dialect(), step)
 		return fromU, nil
@@ -589,25 +636,38 @@ func (iq *IncidentQuery) Clone() *IncidentQuery {
 		order:               append([]incident.OrderOption{}, iq.order...),
 		inters:              append([]Interceptor{}, iq.inters...),
 		predicates:          append([]predicate.Incident{}, iq.predicates...),
+		withTenant:          iq.withTenant.Clone(),
 		withSeverity:        iq.withSeverity.Clone(),
 		withType:            iq.withType.Clone(),
-		withTeamAssignments: iq.withTeamAssignments.Clone(),
-		withRoleAssignments: iq.withRoleAssignments.Clone(),
 		withMilestones:      iq.withMilestones.Clone(),
 		withEvents:          iq.withEvents.Clone(),
 		withRetrospective:   iq.withRetrospective.Clone(),
+		withUsers:           iq.withUsers.Clone(),
+		withRoleAssignments: iq.withRoleAssignments.Clone(),
 		withLinkedIncidents: iq.withLinkedIncidents.Clone(),
 		withFieldSelections: iq.withFieldSelections.Clone(),
 		withTasks:           iq.withTasks.Clone(),
 		withTagAssignments:  iq.withTagAssignments.Clone(),
 		withDebriefs:        iq.withDebriefs.Clone(),
 		withReviewSessions:  iq.withReviewSessions.Clone(),
+		withUserRoles:       iq.withUserRoles.Clone(),
 		withIncidentLinks:   iq.withIncidentLinks.Clone(),
 		// clone intermediate query.
 		sql:       iq.sql.Clone(),
 		path:      iq.path,
 		modifiers: append([]func(*sql.Selector){}, iq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentQuery {
+	query := (&TenantClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withTenant = query
+	return iq
 }
 
 // WithSeverity tells the query-builder to eager-load the nodes that are connected to
@@ -629,28 +689,6 @@ func (iq *IncidentQuery) WithType(opts ...func(*IncidentTypeQuery)) *IncidentQue
 		opt(query)
 	}
 	iq.withType = query
-	return iq
-}
-
-// WithTeamAssignments tells the query-builder to eager-load the nodes that are connected to
-// the "team_assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithTeamAssignments(opts ...func(*IncidentTeamAssignmentQuery)) *IncidentQuery {
-	query := (&IncidentTeamAssignmentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withTeamAssignments = query
-	return iq
-}
-
-// WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
-// the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (iq *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
-	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	iq.withRoleAssignments = query
 	return iq
 }
 
@@ -684,6 +722,28 @@ func (iq *IncidentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *I
 		opt(query)
 	}
 	iq.withRetrospective = query
+	return iq
+}
+
+// WithUsers tells the query-builder to eager-load the nodes that are connected to
+// the "users" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithUsers(opts ...func(*UserQuery)) *IncidentQuery {
+	query := (&UserClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withUsers = query
+	return iq
+}
+
+// WithRoleAssignments tells the query-builder to eager-load the nodes that are connected to
+// the "role_assignments" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithRoleAssignments(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
+	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withRoleAssignments = query
 	return iq
 }
 
@@ -753,6 +813,17 @@ func (iq *IncidentQuery) WithReviewSessions(opts ...func(*MeetingSessionQuery)) 
 	return iq
 }
 
+// WithUserRoles tells the query-builder to eager-load the nodes that are connected to
+// the "user_roles" edge. The optional arguments are used to configure the query builder of the edge.
+func (iq *IncidentQuery) WithUserRoles(opts ...func(*IncidentRoleAssignmentQuery)) *IncidentQuery {
+	query := (&IncidentRoleAssignmentClient{config: iq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iq.withUserRoles = query
+	return iq
+}
+
 // WithIncidentLinks tells the query-builder to eager-load the nodes that are connected to
 // the "incident_links" edge. The optional arguments are used to configure the query builder of the edge.
 func (iq *IncidentQuery) WithIncidentLinks(opts ...func(*IncidentLinkQuery)) *IncidentQuery {
@@ -770,12 +841,12 @@ func (iq *IncidentQuery) WithIncidentLinks(opts ...func(*IncidentLinkQuery)) *In
 // Example:
 //
 //	var v []struct {
-//		Slug string `json:"slug,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Incident.Query().
-//		GroupBy(incident.FieldSlug).
+//		GroupBy(incident.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iq *IncidentQuery) GroupBy(field string, fields ...string) *IncidentGroupBy {
@@ -793,11 +864,11 @@ func (iq *IncidentQuery) GroupBy(field string, fields ...string) *IncidentGroupB
 // Example:
 //
 //	var v []struct {
-//		Slug string `json:"slug,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.Incident.Query().
-//		Select(incident.FieldSlug).
+//		Select(incident.FieldTenantID).
 //		Scan(ctx, &v)
 func (iq *IncidentQuery) Select(fields ...string) *IncidentSelect {
 	iq.ctx.Fields = append(iq.ctx.Fields, fields...)
@@ -848,20 +919,22 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = iq.querySpec()
-		loadedTypes = [14]bool{
+		loadedTypes = [16]bool{
+			iq.withTenant != nil,
 			iq.withSeverity != nil,
 			iq.withType != nil,
-			iq.withTeamAssignments != nil,
-			iq.withRoleAssignments != nil,
 			iq.withMilestones != nil,
 			iq.withEvents != nil,
 			iq.withRetrospective != nil,
+			iq.withUsers != nil,
+			iq.withRoleAssignments != nil,
 			iq.withLinkedIncidents != nil,
 			iq.withFieldSelections != nil,
 			iq.withTasks != nil,
 			iq.withTagAssignments != nil,
 			iq.withDebriefs != nil,
 			iq.withReviewSessions != nil,
+			iq.withUserRoles != nil,
 			iq.withIncidentLinks != nil,
 		}
 	)
@@ -886,6 +959,12 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := iq.withTenant; query != nil {
+		if err := iq.loadTenant(ctx, query, nodes, nil,
+			func(n *Incident, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := iq.withSeverity; query != nil {
 		if err := iq.loadSeverity(ctx, query, nodes, nil,
 			func(n *Incident, e *IncidentSeverity) { n.Edges.Severity = e }); err != nil {
@@ -895,24 +974,6 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	if query := iq.withType; query != nil {
 		if err := iq.loadType(ctx, query, nodes, nil,
 			func(n *Incident, e *IncidentType) { n.Edges.Type = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withTeamAssignments; query != nil {
-		if err := iq.loadTeamAssignments(ctx, query, nodes,
-			func(n *Incident) { n.Edges.TeamAssignments = []*IncidentTeamAssignment{} },
-			func(n *Incident, e *IncidentTeamAssignment) {
-				n.Edges.TeamAssignments = append(n.Edges.TeamAssignments, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := iq.withRoleAssignments; query != nil {
-		if err := iq.loadRoleAssignments(ctx, query, nodes,
-			func(n *Incident) { n.Edges.RoleAssignments = []*IncidentRoleAssignment{} },
-			func(n *Incident, e *IncidentRoleAssignment) {
-				n.Edges.RoleAssignments = append(n.Edges.RoleAssignments, e)
-			}); err != nil {
 			return nil, err
 		}
 	}
@@ -934,6 +995,22 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := iq.loadRetrospective(ctx, query, nodes,
 			func(n *Incident) { n.Edges.Retrospective = []*Retrospective{} },
 			func(n *Incident, e *Retrospective) { n.Edges.Retrospective = append(n.Edges.Retrospective, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withUsers; query != nil {
+		if err := iq.loadUsers(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Users = []*User{} },
+			func(n *Incident, e *User) { n.Edges.Users = append(n.Edges.Users, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := iq.withRoleAssignments; query != nil {
+		if err := iq.loadRoleAssignments(ctx, query, nodes,
+			func(n *Incident) { n.Edges.RoleAssignments = []*IncidentRoleAssignment{} },
+			func(n *Incident, e *IncidentRoleAssignment) {
+				n.Edges.RoleAssignments = append(n.Edges.RoleAssignments, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -981,6 +1058,13 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
+	if query := iq.withUserRoles; query != nil {
+		if err := iq.loadUserRoles(ctx, query, nodes,
+			func(n *Incident) { n.Edges.UserRoles = []*IncidentRoleAssignment{} },
+			func(n *Incident, e *IncidentRoleAssignment) { n.Edges.UserRoles = append(n.Edges.UserRoles, e) }); err != nil {
+			return nil, err
+		}
+	}
 	if query := iq.withIncidentLinks; query != nil {
 		if err := iq.loadIncidentLinks(ctx, query, nodes,
 			func(n *Incident) { n.Edges.IncidentLinks = []*IncidentLink{} },
@@ -991,6 +1075,35 @@ func (iq *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	return nodes, nil
 }
 
+func (iq *IncidentQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Incident)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (iq *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeverityQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSeverity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Incident)
@@ -1046,66 +1159,6 @@ func (iq *IncidentQuery) loadType(ctx context.Context, query *IncidentTypeQuery,
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadTeamAssignments(ctx context.Context, query *IncidentTeamAssignmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentTeamAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentteamassignment.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentTeamAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.TeamAssignmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (iq *IncidentQuery) loadRoleAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentRoleAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Incident)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentroleassignment.FieldIncidentID)
-	}
-	query.Where(predicate.IncidentRoleAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.RoleAssignmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.IncidentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }
@@ -1184,6 +1237,97 @@ func (iq *IncidentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 	}
 	query.Where(predicate.Retrospective(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(incident.RetrospectiveColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *User)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Incident)
+	nids := make(map[uuid.UUID]map[*Incident]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(incident.UsersTable)
+		s.Join(joinT).On(s.C(user.FieldID), joinT.C(incident.UsersPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(incident.UsersPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(incident.UsersPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Incident]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*User](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "users" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (iq *IncidentQuery) loadRoleAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentRoleAssignment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(incidentroleassignment.FieldIncidentID)
+	}
+	query.Where(predicate.IncidentRoleAssignment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.RoleAssignmentsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -1503,6 +1647,36 @@ func (iq *IncidentQuery) loadReviewSessions(ctx context.Context, query *MeetingS
 	}
 	return nil
 }
+func (iq *IncidentQuery) loadUserRoles(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentRoleAssignment)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(incidentroleassignment.FieldIncidentID)
+	}
+	query.Where(predicate.IncidentRoleAssignment(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.UserRolesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (iq *IncidentQuery) loadIncidentLinks(ctx context.Context, query *IncidentLinkQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentLink)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
@@ -1561,6 +1735,9 @@ func (iq *IncidentQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incident.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if iq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incident.FieldTenantID)
 		}
 		if iq.withSeverity != nil {
 			_spec.Node.AddColumnOnce(incident.FieldSeverityID)

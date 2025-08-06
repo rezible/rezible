@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventContext is the model entity for the IncidentEventContext schema.
@@ -20,6 +21,8 @@ type IncidentEventContext struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// SystemState holds the value of the "system_state" field.
 	SystemState string `json:"system_state,omitempty"`
 	// DecisionOptions holds the value of the "decision_options" field.
@@ -39,11 +42,24 @@ type IncidentEventContext struct {
 
 // IncidentEventContextEdges holds the relations/edges for other nodes in the graph.
 type IncidentEventContextEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *IncidentEvent `json:"event,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventContextEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // EventOrErr returns the Event value or an error if the edge
@@ -51,7 +67,7 @@ type IncidentEventContextEdges struct {
 func (e IncidentEventContextEdges) EventOrErr() (*IncidentEvent, error) {
 	if e.Event != nil {
 		return e.Event, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
@@ -64,6 +80,8 @@ func (*IncidentEventContext) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidenteventcontext.FieldDecisionOptions, incidenteventcontext.FieldInvolvedPersonnel:
 			values[i] = new([]byte)
+		case incidenteventcontext.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidenteventcontext.FieldSystemState, incidenteventcontext.FieldDecisionRationale:
 			values[i] = new(sql.NullString)
 		case incidenteventcontext.FieldCreatedAt:
@@ -92,6 +110,12 @@ func (iec *IncidentEventContext) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				iec.ID = *value
+			}
+		case incidenteventcontext.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				iec.TenantID = int(value.Int64)
 			}
 		case incidenteventcontext.FieldSystemState:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -147,6 +171,11 @@ func (iec *IncidentEventContext) Value(name string) (ent.Value, error) {
 	return iec.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentEventContext entity.
+func (iec *IncidentEventContext) QueryTenant() *TenantQuery {
+	return NewIncidentEventContextClient(iec.config).QueryTenant(iec)
+}
+
 // QueryEvent queries the "event" edge of the IncidentEventContext entity.
 func (iec *IncidentEventContext) QueryEvent() *IncidentEventQuery {
 	return NewIncidentEventContextClient(iec.config).QueryEvent(iec)
@@ -175,6 +204,9 @@ func (iec *IncidentEventContext) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventContext(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", iec.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", iec.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("system_state=")
 	builder.WriteString(iec.SystemState)
 	builder.WriteString(", ")

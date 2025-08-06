@@ -475,6 +475,14 @@ func (oru *OncallRosterUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oru *OncallRosterUpdate) check() error {
+	if oru.mutation.TenantCleared() && len(oru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallRoster.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oru *OncallRosterUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdate {
 	oru.modifiers = append(oru.modifiers, modifiers...)
@@ -482,6 +490,9 @@ func (oru *OncallRosterUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *
 }
 
 func (oru *OncallRosterUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := oru.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallroster.Table, oncallroster.Columns, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
 	if ps := oru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -1339,6 +1350,14 @@ func (oruo *OncallRosterUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (oruo *OncallRosterUpdateOne) check() error {
+	if oruo.mutation.TenantCleared() && len(oruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallRoster.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (oruo *OncallRosterUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *OncallRosterUpdateOne {
 	oruo.modifiers = append(oruo.modifiers, modifiers...)
@@ -1346,6 +1365,9 @@ func (oruo *OncallRosterUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder
 }
 
 func (oruo *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRoster, err error) {
+	if err := oruo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(oncallroster.Table, oncallroster.Columns, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
 	id, ok := oruo.mutation.ID()
 	if !ok {

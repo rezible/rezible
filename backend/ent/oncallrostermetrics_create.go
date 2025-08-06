@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallRosterMetricsCreate is the builder for creating a OncallRosterMetrics entity.
@@ -22,6 +23,12 @@ type OncallRosterMetricsCreate struct {
 	mutation *OncallRosterMetricsMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ormc *OncallRosterMetricsCreate) SetTenantID(i int) *OncallRosterMetricsCreate {
+	ormc.mutation.SetTenantID(i)
+	return ormc
 }
 
 // SetRosterID sets the "roster_id" field.
@@ -42,6 +49,11 @@ func (ormc *OncallRosterMetricsCreate) SetNillableID(u *uuid.UUID) *OncallRoster
 		ormc.SetID(*u)
 	}
 	return ormc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ormc *OncallRosterMetricsCreate) SetTenant(t *Tenant) *OncallRosterMetricsCreate {
+	return ormc.SetTenantID(t.ID)
 }
 
 // SetRoster sets the "roster" edge to the OncallRoster entity.
@@ -98,8 +110,14 @@ func (ormc *OncallRosterMetricsCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ormc *OncallRosterMetricsCreate) check() error {
+	if _, ok := ormc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallRosterMetrics.tenant_id"`)}
+	}
 	if _, ok := ormc.mutation.RosterID(); !ok {
 		return &ValidationError{Name: "roster_id", err: errors.New(`ent: missing required field "OncallRosterMetrics.roster_id"`)}
+	}
+	if len(ormc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallRosterMetrics.tenant"`)}
 	}
 	if len(ormc.mutation.RosterIDs()) == 0 {
 		return &ValidationError{Name: "roster", err: errors.New(`ent: missing required edge "OncallRosterMetrics.roster"`)}
@@ -140,6 +158,23 @@ func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlg
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if nodes := ormc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallrostermetrics.TenantTable,
+			Columns: []string{oncallrostermetrics.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ormc.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -164,7 +199,7 @@ func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlg
 // of the `INSERT` statement. For example:
 //
 //	client.OncallRosterMetrics.Create().
-//		SetRosterID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -173,7 +208,7 @@ func (ormc *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlg
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallRosterMetricsUpsert) {
-//			SetRosterID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ormc *OncallRosterMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertOne {
@@ -237,6 +272,9 @@ func (u *OncallRosterMetricsUpsertOne) UpdateNewValues() *OncallRosterMetricsUps
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallrostermetrics.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallrostermetrics.FieldTenantID)
 		}
 	}))
 	return u
@@ -419,7 +457,7 @@ func (ormcb *OncallRosterMetricsCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallRosterMetricsUpsert) {
-//			SetRosterID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ormcb *OncallRosterMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterMetricsUpsertBulk {
@@ -465,6 +503,9 @@ func (u *OncallRosterMetricsUpsertBulk) UpdateNewValues() *OncallRosterMetricsUp
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallrostermetrics.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallrostermetrics.FieldTenantID)
 			}
 		}
 	}))

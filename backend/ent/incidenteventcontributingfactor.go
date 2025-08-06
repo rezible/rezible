@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventContributingFactor is the model entity for the IncidentEventContributingFactor schema.
@@ -19,6 +20,8 @@ type IncidentEventContributingFactor struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// FactorType holds the value of the "factor_type" field.
 	FactorType string `json:"factor_type,omitempty"`
 	// Description holds the value of the "description" field.
@@ -34,11 +37,24 @@ type IncidentEventContributingFactor struct {
 
 // IncidentEventContributingFactorEdges holds the relations/edges for other nodes in the graph.
 type IncidentEventContributingFactorEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *IncidentEvent `json:"event,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventContributingFactorEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // EventOrErr returns the Event value or an error if the edge
@@ -46,7 +62,7 @@ type IncidentEventContributingFactorEdges struct {
 func (e IncidentEventContributingFactorEdges) EventOrErr() (*IncidentEvent, error) {
 	if e.Event != nil {
 		return e.Event, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
@@ -57,6 +73,8 @@ func (*IncidentEventContributingFactor) scanValues(columns []string) ([]any, err
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidenteventcontributingfactor.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidenteventcontributingfactor.FieldFactorType, incidenteventcontributingfactor.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidenteventcontributingfactor.FieldCreatedAt:
@@ -85,6 +103,12 @@ func (iecf *IncidentEventContributingFactor) assignValues(columns []string, valu
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				iecf.ID = *value
+			}
+		case incidenteventcontributingfactor.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				iecf.TenantID = int(value.Int64)
 			}
 		case incidenteventcontributingfactor.FieldFactorType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -124,6 +148,11 @@ func (iecf *IncidentEventContributingFactor) Value(name string) (ent.Value, erro
 	return iecf.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentEventContributingFactor entity.
+func (iecf *IncidentEventContributingFactor) QueryTenant() *TenantQuery {
+	return NewIncidentEventContributingFactorClient(iecf.config).QueryTenant(iecf)
+}
+
 // QueryEvent queries the "event" edge of the IncidentEventContributingFactor entity.
 func (iecf *IncidentEventContributingFactor) QueryEvent() *IncidentEventQuery {
 	return NewIncidentEventContributingFactorClient(iecf.config).QueryEvent(iecf)
@@ -152,6 +181,9 @@ func (iecf *IncidentEventContributingFactor) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventContributingFactor(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", iecf.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", iecf.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("factor_type=")
 	builder.WriteString(iecf.FactorType)
 	builder.WriteString(", ")

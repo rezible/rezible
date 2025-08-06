@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentrole"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentRole is the model entity for the IncidentRole schema.
@@ -18,6 +19,8 @@ type IncidentRole struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
@@ -34,19 +37,32 @@ type IncidentRole struct {
 
 // IncidentRoleEdges holds the relations/edges for other nodes in the graph.
 type IncidentRoleEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Assignments holds the value of the assignments edge.
 	Assignments []*IncidentRoleAssignment `json:"assignments,omitempty"`
 	// DebriefQuestions holds the value of the debrief_questions edge.
 	DebriefQuestions []*IncidentDebriefQuestion `json:"debrief_questions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentRoleEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // AssignmentsOrErr returns the Assignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentRoleEdges) AssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Assignments, nil
 	}
 	return nil, &NotLoadedError{edge: "assignments"}
@@ -55,7 +71,7 @@ func (e IncidentRoleEdges) AssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 // DebriefQuestionsOrErr returns the DebriefQuestions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentRoleEdges) DebriefQuestionsOrErr() ([]*IncidentDebriefQuestion, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.DebriefQuestions, nil
 	}
 	return nil, &NotLoadedError{edge: "debrief_questions"}
@@ -68,6 +84,8 @@ func (*IncidentRole) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentrole.FieldRequired:
 			values[i] = new(sql.NullBool)
+		case incidentrole.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentrole.FieldName, incidentrole.FieldProviderID:
 			values[i] = new(sql.NullString)
 		case incidentrole.FieldArchiveTime:
@@ -94,6 +112,12 @@ func (ir *IncidentRole) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ir.ID = *value
+			}
+		case incidentrole.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ir.TenantID = int(value.Int64)
 			}
 		case incidentrole.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -132,6 +156,11 @@ func (ir *IncidentRole) Value(name string) (ent.Value, error) {
 	return ir.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentRole entity.
+func (ir *IncidentRole) QueryTenant() *TenantQuery {
+	return NewIncidentRoleClient(ir.config).QueryTenant(ir)
+}
+
 // QueryAssignments queries the "assignments" edge of the IncidentRole entity.
 func (ir *IncidentRole) QueryAssignments() *IncidentRoleAssignmentQuery {
 	return NewIncidentRoleClient(ir.config).QueryAssignments(ir)
@@ -165,6 +194,9 @@ func (ir *IncidentRole) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentRole(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ir.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ir.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(ir.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")

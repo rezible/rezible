@@ -54,6 +54,11 @@ func IDLTE(id uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldTenantID, v))
+}
+
 // IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
 func IncidentID(v uuid.UUID) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldIncidentID, v))
@@ -67,6 +72,26 @@ func SystemAnalysisID(v uuid.UUID) predicate.Retrospective {
 // DocumentName applies equality check predicate on the "document_name" field. It's identical to DocumentNameEQ.
 func DocumentName(v string) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldEQ(FieldDocumentName, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.Retrospective {
+	return predicate.Retrospective(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // IncidentIDEQ applies the EQ predicate on the "incident_id" field.
@@ -222,6 +247,29 @@ func StateIn(vs ...State) predicate.Retrospective {
 // StateNotIn applies the NotIn predicate on the "state" field.
 func StateNotIn(vs ...State) predicate.Retrospective {
 	return predicate.Retrospective(sql.FieldNotIn(FieldState, vs...))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.Retrospective {
+	return predicate.Retrospective(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasIncident applies the HasEdge predicate on the "incident" edge.

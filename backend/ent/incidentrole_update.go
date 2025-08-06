@@ -198,6 +198,14 @@ func (iru *IncidentRoleUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iru *IncidentRoleUpdate) check() error {
+	if iru.mutation.TenantCleared() && len(iru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRole.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (iru *IncidentRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdate {
 	iru.modifiers = append(iru.modifiers, modifiers...)
@@ -205,6 +213,9 @@ func (iru *IncidentRoleUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *
 }
 
 func (iru *IncidentRoleUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := iru.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentrole.Table, incidentrole.Columns, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
 	if ps := iru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -519,6 +530,14 @@ func (iruo *IncidentRoleUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (iruo *IncidentRoleUpdateOne) check() error {
+	if iruo.mutation.TenantCleared() && len(iruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentRole.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (iruo *IncidentRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentRoleUpdateOne {
 	iruo.modifiers = append(iruo.modifiers, modifiers...)
@@ -526,6 +545,9 @@ func (iruo *IncidentRoleUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder
 }
 
 func (iruo *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRole, err error) {
+	if err := iruo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentrole.Table, incidentrole.Columns, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
 	id, ok := iruo.mutation.ID()
 	if !ok {

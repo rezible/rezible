@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipFeedbackSignalQuery is the builder for querying SystemRelationshipFeedbackSignal entities.
@@ -26,6 +27,7 @@ type SystemRelationshipFeedbackSignalQuery struct {
 	order            []systemrelationshipfeedbacksignal.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.SystemRelationshipFeedbackSignal
+	withTenant       *TenantQuery
 	withRelationship *SystemAnalysisRelationshipQuery
 	withSignal       *SystemComponentSignalQuery
 	modifiers        []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Unique(unique bool) *SystemR
 func (srfsq *SystemRelationshipFeedbackSignalQuery) Order(o ...systemrelationshipfeedbacksignal.OrderOption) *SystemRelationshipFeedbackSignalQuery {
 	srfsq.order = append(srfsq.order, o...)
 	return srfsq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (srfsq *SystemRelationshipFeedbackSignalQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: srfsq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := srfsq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := srfsq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.TenantTable, systemrelationshipfeedbacksignal.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(srfsq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
@@ -301,6 +325,7 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Clone() *SystemRelationshipF
 		order:            append([]systemrelationshipfeedbacksignal.OrderOption{}, srfsq.order...),
 		inters:           append([]Interceptor{}, srfsq.inters...),
 		predicates:       append([]predicate.SystemRelationshipFeedbackSignal{}, srfsq.predicates...),
+		withTenant:       srfsq.withTenant.Clone(),
 		withRelationship: srfsq.withRelationship.Clone(),
 		withSignal:       srfsq.withSignal.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) Clone() *SystemRelationshipF
 		path:      srfsq.path,
 		modifiers: append([]func(*sql.Selector){}, srfsq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (srfsq *SystemRelationshipFeedbackSignalQuery) WithTenant(opts ...func(*TenantQuery)) *SystemRelationshipFeedbackSignalQuery {
+	query := (&TenantClient{config: srfsq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	srfsq.withTenant = query
+	return srfsq
 }
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
@@ -338,12 +374,12 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) WithSignal(opts ...func(*Sys
 // Example:
 //
 //	var v []struct {
-//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemRelationshipFeedbackSignal.Query().
-//		GroupBy(systemrelationshipfeedbacksignal.FieldRelationshipID).
+//		GroupBy(systemrelationshipfeedbacksignal.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (srfsq *SystemRelationshipFeedbackSignalQuery) GroupBy(field string, fields ...string) *SystemRelationshipFeedbackSignalGroupBy {
@@ -361,11 +397,11 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) GroupBy(field string, fields
 // Example:
 //
 //	var v []struct {
-//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemRelationshipFeedbackSignal.Query().
-//		Select(systemrelationshipfeedbacksignal.FieldRelationshipID).
+//		Select(systemrelationshipfeedbacksignal.FieldTenantID).
 //		Scan(ctx, &v)
 func (srfsq *SystemRelationshipFeedbackSignalQuery) Select(fields ...string) *SystemRelationshipFeedbackSignalSelect {
 	srfsq.ctx.Fields = append(srfsq.ctx.Fields, fields...)
@@ -416,7 +452,8 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	var (
 		nodes       = []*SystemRelationshipFeedbackSignal{}
 		_spec       = srfsq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			srfsq.withTenant != nil,
 			srfsq.withRelationship != nil,
 			srfsq.withSignal != nil,
 		}
@@ -442,6 +479,12 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := srfsq.withTenant; query != nil {
+		if err := srfsq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemRelationshipFeedbackSignal, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := srfsq.withRelationship; query != nil {
 		if err := srfsq.loadRelationship(ctx, query, nodes, nil,
 			func(n *SystemRelationshipFeedbackSignal, e *SystemAnalysisRelationship) { n.Edges.Relationship = e }); err != nil {
@@ -457,6 +500,35 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) sqlAll(ctx context.Context, 
 	return nodes, nil
 }
 
+func (srfsq *SystemRelationshipFeedbackSignalQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemRelationshipFeedbackSignal)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (srfsq *SystemRelationshipFeedbackSignalQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipFeedbackSignal, init func(*SystemRelationshipFeedbackSignal), assign func(*SystemRelationshipFeedbackSignal, *SystemAnalysisRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipFeedbackSignal)
@@ -543,6 +615,9 @@ func (srfsq *SystemRelationshipFeedbackSignalQuery) querySpec() *sqlgraph.QueryS
 			if fields[i] != systemrelationshipfeedbacksignal.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if srfsq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemrelationshipfeedbacksignal.FieldTenantID)
 		}
 		if srfsq.withRelationship != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipfeedbacksignal.FieldRelationshipID)

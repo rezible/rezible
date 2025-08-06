@@ -89,6 +89,9 @@ func (amu *AlertMetricsUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (amu *AlertMetricsUpdate) check() error {
+	if amu.mutation.TenantCleared() && len(amu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertMetrics.tenant"`)
+	}
 	if amu.mutation.AlertCleared() && len(amu.mutation.AlertIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertMetrics.alert"`)
 	}
@@ -236,6 +239,9 @@ func (amuo *AlertMetricsUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (amuo *AlertMetricsUpdateOne) check() error {
+	if amuo.mutation.TenantCleared() && len(amuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AlertMetrics.tenant"`)
+	}
 	if amuo.mutation.AlertCleared() && len(amuo.mutation.AlertIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertMetrics.alert"`)
 	}

@@ -297,6 +297,14 @@ func (idqu *IncidentDebriefQuestionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (idqu *IncidentDebriefQuestionUpdate) check() error {
+	if idqu.mutation.TenantCleared() && len(idqu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (idqu *IncidentDebriefQuestionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdate {
 	idqu.modifiers = append(idqu.modifiers, modifiers...)
@@ -304,6 +312,9 @@ func (idqu *IncidentDebriefQuestionUpdate) Modify(modifiers ...func(u *sql.Updat
 }
 
 func (idqu *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := idqu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefquestion.Table, incidentdebriefquestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
 	if ps := idqu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -882,6 +893,14 @@ func (idquo *IncidentDebriefQuestionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (idquo *IncidentDebriefQuestionUpdateOne) check() error {
+	if idquo.mutation.TenantCleared() && len(idquo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefQuestion.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (idquo *IncidentDebriefQuestionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentDebriefQuestionUpdateOne {
 	idquo.modifiers = append(idquo.modifiers, modifiers...)
@@ -889,6 +908,9 @@ func (idquo *IncidentDebriefQuestionUpdateOne) Modify(modifiers ...func(u *sql.U
 }
 
 func (idquo *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node *IncidentDebriefQuestion, err error) {
+	if err := idquo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentdebriefquestion.Table, incidentdebriefquestion.Columns, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
 	id, ok := idquo.mutation.ID()
 	if !ok {

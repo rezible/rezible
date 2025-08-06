@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
 func ArchiveTime(v time.Time) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldEQ(FieldArchiveTime, v))
@@ -74,6 +79,26 @@ func ProviderID(v string) predicate.IncidentRole {
 // Required applies equality check predicate on the "required" field. It's identical to RequiredEQ.
 func Required(v bool) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldEQ(FieldRequired, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentRole {
+	return predicate.IncidentRole(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
@@ -264,6 +289,29 @@ func RequiredEQ(v bool) predicate.IncidentRole {
 // RequiredNEQ applies the NEQ predicate on the "required" field.
 func RequiredNEQ(v bool) predicate.IncidentRole {
 	return predicate.IncidentRole(sql.FieldNEQ(FieldRequired, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentRole {
+	return predicate.IncidentRole(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentRole {
+	return predicate.IncidentRole(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAssignments applies the HasEdge predicate on the "assignments" edge.

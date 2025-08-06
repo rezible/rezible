@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentFieldCreate is the builder for creating a IncidentField entity.
@@ -24,6 +25,12 @@ type IncidentFieldCreate struct {
 	mutation *IncidentFieldMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ifc *IncidentFieldCreate) SetTenantID(i int) *IncidentFieldCreate {
+	ifc.mutation.SetTenantID(i)
+	return ifc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -58,6 +65,11 @@ func (ifc *IncidentFieldCreate) SetNillableID(u *uuid.UUID) *IncidentFieldCreate
 		ifc.SetID(*u)
 	}
 	return ifc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ifc *IncidentFieldCreate) SetTenant(t *Tenant) *IncidentFieldCreate {
+	return ifc.SetTenantID(t.ID)
 }
 
 // AddOptionIDs adds the "options" edge to the IncidentFieldOption entity by IDs.
@@ -139,8 +151,14 @@ func (ifc *IncidentFieldCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ifc *IncidentFieldCreate) check() error {
+	if _, ok := ifc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentField.tenant_id"`)}
+	}
 	if _, ok := ifc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentField.name"`)}
+	}
+	if len(ifc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentField.tenant"`)}
 	}
 	return nil
 }
@@ -186,6 +204,23 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 		_spec.SetField(incidentfield.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if nodes := ifc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentfield.TenantTable,
+			Columns: []string{incidentfield.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ifc.mutation.OptionsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -225,7 +260,7 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentField.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -234,7 +269,7 @@ func (ifc *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSp
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentFieldUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ifc *IncidentFieldCreate) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertOne {
@@ -316,6 +351,9 @@ func (u *IncidentFieldUpsertOne) UpdateNewValues() *IncidentFieldUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentfield.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentfield.FieldTenantID)
 		}
 	}))
 	return u
@@ -519,7 +557,7 @@ func (ifcb *IncidentFieldCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentFieldUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ifcb *IncidentFieldCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentFieldUpsertBulk {
@@ -565,6 +603,9 @@ func (u *IncidentFieldUpsertBulk) UpdateNewValues() *IncidentFieldUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentfield.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentfield.FieldTenantID)
 			}
 		}
 	}))

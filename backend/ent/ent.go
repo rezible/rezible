@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -32,12 +33,10 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -132,6 +131,7 @@ func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
 			alert.Table:                            alert.ValidColumn,
+			alertfeedback.Table:                    alertfeedback.ValidColumn,
 			alertmetrics.Table:                     alertmetrics.ValidColumn,
 			incident.Table:                         incident.ValidColumn,
 			incidentdebrief.Table:                  incidentdebrief.ValidColumn,
@@ -151,12 +151,10 @@ func checkColumn(table, column string) error {
 			incidentroleassignment.Table:           incidentroleassignment.ValidColumn,
 			incidentseverity.Table:                 incidentseverity.ValidColumn,
 			incidenttag.Table:                      incidenttag.ValidColumn,
-			incidentteamassignment.Table:           incidentteamassignment.ValidColumn,
 			incidenttype.Table:                     incidenttype.ValidColumn,
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			oncallannotation.Table:                 oncallannotation.ValidColumn,
-			oncallannotationalertfeedback.Table:    oncallannotationalertfeedback.ValidColumn,
 			oncallevent.Table:                      oncallevent.ValidColumn,
 			oncallhandovertemplate.Table:           oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                     oncallroster.ValidColumn,

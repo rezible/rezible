@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // PlaybookCreate is the builder for creating a Playbook entity.
@@ -22,6 +23,12 @@ type PlaybookCreate struct {
 	mutation *PlaybookMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (pc *PlaybookCreate) SetTenantID(i int) *PlaybookCreate {
+	pc.mutation.SetTenantID(i)
+	return pc
 }
 
 // SetTitle sets the "title" field.
@@ -54,6 +61,11 @@ func (pc *PlaybookCreate) SetNillableID(u *uuid.UUID) *PlaybookCreate {
 		pc.SetID(*u)
 	}
 	return pc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (pc *PlaybookCreate) SetTenant(t *Tenant) *PlaybookCreate {
+	return pc.SetTenantID(t.ID)
 }
 
 // AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
@@ -120,6 +132,9 @@ func (pc *PlaybookCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PlaybookCreate) check() error {
+	if _, ok := pc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Playbook.tenant_id"`)}
+	}
 	if _, ok := pc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Playbook.title"`)}
 	}
@@ -128,6 +143,9 @@ func (pc *PlaybookCreate) check() error {
 	}
 	if _, ok := pc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Playbook.content"`)}
+	}
+	if len(pc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Playbook.tenant"`)}
 	}
 	return nil
 }
@@ -177,6 +195,23 @@ func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 		_spec.SetField(playbook.FieldContent, field.TypeBytes, value)
 		_node.Content = value
 	}
+	if nodes := pc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   playbook.TenantTable,
+			Columns: []string{playbook.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := pc.mutation.AlertsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -200,7 +235,7 @@ func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Playbook.Create().
-//		SetTitle(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -209,7 +244,7 @@ func (pc *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PlaybookUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (pc *PlaybookCreate) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertOne {
@@ -297,6 +332,9 @@ func (u *PlaybookUpsertOne) UpdateNewValues() *PlaybookUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(playbook.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(playbook.FieldTenantID)
 		}
 	}))
 	return u
@@ -507,7 +545,7 @@ func (pcb *PlaybookCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.PlaybookUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (pcb *PlaybookCreateBulk) OnConflict(opts ...sql.ConflictOption) *PlaybookUpsertBulk {
@@ -553,6 +591,9 @@ func (u *PlaybookUpsertBulk) UpdateNewValues() *PlaybookUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(playbook.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(playbook.FieldTenantID)
 			}
 		}
 	}))

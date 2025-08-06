@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentConstraintQuery is the builder for querying SystemComponentConstraint entities.
@@ -27,6 +28,7 @@ type SystemComponentConstraintQuery struct {
 	order         []systemcomponentconstraint.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.SystemComponentConstraint
+	withTenant    *TenantQuery
 	withComponent *SystemComponentQuery
 	withHazards   *SystemHazardQuery
 	modifiers     []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (sccq *SystemComponentConstraintQuery) Unique(unique bool) *SystemComponent
 func (sccq *SystemComponentConstraintQuery) Order(o ...systemcomponentconstraint.OrderOption) *SystemComponentConstraintQuery {
 	sccq.order = append(sccq.order, o...)
 	return sccq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (sccq *SystemComponentConstraintQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: sccq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sccq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sccq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.TenantTable, systemcomponentconstraint.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sccq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryComponent chains the current query on the "component" edge.
@@ -302,6 +326,7 @@ func (sccq *SystemComponentConstraintQuery) Clone() *SystemComponentConstraintQu
 		order:         append([]systemcomponentconstraint.OrderOption{}, sccq.order...),
 		inters:        append([]Interceptor{}, sccq.inters...),
 		predicates:    append([]predicate.SystemComponentConstraint{}, sccq.predicates...),
+		withTenant:    sccq.withTenant.Clone(),
 		withComponent: sccq.withComponent.Clone(),
 		withHazards:   sccq.withHazards.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (sccq *SystemComponentConstraintQuery) Clone() *SystemComponentConstraintQu
 		path:      sccq.path,
 		modifiers: append([]func(*sql.Selector){}, sccq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (sccq *SystemComponentConstraintQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentConstraintQuery {
+	query := (&TenantClient{config: sccq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sccq.withTenant = query
+	return sccq
 }
 
 // WithComponent tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (sccq *SystemComponentConstraintQuery) WithHazards(opts ...func(*SystemHaza
 // Example:
 //
 //	var v []struct {
-//		ComponentID uuid.UUID `json:"component_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemComponentConstraint.Query().
-//		GroupBy(systemcomponentconstraint.FieldComponentID).
+//		GroupBy(systemcomponentconstraint.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sccq *SystemComponentConstraintQuery) GroupBy(field string, fields ...string) *SystemComponentConstraintGroupBy {
@@ -362,11 +398,11 @@ func (sccq *SystemComponentConstraintQuery) GroupBy(field string, fields ...stri
 // Example:
 //
 //	var v []struct {
-//		ComponentID uuid.UUID `json:"component_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemComponentConstraint.Query().
-//		Select(systemcomponentconstraint.FieldComponentID).
+//		Select(systemcomponentconstraint.FieldTenantID).
 //		Scan(ctx, &v)
 func (sccq *SystemComponentConstraintQuery) Select(fields ...string) *SystemComponentConstraintSelect {
 	sccq.ctx.Fields = append(sccq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (sccq *SystemComponentConstraintQuery) sqlAll(ctx context.Context, hooks ..
 	var (
 		nodes       = []*SystemComponentConstraint{}
 		_spec       = sccq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			sccq.withTenant != nil,
 			sccq.withComponent != nil,
 			sccq.withHazards != nil,
 		}
@@ -443,6 +480,12 @@ func (sccq *SystemComponentConstraintQuery) sqlAll(ctx context.Context, hooks ..
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := sccq.withTenant; query != nil {
+		if err := sccq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemComponentConstraint, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := sccq.withComponent; query != nil {
 		if err := sccq.loadComponent(ctx, query, nodes, nil,
 			func(n *SystemComponentConstraint, e *SystemComponent) { n.Edges.Component = e }); err != nil {
@@ -459,6 +502,35 @@ func (sccq *SystemComponentConstraintQuery) sqlAll(ctx context.Context, hooks ..
 	return nodes, nil
 }
 
+func (sccq *SystemComponentConstraintQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentConstraint, init func(*SystemComponentConstraint), assign func(*SystemComponentConstraint, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemComponentConstraint)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (sccq *SystemComponentConstraintQuery) loadComponent(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentConstraint, init func(*SystemComponentConstraint), assign func(*SystemComponentConstraint, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentConstraint)
@@ -577,6 +649,9 @@ func (sccq *SystemComponentConstraintQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemcomponentconstraint.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sccq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemcomponentconstraint.FieldTenantID)
 		}
 		if sccq.withComponent != nil {
 			_spec.Node.AddColumnOnce(systemcomponentconstraint.FieldComponentID)

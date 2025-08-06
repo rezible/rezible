@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefQuestion is the model entity for the IncidentDebriefQuestion schema.
@@ -17,6 +18,8 @@ type IncidentDebriefQuestion struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -27,6 +30,8 @@ type IncidentDebriefQuestion struct {
 
 // IncidentDebriefQuestionEdges holds the relations/edges for other nodes in the graph.
 type IncidentDebriefQuestionEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Messages holds the value of the messages edge.
 	Messages []*IncidentDebriefMessage `json:"messages,omitempty"`
 	// IncidentFields holds the value of the incident_fields edge.
@@ -41,13 +46,24 @@ type IncidentDebriefQuestionEdges struct {
 	IncidentTypes []*IncidentType `json:"incident_types,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentDebriefQuestionEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // MessagesOrErr returns the Messages value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) MessagesOrErr() ([]*IncidentDebriefMessage, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Messages, nil
 	}
 	return nil, &NotLoadedError{edge: "messages"}
@@ -56,7 +72,7 @@ func (e IncidentDebriefQuestionEdges) MessagesOrErr() ([]*IncidentDebriefMessage
 // IncidentFieldsOrErr returns the IncidentFields value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) IncidentFieldsOrErr() ([]*IncidentField, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.IncidentFields, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_fields"}
@@ -65,7 +81,7 @@ func (e IncidentDebriefQuestionEdges) IncidentFieldsOrErr() ([]*IncidentField, e
 // IncidentRolesOrErr returns the IncidentRoles value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) IncidentRolesOrErr() ([]*IncidentRole, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.IncidentRoles, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_roles"}
@@ -74,7 +90,7 @@ func (e IncidentDebriefQuestionEdges) IncidentRolesOrErr() ([]*IncidentRole, err
 // IncidentSeveritiesOrErr returns the IncidentSeverities value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) IncidentSeveritiesOrErr() ([]*IncidentSeverity, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.IncidentSeverities, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_severities"}
@@ -83,7 +99,7 @@ func (e IncidentDebriefQuestionEdges) IncidentSeveritiesOrErr() ([]*IncidentSeve
 // IncidentTagsOrErr returns the IncidentTags value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) IncidentTagsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.IncidentTags, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_tags"}
@@ -92,7 +108,7 @@ func (e IncidentDebriefQuestionEdges) IncidentTagsOrErr() ([]*IncidentTag, error
 // IncidentTypesOrErr returns the IncidentTypes value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefQuestionEdges) IncidentTypesOrErr() ([]*IncidentType, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.IncidentTypes, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_types"}
@@ -103,6 +119,8 @@ func (*IncidentDebriefQuestion) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentdebriefquestion.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentdebriefquestion.FieldContent:
 			values[i] = new(sql.NullString)
 		case incidentdebriefquestion.FieldID:
@@ -128,6 +146,12 @@ func (idq *IncidentDebriefQuestion) assignValues(columns []string, values []any)
 			} else if value != nil {
 				idq.ID = *value
 			}
+		case incidentdebriefquestion.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				idq.TenantID = int(value.Int64)
+			}
 		case incidentdebriefquestion.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
@@ -145,6 +169,11 @@ func (idq *IncidentDebriefQuestion) assignValues(columns []string, values []any)
 // This includes values selected through modifiers, order, etc.
 func (idq *IncidentDebriefQuestion) Value(name string) (ent.Value, error) {
 	return idq.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the IncidentDebriefQuestion entity.
+func (idq *IncidentDebriefQuestion) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefQuestionClient(idq.config).QueryTenant(idq)
 }
 
 // QueryMessages queries the "messages" edge of the IncidentDebriefQuestion entity.
@@ -200,6 +229,9 @@ func (idq *IncidentDebriefQuestion) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebriefQuestion(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", idq.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", idq.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(idq.Content)
 	builder.WriteByte(')')

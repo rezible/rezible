@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ShiftID applies equality check predicate on the "shift_id" field. It's identical to ShiftIDEQ.
 func ShiftID(v uuid.UUID) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldShiftID, v))
@@ -84,6 +89,26 @@ func SentAt(v time.Time) predicate.OncallUserShiftHandover {
 // Contents applies equality check predicate on the "contents" field. It's identical to ContentsEQ.
 func Contents(v []byte) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldContents, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ShiftIDEQ applies the EQ predicate on the "shift_id" field.
@@ -284,6 +309,29 @@ func ContentsLT(v []byte) predicate.OncallUserShiftHandover {
 // ContentsLTE applies the LTE predicate on the "contents" field.
 func ContentsLTE(v []byte) predicate.OncallUserShiftHandover {
 	return predicate.OncallUserShiftHandover(sql.FieldLTE(FieldContents, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.OncallUserShiftHandover {
+	return predicate.OncallUserShiftHandover(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasShift applies the HasEdge predicate on the "shift" edge.

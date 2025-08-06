@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentRelationshipQuery is the builder for querying SystemComponentRelationship entities.
@@ -28,6 +29,7 @@ type SystemComponentRelationshipQuery struct {
 	order              []systemcomponentrelationship.OrderOption
 	inters             []Interceptor
 	predicates         []predicate.SystemComponentRelationship
+	withTenant         *TenantQuery
 	withSource         *SystemComponentQuery
 	withTarget         *SystemComponentQuery
 	withSystemAnalyses *SystemAnalysisRelationshipQuery
@@ -67,6 +69,28 @@ func (scrq *SystemComponentRelationshipQuery) Unique(unique bool) *SystemCompone
 func (scrq *SystemComponentRelationshipQuery) Order(o ...systemcomponentrelationship.OrderOption) *SystemComponentRelationshipQuery {
 	scrq.order = append(scrq.order, o...)
 	return scrq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (scrq *SystemComponentRelationshipQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: scrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := scrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := scrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TenantTable, systemcomponentrelationship.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(scrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QuerySource chains the current query on the "source" edge.
@@ -349,6 +373,7 @@ func (scrq *SystemComponentRelationshipQuery) Clone() *SystemComponentRelationsh
 		order:              append([]systemcomponentrelationship.OrderOption{}, scrq.order...),
 		inters:             append([]Interceptor{}, scrq.inters...),
 		predicates:         append([]predicate.SystemComponentRelationship{}, scrq.predicates...),
+		withTenant:         scrq.withTenant.Clone(),
 		withSource:         scrq.withSource.Clone(),
 		withTarget:         scrq.withTarget.Clone(),
 		withSystemAnalyses: scrq.withSystemAnalyses.Clone(),
@@ -358,6 +383,17 @@ func (scrq *SystemComponentRelationshipQuery) Clone() *SystemComponentRelationsh
 		path:      scrq.path,
 		modifiers: append([]func(*sql.Selector){}, scrq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (scrq *SystemComponentRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemComponentRelationshipQuery {
+	query := (&TenantClient{config: scrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	scrq.withTenant = query
+	return scrq
 }
 
 // WithSource tells the query-builder to eager-load the nodes that are connected to
@@ -410,12 +446,12 @@ func (scrq *SystemComponentRelationshipQuery) WithHazards(opts ...func(*SystemHa
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemComponentRelationship.Query().
-//		GroupBy(systemcomponentrelationship.FieldProviderID).
+//		GroupBy(systemcomponentrelationship.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (scrq *SystemComponentRelationshipQuery) GroupBy(field string, fields ...string) *SystemComponentRelationshipGroupBy {
@@ -433,11 +469,11 @@ func (scrq *SystemComponentRelationshipQuery) GroupBy(field string, fields ...st
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemComponentRelationship.Query().
-//		Select(systemcomponentrelationship.FieldProviderID).
+//		Select(systemcomponentrelationship.FieldTenantID).
 //		Scan(ctx, &v)
 func (scrq *SystemComponentRelationshipQuery) Select(fields ...string) *SystemComponentRelationshipSelect {
 	scrq.ctx.Fields = append(scrq.ctx.Fields, fields...)
@@ -488,7 +524,8 @@ func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks 
 	var (
 		nodes       = []*SystemComponentRelationship{}
 		_spec       = scrq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
+			scrq.withTenant != nil,
 			scrq.withSource != nil,
 			scrq.withTarget != nil,
 			scrq.withSystemAnalyses != nil,
@@ -515,6 +552,12 @@ func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks 
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := scrq.withTenant; query != nil {
+		if err := scrq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemComponentRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := scrq.withSource; query != nil {
 		if err := scrq.loadSource(ctx, query, nodes, nil,
@@ -547,6 +590,35 @@ func (scrq *SystemComponentRelationshipQuery) sqlAll(ctx context.Context, hooks 
 	return nodes, nil
 }
 
+func (scrq *SystemComponentRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemComponentRelationship)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (scrq *SystemComponentRelationshipQuery) loadSource(ctx context.Context, query *SystemComponentQuery, nodes []*SystemComponentRelationship, init func(*SystemComponentRelationship), assign func(*SystemComponentRelationship, *SystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemComponentRelationship)
@@ -724,6 +796,9 @@ func (scrq *SystemComponentRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemcomponentrelationship.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if scrq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemcomponentrelationship.FieldTenantID)
 		}
 		if scrq.withSource != nil {
 			_spec.Node.AddColumnOnce(systemcomponentrelationship.FieldSourceID)

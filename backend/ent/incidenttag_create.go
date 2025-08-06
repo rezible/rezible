@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentTagCreate is the builder for creating a IncidentTag entity.
@@ -24,6 +25,12 @@ type IncidentTagCreate struct {
 	mutation *IncidentTagMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (itc *IncidentTagCreate) SetTenantID(i int) *IncidentTagCreate {
+	itc.mutation.SetTenantID(i)
+	return itc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -64,6 +71,11 @@ func (itc *IncidentTagCreate) SetNillableID(u *uuid.UUID) *IncidentTagCreate {
 		itc.SetID(*u)
 	}
 	return itc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (itc *IncidentTagCreate) SetTenant(t *Tenant) *IncidentTagCreate {
+	return itc.SetTenantID(t.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -145,11 +157,17 @@ func (itc *IncidentTagCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (itc *IncidentTagCreate) check() error {
+	if _, ok := itc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentTag.tenant_id"`)}
+	}
 	if _, ok := itc.mutation.Key(); !ok {
 		return &ValidationError{Name: "key", err: errors.New(`ent: missing required field "IncidentTag.key"`)}
 	}
 	if _, ok := itc.mutation.Value(); !ok {
 		return &ValidationError{Name: "value", err: errors.New(`ent: missing required field "IncidentTag.value"`)}
+	}
+	if len(itc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentTag.tenant"`)}
 	}
 	return nil
 }
@@ -199,6 +217,23 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 		_spec.SetField(incidenttag.FieldValue, field.TypeString, value)
 		_node.Value = value
 	}
+	if nodes := itc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenttag.TenantTable,
+			Columns: []string{incidenttag.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := itc.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -238,7 +273,7 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentTag.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -247,7 +282,7 @@ func (itc *IncidentTagCreate) createSpec() (*IncidentTag, *sqlgraph.CreateSpec) 
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentTagUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (itc *IncidentTagCreate) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertOne {
@@ -341,6 +376,9 @@ func (u *IncidentTagUpsertOne) UpdateNewValues() *IncidentTagUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenttag.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenttag.FieldTenantID)
 		}
 	}))
 	return u
@@ -558,7 +596,7 @@ func (itcb *IncidentTagCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentTagUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (itcb *IncidentTagCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentTagUpsertBulk {
@@ -604,6 +642,9 @@ func (u *IncidentTagUpsertBulk) UpdateNewValues() *IncidentTagUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenttag.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenttag.FieldTenantID)
 			}
 		}
 	}))

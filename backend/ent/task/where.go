@@ -54,6 +54,11 @@ func IDLTE(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldTenantID, v))
+}
+
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldTitle, v))
@@ -72,6 +77,26 @@ func AssigneeID(v uuid.UUID) predicate.Task {
 // CreatorID applies equality check predicate on the "creator_id" field. It's identical to CreatorIDEQ.
 func CreatorID(v uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldCreatorID, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // TypeEQ applies the EQ predicate on the "type" field.
@@ -247,6 +272,29 @@ func CreatorIDIsNil() predicate.Task {
 // CreatorIDNotNil applies the NotNil predicate on the "creator_id" field.
 func CreatorIDNotNil() predicate.Task {
 	return predicate.Task(sql.FieldNotNull(FieldCreatorID))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.Task {
+	return predicate.Task(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasTickets applies the HasEdge predicate on the "tickets" edge.

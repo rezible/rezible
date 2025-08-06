@@ -95,6 +95,9 @@ func (idsu *IncidentDebriefSuggestionUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (idsu *IncidentDebriefSuggestionUpdate) check() error {
+	if idsu.mutation.TenantCleared() && len(idsu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.tenant"`)
+	}
 	if idsu.mutation.DebriefCleared() && len(idsu.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.debrief"`)
 	}
@@ -251,6 +254,9 @@ func (idsuo *IncidentDebriefSuggestionUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (idsuo *IncidentDebriefSuggestionUpdateOne) check() error {
+	if idsuo.mutation.TenantCleared() && len(idsuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.tenant"`)
+	}
 	if idsuo.mutation.DebriefCleared() && len(idsuo.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefSuggestion.debrief"`)
 	}

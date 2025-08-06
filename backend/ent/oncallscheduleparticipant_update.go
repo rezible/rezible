@@ -136,6 +136,9 @@ func (ospu *OncallScheduleParticipantUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ospu *OncallScheduleParticipantUpdate) check() error {
+	if ospu.mutation.TenantCleared() && len(ospu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.tenant"`)
+	}
 	if ospu.mutation.ScheduleCleared() && len(ospu.mutation.ScheduleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.schedule"`)
 	}
@@ -367,6 +370,9 @@ func (ospuo *OncallScheduleParticipantUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ospuo *OncallScheduleParticipantUpdateOne) check() error {
+	if ospuo.mutation.TenantCleared() && len(ospuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.tenant"`)
+	}
 	if ospuo.mutation.ScheduleCleared() && len(ospuo.mutation.ScheduleIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallScheduleParticipant.schedule"`)
 	}

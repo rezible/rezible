@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisCreate is the builder for creating a SystemAnalysis entity.
@@ -26,6 +27,12 @@ type SystemAnalysisCreate struct {
 	mutation *SystemAnalysisMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (sac *SystemAnalysisCreate) SetTenantID(i int) *SystemAnalysisCreate {
+	sac.mutation.SetTenantID(i)
+	return sac
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -68,6 +75,11 @@ func (sac *SystemAnalysisCreate) SetNillableID(u *uuid.UUID) *SystemAnalysisCrea
 		sac.SetID(*u)
 	}
 	return sac
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (sac *SystemAnalysisCreate) SetTenant(t *Tenant) *SystemAnalysisCreate {
+	return sac.SetTenantID(t.ID)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -189,11 +201,17 @@ func (sac *SystemAnalysisCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sac *SystemAnalysisCreate) check() error {
+	if _, ok := sac.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysis.tenant_id"`)}
+	}
 	if _, ok := sac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysis.created_at"`)}
 	}
 	if _, ok := sac.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemAnalysis.updated_at"`)}
+	}
+	if len(sac.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysis.tenant"`)}
 	}
 	if len(sac.mutation.RetrospectiveIDs()) == 0 {
 		return &ValidationError{Name: "retrospective", err: errors.New(`ent: missing required edge "SystemAnalysis.retrospective"`)}
@@ -241,6 +259,23 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 	if value, ok := sac.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemanalysis.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := sac.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TenantTable,
+			Columns: []string{systemanalysis.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sac.mutation.RetrospectiveIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -320,7 +355,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 // of the `INSERT` statement. For example:
 //
 //	client.SystemAnalysis.Create().
-//		SetCreatedAt(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -329,7 +364,7 @@ func (sac *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.Create
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisUpsert) {
-//			SetCreatedAt(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sac *SystemAnalysisCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisUpsertOne {
@@ -405,6 +440,9 @@ func (u *SystemAnalysisUpsertOne) UpdateNewValues() *SystemAnalysisUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemanalysis.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemanalysis.FieldTenantID)
 		}
 	}))
 	return u
@@ -601,7 +639,7 @@ func (sacb *SystemAnalysisCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisUpsert) {
-//			SetCreatedAt(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sacb *SystemAnalysisCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisUpsertBulk {
@@ -647,6 +685,9 @@ func (u *SystemAnalysisUpsertBulk) UpdateNewValues() *SystemAnalysisUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemanalysis.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemanalysis.FieldTenantID)
 			}
 		}
 	}))

@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisRelationshipQuery is the builder for querying SystemAnalysisRelationship entities.
@@ -31,6 +32,7 @@ type SystemAnalysisRelationshipQuery struct {
 	order                     []systemanalysisrelationship.OrderOption
 	inters                    []Interceptor
 	predicates                []predicate.SystemAnalysisRelationship
+	withTenant                *TenantQuery
 	withSystemAnalysis        *SystemAnalysisQuery
 	withComponentRelationship *SystemComponentRelationshipQuery
 	withControls              *SystemComponentControlQuery
@@ -72,6 +74,28 @@ func (sarq *SystemAnalysisRelationshipQuery) Unique(unique bool) *SystemAnalysis
 func (sarq *SystemAnalysisRelationshipQuery) Order(o ...systemanalysisrelationship.OrderOption) *SystemAnalysisRelationshipQuery {
 	sarq.order = append(sarq.order, o...)
 	return sarq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (sarq *SystemAnalysisRelationshipQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: sarq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := sarq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := sarq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TenantTable, systemanalysisrelationship.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(sarq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QuerySystemAnalysis chains the current query on the "system_analysis" edge.
@@ -398,6 +422,7 @@ func (sarq *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationship
 		order:                     append([]systemanalysisrelationship.OrderOption{}, sarq.order...),
 		inters:                    append([]Interceptor{}, sarq.inters...),
 		predicates:                append([]predicate.SystemAnalysisRelationship{}, sarq.predicates...),
+		withTenant:                sarq.withTenant.Clone(),
 		withSystemAnalysis:        sarq.withSystemAnalysis.Clone(),
 		withComponentRelationship: sarq.withComponentRelationship.Clone(),
 		withControls:              sarq.withControls.Clone(),
@@ -409,6 +434,17 @@ func (sarq *SystemAnalysisRelationshipQuery) Clone() *SystemAnalysisRelationship
 		path:      sarq.path,
 		modifiers: append([]func(*sql.Selector){}, sarq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (sarq *SystemAnalysisRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *SystemAnalysisRelationshipQuery {
+	query := (&TenantClient{config: sarq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	sarq.withTenant = query
+	return sarq
 }
 
 // WithSystemAnalysis tells the query-builder to eager-load the nodes that are connected to
@@ -483,12 +519,12 @@ func (sarq *SystemAnalysisRelationshipQuery) WithFeedbackSignals(opts ...func(*S
 // Example:
 //
 //	var v []struct {
-//		AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemAnalysisRelationship.Query().
-//		GroupBy(systemanalysisrelationship.FieldAnalysisID).
+//		GroupBy(systemanalysisrelationship.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sarq *SystemAnalysisRelationshipQuery) GroupBy(field string, fields ...string) *SystemAnalysisRelationshipGroupBy {
@@ -506,11 +542,11 @@ func (sarq *SystemAnalysisRelationshipQuery) GroupBy(field string, fields ...str
 // Example:
 //
 //	var v []struct {
-//		AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemAnalysisRelationship.Query().
-//		Select(systemanalysisrelationship.FieldAnalysisID).
+//		Select(systemanalysisrelationship.FieldTenantID).
 //		Scan(ctx, &v)
 func (sarq *SystemAnalysisRelationshipQuery) Select(fields ...string) *SystemAnalysisRelationshipSelect {
 	sarq.ctx.Fields = append(sarq.ctx.Fields, fields...)
@@ -561,7 +597,8 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 	var (
 		nodes       = []*SystemAnalysisRelationship{}
 		_spec       = sarq.querySpec()
-		loadedTypes = [6]bool{
+		loadedTypes = [7]bool{
+			sarq.withTenant != nil,
 			sarq.withSystemAnalysis != nil,
 			sarq.withComponentRelationship != nil,
 			sarq.withControls != nil,
@@ -590,6 +627,12 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 	}
 	if len(nodes) == 0 {
 		return nodes, nil
+	}
+	if query := sarq.withTenant; query != nil {
+		if err := sarq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemAnalysisRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
 	}
 	if query := sarq.withSystemAnalysis; query != nil {
 		if err := sarq.loadSystemAnalysis(ctx, query, nodes, nil,
@@ -642,6 +685,35 @@ func (sarq *SystemAnalysisRelationshipQuery) sqlAll(ctx context.Context, hooks .
 	return nodes, nil
 }
 
+func (sarq *SystemAnalysisRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemAnalysisRelationship)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (sarq *SystemAnalysisRelationshipQuery) loadSystemAnalysis(ctx context.Context, query *SystemAnalysisQuery, nodes []*SystemAnalysisRelationship, init func(*SystemAnalysisRelationship), assign func(*SystemAnalysisRelationship, *SystemAnalysis)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemAnalysisRelationship)
@@ -910,6 +982,9 @@ func (sarq *SystemAnalysisRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != systemanalysisrelationship.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if sarq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldTenantID)
 		}
 		if sarq.withSystemAnalysis != nil {
 			_spec.Node.AddColumnOnce(systemanalysisrelationship.FieldAnalysisID)

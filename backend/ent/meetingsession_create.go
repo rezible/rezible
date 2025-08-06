@@ -14,7 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // MeetingSessionCreate is the builder for creating a MeetingSession entity.
@@ -23,6 +25,12 @@ type MeetingSessionCreate struct {
 	mutation *MeetingSessionMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (msc *MeetingSessionCreate) SetTenantID(i int) *MeetingSessionCreate {
+	msc.mutation.SetTenantID(i)
+	return msc
 }
 
 // SetTitle sets the "title" field.
@@ -79,6 +87,11 @@ func (msc *MeetingSessionCreate) SetNillableID(u *uuid.UUID) *MeetingSessionCrea
 	return msc
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (msc *MeetingSessionCreate) SetTenant(t *Tenant) *MeetingSessionCreate {
+	return msc.SetTenantID(t.ID)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (msc *MeetingSessionCreate) AddIncidentIDs(ids ...uuid.UUID) *MeetingSessionCreate {
 	msc.mutation.AddIncidentIDs(ids...)
@@ -92,6 +105,25 @@ func (msc *MeetingSessionCreate) AddIncidents(i ...*Incident) *MeetingSessionCre
 		ids[j] = i[j].ID
 	}
 	return msc.AddIncidentIDs(ids...)
+}
+
+// SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
+func (msc *MeetingSessionCreate) SetScheduleID(id uuid.UUID) *MeetingSessionCreate {
+	msc.mutation.SetScheduleID(id)
+	return msc
+}
+
+// SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
+func (msc *MeetingSessionCreate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionCreate {
+	if id != nil {
+		msc = msc.SetScheduleID(*id)
+	}
+	return msc
+}
+
+// SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
+func (msc *MeetingSessionCreate) SetSchedule(m *MeetingSchedule) *MeetingSessionCreate {
+	return msc.SetScheduleID(m.ID)
 }
 
 // Mutation returns the MeetingSessionMutation object of the builder.
@@ -150,6 +182,9 @@ func (msc *MeetingSessionCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (msc *MeetingSessionCreate) check() error {
+	if _, ok := msc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "MeetingSession.tenant_id"`)}
+	}
 	if _, ok := msc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "MeetingSession.title"`)}
 	}
@@ -158,6 +193,9 @@ func (msc *MeetingSessionCreate) check() error {
 	}
 	if _, ok := msc.mutation.DocumentName(); !ok {
 		return &ValidationError{Name: "document_name", err: errors.New(`ent: missing required field "MeetingSession.document_name"`)}
+	}
+	if len(msc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "MeetingSession.tenant"`)}
 	}
 	return nil
 }
@@ -211,6 +249,23 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 		_spec.SetField(meetingsession.FieldDocumentName, field.TypeString, value)
 		_node.DocumentName = value
 	}
+	if nodes := msc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.TenantTable,
+			Columns: []string{meetingsession.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := msc.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -227,6 +282,23 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := msc.mutation.ScheduleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.ScheduleTable,
+			Columns: []string{meetingsession.ScheduleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.meeting_session_schedule = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -234,7 +306,7 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 // of the `INSERT` statement. For example:
 //
 //	client.MeetingSession.Create().
-//		SetTitle(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -243,7 +315,7 @@ func (msc *MeetingSessionCreate) createSpec() (*MeetingSession, *sqlgraph.Create
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingSessionUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (msc *MeetingSessionCreate) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertOne {
@@ -349,6 +421,9 @@ func (u *MeetingSessionUpsertOne) UpdateNewValues() *MeetingSessionUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(meetingsession.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(meetingsession.FieldTenantID)
 		}
 	}))
 	return u
@@ -580,7 +655,7 @@ func (mscb *MeetingSessionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingSessionUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (mscb *MeetingSessionCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingSessionUpsertBulk {
@@ -626,6 +701,9 @@ func (u *MeetingSessionUpsertBulk) UpdateNewValues() *MeetingSessionUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(meetingsession.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(meetingsession.FieldTenantID)
 			}
 		}
 	}))

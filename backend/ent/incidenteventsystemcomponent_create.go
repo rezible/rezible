@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventSystemComponentCreate is the builder for creating a IncidentEventSystemComponent entity.
@@ -23,6 +24,12 @@ type IncidentEventSystemComponentCreate struct {
 	mutation *IncidentEventSystemComponentMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (iescc *IncidentEventSystemComponentCreate) SetTenantID(i int) *IncidentEventSystemComponentCreate {
+	iescc.mutation.SetTenantID(i)
+	return iescc
 }
 
 // SetIncidentEventID sets the "incident_event_id" field.
@@ -69,6 +76,11 @@ func (iescc *IncidentEventSystemComponentCreate) SetNillableID(u *uuid.UUID) *In
 		iescc.SetID(*u)
 	}
 	return iescc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (iescc *IncidentEventSystemComponentCreate) SetTenant(t *Tenant) *IncidentEventSystemComponentCreate {
+	return iescc.SetTenantID(t.ID)
 }
 
 // SetEventID sets the "event" edge to the IncidentEventSystemComponent entity by ID.
@@ -143,6 +155,9 @@ func (iescc *IncidentEventSystemComponentCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (iescc *IncidentEventSystemComponentCreate) check() error {
+	if _, ok := iescc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.tenant_id"`)}
+	}
 	if _, ok := iescc.mutation.IncidentEventID(); !ok {
 		return &ValidationError{Name: "incident_event_id", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.incident_event_id"`)}
 	}
@@ -159,6 +174,9 @@ func (iescc *IncidentEventSystemComponentCreate) check() error {
 	}
 	if _, ok := iescc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEventSystemComponent.created_at"`)}
+	}
+	if len(iescc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEventSystemComponent.tenant"`)}
 	}
 	if len(iescc.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "IncidentEventSystemComponent.event"`)}
@@ -210,6 +228,23 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 		_spec.SetField(incidenteventsystemcomponent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := iescc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenteventsystemcomponent.TenantTable,
+			Columns: []string{incidenteventsystemcomponent.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := iescc.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -251,7 +286,7 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEventSystemComponent.Create().
-//		SetIncidentEventID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -260,7 +295,7 @@ func (iescc *IncidentEventSystemComponentCreate) createSpec() (*IncidentEventSys
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventSystemComponentUpsert) {
-//			SetIncidentEventID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iescc *IncidentEventSystemComponentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertOne {
@@ -360,6 +395,9 @@ func (u *IncidentEventSystemComponentUpsertOne) UpdateNewValues() *IncidentEvent
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenteventsystemcomponent.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenteventsystemcomponent.FieldTenantID)
 		}
 	}))
 	return u
@@ -584,7 +622,7 @@ func (iesccb *IncidentEventSystemComponentCreateBulk) ExecX(ctx context.Context)
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventSystemComponentUpsert) {
-//			SetIncidentEventID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iesccb *IncidentEventSystemComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventSystemComponentUpsertBulk {
@@ -630,6 +668,9 @@ func (u *IncidentEventSystemComponentUpsertBulk) UpdateNewValues() *IncidentEven
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenteventsystemcomponent.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenteventsystemcomponent.FieldTenantID)
 			}
 		}
 	}))

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipControlActionCreate is the builder for creating a SystemRelationshipControlAction entity.
@@ -24,6 +25,12 @@ type SystemRelationshipControlActionCreate struct {
 	mutation *SystemRelationshipControlActionMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (srcac *SystemRelationshipControlActionCreate) SetTenantID(i int) *SystemRelationshipControlActionCreate {
+	srcac.mutation.SetTenantID(i)
+	return srcac
 }
 
 // SetRelationshipID sets the "relationship_id" field.
@@ -84,6 +91,11 @@ func (srcac *SystemRelationshipControlActionCreate) SetNillableID(u *uuid.UUID) 
 		srcac.SetID(*u)
 	}
 	return srcac
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (srcac *SystemRelationshipControlActionCreate) SetTenant(t *Tenant) *SystemRelationshipControlActionCreate {
+	return srcac.SetTenantID(t.ID)
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
@@ -152,6 +164,9 @@ func (srcac *SystemRelationshipControlActionCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (srcac *SystemRelationshipControlActionCreate) check() error {
+	if _, ok := srcac.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.tenant_id"`)}
+	}
 	if _, ok := srcac.mutation.RelationshipID(); !ok {
 		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.relationship_id"`)}
 	}
@@ -168,6 +183,9 @@ func (srcac *SystemRelationshipControlActionCreate) check() error {
 	}
 	if _, ok := srcac.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemRelationshipControlAction.created_at"`)}
+	}
+	if len(srcac.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.tenant"`)}
 	}
 	if len(srcac.mutation.RelationshipIDs()) == 0 {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemRelationshipControlAction.relationship"`)}
@@ -223,6 +241,23 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 		_spec.SetField(systemrelationshipcontrolaction.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := srcac.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemrelationshipcontrolaction.TenantTable,
+			Columns: []string{systemrelationshipcontrolaction.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := srcac.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -264,7 +299,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 // of the `INSERT` statement. For example:
 //
 //	client.SystemRelationshipControlAction.Create().
-//		SetRelationshipID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -273,7 +308,7 @@ func (srcac *SystemRelationshipControlActionCreate) createSpec() (*SystemRelatio
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipControlActionUpsert) {
-//			SetRelationshipID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (srcac *SystemRelationshipControlActionCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertOne {
@@ -391,6 +426,9 @@ func (u *SystemRelationshipControlActionUpsertOne) UpdateNewValues() *SystemRela
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemrelationshipcontrolaction.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemrelationshipcontrolaction.FieldTenantID)
 		}
 	}))
 	return u
@@ -636,7 +674,7 @@ func (srcacb *SystemRelationshipControlActionCreateBulk) ExecX(ctx context.Conte
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipControlActionUpsert) {
-//			SetRelationshipID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (srcacb *SystemRelationshipControlActionCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipControlActionUpsertBulk {
@@ -682,6 +720,9 @@ func (u *SystemRelationshipControlActionUpsertBulk) UpdateNewValues() *SystemRel
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemrelationshipcontrolaction.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemrelationshipcontrolaction.FieldTenantID)
 			}
 		}
 	}))

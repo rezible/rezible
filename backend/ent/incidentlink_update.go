@@ -153,6 +153,9 @@ func (ilu *IncidentLinkUpdate) check() error {
 			return &ValidationError{Name: "link_type", err: fmt.Errorf(`ent: validator failed for field "IncidentLink.link_type": %w`, err)}
 		}
 	}
+	if ilu.mutation.TenantCleared() && len(ilu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentLink.tenant"`)
+	}
 	if ilu.mutation.IncidentCleared() && len(ilu.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.incident"`)
 	}
@@ -404,6 +407,9 @@ func (iluo *IncidentLinkUpdateOne) check() error {
 		if err := incidentlink.LinkTypeValidator(v); err != nil {
 			return &ValidationError{Name: "link_type", err: fmt.Errorf(`ent: validator failed for field "IncidentLink.link_type": %w`, err)}
 		}
+	}
+	if iluo.mutation.TenantCleared() && len(iluo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentLink.tenant"`)
 	}
 	if iluo.mutation.IncidentCleared() && len(iluo.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentLink.incident"`)

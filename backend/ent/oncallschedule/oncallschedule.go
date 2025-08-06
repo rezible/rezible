@@ -14,6 +14,8 @@ const (
 	Label = "oncall_schedule"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
 	// FieldName holds the string denoting the name field in the database.
@@ -24,12 +26,21 @@ const (
 	FieldTimezone = "timezone"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeParticipants holds the string denoting the participants edge name in mutations.
 	EdgeParticipants = "participants"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
 	// Table holds the table name of the oncallschedule in the database.
 	Table = "oncall_schedules"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_schedules"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// ParticipantsTable is the table that holds the participants relation/edge.
 	ParticipantsTable = "oncall_schedule_participants"
 	// ParticipantsInverseTable is the table name for the OncallScheduleParticipant entity.
@@ -49,6 +60,7 @@ const (
 // Columns holds all SQL columns for oncallschedule fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldArchiveTime,
 	FieldName,
 	FieldRosterID,
@@ -87,6 +99,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByArchiveTime orders the results by the archive_time field.
 func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
@@ -112,6 +129,13 @@ func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByParticipantsCount orders the results by participants count.
 func ByParticipantsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -131,6 +155,13 @@ func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newParticipantsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

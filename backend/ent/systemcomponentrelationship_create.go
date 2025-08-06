@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentRelationshipCreate is the builder for creating a SystemComponentRelationship entity.
@@ -25,6 +26,12 @@ type SystemComponentRelationshipCreate struct {
 	mutation *SystemComponentRelationshipMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (scrc *SystemComponentRelationshipCreate) SetTenantID(i int) *SystemComponentRelationshipCreate {
+	scrc.mutation.SetTenantID(i)
+	return scrc
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -93,6 +100,11 @@ func (scrc *SystemComponentRelationshipCreate) SetNillableID(u *uuid.UUID) *Syst
 		scrc.SetID(*u)
 	}
 	return scrc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (scrc *SystemComponentRelationshipCreate) SetTenant(t *Tenant) *SystemComponentRelationshipCreate {
+	return scrc.SetTenantID(t.ID)
 }
 
 // SetSource sets the "source" edge to the SystemComponent entity.
@@ -191,6 +203,9 @@ func (scrc *SystemComponentRelationshipCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (scrc *SystemComponentRelationshipCreate) check() error {
+	if _, ok := scrc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemComponentRelationship.tenant_id"`)}
+	}
 	if _, ok := scrc.mutation.SourceID(); !ok {
 		return &ValidationError{Name: "source_id", err: errors.New(`ent: missing required field "SystemComponentRelationship.source_id"`)}
 	}
@@ -199,6 +214,9 @@ func (scrc *SystemComponentRelationshipCreate) check() error {
 	}
 	if _, ok := scrc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemComponentRelationship.created_at"`)}
+	}
+	if len(scrc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemComponentRelationship.tenant"`)}
 	}
 	if len(scrc.mutation.SourceIDs()) == 0 {
 		return &ValidationError{Name: "source", err: errors.New(`ent: missing required edge "SystemComponentRelationship.source"`)}
@@ -253,6 +271,23 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 	if value, ok := scrc.mutation.CreatedAt(); ok {
 		_spec.SetField(systemcomponentrelationship.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := scrc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemcomponentrelationship.TenantTable,
+			Columns: []string{systemcomponentrelationship.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := scrc.mutation.SourceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -327,7 +362,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 // of the `INSERT` statement. For example:
 //
 //	client.SystemComponentRelationship.Create().
-//		SetProviderID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -336,7 +371,7 @@ func (scrc *SystemComponentRelationshipCreate) createSpec() (*SystemComponentRel
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentRelationshipUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (scrc *SystemComponentRelationshipCreate) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertOne {
@@ -460,6 +495,9 @@ func (u *SystemComponentRelationshipUpsertOne) UpdateNewValues() *SystemComponen
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemcomponentrelationship.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemcomponentrelationship.FieldTenantID)
 		}
 	}))
 	return u
@@ -712,7 +750,7 @@ func (scrcb *SystemComponentRelationshipCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemComponentRelationshipUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (scrcb *SystemComponentRelationshipCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemComponentRelationshipUpsertBulk {
@@ -758,6 +796,9 @@ func (u *SystemComponentRelationshipUpsertBulk) UpdateNewValues() *SystemCompone
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemcomponentrelationship.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemcomponentrelationship.FieldTenantID)
 			}
 		}
 	}))

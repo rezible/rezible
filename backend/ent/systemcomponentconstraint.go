@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentConstraint is the model entity for the SystemComponentConstraint schema.
@@ -19,6 +20,8 @@ type SystemComponentConstraint struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ComponentID holds the value of the "component_id" field.
 	ComponentID uuid.UUID `json:"component_id,omitempty"`
 	// Label holds the value of the "label" field.
@@ -35,13 +38,26 @@ type SystemComponentConstraint struct {
 
 // SystemComponentConstraintEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentConstraintEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
 	// Hazards holds the value of the hazards edge.
 	Hazards []*SystemHazard `json:"hazards,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemComponentConstraintEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ComponentOrErr returns the Component value or an error if the edge
@@ -49,7 +65,7 @@ type SystemComponentConstraintEdges struct {
 func (e SystemComponentConstraintEdges) ComponentOrErr() (*SystemComponent, error) {
 	if e.Component != nil {
 		return e.Component, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "component"}
@@ -58,7 +74,7 @@ func (e SystemComponentConstraintEdges) ComponentOrErr() (*SystemComponent, erro
 // HazardsOrErr returns the Hazards value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentConstraintEdges) HazardsOrErr() ([]*SystemHazard, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Hazards, nil
 	}
 	return nil, &NotLoadedError{edge: "hazards"}
@@ -69,6 +85,8 @@ func (*SystemComponentConstraint) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemcomponentconstraint.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemcomponentconstraint.FieldLabel, systemcomponentconstraint.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentconstraint.FieldCreatedAt:
@@ -95,6 +113,12 @@ func (scc *SystemComponentConstraint) assignValues(columns []string, values []an
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				scc.ID = *value
+			}
+		case systemcomponentconstraint.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				scc.TenantID = int(value.Int64)
 			}
 		case systemcomponentconstraint.FieldComponentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -133,6 +157,11 @@ func (scc *SystemComponentConstraint) Value(name string) (ent.Value, error) {
 	return scc.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the SystemComponentConstraint entity.
+func (scc *SystemComponentConstraint) QueryTenant() *TenantQuery {
+	return NewSystemComponentConstraintClient(scc.config).QueryTenant(scc)
+}
+
 // QueryComponent queries the "component" edge of the SystemComponentConstraint entity.
 func (scc *SystemComponentConstraint) QueryComponent() *SystemComponentQuery {
 	return NewSystemComponentConstraintClient(scc.config).QueryComponent(scc)
@@ -166,6 +195,9 @@ func (scc *SystemComponentConstraint) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentConstraint(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", scc.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", scc.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("component_id=")
 	builder.WriteString(fmt.Sprintf("%v", scc.ComponentID))
 	builder.WriteString(", ")

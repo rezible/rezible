@@ -89,6 +89,9 @@ func (ormu *OncallRosterMetricsUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ormu *OncallRosterMetricsUpdate) check() error {
+	if ormu.mutation.TenantCleared() && len(ormu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.tenant"`)
+	}
 	if ormu.mutation.RosterCleared() && len(ormu.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.roster"`)
 	}
@@ -236,6 +239,9 @@ func (ormuo *OncallRosterMetricsUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ormuo *OncallRosterMetricsUpdateOne) check() error {
+	if ormuo.mutation.TenantCleared() && len(ormuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.tenant"`)
+	}
 	if ormuo.mutation.RosterCleared() && len(ormuo.mutation.RosterIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallRosterMetrics.roster"`)
 	}

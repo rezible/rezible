@@ -208,6 +208,9 @@ func (idmu *IncidentDebriefMessageUpdate) check() error {
 			return &ValidationError{Name: "requested_tool", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.requested_tool": %w`, err)}
 		}
 	}
+	if idmu.mutation.TenantCleared() && len(idmu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.tenant"`)
+	}
 	if idmu.mutation.DebriefCleared() && len(idmu.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.debrief"`)
 	}
@@ -515,6 +518,9 @@ func (idmuo *IncidentDebriefMessageUpdateOne) check() error {
 		if err := incidentdebriefmessage.RequestedToolValidator(v); err != nil {
 			return &ValidationError{Name: "requested_tool", err: fmt.Errorf(`ent: validator failed for field "IncidentDebriefMessage.requested_tool": %w`, err)}
 		}
+	}
+	if idmuo.mutation.TenantCleared() && len(idmuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.tenant"`)
 	}
 	if idmuo.mutation.DebriefCleared() && len(idmuo.mutation.DebriefIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentDebriefMessage.debrief"`)

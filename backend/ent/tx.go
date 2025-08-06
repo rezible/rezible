@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
+	// AlertFeedback is the client for interacting with the AlertFeedback builders.
+	AlertFeedback *AlertFeedbackClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Incident is the client for interacting with the Incident builders.
@@ -52,8 +54,6 @@ type Tx struct {
 	IncidentSeverity *IncidentSeverityClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
-	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
-	IncidentTeamAssignment *IncidentTeamAssignmentClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
@@ -62,8 +62,6 @@ type Tx struct {
 	MeetingSession *MeetingSessionClient
 	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
 	OncallAnnotation *OncallAnnotationClient
-	// OncallAnnotationAlertFeedback is the client for interacting with the OncallAnnotationAlertFeedback builders.
-	OncallAnnotationAlertFeedback *OncallAnnotationAlertFeedbackClient
 	// OncallEvent is the client for interacting with the OncallEvent builders.
 	OncallEvent *OncallEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
@@ -262,6 +260,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
+	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.IncidentDebrief = NewIncidentDebriefClient(tx.config)
@@ -281,12 +280,10 @@ func (tx *Tx) init() {
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
-	tx.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.OncallAnnotation = NewOncallAnnotationClient(tx.config)
-	tx.OncallAnnotationAlertFeedback = NewOncallAnnotationAlertFeedbackClient(tx.config)
 	tx.OncallEvent = NewOncallEventClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)

@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
 func ArchiveTime(v time.Time) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldEQ(FieldArchiveTime, v))
@@ -94,6 +99,26 @@ func ChatChannelID(v string) predicate.OncallRoster {
 // HandoverTemplateID applies equality check predicate on the "handover_template_id" field. It's identical to HandoverTemplateIDEQ.
 func HandoverTemplateID(v uuid.UUID) predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldEQ(FieldHandoverTemplateID, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.OncallRoster {
+	return predicate.OncallRoster(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
@@ -594,6 +619,29 @@ func HandoverTemplateIDIsNil() predicate.OncallRoster {
 // HandoverTemplateIDNotNil applies the NotNil predicate on the "handover_template_id" field.
 func HandoverTemplateIDNotNil() predicate.OncallRoster {
 	return predicate.OncallRoster(sql.FieldNotNull(FieldHandoverTemplateID))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.OncallRoster {
+	return predicate.OncallRoster(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasSchedules applies the HasEdge predicate on the "schedules" edge.

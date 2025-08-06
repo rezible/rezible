@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontext"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEvent is the model entity for the IncidentEvent schema.
@@ -20,6 +21,8 @@ type IncidentEvent struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
@@ -50,6 +53,8 @@ type IncidentEvent struct {
 
 // IncidentEventEdges holds the relations/edges for other nodes in the graph.
 type IncidentEventEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// Context holds the value of the context edge.
@@ -64,7 +69,18 @@ type IncidentEventEdges struct {
 	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [6]bool
+	loadedTypes [7]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -72,7 +88,7 @@ type IncidentEventEdges struct {
 func (e IncidentEventEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -83,7 +99,7 @@ func (e IncidentEventEdges) IncidentOrErr() (*Incident, error) {
 func (e IncidentEventEdges) ContextOrErr() (*IncidentEventContext, error) {
 	if e.Context != nil {
 		return e.Context, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incidenteventcontext.Label}
 	}
 	return nil, &NotLoadedError{edge: "context"}
@@ -92,7 +108,7 @@ func (e IncidentEventEdges) ContextOrErr() (*IncidentEventContext, error) {
 // FactorsOrErr returns the Factors value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) FactorsOrErr() ([]*IncidentEventContributingFactor, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Factors, nil
 	}
 	return nil, &NotLoadedError{edge: "factors"}
@@ -101,7 +117,7 @@ func (e IncidentEventEdges) FactorsOrErr() ([]*IncidentEventContributingFactor, 
 // EvidenceOrErr returns the Evidence value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Evidence, nil
 	}
 	return nil, &NotLoadedError{edge: "evidence"}
@@ -110,7 +126,7 @@ func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
 // SystemComponentsOrErr returns the SystemComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.SystemComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "system_components"}
@@ -119,7 +135,7 @@ func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) 
 // EventComponentsOrErr returns the EventComponents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEventEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.EventComponents, nil
 	}
 	return nil, &NotLoadedError{edge: "event_components"}
@@ -132,7 +148,7 @@ func (*IncidentEvent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentevent.FieldIsKey, incidentevent.FieldIsDraft:
 			values[i] = new(sql.NullBool)
-		case incidentevent.FieldSequence:
+		case incidentevent.FieldTenantID, incidentevent.FieldSequence:
 			values[i] = new(sql.NullInt64)
 		case incidentevent.FieldKind, incidentevent.FieldTitle, incidentevent.FieldDescription:
 			values[i] = new(sql.NullString)
@@ -160,6 +176,12 @@ func (ie *IncidentEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ie.ID = *value
+			}
+		case incidentevent.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ie.TenantID = int(value.Int64)
 			}
 		case incidentevent.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -240,6 +262,11 @@ func (ie *IncidentEvent) Value(name string) (ent.Value, error) {
 	return ie.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentEvent entity.
+func (ie *IncidentEvent) QueryTenant() *TenantQuery {
+	return NewIncidentEventClient(ie.config).QueryTenant(ie)
+}
+
 // QueryIncident queries the "incident" edge of the IncidentEvent entity.
 func (ie *IncidentEvent) QueryIncident() *IncidentQuery {
 	return NewIncidentEventClient(ie.config).QueryIncident(ie)
@@ -293,6 +320,9 @@ func (ie *IncidentEvent) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEvent(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ie.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ie.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", ie.IncidentID))
 	builder.WriteString(", ")

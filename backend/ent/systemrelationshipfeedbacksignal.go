@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipFeedbackSignal is the model entity for the SystemRelationshipFeedbackSignal schema.
@@ -20,6 +21,8 @@ type SystemRelationshipFeedbackSignal struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
 	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 	// SignalID holds the value of the "signal_id" field.
@@ -38,13 +41,26 @@ type SystemRelationshipFeedbackSignal struct {
 
 // SystemRelationshipFeedbackSignalEdges holds the relations/edges for other nodes in the graph.
 type SystemRelationshipFeedbackSignalEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Relationship holds the value of the relationship edge.
 	Relationship *SystemAnalysisRelationship `json:"relationship,omitempty"`
 	// Signal holds the value of the signal edge.
 	Signal *SystemComponentSignal `json:"signal,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemRelationshipFeedbackSignalEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
@@ -52,7 +68,7 @@ type SystemRelationshipFeedbackSignalEdges struct {
 func (e SystemRelationshipFeedbackSignalEdges) RelationshipOrErr() (*SystemAnalysisRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemanalysisrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
@@ -63,7 +79,7 @@ func (e SystemRelationshipFeedbackSignalEdges) RelationshipOrErr() (*SystemAnaly
 func (e SystemRelationshipFeedbackSignalEdges) SignalOrErr() (*SystemComponentSignal, error) {
 	if e.Signal != nil {
 		return e.Signal, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponentsignal.Label}
 	}
 	return nil, &NotLoadedError{edge: "signal"}
@@ -74,6 +90,8 @@ func (*SystemRelationshipFeedbackSignal) scanValues(columns []string) ([]any, er
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemrelationshipfeedbacksignal.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemrelationshipfeedbacksignal.FieldType, systemrelationshipfeedbacksignal.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemrelationshipfeedbacksignal.FieldCreatedAt:
@@ -100,6 +118,12 @@ func (srfs *SystemRelationshipFeedbackSignal) assignValues(columns []string, val
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				srfs.ID = *value
+			}
+		case systemrelationshipfeedbacksignal.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				srfs.TenantID = int(value.Int64)
 			}
 		case systemrelationshipfeedbacksignal.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -144,6 +168,11 @@ func (srfs *SystemRelationshipFeedbackSignal) Value(name string) (ent.Value, err
 	return srfs.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the SystemRelationshipFeedbackSignal entity.
+func (srfs *SystemRelationshipFeedbackSignal) QueryTenant() *TenantQuery {
+	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QueryTenant(srfs)
+}
+
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipFeedbackSignal entity.
 func (srfs *SystemRelationshipFeedbackSignal) QueryRelationship() *SystemAnalysisRelationshipQuery {
 	return NewSystemRelationshipFeedbackSignalClient(srfs.config).QueryRelationship(srfs)
@@ -177,6 +206,9 @@ func (srfs *SystemRelationshipFeedbackSignal) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemRelationshipFeedbackSignal(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", srfs.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", srfs.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("relationship_id=")
 	builder.WriteString(fmt.Sprintf("%v", srfs.RelationshipID))
 	builder.WriteString(", ")

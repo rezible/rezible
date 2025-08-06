@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -26,9 +27,9 @@ type IncidentRoleAssignmentCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetRoleID sets the "role_id" field.
-func (irac *IncidentRoleAssignmentCreate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentCreate {
-	irac.mutation.SetRoleID(u)
+// SetTenantID sets the "tenant_id" field.
+func (irac *IncidentRoleAssignmentCreate) SetTenantID(i int) *IncidentRoleAssignmentCreate {
+	irac.mutation.SetTenantID(i)
 	return irac
 }
 
@@ -41,6 +42,12 @@ func (irac *IncidentRoleAssignmentCreate) SetIncidentID(u uuid.UUID) *IncidentRo
 // SetUserID sets the "user_id" field.
 func (irac *IncidentRoleAssignmentCreate) SetUserID(u uuid.UUID) *IncidentRoleAssignmentCreate {
 	irac.mutation.SetUserID(u)
+	return irac
+}
+
+// SetRoleID sets the "role_id" field.
+func (irac *IncidentRoleAssignmentCreate) SetRoleID(u uuid.UUID) *IncidentRoleAssignmentCreate {
+	irac.mutation.SetRoleID(u)
 	return irac
 }
 
@@ -58,9 +65,9 @@ func (irac *IncidentRoleAssignmentCreate) SetNillableID(u *uuid.UUID) *IncidentR
 	return irac
 }
 
-// SetRole sets the "role" edge to the IncidentRole entity.
-func (irac *IncidentRoleAssignmentCreate) SetRole(i *IncidentRole) *IncidentRoleAssignmentCreate {
-	return irac.SetRoleID(i.ID)
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (irac *IncidentRoleAssignmentCreate) SetTenant(t *Tenant) *IncidentRoleAssignmentCreate {
+	return irac.SetTenantID(t.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -71,6 +78,11 @@ func (irac *IncidentRoleAssignmentCreate) SetIncident(i *Incident) *IncidentRole
 // SetUser sets the "user" edge to the User entity.
 func (irac *IncidentRoleAssignmentCreate) SetUser(u *User) *IncidentRoleAssignmentCreate {
 	return irac.SetUserID(u.ID)
+}
+
+// SetRole sets the "role" edge to the IncidentRole entity.
+func (irac *IncidentRoleAssignmentCreate) SetRole(i *IncidentRole) *IncidentRoleAssignmentCreate {
+	return irac.SetRoleID(i.ID)
 }
 
 // Mutation returns the IncidentRoleAssignmentMutation object of the builder.
@@ -122,8 +134,8 @@ func (irac *IncidentRoleAssignmentCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (irac *IncidentRoleAssignmentCreate) check() error {
-	if _, ok := irac.mutation.RoleID(); !ok {
-		return &ValidationError{Name: "role_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.role_id"`)}
+	if _, ok := irac.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.tenant_id"`)}
 	}
 	if _, ok := irac.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.incident_id"`)}
@@ -131,14 +143,20 @@ func (irac *IncidentRoleAssignmentCreate) check() error {
 	if _, ok := irac.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.user_id"`)}
 	}
-	if len(irac.mutation.RoleIDs()) == 0 {
-		return &ValidationError{Name: "role", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.role"`)}
+	if _, ok := irac.mutation.RoleID(); !ok {
+		return &ValidationError{Name: "role_id", err: errors.New(`ent: missing required field "IncidentRoleAssignment.role_id"`)}
+	}
+	if len(irac.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.tenant"`)}
 	}
 	if len(irac.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.incident"`)}
 	}
 	if len(irac.mutation.UserIDs()) == 0 {
 		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.user"`)}
+	}
+	if len(irac.mutation.RoleIDs()) == 0 {
+		return &ValidationError{Name: "role", err: errors.New(`ent: missing required edge "IncidentRoleAssignment.role"`)}
 	}
 	return nil
 }
@@ -176,21 +194,21 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if nodes := irac.mutation.RoleIDs(); len(nodes) > 0 {
+	if nodes := irac.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   incidentroleassignment.RoleTable,
-			Columns: []string{incidentroleassignment.RoleColumn},
+			Table:   incidentroleassignment.TenantTable,
+			Columns: []string{incidentroleassignment.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.RoleID = nodes[0]
+		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := irac.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -227,6 +245,23 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 		_node.UserID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := irac.mutation.RoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentroleassignment.RoleTable,
+			Columns: []string{incidentroleassignment.RoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.RoleID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -234,7 +269,7 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentRoleAssignment.Create().
-//		SetRoleID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -243,7 +278,7 @@ func (irac *IncidentRoleAssignmentCreate) createSpec() (*IncidentRoleAssignment,
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentRoleAssignmentUpsert) {
-//			SetRoleID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (irac *IncidentRoleAssignmentCreate) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertOne {
@@ -279,18 +314,6 @@ type (
 	}
 )
 
-// SetRoleID sets the "role_id" field.
-func (u *IncidentRoleAssignmentUpsert) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsert {
-	u.Set(incidentroleassignment.FieldRoleID, v)
-	return u
-}
-
-// UpdateRoleID sets the "role_id" field to the value that was provided on create.
-func (u *IncidentRoleAssignmentUpsert) UpdateRoleID() *IncidentRoleAssignmentUpsert {
-	u.SetExcluded(incidentroleassignment.FieldRoleID)
-	return u
-}
-
 // SetIncidentID sets the "incident_id" field.
 func (u *IncidentRoleAssignmentUpsert) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentUpsert {
 	u.Set(incidentroleassignment.FieldIncidentID, v)
@@ -315,6 +338,18 @@ func (u *IncidentRoleAssignmentUpsert) UpdateUserID() *IncidentRoleAssignmentUps
 	return u
 }
 
+// SetRoleID sets the "role_id" field.
+func (u *IncidentRoleAssignmentUpsert) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsert {
+	u.Set(incidentroleassignment.FieldRoleID, v)
+	return u
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *IncidentRoleAssignmentUpsert) UpdateRoleID() *IncidentRoleAssignmentUpsert {
+	u.SetExcluded(incidentroleassignment.FieldRoleID)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -331,6 +366,9 @@ func (u *IncidentRoleAssignmentUpsertOne) UpdateNewValues() *IncidentRoleAssignm
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentroleassignment.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentroleassignment.FieldTenantID)
 		}
 	}))
 	return u
@@ -363,20 +401,6 @@ func (u *IncidentRoleAssignmentUpsertOne) Update(set func(*IncidentRoleAssignmen
 	return u
 }
 
-// SetRoleID sets the "role_id" field.
-func (u *IncidentRoleAssignmentUpsertOne) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsertOne {
-	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
-		s.SetRoleID(v)
-	})
-}
-
-// UpdateRoleID sets the "role_id" field to the value that was provided on create.
-func (u *IncidentRoleAssignmentUpsertOne) UpdateRoleID() *IncidentRoleAssignmentUpsertOne {
-	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
-		s.UpdateRoleID()
-	})
-}
-
 // SetIncidentID sets the "incident_id" field.
 func (u *IncidentRoleAssignmentUpsertOne) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentUpsertOne {
 	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
@@ -402,6 +426,20 @@ func (u *IncidentRoleAssignmentUpsertOne) SetUserID(v uuid.UUID) *IncidentRoleAs
 func (u *IncidentRoleAssignmentUpsertOne) UpdateUserID() *IncidentRoleAssignmentUpsertOne {
 	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *IncidentRoleAssignmentUpsertOne) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsertOne {
+	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *IncidentRoleAssignmentUpsertOne) UpdateRoleID() *IncidentRoleAssignmentUpsertOne {
+	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
+		s.UpdateRoleID()
 	})
 }
 
@@ -541,7 +579,7 @@ func (iracb *IncidentRoleAssignmentCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentRoleAssignmentUpsert) {
-//			SetRoleID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iracb *IncidentRoleAssignmentCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentRoleAssignmentUpsertBulk {
@@ -588,6 +626,9 @@ func (u *IncidentRoleAssignmentUpsertBulk) UpdateNewValues() *IncidentRoleAssign
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentroleassignment.FieldID)
 			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentroleassignment.FieldTenantID)
+			}
 		}
 	}))
 	return u
@@ -620,20 +661,6 @@ func (u *IncidentRoleAssignmentUpsertBulk) Update(set func(*IncidentRoleAssignme
 	return u
 }
 
-// SetRoleID sets the "role_id" field.
-func (u *IncidentRoleAssignmentUpsertBulk) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsertBulk {
-	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
-		s.SetRoleID(v)
-	})
-}
-
-// UpdateRoleID sets the "role_id" field to the value that was provided on create.
-func (u *IncidentRoleAssignmentUpsertBulk) UpdateRoleID() *IncidentRoleAssignmentUpsertBulk {
-	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
-		s.UpdateRoleID()
-	})
-}
-
 // SetIncidentID sets the "incident_id" field.
 func (u *IncidentRoleAssignmentUpsertBulk) SetIncidentID(v uuid.UUID) *IncidentRoleAssignmentUpsertBulk {
 	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
@@ -659,6 +686,20 @@ func (u *IncidentRoleAssignmentUpsertBulk) SetUserID(v uuid.UUID) *IncidentRoleA
 func (u *IncidentRoleAssignmentUpsertBulk) UpdateUserID() *IncidentRoleAssignmentUpsertBulk {
 	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
 		s.UpdateUserID()
+	})
+}
+
+// SetRoleID sets the "role_id" field.
+func (u *IncidentRoleAssignmentUpsertBulk) SetRoleID(v uuid.UUID) *IncidentRoleAssignmentUpsertBulk {
+	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
+		s.SetRoleID(v)
+	})
+}
+
+// UpdateRoleID sets the "role_id" field to the value that was provided on create.
+func (u *IncidentRoleAssignmentUpsertBulk) UpdateRoleID() *IncidentRoleAssignmentUpsertBulk {
+	return u.Update(func(s *IncidentRoleAssignmentUpsert) {
+		s.UpdateRoleID()
 	})
 }
 

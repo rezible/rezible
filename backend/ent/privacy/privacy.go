@@ -135,6 +135,30 @@ func (f AlertMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation)
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertMutation", m)
 }
 
+// The AlertFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlertFeedbackQueryRuleFunc func(context.Context, *ent.AlertFeedbackQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlertFeedbackQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertFeedbackQuery", q)
+}
+
+// The AlertFeedbackMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AlertFeedbackMutationRuleFunc func(context.Context, *ent.AlertFeedbackMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AlertFeedbackMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlertFeedbackMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertFeedbackMutation", m)
+}
+
 // The AlertMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertMetricsQueryRuleFunc func(context.Context, *ent.AlertMetricsQuery) error
@@ -591,30 +615,6 @@ func (f IncidentTagMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTagMutation", m)
 }
 
-// The IncidentTeamAssignmentQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type IncidentTeamAssignmentQueryRuleFunc func(context.Context, *ent.IncidentTeamAssignmentQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f IncidentTeamAssignmentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTeamAssignmentQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentTeamAssignmentQuery", q)
-}
-
-// The IncidentTeamAssignmentMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type IncidentTeamAssignmentMutationRuleFunc func(context.Context, *ent.IncidentTeamAssignmentMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f IncidentTeamAssignmentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentTeamAssignmentMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentTeamAssignmentMutation", m)
-}
-
 // The IncidentTypeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type IncidentTypeQueryRuleFunc func(context.Context, *ent.IncidentTypeQuery) error
@@ -709,30 +709,6 @@ func (f OncallAnnotationMutationRuleFunc) EvalMutation(ctx context.Context, m en
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallAnnotationMutation", m)
-}
-
-// The OncallAnnotationAlertFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type OncallAnnotationAlertFeedbackQueryRuleFunc func(context.Context, *ent.OncallAnnotationAlertFeedbackQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f OncallAnnotationAlertFeedbackQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallAnnotationAlertFeedbackQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OncallAnnotationAlertFeedbackQuery", q)
-}
-
-// The OncallAnnotationAlertFeedbackMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type OncallAnnotationAlertFeedbackMutationRuleFunc func(context.Context, *ent.OncallAnnotationAlertFeedbackMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f OncallAnnotationAlertFeedbackMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OncallAnnotationAlertFeedbackMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OncallAnnotationAlertFeedbackMutation", m)
 }
 
 // The OncallEventQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1564,6 +1540,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.AlertQuery:
 		return q.Filter(), nil
+	case *ent.AlertFeedbackQuery:
+		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
 	case *ent.IncidentQuery:
@@ -1602,8 +1580,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IncidentTagQuery:
 		return q.Filter(), nil
-	case *ent.IncidentTeamAssignmentQuery:
-		return q.Filter(), nil
 	case *ent.IncidentTypeQuery:
 		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
@@ -1611,8 +1587,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.MeetingSessionQuery:
 		return q.Filter(), nil
 	case *ent.OncallAnnotationQuery:
-		return q.Filter(), nil
-	case *ent.OncallAnnotationAlertFeedbackQuery:
 		return q.Filter(), nil
 	case *ent.OncallEventQuery:
 		return q.Filter(), nil
@@ -1689,6 +1663,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.AlertMutation:
 		return m.Filter(), nil
+	case *ent.AlertFeedbackMutation:
+		return m.Filter(), nil
 	case *ent.AlertMetricsMutation:
 		return m.Filter(), nil
 	case *ent.IncidentMutation:
@@ -1727,8 +1703,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IncidentTagMutation:
 		return m.Filter(), nil
-	case *ent.IncidentTeamAssignmentMutation:
-		return m.Filter(), nil
 	case *ent.IncidentTypeMutation:
 		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
@@ -1736,8 +1710,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.MeetingSessionMutation:
 		return m.Filter(), nil
 	case *ent.OncallAnnotationMutation:
-		return m.Filter(), nil
-	case *ent.OncallAnnotationAlertFeedbackMutation:
 		return m.Filter(), nil
 	case *ent.OncallEventMutation:
 		return m.Filter(), nil

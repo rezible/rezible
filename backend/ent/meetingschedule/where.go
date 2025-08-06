@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldEQ(FieldTenantID, v))
+}
+
 // ArchiveTime applies equality check predicate on the "archive_time" field. It's identical to ArchiveTimeEQ.
 func ArchiveTime(v time.Time) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldEQ(FieldArchiveTime, v))
@@ -99,6 +104,26 @@ func UntilDate(v time.Time) predicate.MeetingSchedule {
 // NumRepetitions applies equality check predicate on the "num_repetitions" field. It's identical to NumRepetitionsEQ.
 func NumRepetitions(v int) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldEQ(FieldNumRepetitions, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // ArchiveTimeEQ applies the EQ predicate on the "archive_time" field.
@@ -611,21 +636,21 @@ func NumRepetitionsNotNil() predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(sql.FieldNotNull(FieldNumRepetitions))
 }
 
-// HasSessions applies the HasEdge predicate on the "sessions" edge.
-func HasSessions() predicate.MeetingSchedule {
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSessionsWith applies the HasEdge predicate on the "sessions" edge with a given conditions (other predicates).
-func HasSessionsWith(preds ...predicate.MeetingSession) predicate.MeetingSchedule {
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
-		step := newSessionsStep()
+		step := newTenantStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -649,6 +674,29 @@ func HasOwningTeam() predicate.MeetingSchedule {
 func HasOwningTeamWith(preds ...predicate.Team) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
 		step := newOwningTeamStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSessions applies the HasEdge predicate on the "sessions" edge.
+func HasSessions() predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SessionsTable, SessionsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSessionsWith applies the HasEdge predicate on the "sessions" edge with a given conditions (other predicates).
+func HasSessionsWith(preds ...predicate.MeetingSession) predicate.MeetingSchedule {
+	return predicate.MeetingSchedule(func(s *sql.Selector) {
+		step := newSessionsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

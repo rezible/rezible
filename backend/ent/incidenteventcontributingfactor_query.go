@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventContributingFactorQuery is the builder for querying IncidentEventContributingFactor entities.
@@ -25,6 +26,7 @@ type IncidentEventContributingFactorQuery struct {
 	order      []incidenteventcontributingfactor.OrderOption
 	inters     []Interceptor
 	predicates []predicate.IncidentEventContributingFactor
+	withTenant *TenantQuery
 	withEvent  *IncidentEventQuery
 	withFKs    bool
 	modifiers  []func(*sql.Selector)
@@ -62,6 +64,28 @@ func (iecfq *IncidentEventContributingFactorQuery) Unique(unique bool) *Incident
 func (iecfq *IncidentEventContributingFactorQuery) Order(o ...incidenteventcontributingfactor.OrderOption) *IncidentEventContributingFactorQuery {
 	iecfq.order = append(iecfq.order, o...)
 	return iecfq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (iecfq *IncidentEventContributingFactorQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: iecfq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iecfq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iecfq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontributingfactor.TenantTable, incidenteventcontributingfactor.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iecfq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
@@ -278,12 +302,24 @@ func (iecfq *IncidentEventContributingFactorQuery) Clone() *IncidentEventContrib
 		order:      append([]incidenteventcontributingfactor.OrderOption{}, iecfq.order...),
 		inters:     append([]Interceptor{}, iecfq.inters...),
 		predicates: append([]predicate.IncidentEventContributingFactor{}, iecfq.predicates...),
+		withTenant: iecfq.withTenant.Clone(),
 		withEvent:  iecfq.withEvent.Clone(),
 		// clone intermediate query.
 		sql:       iecfq.sql.Clone(),
 		path:      iecfq.path,
 		modifiers: append([]func(*sql.Selector){}, iecfq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (iecfq *IncidentEventContributingFactorQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentEventContributingFactorQuery {
+	query := (&TenantClient{config: iecfq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iecfq.withTenant = query
+	return iecfq
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (iecfq *IncidentEventContributingFactorQuery) WithEvent(opts ...func(*Incid
 // Example:
 //
 //	var v []struct {
-//		FactorType string `json:"factor_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentEventContributingFactor.Query().
-//		GroupBy(incidenteventcontributingfactor.FieldFactorType).
+//		GroupBy(incidenteventcontributingfactor.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iecfq *IncidentEventContributingFactorQuery) GroupBy(field string, fields ...string) *IncidentEventContributingFactorGroupBy {
@@ -326,11 +362,11 @@ func (iecfq *IncidentEventContributingFactorQuery) GroupBy(field string, fields 
 // Example:
 //
 //	var v []struct {
-//		FactorType string `json:"factor_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentEventContributingFactor.Query().
-//		Select(incidenteventcontributingfactor.FieldFactorType).
+//		Select(incidenteventcontributingfactor.FieldTenantID).
 //		Scan(ctx, &v)
 func (iecfq *IncidentEventContributingFactorQuery) Select(fields ...string) *IncidentEventContributingFactorSelect {
 	iecfq.ctx.Fields = append(iecfq.ctx.Fields, fields...)
@@ -382,7 +418,8 @@ func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, h
 		nodes       = []*IncidentEventContributingFactor{}
 		withFKs     = iecfq.withFKs
 		_spec       = iecfq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			iecfq.withTenant != nil,
 			iecfq.withEvent != nil,
 		}
 	)
@@ -413,6 +450,12 @@ func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, h
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := iecfq.withTenant; query != nil {
+		if err := iecfq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentEventContributingFactor, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := iecfq.withEvent; query != nil {
 		if err := iecfq.loadEvent(ctx, query, nodes, nil,
 			func(n *IncidentEventContributingFactor, e *IncidentEvent) { n.Edges.Event = e }); err != nil {
@@ -422,6 +465,35 @@ func (iecfq *IncidentEventContributingFactorQuery) sqlAll(ctx context.Context, h
 	return nodes, nil
 }
 
+func (iecfq *IncidentEventContributingFactorQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentEventContributingFactor)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (iecfq *IncidentEventContributingFactorQuery) loadEvent(ctx context.Context, query *IncidentEventQuery, nodes []*IncidentEventContributingFactor, init func(*IncidentEventContributingFactor), assign func(*IncidentEventContributingFactor, *IncidentEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentEventContributingFactor)
@@ -482,6 +554,9 @@ func (iecfq *IncidentEventContributingFactorQuery) querySpec() *sqlgraph.QuerySp
 			if fields[i] != incidenteventcontributingfactor.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if iecfq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidenteventcontributingfactor.FieldTenantID)
 		}
 	}
 	if ps := iecfq.predicates; len(ps) > 0 {

@@ -36,8 +36,8 @@ const (
 	EdgeOncallShifts = "oncall_shifts"
 	// EdgeOncallAnnotations holds the string denoting the oncall_annotations edge name in mutations.
 	EdgeOncallAnnotations = "oncall_annotations"
-	// EdgeIncidentRoleAssignments holds the string denoting the incident_role_assignments edge name in mutations.
-	EdgeIncidentRoleAssignments = "incident_role_assignments"
+	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
+	EdgeIncidents = "incidents"
 	// EdgeIncidentDebriefs holds the string denoting the incident_debriefs edge name in mutations.
 	EdgeIncidentDebriefs = "incident_debriefs"
 	// EdgeAssignedTasks holds the string denoting the assigned_tasks edge name in mutations.
@@ -48,6 +48,8 @@ const (
 	EdgeRetrospectiveReviewRequests = "retrospective_review_requests"
 	// EdgeRetrospectiveReviewResponses holds the string denoting the retrospective_review_responses edge name in mutations.
 	EdgeRetrospectiveReviewResponses = "retrospective_review_responses"
+	// EdgeRoleAssignments holds the string denoting the role_assignments edge name in mutations.
+	EdgeRoleAssignments = "role_assignments"
 	// Table holds the table name of the user in the database.
 	Table = "users"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -88,13 +90,11 @@ const (
 	OncallAnnotationsInverseTable = "oncall_annotations"
 	// OncallAnnotationsColumn is the table column denoting the oncall_annotations relation/edge.
 	OncallAnnotationsColumn = "creator_id"
-	// IncidentRoleAssignmentsTable is the table that holds the incident_role_assignments relation/edge.
-	IncidentRoleAssignmentsTable = "incident_role_assignments"
-	// IncidentRoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
-	IncidentRoleAssignmentsInverseTable = "incident_role_assignments"
-	// IncidentRoleAssignmentsColumn is the table column denoting the incident_role_assignments relation/edge.
-	IncidentRoleAssignmentsColumn = "user_id"
+	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
+	IncidentsTable = "incident_role_assignments"
+	// IncidentsInverseTable is the table name for the Incident entity.
+	// It exists in this package in order to avoid circular dependency with the "incident" package.
+	IncidentsInverseTable = "incidents"
 	// IncidentDebriefsTable is the table that holds the incident_debriefs relation/edge.
 	IncidentDebriefsTable = "incident_debriefs"
 	// IncidentDebriefsInverseTable is the table name for the IncidentDebrief entity.
@@ -130,6 +130,13 @@ const (
 	RetrospectiveReviewResponsesInverseTable = "retrospective_reviews"
 	// RetrospectiveReviewResponsesColumn is the table column denoting the retrospective_review_responses relation/edge.
 	RetrospectiveReviewResponsesColumn = "reviewer_id"
+	// RoleAssignmentsTable is the table that holds the role_assignments relation/edge.
+	RoleAssignmentsTable = "incident_role_assignments"
+	// RoleAssignmentsInverseTable is the table name for the IncidentRoleAssignment entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentroleassignment" package.
+	RoleAssignmentsInverseTable = "incident_role_assignments"
+	// RoleAssignmentsColumn is the table column denoting the role_assignments relation/edge.
+	RoleAssignmentsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -149,6 +156,9 @@ var (
 	// WatchedOncallRostersPrimaryKey and WatchedOncallRostersColumn2 are the table columns denoting the
 	// primary key for the watched_oncall_rosters relation (M2M).
 	WatchedOncallRostersPrimaryKey = []string{"user_id", "oncall_roster_id"}
+	// IncidentsPrimaryKey and IncidentsColumn2 are the table columns denoting the
+	// primary key for the incidents relation (M2M).
+	IncidentsPrimaryKey = []string{"user_id", "incident_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -283,17 +293,17 @@ func ByOncallAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	}
 }
 
-// ByIncidentRoleAssignmentsCount orders the results by incident_role_assignments count.
-func ByIncidentRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByIncidentsCount orders the results by incidents count.
+func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newIncidentRoleAssignmentsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newIncidentsStep(), opts...)
 	}
 }
 
-// ByIncidentRoleAssignments orders the results by incident_role_assignments terms.
-func ByIncidentRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByIncidents orders the results by incidents terms.
+func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newIncidentRoleAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -366,6 +376,20 @@ func ByRetrospectiveReviewResponses(term sql.OrderTerm, terms ...sql.OrderTerm) 
 		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveReviewResponsesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRoleAssignmentsCount orders the results by role_assignments count.
+func ByRoleAssignmentsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRoleAssignmentsStep(), opts...)
+	}
+}
+
+// ByRoleAssignments orders the results by role_assignments terms.
+func ByRoleAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoleAssignmentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -408,11 +432,11 @@ func newOncallAnnotationsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, true, OncallAnnotationsTable, OncallAnnotationsColumn),
 	)
 }
-func newIncidentRoleAssignmentsStep() *sqlgraph.Step {
+func newIncidentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(IncidentRoleAssignmentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, IncidentRoleAssignmentsTable, IncidentRoleAssignmentsColumn),
+		sqlgraph.To(IncidentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, IncidentsTable, IncidentsPrimaryKey...),
 	)
 }
 func newIncidentDebriefsStep() *sqlgraph.Step {
@@ -448,5 +472,12 @@ func newRetrospectiveReviewResponsesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RetrospectiveReviewResponsesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RetrospectiveReviewResponsesTable, RetrospectiveReviewResponsesColumn),
+	)
+}
+func newRoleAssignmentsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoleAssignmentsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
 	)
 }

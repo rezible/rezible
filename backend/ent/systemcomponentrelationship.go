@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemComponentRelationship is the model entity for the SystemComponentRelationship schema.
@@ -19,6 +20,8 @@ type SystemComponentRelationship struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
 	// SourceID holds the value of the "source_id" field.
@@ -37,6 +40,8 @@ type SystemComponentRelationship struct {
 
 // SystemComponentRelationshipEdges holds the relations/edges for other nodes in the graph.
 type SystemComponentRelationshipEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Source holds the value of the source edge.
 	Source *SystemComponent `json:"source,omitempty"`
 	// Target holds the value of the target edge.
@@ -47,7 +52,18 @@ type SystemComponentRelationshipEdges struct {
 	Hazards []*SystemHazard `json:"hazards,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemComponentRelationshipEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // SourceOrErr returns the Source value or an error if the edge
@@ -55,7 +71,7 @@ type SystemComponentRelationshipEdges struct {
 func (e SystemComponentRelationshipEdges) SourceOrErr() (*SystemComponent, error) {
 	if e.Source != nil {
 		return e.Source, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "source"}
@@ -66,7 +82,7 @@ func (e SystemComponentRelationshipEdges) SourceOrErr() (*SystemComponent, error
 func (e SystemComponentRelationshipEdges) TargetOrErr() (*SystemComponent, error) {
 	if e.Target != nil {
 		return e.Target, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "target"}
@@ -75,7 +91,7 @@ func (e SystemComponentRelationshipEdges) TargetOrErr() (*SystemComponent, error
 // SystemAnalysesOrErr returns the SystemAnalyses value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentRelationshipEdges) SystemAnalysesOrErr() ([]*SystemAnalysisRelationship, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.SystemAnalyses, nil
 	}
 	return nil, &NotLoadedError{edge: "system_analyses"}
@@ -84,7 +100,7 @@ func (e SystemComponentRelationshipEdges) SystemAnalysesOrErr() ([]*SystemAnalys
 // HazardsOrErr returns the Hazards value or an error if the edge
 // was not loaded in eager-loading.
 func (e SystemComponentRelationshipEdges) HazardsOrErr() ([]*SystemHazard, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Hazards, nil
 	}
 	return nil, &NotLoadedError{edge: "hazards"}
@@ -95,6 +111,8 @@ func (*SystemComponentRelationship) scanValues(columns []string) ([]any, error) 
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemcomponentrelationship.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemcomponentrelationship.FieldProviderID, systemcomponentrelationship.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemcomponentrelationship.FieldCreatedAt:
@@ -121,6 +139,12 @@ func (scr *SystemComponentRelationship) assignValues(columns []string, values []
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				scr.ID = *value
+			}
+		case systemcomponentrelationship.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				scr.TenantID = int(value.Int64)
 			}
 		case systemcomponentrelationship.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -163,6 +187,11 @@ func (scr *SystemComponentRelationship) assignValues(columns []string, values []
 // This includes values selected through modifiers, order, etc.
 func (scr *SystemComponentRelationship) Value(name string) (ent.Value, error) {
 	return scr.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the SystemComponentRelationship entity.
+func (scr *SystemComponentRelationship) QueryTenant() *TenantQuery {
+	return NewSystemComponentRelationshipClient(scr.config).QueryTenant(scr)
 }
 
 // QuerySource queries the "source" edge of the SystemComponentRelationship entity.
@@ -208,6 +237,9 @@ func (scr *SystemComponentRelationship) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemComponentRelationship(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", scr.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", scr.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(scr.ProviderID)
 	builder.WriteString(", ")

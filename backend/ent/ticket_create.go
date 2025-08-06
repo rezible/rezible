@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 )
 
@@ -22,6 +23,12 @@ type TicketCreate struct {
 	mutation *TicketMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (tc *TicketCreate) SetTenantID(i int) *TicketCreate {
+	tc.mutation.SetTenantID(i)
+	return tc
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -48,6 +55,11 @@ func (tc *TicketCreate) SetNillableID(u *uuid.UUID) *TicketCreate {
 		tc.SetID(*u)
 	}
 	return tc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (tc *TicketCreate) SetTenant(t *Tenant) *TicketCreate {
+	return tc.SetTenantID(t.ID)
 }
 
 // AddTaskIDs adds the "tasks" edge to the Task entity by IDs.
@@ -114,11 +126,17 @@ func (tc *TicketCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TicketCreate) check() error {
+	if _, ok := tc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Ticket.tenant_id"`)}
+	}
 	if _, ok := tc.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Ticket.provider_id"`)}
 	}
 	if _, ok := tc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Ticket.title"`)}
+	}
+	if len(tc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Ticket.tenant"`)}
 	}
 	return nil
 }
@@ -164,6 +182,23 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 		_spec.SetField(ticket.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
+	if nodes := tc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   ticket.TenantTable,
+			Columns: []string{ticket.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := tc.mutation.TasksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -187,7 +222,7 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Ticket.Create().
-//		SetProviderID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -196,7 +231,7 @@ func (tc *TicketCreate) createSpec() (*Ticket, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TicketUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tc *TicketCreate) OnConflict(opts ...sql.ConflictOption) *TicketUpsertOne {
@@ -272,6 +307,9 @@ func (u *TicketUpsertOne) UpdateNewValues() *TicketUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(ticket.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(ticket.FieldTenantID)
 		}
 	}))
 	return u
@@ -468,7 +506,7 @@ func (tcb *TicketCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TicketUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tcb *TicketCreateBulk) OnConflict(opts ...sql.ConflictOption) *TicketUpsertBulk {
@@ -514,6 +552,9 @@ func (u *TicketUpsertBulk) UpdateNewValues() *TicketUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(ticket.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(ticket.FieldTenantID)
 			}
 		}
 	}))

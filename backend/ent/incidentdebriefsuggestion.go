@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefSuggestion is the model entity for the IncidentDebriefSuggestion schema.
@@ -18,6 +19,8 @@ type IncidentDebriefSuggestion struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -29,11 +32,24 @@ type IncidentDebriefSuggestion struct {
 
 // IncidentDebriefSuggestionEdges holds the relations/edges for other nodes in the graph.
 type IncidentDebriefSuggestionEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Debrief holds the value of the debrief edge.
 	Debrief *IncidentDebrief `json:"debrief,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentDebriefSuggestionEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // DebriefOrErr returns the Debrief value or an error if the edge
@@ -41,7 +57,7 @@ type IncidentDebriefSuggestionEdges struct {
 func (e IncidentDebriefSuggestionEdges) DebriefOrErr() (*IncidentDebrief, error) {
 	if e.Debrief != nil {
 		return e.Debrief, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentdebrief.Label}
 	}
 	return nil, &NotLoadedError{edge: "debrief"}
@@ -52,6 +68,8 @@ func (*IncidentDebriefSuggestion) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentdebriefsuggestion.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentdebriefsuggestion.FieldContent:
 			values[i] = new(sql.NullString)
 		case incidentdebriefsuggestion.FieldID:
@@ -79,6 +97,12 @@ func (ids *IncidentDebriefSuggestion) assignValues(columns []string, values []an
 			} else if value != nil {
 				ids.ID = *value
 			}
+		case incidentdebriefsuggestion.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ids.TenantID = int(value.Int64)
+			}
 		case incidentdebriefsuggestion.FieldContent:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field content", values[i])
@@ -103,6 +127,11 @@ func (ids *IncidentDebriefSuggestion) assignValues(columns []string, values []an
 // This includes values selected through modifiers, order, etc.
 func (ids *IncidentDebriefSuggestion) Value(name string) (ent.Value, error) {
 	return ids.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the IncidentDebriefSuggestion entity.
+func (ids *IncidentDebriefSuggestion) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefSuggestionClient(ids.config).QueryTenant(ids)
 }
 
 // QueryDebrief queries the "debrief" edge of the IncidentDebriefSuggestion entity.
@@ -133,6 +162,9 @@ func (ids *IncidentDebriefSuggestion) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebriefSuggestion(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ids.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ids.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("content=")
 	builder.WriteString(ids.Content)
 	builder.WriteByte(')')

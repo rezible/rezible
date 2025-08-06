@@ -192,6 +192,9 @@ func (sacu *SystemAnalysisComponentUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sacu *SystemAnalysisComponentUpdate) check() error {
+	if sacu.mutation.TenantCleared() && len(sacu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.tenant"`)
+	}
 	if sacu.mutation.AnalysisCleared() && len(sacu.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.analysis"`)
 	}
@@ -493,6 +496,9 @@ func (sacuo *SystemAnalysisComponentUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (sacuo *SystemAnalysisComponentUpdateOne) check() error {
+	if sacuo.mutation.TenantCleared() && len(sacuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.tenant"`)
+	}
 	if sacuo.mutation.AnalysisCleared() && len(sacuo.mutation.AnalysisIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysisComponent.analysis"`)
 	}

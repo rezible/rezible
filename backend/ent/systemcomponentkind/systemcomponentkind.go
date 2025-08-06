@@ -16,6 +16,8 @@ const (
 	Label = "system_component_kind"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldProviderID holds the string denoting the provider_id field in the database.
 	FieldProviderID = "provider_id"
 	// FieldLabel holds the string denoting the label field in the database.
@@ -24,10 +26,19 @@ const (
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeComponents holds the string denoting the components edge name in mutations.
 	EdgeComponents = "components"
 	// Table holds the table name of the systemcomponentkind in the database.
 	Table = "system_component_kinds"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "system_component_kinds"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// ComponentsTable is the table that holds the components relation/edge.
 	ComponentsTable = "system_components"
 	// ComponentsInverseTable is the table name for the SystemComponent entity.
@@ -40,6 +51,7 @@ const (
 // Columns holds all SQL columns for systemcomponentkind fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldProviderID,
 	FieldLabel,
 	FieldDescription,
@@ -78,6 +90,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByProviderID orders the results by the provider_id field.
 func ByProviderID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderID, opts...).ToFunc()
@@ -98,6 +115,13 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByComponentsCount orders the results by components count.
 func ByComponentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -110,6 +134,13 @@ func ByComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newComponentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

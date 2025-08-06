@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventContributingFactorCreate is the builder for creating a IncidentEventContributingFactor entity.
@@ -23,6 +24,12 @@ type IncidentEventContributingFactorCreate struct {
 	mutation *IncidentEventContributingFactorMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (iecfc *IncidentEventContributingFactorCreate) SetTenantID(i int) *IncidentEventContributingFactorCreate {
+	iecfc.mutation.SetTenantID(i)
+	return iecfc
 }
 
 // SetFactorType sets the "factor_type" field.
@@ -71,6 +78,11 @@ func (iecfc *IncidentEventContributingFactorCreate) SetNillableID(u *uuid.UUID) 
 		iecfc.SetID(*u)
 	}
 	return iecfc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (iecfc *IncidentEventContributingFactorCreate) SetTenant(t *Tenant) *IncidentEventContributingFactorCreate {
+	return iecfc.SetTenantID(t.ID)
 }
 
 // SetEventID sets the "event" edge to the IncidentEvent entity by ID.
@@ -140,6 +152,9 @@ func (iecfc *IncidentEventContributingFactorCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (iecfc *IncidentEventContributingFactorCreate) check() error {
+	if _, ok := iecfc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEventContributingFactor.tenant_id"`)}
+	}
 	if _, ok := iecfc.mutation.FactorType(); !ok {
 		return &ValidationError{Name: "factor_type", err: errors.New(`ent: missing required field "IncidentEventContributingFactor.factor_type"`)}
 	}
@@ -150,6 +165,9 @@ func (iecfc *IncidentEventContributingFactorCreate) check() error {
 	}
 	if _, ok := iecfc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "IncidentEventContributingFactor.created_at"`)}
+	}
+	if len(iecfc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEventContributingFactor.tenant"`)}
 	}
 	if len(iecfc.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "IncidentEventContributingFactor.event"`)}
@@ -202,6 +220,23 @@ func (iecfc *IncidentEventContributingFactorCreate) createSpec() (*IncidentEvent
 		_spec.SetField(incidenteventcontributingfactor.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := iecfc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenteventcontributingfactor.TenantTable,
+			Columns: []string{incidenteventcontributingfactor.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := iecfc.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -226,7 +261,7 @@ func (iecfc *IncidentEventContributingFactorCreate) createSpec() (*IncidentEvent
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEventContributingFactor.Create().
-//		SetFactorType(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -235,7 +270,7 @@ func (iecfc *IncidentEventContributingFactorCreate) createSpec() (*IncidentEvent
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventContributingFactorUpsert) {
-//			SetFactorType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iecfc *IncidentEventContributingFactorCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventContributingFactorUpsertOne {
@@ -329,6 +364,9 @@ func (u *IncidentEventContributingFactorUpsertOne) UpdateNewValues() *IncidentEv
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenteventcontributingfactor.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenteventcontributingfactor.FieldTenantID)
 		}
 	}))
 	return u
@@ -546,7 +584,7 @@ func (iecfcb *IncidentEventContributingFactorCreateBulk) ExecX(ctx context.Conte
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventContributingFactorUpsert) {
-//			SetFactorType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iecfcb *IncidentEventContributingFactorCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventContributingFactorUpsertBulk {
@@ -592,6 +630,9 @@ func (u *IncidentEventContributingFactorUpsertBulk) UpdateNewValues() *IncidentE
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenteventcontributingfactor.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenteventcontributingfactor.FieldTenantID)
 			}
 		}
 	}))

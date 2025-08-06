@@ -9,6 +9,9 @@ import (
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 
+// AlertFeedback is the predicate function for alertfeedback builders.
+type AlertFeedback func(*sql.Selector)
+
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
@@ -66,9 +69,6 @@ type IncidentSeverity func(*sql.Selector)
 // IncidentTag is the predicate function for incidenttag builders.
 type IncidentTag func(*sql.Selector)
 
-// IncidentTeamAssignment is the predicate function for incidentteamassignment builders.
-type IncidentTeamAssignment func(*sql.Selector)
-
 // IncidentType is the predicate function for incidenttype builders.
 type IncidentType func(*sql.Selector)
 
@@ -80,9 +80,6 @@ type MeetingSession func(*sql.Selector)
 
 // OncallAnnotation is the predicate function for oncallannotation builders.
 type OncallAnnotation func(*sql.Selector)
-
-// OncallAnnotationAlertFeedback is the predicate function for oncallannotationalertfeedback builders.
-type OncallAnnotationAlertFeedback func(*sql.Selector)
 
 // OncallEvent is the predicate function for oncallevent builders.
 type OncallEvent func(*sql.Selector)

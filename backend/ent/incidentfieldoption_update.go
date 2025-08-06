@@ -180,6 +180,9 @@ func (ifou *IncidentFieldOptionUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentFieldOption.type": %w`, err)}
 		}
 	}
+	if ifou.mutation.TenantCleared() && len(ifou.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.tenant"`)
+	}
 	if ifou.mutation.IncidentFieldCleared() && len(ifou.mutation.IncidentFieldIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.incident_field"`)
 	}
@@ -472,6 +475,9 @@ func (ifouo *IncidentFieldOptionUpdateOne) check() error {
 		if err := incidentfieldoption.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "IncidentFieldOption.type": %w`, err)}
 		}
+	}
+	if ifouo.mutation.TenantCleared() && len(ifouo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.tenant"`)
 	}
 	if ifouo.mutation.IncidentFieldCleared() && len(ifouo.mutation.IncidentFieldIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentFieldOption.incident_field"`)

@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefMessageQuery is the builder for querying IncidentDebriefMessage entities.
@@ -26,6 +27,7 @@ type IncidentDebriefMessageQuery struct {
 	order            []incidentdebriefmessage.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.IncidentDebriefMessage
+	withTenant       *TenantQuery
 	withDebrief      *IncidentDebriefQuery
 	withFromQuestion *IncidentDebriefQuestionQuery
 	modifiers        []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (idmq *IncidentDebriefMessageQuery) Unique(unique bool) *IncidentDebriefMes
 func (idmq *IncidentDebriefMessageQuery) Order(o ...incidentdebriefmessage.OrderOption) *IncidentDebriefMessageQuery {
 	idmq.order = append(idmq.order, o...)
 	return idmq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (idmq *IncidentDebriefMessageQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: idmq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := idmq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := idmq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentdebriefmessage.Table, incidentdebriefmessage.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefmessage.TenantTable, incidentdebriefmessage.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(idmq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryDebrief chains the current query on the "debrief" edge.
@@ -301,6 +325,7 @@ func (idmq *IncidentDebriefMessageQuery) Clone() *IncidentDebriefMessageQuery {
 		order:            append([]incidentdebriefmessage.OrderOption{}, idmq.order...),
 		inters:           append([]Interceptor{}, idmq.inters...),
 		predicates:       append([]predicate.IncidentDebriefMessage{}, idmq.predicates...),
+		withTenant:       idmq.withTenant.Clone(),
 		withDebrief:      idmq.withDebrief.Clone(),
 		withFromQuestion: idmq.withFromQuestion.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (idmq *IncidentDebriefMessageQuery) Clone() *IncidentDebriefMessageQuery {
 		path:      idmq.path,
 		modifiers: append([]func(*sql.Selector){}, idmq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (idmq *IncidentDebriefMessageQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentDebriefMessageQuery {
+	query := (&TenantClient{config: idmq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	idmq.withTenant = query
+	return idmq
 }
 
 // WithDebrief tells the query-builder to eager-load the nodes that are connected to
@@ -338,12 +374,12 @@ func (idmq *IncidentDebriefMessageQuery) WithFromQuestion(opts ...func(*Incident
 // Example:
 //
 //	var v []struct {
-//		DebriefID uuid.UUID `json:"debrief_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentDebriefMessage.Query().
-//		GroupBy(incidentdebriefmessage.FieldDebriefID).
+//		GroupBy(incidentdebriefmessage.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (idmq *IncidentDebriefMessageQuery) GroupBy(field string, fields ...string) *IncidentDebriefMessageGroupBy {
@@ -361,11 +397,11 @@ func (idmq *IncidentDebriefMessageQuery) GroupBy(field string, fields ...string)
 // Example:
 //
 //	var v []struct {
-//		DebriefID uuid.UUID `json:"debrief_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentDebriefMessage.Query().
-//		Select(incidentdebriefmessage.FieldDebriefID).
+//		Select(incidentdebriefmessage.FieldTenantID).
 //		Scan(ctx, &v)
 func (idmq *IncidentDebriefMessageQuery) Select(fields ...string) *IncidentDebriefMessageSelect {
 	idmq.ctx.Fields = append(idmq.ctx.Fields, fields...)
@@ -416,7 +452,8 @@ func (idmq *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...qu
 	var (
 		nodes       = []*IncidentDebriefMessage{}
 		_spec       = idmq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			idmq.withTenant != nil,
 			idmq.withDebrief != nil,
 			idmq.withFromQuestion != nil,
 		}
@@ -442,6 +479,12 @@ func (idmq *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...qu
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := idmq.withTenant; query != nil {
+		if err := idmq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentDebriefMessage, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := idmq.withDebrief; query != nil {
 		if err := idmq.loadDebrief(ctx, query, nodes, nil,
 			func(n *IncidentDebriefMessage, e *IncidentDebrief) { n.Edges.Debrief = e }); err != nil {
@@ -457,6 +500,35 @@ func (idmq *IncidentDebriefMessageQuery) sqlAll(ctx context.Context, hooks ...qu
 	return nodes, nil
 }
 
+func (idmq *IncidentDebriefMessageQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentDebriefMessage)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (idmq *IncidentDebriefMessageQuery) loadDebrief(ctx context.Context, query *IncidentDebriefQuery, nodes []*IncidentDebriefMessage, init func(*IncidentDebriefMessage), assign func(*IncidentDebriefMessage, *IncidentDebrief)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentDebriefMessage)
@@ -543,6 +615,9 @@ func (idmq *IncidentDebriefMessageQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidentdebriefmessage.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if idmq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentdebriefmessage.FieldTenantID)
 		}
 		if idmq.withDebrief != nil {
 			_spec.Node.AddColumnOnce(incidentdebriefmessage.FieldDebriefID)

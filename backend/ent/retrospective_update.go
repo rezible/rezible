@@ -210,6 +210,9 @@ func (ru *RetrospectiveUpdate) check() error {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
 	}
+	if ru.mutation.TenantCleared() && len(ru.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.tenant"`)
+	}
 	if ru.mutation.IncidentCleared() && len(ru.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)
 	}
@@ -558,6 +561,9 @@ func (ruo *RetrospectiveUpdateOne) check() error {
 		if err := retrospective.StateValidator(v); err != nil {
 			return &ValidationError{Name: "state", err: fmt.Errorf(`ent: validator failed for field "Retrospective.state": %w`, err)}
 		}
+	}
+	if ruo.mutation.TenantCleared() && len(ruo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Retrospective.tenant"`)
 	}
 	if ruo.mutation.IncidentCleared() && len(ruo.mutation.IncidentIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "Retrospective.incident"`)

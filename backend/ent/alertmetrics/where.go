@@ -54,9 +54,34 @@ func IDLTE(id uuid.UUID) predicate.AlertMetrics {
 	return predicate.AlertMetrics(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.AlertMetrics {
+	return predicate.AlertMetrics(sql.FieldEQ(FieldTenantID, v))
+}
+
 // AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
 func AlertID(v uuid.UUID) predicate.AlertMetrics {
 	return predicate.AlertMetrics(sql.FieldEQ(FieldAlertID, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.AlertMetrics {
+	return predicate.AlertMetrics(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.AlertMetrics {
+	return predicate.AlertMetrics(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.AlertMetrics {
+	return predicate.AlertMetrics(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.AlertMetrics {
+	return predicate.AlertMetrics(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // AlertIDEQ applies the EQ predicate on the "alert_id" field.
@@ -77,6 +102,29 @@ func AlertIDIn(vs ...uuid.UUID) predicate.AlertMetrics {
 // AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
 func AlertIDNotIn(vs ...uuid.UUID) predicate.AlertMetrics {
 	return predicate.AlertMetrics(sql.FieldNotIn(FieldAlertID, vs...))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.AlertMetrics {
+	return predicate.AlertMetrics(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.AlertMetrics {
+	return predicate.AlertMetrics(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasAlert applies the HasEdge predicate on the "alert" edge.

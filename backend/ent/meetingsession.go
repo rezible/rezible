@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // MeetingSession is the model entity for the MeetingSession schema.
@@ -18,6 +20,8 @@ type MeetingSession struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -28,27 +32,53 @@ type MeetingSession struct {
 	DocumentName string `json:"document_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MeetingSessionQuery when eager-loading is set.
-	Edges                     MeetingSessionEdges `json:"edges"`
-	meeting_schedule_sessions *uuid.UUID
-	selectValues              sql.SelectValues
+	Edges                    MeetingSessionEdges `json:"edges"`
+	meeting_session_schedule *uuid.UUID
+	selectValues             sql.SelectValues
 }
 
 // MeetingSessionEdges holds the relations/edges for other nodes in the graph.
 type MeetingSessionEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
+	// Schedule holds the value of the schedule edge.
+	Schedule *MeetingSchedule `json:"schedule,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MeetingSessionEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e MeetingSessionEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
+}
+
+// ScheduleOrErr returns the Schedule value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MeetingSessionEdges) ScheduleOrErr() (*MeetingSchedule, error) {
+	if e.Schedule != nil {
+		return e.Schedule, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: meetingschedule.Label}
+	}
+	return nil, &NotLoadedError{edge: "schedule"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -56,13 +86,15 @@ func (*MeetingSession) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case meetingsession.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case meetingsession.FieldTitle, meetingsession.FieldDocumentName:
 			values[i] = new(sql.NullString)
 		case meetingsession.FieldStartedAt, meetingsession.FieldEndedAt:
 			values[i] = new(sql.NullTime)
 		case meetingsession.FieldID:
 			values[i] = new(uuid.UUID)
-		case meetingsession.ForeignKeys[0]: // meeting_schedule_sessions
+		case meetingsession.ForeignKeys[0]: // meeting_session_schedule
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
@@ -84,6 +116,12 @@ func (ms *MeetingSession) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ms.ID = *value
+			}
+		case meetingsession.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ms.TenantID = int(value.Int64)
 			}
 		case meetingsession.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -111,10 +149,10 @@ func (ms *MeetingSession) assignValues(columns []string, values []any) error {
 			}
 		case meetingsession.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field meeting_schedule_sessions", values[i])
+				return fmt.Errorf("unexpected type %T for field meeting_session_schedule", values[i])
 			} else if value.Valid {
-				ms.meeting_schedule_sessions = new(uuid.UUID)
-				*ms.meeting_schedule_sessions = *value.S.(*uuid.UUID)
+				ms.meeting_session_schedule = new(uuid.UUID)
+				*ms.meeting_session_schedule = *value.S.(*uuid.UUID)
 			}
 		default:
 			ms.selectValues.Set(columns[i], values[i])
@@ -129,9 +167,19 @@ func (ms *MeetingSession) Value(name string) (ent.Value, error) {
 	return ms.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the MeetingSession entity.
+func (ms *MeetingSession) QueryTenant() *TenantQuery {
+	return NewMeetingSessionClient(ms.config).QueryTenant(ms)
+}
+
 // QueryIncidents queries the "incidents" edge of the MeetingSession entity.
 func (ms *MeetingSession) QueryIncidents() *IncidentQuery {
 	return NewMeetingSessionClient(ms.config).QueryIncidents(ms)
+}
+
+// QuerySchedule queries the "schedule" edge of the MeetingSession entity.
+func (ms *MeetingSession) QuerySchedule() *MeetingScheduleQuery {
+	return NewMeetingSessionClient(ms.config).QuerySchedule(ms)
 }
 
 // Update returns a builder for updating this MeetingSession.
@@ -157,6 +205,9 @@ func (ms *MeetingSession) String() string {
 	var builder strings.Builder
 	builder.WriteString("MeetingSession(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ms.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ms.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(ms.Title)
 	builder.WriteString(", ")

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventEvidenceQuery is the builder for querying IncidentEventEvidence entities.
@@ -25,6 +26,7 @@ type IncidentEventEvidenceQuery struct {
 	order      []incidenteventevidence.OrderOption
 	inters     []Interceptor
 	predicates []predicate.IncidentEventEvidence
+	withTenant *TenantQuery
 	withEvent  *IncidentEventQuery
 	withFKs    bool
 	modifiers  []func(*sql.Selector)
@@ -62,6 +64,28 @@ func (ieeq *IncidentEventEvidenceQuery) Unique(unique bool) *IncidentEventEviden
 func (ieeq *IncidentEventEvidenceQuery) Order(o ...incidenteventevidence.OrderOption) *IncidentEventEvidenceQuery {
 	ieeq.order = append(ieeq.order, o...)
 	return ieeq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ieeq *IncidentEventEvidenceQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ieeq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ieeq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ieeq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventevidence.Table, incidenteventevidence.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventevidence.TenantTable, incidenteventevidence.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ieeq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
@@ -278,12 +302,24 @@ func (ieeq *IncidentEventEvidenceQuery) Clone() *IncidentEventEvidenceQuery {
 		order:      append([]incidenteventevidence.OrderOption{}, ieeq.order...),
 		inters:     append([]Interceptor{}, ieeq.inters...),
 		predicates: append([]predicate.IncidentEventEvidence{}, ieeq.predicates...),
+		withTenant: ieeq.withTenant.Clone(),
 		withEvent:  ieeq.withEvent.Clone(),
 		// clone intermediate query.
 		sql:       ieeq.sql.Clone(),
 		path:      ieeq.path,
 		modifiers: append([]func(*sql.Selector){}, ieeq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ieeq *IncidentEventEvidenceQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentEventEvidenceQuery {
+	query := (&TenantClient{config: ieeq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ieeq.withTenant = query
+	return ieeq
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (ieeq *IncidentEventEvidenceQuery) WithEvent(opts ...func(*IncidentEventQue
 // Example:
 //
 //	var v []struct {
-//		EvidenceType incidenteventevidence.EvidenceType `json:"evidence_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentEventEvidence.Query().
-//		GroupBy(incidenteventevidence.FieldEvidenceType).
+//		GroupBy(incidenteventevidence.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ieeq *IncidentEventEvidenceQuery) GroupBy(field string, fields ...string) *IncidentEventEvidenceGroupBy {
@@ -326,11 +362,11 @@ func (ieeq *IncidentEventEvidenceQuery) GroupBy(field string, fields ...string) 
 // Example:
 //
 //	var v []struct {
-//		EvidenceType incidenteventevidence.EvidenceType `json:"evidence_type,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentEventEvidence.Query().
-//		Select(incidenteventevidence.FieldEvidenceType).
+//		Select(incidenteventevidence.FieldTenantID).
 //		Scan(ctx, &v)
 func (ieeq *IncidentEventEvidenceQuery) Select(fields ...string) *IncidentEventEvidenceSelect {
 	ieeq.ctx.Fields = append(ieeq.ctx.Fields, fields...)
@@ -382,7 +418,8 @@ func (ieeq *IncidentEventEvidenceQuery) sqlAll(ctx context.Context, hooks ...que
 		nodes       = []*IncidentEventEvidence{}
 		withFKs     = ieeq.withFKs
 		_spec       = ieeq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			ieeq.withTenant != nil,
 			ieeq.withEvent != nil,
 		}
 	)
@@ -413,6 +450,12 @@ func (ieeq *IncidentEventEvidenceQuery) sqlAll(ctx context.Context, hooks ...que
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ieeq.withTenant; query != nil {
+		if err := ieeq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentEventEvidence, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ieeq.withEvent; query != nil {
 		if err := ieeq.loadEvent(ctx, query, nodes, nil,
 			func(n *IncidentEventEvidence, e *IncidentEvent) { n.Edges.Event = e }); err != nil {
@@ -422,6 +465,35 @@ func (ieeq *IncidentEventEvidenceQuery) sqlAll(ctx context.Context, hooks ...que
 	return nodes, nil
 }
 
+func (ieeq *IncidentEventEvidenceQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentEventEvidence, init func(*IncidentEventEvidence), assign func(*IncidentEventEvidence, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentEventEvidence)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ieeq *IncidentEventEvidenceQuery) loadEvent(ctx context.Context, query *IncidentEventQuery, nodes []*IncidentEventEvidence, init func(*IncidentEventEvidence), assign func(*IncidentEventEvidence, *IncidentEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentEventEvidence)
@@ -482,6 +554,9 @@ func (ieeq *IncidentEventEvidenceQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidenteventevidence.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ieeq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidenteventevidence.FieldTenantID)
 		}
 	}
 	if ps := ieeq.predicates; len(ps) > 0 {

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -108,6 +109,25 @@ func (msu *MeetingSessionUpdate) AddIncidents(i ...*Incident) *MeetingSessionUpd
 	return msu.AddIncidentIDs(ids...)
 }
 
+// SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
+func (msu *MeetingSessionUpdate) SetScheduleID(id uuid.UUID) *MeetingSessionUpdate {
+	msu.mutation.SetScheduleID(id)
+	return msu
+}
+
+// SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
+func (msu *MeetingSessionUpdate) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdate {
+	if id != nil {
+		msu = msu.SetScheduleID(*id)
+	}
+	return msu
+}
+
+// SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
+func (msu *MeetingSessionUpdate) SetSchedule(m *MeetingSchedule) *MeetingSessionUpdate {
+	return msu.SetScheduleID(m.ID)
+}
+
 // Mutation returns the MeetingSessionMutation object of the builder.
 func (msu *MeetingSessionUpdate) Mutation() *MeetingSessionMutation {
 	return msu.mutation
@@ -132,6 +152,12 @@ func (msu *MeetingSessionUpdate) RemoveIncidents(i ...*Incident) *MeetingSession
 		ids[j] = i[j].ID
 	}
 	return msu.RemoveIncidentIDs(ids...)
+}
+
+// ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
+func (msu *MeetingSessionUpdate) ClearSchedule() *MeetingSessionUpdate {
+	msu.mutation.ClearSchedule()
+	return msu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -161,6 +187,14 @@ func (msu *MeetingSessionUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (msu *MeetingSessionUpdate) check() error {
+	if msu.mutation.TenantCleared() && len(msu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "MeetingSession.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (msu *MeetingSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdate {
 	msu.modifiers = append(msu.modifiers, modifiers...)
@@ -168,6 +202,9 @@ func (msu *MeetingSessionUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder))
 }
 
 func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := msu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(meetingsession.Table, meetingsession.Columns, sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID))
 	if ps := msu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -229,6 +266,35 @@ func (msu *MeetingSessionUpdate) sqlSave(ctx context.Context) (n int, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if msu.mutation.ScheduleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.ScheduleTable,
+			Columns: []string{meetingsession.ScheduleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msu.mutation.ScheduleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.ScheduleTable,
+			Columns: []string{meetingsession.ScheduleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -335,6 +401,25 @@ func (msuo *MeetingSessionUpdateOne) AddIncidents(i ...*Incident) *MeetingSessio
 	return msuo.AddIncidentIDs(ids...)
 }
 
+// SetScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID.
+func (msuo *MeetingSessionUpdateOne) SetScheduleID(id uuid.UUID) *MeetingSessionUpdateOne {
+	msuo.mutation.SetScheduleID(id)
+	return msuo
+}
+
+// SetNillableScheduleID sets the "schedule" edge to the MeetingSchedule entity by ID if the given value is not nil.
+func (msuo *MeetingSessionUpdateOne) SetNillableScheduleID(id *uuid.UUID) *MeetingSessionUpdateOne {
+	if id != nil {
+		msuo = msuo.SetScheduleID(*id)
+	}
+	return msuo
+}
+
+// SetSchedule sets the "schedule" edge to the MeetingSchedule entity.
+func (msuo *MeetingSessionUpdateOne) SetSchedule(m *MeetingSchedule) *MeetingSessionUpdateOne {
+	return msuo.SetScheduleID(m.ID)
+}
+
 // Mutation returns the MeetingSessionMutation object of the builder.
 func (msuo *MeetingSessionUpdateOne) Mutation() *MeetingSessionMutation {
 	return msuo.mutation
@@ -359,6 +444,12 @@ func (msuo *MeetingSessionUpdateOne) RemoveIncidents(i ...*Incident) *MeetingSes
 		ids[j] = i[j].ID
 	}
 	return msuo.RemoveIncidentIDs(ids...)
+}
+
+// ClearSchedule clears the "schedule" edge to the MeetingSchedule entity.
+func (msuo *MeetingSessionUpdateOne) ClearSchedule() *MeetingSessionUpdateOne {
+	msuo.mutation.ClearSchedule()
+	return msuo
 }
 
 // Where appends a list predicates to the MeetingSessionUpdate builder.
@@ -401,6 +492,14 @@ func (msuo *MeetingSessionUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (msuo *MeetingSessionUpdateOne) check() error {
+	if msuo.mutation.TenantCleared() && len(msuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "MeetingSession.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (msuo *MeetingSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *MeetingSessionUpdateOne {
 	msuo.modifiers = append(msuo.modifiers, modifiers...)
@@ -408,6 +507,9 @@ func (msuo *MeetingSessionUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuild
 }
 
 func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *MeetingSession, err error) {
+	if err := msuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(meetingsession.Table, meetingsession.Columns, sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID))
 	id, ok := msuo.mutation.ID()
 	if !ok {
@@ -486,6 +588,35 @@ func (msuo *MeetingSessionUpdateOne) sqlSave(ctx context.Context) (_node *Meetin
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if msuo.mutation.ScheduleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.ScheduleTable,
+			Columns: []string{meetingsession.ScheduleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := msuo.mutation.ScheduleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   meetingsession.ScheduleTable,
+			Columns: []string{meetingsession.ScheduleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

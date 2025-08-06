@@ -17,6 +17,8 @@ const (
 	Label = "incident_event_evidence"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldEvidenceType holds the string denoting the evidence_type field in the database.
 	FieldEvidenceType = "evidence_type"
 	// FieldURL holds the string denoting the url field in the database.
@@ -27,10 +29,19 @@ const (
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
 	// Table holds the table name of the incidenteventevidence in the database.
 	Table = "incident_event_evidences"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "incident_event_evidences"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// EventTable is the table that holds the event relation/edge.
 	EventTable = "incident_event_evidences"
 	// EventInverseTable is the table name for the IncidentEvent entity.
@@ -43,6 +54,7 @@ const (
 // Columns holds all SQL columns for incidenteventevidence fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldEvidenceType,
 	FieldURL,
 	FieldTitle,
@@ -123,6 +135,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByEvidenceType orders the results by the evidence_type field.
 func ByEvidenceType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEvidenceType, opts...).ToFunc()
@@ -148,11 +165,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByEventField orders the results by event field.
 func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

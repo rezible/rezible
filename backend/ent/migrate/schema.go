@@ -13,16 +13,69 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "title", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// AlertsTable holds the schema information for the "alerts" table.
 	AlertsTable = &schema.Table{
 		Name:       "alerts",
 		Columns:    AlertsColumns,
 		PrimaryKey: []*schema.Column{AlertsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alerts_tenants_tenant",
+				Columns:    []*schema.Column{AlertsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alert_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AlertsColumns[3]},
+			},
+		},
+	}
+	// AlertFeedbacksColumns holds the columns for the "alert_feedbacks" table.
+	AlertFeedbacksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "actionable", Type: field.TypeBool},
+		{Name: "accurate", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
+		{Name: "documentation_available", Type: field.TypeEnum, Enums: []string{"yes", "needs_update", "no"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
+	}
+	// AlertFeedbacksTable holds the schema information for the "alert_feedbacks" table.
+	AlertFeedbacksTable = &schema.Table{
+		Name:       "alert_feedbacks",
+		Columns:    AlertFeedbacksColumns,
+		PrimaryKey: []*schema.Column{AlertFeedbacksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alert_feedbacks_tenants_tenant",
+				Columns:    []*schema.Column{AlertFeedbacksColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_feedbacks_oncall_annotations_alert_feedback",
+				Columns:    []*schema.Column{AlertFeedbacksColumns[5]},
+				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alertfeedback_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AlertFeedbacksColumns[4]},
+			},
+		},
 	}
 	// AlertMetricsColumns holds the columns for the "alert_metrics" table.
 	AlertMetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "alert_id", Type: field.TypeUUID},
 	}
 	// AlertMetricsTable holds the schema information for the "alert_metrics" table.
@@ -32,10 +85,23 @@ var (
 		PrimaryKey: []*schema.Column{AlertMetricsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "alert_metrics_alerts_alert",
+				Symbol:     "alert_metrics_tenants_tenant",
 				Columns:    []*schema.Column{AlertMetricsColumns[1]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_metrics_alerts_alert",
+				Columns:    []*schema.Column{AlertMetricsColumns[2]},
 				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alertmetrics_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AlertMetricsColumns[1]},
 			},
 		},
 	}
@@ -51,6 +117,7 @@ var (
 		{Name: "closed_at", Type: field.TypeTime},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "severity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "type_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -61,16 +128,29 @@ var (
 		PrimaryKey: []*schema.Column{IncidentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incidents_incident_severities_severity",
+				Symbol:     "incidents_tenants_tenant",
 				Columns:    []*schema.Column{IncidentsColumns[10]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incidents_incident_severities_severity",
+				Columns:    []*schema.Column{IncidentsColumns[11]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[11]},
+				Columns:    []*schema.Column{IncidentsColumns[12]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incident_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentsColumns[10]},
 			},
 		},
 	}
@@ -80,6 +160,7 @@ var (
 		{Name: "required", Type: field.TypeBool},
 		{Name: "started", Type: field.TypeBool},
 		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// IncidentDebriefsTable holds the schema information for the "incident_debriefs" table.
@@ -95,10 +176,23 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incident_debriefs_users_incident_debriefs",
+				Symbol:     "incident_debriefs_tenants_tenant",
 				Columns:    []*schema.Column{IncidentDebriefsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_debriefs_users_incident_debriefs",
+				Columns:    []*schema.Column{IncidentDebriefsColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentdebrief_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentDebriefsColumns[4]},
 			},
 		},
 	}
@@ -110,6 +204,7 @@ var (
 		{Name: "requested_tool", Type: field.TypeEnum, Nullable: true, Enums: []string{"rating"}},
 		{Name: "body", Type: field.TypeString, Size: 2147483647},
 		{Name: "debrief_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "question_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncidentDebriefMessagesTable holds the schema information for the "incident_debrief_messages" table.
@@ -125,10 +220,23 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incident_debrief_messages_incident_debrief_questions_from_question",
+				Symbol:     "incident_debrief_messages_tenants_tenant",
 				Columns:    []*schema.Column{IncidentDebriefMessagesColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_debrief_messages_incident_debrief_questions_from_question",
+				Columns:    []*schema.Column{IncidentDebriefMessagesColumns[7]},
 				RefColumns: []*schema.Column{IncidentDebriefQuestionsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentdebriefmessage_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentDebriefMessagesColumns[6]},
 			},
 		},
 	}
@@ -136,18 +244,35 @@ var (
 	IncidentDebriefQuestionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeString, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentDebriefQuestionsTable holds the schema information for the "incident_debrief_questions" table.
 	IncidentDebriefQuestionsTable = &schema.Table{
 		Name:       "incident_debrief_questions",
 		Columns:    IncidentDebriefQuestionsColumns,
 		PrimaryKey: []*schema.Column{IncidentDebriefQuestionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_debrief_questions_tenants_tenant",
+				Columns:    []*schema.Column{IncidentDebriefQuestionsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentdebriefquestion_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentDebriefQuestionsColumns[2]},
+			},
+		},
 	}
 	// IncidentDebriefSuggestionsColumns holds the columns for the "incident_debrief_suggestions" table.
 	IncidentDebriefSuggestionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeString, Size: 2147483647},
 		{Name: "incident_debrief_suggestions", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentDebriefSuggestionsTable holds the schema information for the "incident_debrief_suggestions" table.
 	IncidentDebriefSuggestionsTable = &schema.Table{
@@ -160,6 +285,19 @@ var (
 				Columns:    []*schema.Column{IncidentDebriefSuggestionsColumns[2]},
 				RefColumns: []*schema.Column{IncidentDebriefsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_debrief_suggestions_tenants_tenant",
+				Columns:    []*schema.Column{IncidentDebriefSuggestionsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentdebriefsuggestion_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentDebriefSuggestionsColumns[3]},
 			},
 		},
 	}
@@ -177,6 +315,7 @@ var (
 		{Name: "sequence", Type: field.TypeInt, Default: 0},
 		{Name: "is_draft", Type: field.TypeBool, Default: false},
 		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentEventsTable holds the schema information for the "incident_events" table.
 	IncidentEventsTable = &schema.Table{
@@ -190,8 +329,19 @@ var (
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_events_tenants_tenant",
+				Columns:    []*schema.Column{IncidentEventsColumns[12]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
 		},
 		Indexes: []*schema.Index{
+			{
+				Name:    "incidentevent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventsColumns[12]},
+			},
 			{
 				Name:    "incidentevent_incident_id_timestamp",
 				Unique:  false,
@@ -213,6 +363,7 @@ var (
 		{Name: "involved_personnel", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "incident_event_context", Type: field.TypeUUID, Unique: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentEventContextsTable holds the schema information for the "incident_event_contexts" table.
 	IncidentEventContextsTable = &schema.Table{
@@ -226,6 +377,19 @@ var (
 				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_event_contexts_tenants_tenant",
+				Columns:    []*schema.Column{IncidentEventContextsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidenteventcontext_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventContextsColumns[7]},
+			},
 		},
 	}
 	// IncidentEventContributingFactorsColumns holds the columns for the "incident_event_contributing_factors" table.
@@ -235,6 +399,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "incident_event_factors", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentEventContributingFactorsTable holds the schema information for the "incident_event_contributing_factors" table.
 	IncidentEventContributingFactorsTable = &schema.Table{
@@ -248,6 +413,19 @@ var (
 				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_event_contributing_factors_tenants_tenant",
+				Columns:    []*schema.Column{IncidentEventContributingFactorsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidenteventcontributingfactor_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventContributingFactorsColumns[5]},
+			},
 		},
 	}
 	// IncidentEventEvidencesColumns holds the columns for the "incident_event_evidences" table.
@@ -259,6 +437,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "incident_event_evidence", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentEventEvidencesTable holds the schema information for the "incident_event_evidences" table.
 	IncidentEventEvidencesTable = &schema.Table{
@@ -272,6 +451,19 @@ var (
 				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_event_evidences_tenants_tenant",
+				Columns:    []*schema.Column{IncidentEventEvidencesColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidenteventevidence_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventEvidencesColumns[7]},
+			},
 		},
 	}
 	// IncidentEventSystemComponentsColumns holds the columns for the "incident_event_system_components" table.
@@ -279,6 +471,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "relationship", Type: field.TypeEnum, Enums: []string{"primary", "affected", "contributing"}},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_event_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 		{Name: "system_component_id", Type: field.TypeUUID},
 	}
@@ -289,23 +482,34 @@ var (
 		PrimaryKey: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_event_system_components_incident_event_system_components_event",
+				Symbol:     "incident_event_system_components_tenants_tenant",
 				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_event_system_components_incident_event_system_components_event",
+				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[4]},
 				RefColumns: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "incident_event_system_components_system_components_system_component",
-				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[4]},
+				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "incidenteventsystemcomponent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[3]},
+			},
+			{
 				Name:    "incidenteventsystemcomponent_incident_event_id_system_component_id",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[3], IncidentEventSystemComponentsColumns[4]},
+				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[4], IncidentEventSystemComponentsColumns[5]},
 			},
 		},
 	}
@@ -314,12 +518,28 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentFieldsTable holds the schema information for the "incident_fields" table.
 	IncidentFieldsTable = &schema.Table{
 		Name:       "incident_fields",
 		Columns:    IncidentFieldsColumns,
 		PrimaryKey: []*schema.Column{IncidentFieldsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_fields_tenants_tenant",
+				Columns:    []*schema.Column{IncidentFieldsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentfield_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentFieldsColumns[3]},
+			},
+		},
 	}
 	// IncidentFieldOptionsColumns holds the columns for the "incident_field_options" table.
 	IncidentFieldOptionsColumns = []*schema.Column{
@@ -328,6 +548,7 @@ var (
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"custom", "derived"}},
 		{Name: "value", Type: field.TypeString},
 		{Name: "incident_field_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentFieldOptionsTable holds the schema information for the "incident_field_options" table.
 	IncidentFieldOptionsTable = &schema.Table{
@@ -341,6 +562,19 @@ var (
 				RefColumns: []*schema.Column{IncidentFieldsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_field_options_tenants_tenant",
+				Columns:    []*schema.Column{IncidentFieldOptionsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentfieldoption_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentFieldOptionsColumns[5]},
+			},
 		},
 	}
 	// IncidentLinksColumns holds the columns for the "incident_links" table.
@@ -348,6 +582,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "link_type", Type: field.TypeEnum, Enums: []string{"parent", "child", "similar"}},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "linked_incident_id", Type: field.TypeUUID},
 	}
@@ -358,23 +593,34 @@ var (
 		PrimaryKey: []*schema.Column{IncidentLinksColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_links_incidents_incident",
+				Symbol:     "incident_links_tenants_tenant",
 				Columns:    []*schema.Column{IncidentLinksColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_links_incidents_incident",
+				Columns:    []*schema.Column{IncidentLinksColumns[4]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incident_links_incidents_linked_incident",
-				Columns:    []*schema.Column{IncidentLinksColumns[4]},
+				Columns:    []*schema.Column{IncidentLinksColumns[5]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "incidentlink_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentLinksColumns[3]},
+			},
+			{
 				Name:    "incidentlink_incident_id_linked_incident_id",
 				Unique:  true,
-				Columns: []*schema.Column{IncidentLinksColumns[3], IncidentLinksColumns[4]},
+				Columns: []*schema.Column{IncidentLinksColumns[4], IncidentLinksColumns[5]},
 			},
 		},
 	}
@@ -385,6 +631,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "time", Type: field.TypeTime},
 		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentMilestonesTable holds the schema information for the "incident_milestones" table.
 	IncidentMilestonesTable = &schema.Table{
@@ -398,6 +645,19 @@ var (
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_milestones_tenants_tenant",
+				Columns:    []*schema.Column{IncidentMilestonesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentmilestone_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentMilestonesColumns[5]},
+			},
 		},
 	}
 	// IncidentRolesColumns holds the columns for the "incident_roles" table.
@@ -407,19 +667,36 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "required", Type: field.TypeBool, Default: false},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentRolesTable holds the schema information for the "incident_roles" table.
 	IncidentRolesTable = &schema.Table{
 		Name:       "incident_roles",
 		Columns:    IncidentRolesColumns,
 		PrimaryKey: []*schema.Column{IncidentRolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_roles_tenants_tenant",
+				Columns:    []*schema.Column{IncidentRolesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentrole_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentRolesColumns[5]},
+			},
+		},
 	}
 	// IncidentRoleAssignmentsColumns holds the columns for the "incident_role_assignments" table.
 	IncidentRoleAssignmentsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "role_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "role_id", Type: field.TypeUUID},
 	}
 	// IncidentRoleAssignmentsTable holds the schema information for the "incident_role_assignments" table.
 	IncidentRoleAssignmentsTable = &schema.Table{
@@ -428,9 +705,9 @@ var (
 		PrimaryKey: []*schema.Column{IncidentRoleAssignmentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_role_assignments_incident_roles_role",
+				Symbol:     "incident_role_assignments_tenants_tenant",
 				Columns:    []*schema.Column{IncidentRoleAssignmentsColumns[1]},
-				RefColumns: []*schema.Column{IncidentRolesColumns[0]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
@@ -445,6 +722,24 @@ var (
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "incident_role_assignments_incident_roles_role",
+				Columns:    []*schema.Column{IncidentRoleAssignmentsColumns[4]},
+				RefColumns: []*schema.Column{IncidentRolesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentroleassignment_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentRoleAssignmentsColumns[1]},
+			},
+			{
+				Name:    "incidentroleassignment_user_id_incident_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentRoleAssignmentsColumns[3], IncidentRoleAssignmentsColumns[2]},
+			},
 		},
 	}
 	// IncidentSeveritiesColumns holds the columns for the "incident_severities" table.
@@ -456,12 +751,28 @@ var (
 		{Name: "rank", Type: field.TypeInt},
 		{Name: "color", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentSeveritiesTable holds the schema information for the "incident_severities" table.
 	IncidentSeveritiesTable = &schema.Table{
 		Name:       "incident_severities",
 		Columns:    IncidentSeveritiesColumns,
 		PrimaryKey: []*schema.Column{IncidentSeveritiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_severities_tenants_tenant",
+				Columns:    []*schema.Column{IncidentSeveritiesColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentseverity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentSeveritiesColumns[7]},
+			},
+		},
 	}
 	// IncidentTagsColumns holds the columns for the "incident_tags" table.
 	IncidentTagsColumns = []*schema.Column{
@@ -469,36 +780,26 @@ var (
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "key", Type: field.TypeString},
 		{Name: "value", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentTagsTable holds the schema information for the "incident_tags" table.
 	IncidentTagsTable = &schema.Table{
 		Name:       "incident_tags",
 		Columns:    IncidentTagsColumns,
 		PrimaryKey: []*schema.Column{IncidentTagsColumns[0]},
-	}
-	// IncidentTeamAssignmentsColumns holds the columns for the "incident_team_assignments" table.
-	IncidentTeamAssignmentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "incident_id", Type: field.TypeUUID},
-		{Name: "team_id", Type: field.TypeUUID},
-	}
-	// IncidentTeamAssignmentsTable holds the schema information for the "incident_team_assignments" table.
-	IncidentTeamAssignmentsTable = &schema.Table{
-		Name:       "incident_team_assignments",
-		Columns:    IncidentTeamAssignmentsColumns,
-		PrimaryKey: []*schema.Column{IncidentTeamAssignmentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_team_assignments_incidents_incident",
-				Columns:    []*schema.Column{IncidentTeamAssignmentsColumns[1]},
-				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				Symbol:     "incident_tags_tenants_tenant",
+				Columns:    []*schema.Column{IncidentTagsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+		},
+		Indexes: []*schema.Index{
 			{
-				Symbol:     "incident_team_assignments_teams_team",
-				Columns:    []*schema.Column{IncidentTeamAssignmentsColumns[2]},
-				RefColumns: []*schema.Column{TeamsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Name:    "incidenttag_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentTagsColumns[4]},
 			},
 		},
 	}
@@ -507,12 +808,28 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "archive_time", Type: field.TypeTime, Nullable: true},
 		{Name: "name", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IncidentTypesTable holds the schema information for the "incident_types" table.
 	IncidentTypesTable = &schema.Table{
 		Name:       "incident_types",
 		Columns:    IncidentTypesColumns,
 		PrimaryKey: []*schema.Column{IncidentTypesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_types_tenants_tenant",
+				Columns:    []*schema.Column{IncidentTypesColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidenttype_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentTypesColumns[3]},
+			},
+		},
 	}
 	// MeetingSchedulesColumns holds the columns for the "meeting_schedules" table.
 	MeetingSchedulesColumns = []*schema.Column{
@@ -529,12 +846,28 @@ var (
 		{Name: "monthly_on", Type: field.TypeEnum, Nullable: true, Enums: []string{"same_day", "same_weekday"}},
 		{Name: "until_date", Type: field.TypeTime, Nullable: true},
 		{Name: "num_repetitions", Type: field.TypeInt, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// MeetingSchedulesTable holds the schema information for the "meeting_schedules" table.
 	MeetingSchedulesTable = &schema.Table{
 		Name:       "meeting_schedules",
 		Columns:    MeetingSchedulesColumns,
 		PrimaryKey: []*schema.Column{MeetingSchedulesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "meeting_schedules_tenants_tenant",
+				Columns:    []*schema.Column{MeetingSchedulesColumns[13]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "meetingschedule_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MeetingSchedulesColumns[13]},
+			},
+		},
 	}
 	// MeetingSessionsColumns holds the columns for the "meeting_sessions" table.
 	MeetingSessionsColumns = []*schema.Column{
@@ -543,7 +876,8 @@ var (
 		{Name: "started_at", Type: field.TypeTime},
 		{Name: "ended_at", Type: field.TypeTime, Nullable: true},
 		{Name: "document_name", Type: field.TypeString},
-		{Name: "meeting_schedule_sessions", Type: field.TypeUUID, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "meeting_session_schedule", Type: field.TypeUUID, Nullable: true},
 	}
 	// MeetingSessionsTable holds the schema information for the "meeting_sessions" table.
 	MeetingSessionsTable = &schema.Table{
@@ -552,10 +886,23 @@ var (
 		PrimaryKey: []*schema.Column{MeetingSessionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "meeting_sessions_meeting_schedules_sessions",
+				Symbol:     "meeting_sessions_tenants_tenant",
 				Columns:    []*schema.Column{MeetingSessionsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "meeting_sessions_meeting_schedules_schedule",
+				Columns:    []*schema.Column{MeetingSessionsColumns[6]},
 				RefColumns: []*schema.Column{MeetingSchedulesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "meetingsession_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{MeetingSessionsColumns[5]},
 			},
 		},
 	}
@@ -566,6 +913,7 @@ var (
 		{Name: "minutes_occupied", Type: field.TypeInt},
 		{Name: "notes", Type: field.TypeString, Size: 2147483647},
 		{Name: "tags", Type: field.TypeJSON},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "event_id", Type: field.TypeUUID},
 		{Name: "roster_id", Type: field.TypeUUID},
 		{Name: "creator_id", Type: field.TypeUUID},
@@ -577,44 +925,35 @@ var (
 		PrimaryKey: []*schema.Column{OncallAnnotationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oncall_annotations_oncall_events_event",
+				Symbol:     "oncall_annotations_tenants_tenant",
 				Columns:    []*schema.Column{OncallAnnotationsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oncall_annotations_oncall_events_event",
+				Columns:    []*schema.Column{OncallAnnotationsColumns[6]},
 				RefColumns: []*schema.Column{OncallEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_annotations_oncall_rosters_roster",
-				Columns:    []*schema.Column{OncallAnnotationsColumns[6]},
+				Columns:    []*schema.Column{OncallAnnotationsColumns[7]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_annotations_users_creator",
-				Columns:    []*schema.Column{OncallAnnotationsColumns[7]},
+				Columns:    []*schema.Column{OncallAnnotationsColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
-	}
-	// OncallAnnotationAlertFeedbacksColumns holds the columns for the "oncall_annotation_alert_feedbacks" table.
-	OncallAnnotationAlertFeedbacksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "actionable", Type: field.TypeBool},
-		{Name: "accurate", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
-		{Name: "documentation_available", Type: field.TypeEnum, Enums: []string{"yes", "needs_update", "no"}},
-		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
-	}
-	// OncallAnnotationAlertFeedbacksTable holds the schema information for the "oncall_annotation_alert_feedbacks" table.
-	OncallAnnotationAlertFeedbacksTable = &schema.Table{
-		Name:       "oncall_annotation_alert_feedbacks",
-		Columns:    OncallAnnotationAlertFeedbacksColumns,
-		PrimaryKey: []*schema.Column{OncallAnnotationAlertFeedbacksColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
+		Indexes: []*schema.Index{
 			{
-				Symbol:     "oncall_annotation_alert_feedbacks_oncall_annotations_alert_feedback",
-				Columns:    []*schema.Column{OncallAnnotationAlertFeedbacksColumns[4]},
-				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Name:    "oncallannotation_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallAnnotationsColumns[5]},
 			},
 		},
 	}
@@ -627,6 +966,7 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "alert_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -637,16 +977,29 @@ var (
 		PrimaryKey: []*schema.Column{OncallEventsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oncall_events_oncall_rosters_roster",
+				Symbol:     "oncall_events_tenants_tenant",
 				Columns:    []*schema.Column{OncallEventsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oncall_events_oncall_rosters_roster",
+				Columns:    []*schema.Column{OncallEventsColumns[8]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "oncall_events_alerts_alert",
-				Columns:    []*schema.Column{OncallEventsColumns[8]},
+				Columns:    []*schema.Column{OncallEventsColumns[9]},
 				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallevent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallEventsColumns[7]},
 			},
 		},
 	}
@@ -657,12 +1010,28 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "contents", Type: field.TypeBytes},
 		{Name: "is_default", Type: field.TypeBool, Default: false},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OncallHandoverTemplatesTable holds the schema information for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesTable = &schema.Table{
 		Name:       "oncall_handover_templates",
 		Columns:    OncallHandoverTemplatesColumns,
 		PrimaryKey: []*schema.Column{OncallHandoverTemplatesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "oncall_handover_templates_tenants_tenant",
+				Columns:    []*schema.Column{OncallHandoverTemplatesColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallhandovertemplate_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallHandoverTemplatesColumns[5]},
+			},
+		},
 	}
 	// OncallRostersColumns holds the columns for the "oncall_rosters" table.
 	OncallRostersColumns = []*schema.Column{
@@ -675,6 +1044,7 @@ var (
 		{Name: "chat_handle", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "handover_template_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OncallRostersTable holds the schema information for the "oncall_rosters" table.
 	OncallRostersTable = &schema.Table{
@@ -688,11 +1058,25 @@ var (
 				RefColumns: []*schema.Column{OncallHandoverTemplatesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
+			{
+				Symbol:     "oncall_rosters_tenants_tenant",
+				Columns:    []*schema.Column{OncallRostersColumns[9]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallroster_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallRostersColumns[9]},
+			},
 		},
 	}
 	// OncallRosterMetricsColumns holds the columns for the "oncall_roster_metrics" table.
 	OncallRosterMetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "roster_id", Type: field.TypeUUID},
 	}
 	// OncallRosterMetricsTable holds the schema information for the "oncall_roster_metrics" table.
@@ -702,10 +1086,23 @@ var (
 		PrimaryKey: []*schema.Column{OncallRosterMetricsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oncall_roster_metrics_oncall_rosters_roster",
+				Symbol:     "oncall_roster_metrics_tenants_tenant",
 				Columns:    []*schema.Column{OncallRosterMetricsColumns[1]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oncall_roster_metrics_oncall_rosters_roster",
+				Columns:    []*schema.Column{OncallRosterMetricsColumns[2]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallrostermetrics_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallRosterMetricsColumns[1]},
 			},
 		},
 	}
@@ -717,6 +1114,7 @@ var (
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
 		{Name: "provider_id", Type: field.TypeString, Unique: true},
 		{Name: "roster_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OncallSchedulesTable holds the schema information for the "oncall_schedules" table.
 	OncallSchedulesTable = &schema.Table{
@@ -730,6 +1128,19 @@ var (
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "oncall_schedules_tenants_tenant",
+				Columns:    []*schema.Column{OncallSchedulesColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallschedule_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallSchedulesColumns[6]},
+			},
 		},
 	}
 	// OncallScheduleParticipantsColumns holds the columns for the "oncall_schedule_participants" table.
@@ -737,6 +1148,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "index", Type: field.TypeInt},
 		{Name: "schedule_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// OncallScheduleParticipantsTable holds the schema information for the "oncall_schedule_participants" table.
@@ -752,10 +1164,23 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "oncall_schedule_participants_users_user",
+				Symbol:     "oncall_schedule_participants_tenants_tenant",
 				Columns:    []*schema.Column{OncallScheduleParticipantsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oncall_schedule_participants_users_user",
+				Columns:    []*schema.Column{OncallScheduleParticipantsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallscheduleparticipant_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallScheduleParticipantsColumns[3]},
 			},
 		},
 	}
@@ -766,6 +1191,7 @@ var (
 		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"primary", "secondary", "shadow", "covering"}, Default: "primary"},
 		{Name: "start_at", Type: field.TypeTime},
 		{Name: "end_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "roster_id", Type: field.TypeUUID},
 		{Name: "primary_shift_id", Type: field.TypeUUID, Unique: true, Nullable: true},
@@ -777,22 +1203,35 @@ var (
 		PrimaryKey: []*schema.Column{OncallUserShiftsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "oncall_user_shifts_users_user",
+				Symbol:     "oncall_user_shifts_tenants_tenant",
 				Columns:    []*schema.Column{OncallUserShiftsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "oncall_user_shifts_users_user",
+				Columns:    []*schema.Column{OncallUserShiftsColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_user_shifts_oncall_rosters_roster",
-				Columns:    []*schema.Column{OncallUserShiftsColumns[6]},
+				Columns:    []*schema.Column{OncallUserShiftsColumns[7]},
 				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "oncall_user_shifts_oncall_user_shifts_primary_shift",
-				Columns:    []*schema.Column{OncallUserShiftsColumns[7]},
+				Columns:    []*schema.Column{OncallUserShiftsColumns[8]},
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallusershift_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallUserShiftsColumns[5]},
 			},
 		},
 	}
@@ -805,6 +1244,7 @@ var (
 		{Name: "sent_at", Type: field.TypeTime, Nullable: true},
 		{Name: "contents", Type: field.TypeBytes},
 		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OncallUserShiftHandoversTable holds the schema information for the "oncall_user_shift_handovers" table.
 	OncallUserShiftHandoversTable = &schema.Table{
@@ -818,12 +1258,26 @@ var (
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "oncall_user_shift_handovers_tenants_tenant",
+				Columns:    []*schema.Column{OncallUserShiftHandoversColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallusershifthandover_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallUserShiftHandoversColumns[7]},
+			},
 		},
 	}
 	// OncallUserShiftMetricsColumns holds the columns for the "oncall_user_shift_metrics" table.
 	OncallUserShiftMetricsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "shift_id", Type: field.TypeUUID, Unique: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OncallUserShiftMetricsTable holds the schema information for the "oncall_user_shift_metrics" table.
 	OncallUserShiftMetricsTable = &schema.Table{
@@ -837,6 +1291,19 @@ var (
 				RefColumns: []*schema.Column{OncallUserShiftsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "oncall_user_shift_metrics_tenants_tenant",
+				Columns:    []*schema.Column{OncallUserShiftMetricsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "oncallusershiftmetrics_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OncallUserShiftMetricsColumns[2]},
+			},
 		},
 	}
 	// PlaybooksColumns holds the columns for the "playbooks" table.
@@ -845,12 +1312,28 @@ var (
 		{Name: "title", Type: field.TypeString},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "content", Type: field.TypeBytes},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// PlaybooksTable holds the schema information for the "playbooks" table.
 	PlaybooksTable = &schema.Table{
 		Name:       "playbooks",
 		Columns:    PlaybooksColumns,
 		PrimaryKey: []*schema.Column{PlaybooksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "playbooks_tenants_tenant",
+				Columns:    []*schema.Column{PlaybooksColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "playbook_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{PlaybooksColumns[4]},
+			},
+		},
 	}
 	// ProviderConfigsColumns holds the columns for the "provider_configs" table.
 	ProviderConfigsColumns = []*schema.Column{
@@ -876,6 +1359,11 @@ var (
 			},
 		},
 		Indexes: []*schema.Index{
+			{
+				Name:    "providerconfig_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderConfigsColumns[6]},
+			},
 			{
 				Name:    "providerconfig_provider_name_provider_type",
 				Unique:  true,
@@ -905,6 +1393,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "providersynchistory_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderSyncHistoriesColumns[5]},
+			},
+		},
 	}
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
@@ -912,6 +1407,7 @@ var (
 		{Name: "document_name", Type: field.TypeString},
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "system_analysis_id", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
@@ -922,16 +1418,29 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectivesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospectives_incidents_incident",
+				Symbol:     "retrospectives_tenants_tenant",
 				Columns:    []*schema.Column{RetrospectivesColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospectives_incidents_incident",
+				Columns:    []*schema.Column{RetrospectivesColumns[5]},
 				RefColumns: []*schema.Column{IncidentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospectives_system_analyses_retrospective",
-				Columns:    []*schema.Column{RetrospectivesColumns[5]},
+				Columns:    []*schema.Column{RetrospectivesColumns[6]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "retrospective_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{RetrospectivesColumns[4]},
 			},
 		},
 	}
@@ -939,6 +1448,7 @@ var (
 	RetrospectiveDiscussionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeBytes},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "retrospective_id", Type: field.TypeUUID},
 	}
 	// RetrospectiveDiscussionsTable holds the schema information for the "retrospective_discussions" table.
@@ -948,10 +1458,23 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospective_discussions_retrospectives_retrospective",
+				Symbol:     "retrospective_discussions_tenants_tenant",
 				Columns:    []*schema.Column{RetrospectiveDiscussionsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospective_discussions_retrospectives_retrospective",
+				Columns:    []*schema.Column{RetrospectiveDiscussionsColumns[3]},
 				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "retrospectivediscussion_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{RetrospectiveDiscussionsColumns[2]},
 			},
 		},
 	}
@@ -959,6 +1482,7 @@ var (
 	RetrospectiveDiscussionRepliesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "content", Type: field.TypeBytes},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "retrospective_discussion_reply_discussion", Type: field.TypeUUID},
 		{Name: "retrospective_discussion_reply_replies", Type: field.TypeUUID, Nullable: true},
 	}
@@ -969,16 +1493,29 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectiveDiscussionRepliesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospective_discussion_replies_retrospective_discussions_discussion",
+				Symbol:     "retrospective_discussion_replies_tenants_tenant",
 				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospective_discussion_replies_retrospective_discussions_discussion",
+				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[3]},
 				RefColumns: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospective_discussion_replies_retrospective_discussion_replies_replies",
-				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[3]},
+				Columns:    []*schema.Column{RetrospectiveDiscussionRepliesColumns[4]},
 				RefColumns: []*schema.Column{RetrospectiveDiscussionRepliesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "retrospectivediscussionreply_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{RetrospectiveDiscussionRepliesColumns[2]},
 			},
 		},
 	}
@@ -986,6 +1523,7 @@ var (
 	RetrospectiveReviewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"waiting", "request_changes", "approved"}},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "retrospective_id", Type: field.TypeUUID},
 		{Name: "requester_id", Type: field.TypeUUID},
 		{Name: "reviewer_id", Type: field.TypeUUID},
@@ -998,28 +1536,41 @@ var (
 		PrimaryKey: []*schema.Column{RetrospectiveReviewsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "retrospective_reviews_retrospectives_retrospective",
+				Symbol:     "retrospective_reviews_tenants_tenant",
 				Columns:    []*schema.Column{RetrospectiveReviewsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospective_reviews_retrospectives_retrospective",
+				Columns:    []*schema.Column{RetrospectiveReviewsColumns[3]},
 				RefColumns: []*schema.Column{RetrospectivesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "retrospective_reviews_users_requester",
-				Columns:    []*schema.Column{RetrospectiveReviewsColumns[3]},
-				RefColumns: []*schema.Column{UsersColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "retrospective_reviews_users_reviewer",
 				Columns:    []*schema.Column{RetrospectiveReviewsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "retrospective_reviews_retrospective_discussions_discussion",
+				Symbol:     "retrospective_reviews_users_reviewer",
 				Columns:    []*schema.Column{RetrospectiveReviewsColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "retrospective_reviews_retrospective_discussions_discussion",
+				Columns:    []*schema.Column{RetrospectiveReviewsColumns[6]},
 				RefColumns: []*schema.Column{RetrospectiveDiscussionsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "retrospectivereview_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{RetrospectiveReviewsColumns[2]},
 			},
 		},
 	}
@@ -1028,12 +1579,28 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
 		Name:       "system_analyses",
 		Columns:    SystemAnalysesColumns,
 		PrimaryKey: []*schema.Column{SystemAnalysesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_analyses_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysesColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysis_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysesColumns[3]},
+			},
+		},
 	}
 	// SystemAnalysisComponentsColumns holds the columns for the "system_analysis_components" table.
 	SystemAnalysisComponentsColumns = []*schema.Column{
@@ -1042,6 +1609,7 @@ var (
 		{Name: "pos_x", Type: field.TypeFloat64, Default: 0},
 		{Name: "pos_y", Type: field.TypeFloat64, Default: 0},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
 		{Name: "component_id", Type: field.TypeUUID},
 	}
@@ -1052,23 +1620,34 @@ var (
 		PrimaryKey: []*schema.Column{SystemAnalysisComponentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_components_system_analyses_analysis",
+				Symbol:     "system_analysis_components_tenants_tenant",
 				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_components_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[6]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_analysis_components_system_components_component",
-				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[6]},
+				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[7]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "systemanalysiscomponent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisComponentsColumns[5]},
+			},
+			{
 				Name:    "systemanalysiscomponent_component_id_analysis_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemAnalysisComponentsColumns[6], SystemAnalysisComponentsColumns[5]},
+				Columns: []*schema.Column{SystemAnalysisComponentsColumns[7], SystemAnalysisComponentsColumns[6]},
 			},
 		},
 	}
@@ -1077,6 +1656,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
 		{Name: "component_relationship_id", Type: field.TypeUUID},
 	}
@@ -1087,16 +1667,29 @@ var (
 		PrimaryKey: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_relationships_system_analyses_system_analysis",
+				Symbol:     "system_analysis_relationships_tenants_tenant",
 				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_relationships_system_analyses_system_analysis",
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[4]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_analysis_relationships_system_component_relationships_component_relationship",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[4]},
+				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysisrelationship_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[3]},
 			},
 		},
 	}
@@ -1109,6 +1702,7 @@ var (
 		{Name: "properties", Type: field.TypeJSON, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "kind_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemComponentsTable holds the schema information for the "system_components" table.
@@ -1118,10 +1712,23 @@ var (
 		PrimaryKey: []*schema.Column{SystemComponentsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_components_system_component_kinds_kind",
+				Symbol:     "system_components_tenants_tenant",
 				Columns:    []*schema.Column{SystemComponentsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_components_system_component_kinds_kind",
+				Columns:    []*schema.Column{SystemComponentsColumns[8]},
 				RefColumns: []*schema.Column{SystemComponentKindsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentsColumns[7]},
 			},
 		},
 	}
@@ -1131,6 +1738,7 @@ var (
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "component_id", Type: field.TypeUUID},
 	}
 	// SystemComponentConstraintsTable holds the schema information for the "system_component_constraints" table.
@@ -1140,10 +1748,23 @@ var (
 		PrimaryKey: []*schema.Column{SystemComponentConstraintsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_component_constraints_system_components_component",
+				Symbol:     "system_component_constraints_tenants_tenant",
 				Columns:    []*schema.Column{SystemComponentConstraintsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_constraints_system_components_component",
+				Columns:    []*schema.Column{SystemComponentConstraintsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentconstraint_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentConstraintsColumns[4]},
 			},
 		},
 	}
@@ -1153,6 +1774,7 @@ var (
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "component_id", Type: field.TypeUUID},
 	}
 	// SystemComponentControlsTable holds the schema information for the "system_component_controls" table.
@@ -1162,10 +1784,23 @@ var (
 		PrimaryKey: []*schema.Column{SystemComponentControlsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_component_controls_system_components_component",
+				Symbol:     "system_component_controls_tenants_tenant",
 				Columns:    []*schema.Column{SystemComponentControlsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_controls_system_components_component",
+				Columns:    []*schema.Column{SystemComponentControlsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentcontrol_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentControlsColumns[4]},
 			},
 		},
 	}
@@ -1176,12 +1811,28 @@ var (
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// SystemComponentKindsTable holds the schema information for the "system_component_kinds" table.
 	SystemComponentKindsTable = &schema.Table{
 		Name:       "system_component_kinds",
 		Columns:    SystemComponentKindsColumns,
 		PrimaryKey: []*schema.Column{SystemComponentKindsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_component_kinds_tenants_tenant",
+				Columns:    []*schema.Column{SystemComponentKindsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentkind_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentKindsColumns[5]},
+			},
+		},
 	}
 	// SystemComponentRelationshipsColumns holds the columns for the "system_component_relationships" table.
 	SystemComponentRelationshipsColumns = []*schema.Column{
@@ -1189,6 +1840,7 @@ var (
 		{Name: "provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "source_id", Type: field.TypeUUID},
 		{Name: "target_id", Type: field.TypeUUID},
 	}
@@ -1199,23 +1851,34 @@ var (
 		PrimaryKey: []*schema.Column{SystemComponentRelationshipsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_component_relationships_system_components_source",
+				Symbol:     "system_component_relationships_tenants_tenant",
 				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_relationships_system_components_source",
+				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_component_relationships_system_components_target",
-				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[5]},
+				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[6]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "systemcomponentrelationship_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentRelationshipsColumns[4]},
+			},
+			{
 				Name:    "systemcomponentrelationship_source_id_target_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemComponentRelationshipsColumns[4], SystemComponentRelationshipsColumns[5]},
+				Columns: []*schema.Column{SystemComponentRelationshipsColumns[5], SystemComponentRelationshipsColumns[6]},
 			},
 		},
 	}
@@ -1225,6 +1888,7 @@ var (
 		{Name: "label", Type: field.TypeString, Size: 2147483647},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "component_id", Type: field.TypeUUID},
 	}
 	// SystemComponentSignalsTable holds the schema information for the "system_component_signals" table.
@@ -1234,10 +1898,23 @@ var (
 		PrimaryKey: []*schema.Column{SystemComponentSignalsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_component_signals_system_components_component",
+				Symbol:     "system_component_signals_tenants_tenant",
 				Columns:    []*schema.Column{SystemComponentSignalsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_component_signals_system_components_component",
+				Columns:    []*schema.Column{SystemComponentSignalsColumns[5]},
 				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemcomponentsignal_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemComponentSignalsColumns[4]},
 			},
 		},
 	}
@@ -1248,12 +1925,28 @@ var (
 		{Name: "description", Type: field.TypeString, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// SystemHazardsTable holds the schema information for the "system_hazards" table.
 	SystemHazardsTable = &schema.Table{
 		Name:       "system_hazards",
 		Columns:    SystemHazardsColumns,
 		PrimaryKey: []*schema.Column{SystemHazardsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_hazards_tenants_tenant",
+				Columns:    []*schema.Column{SystemHazardsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemhazard_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemHazardsColumns[5]},
+			},
+		},
 	}
 	// SystemRelationshipControlActionsColumns holds the columns for the "system_relationship_control_actions" table.
 	SystemRelationshipControlActionsColumns = []*schema.Column{
@@ -1261,6 +1954,7 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "relationship_id", Type: field.TypeUUID},
 		{Name: "control_id", Type: field.TypeUUID},
 	}
@@ -1271,23 +1965,34 @@ var (
 		PrimaryKey: []*schema.Column{SystemRelationshipControlActionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_relationship_control_actions_system_analysis_relationships_relationship",
+				Symbol:     "system_relationship_control_actions_tenants_tenant",
 				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_relationship_control_actions_system_analysis_relationships_relationship",
+				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[5]},
 				RefColumns: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_relationship_control_actions_system_component_controls_control",
-				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[5]},
+				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[6]},
 				RefColumns: []*schema.Column{SystemComponentControlsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "systemrelationshipcontrolaction_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemRelationshipControlActionsColumns[4]},
+			},
+			{
 				Name:    "systemrelationshipcontrolaction_relationship_id_control_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemRelationshipControlActionsColumns[4], SystemRelationshipControlActionsColumns[5]},
+				Columns: []*schema.Column{SystemRelationshipControlActionsColumns[5], SystemRelationshipControlActionsColumns[6]},
 			},
 		},
 	}
@@ -1297,6 +2002,7 @@ var (
 		{Name: "type", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "relationship_id", Type: field.TypeUUID},
 		{Name: "signal_id", Type: field.TypeUUID},
 	}
@@ -1307,23 +2013,34 @@ var (
 		PrimaryKey: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_relationship_feedback_signals_system_analysis_relationships_relationship",
+				Symbol:     "system_relationship_feedback_signals_tenants_tenant",
 				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_relationship_feedback_signals_system_analysis_relationships_relationship",
+				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[5]},
 				RefColumns: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "system_relationship_feedback_signals_system_component_signals_signal",
-				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[5]},
+				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[6]},
 				RefColumns: []*schema.Column{SystemComponentSignalsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
+				Name:    "systemrelationshipfeedbacksignal_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4]},
+			},
+			{
 				Name:    "systemrelationshipfeedbacksignal_relationship_id_signal_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4], SystemRelationshipFeedbackSignalsColumns[5]},
+				Columns: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[5], SystemRelationshipFeedbackSignalsColumns[6]},
 			},
 		},
 	}
@@ -1333,6 +2050,7 @@ var (
 		{Name: "type", Type: field.TypeEnum, Enums: []string{"cleanup", "detect", "mitigate", "prevent"}},
 		{Name: "title", Type: field.TypeString},
 		{Name: "incident_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "assignee_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "creator_id", Type: field.TypeUUID, Nullable: true},
 	}
@@ -1349,16 +2067,29 @@ var (
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "tasks_users_assigned_tasks",
+				Symbol:     "tasks_tenants_tenant",
 				Columns:    []*schema.Column{TasksColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "tasks_users_assigned_tasks",
+				Columns:    []*schema.Column{TasksColumns[5]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "tasks_users_created_tasks",
-				Columns:    []*schema.Column{TasksColumns[5]},
+				Columns:    []*schema.Column{TasksColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "task_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TasksColumns[4]},
 			},
 		},
 	}
@@ -1370,12 +2101,28 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// TeamsTable holds the schema information for the "teams" table.
 	TeamsTable = &schema.Table{
 		Name:       "teams",
 		Columns:    TeamsColumns,
 		PrimaryKey: []*schema.Column{TeamsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "teams_tenants_tenant",
+				Columns:    []*schema.Column{TeamsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "team_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TeamsColumns[6]},
+			},
+		},
 	}
 	// TenantsColumns holds the columns for the "tenants" table.
 	TenantsColumns = []*schema.Column{
@@ -1394,12 +2141,28 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider_id", Type: field.TypeString},
 		{Name: "title", Type: field.TypeString},
+		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// TicketsTable holds the schema information for the "tickets" table.
 	TicketsTable = &schema.Table{
 		Name:       "tickets",
 		Columns:    TicketsColumns,
 		PrimaryKey: []*schema.Column{TicketsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "tickets_tenants_tenant",
+				Columns:    []*schema.Column{TicketsColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "ticket_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{TicketsColumns[3]},
+			},
+		},
 	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
@@ -1421,6 +2184,13 @@ var (
 				Columns:    []*schema.Column{UsersColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "user_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{UsersColumns[5]},
 			},
 		},
 	}
@@ -1877,6 +2647,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AlertsTable,
+		AlertFeedbacksTable,
 		AlertMetricsTable,
 		IncidentsTable,
 		IncidentDebriefsTable,
@@ -1896,12 +2667,10 @@ var (
 		IncidentRoleAssignmentsTable,
 		IncidentSeveritiesTable,
 		IncidentTagsTable,
-		IncidentTeamAssignmentsTable,
 		IncidentTypesTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		OncallAnnotationsTable,
-		OncallAnnotationAlertFeedbacksTable,
 		OncallEventsTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
@@ -1957,74 +2726,126 @@ var (
 )
 
 func init() {
-	AlertMetricsTable.ForeignKeys[0].RefTable = AlertsTable
-	IncidentsTable.ForeignKeys[0].RefTable = IncidentSeveritiesTable
-	IncidentsTable.ForeignKeys[1].RefTable = IncidentTypesTable
+	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
+	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
+	AlertFeedbacksTable.ForeignKeys[1].RefTable = OncallAnnotationsTable
+	AlertMetricsTable.ForeignKeys[0].RefTable = TenantsTable
+	AlertMetricsTable.ForeignKeys[1].RefTable = AlertsTable
+	IncidentsTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentsTable.ForeignKeys[1].RefTable = IncidentSeveritiesTable
+	IncidentsTable.ForeignKeys[2].RefTable = IncidentTypesTable
 	IncidentDebriefsTable.ForeignKeys[0].RefTable = IncidentsTable
-	IncidentDebriefsTable.ForeignKeys[1].RefTable = UsersTable
+	IncidentDebriefsTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentDebriefsTable.ForeignKeys[2].RefTable = UsersTable
 	IncidentDebriefMessagesTable.ForeignKeys[0].RefTable = IncidentDebriefsTable
-	IncidentDebriefMessagesTable.ForeignKeys[1].RefTable = IncidentDebriefQuestionsTable
+	IncidentDebriefMessagesTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentDebriefMessagesTable.ForeignKeys[2].RefTable = IncidentDebriefQuestionsTable
+	IncidentDebriefQuestionsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentDebriefSuggestionsTable.ForeignKeys[0].RefTable = IncidentDebriefsTable
+	IncidentDebriefSuggestionsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventsTable.ForeignKeys[0].RefTable = IncidentsTable
+	IncidentEventsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventContextsTable.ForeignKeys[0].RefTable = IncidentEventsTable
+	IncidentEventContextsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventContributingFactorsTable.ForeignKeys[0].RefTable = IncidentEventsTable
+	IncidentEventContributingFactorsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventEvidencesTable.ForeignKeys[0].RefTable = IncidentEventsTable
-	IncidentEventSystemComponentsTable.ForeignKeys[0].RefTable = IncidentEventSystemComponentsTable
-	IncidentEventSystemComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	IncidentEventEvidencesTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentEventSystemComponentsTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentEventSystemComponentsTable.ForeignKeys[1].RefTable = IncidentEventSystemComponentsTable
+	IncidentEventSystemComponentsTable.ForeignKeys[2].RefTable = SystemComponentsTable
+	IncidentFieldsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
-	IncidentLinksTable.ForeignKeys[0].RefTable = IncidentsTable
+	IncidentFieldOptionsTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentLinksTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentLinksTable.ForeignKeys[1].RefTable = IncidentsTable
+	IncidentLinksTable.ForeignKeys[2].RefTable = IncidentsTable
 	IncidentMilestonesTable.ForeignKeys[0].RefTable = IncidentsTable
-	IncidentRoleAssignmentsTable.ForeignKeys[0].RefTable = IncidentRolesTable
+	IncidentMilestonesTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentRolesTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentRoleAssignmentsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[1].RefTable = IncidentsTable
 	IncidentRoleAssignmentsTable.ForeignKeys[2].RefTable = UsersTable
-	IncidentTeamAssignmentsTable.ForeignKeys[0].RefTable = IncidentsTable
-	IncidentTeamAssignmentsTable.ForeignKeys[1].RefTable = TeamsTable
-	MeetingSessionsTable.ForeignKeys[0].RefTable = MeetingSchedulesTable
-	OncallAnnotationsTable.ForeignKeys[0].RefTable = OncallEventsTable
-	OncallAnnotationsTable.ForeignKeys[1].RefTable = OncallRostersTable
-	OncallAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
-	OncallAnnotationAlertFeedbacksTable.ForeignKeys[0].RefTable = OncallAnnotationsTable
-	OncallEventsTable.ForeignKeys[0].RefTable = OncallRostersTable
-	OncallEventsTable.ForeignKeys[1].RefTable = AlertsTable
+	IncidentRoleAssignmentsTable.ForeignKeys[3].RefTable = IncidentRolesTable
+	IncidentSeveritiesTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentTagsTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
+	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
+	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
+	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
+	OncallAnnotationsTable.ForeignKeys[0].RefTable = TenantsTable
+	OncallAnnotationsTable.ForeignKeys[1].RefTable = OncallEventsTable
+	OncallAnnotationsTable.ForeignKeys[2].RefTable = OncallRostersTable
+	OncallAnnotationsTable.ForeignKeys[3].RefTable = UsersTable
+	OncallEventsTable.ForeignKeys[0].RefTable = TenantsTable
+	OncallEventsTable.ForeignKeys[1].RefTable = OncallRostersTable
+	OncallEventsTable.ForeignKeys[2].RefTable = AlertsTable
+	OncallHandoverTemplatesTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
-	OncallRosterMetricsTable.ForeignKeys[0].RefTable = OncallRostersTable
+	OncallRostersTable.ForeignKeys[1].RefTable = TenantsTable
+	OncallRosterMetricsTable.ForeignKeys[0].RefTable = TenantsTable
+	OncallRosterMetricsTable.ForeignKeys[1].RefTable = OncallRostersTable
 	OncallSchedulesTable.ForeignKeys[0].RefTable = OncallRostersTable
+	OncallSchedulesTable.ForeignKeys[1].RefTable = TenantsTable
 	OncallScheduleParticipantsTable.ForeignKeys[0].RefTable = OncallSchedulesTable
-	OncallScheduleParticipantsTable.ForeignKeys[1].RefTable = UsersTable
-	OncallUserShiftsTable.ForeignKeys[0].RefTable = UsersTable
-	OncallUserShiftsTable.ForeignKeys[1].RefTable = OncallRostersTable
-	OncallUserShiftsTable.ForeignKeys[2].RefTable = OncallUserShiftsTable
+	OncallScheduleParticipantsTable.ForeignKeys[1].RefTable = TenantsTable
+	OncallScheduleParticipantsTable.ForeignKeys[2].RefTable = UsersTable
+	OncallUserShiftsTable.ForeignKeys[0].RefTable = TenantsTable
+	OncallUserShiftsTable.ForeignKeys[1].RefTable = UsersTable
+	OncallUserShiftsTable.ForeignKeys[2].RefTable = OncallRostersTable
+	OncallUserShiftsTable.ForeignKeys[3].RefTable = OncallUserShiftsTable
 	OncallUserShiftHandoversTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
+	OncallUserShiftHandoversTable.ForeignKeys[1].RefTable = TenantsTable
 	OncallUserShiftMetricsTable.ForeignKeys[0].RefTable = OncallUserShiftsTable
+	OncallUserShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
+	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderConfigsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
-	RetrospectivesTable.ForeignKeys[0].RefTable = IncidentsTable
-	RetrospectivesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = RetrospectivesTable
-	RetrospectiveDiscussionRepliesTable.ForeignKeys[0].RefTable = RetrospectiveDiscussionsTable
-	RetrospectiveDiscussionRepliesTable.ForeignKeys[1].RefTable = RetrospectiveDiscussionRepliesTable
-	RetrospectiveReviewsTable.ForeignKeys[0].RefTable = RetrospectivesTable
-	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = UsersTable
+	RetrospectivesTable.ForeignKeys[0].RefTable = TenantsTable
+	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
+	RetrospectivesTable.ForeignKeys[2].RefTable = SystemAnalysesTable
+	RetrospectiveDiscussionsTable.ForeignKeys[0].RefTable = TenantsTable
+	RetrospectiveDiscussionsTable.ForeignKeys[1].RefTable = RetrospectivesTable
+	RetrospectiveDiscussionRepliesTable.ForeignKeys[0].RefTable = TenantsTable
+	RetrospectiveDiscussionRepliesTable.ForeignKeys[1].RefTable = RetrospectiveDiscussionsTable
+	RetrospectiveDiscussionRepliesTable.ForeignKeys[2].RefTable = RetrospectiveDiscussionRepliesTable
+	RetrospectiveReviewsTable.ForeignKeys[0].RefTable = TenantsTable
+	RetrospectiveReviewsTable.ForeignKeys[1].RefTable = RetrospectivesTable
 	RetrospectiveReviewsTable.ForeignKeys[2].RefTable = UsersTable
-	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = RetrospectiveDiscussionsTable
-	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
-	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = SystemAnalysesTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
-	SystemComponentsTable.ForeignKeys[0].RefTable = SystemComponentKindsTable
-	SystemComponentConstraintsTable.ForeignKeys[0].RefTable = SystemComponentsTable
-	SystemComponentControlsTable.ForeignKeys[0].RefTable = SystemComponentsTable
-	SystemComponentRelationshipsTable.ForeignKeys[0].RefTable = SystemComponentsTable
+	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
+	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveDiscussionsTable
+	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisComponentsTable.ForeignKeys[2].RefTable = SystemComponentsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = SystemComponentRelationshipsTable
+	SystemComponentsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemComponentsTable.ForeignKeys[1].RefTable = SystemComponentKindsTable
+	SystemComponentConstraintsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemComponentConstraintsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemComponentControlsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemComponentControlsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemComponentKindsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemComponentRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemComponentRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemComponentSignalsTable.ForeignKeys[0].RefTable = SystemComponentsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[0].RefTable = SystemAnalysisRelationshipsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[1].RefTable = SystemComponentControlsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[0].RefTable = SystemAnalysisRelationshipsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[1].RefTable = SystemComponentSignalsTable
+	SystemComponentRelationshipsTable.ForeignKeys[2].RefTable = SystemComponentsTable
+	SystemComponentSignalsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemComponentSignalsTable.ForeignKeys[1].RefTable = SystemComponentsTable
+	SystemHazardsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemRelationshipControlActionsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemRelationshipControlActionsTable.ForeignKeys[1].RefTable = SystemAnalysisRelationshipsTable
+	SystemRelationshipControlActionsTable.ForeignKeys[2].RefTable = SystemComponentControlsTable
+	SystemRelationshipFeedbackSignalsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemRelationshipFeedbackSignalsTable.ForeignKeys[1].RefTable = SystemAnalysisRelationshipsTable
+	SystemRelationshipFeedbackSignalsTable.ForeignKeys[2].RefTable = SystemComponentSignalsTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
-	TasksTable.ForeignKeys[1].RefTable = UsersTable
+	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
+	TasksTable.ForeignKeys[3].RefTable = UsersTable
+	TeamsTable.ForeignKeys[0].RefTable = TenantsTable
+	TicketsTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentFieldSelectionsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentFieldSelectionsTable.ForeignKeys[1].RefTable = IncidentFieldOptionsTable

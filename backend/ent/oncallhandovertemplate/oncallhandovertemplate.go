@@ -16,6 +16,8 @@ const (
 	Label = "oncall_handover_template"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -24,10 +26,19 @@ const (
 	FieldContents = "contents"
 	// FieldIsDefault holds the string denoting the is_default field in the database.
 	FieldIsDefault = "is_default"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
 	// Table holds the table name of the oncallhandovertemplate in the database.
 	Table = "oncall_handover_templates"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_handover_templates"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// RosterTable is the table that holds the roster relation/edge.
 	RosterTable = "oncall_rosters"
 	// RosterInverseTable is the table name for the OncallRoster entity.
@@ -40,6 +51,7 @@ const (
 // Columns holds all SQL columns for oncallhandovertemplate fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldContents,
@@ -82,6 +94,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -97,6 +114,13 @@ func ByIsDefault(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIsDefault, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByRosterCount orders the results by roster count.
 func ByRosterCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -109,6 +133,13 @@ func ByRoster(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

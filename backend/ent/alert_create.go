@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // AlertCreate is the builder for creating a Alert entity.
@@ -24,6 +25,12 @@ type AlertCreate struct {
 	mutation *AlertMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ac *AlertCreate) SetTenantID(i int) *AlertCreate {
+	ac.mutation.SetTenantID(i)
+	return ac
 }
 
 // SetTitle sets the "title" field.
@@ -50,6 +57,11 @@ func (ac *AlertCreate) SetNillableID(u *uuid.UUID) *AlertCreate {
 		ac.SetID(*u)
 	}
 	return ac
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ac *AlertCreate) SetTenant(t *Tenant) *AlertCreate {
+	return ac.SetTenantID(t.ID)
 }
 
 // AddMetricIDs adds the "metrics" edge to the AlertMetrics entity by IDs.
@@ -146,11 +158,17 @@ func (ac *AlertCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ac *AlertCreate) check() error {
+	if _, ok := ac.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Alert.tenant_id"`)}
+	}
 	if _, ok := ac.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Alert.title"`)}
 	}
 	if _, ok := ac.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "Alert.provider_id"`)}
+	}
+	if len(ac.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Alert.tenant"`)}
 	}
 	return nil
 }
@@ -195,6 +213,23 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 	if value, ok := ac.mutation.ProviderID(); ok {
 		_spec.SetField(alert.FieldProviderID, field.TypeString, value)
 		_node.ProviderID = value
+	}
+	if nodes := ac.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.TenantTable,
+			Columns: []string{alert.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := ac.mutation.MetricsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -251,7 +286,7 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Alert.Create().
-//		SetTitle(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -260,7 +295,7 @@ func (ac *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AlertUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ac *AlertCreate) OnConflict(opts ...sql.ConflictOption) *AlertUpsertOne {
@@ -336,6 +371,9 @@ func (u *AlertUpsertOne) UpdateNewValues() *AlertUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(alert.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(alert.FieldTenantID)
 		}
 	}))
 	return u
@@ -532,7 +570,7 @@ func (acb *AlertCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.AlertUpsert) {
-//			SetTitle(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (acb *AlertCreateBulk) OnConflict(opts ...sql.ConflictOption) *AlertUpsertBulk {
@@ -578,6 +616,9 @@ func (u *AlertUpsertBulk) UpdateNewValues() *AlertUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(alert.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(alert.FieldTenantID)
 			}
 		}
 	}))

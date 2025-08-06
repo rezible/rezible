@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentRoleQuery is the builder for querying IncidentRole entities.
@@ -27,6 +28,7 @@ type IncidentRoleQuery struct {
 	order                []incidentrole.OrderOption
 	inters               []Interceptor
 	predicates           []predicate.IncidentRole
+	withTenant           *TenantQuery
 	withAssignments      *IncidentRoleAssignmentQuery
 	withDebriefQuestions *IncidentDebriefQuestionQuery
 	modifiers            []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (irq *IncidentRoleQuery) Unique(unique bool) *IncidentRoleQuery {
 func (irq *IncidentRoleQuery) Order(o ...incidentrole.OrderOption) *IncidentRoleQuery {
 	irq.order = append(irq.order, o...)
 	return irq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (irq *IncidentRoleQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: irq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := irq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := irq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentrole.Table, incidentrole.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentrole.TenantTable, incidentrole.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(irq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryAssignments chains the current query on the "assignments" edge.
@@ -302,6 +326,7 @@ func (irq *IncidentRoleQuery) Clone() *IncidentRoleQuery {
 		order:                append([]incidentrole.OrderOption{}, irq.order...),
 		inters:               append([]Interceptor{}, irq.inters...),
 		predicates:           append([]predicate.IncidentRole{}, irq.predicates...),
+		withTenant:           irq.withTenant.Clone(),
 		withAssignments:      irq.withAssignments.Clone(),
 		withDebriefQuestions: irq.withDebriefQuestions.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (irq *IncidentRoleQuery) Clone() *IncidentRoleQuery {
 		path:      irq.path,
 		modifiers: append([]func(*sql.Selector){}, irq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (irq *IncidentRoleQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentRoleQuery {
+	query := (&TenantClient{config: irq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	irq.withTenant = query
+	return irq
 }
 
 // WithAssignments tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (irq *IncidentRoleQuery) WithDebriefQuestions(opts ...func(*IncidentDebrief
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentRole.Query().
-//		GroupBy(incidentrole.FieldArchiveTime).
+//		GroupBy(incidentrole.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (irq *IncidentRoleQuery) GroupBy(field string, fields ...string) *IncidentRoleGroupBy {
@@ -362,11 +398,11 @@ func (irq *IncidentRoleQuery) GroupBy(field string, fields ...string) *IncidentR
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentRole.Query().
-//		Select(incidentrole.FieldArchiveTime).
+//		Select(incidentrole.FieldTenantID).
 //		Scan(ctx, &v)
 func (irq *IncidentRoleQuery) Select(fields ...string) *IncidentRoleSelect {
 	irq.ctx.Fields = append(irq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (irq *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*IncidentRole{}
 		_spec       = irq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			irq.withTenant != nil,
 			irq.withAssignments != nil,
 			irq.withDebriefQuestions != nil,
 		}
@@ -443,6 +480,12 @@ func (irq *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := irq.withTenant; query != nil {
+		if err := irq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentRole, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := irq.withAssignments; query != nil {
 		if err := irq.loadAssignments(ctx, query, nodes,
 			func(n *IncidentRole) { n.Edges.Assignments = []*IncidentRoleAssignment{} },
@@ -462,6 +505,35 @@ func (irq *IncidentRoleQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	return nodes, nil
 }
 
+func (irq *IncidentRoleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentRole)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (irq *IncidentRoleQuery) loadAssignments(ctx context.Context, query *IncidentRoleAssignmentQuery, nodes []*IncidentRole, init func(*IncidentRole), assign func(*IncidentRole, *IncidentRoleAssignment)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentRole)
@@ -581,6 +653,9 @@ func (irq *IncidentRoleQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidentrole.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if irq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidentrole.FieldTenantID)
 		}
 	}
 	if ps := irq.predicates; len(ps) > 0 {

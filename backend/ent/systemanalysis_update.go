@@ -228,6 +228,9 @@ func (sau *SystemAnalysisUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sau *SystemAnalysisUpdate) check() error {
+	if sau.mutation.TenantCleared() && len(sau.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
+	}
 	if sau.mutation.RetrospectiveCleared() && len(sau.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}
@@ -672,6 +675,9 @@ func (sauo *SystemAnalysisUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sauo *SystemAnalysisUpdateOne) check() error {
+	if sauo.mutation.TenantCleared() && len(sauo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.tenant"`)
+	}
 	if sauo.mutation.RetrospectiveCleared() && len(sauo.mutation.RetrospectiveIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemAnalysis.retrospective"`)
 	}

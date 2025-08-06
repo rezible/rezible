@@ -254,6 +254,9 @@ func (oeu *OncallEventUpdate) check() error {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "OncallEvent.kind": %w`, err)}
 		}
 	}
+	if oeu.mutation.TenantCleared() && len(oeu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEvent.tenant"`)
+	}
 	return nil
 }
 
@@ -651,6 +654,9 @@ func (oeuo *OncallEventUpdateOne) check() error {
 		if err := oncallevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "OncallEvent.kind": %w`, err)}
 		}
+	}
+	if oeuo.mutation.TenantCleared() && len(oeuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallEvent.tenant"`)
 	}
 	return nil
 }

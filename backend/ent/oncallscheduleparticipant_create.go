@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -23,6 +24,12 @@ type OncallScheduleParticipantCreate struct {
 	mutation *OncallScheduleParticipantMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ospc *OncallScheduleParticipantCreate) SetTenantID(i int) *OncallScheduleParticipantCreate {
+	ospc.mutation.SetTenantID(i)
+	return ospc
 }
 
 // SetScheduleID sets the "schedule_id" field.
@@ -55,6 +62,11 @@ func (ospc *OncallScheduleParticipantCreate) SetNillableID(u *uuid.UUID) *Oncall
 		ospc.SetID(*u)
 	}
 	return ospc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ospc *OncallScheduleParticipantCreate) SetTenant(t *Tenant) *OncallScheduleParticipantCreate {
+	return ospc.SetTenantID(t.ID)
 }
 
 // SetSchedule sets the "schedule" edge to the OncallSchedule entity.
@@ -116,6 +128,9 @@ func (ospc *OncallScheduleParticipantCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ospc *OncallScheduleParticipantCreate) check() error {
+	if _, ok := ospc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallScheduleParticipant.tenant_id"`)}
+	}
 	if _, ok := ospc.mutation.ScheduleID(); !ok {
 		return &ValidationError{Name: "schedule_id", err: errors.New(`ent: missing required field "OncallScheduleParticipant.schedule_id"`)}
 	}
@@ -124,6 +139,9 @@ func (ospc *OncallScheduleParticipantCreate) check() error {
 	}
 	if _, ok := ospc.mutation.Index(); !ok {
 		return &ValidationError{Name: "index", err: errors.New(`ent: missing required field "OncallScheduleParticipant.index"`)}
+	}
+	if len(ospc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallScheduleParticipant.tenant"`)}
 	}
 	if len(ospc.mutation.ScheduleIDs()) == 0 {
 		return &ValidationError{Name: "schedule", err: errors.New(`ent: missing required edge "OncallScheduleParticipant.schedule"`)}
@@ -171,6 +189,23 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 		_spec.SetField(oncallscheduleparticipant.FieldIndex, field.TypeInt, value)
 		_node.Index = value
 	}
+	if nodes := ospc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallscheduleparticipant.TenantTable,
+			Columns: []string{oncallscheduleparticipant.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ospc.mutation.ScheduleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -212,7 +247,7 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 // of the `INSERT` statement. For example:
 //
 //	client.OncallScheduleParticipant.Create().
-//		SetScheduleID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -221,7 +256,7 @@ func (ospc *OncallScheduleParticipantCreate) createSpec() (*OncallSchedulePartic
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallScheduleParticipantUpsert) {
-//			SetScheduleID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ospc *OncallScheduleParticipantCreate) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertOne {
@@ -315,6 +350,9 @@ func (u *OncallScheduleParticipantUpsertOne) UpdateNewValues() *OncallSchedulePa
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallscheduleparticipant.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallscheduleparticipant.FieldTenantID)
 		}
 	}))
 	return u
@@ -532,7 +570,7 @@ func (ospcb *OncallScheduleParticipantCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallScheduleParticipantUpsert) {
-//			SetScheduleID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ospcb *OncallScheduleParticipantCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallScheduleParticipantUpsertBulk {
@@ -578,6 +616,9 @@ func (u *OncallScheduleParticipantUpsertBulk) UpdateNewValues() *OncallScheduleP
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallscheduleparticipant.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallscheduleparticipant.FieldTenantID)
 			}
 		}
 	}))

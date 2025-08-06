@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisComponentCreate is the builder for creating a SystemAnalysisComponent entity.
@@ -24,6 +25,12 @@ type SystemAnalysisComponentCreate struct {
 	mutation *SystemAnalysisComponentMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (sacc *SystemAnalysisComponentCreate) SetTenantID(i int) *SystemAnalysisComponentCreate {
+	sacc.mutation.SetTenantID(i)
+	return sacc
 }
 
 // SetAnalysisID sets the "analysis_id" field.
@@ -108,6 +115,11 @@ func (sacc *SystemAnalysisComponentCreate) SetNillableID(u *uuid.UUID) *SystemAn
 	return sacc
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (sacc *SystemAnalysisComponentCreate) SetTenant(t *Tenant) *SystemAnalysisComponentCreate {
+	return sacc.SetTenantID(t.ID)
+}
+
 // SetAnalysis sets the "analysis" edge to the SystemAnalysis entity.
 func (sacc *SystemAnalysisComponentCreate) SetAnalysis(s *SystemAnalysis) *SystemAnalysisComponentCreate {
 	return sacc.SetAnalysisID(s.ID)
@@ -182,6 +194,9 @@ func (sacc *SystemAnalysisComponentCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (sacc *SystemAnalysisComponentCreate) check() error {
+	if _, ok := sacc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.tenant_id"`)}
+	}
 	if _, ok := sacc.mutation.AnalysisID(); !ok {
 		return &ValidationError{Name: "analysis_id", err: errors.New(`ent: missing required field "SystemAnalysisComponent.analysis_id"`)}
 	}
@@ -196,6 +211,9 @@ func (sacc *SystemAnalysisComponentCreate) check() error {
 	}
 	if _, ok := sacc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemAnalysisComponent.created_at"`)}
+	}
+	if len(sacc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemAnalysisComponent.tenant"`)}
 	}
 	if len(sacc.mutation.AnalysisIDs()) == 0 {
 		return &ValidationError{Name: "analysis", err: errors.New(`ent: missing required edge "SystemAnalysisComponent.analysis"`)}
@@ -255,6 +273,23 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 		_spec.SetField(systemanalysiscomponent.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := sacc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysiscomponent.TenantTable,
+			Columns: []string{systemanalysiscomponent.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := sacc.mutation.AnalysisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -296,7 +331,7 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 // of the `INSERT` statement. For example:
 //
 //	client.SystemAnalysisComponent.Create().
-//		SetAnalysisID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -305,7 +340,7 @@ func (sacc *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponen
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisComponentUpsert) {
-//			SetAnalysisID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (sacc *SystemAnalysisComponentCreate) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertOne {
@@ -447,6 +482,9 @@ func (u *SystemAnalysisComponentUpsertOne) UpdateNewValues() *SystemAnalysisComp
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemanalysiscomponent.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemanalysiscomponent.FieldTenantID)
 		}
 	}))
 	return u
@@ -720,7 +758,7 @@ func (saccb *SystemAnalysisComponentCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemAnalysisComponentUpsert) {
-//			SetAnalysisID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (saccb *SystemAnalysisComponentCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemAnalysisComponentUpsertBulk {
@@ -766,6 +804,9 @@ func (u *SystemAnalysisComponentUpsertBulk) UpdateNewValues() *SystemAnalysisCom
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemanalysiscomponent.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemanalysiscomponent.FieldTenantID)
 			}
 		}
 	}))

@@ -21,6 +21,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -30,6 +31,12 @@ type OncallRosterCreate struct {
 	mutation *OncallRosterMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (orc *OncallRosterCreate) SetTenantID(i int) *OncallRosterCreate {
+	orc.mutation.SetTenantID(i)
+	return orc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -132,6 +139,11 @@ func (orc *OncallRosterCreate) SetNillableID(u *uuid.UUID) *OncallRosterCreate {
 		orc.SetID(*u)
 	}
 	return orc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (orc *OncallRosterCreate) SetTenant(t *Tenant) *OncallRosterCreate {
+	return orc.SetTenantID(t.ID)
 }
 
 // AddScheduleIDs adds the "schedules" edge to the OncallSchedule entity by IDs.
@@ -293,6 +305,9 @@ func (orc *OncallRosterCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (orc *OncallRosterCreate) check() error {
+	if _, ok := orc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallRoster.tenant_id"`)}
+	}
 	if _, ok := orc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "OncallRoster.name"`)}
 	}
@@ -301,6 +316,9 @@ func (orc *OncallRosterCreate) check() error {
 	}
 	if _, ok := orc.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "OncallRoster.provider_id"`)}
+	}
+	if len(orc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallRoster.tenant"`)}
 	}
 	return nil
 }
@@ -365,6 +383,23 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 	if value, ok := orc.mutation.ChatChannelID(); ok {
 		_spec.SetField(oncallroster.FieldChatChannelID, field.TypeString, value)
 		_node.ChatChannelID = value
+	}
+	if nodes := orc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallroster.TenantTable,
+			Columns: []string{oncallroster.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := orc.mutation.SchedulesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -502,7 +537,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.OncallRoster.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -511,7 +546,7 @@ func (orc *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallRosterUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (orc *OncallRosterCreate) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertOne {
@@ -689,6 +724,9 @@ func (u *OncallRosterUpsertOne) UpdateNewValues() *OncallRosterUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallroster.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallroster.FieldTenantID)
 		}
 	}))
 	return u
@@ -1004,7 +1042,7 @@ func (orcb *OncallRosterCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallRosterUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (orcb *OncallRosterCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallRosterUpsertBulk {
@@ -1050,6 +1088,9 @@ func (u *OncallRosterUpsertBulk) UpdateNewValues() *OncallRosterUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallroster.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallroster.FieldTenantID)
 			}
 		}
 	}))

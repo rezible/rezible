@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -19,6 +20,8 @@ type OncallScheduleParticipant struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ScheduleID holds the value of the "schedule_id" field.
 	ScheduleID uuid.UUID `json:"schedule_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
@@ -33,13 +36,26 @@ type OncallScheduleParticipant struct {
 
 // OncallScheduleParticipantEdges holds the relations/edges for other nodes in the graph.
 type OncallScheduleParticipantEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Schedule holds the value of the schedule edge.
 	Schedule *OncallSchedule `json:"schedule,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallScheduleParticipantEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // ScheduleOrErr returns the Schedule value or an error if the edge
@@ -47,7 +63,7 @@ type OncallScheduleParticipantEdges struct {
 func (e OncallScheduleParticipantEdges) ScheduleOrErr() (*OncallSchedule, error) {
 	if e.Schedule != nil {
 		return e.Schedule, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallschedule.Label}
 	}
 	return nil, &NotLoadedError{edge: "schedule"}
@@ -58,7 +74,7 @@ func (e OncallScheduleParticipantEdges) ScheduleOrErr() (*OncallSchedule, error)
 func (e OncallScheduleParticipantEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -69,7 +85,7 @@ func (*OncallScheduleParticipant) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case oncallscheduleparticipant.FieldIndex:
+		case oncallscheduleparticipant.FieldTenantID, oncallscheduleparticipant.FieldIndex:
 			values[i] = new(sql.NullInt64)
 		case oncallscheduleparticipant.FieldID, oncallscheduleparticipant.FieldScheduleID, oncallscheduleparticipant.FieldUserID:
 			values[i] = new(uuid.UUID)
@@ -93,6 +109,12 @@ func (osp *OncallScheduleParticipant) assignValues(columns []string, values []an
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				osp.ID = *value
+			}
+		case oncallscheduleparticipant.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				osp.TenantID = int(value.Int64)
 			}
 		case oncallscheduleparticipant.FieldScheduleID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -123,6 +145,11 @@ func (osp *OncallScheduleParticipant) assignValues(columns []string, values []an
 // This includes values selected through modifiers, order, etc.
 func (osp *OncallScheduleParticipant) Value(name string) (ent.Value, error) {
 	return osp.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the OncallScheduleParticipant entity.
+func (osp *OncallScheduleParticipant) QueryTenant() *TenantQuery {
+	return NewOncallScheduleParticipantClient(osp.config).QueryTenant(osp)
 }
 
 // QuerySchedule queries the "schedule" edge of the OncallScheduleParticipant entity.
@@ -158,6 +185,9 @@ func (osp *OncallScheduleParticipant) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallScheduleParticipant(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", osp.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", osp.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("schedule_id=")
 	builder.WriteString(fmt.Sprintf("%v", osp.ScheduleID))
 	builder.WriteString(", ")

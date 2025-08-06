@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftMetricsCreate is the builder for creating a OncallUserShiftMetrics entity.
@@ -22,6 +23,12 @@ type OncallUserShiftMetricsCreate struct {
 	mutation *OncallUserShiftMetricsMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (ousmc *OncallUserShiftMetricsCreate) SetTenantID(i int) *OncallUserShiftMetricsCreate {
+	ousmc.mutation.SetTenantID(i)
+	return ousmc
 }
 
 // SetShiftID sets the "shift_id" field.
@@ -42,6 +49,11 @@ func (ousmc *OncallUserShiftMetricsCreate) SetNillableID(u *uuid.UUID) *OncallUs
 		ousmc.SetID(*u)
 	}
 	return ousmc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (ousmc *OncallUserShiftMetricsCreate) SetTenant(t *Tenant) *OncallUserShiftMetricsCreate {
+	return ousmc.SetTenantID(t.ID)
 }
 
 // SetShift sets the "shift" edge to the OncallUserShift entity.
@@ -98,8 +110,14 @@ func (ousmc *OncallUserShiftMetricsCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousmc *OncallUserShiftMetricsCreate) check() error {
+	if _, ok := ousmc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallUserShiftMetrics.tenant_id"`)}
+	}
 	if _, ok := ousmc.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallUserShiftMetrics.shift_id"`)}
+	}
+	if len(ousmc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallUserShiftMetrics.tenant"`)}
 	}
 	if len(ousmc.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallUserShiftMetrics.shift"`)}
@@ -140,6 +158,23 @@ func (ousmc *OncallUserShiftMetricsCreate) createSpec() (*OncallUserShiftMetrics
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if nodes := ousmc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallusershiftmetrics.TenantTable,
+			Columns: []string{oncallusershiftmetrics.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := ousmc.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -164,7 +199,7 @@ func (ousmc *OncallUserShiftMetricsCreate) createSpec() (*OncallUserShiftMetrics
 // of the `INSERT` statement. For example:
 //
 //	client.OncallUserShiftMetrics.Create().
-//		SetShiftID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -173,7 +208,7 @@ func (ousmc *OncallUserShiftMetricsCreate) createSpec() (*OncallUserShiftMetrics
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallUserShiftMetricsUpsert) {
-//			SetShiftID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ousmc *OncallUserShiftMetricsCreate) OnConflict(opts ...sql.ConflictOption) *OncallUserShiftMetricsUpsertOne {
@@ -237,6 +272,9 @@ func (u *OncallUserShiftMetricsUpsertOne) UpdateNewValues() *OncallUserShiftMetr
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallusershiftmetrics.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallusershiftmetrics.FieldTenantID)
 		}
 	}))
 	return u
@@ -419,7 +457,7 @@ func (ousmcb *OncallUserShiftMetricsCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallUserShiftMetricsUpsert) {
-//			SetShiftID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ousmcb *OncallUserShiftMetricsCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallUserShiftMetricsUpsertBulk {
@@ -465,6 +503,9 @@ func (u *OncallUserShiftMetricsUpsertBulk) UpdateNewValues() *OncallUserShiftMet
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallusershiftmetrics.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallusershiftmetrics.FieldTenantID)
 			}
 		}
 	}))

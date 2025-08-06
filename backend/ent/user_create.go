@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/oncallannotation"
@@ -173,19 +174,19 @@ func (uc *UserCreate) AddOncallAnnotations(o ...*OncallAnnotation) *UserCreate {
 	return uc.AddOncallAnnotationIDs(ids...)
 }
 
-// AddIncidentRoleAssignmentIDs adds the "incident_role_assignments" edge to the IncidentRoleAssignment entity by IDs.
-func (uc *UserCreate) AddIncidentRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
-	uc.mutation.AddIncidentRoleAssignmentIDs(ids...)
+// AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
+func (uc *UserCreate) AddIncidentIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddIncidentIDs(ids...)
 	return uc
 }
 
-// AddIncidentRoleAssignments adds the "incident_role_assignments" edges to the IncidentRoleAssignment entity.
-func (uc *UserCreate) AddIncidentRoleAssignments(i ...*IncidentRoleAssignment) *UserCreate {
+// AddIncidents adds the "incidents" edges to the Incident entity.
+func (uc *UserCreate) AddIncidents(i ...*Incident) *UserCreate {
 	ids := make([]uuid.UUID, len(i))
 	for j := range i {
 		ids[j] = i[j].ID
 	}
-	return uc.AddIncidentRoleAssignmentIDs(ids...)
+	return uc.AddIncidentIDs(ids...)
 }
 
 // AddIncidentDebriefIDs adds the "incident_debriefs" edge to the IncidentDebrief entity by IDs.
@@ -261,6 +262,21 @@ func (uc *UserCreate) AddRetrospectiveReviewResponses(r ...*RetrospectiveReview)
 		ids[i] = r[i].ID
 	}
 	return uc.AddRetrospectiveReviewResponseIDs(ids...)
+}
+
+// AddRoleAssignmentIDs adds the "role_assignments" edge to the IncidentRoleAssignment entity by IDs.
+func (uc *UserCreate) AddRoleAssignmentIDs(ids ...uuid.UUID) *UserCreate {
+	uc.mutation.AddRoleAssignmentIDs(ids...)
+	return uc
+}
+
+// AddRoleAssignments adds the "role_assignments" edges to the IncidentRoleAssignment entity.
+func (uc *UserCreate) AddRoleAssignments(i ...*IncidentRoleAssignment) *UserCreate {
+	ids := make([]uuid.UUID, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return uc.AddRoleAssignmentIDs(ids...)
 }
 
 // Mutation returns the UserMutation object of the builder.
@@ -473,19 +489,26 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := uc.mutation.IncidentRoleAssignmentsIDs(); len(nodes) > 0 {
+	if nodes := uc.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   user.IncidentRoleAssignmentsTable,
-			Columns: []string{user.IncidentRoleAssignmentsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   user.IncidentsTable,
+			Columns: user.IncidentsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &IncidentRoleAssignmentCreate{config: uc.config, mutation: newIncidentRoleAssignmentMutation(uc.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
@@ -562,6 +585,22 @@ func (uc *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := uc.mutation.RoleAssignmentsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   user.RoleAssignmentsTable,
+			Columns: []string{user.RoleAssignmentsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

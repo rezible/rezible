@@ -16,6 +16,8 @@ const (
 	Label = "system_relationship_feedback_signal"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
 	FieldRelationshipID = "relationship_id"
 	// FieldSignalID holds the string denoting the signal_id field in the database.
@@ -26,12 +28,21 @@ const (
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeRelationship holds the string denoting the relationship edge name in mutations.
 	EdgeRelationship = "relationship"
 	// EdgeSignal holds the string denoting the signal edge name in mutations.
 	EdgeSignal = "signal"
 	// Table holds the table name of the systemrelationshipfeedbacksignal in the database.
 	Table = "system_relationship_feedback_signals"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "system_relationship_feedback_signals"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// RelationshipTable is the table that holds the relationship relation/edge.
 	RelationshipTable = "system_relationship_feedback_signals"
 	// RelationshipInverseTable is the table name for the SystemAnalysisRelationship entity.
@@ -51,6 +62,7 @@ const (
 // Columns holds all SQL columns for systemrelationshipfeedbacksignal fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldRelationshipID,
 	FieldSignalID,
 	FieldType,
@@ -92,6 +104,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByRelationshipID orders the results by the relationship_id field.
 func ByRelationshipID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRelationshipID, opts...).ToFunc()
@@ -117,6 +134,13 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByRelationshipField orders the results by relationship field.
 func ByRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -129,6 +153,13 @@ func BySignalField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newSignalStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newRelationshipStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

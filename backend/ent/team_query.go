@@ -14,26 +14,26 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
 // TeamQuery is the builder for querying Team entities.
 type TeamQuery struct {
 	config
-	ctx                     *QueryContext
-	order                   []team.OrderOption
-	inters                  []Interceptor
-	predicates              []predicate.Team
-	withUsers               *UserQuery
-	withOncallRosters       *OncallRosterQuery
-	withIncidentAssignments *IncidentTeamAssignmentQuery
-	withScheduledMeetings   *MeetingScheduleQuery
-	modifiers               []func(*sql.Selector)
+	ctx                   *QueryContext
+	order                 []team.OrderOption
+	inters                []Interceptor
+	predicates            []predicate.Team
+	withTenant            *TenantQuery
+	withUsers             *UserQuery
+	withOncallRosters     *OncallRosterQuery
+	withScheduledMeetings *MeetingScheduleQuery
+	modifiers             []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -68,6 +68,28 @@ func (tq *TeamQuery) Unique(unique bool) *TeamQuery {
 func (tq *TeamQuery) Order(o ...team.OrderOption) *TeamQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (tq *TeamQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, team.TenantTable, team.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryUsers chains the current query on the "users" edge.
@@ -107,28 +129,6 @@ func (tq *TeamQuery) QueryOncallRosters() *OncallRosterQuery {
 			sqlgraph.From(team.Table, team.FieldID, selector),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, team.OncallRostersTable, team.OncallRostersPrimaryKey...),
-		)
-		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryIncidentAssignments chains the current query on the "incident_assignments" edge.
-func (tq *TeamQuery) QueryIncidentAssignments() *IncidentTeamAssignmentQuery {
-	query := (&IncidentTeamAssignmentClient{config: tq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := tq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := tq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, selector),
-			sqlgraph.To(incidentteamassignment.Table, incidentteamassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.IncidentAssignmentsTable, team.IncidentAssignmentsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -345,20 +345,31 @@ func (tq *TeamQuery) Clone() *TeamQuery {
 		return nil
 	}
 	return &TeamQuery{
-		config:                  tq.config,
-		ctx:                     tq.ctx.Clone(),
-		order:                   append([]team.OrderOption{}, tq.order...),
-		inters:                  append([]Interceptor{}, tq.inters...),
-		predicates:              append([]predicate.Team{}, tq.predicates...),
-		withUsers:               tq.withUsers.Clone(),
-		withOncallRosters:       tq.withOncallRosters.Clone(),
-		withIncidentAssignments: tq.withIncidentAssignments.Clone(),
-		withScheduledMeetings:   tq.withScheduledMeetings.Clone(),
+		config:                tq.config,
+		ctx:                   tq.ctx.Clone(),
+		order:                 append([]team.OrderOption{}, tq.order...),
+		inters:                append([]Interceptor{}, tq.inters...),
+		predicates:            append([]predicate.Team{}, tq.predicates...),
+		withTenant:            tq.withTenant.Clone(),
+		withUsers:             tq.withUsers.Clone(),
+		withOncallRosters:     tq.withOncallRosters.Clone(),
+		withScheduledMeetings: tq.withScheduledMeetings.Clone(),
 		// clone intermediate query.
 		sql:       tq.sql.Clone(),
 		path:      tq.path,
 		modifiers: append([]func(*sql.Selector){}, tq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TeamQuery) WithTenant(opts ...func(*TenantQuery)) *TeamQuery {
+	query := (&TenantClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withTenant = query
+	return tq
 }
 
 // WithUsers tells the query-builder to eager-load the nodes that are connected to
@@ -383,17 +394,6 @@ func (tq *TeamQuery) WithOncallRosters(opts ...func(*OncallRosterQuery)) *TeamQu
 	return tq
 }
 
-// WithIncidentAssignments tells the query-builder to eager-load the nodes that are connected to
-// the "incident_assignments" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TeamQuery) WithIncidentAssignments(opts ...func(*IncidentTeamAssignmentQuery)) *TeamQuery {
-	query := (&IncidentTeamAssignmentClient{config: tq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	tq.withIncidentAssignments = query
-	return tq
-}
-
 // WithScheduledMeetings tells the query-builder to eager-load the nodes that are connected to
 // the "scheduled_meetings" edge. The optional arguments are used to configure the query builder of the edge.
 func (tq *TeamQuery) WithScheduledMeetings(opts ...func(*MeetingScheduleQuery)) *TeamQuery {
@@ -411,12 +411,12 @@ func (tq *TeamQuery) WithScheduledMeetings(opts ...func(*MeetingScheduleQuery)) 
 // Example:
 //
 //	var v []struct {
-//		Slug string `json:"slug,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Team.Query().
-//		GroupBy(team.FieldSlug).
+//		GroupBy(team.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *TeamQuery) GroupBy(field string, fields ...string) *TeamGroupBy {
@@ -434,11 +434,11 @@ func (tq *TeamQuery) GroupBy(field string, fields ...string) *TeamGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Slug string `json:"slug,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.Team.Query().
-//		Select(team.FieldSlug).
+//		Select(team.FieldTenantID).
 //		Scan(ctx, &v)
 func (tq *TeamQuery) Select(fields ...string) *TeamSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
@@ -490,9 +490,9 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		nodes       = []*Team{}
 		_spec       = tq.querySpec()
 		loadedTypes = [4]bool{
+			tq.withTenant != nil,
 			tq.withUsers != nil,
 			tq.withOncallRosters != nil,
-			tq.withIncidentAssignments != nil,
 			tq.withScheduledMeetings != nil,
 		}
 	)
@@ -517,6 +517,12 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := tq.withTenant; query != nil {
+		if err := tq.loadTenant(ctx, query, nodes, nil,
+			func(n *Team, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := tq.withUsers; query != nil {
 		if err := tq.loadUsers(ctx, query, nodes,
 			func(n *Team) { n.Edges.Users = []*User{} },
@@ -531,15 +537,6 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 			return nil, err
 		}
 	}
-	if query := tq.withIncidentAssignments; query != nil {
-		if err := tq.loadIncidentAssignments(ctx, query, nodes,
-			func(n *Team) { n.Edges.IncidentAssignments = []*IncidentTeamAssignment{} },
-			func(n *Team, e *IncidentTeamAssignment) {
-				n.Edges.IncidentAssignments = append(n.Edges.IncidentAssignments, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
 	if query := tq.withScheduledMeetings; query != nil {
 		if err := tq.loadScheduledMeetings(ctx, query, nodes,
 			func(n *Team) { n.Edges.ScheduledMeetings = []*MeetingSchedule{} },
@@ -550,6 +547,35 @@ func (tq *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 	return nodes, nil
 }
 
+func (tq *TeamQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Team, init func(*Team), assign func(*Team, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Team)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (tq *TeamQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*Team, init func(*Team), assign func(*Team, *User)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Team)
@@ -672,36 +698,6 @@ func (tq *TeamQuery) loadOncallRosters(ctx context.Context, query *OncallRosterQ
 	}
 	return nil
 }
-func (tq *TeamQuery) loadIncidentAssignments(ctx context.Context, query *IncidentTeamAssignmentQuery, nodes []*Team, init func(*Team), assign func(*Team, *IncidentTeamAssignment)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Team)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentteamassignment.FieldTeamID)
-	}
-	query.Where(predicate.IncidentTeamAssignment(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(team.IncidentAssignmentsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.TeamID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "team_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (tq *TeamQuery) loadScheduledMeetings(ctx context.Context, query *MeetingScheduleQuery, nodes []*Team, init func(*Team), assign func(*Team, *MeetingSchedule)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Team)
@@ -791,6 +787,9 @@ func (tq *TeamQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != team.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if tq.withTenant != nil {
+			_spec.Node.AddColumnOnce(team.FieldTenantID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 )
 
@@ -17,6 +18,8 @@ type Ticket struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ProviderID holds the value of the "provider_id" field.
 	ProviderID string `json:"provider_id,omitempty"`
 	// Title holds the value of the "title" field.
@@ -29,17 +32,30 @@ type Ticket struct {
 
 // TicketEdges holds the relations/edges for other nodes in the graph.
 type TicketEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Tasks holds the value of the tasks edge.
 	Tasks []*Task `json:"tasks,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TicketEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e TicketEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -50,6 +66,8 @@ func (*Ticket) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case ticket.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case ticket.FieldProviderID, ticket.FieldTitle:
 			values[i] = new(sql.NullString)
 		case ticket.FieldID:
@@ -75,6 +93,12 @@ func (t *Ticket) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				t.ID = *value
 			}
+		case ticket.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				t.TenantID = int(value.Int64)
+			}
 		case ticket.FieldProviderID:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider_id", values[i])
@@ -98,6 +122,11 @@ func (t *Ticket) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (t *Ticket) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the Ticket entity.
+func (t *Ticket) QueryTenant() *TenantQuery {
+	return NewTicketClient(t.config).QueryTenant(t)
 }
 
 // QueryTasks queries the "tasks" edge of the Ticket entity.
@@ -128,6 +157,9 @@ func (t *Ticket) String() string {
 	var builder strings.Builder
 	builder.WriteString("Ticket(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("provider_id=")
 	builder.WriteString(t.ProviderID)
 	builder.WriteString(", ")

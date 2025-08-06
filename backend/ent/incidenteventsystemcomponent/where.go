@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(sql.FieldEQ(FieldTenantID, v))
+}
+
 // IncidentEventID applies equality check predicate on the "incident_event_id" field. It's identical to IncidentEventIDEQ.
 func IncidentEventID(v uuid.UUID) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(sql.FieldEQ(FieldIncidentEventID, v))
@@ -69,6 +74,26 @@ func SystemComponentID(v uuid.UUID) predicate.IncidentEventSystemComponent {
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // IncidentEventIDEQ applies the EQ predicate on the "incident_event_id" field.
@@ -169,6 +194,29 @@ func CreatedAtLT(v time.Time) predicate.IncidentEventSystemComponent {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentEventSystemComponent {
+	return predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasEvent applies the HasEdge predicate on the "event" edge.

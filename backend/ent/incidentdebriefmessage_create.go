@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefMessageCreate is the builder for creating a IncidentDebriefMessage entity.
@@ -24,6 +25,12 @@ type IncidentDebriefMessageCreate struct {
 	mutation *IncidentDebriefMessageMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (idmc *IncidentDebriefMessageCreate) SetTenantID(i int) *IncidentDebriefMessageCreate {
+	idmc.mutation.SetTenantID(i)
+	return idmc
 }
 
 // SetDebriefID sets the "debrief_id" field.
@@ -98,6 +105,11 @@ func (idmc *IncidentDebriefMessageCreate) SetNillableID(u *uuid.UUID) *IncidentD
 		idmc.SetID(*u)
 	}
 	return idmc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (idmc *IncidentDebriefMessageCreate) SetTenant(t *Tenant) *IncidentDebriefMessageCreate {
+	return idmc.SetTenantID(t.ID)
 }
 
 // SetDebrief sets the "debrief" edge to the IncidentDebrief entity.
@@ -180,6 +192,9 @@ func (idmc *IncidentDebriefMessageCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (idmc *IncidentDebriefMessageCreate) check() error {
+	if _, ok := idmc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentDebriefMessage.tenant_id"`)}
+	}
 	if _, ok := idmc.mutation.DebriefID(); !ok {
 		return &ValidationError{Name: "debrief_id", err: errors.New(`ent: missing required field "IncidentDebriefMessage.debrief_id"`)}
 	}
@@ -201,6 +216,9 @@ func (idmc *IncidentDebriefMessageCreate) check() error {
 	}
 	if _, ok := idmc.mutation.Body(); !ok {
 		return &ValidationError{Name: "body", err: errors.New(`ent: missing required field "IncidentDebriefMessage.body"`)}
+	}
+	if len(idmc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentDebriefMessage.tenant"`)}
 	}
 	if len(idmc.mutation.DebriefIDs()) == 0 {
 		return &ValidationError{Name: "debrief", err: errors.New(`ent: missing required edge "IncidentDebriefMessage.debrief"`)}
@@ -257,6 +275,23 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 		_spec.SetField(incidentdebriefmessage.FieldBody, field.TypeString, value)
 		_node.Body = value
 	}
+	if nodes := idmc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentdebriefmessage.TenantTable,
+			Columns: []string{incidentdebriefmessage.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := idmc.mutation.DebriefIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -298,7 +333,7 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentDebriefMessage.Create().
-//		SetDebriefID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -307,7 +342,7 @@ func (idmc *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage,
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentDebriefMessageUpsert) {
-//			SetDebriefID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (idmc *IncidentDebriefMessageCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertOne {
@@ -443,6 +478,9 @@ func (u *IncidentDebriefMessageUpsertOne) UpdateNewValues() *IncidentDebriefMess
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentdebriefmessage.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentdebriefmessage.FieldTenantID)
 		}
 	}))
 	return u
@@ -709,7 +747,7 @@ func (idmcb *IncidentDebriefMessageCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentDebriefMessageUpsert) {
-//			SetDebriefID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (idmcb *IncidentDebriefMessageCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefMessageUpsertBulk {
@@ -755,6 +793,9 @@ func (u *IncidentDebriefMessageUpsertBulk) UpdateNewValues() *IncidentDebriefMes
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentdebriefmessage.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentdebriefmessage.FieldTenantID)
 			}
 		}
 	}))

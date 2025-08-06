@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
@@ -154,13 +154,13 @@ func (oau *OncallAnnotationUpdate) SetCreator(u *User) *OncallAnnotationUpdate {
 	return oau.SetCreatorID(u.ID)
 }
 
-// SetAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID.
+// SetAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID.
 func (oau *OncallAnnotationUpdate) SetAlertFeedbackID(id uuid.UUID) *OncallAnnotationUpdate {
 	oau.mutation.SetAlertFeedbackID(id)
 	return oau
 }
 
-// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID if the given value is not nil.
+// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
 func (oau *OncallAnnotationUpdate) SetNillableAlertFeedbackID(id *uuid.UUID) *OncallAnnotationUpdate {
 	if id != nil {
 		oau = oau.SetAlertFeedbackID(*id)
@@ -168,9 +168,9 @@ func (oau *OncallAnnotationUpdate) SetNillableAlertFeedbackID(id *uuid.UUID) *On
 	return oau
 }
 
-// SetAlertFeedback sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
-func (oau *OncallAnnotationUpdate) SetAlertFeedback(o *OncallAnnotationAlertFeedback) *OncallAnnotationUpdate {
-	return oau.SetAlertFeedbackID(o.ID)
+// SetAlertFeedback sets the "alert_feedback" edge to the AlertFeedback entity.
+func (oau *OncallAnnotationUpdate) SetAlertFeedback(a *AlertFeedback) *OncallAnnotationUpdate {
+	return oau.SetAlertFeedbackID(a.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
@@ -211,7 +211,7 @@ func (oau *OncallAnnotationUpdate) ClearCreator() *OncallAnnotationUpdate {
 	return oau
 }
 
-// ClearAlertFeedback clears the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
+// ClearAlertFeedback clears the "alert_feedback" edge to the AlertFeedback entity.
 func (oau *OncallAnnotationUpdate) ClearAlertFeedback() *OncallAnnotationUpdate {
 	oau.mutation.ClearAlertFeedback()
 	return oau
@@ -267,6 +267,9 @@ func (oau *OncallAnnotationUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oau *OncallAnnotationUpdate) check() error {
+	if oau.mutation.TenantCleared() && len(oau.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallAnnotation.tenant"`)
+	}
 	if oau.mutation.EventCleared() && len(oau.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallAnnotation.event"`)
 	}
@@ -412,7 +415,7 @@ func (oau *OncallAnnotationUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Columns: []string{oncallannotation.AlertFeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -425,7 +428,7 @@ func (oau *OncallAnnotationUpdate) sqlSave(ctx context.Context) (n int, err erro
 			Columns: []string{oncallannotation.AlertFeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -618,13 +621,13 @@ func (oauo *OncallAnnotationUpdateOne) SetCreator(u *User) *OncallAnnotationUpda
 	return oauo.SetCreatorID(u.ID)
 }
 
-// SetAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID.
+// SetAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID.
 func (oauo *OncallAnnotationUpdateOne) SetAlertFeedbackID(id uuid.UUID) *OncallAnnotationUpdateOne {
 	oauo.mutation.SetAlertFeedbackID(id)
 	return oauo
 }
 
-// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID if the given value is not nil.
+// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
 func (oauo *OncallAnnotationUpdateOne) SetNillableAlertFeedbackID(id *uuid.UUID) *OncallAnnotationUpdateOne {
 	if id != nil {
 		oauo = oauo.SetAlertFeedbackID(*id)
@@ -632,9 +635,9 @@ func (oauo *OncallAnnotationUpdateOne) SetNillableAlertFeedbackID(id *uuid.UUID)
 	return oauo
 }
 
-// SetAlertFeedback sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
-func (oauo *OncallAnnotationUpdateOne) SetAlertFeedback(o *OncallAnnotationAlertFeedback) *OncallAnnotationUpdateOne {
-	return oauo.SetAlertFeedbackID(o.ID)
+// SetAlertFeedback sets the "alert_feedback" edge to the AlertFeedback entity.
+func (oauo *OncallAnnotationUpdateOne) SetAlertFeedback(a *AlertFeedback) *OncallAnnotationUpdateOne {
+	return oauo.SetAlertFeedbackID(a.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
@@ -675,7 +678,7 @@ func (oauo *OncallAnnotationUpdateOne) ClearCreator() *OncallAnnotationUpdateOne
 	return oauo
 }
 
-// ClearAlertFeedback clears the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
+// ClearAlertFeedback clears the "alert_feedback" edge to the AlertFeedback entity.
 func (oauo *OncallAnnotationUpdateOne) ClearAlertFeedback() *OncallAnnotationUpdateOne {
 	oauo.mutation.ClearAlertFeedback()
 	return oauo
@@ -744,6 +747,9 @@ func (oauo *OncallAnnotationUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oauo *OncallAnnotationUpdateOne) check() error {
+	if oauo.mutation.TenantCleared() && len(oauo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallAnnotation.tenant"`)
+	}
 	if oauo.mutation.EventCleared() && len(oauo.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallAnnotation.event"`)
 	}
@@ -906,7 +912,7 @@ func (oauo *OncallAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			Columns: []string{oncallannotation.AlertFeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -919,7 +925,7 @@ func (oauo *OncallAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 			Columns: []string{oncallannotation.AlertFeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

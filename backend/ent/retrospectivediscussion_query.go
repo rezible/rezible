@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // RetrospectiveDiscussionQuery is the builder for querying RetrospectiveDiscussion entities.
@@ -28,6 +29,7 @@ type RetrospectiveDiscussionQuery struct {
 	order             []retrospectivediscussion.OrderOption
 	inters            []Interceptor
 	predicates        []predicate.RetrospectiveDiscussion
+	withTenant        *TenantQuery
 	withRetrospective *RetrospectiveQuery
 	withReplies       *RetrospectiveDiscussionReplyQuery
 	withReview        *RetrospectiveReviewQuery
@@ -66,6 +68,28 @@ func (rdq *RetrospectiveDiscussionQuery) Unique(unique bool) *RetrospectiveDiscu
 func (rdq *RetrospectiveDiscussionQuery) Order(o ...retrospectivediscussion.OrderOption) *RetrospectiveDiscussionQuery {
 	rdq.order = append(rdq.order, o...)
 	return rdq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (rdq *RetrospectiveDiscussionQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: rdq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rdq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rdq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussion.TenantTable, retrospectivediscussion.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rdq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRetrospective chains the current query on the "retrospective" edge.
@@ -326,6 +350,7 @@ func (rdq *RetrospectiveDiscussionQuery) Clone() *RetrospectiveDiscussionQuery {
 		order:             append([]retrospectivediscussion.OrderOption{}, rdq.order...),
 		inters:            append([]Interceptor{}, rdq.inters...),
 		predicates:        append([]predicate.RetrospectiveDiscussion{}, rdq.predicates...),
+		withTenant:        rdq.withTenant.Clone(),
 		withRetrospective: rdq.withRetrospective.Clone(),
 		withReplies:       rdq.withReplies.Clone(),
 		withReview:        rdq.withReview.Clone(),
@@ -334,6 +359,17 @@ func (rdq *RetrospectiveDiscussionQuery) Clone() *RetrospectiveDiscussionQuery {
 		path:      rdq.path,
 		modifiers: append([]func(*sql.Selector){}, rdq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (rdq *RetrospectiveDiscussionQuery) WithTenant(opts ...func(*TenantQuery)) *RetrospectiveDiscussionQuery {
+	query := (&TenantClient{config: rdq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rdq.withTenant = query
+	return rdq
 }
 
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
@@ -375,12 +411,12 @@ func (rdq *RetrospectiveDiscussionQuery) WithReview(opts ...func(*RetrospectiveR
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.RetrospectiveDiscussion.Query().
-//		GroupBy(retrospectivediscussion.FieldRetrospectiveID).
+//		GroupBy(retrospectivediscussion.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rdq *RetrospectiveDiscussionQuery) GroupBy(field string, fields ...string) *RetrospectiveDiscussionGroupBy {
@@ -398,11 +434,11 @@ func (rdq *RetrospectiveDiscussionQuery) GroupBy(field string, fields ...string)
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.RetrospectiveDiscussion.Query().
-//		Select(retrospectivediscussion.FieldRetrospectiveID).
+//		Select(retrospectivediscussion.FieldTenantID).
 //		Scan(ctx, &v)
 func (rdq *RetrospectiveDiscussionQuery) Select(fields ...string) *RetrospectiveDiscussionSelect {
 	rdq.ctx.Fields = append(rdq.ctx.Fields, fields...)
@@ -453,7 +489,8 @@ func (rdq *RetrospectiveDiscussionQuery) sqlAll(ctx context.Context, hooks ...qu
 	var (
 		nodes       = []*RetrospectiveDiscussion{}
 		_spec       = rdq.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
+			rdq.withTenant != nil,
 			rdq.withRetrospective != nil,
 			rdq.withReplies != nil,
 			rdq.withReview != nil,
@@ -480,6 +517,12 @@ func (rdq *RetrospectiveDiscussionQuery) sqlAll(ctx context.Context, hooks ...qu
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := rdq.withTenant; query != nil {
+		if err := rdq.loadTenant(ctx, query, nodes, nil,
+			func(n *RetrospectiveDiscussion, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := rdq.withRetrospective; query != nil {
 		if err := rdq.loadRetrospective(ctx, query, nodes, nil,
 			func(n *RetrospectiveDiscussion, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
@@ -505,6 +548,35 @@ func (rdq *RetrospectiveDiscussionQuery) sqlAll(ctx context.Context, hooks ...qu
 	return nodes, nil
 }
 
+func (rdq *RetrospectiveDiscussionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*RetrospectiveDiscussion, init func(*RetrospectiveDiscussion), assign func(*RetrospectiveDiscussion, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*RetrospectiveDiscussion)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (rdq *RetrospectiveDiscussionQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*RetrospectiveDiscussion, init func(*RetrospectiveDiscussion), assign func(*RetrospectiveDiscussion, *Retrospective)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveDiscussion)
@@ -624,6 +696,9 @@ func (rdq *RetrospectiveDiscussionQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != retrospectivediscussion.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rdq.withTenant != nil {
+			_spec.Node.AddColumnOnce(retrospectivediscussion.FieldTenantID)
 		}
 		if rdq.withRetrospective != nil {
 			_spec.Node.AddColumnOnce(retrospectivediscussion.FieldRetrospectiveID)

@@ -14,27 +14,31 @@ const (
 	Label = "incident_role_assignment"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldRoleID holds the string denoting the role_id field in the database.
-	FieldRoleID = "role_id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldIncidentID holds the string denoting the incident_id field in the database.
 	FieldIncidentID = "incident_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
-	// EdgeRole holds the string denoting the role edge name in mutations.
-	EdgeRole = "role"
+	// FieldRoleID holds the string denoting the role_id field in the database.
+	FieldRoleID = "role_id"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
 	EdgeIncident = "incident"
 	// EdgeUser holds the string denoting the user edge name in mutations.
 	EdgeUser = "user"
+	// EdgeRole holds the string denoting the role edge name in mutations.
+	EdgeRole = "role"
 	// Table holds the table name of the incidentroleassignment in the database.
 	Table = "incident_role_assignments"
-	// RoleTable is the table that holds the role relation/edge.
-	RoleTable = "incident_role_assignments"
-	// RoleInverseTable is the table name for the IncidentRole entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentrole" package.
-	RoleInverseTable = "incident_roles"
-	// RoleColumn is the table column denoting the role relation/edge.
-	RoleColumn = "role_id"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "incident_role_assignments"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// IncidentTable is the table that holds the incident relation/edge.
 	IncidentTable = "incident_role_assignments"
 	// IncidentInverseTable is the table name for the Incident entity.
@@ -49,14 +53,22 @@ const (
 	UserInverseTable = "users"
 	// UserColumn is the table column denoting the user relation/edge.
 	UserColumn = "user_id"
+	// RoleTable is the table that holds the role relation/edge.
+	RoleTable = "incident_role_assignments"
+	// RoleInverseTable is the table name for the IncidentRole entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentrole" package.
+	RoleInverseTable = "incident_roles"
+	// RoleColumn is the table column denoting the role relation/edge.
+	RoleColumn = "role_id"
 )
 
 // Columns holds all SQL columns for incidentroleassignment fields.
 var Columns = []string{
 	FieldID,
-	FieldRoleID,
+	FieldTenantID,
 	FieldIncidentID,
 	FieldUserID,
+	FieldRoleID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -89,9 +101,9 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByRoleID orders the results by the role_id field.
-func ByRoleID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRoleID, opts...).ToFunc()
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
 // ByIncidentID orders the results by the incident_id field.
@@ -104,10 +116,15 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUserID, opts...).ToFunc()
 }
 
-// ByRoleField orders the results by role field.
-func ByRoleField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByRoleID orders the results by the role_id field.
+func ByRoleID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldRoleID, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRoleStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -124,11 +141,18 @@ func ByUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newUserStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newRoleStep() *sqlgraph.Step {
+
+// ByRoleField orders the results by role field.
+func ByRoleField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRoleStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RoleInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, RoleTable, RoleColumn),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
 func newIncidentStep() *sqlgraph.Step {
@@ -143,5 +167,12 @@ func newUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(UserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
+	)
+}
+func newRoleStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RoleInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, RoleTable, RoleColumn),
 	)
 }

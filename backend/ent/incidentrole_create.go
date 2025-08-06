@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentRoleCreate is the builder for creating a IncidentRole entity.
@@ -24,6 +25,12 @@ type IncidentRoleCreate struct {
 	mutation *IncidentRoleMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (irc *IncidentRoleCreate) SetTenantID(i int) *IncidentRoleCreate {
+	irc.mutation.SetTenantID(i)
+	return irc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -78,6 +85,11 @@ func (irc *IncidentRoleCreate) SetNillableID(u *uuid.UUID) *IncidentRoleCreate {
 		irc.SetID(*u)
 	}
 	return irc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (irc *IncidentRoleCreate) SetTenant(t *Tenant) *IncidentRoleCreate {
+	return irc.SetTenantID(t.ID)
 }
 
 // AddAssignmentIDs adds the "assignments" edge to the IncidentRoleAssignment entity by IDs.
@@ -163,6 +175,9 @@ func (irc *IncidentRoleCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (irc *IncidentRoleCreate) check() error {
+	if _, ok := irc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentRole.tenant_id"`)}
+	}
 	if _, ok := irc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentRole.name"`)}
 	}
@@ -171,6 +186,9 @@ func (irc *IncidentRoleCreate) check() error {
 	}
 	if _, ok := irc.mutation.Required(); !ok {
 		return &ValidationError{Name: "required", err: errors.New(`ent: missing required field "IncidentRole.required"`)}
+	}
+	if len(irc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentRole.tenant"`)}
 	}
 	return nil
 }
@@ -224,6 +242,23 @@ func (irc *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec
 		_spec.SetField(incidentrole.FieldRequired, field.TypeBool, value)
 		_node.Required = value
 	}
+	if nodes := irc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentrole.TenantTable,
+			Columns: []string{incidentrole.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := irc.mutation.AssignmentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -263,7 +298,7 @@ func (irc *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentRole.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -272,7 +307,7 @@ func (irc *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentRoleUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (irc *IncidentRoleCreate) OnConflict(opts ...sql.ConflictOption) *IncidentRoleUpsertOne {
@@ -378,6 +413,9 @@ func (u *IncidentRoleUpsertOne) UpdateNewValues() *IncidentRoleUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentrole.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentrole.FieldTenantID)
 		}
 	}))
 	return u
@@ -609,7 +647,7 @@ func (ircb *IncidentRoleCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentRoleUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (ircb *IncidentRoleCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentRoleUpsertBulk {
@@ -655,6 +693,9 @@ func (u *IncidentRoleUpsertBulk) UpdateNewValues() *IncidentRoleUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentrole.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentrole.FieldTenantID)
 			}
 		}
 	}))

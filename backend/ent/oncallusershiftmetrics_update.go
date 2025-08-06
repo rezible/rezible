@@ -89,6 +89,9 @@ func (ousmu *OncallUserShiftMetricsUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousmu *OncallUserShiftMetricsUpdate) check() error {
+	if ousmu.mutation.TenantCleared() && len(ousmu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShiftMetrics.tenant"`)
+	}
 	if ousmu.mutation.ShiftCleared() && len(ousmu.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftMetrics.shift"`)
 	}
@@ -236,6 +239,9 @@ func (ousmuo *OncallUserShiftMetricsUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ousmuo *OncallUserShiftMetricsUpdateOne) check() error {
+	if ousmuo.mutation.TenantCleared() && len(ousmuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShiftMetrics.tenant"`)
+	}
 	if ousmuo.mutation.ShiftCleared() && len(ousmuo.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftMetrics.shift"`)
 	}

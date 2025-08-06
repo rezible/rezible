@@ -16,6 +16,8 @@ const (
 	Label = "meeting_session"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -24,20 +26,39 @@ const (
 	FieldEndedAt = "ended_at"
 	// FieldDocumentName holds the string denoting the document_name field in the database.
 	FieldDocumentName = "document_name"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
+	// EdgeSchedule holds the string denoting the schedule edge name in mutations.
+	EdgeSchedule = "schedule"
 	// Table holds the table name of the meetingsession in the database.
 	Table = "meeting_sessions"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "meeting_sessions"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.
 	IncidentsTable = "incident_review_sessions"
 	// IncidentsInverseTable is the table name for the Incident entity.
 	// It exists in this package in order to avoid circular dependency with the "incident" package.
 	IncidentsInverseTable = "incidents"
+	// ScheduleTable is the table that holds the schedule relation/edge.
+	ScheduleTable = "meeting_sessions"
+	// ScheduleInverseTable is the table name for the MeetingSchedule entity.
+	// It exists in this package in order to avoid circular dependency with the "meetingschedule" package.
+	ScheduleInverseTable = "meeting_schedules"
+	// ScheduleColumn is the table column denoting the schedule relation/edge.
+	ScheduleColumn = "meeting_session_schedule"
 )
 
 // Columns holds all SQL columns for meetingsession fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldTitle,
 	FieldStartedAt,
 	FieldEndedAt,
@@ -47,7 +68,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "meeting_sessions"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"meeting_schedule_sessions",
+	"meeting_session_schedule",
 }
 
 var (
@@ -93,6 +114,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
@@ -113,6 +139,13 @@ func ByDocumentName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentName, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByIncidentsCount orders the results by incidents count.
 func ByIncidentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -126,10 +159,31 @@ func ByIncidents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newIncidentsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByScheduleField orders the results by schedule field.
+func ByScheduleField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScheduleStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
 func newIncidentsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IncidentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
+	)
+}
+func newScheduleStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScheduleInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ScheduleTable, ScheduleColumn),
 	)
 }

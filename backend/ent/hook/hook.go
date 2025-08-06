@@ -21,6 +21,18 @@ func (f AlertFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertMutation", m)
 }
 
+// The AlertFeedbackFunc type is an adapter to allow the use of ordinary
+// function as AlertFeedback mutator.
+type AlertFeedbackFunc func(context.Context, *ent.AlertFeedbackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertFeedbackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertFeedbackMutation", m)
+}
+
 // The AlertMetricsFunc type is an adapter to allow the use of ordinary
 // function as AlertMetrics mutator.
 type AlertMetricsFunc func(context.Context, *ent.AlertMetricsMutation) (ent.Value, error)
@@ -249,18 +261,6 @@ func (f IncidentTagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTagMutation", m)
 }
 
-// The IncidentTeamAssignmentFunc type is an adapter to allow the use of ordinary
-// function as IncidentTeamAssignment mutator.
-type IncidentTeamAssignmentFunc func(context.Context, *ent.IncidentTeamAssignmentMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentTeamAssignmentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentTeamAssignmentMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTeamAssignmentMutation", m)
-}
-
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary
 // function as IncidentType mutator.
 type IncidentTypeFunc func(context.Context, *ent.IncidentTypeMutation) (ent.Value, error)
@@ -307,18 +307,6 @@ func (f OncallAnnotationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.V
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAnnotationMutation", m)
-}
-
-// The OncallAnnotationAlertFeedbackFunc type is an adapter to allow the use of ordinary
-// function as OncallAnnotationAlertFeedback mutator.
-type OncallAnnotationAlertFeedbackFunc func(context.Context, *ent.OncallAnnotationAlertFeedbackMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OncallAnnotationAlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OncallAnnotationAlertFeedbackMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OncallAnnotationAlertFeedbackMutation", m)
 }
 
 // The OncallEventFunc type is an adapter to allow the use of ordinary

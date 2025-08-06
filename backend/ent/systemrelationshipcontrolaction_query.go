@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipControlActionQuery is the builder for querying SystemRelationshipControlAction entities.
@@ -26,6 +27,7 @@ type SystemRelationshipControlActionQuery struct {
 	order            []systemrelationshipcontrolaction.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.SystemRelationshipControlAction
+	withTenant       *TenantQuery
 	withRelationship *SystemAnalysisRelationshipQuery
 	withControl      *SystemComponentControlQuery
 	modifiers        []func(*sql.Selector)
@@ -63,6 +65,28 @@ func (srcaq *SystemRelationshipControlActionQuery) Unique(unique bool) *SystemRe
 func (srcaq *SystemRelationshipControlActionQuery) Order(o ...systemrelationshipcontrolaction.OrderOption) *SystemRelationshipControlActionQuery {
 	srcaq.order = append(srcaq.order, o...)
 	return srcaq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (srcaq *SystemRelationshipControlActionQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: srcaq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := srcaq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := srcaq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.TenantTable, systemrelationshipcontrolaction.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(srcaq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
@@ -301,6 +325,7 @@ func (srcaq *SystemRelationshipControlActionQuery) Clone() *SystemRelationshipCo
 		order:            append([]systemrelationshipcontrolaction.OrderOption{}, srcaq.order...),
 		inters:           append([]Interceptor{}, srcaq.inters...),
 		predicates:       append([]predicate.SystemRelationshipControlAction{}, srcaq.predicates...),
+		withTenant:       srcaq.withTenant.Clone(),
 		withRelationship: srcaq.withRelationship.Clone(),
 		withControl:      srcaq.withControl.Clone(),
 		// clone intermediate query.
@@ -308,6 +333,17 @@ func (srcaq *SystemRelationshipControlActionQuery) Clone() *SystemRelationshipCo
 		path:      srcaq.path,
 		modifiers: append([]func(*sql.Selector){}, srcaq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (srcaq *SystemRelationshipControlActionQuery) WithTenant(opts ...func(*TenantQuery)) *SystemRelationshipControlActionQuery {
+	query := (&TenantClient{config: srcaq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	srcaq.withTenant = query
+	return srcaq
 }
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
@@ -338,12 +374,12 @@ func (srcaq *SystemRelationshipControlActionQuery) WithControl(opts ...func(*Sys
 // Example:
 //
 //	var v []struct {
-//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.SystemRelationshipControlAction.Query().
-//		GroupBy(systemrelationshipcontrolaction.FieldRelationshipID).
+//		GroupBy(systemrelationshipcontrolaction.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (srcaq *SystemRelationshipControlActionQuery) GroupBy(field string, fields ...string) *SystemRelationshipControlActionGroupBy {
@@ -361,11 +397,11 @@ func (srcaq *SystemRelationshipControlActionQuery) GroupBy(field string, fields 
 // Example:
 //
 //	var v []struct {
-//		RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.SystemRelationshipControlAction.Query().
-//		Select(systemrelationshipcontrolaction.FieldRelationshipID).
+//		Select(systemrelationshipcontrolaction.FieldTenantID).
 //		Scan(ctx, &v)
 func (srcaq *SystemRelationshipControlActionQuery) Select(fields ...string) *SystemRelationshipControlActionSelect {
 	srcaq.ctx.Fields = append(srcaq.ctx.Fields, fields...)
@@ -416,7 +452,8 @@ func (srcaq *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, h
 	var (
 		nodes       = []*SystemRelationshipControlAction{}
 		_spec       = srcaq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			srcaq.withTenant != nil,
 			srcaq.withRelationship != nil,
 			srcaq.withControl != nil,
 		}
@@ -442,6 +479,12 @@ func (srcaq *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, h
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := srcaq.withTenant; query != nil {
+		if err := srcaq.loadTenant(ctx, query, nodes, nil,
+			func(n *SystemRelationshipControlAction, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := srcaq.withRelationship; query != nil {
 		if err := srcaq.loadRelationship(ctx, query, nodes, nil,
 			func(n *SystemRelationshipControlAction, e *SystemAnalysisRelationship) { n.Edges.Relationship = e }); err != nil {
@@ -457,6 +500,35 @@ func (srcaq *SystemRelationshipControlActionQuery) sqlAll(ctx context.Context, h
 	return nodes, nil
 }
 
+func (srcaq *SystemRelationshipControlActionQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*SystemRelationshipControlAction)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (srcaq *SystemRelationshipControlActionQuery) loadRelationship(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemRelationshipControlAction, init func(*SystemRelationshipControlAction), assign func(*SystemRelationshipControlAction, *SystemAnalysisRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemRelationshipControlAction)
@@ -543,6 +615,9 @@ func (srcaq *SystemRelationshipControlActionQuery) querySpec() *sqlgraph.QuerySp
 			if fields[i] != systemrelationshipcontrolaction.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if srcaq.withTenant != nil {
+			_spec.Node.AddColumnOnce(systemrelationshipcontrolaction.FieldTenantID)
 		}
 		if srcaq.withRelationship != nil {
 			_spec.Node.AddColumnOnce(systemrelationshipcontrolaction.FieldRelationshipID)

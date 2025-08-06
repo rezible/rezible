@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -19,6 +20,8 @@ type IncidentDebrief struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// IncidentID holds the value of the "incident_id" field.
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
@@ -35,6 +38,8 @@ type IncidentDebrief struct {
 
 // IncidentDebriefEdges holds the relations/edges for other nodes in the graph.
 type IncidentDebriefEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Incident holds the value of the incident edge.
 	Incident *Incident `json:"incident,omitempty"`
 	// User holds the value of the user edge.
@@ -45,7 +50,18 @@ type IncidentDebriefEdges struct {
 	Suggestions []*IncidentDebriefSuggestion `json:"suggestions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentDebriefEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentOrErr returns the Incident value or an error if the edge
@@ -53,7 +69,7 @@ type IncidentDebriefEdges struct {
 func (e IncidentDebriefEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -64,7 +80,7 @@ func (e IncidentDebriefEdges) IncidentOrErr() (*Incident, error) {
 func (e IncidentDebriefEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -73,7 +89,7 @@ func (e IncidentDebriefEdges) UserOrErr() (*User, error) {
 // MessagesOrErr returns the Messages value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefEdges) MessagesOrErr() ([]*IncidentDebriefMessage, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Messages, nil
 	}
 	return nil, &NotLoadedError{edge: "messages"}
@@ -82,7 +98,7 @@ func (e IncidentDebriefEdges) MessagesOrErr() ([]*IncidentDebriefMessage, error)
 // SuggestionsOrErr returns the Suggestions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentDebriefEdges) SuggestionsOrErr() ([]*IncidentDebriefSuggestion, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Suggestions, nil
 	}
 	return nil, &NotLoadedError{edge: "suggestions"}
@@ -95,6 +111,8 @@ func (*IncidentDebrief) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentdebrief.FieldRequired, incidentdebrief.FieldStarted:
 			values[i] = new(sql.NullBool)
+		case incidentdebrief.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentdebrief.FieldID, incidentdebrief.FieldIncidentID, incidentdebrief.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -117,6 +135,12 @@ func (id *IncidentDebrief) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				id.ID = *value
+			}
+		case incidentdebrief.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				id.TenantID = int(value.Int64)
 			}
 		case incidentdebrief.FieldIncidentID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -153,6 +177,11 @@ func (id *IncidentDebrief) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (id *IncidentDebrief) Value(name string) (ent.Value, error) {
 	return id.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the IncidentDebrief entity.
+func (id *IncidentDebrief) QueryTenant() *TenantQuery {
+	return NewIncidentDebriefClient(id.config).QueryTenant(id)
 }
 
 // QueryIncident queries the "incident" edge of the IncidentDebrief entity.
@@ -198,6 +227,9 @@ func (id *IncidentDebrief) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentDebrief(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", id.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", id.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", id.IncidentID))
 	builder.WriteString(", ")

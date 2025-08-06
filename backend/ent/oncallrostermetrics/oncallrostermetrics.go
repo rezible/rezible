@@ -14,12 +14,23 @@ const (
 	Label = "oncall_roster_metrics"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldRosterID holds the string denoting the roster_id field in the database.
 	FieldRosterID = "roster_id"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
 	// Table holds the table name of the oncallrostermetrics in the database.
 	Table = "oncall_roster_metrics"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_roster_metrics"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// RosterTable is the table that holds the roster relation/edge.
 	RosterTable = "oncall_roster_metrics"
 	// RosterInverseTable is the table name for the OncallRoster entity.
@@ -32,6 +43,7 @@ const (
 // Columns holds all SQL columns for oncallrostermetrics fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldRosterID,
 }
 
@@ -65,9 +77,21 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByRosterID orders the results by the roster_id field.
 func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
 }
 
 // ByRosterField orders the results by roster field.
@@ -75,6 +99,13 @@ func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newRosterStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

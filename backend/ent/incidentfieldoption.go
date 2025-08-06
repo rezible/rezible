@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentFieldOption is the model entity for the IncidentFieldOption schema.
@@ -19,6 +20,8 @@ type IncidentFieldOption struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// IncidentFieldID holds the value of the "incident_field_id" field.
@@ -35,13 +38,26 @@ type IncidentFieldOption struct {
 
 // IncidentFieldOptionEdges holds the relations/edges for other nodes in the graph.
 type IncidentFieldOptionEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// IncidentField holds the value of the incident_field edge.
 	IncidentField *IncidentField `json:"incident_field,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentFieldOptionEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // IncidentFieldOrErr returns the IncidentField value or an error if the edge
@@ -49,7 +65,7 @@ type IncidentFieldOptionEdges struct {
 func (e IncidentFieldOptionEdges) IncidentFieldOrErr() (*IncidentField, error) {
 	if e.IncidentField != nil {
 		return e.IncidentField, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentfield.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident_field"}
@@ -58,7 +74,7 @@ func (e IncidentFieldOptionEdges) IncidentFieldOrErr() (*IncidentField, error) {
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentFieldOptionEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
@@ -69,6 +85,8 @@ func (*IncidentFieldOption) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidentfieldoption.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidentfieldoption.FieldType, incidentfieldoption.FieldValue:
 			values[i] = new(sql.NullString)
 		case incidentfieldoption.FieldArchiveTime:
@@ -95,6 +113,12 @@ func (ifo *IncidentFieldOption) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ifo.ID = *value
+			}
+		case incidentfieldoption.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ifo.TenantID = int(value.Int64)
 			}
 		case incidentfieldoption.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -133,6 +157,11 @@ func (ifo *IncidentFieldOption) GetValue(name string) (ent.Value, error) {
 	return ifo.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentFieldOption entity.
+func (ifo *IncidentFieldOption) QueryTenant() *TenantQuery {
+	return NewIncidentFieldOptionClient(ifo.config).QueryTenant(ifo)
+}
+
 // QueryIncidentField queries the "incident_field" edge of the IncidentFieldOption entity.
 func (ifo *IncidentFieldOption) QueryIncidentField() *IncidentFieldQuery {
 	return NewIncidentFieldOptionClient(ifo.config).QueryIncidentField(ifo)
@@ -166,6 +195,9 @@ func (ifo *IncidentFieldOption) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentFieldOption(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ifo.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ifo.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(ifo.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")

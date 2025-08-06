@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentDebriefQuestionCreate is the builder for creating a IncidentDebriefQuestion entity.
@@ -27,6 +28,12 @@ type IncidentDebriefQuestionCreate struct {
 	mutation *IncidentDebriefQuestionMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (idqc *IncidentDebriefQuestionCreate) SetTenantID(i int) *IncidentDebriefQuestionCreate {
+	idqc.mutation.SetTenantID(i)
+	return idqc
 }
 
 // SetContent sets the "content" field.
@@ -47,6 +54,11 @@ func (idqc *IncidentDebriefQuestionCreate) SetNillableID(u *uuid.UUID) *Incident
 		idqc.SetID(*u)
 	}
 	return idqc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (idqc *IncidentDebriefQuestionCreate) SetTenant(t *Tenant) *IncidentDebriefQuestionCreate {
+	return idqc.SetTenantID(t.ID)
 }
 
 // AddMessageIDs adds the "messages" edge to the IncidentDebriefMessage entity by IDs.
@@ -188,8 +200,14 @@ func (idqc *IncidentDebriefQuestionCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (idqc *IncidentDebriefQuestionCreate) check() error {
+	if _, ok := idqc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentDebriefQuestion.tenant_id"`)}
+	}
 	if _, ok := idqc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "IncidentDebriefQuestion.content"`)}
+	}
+	if len(idqc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentDebriefQuestion.tenant"`)}
 	}
 	return nil
 }
@@ -230,6 +248,23 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 	if value, ok := idqc.mutation.Content(); ok {
 		_spec.SetField(incidentdebriefquestion.FieldContent, field.TypeString, value)
 		_node.Content = value
+	}
+	if nodes := idqc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentdebriefquestion.TenantTable,
+			Columns: []string{incidentdebriefquestion.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := idqc.mutation.MessagesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -334,7 +369,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentDebriefQuestion.Create().
-//		SetContent(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -343,7 +378,7 @@ func (idqc *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestio
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentDebriefQuestionUpsert) {
-//			SetContent(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (idqc *IncidentDebriefQuestionCreate) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertOne {
@@ -407,6 +442,9 @@ func (u *IncidentDebriefQuestionUpsertOne) UpdateNewValues() *IncidentDebriefQue
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentdebriefquestion.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentdebriefquestion.FieldTenantID)
 		}
 	}))
 	return u
@@ -589,7 +627,7 @@ func (idqcb *IncidentDebriefQuestionCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentDebriefQuestionUpsert) {
-//			SetContent(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (idqcb *IncidentDebriefQuestionCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentDebriefQuestionUpsertBulk {
@@ -635,6 +673,9 @@ func (u *IncidentDebriefQuestionUpsertBulk) UpdateNewValues() *IncidentDebriefQu
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentdebriefquestion.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentdebriefquestion.FieldTenantID)
 			}
 		}
 	}))

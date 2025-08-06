@@ -16,16 +16,27 @@ const (
 	Label = "incident_event_contributing_factor"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldFactorType holds the string denoting the factor_type field in the database.
 	FieldFactorType = "factor_type"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeEvent holds the string denoting the event edge name in mutations.
 	EdgeEvent = "event"
 	// Table holds the table name of the incidenteventcontributingfactor in the database.
 	Table = "incident_event_contributing_factors"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "incident_event_contributing_factors"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// EventTable is the table that holds the event relation/edge.
 	EventTable = "incident_event_contributing_factors"
 	// EventInverseTable is the table name for the IncidentEvent entity.
@@ -38,6 +49,7 @@ const (
 // Columns holds all SQL columns for incidenteventcontributingfactor fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldFactorType,
 	FieldDescription,
 	FieldCreatedAt,
@@ -88,6 +100,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByFactorType orders the results by the factor_type field.
 func ByFactorType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFactorType, opts...).ToFunc()
@@ -103,11 +120,25 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByEventField orders the results by event field.
 func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

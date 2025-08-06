@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -27,6 +28,7 @@ type RetrospectiveReviewQuery struct {
 	order             []retrospectivereview.OrderOption
 	inters            []Interceptor
 	predicates        []predicate.RetrospectiveReview
+	withTenant        *TenantQuery
 	withRetrospective *RetrospectiveQuery
 	withRequester     *UserQuery
 	withReviewer      *UserQuery
@@ -67,6 +69,28 @@ func (rrq *RetrospectiveReviewQuery) Unique(unique bool) *RetrospectiveReviewQue
 func (rrq *RetrospectiveReviewQuery) Order(o ...retrospectivereview.OrderOption) *RetrospectiveReviewQuery {
 	rrq.order = append(rrq.order, o...)
 	return rrq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (rrq *RetrospectiveReviewQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: rrq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rrq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rrq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.TenantTable, retrospectivereview.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(rrq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRetrospective chains the current query on the "retrospective" edge.
@@ -349,6 +373,7 @@ func (rrq *RetrospectiveReviewQuery) Clone() *RetrospectiveReviewQuery {
 		order:             append([]retrospectivereview.OrderOption{}, rrq.order...),
 		inters:            append([]Interceptor{}, rrq.inters...),
 		predicates:        append([]predicate.RetrospectiveReview{}, rrq.predicates...),
+		withTenant:        rrq.withTenant.Clone(),
 		withRetrospective: rrq.withRetrospective.Clone(),
 		withRequester:     rrq.withRequester.Clone(),
 		withReviewer:      rrq.withReviewer.Clone(),
@@ -358,6 +383,17 @@ func (rrq *RetrospectiveReviewQuery) Clone() *RetrospectiveReviewQuery {
 		path:      rrq.path,
 		modifiers: append([]func(*sql.Selector){}, rrq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (rrq *RetrospectiveReviewQuery) WithTenant(opts ...func(*TenantQuery)) *RetrospectiveReviewQuery {
+	query := (&TenantClient{config: rrq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rrq.withTenant = query
+	return rrq
 }
 
 // WithRetrospective tells the query-builder to eager-load the nodes that are connected to
@@ -410,12 +446,12 @@ func (rrq *RetrospectiveReviewQuery) WithDiscussion(opts ...func(*RetrospectiveD
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.RetrospectiveReview.Query().
-//		GroupBy(retrospectivereview.FieldRetrospectiveID).
+//		GroupBy(retrospectivereview.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rrq *RetrospectiveReviewQuery) GroupBy(field string, fields ...string) *RetrospectiveReviewGroupBy {
@@ -433,11 +469,11 @@ func (rrq *RetrospectiveReviewQuery) GroupBy(field string, fields ...string) *Re
 // Example:
 //
 //	var v []struct {
-//		RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.RetrospectiveReview.Query().
-//		Select(retrospectivereview.FieldRetrospectiveID).
+//		Select(retrospectivereview.FieldTenantID).
 //		Scan(ctx, &v)
 func (rrq *RetrospectiveReviewQuery) Select(fields ...string) *RetrospectiveReviewSelect {
 	rrq.ctx.Fields = append(rrq.ctx.Fields, fields...)
@@ -489,7 +525,8 @@ func (rrq *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryH
 		nodes       = []*RetrospectiveReview{}
 		withFKs     = rrq.withFKs
 		_spec       = rrq.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
+			rrq.withTenant != nil,
 			rrq.withRetrospective != nil,
 			rrq.withRequester != nil,
 			rrq.withReviewer != nil,
@@ -523,6 +560,12 @@ func (rrq *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryH
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := rrq.withTenant; query != nil {
+		if err := rrq.loadTenant(ctx, query, nodes, nil,
+			func(n *RetrospectiveReview, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := rrq.withRetrospective; query != nil {
 		if err := rrq.loadRetrospective(ctx, query, nodes, nil,
 			func(n *RetrospectiveReview, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
@@ -550,6 +593,35 @@ func (rrq *RetrospectiveReviewQuery) sqlAll(ctx context.Context, hooks ...queryH
 	return nodes, nil
 }
 
+func (rrq *RetrospectiveReviewQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*RetrospectiveReview)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (rrq *RetrospectiveReviewQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*RetrospectiveReview, init func(*RetrospectiveReview), assign func(*RetrospectiveReview, *Retrospective)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*RetrospectiveReview)
@@ -697,6 +769,9 @@ func (rrq *RetrospectiveReviewQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != retrospectivereview.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if rrq.withTenant != nil {
+			_spec.Node.AddColumnOnce(retrospectivereview.FieldTenantID)
 		}
 		if rrq.withRetrospective != nil {
 			_spec.Node.AddColumnOnce(retrospectivereview.FieldRetrospectiveID)

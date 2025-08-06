@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventEvidence is the model entity for the IncidentEventEvidence schema.
@@ -19,6 +20,8 @@ type IncidentEventEvidence struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// EvidenceType holds the value of the "evidence_type" field.
 	EvidenceType incidenteventevidence.EvidenceType `json:"evidence_type,omitempty"`
 	// URL holds the value of the "url" field.
@@ -38,11 +41,24 @@ type IncidentEventEvidence struct {
 
 // IncidentEventEvidenceEdges holds the relations/edges for other nodes in the graph.
 type IncidentEventEvidenceEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *IncidentEvent `json:"event,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEventEvidenceEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // EventOrErr returns the Event value or an error if the edge
@@ -50,7 +66,7 @@ type IncidentEventEvidenceEdges struct {
 func (e IncidentEventEvidenceEdges) EventOrErr() (*IncidentEvent, error) {
 	if e.Event != nil {
 		return e.Event, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: incidentevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
@@ -61,6 +77,8 @@ func (*IncidentEventEvidence) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incidenteventevidence.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case incidenteventevidence.FieldEvidenceType, incidenteventevidence.FieldURL, incidenteventevidence.FieldTitle, incidenteventevidence.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidenteventevidence.FieldCreatedAt:
@@ -89,6 +107,12 @@ func (iee *IncidentEventEvidence) assignValues(columns []string, values []any) e
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				iee.ID = *value
+			}
+		case incidenteventevidence.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				iee.TenantID = int(value.Int64)
 			}
 		case incidenteventevidence.FieldEvidenceType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -140,6 +164,11 @@ func (iee *IncidentEventEvidence) Value(name string) (ent.Value, error) {
 	return iee.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the IncidentEventEvidence entity.
+func (iee *IncidentEventEvidence) QueryTenant() *TenantQuery {
+	return NewIncidentEventEvidenceClient(iee.config).QueryTenant(iee)
+}
+
 // QueryEvent queries the "event" edge of the IncidentEventEvidence entity.
 func (iee *IncidentEventEvidence) QueryEvent() *IncidentEventQuery {
 	return NewIncidentEventEvidenceClient(iee.config).QueryEvent(iee)
@@ -168,6 +197,9 @@ func (iee *IncidentEventEvidence) String() string {
 	var builder strings.Builder
 	builder.WriteString("IncidentEventEvidence(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", iee.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", iee.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("evidence_type=")
 	builder.WriteString(fmt.Sprintf("%v", iee.EvidenceType))
 	builder.WriteString(", ")

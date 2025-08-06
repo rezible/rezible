@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -19,6 +20,8 @@ type Task struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// Type holds the value of the "type" field.
 	Type task.Type `json:"type,omitempty"`
 	// Title holds the value of the "title" field.
@@ -37,6 +40,8 @@ type Task struct {
 
 // TaskEdges holds the relations/edges for other nodes in the graph.
 type TaskEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Tickets holds the value of the tickets edge.
 	Tickets []*Ticket `json:"tickets,omitempty"`
 	// Incident holds the value of the incident edge.
@@ -47,13 +52,24 @@ type TaskEdges struct {
 	Creator *User `json:"creator,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TaskEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // TicketsOrErr returns the Tickets value or an error if the edge
 // was not loaded in eager-loading.
 func (e TaskEdges) TicketsOrErr() ([]*Ticket, error) {
-	if e.loadedTypes[0] {
+	if e.loadedTypes[1] {
 		return e.Tickets, nil
 	}
 	return nil, &NotLoadedError{edge: "tickets"}
@@ -64,7 +80,7 @@ func (e TaskEdges) TicketsOrErr() ([]*Ticket, error) {
 func (e TaskEdges) IncidentOrErr() (*Incident, error) {
 	if e.Incident != nil {
 		return e.Incident, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incident.Label}
 	}
 	return nil, &NotLoadedError{edge: "incident"}
@@ -75,7 +91,7 @@ func (e TaskEdges) IncidentOrErr() (*Incident, error) {
 func (e TaskEdges) AssigneeOrErr() (*User, error) {
 	if e.Assignee != nil {
 		return e.Assignee, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "assignee"}
@@ -86,7 +102,7 @@ func (e TaskEdges) AssigneeOrErr() (*User, error) {
 func (e TaskEdges) CreatorOrErr() (*User, error) {
 	if e.Creator != nil {
 		return e.Creator, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -97,6 +113,8 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case task.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case task.FieldType, task.FieldTitle:
 			values[i] = new(sql.NullString)
 		case task.FieldID, task.FieldIncidentID, task.FieldAssigneeID, task.FieldCreatorID:
@@ -121,6 +139,12 @@ func (t *Task) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				t.ID = *value
+			}
+		case task.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				t.TenantID = int(value.Int64)
 			}
 		case task.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -163,6 +187,11 @@ func (t *Task) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (t *Task) Value(name string) (ent.Value, error) {
 	return t.selectValues.Get(name)
+}
+
+// QueryTenant queries the "tenant" edge of the Task entity.
+func (t *Task) QueryTenant() *TenantQuery {
+	return NewTaskClient(t.config).QueryTenant(t)
 }
 
 // QueryTickets queries the "tickets" edge of the Task entity.
@@ -208,6 +237,9 @@ func (t *Task) String() string {
 	var builder strings.Builder
 	builder.WriteString("Task(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", t.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("type=")
 	builder.WriteString(fmt.Sprintf("%v", t.Type))
 	builder.WriteString(", ")

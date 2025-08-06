@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospectivediscussion"
 	"github.com/rezible/rezible/ent/retrospectivediscussionreply"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // RetrospectiveDiscussionReplyCreate is the builder for creating a RetrospectiveDiscussionReply entity.
@@ -22,6 +23,12 @@ type RetrospectiveDiscussionReplyCreate struct {
 	mutation *RetrospectiveDiscussionReplyMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (rdrc *RetrospectiveDiscussionReplyCreate) SetTenantID(i int) *RetrospectiveDiscussionReplyCreate {
+	rdrc.mutation.SetTenantID(i)
+	return rdrc
 }
 
 // SetContent sets the "content" field.
@@ -42,6 +49,11 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) SetNillableID(u *uuid.UUID) *Ret
 		rdrc.SetID(*u)
 	}
 	return rdrc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (rdrc *RetrospectiveDiscussionReplyCreate) SetTenant(t *Tenant) *RetrospectiveDiscussionReplyCreate {
+	return rdrc.SetTenantID(t.ID)
 }
 
 // SetDiscussionID sets the "discussion" edge to the RetrospectiveDiscussion entity by ID.
@@ -138,8 +150,14 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (rdrc *RetrospectiveDiscussionReplyCreate) check() error {
+	if _, ok := rdrc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "RetrospectiveDiscussionReply.tenant_id"`)}
+	}
 	if _, ok := rdrc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "RetrospectiveDiscussionReply.content"`)}
+	}
+	if len(rdrc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "RetrospectiveDiscussionReply.tenant"`)}
 	}
 	if len(rdrc.mutation.DiscussionIDs()) == 0 {
 		return &ValidationError{Name: "discussion", err: errors.New(`ent: missing required edge "RetrospectiveDiscussionReply.discussion"`)}
@@ -183,6 +201,23 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) createSpec() (*RetrospectiveDisc
 	if value, ok := rdrc.mutation.Content(); ok {
 		_spec.SetField(retrospectivediscussionreply.FieldContent, field.TypeBytes, value)
 		_node.Content = value
+	}
+	if nodes := rdrc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   retrospectivediscussionreply.TenantTable,
+			Columns: []string{retrospectivediscussionreply.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rdrc.mutation.DiscussionIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -241,7 +276,7 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) createSpec() (*RetrospectiveDisc
 // of the `INSERT` statement. For example:
 //
 //	client.RetrospectiveDiscussionReply.Create().
-//		SetContent(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -250,7 +285,7 @@ func (rdrc *RetrospectiveDiscussionReplyCreate) createSpec() (*RetrospectiveDisc
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveDiscussionReplyUpsert) {
-//			SetContent(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (rdrc *RetrospectiveDiscussionReplyCreate) OnConflict(opts ...sql.ConflictOption) *RetrospectiveDiscussionReplyUpsertOne {
@@ -314,6 +349,9 @@ func (u *RetrospectiveDiscussionReplyUpsertOne) UpdateNewValues() *Retrospective
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(retrospectivediscussionreply.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(retrospectivediscussionreply.FieldTenantID)
 		}
 	}))
 	return u
@@ -496,7 +534,7 @@ func (rdrcb *RetrospectiveDiscussionReplyCreateBulk) ExecX(ctx context.Context) 
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.RetrospectiveDiscussionReplyUpsert) {
-//			SetContent(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (rdrcb *RetrospectiveDiscussionReplyCreateBulk) OnConflict(opts ...sql.ConflictOption) *RetrospectiveDiscussionReplyUpsertBulk {
@@ -542,6 +580,9 @@ func (u *RetrospectiveDiscussionReplyUpsertBulk) UpdateNewValues() *Retrospectiv
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(retrospectivediscussionreply.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(retrospectivediscussionreply.FieldTenantID)
 			}
 		}
 	}))

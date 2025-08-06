@@ -195,6 +195,9 @@ func (oushu *OncallUserShiftHandoverUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oushu *OncallUserShiftHandoverUpdate) check() error {
+	if oushu.mutation.TenantCleared() && len(oushu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShiftHandover.tenant"`)
+	}
 	if oushu.mutation.ShiftCleared() && len(oushu.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftHandover.shift"`)
 	}
@@ -509,6 +512,9 @@ func (oushuo *OncallUserShiftHandoverUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (oushuo *OncallUserShiftHandoverUpdateOne) check() error {
+	if oushuo.mutation.TenantCleared() && len(oushuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OncallUserShiftHandover.tenant"`)
+	}
 	if oushuo.mutation.ShiftCleared() && len(oushuo.mutation.ShiftIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "OncallUserShiftHandover.shift"`)
 	}

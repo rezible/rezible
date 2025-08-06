@@ -14,8 +14,12 @@ const (
 	Label = "retrospective_discussion_reply"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeDiscussion holds the string denoting the discussion edge name in mutations.
 	EdgeDiscussion = "discussion"
 	// EdgeParentReply holds the string denoting the parent_reply edge name in mutations.
@@ -24,6 +28,13 @@ const (
 	EdgeReplies = "replies"
 	// Table holds the table name of the retrospectivediscussionreply in the database.
 	Table = "retrospective_discussion_replies"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "retrospective_discussion_replies"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// DiscussionTable is the table that holds the discussion relation/edge.
 	DiscussionTable = "retrospective_discussion_replies"
 	// DiscussionInverseTable is the table name for the RetrospectiveDiscussion entity.
@@ -44,6 +55,7 @@ const (
 // Columns holds all SQL columns for retrospectivediscussionreply fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldContent,
 }
 
@@ -89,6 +101,18 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByDiscussionField orders the results by discussion field.
 func ByDiscussionField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -115,6 +139,13 @@ func ByReplies(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newRepliesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newDiscussionStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

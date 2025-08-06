@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentTagQuery is the builder for querying IncidentTag entities.
@@ -27,6 +28,7 @@ type IncidentTagQuery struct {
 	order                []incidenttag.OrderOption
 	inters               []Interceptor
 	predicates           []predicate.IncidentTag
+	withTenant           *TenantQuery
 	withIncidents        *IncidentQuery
 	withDebriefQuestions *IncidentDebriefQuestionQuery
 	modifiers            []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (itq *IncidentTagQuery) Unique(unique bool) *IncidentTagQuery {
 func (itq *IncidentTagQuery) Order(o ...incidenttag.OrderOption) *IncidentTagQuery {
 	itq.order = append(itq.order, o...)
 	return itq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (itq *IncidentTagQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: itq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := itq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := itq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttag.Table, incidenttag.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttag.TenantTable, incidenttag.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(itq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryIncidents chains the current query on the "incidents" edge.
@@ -302,6 +326,7 @@ func (itq *IncidentTagQuery) Clone() *IncidentTagQuery {
 		order:                append([]incidenttag.OrderOption{}, itq.order...),
 		inters:               append([]Interceptor{}, itq.inters...),
 		predicates:           append([]predicate.IncidentTag{}, itq.predicates...),
+		withTenant:           itq.withTenant.Clone(),
 		withIncidents:        itq.withIncidents.Clone(),
 		withDebriefQuestions: itq.withDebriefQuestions.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (itq *IncidentTagQuery) Clone() *IncidentTagQuery {
 		path:      itq.path,
 		modifiers: append([]func(*sql.Selector){}, itq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (itq *IncidentTagQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentTagQuery {
+	query := (&TenantClient{config: itq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	itq.withTenant = query
+	return itq
 }
 
 // WithIncidents tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (itq *IncidentTagQuery) WithDebriefQuestions(opts ...func(*IncidentDebriefQ
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentTag.Query().
-//		GroupBy(incidenttag.FieldArchiveTime).
+//		GroupBy(incidenttag.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (itq *IncidentTagQuery) GroupBy(field string, fields ...string) *IncidentTagGroupBy {
@@ -362,11 +398,11 @@ func (itq *IncidentTagQuery) GroupBy(field string, fields ...string) *IncidentTa
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentTag.Query().
-//		Select(incidenttag.FieldArchiveTime).
+//		Select(incidenttag.FieldTenantID).
 //		Scan(ctx, &v)
 func (itq *IncidentTagQuery) Select(fields ...string) *IncidentTagSelect {
 	itq.ctx.Fields = append(itq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (itq *IncidentTagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	var (
 		nodes       = []*IncidentTag{}
 		_spec       = itq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			itq.withTenant != nil,
 			itq.withIncidents != nil,
 			itq.withDebriefQuestions != nil,
 		}
@@ -443,6 +480,12 @@ func (itq *IncidentTagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := itq.withTenant; query != nil {
+		if err := itq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentTag, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := itq.withIncidents; query != nil {
 		if err := itq.loadIncidents(ctx, query, nodes,
 			func(n *IncidentTag) { n.Edges.Incidents = []*Incident{} },
@@ -462,6 +505,35 @@ func (itq *IncidentTagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
+func (itq *IncidentTagQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentTag, init func(*IncidentTag), assign func(*IncidentTag, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentTag)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (itq *IncidentTagQuery) loadIncidents(ctx context.Context, query *IncidentQuery, nodes []*IncidentTag, init func(*IncidentTag), assign func(*IncidentTag, *Incident)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*IncidentTag)
@@ -612,6 +684,9 @@ func (itq *IncidentTagQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != incidenttag.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if itq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidenttag.FieldTenantID)
 		}
 	}
 	if ps := itq.predicates; len(ps) > 0 {

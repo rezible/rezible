@@ -16,6 +16,8 @@ const (
 	Label = "oncall_user_shift_handover"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldShiftID holds the string denoting the shift_id field in the database.
 	FieldShiftID = "shift_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -28,12 +30,21 @@ const (
 	FieldSentAt = "sent_at"
 	// FieldContents holds the string denoting the contents field in the database.
 	FieldContents = "contents"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeShift holds the string denoting the shift edge name in mutations.
 	EdgeShift = "shift"
 	// EdgePinnedAnnotations holds the string denoting the pinned_annotations edge name in mutations.
 	EdgePinnedAnnotations = "pinned_annotations"
 	// Table holds the table name of the oncallusershifthandover in the database.
 	Table = "oncall_user_shift_handovers"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "oncall_user_shift_handovers"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// ShiftTable is the table that holds the shift relation/edge.
 	ShiftTable = "oncall_user_shift_handovers"
 	// ShiftInverseTable is the table name for the OncallUserShift entity.
@@ -51,6 +62,7 @@ const (
 // Columns holds all SQL columns for oncallusershifthandover fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldShiftID,
 	FieldCreatedAt,
 	FieldReminderSent,
@@ -99,6 +111,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByShiftID orders the results by the shift_id field.
 func ByShiftID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldShiftID, opts...).ToFunc()
@@ -124,6 +141,13 @@ func BySentAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSentAt, opts...).ToFunc()
 }
 
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByShiftField orders the results by shift field.
 func ByShiftField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -143,6 +167,13 @@ func ByPinnedAnnotations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newPinnedAnnotationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
+}
+func newTenantStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
 }
 func newShiftStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(

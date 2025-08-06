@@ -170,6 +170,14 @@ func (ifu *IncidentFieldUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ifu *IncidentFieldUpdate) check() error {
+	if ifu.mutation.TenantCleared() && len(ifu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentField.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (ifu *IncidentFieldUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldUpdate {
 	ifu.modifiers = append(ifu.modifiers, modifiers...)
@@ -177,6 +185,9 @@ func (ifu *IncidentFieldUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) 
 }
 
 func (ifu *IncidentFieldUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := ifu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentfield.Table, incidentfield.Columns, sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID))
 	if ps := ifu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -457,6 +468,14 @@ func (ifuo *IncidentFieldUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ifuo *IncidentFieldUpdateOne) check() error {
+	if ifuo.mutation.TenantCleared() && len(ifuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentField.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (ifuo *IncidentFieldUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentFieldUpdateOne {
 	ifuo.modifiers = append(ifuo.modifiers, modifiers...)
@@ -464,6 +483,9 @@ func (ifuo *IncidentFieldUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilde
 }
 
 func (ifuo *IncidentFieldUpdateOne) sqlSave(ctx context.Context) (_node *IncidentField, err error) {
+	if err := ifuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidentfield.Table, incidentfield.Columns, sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID))
 	id, ok := ifuo.mutation.ID()
 	if !ok {

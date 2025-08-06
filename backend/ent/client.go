@@ -17,6 +17,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -36,12 +37,10 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -84,6 +83,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
+	// AlertFeedback is the client for interacting with the AlertFeedback builders.
+	AlertFeedback *AlertFeedbackClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Incident is the client for interacting with the Incident builders.
@@ -122,8 +123,6 @@ type Client struct {
 	IncidentSeverity *IncidentSeverityClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
-	// IncidentTeamAssignment is the client for interacting with the IncidentTeamAssignment builders.
-	IncidentTeamAssignment *IncidentTeamAssignmentClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
@@ -132,8 +131,6 @@ type Client struct {
 	MeetingSession *MeetingSessionClient
 	// OncallAnnotation is the client for interacting with the OncallAnnotation builders.
 	OncallAnnotation *OncallAnnotationClient
-	// OncallAnnotationAlertFeedback is the client for interacting with the OncallAnnotationAlertFeedback builders.
-	OncallAnnotationAlertFeedback *OncallAnnotationAlertFeedbackClient
 	// OncallEvent is the client for interacting with the OncallEvent builders.
 	OncallEvent *OncallEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
@@ -212,6 +209,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
+	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
@@ -231,12 +229,10 @@ func (c *Client) init() {
 	c.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(c.config)
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
 	c.IncidentTag = NewIncidentTagClient(c.config)
-	c.IncidentTeamAssignment = NewIncidentTeamAssignmentClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.OncallAnnotation = NewOncallAnnotationClient(c.config)
-	c.OncallAnnotationAlertFeedback = NewOncallAnnotationAlertFeedbackClient(c.config)
 	c.OncallEvent = NewOncallEventClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
@@ -363,6 +359,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:                              ctx,
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
+		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
@@ -382,12 +379,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentRoleAssignment:           NewIncidentRoleAssignmentClient(cfg),
 		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
 		IncidentTag:                      NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:           NewIncidentTeamAssignmentClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
-		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
@@ -441,6 +436,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:                              ctx,
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
+		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
@@ -460,12 +456,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentRoleAssignment:           NewIncidentRoleAssignmentClient(cfg),
 		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
 		IncidentTag:                      NewIncidentTagClient(cfg),
-		IncidentTeamAssignment:           NewIncidentTeamAssignmentClient(cfg),
 		IncidentType:                     NewIncidentTypeClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
 		OncallAnnotation:                 NewOncallAnnotationClient(cfg),
-		OncallAnnotationAlertFeedback:    NewOncallAnnotationAlertFeedbackClient(cfg),
 		OncallEvent:                      NewOncallEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
@@ -528,15 +522,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
-		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.MeetingSchedule,
+		c.MeetingSession, c.OncallAnnotation, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftHandover,
 		c.OncallUserShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
@@ -555,15 +548,14 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertMetrics, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
 		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentTeamAssignment, c.IncidentType,
-		c.MeetingSchedule, c.MeetingSession, c.OncallAnnotation,
-		c.OncallAnnotationAlertFeedback, c.OncallEvent, c.OncallHandoverTemplate,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.MeetingSchedule,
+		c.MeetingSession, c.OncallAnnotation, c.OncallEvent, c.OncallHandoverTemplate,
 		c.OncallRoster, c.OncallRosterMetrics, c.OncallSchedule,
 		c.OncallScheduleParticipant, c.OncallUserShift, c.OncallUserShiftHandover,
 		c.OncallUserShiftMetrics, c.Playbook, c.ProviderConfig, c.ProviderSyncHistory,
@@ -583,6 +575,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *AlertMutation:
 		return c.Alert.mutate(ctx, m)
+	case *AlertFeedbackMutation:
+		return c.AlertFeedback.mutate(ctx, m)
 	case *AlertMetricsMutation:
 		return c.AlertMetrics.mutate(ctx, m)
 	case *IncidentMutation:
@@ -621,8 +615,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentSeverity.mutate(ctx, m)
 	case *IncidentTagMutation:
 		return c.IncidentTag.mutate(ctx, m)
-	case *IncidentTeamAssignmentMutation:
-		return c.IncidentTeamAssignment.mutate(ctx, m)
 	case *IncidentTypeMutation:
 		return c.IncidentType.mutate(ctx, m)
 	case *MeetingScheduleMutation:
@@ -631,8 +623,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSession.mutate(ctx, m)
 	case *OncallAnnotationMutation:
 		return c.OncallAnnotation.mutate(ctx, m)
-	case *OncallAnnotationAlertFeedbackMutation:
-		return c.OncallAnnotationAlertFeedback.mutate(ctx, m)
 	case *OncallEventMutation:
 		return c.OncallEvent.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
@@ -812,6 +802,22 @@ func (c *AlertClient) GetX(ctx context.Context, id uuid.UUID) *Alert {
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a Alert.
+func (c *AlertClient) QueryTenant(a *Alert) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := a.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alert.TenantTable, alert.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryMetrics queries the metrics edge of a Alert.
 func (c *AlertClient) QueryMetrics(a *Alert) *AlertMetricsQuery {
 	query := (&AlertMetricsClient{config: c.config}).Query()
@@ -883,6 +889,172 @@ func (c *AlertClient) mutate(ctx context.Context, m *AlertMutation) (Value, erro
 		return (&AlertDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Alert mutation op: %q", m.Op())
+	}
+}
+
+// AlertFeedbackClient is a client for the AlertFeedback schema.
+type AlertFeedbackClient struct {
+	config
+}
+
+// NewAlertFeedbackClient returns a client for the AlertFeedback from the given config.
+func NewAlertFeedbackClient(c config) *AlertFeedbackClient {
+	return &AlertFeedbackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alertfeedback.Hooks(f(g(h())))`.
+func (c *AlertFeedbackClient) Use(hooks ...Hook) {
+	c.hooks.AlertFeedback = append(c.hooks.AlertFeedback, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertfeedback.Intercept(f(g(h())))`.
+func (c *AlertFeedbackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertFeedback = append(c.inters.AlertFeedback, interceptors...)
+}
+
+// Create returns a builder for creating a AlertFeedback entity.
+func (c *AlertFeedbackClient) Create() *AlertFeedbackCreate {
+	mutation := newAlertFeedbackMutation(c.config, OpCreate)
+	return &AlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AlertFeedback entities.
+func (c *AlertFeedbackClient) CreateBulk(builders ...*AlertFeedbackCreate) *AlertFeedbackCreateBulk {
+	return &AlertFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertFeedbackClient) MapCreateBulk(slice any, setFunc func(*AlertFeedbackCreate, int)) *AlertFeedbackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertFeedbackCreateBulk{err: fmt.Errorf("calling to AlertFeedbackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertFeedbackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AlertFeedback.
+func (c *AlertFeedbackClient) Update() *AlertFeedbackUpdate {
+	mutation := newAlertFeedbackMutation(c.config, OpUpdate)
+	return &AlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertFeedbackClient) UpdateOne(af *AlertFeedback) *AlertFeedbackUpdateOne {
+	mutation := newAlertFeedbackMutation(c.config, OpUpdateOne, withAlertFeedback(af))
+	return &AlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertFeedbackClient) UpdateOneID(id uuid.UUID) *AlertFeedbackUpdateOne {
+	mutation := newAlertFeedbackMutation(c.config, OpUpdateOne, withAlertFeedbackID(id))
+	return &AlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AlertFeedback.
+func (c *AlertFeedbackClient) Delete() *AlertFeedbackDelete {
+	mutation := newAlertFeedbackMutation(c.config, OpDelete)
+	return &AlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertFeedbackClient) DeleteOne(af *AlertFeedback) *AlertFeedbackDeleteOne {
+	return c.DeleteOneID(af.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertFeedbackClient) DeleteOneID(id uuid.UUID) *AlertFeedbackDeleteOne {
+	builder := c.Delete().Where(alertfeedback.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertFeedbackDeleteOne{builder}
+}
+
+// Query returns a query builder for AlertFeedback.
+func (c *AlertFeedbackClient) Query() *AlertFeedbackQuery {
+	return &AlertFeedbackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertFeedback},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AlertFeedback entity by its id.
+func (c *AlertFeedbackClient) Get(ctx context.Context, id uuid.UUID) (*AlertFeedback, error) {
+	return c.Query().Where(alertfeedback.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertFeedbackClient) GetX(ctx context.Context, id uuid.UUID) *AlertFeedback {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AlertFeedback.
+func (c *AlertFeedbackClient) QueryTenant(af *AlertFeedback) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := af.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.TenantTable, alertfeedback.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(af.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnnotation queries the annotation edge of a AlertFeedback.
+func (c *AlertFeedbackClient) QueryAnnotation(af *AlertFeedback) *OncallAnnotationQuery {
+	query := (&OncallAnnotationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := af.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
+			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, alertfeedback.AnnotationTable, alertfeedback.AnnotationColumn),
+		)
+		fromV = sqlgraph.Neighbors(af.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AlertFeedbackClient) Hooks() []Hook {
+	hooks := c.hooks.AlertFeedback
+	return append(hooks[:len(hooks):len(hooks)], alertfeedback.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertFeedbackClient) Interceptors() []Interceptor {
+	return c.inters.AlertFeedback
+}
+
+func (c *AlertFeedbackClient) mutate(ctx context.Context, m *AlertFeedbackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AlertFeedback mutation op: %q", m.Op())
 	}
 }
 
@@ -992,6 +1164,22 @@ func (c *AlertMetricsClient) GetX(ctx context.Context, id uuid.UUID) *AlertMetri
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a AlertMetrics.
+func (c *AlertMetricsClient) QueryTenant(am *AlertMetrics) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := am.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertmetrics.Table, alertmetrics.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertmetrics.TenantTable, alertmetrics.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(am.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryAlert queries the alert edge of a AlertMetrics.
@@ -1144,6 +1332,22 @@ func (c *IncidentClient) GetX(ctx context.Context, id uuid.UUID) *Incident {
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a Incident.
+func (c *IncidentClient) QueryTenant(i *Incident) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.TenantTable, incident.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySeverity queries the severity edge of a Incident.
 func (c *IncidentClient) QuerySeverity(i *Incident) *IncidentSeverityQuery {
 	query := (&IncidentSeverityClient{config: c.config}).Query()
@@ -1169,38 +1373,6 @@ func (c *IncidentClient) QueryType(i *Incident) *IncidentTypeQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTeamAssignments queries the team_assignments edge of a Incident.
-func (c *IncidentClient) QueryTeamAssignments(i *Incident) *IncidentTeamAssignmentQuery {
-	query := (&IncidentTeamAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentteamassignment.Table, incidentteamassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.TeamAssignmentsTable, incident.TeamAssignmentsColumn),
-		)
-		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRoleAssignments queries the role_assignments edge of a Incident.
-func (c *IncidentClient) QueryRoleAssignments(i *Incident) *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := i.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1249,6 +1421,38 @@ func (c *IncidentClient) QueryRetrospective(i *Incident) *RetrospectiveQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.RetrospectiveTable, incident.RetrospectiveColumn),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUsers queries the users edge of a Incident.
+func (c *IncidentClient) QueryUsers(i *Incident) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, incident.UsersTable, incident.UsersPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRoleAssignments queries the role_assignments edge of a Incident.
+func (c *IncidentClient) QueryRoleAssignments(i *Incident) *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1345,6 +1549,22 @@ func (c *IncidentClient) QueryReviewSessions(i *Incident) *MeetingSessionQuery {
 			sqlgraph.From(incident.Table, incident.FieldID, id),
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUserRoles queries the user_roles edge of a Incident.
+func (c *IncidentClient) QueryUserRoles(i *Incident) *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := i.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.UserRolesTable, incident.UserRolesColumn),
 		)
 		fromV = sqlgraph.Neighbors(i.driver.Dialect(), step)
 		return fromV, nil
@@ -1500,6 +1720,22 @@ func (c *IncidentDebriefClient) GetX(ctx context.Context, id uuid.UUID) *Inciden
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentDebrief.
+func (c *IncidentDebriefClient) QueryTenant(node *IncidentDebrief) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := node.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentdebrief.Table, incidentdebrief.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebrief.TenantTable, incidentdebrief.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(node.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryIncident queries the incident edge of a IncidentDebrief.
@@ -1700,6 +1936,22 @@ func (c *IncidentDebriefMessageClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentDebriefMessage.
+func (c *IncidentDebriefMessageClient) QueryTenant(idm *IncidentDebriefMessage) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := idm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentdebriefmessage.Table, incidentdebriefmessage.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefmessage.TenantTable, incidentdebriefmessage.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(idm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryDebrief queries the debrief edge of a IncidentDebriefMessage.
 func (c *IncidentDebriefMessageClient) QueryDebrief(idm *IncidentDebriefMessage) *IncidentDebriefQuery {
 	query := (&IncidentDebriefClient{config: c.config}).Query()
@@ -1864,6 +2116,22 @@ func (c *IncidentDebriefQuestionClient) GetX(ctx context.Context, id uuid.UUID) 
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentDebriefQuestion.
+func (c *IncidentDebriefQuestionClient) QueryTenant(idq *IncidentDebriefQuestion) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := idq.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentdebriefquestion.Table, incidentdebriefquestion.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefquestion.TenantTable, incidentdebriefquestion.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(idq.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryMessages queries the messages edge of a IncidentDebriefQuestion.
@@ -2096,6 +2364,22 @@ func (c *IncidentDebriefSuggestionClient) GetX(ctx context.Context, id uuid.UUID
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentDebriefSuggestion.
+func (c *IncidentDebriefSuggestionClient) QueryTenant(ids *IncidentDebriefSuggestion) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ids.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentdebriefsuggestion.Table, incidentdebriefsuggestion.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentdebriefsuggestion.TenantTable, incidentdebriefsuggestion.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ids.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryDebrief queries the debrief edge of a IncidentDebriefSuggestion.
 func (c *IncidentDebriefSuggestionClient) QueryDebrief(ids *IncidentDebriefSuggestion) *IncidentDebriefQuery {
 	query := (&IncidentDebriefClient{config: c.config}).Query()
@@ -2244,6 +2528,22 @@ func (c *IncidentEventClient) GetX(ctx context.Context, id uuid.UUID) *IncidentE
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryTenant(ie *IncidentEvent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ie.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentevent.TenantTable, incidentevent.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ie.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryIncident queries the incident edge of a IncidentEvent.
@@ -2476,6 +2776,22 @@ func (c *IncidentEventContextClient) GetX(ctx context.Context, id uuid.UUID) *In
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentEventContext.
+func (c *IncidentEventContextClient) QueryTenant(iec *IncidentEventContext) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iec.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventcontext.Table, incidenteventcontext.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontext.TenantTable, incidenteventcontext.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(iec.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEvent queries the event edge of a IncidentEventContext.
 func (c *IncidentEventContextClient) QueryEvent(iec *IncidentEventContext) *IncidentEventQuery {
 	query := (&IncidentEventClient{config: c.config}).Query()
@@ -2624,6 +2940,22 @@ func (c *IncidentEventContributingFactorClient) GetX(ctx context.Context, id uui
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentEventContributingFactor.
+func (c *IncidentEventContributingFactorClient) QueryTenant(iecf *IncidentEventContributingFactor) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iecf.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontributingfactor.TenantTable, incidenteventcontributingfactor.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(iecf.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryEvent queries the event edge of a IncidentEventContributingFactor.
@@ -2776,6 +3108,22 @@ func (c *IncidentEventEvidenceClient) GetX(ctx context.Context, id uuid.UUID) *I
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentEventEvidence.
+func (c *IncidentEventEvidenceClient) QueryTenant(iee *IncidentEventEvidence) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iee.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventevidence.Table, incidenteventevidence.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventevidence.TenantTable, incidenteventevidence.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(iee.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEvent queries the event edge of a IncidentEventEvidence.
 func (c *IncidentEventEvidenceClient) QueryEvent(iee *IncidentEventEvidence) *IncidentEventQuery {
 	query := (&IncidentEventClient{config: c.config}).Query()
@@ -2924,6 +3272,22 @@ func (c *IncidentEventSystemComponentClient) GetX(ctx context.Context, id uuid.U
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentEventSystemComponent.
+func (c *IncidentEventSystemComponentClient) QueryTenant(iesc *IncidentEventSystemComponent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := iesc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.TenantTable, incidenteventsystemcomponent.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(iesc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryEvent queries the event edge of a IncidentEventSystemComponent.
@@ -3090,6 +3454,22 @@ func (c *IncidentFieldClient) GetX(ctx context.Context, id uuid.UUID) *IncidentF
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentField.
+func (c *IncidentFieldClient) QueryTenant(_if *IncidentField) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _if.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentfield.Table, incidentfield.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentfield.TenantTable, incidentfield.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(_if.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryOptions queries the options edge of a IncidentField.
@@ -3259,6 +3639,22 @@ func (c *IncidentFieldOptionClient) GetX(ctx context.Context, id uuid.UUID) *Inc
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentFieldOption.
+func (c *IncidentFieldOptionClient) QueryTenant(ifo *IncidentFieldOption) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ifo.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentfieldoption.Table, incidentfieldoption.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentfieldoption.TenantTable, incidentfieldoption.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ifo.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncidentField queries the incident_field edge of a IncidentFieldOption.
 func (c *IncidentFieldOptionClient) QueryIncidentField(ifo *IncidentFieldOption) *IncidentFieldQuery {
 	query := (&IncidentFieldClient{config: c.config}).Query()
@@ -3424,6 +3820,22 @@ func (c *IncidentLinkClient) GetX(ctx context.Context, id int) *IncidentLink {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentLink.
+func (c *IncidentLinkClient) QueryTenant(il *IncidentLink) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := il.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentlink.Table, incidentlink.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentlink.TenantTable, incidentlink.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(il.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryIncident queries the incident edge of a IncidentLink.
@@ -3592,6 +4004,22 @@ func (c *IncidentMilestoneClient) GetX(ctx context.Context, id uuid.UUID) *Incid
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentMilestone.
+func (c *IncidentMilestoneClient) QueryTenant(im *IncidentMilestone) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := im.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentmilestone.Table, incidentmilestone.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentmilestone.TenantTable, incidentmilestone.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(im.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncident queries the incident edge of a IncidentMilestone.
 func (c *IncidentMilestoneClient) QueryIncident(im *IncidentMilestone) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -3740,6 +4168,22 @@ func (c *IncidentRoleClient) GetX(ctx context.Context, id uuid.UUID) *IncidentRo
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentRole.
+func (c *IncidentRoleClient) QueryTenant(ir *IncidentRole) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ir.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentrole.Table, incidentrole.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentrole.TenantTable, incidentrole.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ir.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryAssignments queries the assignments edge of a IncidentRole.
@@ -3909,15 +4353,15 @@ func (c *IncidentRoleAssignmentClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
-// QueryRole queries the role edge of a IncidentRoleAssignment.
-func (c *IncidentRoleAssignmentClient) QueryRole(ira *IncidentRoleAssignment) *IncidentRoleQuery {
-	query := (&IncidentRoleClient{config: c.config}).Query()
+// QueryTenant queries the tenant edge of a IncidentRoleAssignment.
+func (c *IncidentRoleAssignmentClient) QueryTenant(ira *IncidentRoleAssignment) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ira.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, id),
-			sqlgraph.To(incidentrole.Table, incidentrole.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.RoleTable, incidentroleassignment.RoleColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.TenantTable, incidentroleassignment.TenantColumn),
 		)
 		fromV = sqlgraph.Neighbors(ira.driver.Dialect(), step)
 		return fromV, nil
@@ -3950,6 +4394,22 @@ func (c *IncidentRoleAssignmentClient) QueryUser(ira *IncidentRoleAssignment) *U
 			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.UserTable, incidentroleassignment.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(ira.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRole queries the role edge of a IncidentRoleAssignment.
+func (c *IncidentRoleAssignmentClient) QueryRole(ira *IncidentRoleAssignment) *IncidentRoleQuery {
+	query := (&IncidentRoleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ira.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentroleassignment.Table, incidentroleassignment.FieldID, id),
+			sqlgraph.To(incidentrole.Table, incidentrole.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentroleassignment.RoleTable, incidentroleassignment.RoleColumn),
 		)
 		fromV = sqlgraph.Neighbors(ira.driver.Dialect(), step)
 		return fromV, nil
@@ -4089,6 +4549,22 @@ func (c *IncidentSeverityClient) GetX(ctx context.Context, id uuid.UUID) *Incide
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentSeverity.
+func (c *IncidentSeverityClient) QueryTenant(is *IncidentSeverity) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := is.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentseverity.Table, incidentseverity.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.TenantTable, incidentseverity.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(is.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryIncidents queries the incidents edge of a IncidentSeverity.
@@ -4258,6 +4734,22 @@ func (c *IncidentTagClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTag
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a IncidentTag.
+func (c *IncidentTagClient) QueryTenant(it *IncidentTag) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := it.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttag.Table, incidenttag.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttag.TenantTable, incidenttag.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(it.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncidents queries the incidents edge of a IncidentTag.
 func (c *IncidentTagClient) QueryIncidents(it *IncidentTag) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -4314,172 +4806,6 @@ func (c *IncidentTagClient) mutate(ctx context.Context, m *IncidentTagMutation) 
 		return (&IncidentTagDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentTag mutation op: %q", m.Op())
-	}
-}
-
-// IncidentTeamAssignmentClient is a client for the IncidentTeamAssignment schema.
-type IncidentTeamAssignmentClient struct {
-	config
-}
-
-// NewIncidentTeamAssignmentClient returns a client for the IncidentTeamAssignment from the given config.
-func NewIncidentTeamAssignmentClient(c config) *IncidentTeamAssignmentClient {
-	return &IncidentTeamAssignmentClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidentteamassignment.Hooks(f(g(h())))`.
-func (c *IncidentTeamAssignmentClient) Use(hooks ...Hook) {
-	c.hooks.IncidentTeamAssignment = append(c.hooks.IncidentTeamAssignment, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidentteamassignment.Intercept(f(g(h())))`.
-func (c *IncidentTeamAssignmentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentTeamAssignment = append(c.inters.IncidentTeamAssignment, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentTeamAssignment entity.
-func (c *IncidentTeamAssignmentClient) Create() *IncidentTeamAssignmentCreate {
-	mutation := newIncidentTeamAssignmentMutation(c.config, OpCreate)
-	return &IncidentTeamAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentTeamAssignment entities.
-func (c *IncidentTeamAssignmentClient) CreateBulk(builders ...*IncidentTeamAssignmentCreate) *IncidentTeamAssignmentCreateBulk {
-	return &IncidentTeamAssignmentCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentTeamAssignmentClient) MapCreateBulk(slice any, setFunc func(*IncidentTeamAssignmentCreate, int)) *IncidentTeamAssignmentCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentTeamAssignmentCreateBulk{err: fmt.Errorf("calling to IncidentTeamAssignmentClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentTeamAssignmentCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentTeamAssignmentCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentTeamAssignment.
-func (c *IncidentTeamAssignmentClient) Update() *IncidentTeamAssignmentUpdate {
-	mutation := newIncidentTeamAssignmentMutation(c.config, OpUpdate)
-	return &IncidentTeamAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentTeamAssignmentClient) UpdateOne(ita *IncidentTeamAssignment) *IncidentTeamAssignmentUpdateOne {
-	mutation := newIncidentTeamAssignmentMutation(c.config, OpUpdateOne, withIncidentTeamAssignment(ita))
-	return &IncidentTeamAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentTeamAssignmentClient) UpdateOneID(id int) *IncidentTeamAssignmentUpdateOne {
-	mutation := newIncidentTeamAssignmentMutation(c.config, OpUpdateOne, withIncidentTeamAssignmentID(id))
-	return &IncidentTeamAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentTeamAssignment.
-func (c *IncidentTeamAssignmentClient) Delete() *IncidentTeamAssignmentDelete {
-	mutation := newIncidentTeamAssignmentMutation(c.config, OpDelete)
-	return &IncidentTeamAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentTeamAssignmentClient) DeleteOne(ita *IncidentTeamAssignment) *IncidentTeamAssignmentDeleteOne {
-	return c.DeleteOneID(ita.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentTeamAssignmentClient) DeleteOneID(id int) *IncidentTeamAssignmentDeleteOne {
-	builder := c.Delete().Where(incidentteamassignment.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentTeamAssignmentDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentTeamAssignment.
-func (c *IncidentTeamAssignmentClient) Query() *IncidentTeamAssignmentQuery {
-	return &IncidentTeamAssignmentQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentTeamAssignment},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentTeamAssignment entity by its id.
-func (c *IncidentTeamAssignmentClient) Get(ctx context.Context, id int) (*IncidentTeamAssignment, error) {
-	return c.Query().Where(incidentteamassignment.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentTeamAssignmentClient) GetX(ctx context.Context, id int) *IncidentTeamAssignment {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryIncident queries the incident edge of a IncidentTeamAssignment.
-func (c *IncidentTeamAssignmentClient) QueryIncident(ita *IncidentTeamAssignment) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ita.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentteamassignment.Table, incidentteamassignment.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentteamassignment.IncidentTable, incidentteamassignment.IncidentColumn),
-		)
-		fromV = sqlgraph.Neighbors(ita.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTeam queries the team edge of a IncidentTeamAssignment.
-func (c *IncidentTeamAssignmentClient) QueryTeam(ita *IncidentTeamAssignment) *TeamQuery {
-	query := (&TeamClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := ita.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentteamassignment.Table, incidentteamassignment.FieldID, id),
-			sqlgraph.To(team.Table, team.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentteamassignment.TeamTable, incidentteamassignment.TeamColumn),
-		)
-		fromV = sqlgraph.Neighbors(ita.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentTeamAssignmentClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentTeamAssignment
-	return append(hooks[:len(hooks):len(hooks)], incidentteamassignment.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentTeamAssignmentClient) Interceptors() []Interceptor {
-	return c.inters.IncidentTeamAssignment
-}
-
-func (c *IncidentTeamAssignmentClient) mutate(ctx context.Context, m *IncidentTeamAssignmentMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentTeamAssignmentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentTeamAssignmentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentTeamAssignmentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentTeamAssignmentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentTeamAssignment mutation op: %q", m.Op())
 	}
 }
 
@@ -4589,6 +4915,22 @@ func (c *IncidentTypeClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTy
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentType.
+func (c *IncidentTypeClient) QueryTenant(it *IncidentType) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := it.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttype.Table, incidenttype.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttype.TenantTable, incidenttype.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(it.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryIncidents queries the incidents edge of a IncidentType.
@@ -4758,15 +5100,15 @@ func (c *MeetingScheduleClient) GetX(ctx context.Context, id uuid.UUID) *Meeting
 	return obj
 }
 
-// QuerySessions queries the sessions edge of a MeetingSchedule.
-func (c *MeetingScheduleClient) QuerySessions(ms *MeetingSchedule) *MeetingSessionQuery {
-	query := (&MeetingSessionClient{config: c.config}).Query()
+// QueryTenant queries the tenant edge of a MeetingSchedule.
+func (c *MeetingScheduleClient) QueryTenant(ms *MeetingSchedule) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := ms.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, id),
-			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, meetingschedule.SessionsTable, meetingschedule.SessionsColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, meetingschedule.TenantTable, meetingschedule.TenantColumn),
 		)
 		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
 		return fromV, nil
@@ -4783,6 +5125,22 @@ func (c *MeetingScheduleClient) QueryOwningTeam(ms *MeetingSchedule) *TeamQuery 
 			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, id),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, meetingschedule.OwningTeamTable, meetingschedule.OwningTeamPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySessions queries the sessions edge of a MeetingSchedule.
+func (c *MeetingScheduleClient) QuerySessions(ms *MeetingSchedule) *MeetingSessionQuery {
+	query := (&MeetingSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ms.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, id),
+			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, meetingschedule.SessionsTable, meetingschedule.SessionsColumn),
 		)
 		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
 		return fromV, nil
@@ -4925,6 +5283,22 @@ func (c *MeetingSessionClient) GetX(ctx context.Context, id uuid.UUID) *MeetingS
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a MeetingSession.
+func (c *MeetingSessionClient) QueryTenant(ms *MeetingSession) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ms.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, meetingsession.TenantTable, meetingsession.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncidents queries the incidents edge of a MeetingSession.
 func (c *MeetingSessionClient) QueryIncidents(ms *MeetingSession) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -4934,6 +5308,22 @@ func (c *MeetingSessionClient) QueryIncidents(ms *MeetingSession) *IncidentQuery
 			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySchedule queries the schedule edge of a MeetingSession.
+func (c *MeetingSessionClient) QuerySchedule(ms *MeetingSession) *MeetingScheduleQuery {
+	query := (&MeetingScheduleClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ms.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingsession.Table, meetingsession.FieldID, id),
+			sqlgraph.To(meetingschedule.Table, meetingschedule.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, meetingsession.ScheduleTable, meetingsession.ScheduleColumn),
 		)
 		fromV = sqlgraph.Neighbors(ms.driver.Dialect(), step)
 		return fromV, nil
@@ -5075,6 +5465,22 @@ func (c *OncallAnnotationClient) GetX(ctx context.Context, id uuid.UUID) *Oncall
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallAnnotation.
+func (c *OncallAnnotationClient) QueryTenant(oa *OncallAnnotation) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallannotation.TenantTable, oncallannotation.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryEvent queries the event edge of a OncallAnnotation.
 func (c *OncallAnnotationClient) QueryEvent(oa *OncallAnnotation) *OncallEventQuery {
 	query := (&OncallEventClient{config: c.config}).Query()
@@ -5124,13 +5530,13 @@ func (c *OncallAnnotationClient) QueryCreator(oa *OncallAnnotation) *UserQuery {
 }
 
 // QueryAlertFeedback queries the alert_feedback edge of a OncallAnnotation.
-func (c *OncallAnnotationClient) QueryAlertFeedback(oa *OncallAnnotation) *OncallAnnotationAlertFeedbackQuery {
-	query := (&OncallAnnotationAlertFeedbackClient{config: c.config}).Query()
+func (c *OncallAnnotationClient) QueryAlertFeedback(oa *OncallAnnotation) *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := oa.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(oncallannotation.Table, oncallannotation.FieldID, id),
-			sqlgraph.To(oncallannotationalertfeedback.Table, oncallannotationalertfeedback.FieldID),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallannotation.AlertFeedbackTable, oncallannotation.AlertFeedbackColumn),
 		)
 		fromV = sqlgraph.Neighbors(oa.driver.Dialect(), step)
@@ -5178,156 +5584,6 @@ func (c *OncallAnnotationClient) mutate(ctx context.Context, m *OncallAnnotation
 		return (&OncallAnnotationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OncallAnnotation mutation op: %q", m.Op())
-	}
-}
-
-// OncallAnnotationAlertFeedbackClient is a client for the OncallAnnotationAlertFeedback schema.
-type OncallAnnotationAlertFeedbackClient struct {
-	config
-}
-
-// NewOncallAnnotationAlertFeedbackClient returns a client for the OncallAnnotationAlertFeedback from the given config.
-func NewOncallAnnotationAlertFeedbackClient(c config) *OncallAnnotationAlertFeedbackClient {
-	return &OncallAnnotationAlertFeedbackClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `oncallannotationalertfeedback.Hooks(f(g(h())))`.
-func (c *OncallAnnotationAlertFeedbackClient) Use(hooks ...Hook) {
-	c.hooks.OncallAnnotationAlertFeedback = append(c.hooks.OncallAnnotationAlertFeedback, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `oncallannotationalertfeedback.Intercept(f(g(h())))`.
-func (c *OncallAnnotationAlertFeedbackClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OncallAnnotationAlertFeedback = append(c.inters.OncallAnnotationAlertFeedback, interceptors...)
-}
-
-// Create returns a builder for creating a OncallAnnotationAlertFeedback entity.
-func (c *OncallAnnotationAlertFeedbackClient) Create() *OncallAnnotationAlertFeedbackCreate {
-	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpCreate)
-	return &OncallAnnotationAlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OncallAnnotationAlertFeedback entities.
-func (c *OncallAnnotationAlertFeedbackClient) CreateBulk(builders ...*OncallAnnotationAlertFeedbackCreate) *OncallAnnotationAlertFeedbackCreateBulk {
-	return &OncallAnnotationAlertFeedbackCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OncallAnnotationAlertFeedbackClient) MapCreateBulk(slice any, setFunc func(*OncallAnnotationAlertFeedbackCreate, int)) *OncallAnnotationAlertFeedbackCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OncallAnnotationAlertFeedbackCreateBulk{err: fmt.Errorf("calling to OncallAnnotationAlertFeedbackClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OncallAnnotationAlertFeedbackCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OncallAnnotationAlertFeedbackCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OncallAnnotationAlertFeedback.
-func (c *OncallAnnotationAlertFeedbackClient) Update() *OncallAnnotationAlertFeedbackUpdate {
-	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdate)
-	return &OncallAnnotationAlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OncallAnnotationAlertFeedbackClient) UpdateOne(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationAlertFeedbackUpdateOne {
-	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdateOne, withOncallAnnotationAlertFeedback(oaaf))
-	return &OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OncallAnnotationAlertFeedbackClient) UpdateOneID(id uuid.UUID) *OncallAnnotationAlertFeedbackUpdateOne {
-	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpUpdateOne, withOncallAnnotationAlertFeedbackID(id))
-	return &OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OncallAnnotationAlertFeedback.
-func (c *OncallAnnotationAlertFeedbackClient) Delete() *OncallAnnotationAlertFeedbackDelete {
-	mutation := newOncallAnnotationAlertFeedbackMutation(c.config, OpDelete)
-	return &OncallAnnotationAlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OncallAnnotationAlertFeedbackClient) DeleteOne(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationAlertFeedbackDeleteOne {
-	return c.DeleteOneID(oaaf.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OncallAnnotationAlertFeedbackClient) DeleteOneID(id uuid.UUID) *OncallAnnotationAlertFeedbackDeleteOne {
-	builder := c.Delete().Where(oncallannotationalertfeedback.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OncallAnnotationAlertFeedbackDeleteOne{builder}
-}
-
-// Query returns a query builder for OncallAnnotationAlertFeedback.
-func (c *OncallAnnotationAlertFeedbackClient) Query() *OncallAnnotationAlertFeedbackQuery {
-	return &OncallAnnotationAlertFeedbackQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOncallAnnotationAlertFeedback},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OncallAnnotationAlertFeedback entity by its id.
-func (c *OncallAnnotationAlertFeedbackClient) Get(ctx context.Context, id uuid.UUID) (*OncallAnnotationAlertFeedback, error) {
-	return c.Query().Where(oncallannotationalertfeedback.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OncallAnnotationAlertFeedbackClient) GetX(ctx context.Context, id uuid.UUID) *OncallAnnotationAlertFeedback {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryAnnotation queries the annotation edge of a OncallAnnotationAlertFeedback.
-func (c *OncallAnnotationAlertFeedbackClient) QueryAnnotation(oaaf *OncallAnnotationAlertFeedback) *OncallAnnotationQuery {
-	query := (&OncallAnnotationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := oaaf.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallannotationalertfeedback.Table, oncallannotationalertfeedback.FieldID, id),
-			sqlgraph.To(oncallannotation.Table, oncallannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, oncallannotationalertfeedback.AnnotationTable, oncallannotationalertfeedback.AnnotationColumn),
-		)
-		fromV = sqlgraph.Neighbors(oaaf.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OncallAnnotationAlertFeedbackClient) Hooks() []Hook {
-	hooks := c.hooks.OncallAnnotationAlertFeedback
-	return append(hooks[:len(hooks):len(hooks)], oncallannotationalertfeedback.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *OncallAnnotationAlertFeedbackClient) Interceptors() []Interceptor {
-	return c.inters.OncallAnnotationAlertFeedback
-}
-
-func (c *OncallAnnotationAlertFeedbackClient) mutate(ctx context.Context, m *OncallAnnotationAlertFeedbackMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OncallAnnotationAlertFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OncallAnnotationAlertFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OncallAnnotationAlertFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OncallAnnotationAlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OncallAnnotationAlertFeedback mutation op: %q", m.Op())
 	}
 }
 
@@ -5437,6 +5693,22 @@ func (c *OncallEventClient) GetX(ctx context.Context, id uuid.UUID) *OncallEvent
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a OncallEvent.
+func (c *OncallEventClient) QueryTenant(oe *OncallEvent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oe.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallevent.Table, oncallevent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallevent.TenantTable, oncallevent.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(oe.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryRoster queries the roster edge of a OncallEvent.
@@ -5621,6 +5893,22 @@ func (c *OncallHandoverTemplateClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallHandoverTemplate.
+func (c *OncallHandoverTemplateClient) QueryTenant(oht *OncallHandoverTemplate) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oht.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallhandovertemplate.TenantTable, oncallhandovertemplate.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(oht.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRoster queries the roster edge of a OncallHandoverTemplate.
 func (c *OncallHandoverTemplateClient) QueryRoster(oht *OncallHandoverTemplate) *OncallRosterQuery {
 	query := (&OncallRosterClient{config: c.config}).Query()
@@ -5769,6 +6057,22 @@ func (c *OncallRosterClient) GetX(ctx context.Context, id uuid.UUID) *OncallRost
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a OncallRoster.
+func (c *OncallRosterClient) QueryTenant(or *OncallRoster) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := or.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallroster.TenantTable, oncallroster.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(or.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QuerySchedules queries the schedules edge of a OncallRoster.
@@ -6034,6 +6338,22 @@ func (c *OncallRosterMetricsClient) GetX(ctx context.Context, id uuid.UUID) *Onc
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallRosterMetrics.
+func (c *OncallRosterMetricsClient) QueryTenant(orm *OncallRosterMetrics) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := orm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallrostermetrics.Table, oncallrostermetrics.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallrostermetrics.TenantTable, oncallrostermetrics.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(orm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRoster queries the roster edge of a OncallRosterMetrics.
 func (c *OncallRosterMetricsClient) QueryRoster(orm *OncallRosterMetrics) *OncallRosterQuery {
 	query := (&OncallRosterClient{config: c.config}).Query()
@@ -6182,6 +6502,22 @@ func (c *OncallScheduleClient) GetX(ctx context.Context, id uuid.UUID) *OncallSc
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a OncallSchedule.
+func (c *OncallScheduleClient) QueryTenant(os *OncallSchedule) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := os.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallschedule.Table, oncallschedule.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallschedule.TenantTable, oncallschedule.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(os.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryParticipants queries the participants edge of a OncallSchedule.
@@ -6351,6 +6687,22 @@ func (c *OncallScheduleParticipantClient) GetX(ctx context.Context, id uuid.UUID
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallScheduleParticipant.
+func (c *OncallScheduleParticipantClient) QueryTenant(osp *OncallScheduleParticipant) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := osp.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallscheduleparticipant.Table, oncallscheduleparticipant.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallscheduleparticipant.TenantTable, oncallscheduleparticipant.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(osp.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySchedule queries the schedule edge of a OncallScheduleParticipant.
 func (c *OncallScheduleParticipantClient) QuerySchedule(osp *OncallScheduleParticipant) *OncallScheduleQuery {
 	query := (&OncallScheduleClient{config: c.config}).Query()
@@ -6515,6 +6867,22 @@ func (c *OncallUserShiftClient) GetX(ctx context.Context, id uuid.UUID) *OncallU
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a OncallUserShift.
+func (c *OncallUserShiftClient) QueryTenant(ous *OncallUserShift) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ous.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershift.Table, oncallusershift.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershift.TenantTable, oncallusershift.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ous.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryUser queries the user edge of a OncallUserShift.
@@ -6731,6 +7099,22 @@ func (c *OncallUserShiftHandoverClient) GetX(ctx context.Context, id uuid.UUID) 
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallUserShiftHandover.
+func (c *OncallUserShiftHandoverClient) QueryTenant(oush *OncallUserShiftHandover) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := oush.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershifthandover.Table, oncallusershifthandover.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershifthandover.TenantTable, oncallusershifthandover.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(oush.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryShift queries the shift edge of a OncallUserShiftHandover.
 func (c *OncallUserShiftHandoverClient) QueryShift(oush *OncallUserShiftHandover) *OncallUserShiftQuery {
 	query := (&OncallUserShiftClient{config: c.config}).Query()
@@ -6897,6 +7281,22 @@ func (c *OncallUserShiftMetricsClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a OncallUserShiftMetrics.
+func (c *OncallUserShiftMetricsClient) QueryTenant(ousm *OncallUserShiftMetrics) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ousm.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallusershiftmetrics.Table, oncallusershiftmetrics.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallusershiftmetrics.TenantTable, oncallusershiftmetrics.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(ousm.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryShift queries the shift edge of a OncallUserShiftMetrics.
 func (c *OncallUserShiftMetricsClient) QueryShift(ousm *OncallUserShiftMetrics) *OncallUserShiftQuery {
 	query := (&OncallUserShiftClient{config: c.config}).Query()
@@ -7045,6 +7445,22 @@ func (c *PlaybookClient) GetX(ctx context.Context, id uuid.UUID) *Playbook {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a Playbook.
+func (c *PlaybookClient) QueryTenant(pl *Playbook) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pl.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(playbook.Table, playbook.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, playbook.TenantTable, playbook.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryAlerts queries the alerts edge of a Playbook.
@@ -7497,6 +7913,22 @@ func (c *RetrospectiveClient) GetX(ctx context.Context, id uuid.UUID) *Retrospec
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a Retrospective.
+func (c *RetrospectiveClient) QueryTenant(r *Retrospective) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospective.Table, retrospective.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.TenantTable, retrospective.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncident queries the incident edge of a Retrospective.
 func (c *RetrospectiveClient) QueryIncident(r *Retrospective) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -7677,6 +8109,22 @@ func (c *RetrospectiveDiscussionClient) GetX(ctx context.Context, id uuid.UUID) 
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a RetrospectiveDiscussion.
+func (c *RetrospectiveDiscussionClient) QueryTenant(rd *RetrospectiveDiscussion) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rd.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivediscussion.Table, retrospectivediscussion.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussion.TenantTable, retrospectivediscussion.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(rd.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryRetrospective queries the retrospective edge of a RetrospectiveDiscussion.
@@ -7861,6 +8309,22 @@ func (c *RetrospectiveDiscussionReplyClient) GetX(ctx context.Context, id uuid.U
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a RetrospectiveDiscussionReply.
+func (c *RetrospectiveDiscussionReplyClient) QueryTenant(rdr *RetrospectiveDiscussionReply) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rdr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivediscussionreply.Table, retrospectivediscussionreply.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivediscussionreply.TenantTable, retrospectivediscussionreply.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(rdr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryDiscussion queries the discussion edge of a RetrospectiveDiscussionReply.
 func (c *RetrospectiveDiscussionReplyClient) QueryDiscussion(rdr *RetrospectiveDiscussionReply) *RetrospectiveDiscussionQuery {
 	query := (&RetrospectiveDiscussionClient{config: c.config}).Query()
@@ -8041,6 +8505,22 @@ func (c *RetrospectiveReviewClient) GetX(ctx context.Context, id uuid.UUID) *Ret
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a RetrospectiveReview.
+func (c *RetrospectiveReviewClient) QueryTenant(rr *RetrospectiveReview) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := rr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(retrospectivereview.Table, retrospectivereview.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivereview.TenantTable, retrospectivereview.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(rr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryRetrospective queries the retrospective edge of a RetrospectiveReview.
@@ -8241,6 +8721,22 @@ func (c *SystemAnalysisClient) GetX(ctx context.Context, id uuid.UUID) *SystemAn
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryTenant(sa *SystemAnalysis) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TenantTable, systemanalysis.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRetrospective queries the retrospective edge of a SystemAnalysis.
 func (c *SystemAnalysisClient) QueryRetrospective(sa *SystemAnalysis) *RetrospectiveQuery {
 	query := (&RetrospectiveClient{config: c.config}).Query()
@@ -8439,6 +8935,22 @@ func (c *SystemAnalysisComponentClient) GetX(ctx context.Context, id uuid.UUID) 
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemAnalysisComponent.
+func (c *SystemAnalysisComponentClient) QueryTenant(sac *SystemAnalysisComponent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sac.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.TenantTable, systemanalysiscomponent.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sac.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryAnalysis queries the analysis edge of a SystemAnalysisComponent.
 func (c *SystemAnalysisComponentClient) QueryAnalysis(sac *SystemAnalysisComponent) *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: c.config}).Query()
@@ -8603,6 +9115,22 @@ func (c *SystemAnalysisRelationshipClient) GetX(ctx context.Context, id uuid.UUI
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemAnalysisRelationship.
+func (c *SystemAnalysisRelationshipClient) QueryTenant(sar *SystemAnalysisRelationship) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sar.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TenantTable, systemanalysisrelationship.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sar.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QuerySystemAnalysis queries the system_analysis edge of a SystemAnalysisRelationship.
@@ -8833,6 +9361,22 @@ func (c *SystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemC
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemComponent.
+func (c *SystemComponentClient) QueryTenant(sc *SystemComponent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.TenantTable, systemcomponent.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryKind queries the kind edge of a SystemComponent.
@@ -9145,6 +9689,22 @@ func (c *SystemComponentConstraintClient) GetX(ctx context.Context, id uuid.UUID
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemComponentConstraint.
+func (c *SystemComponentConstraintClient) QueryTenant(scc *SystemComponentConstraint) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.TenantTable, systemcomponentconstraint.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryComponent queries the component edge of a SystemComponentConstraint.
 func (c *SystemComponentConstraintClient) QueryComponent(scc *SystemComponentConstraint) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
@@ -9309,6 +9869,22 @@ func (c *SystemComponentControlClient) GetX(ctx context.Context, id uuid.UUID) *
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemComponentControl.
+func (c *SystemComponentControlClient) QueryTenant(scc *SystemComponentControl) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scc.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrol.TenantTable, systemcomponentcontrol.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(scc.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryComponent queries the component edge of a SystemComponentControl.
@@ -9493,6 +10069,22 @@ func (c *SystemComponentKindClient) GetX(ctx context.Context, id uuid.UUID) *Sys
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemComponentKind.
+func (c *SystemComponentKindClient) QueryTenant(sck *SystemComponentKind) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sck.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentkind.Table, systemcomponentkind.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentkind.TenantTable, systemcomponentkind.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sck.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryComponents queries the components edge of a SystemComponentKind.
 func (c *SystemComponentKindClient) QueryComponents(sck *SystemComponentKind) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
@@ -9641,6 +10233,22 @@ func (c *SystemComponentRelationshipClient) GetX(ctx context.Context, id uuid.UU
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemComponentRelationship.
+func (c *SystemComponentRelationshipClient) QueryTenant(scr *SystemComponentRelationship) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scr.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TenantTable, systemcomponentrelationship.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(scr.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QuerySource queries the source edge of a SystemComponentRelationship.
@@ -9841,6 +10449,22 @@ func (c *SystemComponentSignalClient) GetX(ctx context.Context, id uuid.UUID) *S
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemComponentSignal.
+func (c *SystemComponentSignalClient) QueryTenant(scs *SystemComponentSignal) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := scs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.TenantTable, systemcomponentsignal.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(scs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryComponent queries the component edge of a SystemComponentSignal.
 func (c *SystemComponentSignalClient) QueryComponent(scs *SystemComponentSignal) *SystemComponentQuery {
 	query := (&SystemComponentClient{config: c.config}).Query()
@@ -10021,6 +10645,22 @@ func (c *SystemHazardClient) GetX(ctx context.Context, id uuid.UUID) *SystemHaza
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a SystemHazard.
+func (c *SystemHazardClient) QueryTenant(sh *SystemHazard) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := sh.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.TenantTable, systemhazard.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(sh.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryComponents queries the components edge of a SystemHazard.
@@ -10205,6 +10845,22 @@ func (c *SystemRelationshipControlActionClient) GetX(ctx context.Context, id uui
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemRelationshipControlAction.
+func (c *SystemRelationshipControlActionClient) QueryTenant(srca *SystemRelationshipControlAction) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := srca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.TenantTable, systemrelationshipcontrolaction.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(srca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRelationship queries the relationship edge of a SystemRelationshipControlAction.
 func (c *SystemRelationshipControlActionClient) QueryRelationship(srca *SystemRelationshipControlAction) *SystemAnalysisRelationshipQuery {
 	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
@@ -10371,6 +11027,22 @@ func (c *SystemRelationshipFeedbackSignalClient) GetX(ctx context.Context, id uu
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a SystemRelationshipFeedbackSignal.
+func (c *SystemRelationshipFeedbackSignalClient) QueryTenant(srfs *SystemRelationshipFeedbackSignal) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := srfs.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.TenantTable, systemrelationshipfeedbacksignal.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(srfs.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRelationship queries the relationship edge of a SystemRelationshipFeedbackSignal.
 func (c *SystemRelationshipFeedbackSignalClient) QueryRelationship(srfs *SystemRelationshipFeedbackSignal) *SystemAnalysisRelationshipQuery {
 	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
@@ -10535,6 +11207,22 @@ func (c *TaskClient) GetX(ctx context.Context, id uuid.UUID) *Task {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryTenant queries the tenant edge of a Task.
+func (c *TaskClient) QueryTenant(t *Task) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(task.Table, task.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, task.TenantTable, task.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // QueryTickets queries the tickets edge of a Task.
@@ -10735,6 +11423,22 @@ func (c *TeamClient) GetX(ctx context.Context, id uuid.UUID) *Team {
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a Team.
+func (c *TeamClient) QueryTenant(t *Team) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(team.Table, team.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, team.TenantTable, team.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryUsers queries the users edge of a Team.
 func (c *TeamClient) QueryUsers(t *Team) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
@@ -10760,22 +11464,6 @@ func (c *TeamClient) QueryOncallRosters(t *Team) *OncallRosterQuery {
 			sqlgraph.From(team.Table, team.FieldID, id),
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, team.OncallRostersTable, team.OncallRostersPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncidentAssignments queries the incident_assignments edge of a Team.
-func (c *TeamClient) QueryIncidentAssignments(t *Team) *IncidentTeamAssignmentQuery {
-	query := (&IncidentTeamAssignmentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(team.Table, team.FieldID, id),
-			sqlgraph.To(incidentteamassignment.Table, incidentteamassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, team.IncidentAssignmentsTable, team.IncidentAssignmentsColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil
@@ -11067,6 +11755,22 @@ func (c *TicketClient) GetX(ctx context.Context, id uuid.UUID) *Ticket {
 	return obj
 }
 
+// QueryTenant queries the tenant edge of a Ticket.
+func (c *TicketClient) QueryTenant(t *Ticket) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := t.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ticket.Table, ticket.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ticket.TenantTable, ticket.TenantColumn),
+		)
+		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryTasks queries the tasks edge of a Ticket.
 func (c *TicketClient) QueryTasks(t *Ticket) *TaskQuery {
 	query := (&TaskClient{config: c.config}).Query()
@@ -11313,15 +12017,15 @@ func (c *UserClient) QueryOncallAnnotations(u *User) *OncallAnnotationQuery {
 	return query
 }
 
-// QueryIncidentRoleAssignments queries the incident_role_assignments edge of a User.
-func (c *UserClient) QueryIncidentRoleAssignments(u *User) *IncidentRoleAssignmentQuery {
-	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
+// QueryIncidents queries the incidents edge of a User.
+func (c *UserClient) QueryIncidents(u *User) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := u.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, user.IncidentRoleAssignmentsTable, user.IncidentRoleAssignmentsColumn),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, user.IncidentsTable, user.IncidentsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
 		return fromV, nil
@@ -11409,6 +12113,22 @@ func (c *UserClient) QueryRetrospectiveReviewResponses(u *User) *RetrospectiveRe
 	return query
 }
 
+// QueryRoleAssignments queries the role_assignments edge of a User.
+func (c *UserClient) QueryRoleAssignments(u *User) *IncidentRoleAssignmentQuery {
+	query := (&IncidentRoleAssignmentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := u.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, user.RoleAssignmentsTable, user.RoleAssignmentsColumn),
+		)
+		fromV = sqlgraph.Neighbors(u.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *UserClient) Hooks() []Hook {
 	hooks := c.hooks.User
@@ -11438,13 +12158,13 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertMetrics, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
+		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
+		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
+		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
+		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
 		OncallUserShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
@@ -11456,13 +12176,13 @@ type (
 		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, AlertMetrics, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTeamAssignment, IncidentType, MeetingSchedule,
-		MeetingSession, OncallAnnotation, OncallAnnotationAlertFeedback, OncallEvent,
+		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
+		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
+		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
+		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
 		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
 		OncallScheduleParticipant, OncallUserShift, OncallUserShiftHandover,
 		OncallUserShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,

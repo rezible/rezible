@@ -517,21 +517,21 @@ func HasOncallAnnotationsWith(preds ...predicate.OncallAnnotation) predicate.Use
 	})
 }
 
-// HasIncidentRoleAssignments applies the HasEdge predicate on the "incident_role_assignments" edge.
-func HasIncidentRoleAssignments() predicate.User {
+// HasIncidents applies the HasEdge predicate on the "incidents" edge.
+func HasIncidents() predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, IncidentRoleAssignmentsTable, IncidentRoleAssignmentsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, IncidentsTable, IncidentsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasIncidentRoleAssignmentsWith applies the HasEdge predicate on the "incident_role_assignments" edge with a given conditions (other predicates).
-func HasIncidentRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate.User {
+// HasIncidentsWith applies the HasEdge predicate on the "incidents" edge with a given conditions (other predicates).
+func HasIncidentsWith(preds ...predicate.Incident) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
-		step := newIncidentRoleAssignmentsStep()
+		step := newIncidentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -647,6 +647,29 @@ func HasRetrospectiveReviewResponses() predicate.User {
 func HasRetrospectiveReviewResponsesWith(preds ...predicate.RetrospectiveReview) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newRetrospectiveReviewResponsesStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoleAssignments applies the HasEdge predicate on the "role_assignments" edge.
+func HasRoleAssignments() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, RoleAssignmentsTable, RoleAssignmentsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRoleAssignmentsWith applies the HasEdge predicate on the "role_assignments" edge with a given conditions (other predicates).
+func HasRoleAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newRoleAssignmentsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

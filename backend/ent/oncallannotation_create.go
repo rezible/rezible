@@ -13,11 +13,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -27,6 +28,12 @@ type OncallAnnotationCreate struct {
 	mutation *OncallAnnotationMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (oac *OncallAnnotationCreate) SetTenantID(i int) *OncallAnnotationCreate {
+	oac.mutation.SetTenantID(i)
+	return oac
 }
 
 // SetEventID sets the "event_id" field.
@@ -93,6 +100,11 @@ func (oac *OncallAnnotationCreate) SetNillableID(u *uuid.UUID) *OncallAnnotation
 	return oac
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (oac *OncallAnnotationCreate) SetTenant(t *Tenant) *OncallAnnotationCreate {
+	return oac.SetTenantID(t.ID)
+}
+
 // SetEvent sets the "event" edge to the OncallEvent entity.
 func (oac *OncallAnnotationCreate) SetEvent(o *OncallEvent) *OncallAnnotationCreate {
 	return oac.SetEventID(o.ID)
@@ -108,13 +120,13 @@ func (oac *OncallAnnotationCreate) SetCreator(u *User) *OncallAnnotationCreate {
 	return oac.SetCreatorID(u.ID)
 }
 
-// SetAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID.
+// SetAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID.
 func (oac *OncallAnnotationCreate) SetAlertFeedbackID(id uuid.UUID) *OncallAnnotationCreate {
 	oac.mutation.SetAlertFeedbackID(id)
 	return oac
 }
 
-// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity by ID if the given value is not nil.
+// SetNillableAlertFeedbackID sets the "alert_feedback" edge to the AlertFeedback entity by ID if the given value is not nil.
 func (oac *OncallAnnotationCreate) SetNillableAlertFeedbackID(id *uuid.UUID) *OncallAnnotationCreate {
 	if id != nil {
 		oac = oac.SetAlertFeedbackID(*id)
@@ -122,9 +134,9 @@ func (oac *OncallAnnotationCreate) SetNillableAlertFeedbackID(id *uuid.UUID) *On
 	return oac
 }
 
-// SetAlertFeedback sets the "alert_feedback" edge to the OncallAnnotationAlertFeedback entity.
-func (oac *OncallAnnotationCreate) SetAlertFeedback(o *OncallAnnotationAlertFeedback) *OncallAnnotationCreate {
-	return oac.SetAlertFeedbackID(o.ID)
+// SetAlertFeedback sets the "alert_feedback" edge to the AlertFeedback entity.
+func (oac *OncallAnnotationCreate) SetAlertFeedback(a *AlertFeedback) *OncallAnnotationCreate {
+	return oac.SetAlertFeedbackID(a.ID)
 }
 
 // AddHandoverIDs adds the "handovers" edge to the OncallUserShiftHandover entity by IDs.
@@ -198,6 +210,9 @@ func (oac *OncallAnnotationCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (oac *OncallAnnotationCreate) check() error {
+	if _, ok := oac.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallAnnotation.tenant_id"`)}
+	}
 	if _, ok := oac.mutation.EventID(); !ok {
 		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "OncallAnnotation.event_id"`)}
 	}
@@ -218,6 +233,9 @@ func (oac *OncallAnnotationCreate) check() error {
 	}
 	if _, ok := oac.mutation.Tags(); !ok {
 		return &ValidationError{Name: "tags", err: errors.New(`ent: missing required field "OncallAnnotation.tags"`)}
+	}
+	if len(oac.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallAnnotation.tenant"`)}
 	}
 	if len(oac.mutation.EventIDs()) == 0 {
 		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "OncallAnnotation.event"`)}
@@ -280,6 +298,23 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 		_spec.SetField(oncallannotation.FieldTags, field.TypeJSON, value)
 		_node.Tags = value
 	}
+	if nodes := oac.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallannotation.TenantTable,
+			Columns: []string{oncallannotation.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := oac.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -339,7 +374,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 			Columns: []string{oncallannotation.AlertFeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallannotationalertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -370,7 +405,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 // of the `INSERT` statement. For example:
 //
 //	client.OncallAnnotation.Create().
-//		SetEventID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -379,7 +414,7 @@ func (oac *OncallAnnotationCreate) createSpec() (*OncallAnnotation, *sqlgraph.Cr
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallAnnotationUpsert) {
-//			SetEventID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oac *OncallAnnotationCreate) OnConflict(opts ...sql.ConflictOption) *OncallAnnotationUpsertOne {
@@ -521,6 +556,9 @@ func (u *OncallAnnotationUpsertOne) UpdateNewValues() *OncallAnnotationUpsertOne
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallannotation.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallannotation.FieldTenantID)
 		}
 	}))
 	return u
@@ -794,7 +832,7 @@ func (oacb *OncallAnnotationCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallAnnotationUpsert) {
-//			SetEventID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oacb *OncallAnnotationCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallAnnotationUpsertBulk {
@@ -840,6 +878,9 @@ func (u *OncallAnnotationUpsertBulk) UpdateNewValues() *OncallAnnotationUpsertBu
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallannotation.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallannotation.FieldTenantID)
 			}
 		}
 	}))

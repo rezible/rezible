@@ -169,6 +169,9 @@ func (srfsu *SystemRelationshipFeedbackSignalUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
 		}
 	}
+	if srfsu.mutation.TenantCleared() && len(srfsu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.tenant"`)
+	}
 	if srfsu.mutation.RelationshipCleared() && len(srfsu.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.relationship"`)
 	}
@@ -437,6 +440,9 @@ func (srfsuo *SystemRelationshipFeedbackSignalUpdateOne) check() error {
 		if err := systemrelationshipfeedbacksignal.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "SystemRelationshipFeedbackSignal.type": %w`, err)}
 		}
+	}
+	if srfsuo.mutation.TenantCleared() && len(srfsuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.tenant"`)
 	}
 	if srfsuo.mutation.RelationshipCleared() && len(srfsuo.mutation.RelationshipIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "SystemRelationshipFeedbackSignal.relationship"`)

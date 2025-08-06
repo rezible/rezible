@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallEventCreate is the builder for creating a OncallEvent entity.
@@ -25,6 +26,12 @@ type OncallEventCreate struct {
 	mutation *OncallEventMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (oec *OncallEventCreate) SetTenantID(i int) *OncallEventCreate {
+	oec.mutation.SetTenantID(i)
+	return oec
 }
 
 // SetProviderID sets the "provider_id" field.
@@ -105,6 +112,11 @@ func (oec *OncallEventCreate) SetNillableID(u *uuid.UUID) *OncallEventCreate {
 	return oec
 }
 
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (oec *OncallEventCreate) SetTenant(t *Tenant) *OncallEventCreate {
+	return oec.SetTenantID(t.ID)
+}
+
 // SetRoster sets the "roster" edge to the OncallRoster entity.
 func (oec *OncallEventCreate) SetRoster(o *OncallRoster) *OncallEventCreate {
 	return oec.SetRosterID(o.ID)
@@ -179,6 +191,9 @@ func (oec *OncallEventCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (oec *OncallEventCreate) check() error {
+	if _, ok := oec.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallEvent.tenant_id"`)}
+	}
 	if _, ok := oec.mutation.ProviderID(); !ok {
 		return &ValidationError{Name: "provider_id", err: errors.New(`ent: missing required field "OncallEvent.provider_id"`)}
 	}
@@ -201,6 +216,9 @@ func (oec *OncallEventCreate) check() error {
 	}
 	if _, ok := oec.mutation.Source(); !ok {
 		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "OncallEvent.source"`)}
+	}
+	if len(oec.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallEvent.tenant"`)}
 	}
 	return nil
 }
@@ -262,6 +280,23 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 		_spec.SetField(oncallevent.FieldSource, field.TypeString, value)
 		_node.Source = value
 	}
+	if nodes := oec.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallevent.TenantTable,
+			Columns: []string{oncallevent.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := oec.mutation.RosterIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -319,7 +354,7 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 // of the `INSERT` statement. For example:
 //
 //	client.OncallEvent.Create().
-//		SetProviderID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -328,7 +363,7 @@ func (oec *OncallEventCreate) createSpec() (*OncallEvent, *sqlgraph.CreateSpec) 
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallEventUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oec *OncallEventCreate) OnConflict(opts ...sql.ConflictOption) *OncallEventUpsertOne {
@@ -488,6 +523,9 @@ func (u *OncallEventUpsertOne) UpdateNewValues() *OncallEventUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallevent.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallevent.FieldTenantID)
 		}
 	}))
 	return u
@@ -782,7 +820,7 @@ func (oecb *OncallEventCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallEventUpsert) {
-//			SetProviderID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oecb *OncallEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallEventUpsertBulk {
@@ -828,6 +866,9 @@ func (u *OncallEventUpsertBulk) UpdateNewValues() *OncallEventUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallevent.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallevent.FieldTenantID)
 			}
 		}
 	}))

@@ -48,8 +48,8 @@ type UserEdges struct {
 	OncallShifts []*OncallUserShift `json:"oncall_shifts,omitempty"`
 	// OncallAnnotations holds the value of the oncall_annotations edge.
 	OncallAnnotations []*OncallAnnotation `json:"oncall_annotations,omitempty"`
-	// IncidentRoleAssignments holds the value of the incident_role_assignments edge.
-	IncidentRoleAssignments []*IncidentRoleAssignment `json:"incident_role_assignments,omitempty"`
+	// Incidents holds the value of the incidents edge.
+	Incidents []*Incident `json:"incidents,omitempty"`
 	// IncidentDebriefs holds the value of the incident_debriefs edge.
 	IncidentDebriefs []*IncidentDebrief `json:"incident_debriefs,omitempty"`
 	// AssignedTasks holds the value of the assigned_tasks edge.
@@ -60,9 +60,11 @@ type UserEdges struct {
 	RetrospectiveReviewRequests []*RetrospectiveReview `json:"retrospective_review_requests,omitempty"`
 	// RetrospectiveReviewResponses holds the value of the retrospective_review_responses edge.
 	RetrospectiveReviewResponses []*RetrospectiveReview `json:"retrospective_review_responses,omitempty"`
+	// RoleAssignments holds the value of the role_assignments edge.
+	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [12]bool
+	loadedTypes [13]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -121,13 +123,13 @@ func (e UserEdges) OncallAnnotationsOrErr() ([]*OncallAnnotation, error) {
 	return nil, &NotLoadedError{edge: "oncall_annotations"}
 }
 
-// IncidentRoleAssignmentsOrErr returns the IncidentRoleAssignments value or an error if the edge
+// IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) IncidentRoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
+func (e UserEdges) IncidentsOrErr() ([]*Incident, error) {
 	if e.loadedTypes[6] {
-		return e.IncidentRoleAssignments, nil
+		return e.Incidents, nil
 	}
-	return nil, &NotLoadedError{edge: "incident_role_assignments"}
+	return nil, &NotLoadedError{edge: "incidents"}
 }
 
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
@@ -173,6 +175,15 @@ func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, 
 		return e.RetrospectiveReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
+}
+
+// RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
+	if e.loadedTypes[12] {
+		return e.RoleAssignments, nil
+	}
+	return nil, &NotLoadedError{edge: "role_assignments"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -280,9 +291,9 @@ func (u *User) QueryOncallAnnotations() *OncallAnnotationQuery {
 	return NewUserClient(u.config).QueryOncallAnnotations(u)
 }
 
-// QueryIncidentRoleAssignments queries the "incident_role_assignments" edge of the User entity.
-func (u *User) QueryIncidentRoleAssignments() *IncidentRoleAssignmentQuery {
-	return NewUserClient(u.config).QueryIncidentRoleAssignments(u)
+// QueryIncidents queries the "incidents" edge of the User entity.
+func (u *User) QueryIncidents() *IncidentQuery {
+	return NewUserClient(u.config).QueryIncidents(u)
 }
 
 // QueryIncidentDebriefs queries the "incident_debriefs" edge of the User entity.
@@ -308,6 +319,11 @@ func (u *User) QueryRetrospectiveReviewRequests() *RetrospectiveReviewQuery {
 // QueryRetrospectiveReviewResponses queries the "retrospective_review_responses" edge of the User entity.
 func (u *User) QueryRetrospectiveReviewResponses() *RetrospectiveReviewQuery {
 	return NewUserClient(u.config).QueryRetrospectiveReviewResponses(u)
+}
+
+// QueryRoleAssignments queries the "role_assignments" edge of the User entity.
+func (u *User) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
+	return NewUserClient(u.config).QueryRoleAssignments(u)
 }
 
 // Update returns a builder for updating this User.

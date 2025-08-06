@@ -54,9 +54,34 @@ func IDLTE(id uuid.UUID) predicate.OncallRosterMetrics {
 	return predicate.OncallRosterMetrics(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(sql.FieldEQ(FieldTenantID, v))
+}
+
 // RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
 func RosterID(v uuid.UUID) predicate.OncallRosterMetrics {
 	return predicate.OncallRosterMetrics(sql.FieldEQ(FieldRosterID, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // RosterIDEQ applies the EQ predicate on the "roster_id" field.
@@ -77,6 +102,29 @@ func RosterIDIn(vs ...uuid.UUID) predicate.OncallRosterMetrics {
 // RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
 func RosterIDNotIn(vs ...uuid.UUID) predicate.OncallRosterMetrics {
 	return predicate.OncallRosterMetrics(sql.FieldNotIn(FieldRosterID, vs...))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.OncallRosterMetrics {
+	return predicate.OncallRosterMetrics(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasRoster applies the HasEdge predicate on the "roster" edge.

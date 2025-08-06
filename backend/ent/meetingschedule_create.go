@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // MeetingScheduleCreate is the builder for creating a MeetingSchedule entity.
@@ -24,6 +25,12 @@ type MeetingScheduleCreate struct {
 	mutation *MeetingScheduleMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (msc *MeetingScheduleCreate) SetTenantID(i int) *MeetingScheduleCreate {
+	msc.mutation.SetTenantID(i)
+	return msc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -160,19 +167,9 @@ func (msc *MeetingScheduleCreate) SetNillableID(u *uuid.UUID) *MeetingScheduleCr
 	return msc
 }
 
-// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
-func (msc *MeetingScheduleCreate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
-	msc.mutation.AddSessionIDs(ids...)
-	return msc
-}
-
-// AddSessions adds the "sessions" edges to the MeetingSession entity.
-func (msc *MeetingScheduleCreate) AddSessions(m ...*MeetingSession) *MeetingScheduleCreate {
-	ids := make([]uuid.UUID, len(m))
-	for i := range m {
-		ids[i] = m[i].ID
-	}
-	return msc.AddSessionIDs(ids...)
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (msc *MeetingScheduleCreate) SetTenant(t *Tenant) *MeetingScheduleCreate {
+	return msc.SetTenantID(t.ID)
 }
 
 // AddOwningTeamIDs adds the "owning_team" edge to the Team entity by IDs.
@@ -188,6 +185,21 @@ func (msc *MeetingScheduleCreate) AddOwningTeam(t ...*Team) *MeetingScheduleCrea
 		ids[i] = t[i].ID
 	}
 	return msc.AddOwningTeamIDs(ids...)
+}
+
+// AddSessionIDs adds the "sessions" edge to the MeetingSession entity by IDs.
+func (msc *MeetingScheduleCreate) AddSessionIDs(ids ...uuid.UUID) *MeetingScheduleCreate {
+	msc.mutation.AddSessionIDs(ids...)
+	return msc
+}
+
+// AddSessions adds the "sessions" edges to the MeetingSession entity.
+func (msc *MeetingScheduleCreate) AddSessions(m ...*MeetingSession) *MeetingScheduleCreate {
+	ids := make([]uuid.UUID, len(m))
+	for i := range m {
+		ids[i] = m[i].ID
+	}
+	return msc.AddSessionIDs(ids...)
 }
 
 // Mutation returns the MeetingScheduleMutation object of the builder.
@@ -243,6 +255,9 @@ func (msc *MeetingScheduleCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (msc *MeetingScheduleCreate) check() error {
+	if _, ok := msc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "MeetingSchedule.tenant_id"`)}
+	}
 	if _, ok := msc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "MeetingSchedule.name"`)}
 	}
@@ -275,6 +290,9 @@ func (msc *MeetingScheduleCreate) check() error {
 		if err := meetingschedule.MonthlyOnValidator(v); err != nil {
 			return &ValidationError{Name: "monthly_on", err: fmt.Errorf(`ent: validator failed for field "MeetingSchedule.monthly_on": %w`, err)}
 		}
+	}
+	if len(msc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "MeetingSchedule.tenant"`)}
 	}
 	return nil
 }
@@ -360,20 +378,21 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 		_spec.SetField(meetingschedule.FieldNumRepetitions, field.TypeInt, value)
 		_node.NumRepetitions = value
 	}
-	if nodes := msc.mutation.SessionsIDs(); len(nodes) > 0 {
+	if nodes := msc.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   meetingschedule.SessionsTable,
-			Columns: []string{meetingschedule.SessionsColumn},
+			Table:   meetingschedule.TenantTable,
+			Columns: []string{meetingschedule.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := msc.mutation.OwningTeamIDs(); len(nodes) > 0 {
@@ -392,6 +411,22 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := msc.mutation.SessionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   meetingschedule.SessionsTable,
+			Columns: []string{meetingschedule.SessionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -399,7 +434,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 // of the `INSERT` statement. For example:
 //
 //	client.MeetingSchedule.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -408,7 +443,7 @@ func (msc *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Crea
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingScheduleUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (msc *MeetingScheduleCreate) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertOne {
@@ -664,6 +699,9 @@ func (u *MeetingScheduleUpsertOne) UpdateNewValues() *MeetingScheduleUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(meetingschedule.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(meetingschedule.FieldTenantID)
 		}
 	}))
 	return u
@@ -1070,7 +1108,7 @@ func (mscb *MeetingScheduleCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.MeetingScheduleUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (mscb *MeetingScheduleCreateBulk) OnConflict(opts ...sql.ConflictOption) *MeetingScheduleUpsertBulk {
@@ -1116,6 +1154,9 @@ func (u *MeetingScheduleUpsertBulk) UpdateNewValues() *MeetingScheduleUpsertBulk
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(meetingschedule.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(meetingschedule.FieldTenantID)
 			}
 		}
 	}))

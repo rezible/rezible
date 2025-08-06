@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -24,6 +25,12 @@ type TaskCreate struct {
 	mutation *TaskMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (tc *TaskCreate) SetTenantID(i int) *TaskCreate {
+	tc.mutation.SetTenantID(i)
+	return tc
 }
 
 // SetType sets the "type" field.
@@ -92,6 +99,11 @@ func (tc *TaskCreate) SetNillableID(u *uuid.UUID) *TaskCreate {
 		tc.SetID(*u)
 	}
 	return tc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (tc *TaskCreate) SetTenant(t *Tenant) *TaskCreate {
+	return tc.SetTenantID(t.ID)
 }
 
 // AddTicketIDs adds the "tickets" edge to the Ticket entity by IDs.
@@ -173,6 +185,9 @@ func (tc *TaskCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TaskCreate) check() error {
+	if _, ok := tc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Task.tenant_id"`)}
+	}
 	if _, ok := tc.mutation.GetType(); !ok {
 		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Task.type"`)}
 	}
@@ -183,6 +198,9 @@ func (tc *TaskCreate) check() error {
 	}
 	if _, ok := tc.mutation.Title(); !ok {
 		return &ValidationError{Name: "title", err: errors.New(`ent: missing required field "Task.title"`)}
+	}
+	if len(tc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Task.tenant"`)}
 	}
 	return nil
 }
@@ -227,6 +245,23 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.Title(); ok {
 		_spec.SetField(task.FieldTitle, field.TypeString, value)
 		_node.Title = value
+	}
+	if nodes := tc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   task.TenantTable,
+			Columns: []string{task.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := tc.mutation.TicketsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -302,7 +337,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Task.Create().
-//		SetType(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -311,7 +346,7 @@ func (tc *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskUpsert) {
-//			SetType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tc *TaskCreate) OnConflict(opts ...sql.ConflictOption) *TaskUpsertOne {
@@ -441,6 +476,9 @@ func (u *TaskUpsertOne) UpdateNewValues() *TaskUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(task.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(task.FieldTenantID)
 		}
 	}))
 	return u
@@ -700,7 +738,7 @@ func (tcb *TaskCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.TaskUpsert) {
-//			SetType(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (tcb *TaskCreateBulk) OnConflict(opts ...sql.ConflictOption) *TaskUpsertBulk {
@@ -746,6 +784,9 @@ func (u *TaskUpsertBulk) UpdateNewValues() *TaskUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(task.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(task.FieldTenantID)
 			}
 		}
 	}))

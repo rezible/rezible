@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/meetingschedule"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // MeetingSchedule is the model entity for the MeetingSchedule schema.
@@ -19,6 +20,8 @@ type MeetingSchedule struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
 	// Name holds the value of the "name" field.
@@ -51,22 +54,26 @@ type MeetingSchedule struct {
 
 // MeetingScheduleEdges holds the relations/edges for other nodes in the graph.
 type MeetingScheduleEdges struct {
-	// Sessions holds the value of the sessions edge.
-	Sessions []*MeetingSession `json:"sessions,omitempty"`
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// OwningTeam holds the value of the owning_team edge.
 	OwningTeam []*Team `json:"owning_team,omitempty"`
+	// Sessions holds the value of the sessions edge.
+	Sessions []*MeetingSession `json:"sessions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
-// SessionsOrErr returns the Sessions value or an error if the edge
-// was not loaded in eager-loading.
-func (e MeetingScheduleEdges) SessionsOrErr() ([]*MeetingSession, error) {
-	if e.loadedTypes[0] {
-		return e.Sessions, nil
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MeetingScheduleEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
 	}
-	return nil, &NotLoadedError{edge: "sessions"}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // OwningTeamOrErr returns the OwningTeam value or an error if the edge
@@ -78,6 +85,15 @@ func (e MeetingScheduleEdges) OwningTeamOrErr() ([]*Team, error) {
 	return nil, &NotLoadedError{edge: "owning_team"}
 }
 
+// SessionsOrErr returns the Sessions value or an error if the edge
+// was not loaded in eager-loading.
+func (e MeetingScheduleEdges) SessionsOrErr() ([]*MeetingSession, error) {
+	if e.loadedTypes[2] {
+		return e.Sessions, nil
+	}
+	return nil, &NotLoadedError{edge: "sessions"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*MeetingSchedule) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -85,7 +101,7 @@ func (*MeetingSchedule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case meetingschedule.FieldWeekDays:
 			values[i] = new([]byte)
-		case meetingschedule.FieldBeginMinute, meetingschedule.FieldDurationMinutes, meetingschedule.FieldRepetitionStep, meetingschedule.FieldNumRepetitions:
+		case meetingschedule.FieldTenantID, meetingschedule.FieldBeginMinute, meetingschedule.FieldDurationMinutes, meetingschedule.FieldRepetitionStep, meetingschedule.FieldNumRepetitions:
 			values[i] = new(sql.NullInt64)
 		case meetingschedule.FieldName, meetingschedule.FieldDescription, meetingschedule.FieldRepeats, meetingschedule.FieldMonthlyOn:
 			values[i] = new(sql.NullString)
@@ -113,6 +129,12 @@ func (ms *MeetingSchedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ms.ID = *value
+			}
+		case meetingschedule.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ms.TenantID = int(value.Int64)
 			}
 		case meetingschedule.FieldArchiveTime:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -201,14 +223,19 @@ func (ms *MeetingSchedule) Value(name string) (ent.Value, error) {
 	return ms.selectValues.Get(name)
 }
 
-// QuerySessions queries the "sessions" edge of the MeetingSchedule entity.
-func (ms *MeetingSchedule) QuerySessions() *MeetingSessionQuery {
-	return NewMeetingScheduleClient(ms.config).QuerySessions(ms)
+// QueryTenant queries the "tenant" edge of the MeetingSchedule entity.
+func (ms *MeetingSchedule) QueryTenant() *TenantQuery {
+	return NewMeetingScheduleClient(ms.config).QueryTenant(ms)
 }
 
 // QueryOwningTeam queries the "owning_team" edge of the MeetingSchedule entity.
 func (ms *MeetingSchedule) QueryOwningTeam() *TeamQuery {
 	return NewMeetingScheduleClient(ms.config).QueryOwningTeam(ms)
+}
+
+// QuerySessions queries the "sessions" edge of the MeetingSchedule entity.
+func (ms *MeetingSchedule) QuerySessions() *MeetingSessionQuery {
+	return NewMeetingScheduleClient(ms.config).QuerySessions(ms)
 }
 
 // Update returns a builder for updating this MeetingSchedule.
@@ -234,6 +261,9 @@ func (ms *MeetingSchedule) String() string {
 	var builder strings.Builder
 	builder.WriteString("MeetingSchedule(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ms.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ms.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(ms.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")

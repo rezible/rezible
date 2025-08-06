@@ -11,10 +11,11 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallroster"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -23,6 +24,8 @@ type OncallAnnotation struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// EventID holds the value of the "event_id" field.
 	EventID uuid.UUID `json:"event_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
@@ -45,6 +48,8 @@ type OncallAnnotation struct {
 
 // OncallAnnotationEdges holds the relations/edges for other nodes in the graph.
 type OncallAnnotationEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
 	Event *OncallEvent `json:"event,omitempty"`
 	// Roster holds the value of the roster edge.
@@ -52,12 +57,23 @@ type OncallAnnotationEdges struct {
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
 	// AlertFeedback holds the value of the alert_feedback edge.
-	AlertFeedback *OncallAnnotationAlertFeedback `json:"alert_feedback,omitempty"`
+	AlertFeedback *AlertFeedback `json:"alert_feedback,omitempty"`
 	// Handovers holds the value of the handovers edge.
 	Handovers []*OncallUserShiftHandover `json:"handovers,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallAnnotationEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // EventOrErr returns the Event value or an error if the edge
@@ -65,7 +81,7 @@ type OncallAnnotationEdges struct {
 func (e OncallAnnotationEdges) EventOrErr() (*OncallEvent, error) {
 	if e.Event != nil {
 		return e.Event, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: oncallevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
@@ -76,7 +92,7 @@ func (e OncallAnnotationEdges) EventOrErr() (*OncallEvent, error) {
 func (e OncallAnnotationEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -87,7 +103,7 @@ func (e OncallAnnotationEdges) RosterOrErr() (*OncallRoster, error) {
 func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 	if e.Creator != nil {
 		return e.Creator, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "creator"}
@@ -95,11 +111,11 @@ func (e OncallAnnotationEdges) CreatorOrErr() (*User, error) {
 
 // AlertFeedbackOrErr returns the AlertFeedback value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*OncallAnnotationAlertFeedback, error) {
+func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*AlertFeedback, error) {
 	if e.AlertFeedback != nil {
 		return e.AlertFeedback, nil
-	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: oncallannotationalertfeedback.Label}
+	} else if e.loadedTypes[4] {
+		return nil, &NotFoundError{label: alertfeedback.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert_feedback"}
 }
@@ -107,7 +123,7 @@ func (e OncallAnnotationEdges) AlertFeedbackOrErr() (*OncallAnnotationAlertFeedb
 // HandoversOrErr returns the Handovers value or an error if the edge
 // was not loaded in eager-loading.
 func (e OncallAnnotationEdges) HandoversOrErr() ([]*OncallUserShiftHandover, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.Handovers, nil
 	}
 	return nil, &NotLoadedError{edge: "handovers"}
@@ -120,7 +136,7 @@ func (*OncallAnnotation) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallannotation.FieldTags:
 			values[i] = new([]byte)
-		case oncallannotation.FieldMinutesOccupied:
+		case oncallannotation.FieldTenantID, oncallannotation.FieldMinutesOccupied:
 			values[i] = new(sql.NullInt64)
 		case oncallannotation.FieldNotes:
 			values[i] = new(sql.NullString)
@@ -148,6 +164,12 @@ func (oa *OncallAnnotation) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				oa.ID = *value
+			}
+		case oncallannotation.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				oa.TenantID = int(value.Int64)
 			}
 		case oncallannotation.FieldEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -206,6 +228,11 @@ func (oa *OncallAnnotation) Value(name string) (ent.Value, error) {
 	return oa.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the OncallAnnotation entity.
+func (oa *OncallAnnotation) QueryTenant() *TenantQuery {
+	return NewOncallAnnotationClient(oa.config).QueryTenant(oa)
+}
+
 // QueryEvent queries the "event" edge of the OncallAnnotation entity.
 func (oa *OncallAnnotation) QueryEvent() *OncallEventQuery {
 	return NewOncallAnnotationClient(oa.config).QueryEvent(oa)
@@ -222,7 +249,7 @@ func (oa *OncallAnnotation) QueryCreator() *UserQuery {
 }
 
 // QueryAlertFeedback queries the "alert_feedback" edge of the OncallAnnotation entity.
-func (oa *OncallAnnotation) QueryAlertFeedback() *OncallAnnotationAlertFeedbackQuery {
+func (oa *OncallAnnotation) QueryAlertFeedback() *AlertFeedbackQuery {
 	return NewOncallAnnotationClient(oa.config).QueryAlertFeedback(oa)
 }
 
@@ -254,6 +281,9 @@ func (oa *OncallAnnotation) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallAnnotation(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", oa.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", oa.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("event_id=")
 	builder.WriteString(fmt.Sprintf("%v", oa.EventID))
 	builder.WriteString(", ")

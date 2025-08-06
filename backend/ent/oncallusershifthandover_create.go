@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallannotation"
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallUserShiftHandoverCreate is the builder for creating a OncallUserShiftHandover entity.
@@ -24,6 +25,12 @@ type OncallUserShiftHandoverCreate struct {
 	mutation *OncallUserShiftHandoverMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (oushc *OncallUserShiftHandoverCreate) SetTenantID(i int) *OncallUserShiftHandoverCreate {
+	oushc.mutation.SetTenantID(i)
+	return oushc
 }
 
 // SetShiftID sets the "shift_id" field.
@@ -98,6 +105,11 @@ func (oushc *OncallUserShiftHandoverCreate) SetNillableID(u *uuid.UUID) *OncallU
 		oushc.SetID(*u)
 	}
 	return oushc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (oushc *OncallUserShiftHandoverCreate) SetTenant(t *Tenant) *OncallUserShiftHandoverCreate {
+	return oushc.SetTenantID(t.ID)
 }
 
 // SetShift sets the "shift" edge to the OncallUserShift entity.
@@ -180,6 +192,9 @@ func (oushc *OncallUserShiftHandoverCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (oushc *OncallUserShiftHandoverCreate) check() error {
+	if _, ok := oushc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OncallUserShiftHandover.tenant_id"`)}
+	}
 	if _, ok := oushc.mutation.ShiftID(); !ok {
 		return &ValidationError{Name: "shift_id", err: errors.New(`ent: missing required field "OncallUserShiftHandover.shift_id"`)}
 	}
@@ -194,6 +209,9 @@ func (oushc *OncallUserShiftHandoverCreate) check() error {
 	}
 	if _, ok := oushc.mutation.Contents(); !ok {
 		return &ValidationError{Name: "contents", err: errors.New(`ent: missing required field "OncallUserShiftHandover.contents"`)}
+	}
+	if len(oushc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "OncallUserShiftHandover.tenant"`)}
 	}
 	if len(oushc.mutation.ShiftIDs()) == 0 {
 		return &ValidationError{Name: "shift", err: errors.New(`ent: missing required edge "OncallUserShiftHandover.shift"`)}
@@ -254,6 +272,23 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 		_spec.SetField(oncallusershifthandover.FieldContents, field.TypeBytes, value)
 		_node.Contents = value
 	}
+	if nodes := oushc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   oncallusershifthandover.TenantTable,
+			Columns: []string{oncallusershifthandover.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := oushc.mutation.ShiftIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -294,7 +329,7 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 // of the `INSERT` statement. For example:
 //
 //	client.OncallUserShiftHandover.Create().
-//		SetShiftID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -303,7 +338,7 @@ func (oushc *OncallUserShiftHandoverCreate) createSpec() (*OncallUserShiftHandov
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallUserShiftHandoverUpsert) {
-//			SetShiftID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oushc *OncallUserShiftHandoverCreate) OnConflict(opts ...sql.ConflictOption) *OncallUserShiftHandoverUpsertOne {
@@ -433,6 +468,9 @@ func (u *OncallUserShiftHandoverUpsertOne) UpdateNewValues() *OncallUserShiftHan
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(oncallusershifthandover.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(oncallusershifthandover.FieldTenantID)
 		}
 	}))
 	return u
@@ -692,7 +730,7 @@ func (oushcb *OncallUserShiftHandoverCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.OncallUserShiftHandoverUpsert) {
-//			SetShiftID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (oushcb *OncallUserShiftHandoverCreateBulk) OnConflict(opts ...sql.ConflictOption) *OncallUserShiftHandoverUpsertBulk {
@@ -738,6 +776,9 @@ func (u *OncallUserShiftHandoverUpsertBulk) UpdateNewValues() *OncallUserShiftHa
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(oncallusershifthandover.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(oncallusershifthandover.FieldTenantID)
 			}
 		}
 	}))

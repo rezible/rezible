@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallRosterMetricsQuery is the builder for querying OncallRosterMetrics entities.
@@ -25,6 +26,7 @@ type OncallRosterMetricsQuery struct {
 	order      []oncallrostermetrics.OrderOption
 	inters     []Interceptor
 	predicates []predicate.OncallRosterMetrics
+	withTenant *TenantQuery
 	withRoster *OncallRosterQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -61,6 +63,28 @@ func (ormq *OncallRosterMetricsQuery) Unique(unique bool) *OncallRosterMetricsQu
 func (ormq *OncallRosterMetricsQuery) Order(o ...oncallrostermetrics.OrderOption) *OncallRosterMetricsQuery {
 	ormq.order = append(ormq.order, o...)
 	return ormq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ormq *OncallRosterMetricsQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ormq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ormq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ormq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallrostermetrics.Table, oncallrostermetrics.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallrostermetrics.TenantTable, oncallrostermetrics.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ormq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
@@ -277,12 +301,24 @@ func (ormq *OncallRosterMetricsQuery) Clone() *OncallRosterMetricsQuery {
 		order:      append([]oncallrostermetrics.OrderOption{}, ormq.order...),
 		inters:     append([]Interceptor{}, ormq.inters...),
 		predicates: append([]predicate.OncallRosterMetrics{}, ormq.predicates...),
+		withTenant: ormq.withTenant.Clone(),
 		withRoster: ormq.withRoster.Clone(),
 		// clone intermediate query.
 		sql:       ormq.sql.Clone(),
 		path:      ormq.path,
 		modifiers: append([]func(*sql.Selector){}, ormq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ormq *OncallRosterMetricsQuery) WithTenant(opts ...func(*TenantQuery)) *OncallRosterMetricsQuery {
+	query := (&TenantClient{config: ormq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ormq.withTenant = query
+	return ormq
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
@@ -302,12 +338,12 @@ func (ormq *OncallRosterMetricsQuery) WithRoster(opts ...func(*OncallRosterQuery
 // Example:
 //
 //	var v []struct {
-//		RosterID uuid.UUID `json:"roster_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallRosterMetrics.Query().
-//		GroupBy(oncallrostermetrics.FieldRosterID).
+//		GroupBy(oncallrostermetrics.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ormq *OncallRosterMetricsQuery) GroupBy(field string, fields ...string) *OncallRosterMetricsGroupBy {
@@ -325,11 +361,11 @@ func (ormq *OncallRosterMetricsQuery) GroupBy(field string, fields ...string) *O
 // Example:
 //
 //	var v []struct {
-//		RosterID uuid.UUID `json:"roster_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallRosterMetrics.Query().
-//		Select(oncallrostermetrics.FieldRosterID).
+//		Select(oncallrostermetrics.FieldTenantID).
 //		Scan(ctx, &v)
 func (ormq *OncallRosterMetricsQuery) Select(fields ...string) *OncallRosterMetricsSelect {
 	ormq.ctx.Fields = append(ormq.ctx.Fields, fields...)
@@ -380,7 +416,8 @@ func (ormq *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...query
 	var (
 		nodes       = []*OncallRosterMetrics{}
 		_spec       = ormq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			ormq.withTenant != nil,
 			ormq.withRoster != nil,
 		}
 	)
@@ -405,6 +442,12 @@ func (ormq *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...query
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ormq.withTenant; query != nil {
+		if err := ormq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallRosterMetrics, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ormq.withRoster; query != nil {
 		if err := ormq.loadRoster(ctx, query, nodes, nil,
 			func(n *OncallRosterMetrics, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
@@ -414,6 +457,35 @@ func (ormq *OncallRosterMetricsQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
+func (ormq *OncallRosterMetricsQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallRosterMetrics)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ormq *OncallRosterMetricsQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallRosterMetrics, init func(*OncallRosterMetrics), assign func(*OncallRosterMetrics, *OncallRoster)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OncallRosterMetrics)
@@ -471,6 +543,9 @@ func (ormq *OncallRosterMetricsQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallrostermetrics.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ormq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallrostermetrics.FieldTenantID)
 		}
 		if ormq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallrostermetrics.FieldRosterID)

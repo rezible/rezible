@@ -571,6 +571,9 @@ func (scu *SystemComponentUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
 	}
+	if scu.mutation.TenantCleared() && len(scu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.tenant"`)
+	}
 	return nil
 }
 
@@ -1726,6 +1729,9 @@ func (scuo *SystemComponentUpdateOne) check() error {
 		if err := systemcomponent.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "SystemComponent.name": %w`, err)}
 		}
+	}
+	if scuo.mutation.TenantCleared() && len(scuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "SystemComponent.tenant"`)
 	}
 	return nil
 }

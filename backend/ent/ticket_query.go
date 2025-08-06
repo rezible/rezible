@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/task"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 )
 
@@ -26,6 +27,7 @@ type TicketQuery struct {
 	order      []ticket.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Ticket
+	withTenant *TenantQuery
 	withTasks  *TaskQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -62,6 +64,28 @@ func (tq *TicketQuery) Unique(unique bool) *TicketQuery {
 func (tq *TicketQuery) Order(o ...ticket.OrderOption) *TicketQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (tq *TicketQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: tq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ticket.Table, ticket.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ticket.TenantTable, ticket.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryTasks chains the current query on the "tasks" edge.
@@ -278,12 +302,24 @@ func (tq *TicketQuery) Clone() *TicketQuery {
 		order:      append([]ticket.OrderOption{}, tq.order...),
 		inters:     append([]Interceptor{}, tq.inters...),
 		predicates: append([]predicate.Ticket{}, tq.predicates...),
+		withTenant: tq.withTenant.Clone(),
 		withTasks:  tq.withTasks.Clone(),
 		// clone intermediate query.
 		sql:       tq.sql.Clone(),
 		path:      tq.path,
 		modifiers: append([]func(*sql.Selector){}, tq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TicketQuery) WithTenant(opts ...func(*TenantQuery)) *TicketQuery {
+	query := (&TenantClient{config: tq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withTenant = query
+	return tq
 }
 
 // WithTasks tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (tq *TicketQuery) WithTasks(opts ...func(*TaskQuery)) *TicketQuery {
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Ticket.Query().
-//		GroupBy(ticket.FieldProviderID).
+//		GroupBy(ticket.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (tq *TicketQuery) GroupBy(field string, fields ...string) *TicketGroupBy {
@@ -326,11 +362,11 @@ func (tq *TicketQuery) GroupBy(field string, fields ...string) *TicketGroupBy {
 // Example:
 //
 //	var v []struct {
-//		ProviderID string `json:"provider_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.Ticket.Query().
-//		Select(ticket.FieldProviderID).
+//		Select(ticket.FieldTenantID).
 //		Scan(ctx, &v)
 func (tq *TicketQuery) Select(fields ...string) *TicketSelect {
 	tq.ctx.Fields = append(tq.ctx.Fields, fields...)
@@ -381,7 +417,8 @@ func (tq *TicketQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ticke
 	var (
 		nodes       = []*Ticket{}
 		_spec       = tq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			tq.withTenant != nil,
 			tq.withTasks != nil,
 		}
 	)
@@ -406,6 +443,12 @@ func (tq *TicketQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ticke
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := tq.withTenant; query != nil {
+		if err := tq.loadTenant(ctx, query, nodes, nil,
+			func(n *Ticket, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := tq.withTasks; query != nil {
 		if err := tq.loadTasks(ctx, query, nodes,
 			func(n *Ticket) { n.Edges.Tasks = []*Task{} },
@@ -416,6 +459,35 @@ func (tq *TicketQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ticke
 	return nodes, nil
 }
 
+func (tq *TicketQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Ticket, init func(*Ticket), assign func(*Ticket, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Ticket)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (tq *TicketQuery) loadTasks(ctx context.Context, query *TaskQuery, nodes []*Ticket, init func(*Ticket), assign func(*Ticket, *Task)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Ticket)
@@ -505,6 +577,9 @@ func (tq *TicketQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != ticket.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if tq.withTenant != nil {
+			_spec.Node.AddColumnOnce(ticket.FieldTenantID)
 		}
 	}
 	if ps := tq.predicates; len(ps) > 0 {

@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // MeetingScheduleQuery is the builder for querying MeetingSchedule entities.
@@ -27,8 +28,9 @@ type MeetingScheduleQuery struct {
 	order          []meetingschedule.OrderOption
 	inters         []Interceptor
 	predicates     []predicate.MeetingSchedule
-	withSessions   *MeetingSessionQuery
+	withTenant     *TenantQuery
 	withOwningTeam *TeamQuery
+	withSessions   *MeetingSessionQuery
 	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -66,9 +68,9 @@ func (msq *MeetingScheduleQuery) Order(o ...meetingschedule.OrderOption) *Meetin
 	return msq
 }
 
-// QuerySessions chains the current query on the "sessions" edge.
-func (msq *MeetingScheduleQuery) QuerySessions() *MeetingSessionQuery {
-	query := (&MeetingSessionClient{config: msq.config}).Query()
+// QueryTenant chains the current query on the "tenant" edge.
+func (msq *MeetingScheduleQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: msq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := msq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -79,8 +81,8 @@ func (msq *MeetingScheduleQuery) QuerySessions() *MeetingSessionQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, selector),
-			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, meetingschedule.SessionsTable, meetingschedule.SessionsColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, meetingschedule.TenantTable, meetingschedule.TenantColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(msq.driver.Dialect(), step)
 		return fromU, nil
@@ -103,6 +105,28 @@ func (msq *MeetingScheduleQuery) QueryOwningTeam() *TeamQuery {
 			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, selector),
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, meetingschedule.OwningTeamTable, meetingschedule.OwningTeamPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(msq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySessions chains the current query on the "sessions" edge.
+func (msq *MeetingScheduleQuery) QuerySessions() *MeetingSessionQuery {
+	query := (&MeetingSessionClient{config: msq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := msq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := msq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(meetingschedule.Table, meetingschedule.FieldID, selector),
+			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, meetingschedule.SessionsTable, meetingschedule.SessionsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(msq.driver.Dialect(), step)
 		return fromU, nil
@@ -302,8 +326,9 @@ func (msq *MeetingScheduleQuery) Clone() *MeetingScheduleQuery {
 		order:          append([]meetingschedule.OrderOption{}, msq.order...),
 		inters:         append([]Interceptor{}, msq.inters...),
 		predicates:     append([]predicate.MeetingSchedule{}, msq.predicates...),
-		withSessions:   msq.withSessions.Clone(),
+		withTenant:     msq.withTenant.Clone(),
 		withOwningTeam: msq.withOwningTeam.Clone(),
+		withSessions:   msq.withSessions.Clone(),
 		// clone intermediate query.
 		sql:       msq.sql.Clone(),
 		path:      msq.path,
@@ -311,14 +336,14 @@ func (msq *MeetingScheduleQuery) Clone() *MeetingScheduleQuery {
 	}
 }
 
-// WithSessions tells the query-builder to eager-load the nodes that are connected to
-// the "sessions" edge. The optional arguments are used to configure the query builder of the edge.
-func (msq *MeetingScheduleQuery) WithSessions(opts ...func(*MeetingSessionQuery)) *MeetingScheduleQuery {
-	query := (&MeetingSessionClient{config: msq.config}).Query()
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (msq *MeetingScheduleQuery) WithTenant(opts ...func(*TenantQuery)) *MeetingScheduleQuery {
+	query := (&TenantClient{config: msq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	msq.withSessions = query
+	msq.withTenant = query
 	return msq
 }
 
@@ -333,18 +358,29 @@ func (msq *MeetingScheduleQuery) WithOwningTeam(opts ...func(*TeamQuery)) *Meeti
 	return msq
 }
 
+// WithSessions tells the query-builder to eager-load the nodes that are connected to
+// the "sessions" edge. The optional arguments are used to configure the query builder of the edge.
+func (msq *MeetingScheduleQuery) WithSessions(opts ...func(*MeetingSessionQuery)) *MeetingScheduleQuery {
+	query := (&MeetingSessionClient{config: msq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	msq.withSessions = query
+	return msq
+}
+
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
 //
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.MeetingSchedule.Query().
-//		GroupBy(meetingschedule.FieldArchiveTime).
+//		GroupBy(meetingschedule.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (msq *MeetingScheduleQuery) GroupBy(field string, fields ...string) *MeetingScheduleGroupBy {
@@ -362,11 +398,11 @@ func (msq *MeetingScheduleQuery) GroupBy(field string, fields ...string) *Meetin
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.MeetingSchedule.Query().
-//		Select(meetingschedule.FieldArchiveTime).
+//		Select(meetingschedule.FieldTenantID).
 //		Scan(ctx, &v)
 func (msq *MeetingScheduleQuery) Select(fields ...string) *MeetingScheduleSelect {
 	msq.ctx.Fields = append(msq.ctx.Fields, fields...)
@@ -417,9 +453,10 @@ func (msq *MeetingScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*MeetingSchedule{}
 		_spec       = msq.querySpec()
-		loadedTypes = [2]bool{
-			msq.withSessions != nil,
+		loadedTypes = [3]bool{
+			msq.withTenant != nil,
 			msq.withOwningTeam != nil,
+			msq.withSessions != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -443,10 +480,9 @@ func (msq *MeetingScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := msq.withSessions; query != nil {
-		if err := msq.loadSessions(ctx, query, nodes,
-			func(n *MeetingSchedule) { n.Edges.Sessions = []*MeetingSession{} },
-			func(n *MeetingSchedule, e *MeetingSession) { n.Edges.Sessions = append(n.Edges.Sessions, e) }); err != nil {
+	if query := msq.withTenant; query != nil {
+		if err := msq.loadTenant(ctx, query, nodes, nil,
+			func(n *MeetingSchedule, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -457,37 +493,42 @@ func (msq *MeetingScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 			return nil, err
 		}
 	}
+	if query := msq.withSessions; query != nil {
+		if err := msq.loadSessions(ctx, query, nodes,
+			func(n *MeetingSchedule) { n.Edges.Sessions = []*MeetingSession{} },
+			func(n *MeetingSchedule, e *MeetingSession) { n.Edges.Sessions = append(n.Edges.Sessions, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (msq *MeetingScheduleQuery) loadSessions(ctx context.Context, query *MeetingSessionQuery, nodes []*MeetingSchedule, init func(*MeetingSchedule), assign func(*MeetingSchedule, *MeetingSession)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*MeetingSchedule)
+func (msq *MeetingScheduleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*MeetingSchedule, init func(*MeetingSchedule), assign func(*MeetingSchedule, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*MeetingSchedule)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
 		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.MeetingSession(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(meetingschedule.SessionsColumn), fks...))
-	}))
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.meeting_schedule_sessions
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "meeting_schedule_sessions" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "meeting_schedule_sessions" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -552,6 +593,37 @@ func (msq *MeetingScheduleQuery) loadOwningTeam(ctx context.Context, query *Team
 	}
 	return nil
 }
+func (msq *MeetingScheduleQuery) loadSessions(ctx context.Context, query *MeetingSessionQuery, nodes []*MeetingSchedule, init func(*MeetingSchedule), assign func(*MeetingSchedule, *MeetingSession)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*MeetingSchedule)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.MeetingSession(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(meetingschedule.SessionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.meeting_session_schedule
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "meeting_session_schedule" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "meeting_session_schedule" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 
 func (msq *MeetingScheduleQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := msq.querySpec()
@@ -580,6 +652,9 @@ func (msq *MeetingScheduleQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != meetingschedule.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if msq.withTenant != nil {
+			_spec.Node.AddColumnOnce(meetingschedule.FieldTenantID)
 		}
 	}
 	if ps := msq.predicates; len(ps) > 0 {

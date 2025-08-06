@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallScheduleQuery is the builder for querying OncallSchedule entities.
@@ -27,6 +28,7 @@ type OncallScheduleQuery struct {
 	order            []oncallschedule.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.OncallSchedule
+	withTenant       *TenantQuery
 	withParticipants *OncallScheduleParticipantQuery
 	withRoster       *OncallRosterQuery
 	modifiers        []func(*sql.Selector)
@@ -64,6 +66,28 @@ func (osq *OncallScheduleQuery) Unique(unique bool) *OncallScheduleQuery {
 func (osq *OncallScheduleQuery) Order(o ...oncallschedule.OrderOption) *OncallScheduleQuery {
 	osq.order = append(osq.order, o...)
 	return osq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (osq *OncallScheduleQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: osq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := osq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := osq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallschedule.Table, oncallschedule.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallschedule.TenantTable, oncallschedule.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(osq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryParticipants chains the current query on the "participants" edge.
@@ -302,6 +326,7 @@ func (osq *OncallScheduleQuery) Clone() *OncallScheduleQuery {
 		order:            append([]oncallschedule.OrderOption{}, osq.order...),
 		inters:           append([]Interceptor{}, osq.inters...),
 		predicates:       append([]predicate.OncallSchedule{}, osq.predicates...),
+		withTenant:       osq.withTenant.Clone(),
 		withParticipants: osq.withParticipants.Clone(),
 		withRoster:       osq.withRoster.Clone(),
 		// clone intermediate query.
@@ -309,6 +334,17 @@ func (osq *OncallScheduleQuery) Clone() *OncallScheduleQuery {
 		path:      osq.path,
 		modifiers: append([]func(*sql.Selector){}, osq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (osq *OncallScheduleQuery) WithTenant(opts ...func(*TenantQuery)) *OncallScheduleQuery {
+	query := (&TenantClient{config: osq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	osq.withTenant = query
+	return osq
 }
 
 // WithParticipants tells the query-builder to eager-load the nodes that are connected to
@@ -339,12 +375,12 @@ func (osq *OncallScheduleQuery) WithRoster(opts ...func(*OncallRosterQuery)) *On
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallSchedule.Query().
-//		GroupBy(oncallschedule.FieldArchiveTime).
+//		GroupBy(oncallschedule.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (osq *OncallScheduleQuery) GroupBy(field string, fields ...string) *OncallScheduleGroupBy {
@@ -362,11 +398,11 @@ func (osq *OncallScheduleQuery) GroupBy(field string, fields ...string) *OncallS
 // Example:
 //
 //	var v []struct {
-//		ArchiveTime time.Time `json:"archive_time,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallSchedule.Query().
-//		Select(oncallschedule.FieldArchiveTime).
+//		Select(oncallschedule.FieldTenantID).
 //		Scan(ctx, &v)
 func (osq *OncallScheduleQuery) Select(fields ...string) *OncallScheduleSelect {
 	osq.ctx.Fields = append(osq.ctx.Fields, fields...)
@@ -417,7 +453,8 @@ func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*OncallSchedule{}
 		_spec       = osq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			osq.withTenant != nil,
 			osq.withParticipants != nil,
 			osq.withRoster != nil,
 		}
@@ -443,6 +480,12 @@ func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := osq.withTenant; query != nil {
+		if err := osq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallSchedule, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := osq.withParticipants; query != nil {
 		if err := osq.loadParticipants(ctx, query, nodes,
 			func(n *OncallSchedule) { n.Edges.Participants = []*OncallScheduleParticipant{} },
@@ -461,6 +504,35 @@ func (osq *OncallScheduleQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	return nodes, nil
 }
 
+func (osq *OncallScheduleQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallSchedule)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (osq *OncallScheduleQuery) loadParticipants(ctx context.Context, query *OncallScheduleParticipantQuery, nodes []*OncallSchedule, init func(*OncallSchedule), assign func(*OncallSchedule, *OncallScheduleParticipant)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallSchedule)
@@ -548,6 +620,9 @@ func (osq *OncallScheduleQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallschedule.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if osq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallschedule.FieldTenantID)
 		}
 		if osq.withRoster != nil {
 			_spec.Node.AddColumnOnce(oncallschedule.FieldRosterID)

@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
 	"github.com/rezible/rezible/ent/systemhazard"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemHazardCreate is the builder for creating a SystemHazard entity.
@@ -25,6 +26,12 @@ type SystemHazardCreate struct {
 	mutation *SystemHazardMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (shc *SystemHazardCreate) SetTenantID(i int) *SystemHazardCreate {
+	shc.mutation.SetTenantID(i)
+	return shc
 }
 
 // SetName sets the "name" field.
@@ -79,6 +86,11 @@ func (shc *SystemHazardCreate) SetNillableID(u *uuid.UUID) *SystemHazardCreate {
 		shc.SetID(*u)
 	}
 	return shc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (shc *SystemHazardCreate) SetTenant(t *Tenant) *SystemHazardCreate {
+	return shc.SetTenantID(t.ID)
 }
 
 // AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
@@ -189,6 +201,9 @@ func (shc *SystemHazardCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (shc *SystemHazardCreate) check() error {
+	if _, ok := shc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemHazard.tenant_id"`)}
+	}
 	if _, ok := shc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "SystemHazard.name"`)}
 	}
@@ -205,6 +220,9 @@ func (shc *SystemHazardCreate) check() error {
 	}
 	if _, ok := shc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "SystemHazard.updated_at"`)}
+	}
+	if len(shc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemHazard.tenant"`)}
 	}
 	return nil
 }
@@ -257,6 +275,23 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 	if value, ok := shc.mutation.UpdatedAt(); ok {
 		_spec.SetField(systemhazard.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := shc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemhazard.TenantTable,
+			Columns: []string{systemhazard.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := shc.mutation.ComponentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,7 +348,7 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.SystemHazard.Create().
-//		SetName(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -322,7 +357,7 @@ func (shc *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemHazardUpsert) {
-//			SetName(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (shc *SystemHazardCreate) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertOne {
@@ -422,6 +457,9 @@ func (u *SystemHazardUpsertOne) UpdateNewValues() *SystemHazardUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemhazard.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemhazard.FieldTenantID)
 		}
 	}))
 	return u
@@ -646,7 +684,7 @@ func (shcb *SystemHazardCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemHazardUpsert) {
-//			SetName(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (shcb *SystemHazardCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemHazardUpsertBulk {
@@ -692,6 +730,9 @@ func (u *SystemHazardUpsertBulk) UpdateNewValues() *SystemHazardUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemhazard.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemhazard.FieldTenantID)
 			}
 		}
 	}))

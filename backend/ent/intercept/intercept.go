@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
@@ -28,12 +29,10 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
-	"github.com/rezible/rezible/ent/incidentteamassignment"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/oncallannotation"
-	"github.com/rezible/rezible/ent/oncallannotationalertfeedback"
 	"github.com/rezible/rezible/ent/oncallevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -151,6 +150,33 @@ func (f TraverseAlert) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertQuery", q)
+}
+
+// The AlertFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertFeedbackFunc func(context.Context, *ent.AlertFeedbackQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AlertFeedbackFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertFeedbackQuery", q)
+}
+
+// The TraverseAlertFeedback type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertFeedback func(context.Context, *ent.AlertFeedbackQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAlertFeedback) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAlertFeedback) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertFeedbackQuery", q)
 }
 
 // The AlertMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -666,33 +692,6 @@ func (f TraverseIncidentTag) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTagQuery", q)
 }
 
-// The IncidentTeamAssignmentFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentTeamAssignmentFunc func(context.Context, *ent.IncidentTeamAssignmentQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentTeamAssignmentFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentTeamAssignmentQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTeamAssignmentQuery", q)
-}
-
-// The TraverseIncidentTeamAssignment type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentTeamAssignment func(context.Context, *ent.IncidentTeamAssignmentQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentTeamAssignment) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentTeamAssignment) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentTeamAssignmentQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTeamAssignmentQuery", q)
-}
-
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary function as a Querier.
 type IncidentTypeFunc func(context.Context, *ent.IncidentTypeQuery) (ent.Value, error)
 
@@ -799,33 +798,6 @@ func (f TraverseOncallAnnotation) Traverse(ctx context.Context, q ent.Query) err
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationQuery", q)
-}
-
-// The OncallAnnotationAlertFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
-type OncallAnnotationAlertFeedbackFunc func(context.Context, *ent.OncallAnnotationAlertFeedbackQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f OncallAnnotationAlertFeedbackFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.OncallAnnotationAlertFeedbackQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationAlertFeedbackQuery", q)
-}
-
-// The TraverseOncallAnnotationAlertFeedback type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseOncallAnnotationAlertFeedback func(context.Context, *ent.OncallAnnotationAlertFeedbackQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseOncallAnnotationAlertFeedback) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseOncallAnnotationAlertFeedback) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OncallAnnotationAlertFeedbackQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.OncallAnnotationAlertFeedbackQuery", q)
 }
 
 // The OncallEventFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1724,6 +1696,8 @@ func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
+	case *ent.AlertFeedbackQuery:
+		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.IncidentQuery:
@@ -1762,8 +1736,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentSeverityQuery, predicate.IncidentSeverity, incidentseverity.OrderOption]{typ: ent.TypeIncidentSeverity, tq: q}, nil
 	case *ent.IncidentTagQuery:
 		return &query[*ent.IncidentTagQuery, predicate.IncidentTag, incidenttag.OrderOption]{typ: ent.TypeIncidentTag, tq: q}, nil
-	case *ent.IncidentTeamAssignmentQuery:
-		return &query[*ent.IncidentTeamAssignmentQuery, predicate.IncidentTeamAssignment, incidentteamassignment.OrderOption]{typ: ent.TypeIncidentTeamAssignment, tq: q}, nil
 	case *ent.IncidentTypeQuery:
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
 	case *ent.MeetingScheduleQuery:
@@ -1772,8 +1744,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.MeetingSessionQuery, predicate.MeetingSession, meetingsession.OrderOption]{typ: ent.TypeMeetingSession, tq: q}, nil
 	case *ent.OncallAnnotationQuery:
 		return &query[*ent.OncallAnnotationQuery, predicate.OncallAnnotation, oncallannotation.OrderOption]{typ: ent.TypeOncallAnnotation, tq: q}, nil
-	case *ent.OncallAnnotationAlertFeedbackQuery:
-		return &query[*ent.OncallAnnotationAlertFeedbackQuery, predicate.OncallAnnotationAlertFeedback, oncallannotationalertfeedback.OrderOption]{typ: ent.TypeOncallAnnotationAlertFeedback, tq: q}, nil
 	case *ent.OncallEventQuery:
 		return &query[*ent.OncallEventQuery, predicate.OncallEvent, oncallevent.OrderOption]{typ: ent.TypeOncallEvent, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:

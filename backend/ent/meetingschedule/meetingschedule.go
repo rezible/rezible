@@ -16,6 +16,8 @@ const (
 	Label = "meeting_schedule"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
 	// FieldName holds the string denoting the name field in the database.
@@ -40,29 +42,39 @@ const (
 	FieldUntilDate = "until_date"
 	// FieldNumRepetitions holds the string denoting the num_repetitions field in the database.
 	FieldNumRepetitions = "num_repetitions"
-	// EdgeSessions holds the string denoting the sessions edge name in mutations.
-	EdgeSessions = "sessions"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeOwningTeam holds the string denoting the owning_team edge name in mutations.
 	EdgeOwningTeam = "owning_team"
+	// EdgeSessions holds the string denoting the sessions edge name in mutations.
+	EdgeSessions = "sessions"
 	// Table holds the table name of the meetingschedule in the database.
 	Table = "meeting_schedules"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "meeting_schedules"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
+	// OwningTeamTable is the table that holds the owning_team relation/edge. The primary key declared below.
+	OwningTeamTable = "meeting_schedule_owning_team"
+	// OwningTeamInverseTable is the table name for the Team entity.
+	// It exists in this package in order to avoid circular dependency with the "team" package.
+	OwningTeamInverseTable = "teams"
 	// SessionsTable is the table that holds the sessions relation/edge.
 	SessionsTable = "meeting_sessions"
 	// SessionsInverseTable is the table name for the MeetingSession entity.
 	// It exists in this package in order to avoid circular dependency with the "meetingsession" package.
 	SessionsInverseTable = "meeting_sessions"
 	// SessionsColumn is the table column denoting the sessions relation/edge.
-	SessionsColumn = "meeting_schedule_sessions"
-	// OwningTeamTable is the table that holds the owning_team relation/edge. The primary key declared below.
-	OwningTeamTable = "meeting_schedule_owning_team"
-	// OwningTeamInverseTable is the table name for the Team entity.
-	// It exists in this package in order to avoid circular dependency with the "team" package.
-	OwningTeamInverseTable = "teams"
+	SessionsColumn = "meeting_session_schedule"
 )
 
 // Columns holds all SQL columns for meetingschedule fields.
 var Columns = []string{
 	FieldID,
+	FieldTenantID,
 	FieldArchiveTime,
 	FieldName,
 	FieldDescription,
@@ -165,6 +177,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+}
+
 // ByArchiveTime orders the results by the archive_time field.
 func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
@@ -220,17 +237,10 @@ func ByNumRepetitions(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNumRepetitions, opts...).ToFunc()
 }
 
-// BySessionsCount orders the results by sessions count.
-func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSessionsStep(), opts...)
-	}
-}
-
-// BySessions orders the results by sessions terms.
-func BySessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -247,11 +257,25 @@ func ByOwningTeam(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newOwningTeamStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newSessionsStep() *sqlgraph.Step {
+
+// BySessionsCount orders the results by sessions count.
+func BySessionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSessionsStep(), opts...)
+	}
+}
+
+// BySessions orders the results by sessions terms.
+func BySessions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSessionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SessionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, SessionsTable, SessionsColumn),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
 func newOwningTeamStep() *sqlgraph.Step {
@@ -259,5 +283,12 @@ func newOwningTeamStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwningTeamInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, OwningTeamTable, OwningTeamPrimaryKey...),
+	)
+}
+func newSessionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SessionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SessionsTable, SessionsColumn),
 	)
 }

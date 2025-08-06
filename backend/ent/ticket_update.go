@@ -126,6 +126,14 @@ func (tu *TicketUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *TicketUpdate) check() error {
+	if tu.mutation.TenantCleared() && len(tu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Ticket.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tu *TicketUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TicketUpdate {
 	tu.modifiers = append(tu.modifiers, modifiers...)
@@ -133,6 +141,9 @@ func (tu *TicketUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TicketU
 }
 
 func (tu *TicketUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := tu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(ticket.Table, ticket.Columns, sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID))
 	if ps := tu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -323,6 +334,14 @@ func (tuo *TicketUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tuo *TicketUpdateOne) check() error {
+	if tuo.mutation.TenantCleared() && len(tuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Ticket.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (tuo *TicketUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *TicketUpdateOne {
 	tuo.modifiers = append(tuo.modifiers, modifiers...)
@@ -330,6 +349,9 @@ func (tuo *TicketUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Tic
 }
 
 func (tuo *TicketUpdateOne) sqlSave(ctx context.Context) (_node *Ticket, err error) {
+	if err := tuo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(ticket.Table, ticket.Columns, sqlgraph.NewFieldSpec(ticket.FieldID, field.TypeUUID))
 	id, ok := tuo.mutation.ID()
 	if !ok {

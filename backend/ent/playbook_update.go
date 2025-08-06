@@ -132,6 +132,14 @@ func (pu *PlaybookUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (pu *PlaybookUpdate) check() error {
+	if pu.mutation.TenantCleared() && len(pu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Playbook.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (pu *PlaybookUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PlaybookUpdate {
 	pu.modifiers = append(pu.modifiers, modifiers...)
@@ -139,6 +147,9 @@ func (pu *PlaybookUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *Playb
 }
 
 func (pu *PlaybookUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := pu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(playbook.Table, playbook.Columns, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
 	if ps := pu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -338,6 +349,14 @@ func (puo *PlaybookUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (puo *PlaybookUpdateOne) check() error {
+	if puo.mutation.TenantCleared() && len(puo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Playbook.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (puo *PlaybookUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *PlaybookUpdateOne {
 	puo.modifiers = append(puo.modifiers, modifiers...)
@@ -345,6 +364,9 @@ func (puo *PlaybookUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *P
 }
 
 func (puo *PlaybookUpdateOne) sqlSave(ctx context.Context) (_node *Playbook, err error) {
+	if err := puo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(playbook.Table, playbook.Columns, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
 	id, ok := puo.mutation.ID()
 	if !ok {

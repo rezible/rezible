@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // OncallHandoverTemplateQuery is the builder for querying OncallHandoverTemplate entities.
@@ -26,6 +27,7 @@ type OncallHandoverTemplateQuery struct {
 	order      []oncallhandovertemplate.OrderOption
 	inters     []Interceptor
 	predicates []predicate.OncallHandoverTemplate
+	withTenant *TenantQuery
 	withRoster *OncallRosterQuery
 	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -62,6 +64,28 @@ func (ohtq *OncallHandoverTemplateQuery) Unique(unique bool) *OncallHandoverTemp
 func (ohtq *OncallHandoverTemplateQuery) Order(o ...oncallhandovertemplate.OrderOption) *OncallHandoverTemplateQuery {
 	ohtq.order = append(ohtq.order, o...)
 	return ohtq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (ohtq *OncallHandoverTemplateQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: ohtq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := ohtq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := ohtq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, oncallhandovertemplate.TenantTable, oncallhandovertemplate.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(ohtq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryRoster chains the current query on the "roster" edge.
@@ -278,12 +302,24 @@ func (ohtq *OncallHandoverTemplateQuery) Clone() *OncallHandoverTemplateQuery {
 		order:      append([]oncallhandovertemplate.OrderOption{}, ohtq.order...),
 		inters:     append([]Interceptor{}, ohtq.inters...),
 		predicates: append([]predicate.OncallHandoverTemplate{}, ohtq.predicates...),
+		withTenant: ohtq.withTenant.Clone(),
 		withRoster: ohtq.withRoster.Clone(),
 		// clone intermediate query.
 		sql:       ohtq.sql.Clone(),
 		path:      ohtq.path,
 		modifiers: append([]func(*sql.Selector){}, ohtq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (ohtq *OncallHandoverTemplateQuery) WithTenant(opts ...func(*TenantQuery)) *OncallHandoverTemplateQuery {
+	query := (&TenantClient{config: ohtq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	ohtq.withTenant = query
+	return ohtq
 }
 
 // WithRoster tells the query-builder to eager-load the nodes that are connected to
@@ -303,12 +339,12 @@ func (ohtq *OncallHandoverTemplateQuery) WithRoster(opts ...func(*OncallRosterQu
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.OncallHandoverTemplate.Query().
-//		GroupBy(oncallhandovertemplate.FieldCreatedAt).
+//		GroupBy(oncallhandovertemplate.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (ohtq *OncallHandoverTemplateQuery) GroupBy(field string, fields ...string) *OncallHandoverTemplateGroupBy {
@@ -326,11 +362,11 @@ func (ohtq *OncallHandoverTemplateQuery) GroupBy(field string, fields ...string)
 // Example:
 //
 //	var v []struct {
-//		CreatedAt time.Time `json:"created_at,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.OncallHandoverTemplate.Query().
-//		Select(oncallhandovertemplate.FieldCreatedAt).
+//		Select(oncallhandovertemplate.FieldTenantID).
 //		Scan(ctx, &v)
 func (ohtq *OncallHandoverTemplateQuery) Select(fields ...string) *OncallHandoverTemplateSelect {
 	ohtq.ctx.Fields = append(ohtq.ctx.Fields, fields...)
@@ -381,7 +417,8 @@ func (ohtq *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...qu
 	var (
 		nodes       = []*OncallHandoverTemplate{}
 		_spec       = ohtq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
+			ohtq.withTenant != nil,
 			ohtq.withRoster != nil,
 		}
 	)
@@ -406,6 +443,12 @@ func (ohtq *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...qu
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := ohtq.withTenant; query != nil {
+		if err := ohtq.loadTenant(ctx, query, nodes, nil,
+			func(n *OncallHandoverTemplate, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := ohtq.withRoster; query != nil {
 		if err := ohtq.loadRoster(ctx, query, nodes,
 			func(n *OncallHandoverTemplate) { n.Edges.Roster = []*OncallRoster{} },
@@ -416,6 +459,35 @@ func (ohtq *OncallHandoverTemplateQuery) sqlAll(ctx context.Context, hooks ...qu
 	return nodes, nil
 }
 
+func (ohtq *OncallHandoverTemplateQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*OncallHandoverTemplate)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (ohtq *OncallHandoverTemplateQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*OncallHandoverTemplate, init func(*OncallHandoverTemplate), assign func(*OncallHandoverTemplate, *OncallRoster)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*OncallHandoverTemplate)
@@ -474,6 +546,9 @@ func (ohtq *OncallHandoverTemplateQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != oncallhandovertemplate.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if ohtq.withTenant != nil {
+			_spec.Node.AddColumnOnce(oncallhandovertemplate.FieldTenantID)
 		}
 	}
 	if ps := ohtq.predicates; len(ps) > 0 {

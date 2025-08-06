@@ -173,6 +173,9 @@ func (ieeu *IncidentEventEvidenceUpdate) check() error {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.title": %w`, err)}
 		}
 	}
+	if ieeu.mutation.TenantCleared() && len(ieeu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.tenant"`)
+	}
 	if ieeu.mutation.EventCleared() && len(ieeu.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.event"`)
 	}
@@ -420,6 +423,9 @@ func (ieeuo *IncidentEventEvidenceUpdateOne) check() error {
 		if err := incidenteventevidence.TitleValidator(v); err != nil {
 			return &ValidationError{Name: "title", err: fmt.Errorf(`ent: validator failed for field "IncidentEventEvidence.title": %w`, err)}
 		}
+	}
+	if ieeuo.mutation.TenantCleared() && len(ieeuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.tenant"`)
 	}
 	if ieeuo.mutation.EventCleared() && len(ieeuo.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventEvidence.event"`)

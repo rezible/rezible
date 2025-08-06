@@ -135,6 +135,9 @@ func (iecfu *IncidentEventContributingFactorUpdate) check() error {
 			return &ValidationError{Name: "factor_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventContributingFactor.factor_type": %w`, err)}
 		}
 	}
+	if iecfu.mutation.TenantCleared() && len(iecfu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.tenant"`)
+	}
 	if iecfu.mutation.EventCleared() && len(iecfu.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.event"`)
 	}
@@ -338,6 +341,9 @@ func (iecfuo *IncidentEventContributingFactorUpdateOne) check() error {
 		if err := incidenteventcontributingfactor.FactorTypeValidator(v); err != nil {
 			return &ValidationError{Name: "factor_type", err: fmt.Errorf(`ent: validator failed for field "IncidentEventContributingFactor.factor_type": %w`, err)}
 		}
+	}
+	if iecfuo.mutation.TenantCleared() && len(iecfuo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.tenant"`)
 	}
 	if iecfuo.mutation.EventCleared() && len(iecfuo.mutation.EventIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "IncidentEventContributingFactor.event"`)

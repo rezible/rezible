@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallusershift"
 	"github.com/rezible/rezible/ent/oncallusershifthandover"
 	"github.com/rezible/rezible/ent/oncallusershiftmetrics"
+	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
@@ -22,6 +23,8 @@ type OncallUserShift struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// RosterID holds the value of the "roster_id" field.
@@ -44,6 +47,8 @@ type OncallUserShift struct {
 
 // OncallUserShiftEdges holds the relations/edges for other nodes in the graph.
 type OncallUserShiftEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// User holds the value of the user edge.
 	User *User `json:"user,omitempty"`
 	// Roster holds the value of the roster edge.
@@ -56,7 +61,18 @@ type OncallUserShiftEdges struct {
 	Metrics *OncallUserShiftMetrics `json:"metrics,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OncallUserShiftEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // UserOrErr returns the User value or an error if the edge
@@ -64,7 +80,7 @@ type OncallUserShiftEdges struct {
 func (e OncallUserShiftEdges) UserOrErr() (*User, error) {
 	if e.User != nil {
 		return e.User, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: user.Label}
 	}
 	return nil, &NotLoadedError{edge: "user"}
@@ -75,7 +91,7 @@ func (e OncallUserShiftEdges) UserOrErr() (*User, error) {
 func (e OncallUserShiftEdges) RosterOrErr() (*OncallRoster, error) {
 	if e.Roster != nil {
 		return e.Roster, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: oncallroster.Label}
 	}
 	return nil, &NotLoadedError{edge: "roster"}
@@ -86,7 +102,7 @@ func (e OncallUserShiftEdges) RosterOrErr() (*OncallRoster, error) {
 func (e OncallUserShiftEdges) PrimaryShiftOrErr() (*OncallUserShift, error) {
 	if e.PrimaryShift != nil {
 		return e.PrimaryShift, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: oncallusershift.Label}
 	}
 	return nil, &NotLoadedError{edge: "primary_shift"}
@@ -97,7 +113,7 @@ func (e OncallUserShiftEdges) PrimaryShiftOrErr() (*OncallUserShift, error) {
 func (e OncallUserShiftEdges) HandoverOrErr() (*OncallUserShiftHandover, error) {
 	if e.Handover != nil {
 		return e.Handover, nil
-	} else if e.loadedTypes[3] {
+	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: oncallusershifthandover.Label}
 	}
 	return nil, &NotLoadedError{edge: "handover"}
@@ -108,7 +124,7 @@ func (e OncallUserShiftEdges) HandoverOrErr() (*OncallUserShiftHandover, error) 
 func (e OncallUserShiftEdges) MetricsOrErr() (*OncallUserShiftMetrics, error) {
 	if e.Metrics != nil {
 		return e.Metrics, nil
-	} else if e.loadedTypes[4] {
+	} else if e.loadedTypes[5] {
 		return nil, &NotFoundError{label: oncallusershiftmetrics.Label}
 	}
 	return nil, &NotLoadedError{edge: "metrics"}
@@ -119,6 +135,8 @@ func (*OncallUserShift) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case oncallusershift.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case oncallusershift.FieldProviderID, oncallusershift.FieldRole:
 			values[i] = new(sql.NullString)
 		case oncallusershift.FieldStartAt, oncallusershift.FieldEndAt:
@@ -145,6 +163,12 @@ func (ous *OncallUserShift) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				ous.ID = *value
+			}
+		case oncallusershift.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				ous.TenantID = int(value.Int64)
 			}
 		case oncallusershift.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -201,6 +225,11 @@ func (ous *OncallUserShift) Value(name string) (ent.Value, error) {
 	return ous.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the OncallUserShift entity.
+func (ous *OncallUserShift) QueryTenant() *TenantQuery {
+	return NewOncallUserShiftClient(ous.config).QueryTenant(ous)
+}
+
 // QueryUser queries the "user" edge of the OncallUserShift entity.
 func (ous *OncallUserShift) QueryUser() *UserQuery {
 	return NewOncallUserShiftClient(ous.config).QueryUser(ous)
@@ -249,6 +278,9 @@ func (ous *OncallUserShift) String() string {
 	var builder strings.Builder
 	builder.WriteString("OncallUserShift(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", ous.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", ous.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", ous.UserID))
 	builder.WriteString(", ")

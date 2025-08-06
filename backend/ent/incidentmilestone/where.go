@@ -56,6 +56,11 @@ func IDLTE(id uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldLTE(FieldID, id))
 }
 
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v int) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldTenantID, v))
+}
+
 // IncidentID applies equality check predicate on the "incident_id" field. It's identical to IncidentIDEQ.
 func IncidentID(v uuid.UUID) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldIncidentID, v))
@@ -69,6 +74,26 @@ func Description(v string) predicate.IncidentMilestone {
 // Time applies equality check predicate on the "time" field. It's identical to TimeEQ.
 func Time(v time.Time) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldEQ(FieldTime, v))
+}
+
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v int) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldEQ(FieldTenantID, v))
+}
+
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v int) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNEQ(FieldTenantID, v))
+}
+
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...int) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldIn(FieldTenantID, vs...))
+}
+
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...int) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // IncidentIDEQ applies the EQ predicate on the "incident_id" field.
@@ -224,6 +249,29 @@ func TimeLT(v time.Time) predicate.IncidentMilestone {
 // TimeLTE applies the LTE predicate on the "time" field.
 func TimeLTE(v time.Time) predicate.IncidentMilestone {
 	return predicate.IncidentMilestone(sql.FieldLTE(FieldTime, v))
+}
+
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentMilestone {
+	return predicate.IncidentMilestone(func(s *sql.Selector) {
+		step := newTenantStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // HasIncident applies the HasEdge predicate on the "incident" edge.

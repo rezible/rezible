@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisComponent is the model entity for the SystemAnalysisComponent schema.
@@ -20,6 +21,8 @@ type SystemAnalysisComponent struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// AnalysisID holds the value of the "analysis_id" field.
 	AnalysisID uuid.UUID `json:"analysis_id,omitempty"`
 	// ComponentID holds the value of the "component_id" field.
@@ -40,13 +43,26 @@ type SystemAnalysisComponent struct {
 
 // SystemAnalysisComponentEdges holds the relations/edges for other nodes in the graph.
 type SystemAnalysisComponentEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Analysis holds the value of the analysis edge.
 	Analysis *SystemAnalysis `json:"analysis,omitempty"`
 	// Component holds the value of the component edge.
 	Component *SystemComponent `json:"component,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisComponentEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // AnalysisOrErr returns the Analysis value or an error if the edge
@@ -54,7 +70,7 @@ type SystemAnalysisComponentEdges struct {
 func (e SystemAnalysisComponentEdges) AnalysisOrErr() (*SystemAnalysis, error) {
 	if e.Analysis != nil {
 		return e.Analysis, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemanalysis.Label}
 	}
 	return nil, &NotLoadedError{edge: "analysis"}
@@ -65,7 +81,7 @@ func (e SystemAnalysisComponentEdges) AnalysisOrErr() (*SystemAnalysis, error) {
 func (e SystemAnalysisComponentEdges) ComponentOrErr() (*SystemComponent, error) {
 	if e.Component != nil {
 		return e.Component, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponent.Label}
 	}
 	return nil, &NotLoadedError{edge: "component"}
@@ -78,6 +94,8 @@ func (*SystemAnalysisComponent) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case systemanalysiscomponent.FieldPosX, systemanalysiscomponent.FieldPosY:
 			values[i] = new(sql.NullFloat64)
+		case systemanalysiscomponent.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemanalysiscomponent.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemanalysiscomponent.FieldCreatedAt:
@@ -104,6 +122,12 @@ func (sac *SystemAnalysisComponent) assignValues(columns []string, values []any)
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				sac.ID = *value
+			}
+		case systemanalysiscomponent.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				sac.TenantID = int(value.Int64)
 			}
 		case systemanalysiscomponent.FieldAnalysisID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -154,6 +178,11 @@ func (sac *SystemAnalysisComponent) Value(name string) (ent.Value, error) {
 	return sac.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the SystemAnalysisComponent entity.
+func (sac *SystemAnalysisComponent) QueryTenant() *TenantQuery {
+	return NewSystemAnalysisComponentClient(sac.config).QueryTenant(sac)
+}
+
 // QueryAnalysis queries the "analysis" edge of the SystemAnalysisComponent entity.
 func (sac *SystemAnalysisComponent) QueryAnalysis() *SystemAnalysisQuery {
 	return NewSystemAnalysisComponentClient(sac.config).QueryAnalysis(sac)
@@ -187,6 +216,9 @@ func (sac *SystemAnalysisComponent) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemAnalysisComponent(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", sac.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", sac.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("analysis_id=")
 	builder.WriteString(fmt.Sprintf("%v", sac.AnalysisID))
 	builder.WriteString(", ")

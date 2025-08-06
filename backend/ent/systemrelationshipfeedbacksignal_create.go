@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentsignal"
 	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipFeedbackSignalCreate is the builder for creating a SystemRelationshipFeedbackSignal entity.
@@ -24,6 +25,12 @@ type SystemRelationshipFeedbackSignalCreate struct {
 	mutation *SystemRelationshipFeedbackSignalMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (srfsc *SystemRelationshipFeedbackSignalCreate) SetTenantID(i int) *SystemRelationshipFeedbackSignalCreate {
+	srfsc.mutation.SetTenantID(i)
+	return srfsc
 }
 
 // SetRelationshipID sets the "relationship_id" field.
@@ -84,6 +91,11 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) SetNillableID(u *uuid.UUID)
 		srfsc.SetID(*u)
 	}
 	return srfsc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (srfsc *SystemRelationshipFeedbackSignalCreate) SetTenant(t *Tenant) *SystemRelationshipFeedbackSignalCreate {
+	return srfsc.SetTenantID(t.ID)
 }
 
 // SetRelationship sets the "relationship" edge to the SystemAnalysisRelationship entity.
@@ -152,6 +164,9 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (srfsc *SystemRelationshipFeedbackSignalCreate) check() error {
+	if _, ok := srfsc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.tenant_id"`)}
+	}
 	if _, ok := srfsc.mutation.RelationshipID(); !ok {
 		return &ValidationError{Name: "relationship_id", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.relationship_id"`)}
 	}
@@ -168,6 +183,9 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) check() error {
 	}
 	if _, ok := srfsc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "SystemRelationshipFeedbackSignal.created_at"`)}
+	}
+	if len(srfsc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "SystemRelationshipFeedbackSignal.tenant"`)}
 	}
 	if len(srfsc.mutation.RelationshipIDs()) == 0 {
 		return &ValidationError{Name: "relationship", err: errors.New(`ent: missing required edge "SystemRelationshipFeedbackSignal.relationship"`)}
@@ -223,6 +241,23 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 		_spec.SetField(systemrelationshipfeedbacksignal.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
+	if nodes := srfsc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemrelationshipfeedbacksignal.TenantTable,
+			Columns: []string{systemrelationshipfeedbacksignal.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := srfsc.mutation.RelationshipIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -264,7 +299,7 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 // of the `INSERT` statement. For example:
 //
 //	client.SystemRelationshipFeedbackSignal.Create().
-//		SetRelationshipID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -273,7 +308,7 @@ func (srfsc *SystemRelationshipFeedbackSignalCreate) createSpec() (*SystemRelati
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipFeedbackSignalUpsert) {
-//			SetRelationshipID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (srfsc *SystemRelationshipFeedbackSignalCreate) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertOne {
@@ -391,6 +426,9 @@ func (u *SystemRelationshipFeedbackSignalUpsertOne) UpdateNewValues() *SystemRel
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(systemrelationshipfeedbacksignal.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(systemrelationshipfeedbacksignal.FieldTenantID)
 		}
 	}))
 	return u
@@ -636,7 +674,7 @@ func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) ExecX(ctx context.Cont
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.SystemRelationshipFeedbackSignalUpsert) {
-//			SetRelationshipID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (srfscb *SystemRelationshipFeedbackSignalCreateBulk) OnConflict(opts ...sql.ConflictOption) *SystemRelationshipFeedbackSignalUpsertBulk {
@@ -682,6 +720,9 @@ func (u *SystemRelationshipFeedbackSignalUpsertBulk) UpdateNewValues() *SystemRe
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(systemrelationshipfeedbacksignal.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(systemrelationshipfeedbacksignal.FieldTenantID)
 			}
 		}
 	}))

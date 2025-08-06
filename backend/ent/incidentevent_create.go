@@ -20,6 +20,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventevidence"
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventCreate is the builder for creating a IncidentEvent entity.
@@ -28,6 +29,12 @@ type IncidentEventCreate struct {
 	mutation *IncidentEventMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (iec *IncidentEventCreate) SetTenantID(i int) *IncidentEventCreate {
+	iec.mutation.SetTenantID(i)
+	return iec
 }
 
 // SetIncidentID sets the "incident_id" field.
@@ -156,6 +163,11 @@ func (iec *IncidentEventCreate) SetNillableID(u *uuid.UUID) *IncidentEventCreate
 		iec.SetID(*u)
 	}
 	return iec
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (iec *IncidentEventCreate) SetTenant(t *Tenant) *IncidentEventCreate {
+	return iec.SetTenantID(t.ID)
 }
 
 // SetIncident sets the "incident" edge to the Incident entity.
@@ -317,6 +329,9 @@ func (iec *IncidentEventCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (iec *IncidentEventCreate) check() error {
+	if _, ok := iec.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentEvent.tenant_id"`)}
+	}
 	if _, ok := iec.mutation.IncidentID(); !ok {
 		return &ValidationError{Name: "incident_id", err: errors.New(`ent: missing required field "IncidentEvent.incident_id"`)}
 	}
@@ -356,6 +371,9 @@ func (iec *IncidentEventCreate) check() error {
 	}
 	if _, ok := iec.mutation.IsDraft(); !ok {
 		return &ValidationError{Name: "is_draft", err: errors.New(`ent: missing required field "IncidentEvent.is_draft"`)}
+	}
+	if len(iec.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentEvent.tenant"`)}
 	}
 	if len(iec.mutation.IncidentIDs()) == 0 {
 		return &ValidationError{Name: "incident", err: errors.New(`ent: missing required edge "IncidentEvent.incident"`)}
@@ -435,6 +453,23 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 	if value, ok := iec.mutation.IsDraft(); ok {
 		_spec.SetField(incidentevent.FieldIsDraft, field.TypeBool, value)
 		_node.IsDraft = value
+	}
+	if nodes := iec.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentevent.TenantTable,
+			Columns: []string{incidentevent.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := iec.mutation.IncidentIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -547,7 +582,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentEvent.Create().
-//		SetIncidentID(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -556,7 +591,7 @@ func (iec *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSp
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventUpsert) {
-//			SetIncidentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iec *IncidentEventCreate) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertOne {
@@ -752,6 +787,9 @@ func (u *IncidentEventUpsertOne) UpdateNewValues() *IncidentEventUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidentevent.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidentevent.FieldTenantID)
 		}
 	}))
 	return u
@@ -1088,7 +1126,7 @@ func (iecb *IncidentEventCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentEventUpsert) {
-//			SetIncidentID(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (iecb *IncidentEventCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentEventUpsertBulk {
@@ -1134,6 +1172,9 @@ func (u *IncidentEventUpsertBulk) UpdateNewValues() *IncidentEventUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidentevent.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidentevent.FieldTenantID)
 			}
 		}
 	}))

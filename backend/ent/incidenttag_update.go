@@ -184,6 +184,14 @@ func (itu *IncidentTagUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (itu *IncidentTagUpdate) check() error {
+	if itu.mutation.TenantCleared() && len(itu.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentTag.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (itu *IncidentTagUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTagUpdate {
 	itu.modifiers = append(itu.modifiers, modifiers...)
@@ -191,6 +199,9 @@ func (itu *IncidentTagUpdate) Modify(modifiers ...func(u *sql.UpdateBuilder)) *I
 }
 
 func (itu *IncidentTagUpdate) sqlSave(ctx context.Context) (n int, err error) {
+	if err := itu.check(); err != nil {
+		return n, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidenttag.Table, incidenttag.Columns, sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID))
 	if ps := itu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -488,6 +499,14 @@ func (ituo *IncidentTagUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (ituo *IncidentTagUpdateOne) check() error {
+	if ituo.mutation.TenantCleared() && len(ituo.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "IncidentTag.tenant"`)
+	}
+	return nil
+}
+
 // Modify adds a statement modifier for attaching custom logic to the UPDATE statement.
 func (ituo *IncidentTagUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)) *IncidentTagUpdateOne {
 	ituo.modifiers = append(ituo.modifiers, modifiers...)
@@ -495,6 +514,9 @@ func (ituo *IncidentTagUpdateOne) Modify(modifiers ...func(u *sql.UpdateBuilder)
 }
 
 func (ituo *IncidentTagUpdateOne) sqlSave(ctx context.Context) (_node *IncidentTag, err error) {
+	if err := ituo.check(); err != nil {
+		return _node, err
+	}
 	_spec := sqlgraph.NewUpdateSpec(incidenttag.Table, incidenttag.Columns, sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID))
 	id, ok := ituo.mutation.ID()
 	if !ok {

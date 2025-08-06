@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentTypeCreate is the builder for creating a IncidentType entity.
@@ -24,6 +25,12 @@ type IncidentTypeCreate struct {
 	mutation *IncidentTypeMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (itc *IncidentTypeCreate) SetTenantID(i int) *IncidentTypeCreate {
+	itc.mutation.SetTenantID(i)
+	return itc
 }
 
 // SetArchiveTime sets the "archive_time" field.
@@ -58,6 +65,11 @@ func (itc *IncidentTypeCreate) SetNillableID(u *uuid.UUID) *IncidentTypeCreate {
 		itc.SetID(*u)
 	}
 	return itc
+}
+
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (itc *IncidentTypeCreate) SetTenant(t *Tenant) *IncidentTypeCreate {
+	return itc.SetTenantID(t.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -139,8 +151,14 @@ func (itc *IncidentTypeCreate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (itc *IncidentTypeCreate) check() error {
+	if _, ok := itc.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "IncidentType.tenant_id"`)}
+	}
 	if _, ok := itc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "IncidentType.name"`)}
+	}
+	if len(itc.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "IncidentType.tenant"`)}
 	}
 	return nil
 }
@@ -186,6 +204,23 @@ func (itc *IncidentTypeCreate) createSpec() (*IncidentType, *sqlgraph.CreateSpec
 		_spec.SetField(incidenttype.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if nodes := itc.mutation.TenantIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidenttype.TenantTable,
+			Columns: []string{incidenttype.TenantColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := itc.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -225,7 +260,7 @@ func (itc *IncidentTypeCreate) createSpec() (*IncidentType, *sqlgraph.CreateSpec
 // of the `INSERT` statement. For example:
 //
 //	client.IncidentType.Create().
-//		SetArchiveTime(v).
+//		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -234,7 +269,7 @@ func (itc *IncidentTypeCreate) createSpec() (*IncidentType, *sqlgraph.CreateSpec
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentTypeUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (itc *IncidentTypeCreate) OnConflict(opts ...sql.ConflictOption) *IncidentTypeUpsertOne {
@@ -316,6 +351,9 @@ func (u *IncidentTypeUpsertOne) UpdateNewValues() *IncidentTypeUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
 			s.SetIgnore(incidenttype.FieldID)
+		}
+		if _, exists := u.create.mutation.TenantID(); exists {
+			s.SetIgnore(incidenttype.FieldTenantID)
 		}
 	}))
 	return u
@@ -519,7 +557,7 @@ func (itcb *IncidentTypeCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.IncidentTypeUpsert) {
-//			SetArchiveTime(v+v).
+//			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
 func (itcb *IncidentTypeCreateBulk) OnConflict(opts ...sql.ConflictOption) *IncidentTypeUpsertBulk {
@@ -565,6 +603,9 @@ func (u *IncidentTypeUpsertBulk) UpdateNewValues() *IncidentTypeUpsertBulk {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
 				s.SetIgnore(incidenttype.FieldID)
+			}
+			if _, exists := b.mutation.TenantID(); exists {
+				s.SetIgnore(incidenttype.FieldTenantID)
 			}
 		}
 	}))

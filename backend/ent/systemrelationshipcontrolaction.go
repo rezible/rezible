@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemRelationshipControlAction is the model entity for the SystemRelationshipControlAction schema.
@@ -20,6 +21,8 @@ type SystemRelationshipControlAction struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID int `json:"tenant_id,omitempty"`
 	// RelationshipID holds the value of the "relationship_id" field.
 	RelationshipID uuid.UUID `json:"relationship_id,omitempty"`
 	// ControlID holds the value of the "control_id" field.
@@ -38,13 +41,26 @@ type SystemRelationshipControlAction struct {
 
 // SystemRelationshipControlActionEdges holds the relations/edges for other nodes in the graph.
 type SystemRelationshipControlActionEdges struct {
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Relationship holds the value of the relationship edge.
 	Relationship *SystemAnalysisRelationship `json:"relationship,omitempty"`
 	// Control holds the value of the control edge.
 	Control *SystemComponentControl `json:"control,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
+}
+
+// TenantOrErr returns the Tenant value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemRelationshipControlActionEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: tenant.Label}
+	}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
@@ -52,7 +68,7 @@ type SystemRelationshipControlActionEdges struct {
 func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemAnalysisRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
-	} else if e.loadedTypes[0] {
+	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: systemanalysisrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
@@ -63,7 +79,7 @@ func (e SystemRelationshipControlActionEdges) RelationshipOrErr() (*SystemAnalys
 func (e SystemRelationshipControlActionEdges) ControlOrErr() (*SystemComponentControl, error) {
 	if e.Control != nil {
 		return e.Control, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemcomponentcontrol.Label}
 	}
 	return nil, &NotLoadedError{edge: "control"}
@@ -74,6 +90,8 @@ func (*SystemRelationshipControlAction) scanValues(columns []string) ([]any, err
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemrelationshipcontrolaction.FieldTenantID:
+			values[i] = new(sql.NullInt64)
 		case systemrelationshipcontrolaction.FieldType, systemrelationshipcontrolaction.FieldDescription:
 			values[i] = new(sql.NullString)
 		case systemrelationshipcontrolaction.FieldCreatedAt:
@@ -100,6 +118,12 @@ func (srca *SystemRelationshipControlAction) assignValues(columns []string, valu
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				srca.ID = *value
+			}
+		case systemrelationshipcontrolaction.FieldTenantID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
+			} else if value.Valid {
+				srca.TenantID = int(value.Int64)
 			}
 		case systemrelationshipcontrolaction.FieldRelationshipID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -144,6 +168,11 @@ func (srca *SystemRelationshipControlAction) Value(name string) (ent.Value, erro
 	return srca.selectValues.Get(name)
 }
 
+// QueryTenant queries the "tenant" edge of the SystemRelationshipControlAction entity.
+func (srca *SystemRelationshipControlAction) QueryTenant() *TenantQuery {
+	return NewSystemRelationshipControlActionClient(srca.config).QueryTenant(srca)
+}
+
 // QueryRelationship queries the "relationship" edge of the SystemRelationshipControlAction entity.
 func (srca *SystemRelationshipControlAction) QueryRelationship() *SystemAnalysisRelationshipQuery {
 	return NewSystemRelationshipControlActionClient(srca.config).QueryRelationship(srca)
@@ -177,6 +206,9 @@ func (srca *SystemRelationshipControlAction) String() string {
 	var builder strings.Builder
 	builder.WriteString("SystemRelationshipControlAction(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", srca.ID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", srca.TenantID))
+	builder.WriteString(", ")
 	builder.WriteString("relationship_id=")
 	builder.WriteString(fmt.Sprintf("%v", srca.RelationshipID))
 	builder.WriteString(", ")

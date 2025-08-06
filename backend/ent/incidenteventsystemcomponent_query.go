@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventSystemComponentQuery is the builder for querying IncidentEventSystemComponent entities.
@@ -25,6 +26,7 @@ type IncidentEventSystemComponentQuery struct {
 	order               []incidenteventsystemcomponent.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.IncidentEventSystemComponent
+	withTenant          *TenantQuery
 	withEvent           *IncidentEventSystemComponentQuery
 	withSystemComponent *SystemComponentQuery
 	modifiers           []func(*sql.Selector)
@@ -62,6 +64,28 @@ func (iescq *IncidentEventSystemComponentQuery) Unique(unique bool) *IncidentEve
 func (iescq *IncidentEventSystemComponentQuery) Order(o ...incidenteventsystemcomponent.OrderOption) *IncidentEventSystemComponentQuery {
 	iescq.order = append(iescq.order, o...)
 	return iescq
+}
+
+// QueryTenant chains the current query on the "tenant" edge.
+func (iescq *IncidentEventSystemComponentQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: iescq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := iescq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := iescq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, selector),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.TenantTable, incidenteventsystemcomponent.TenantColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(iescq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // QueryEvent chains the current query on the "event" edge.
@@ -300,6 +324,7 @@ func (iescq *IncidentEventSystemComponentQuery) Clone() *IncidentEventSystemComp
 		order:               append([]incidenteventsystemcomponent.OrderOption{}, iescq.order...),
 		inters:              append([]Interceptor{}, iescq.inters...),
 		predicates:          append([]predicate.IncidentEventSystemComponent{}, iescq.predicates...),
+		withTenant:          iescq.withTenant.Clone(),
 		withEvent:           iescq.withEvent.Clone(),
 		withSystemComponent: iescq.withSystemComponent.Clone(),
 		// clone intermediate query.
@@ -307,6 +332,17 @@ func (iescq *IncidentEventSystemComponentQuery) Clone() *IncidentEventSystemComp
 		path:      iescq.path,
 		modifiers: append([]func(*sql.Selector){}, iescq.modifiers...),
 	}
+}
+
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (iescq *IncidentEventSystemComponentQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentEventSystemComponentQuery {
+	query := (&TenantClient{config: iescq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	iescq.withTenant = query
+	return iescq
 }
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
@@ -337,12 +373,12 @@ func (iescq *IncidentEventSystemComponentQuery) WithSystemComponent(opts ...func
 // Example:
 //
 //	var v []struct {
-//		IncidentEventID uuid.UUID `json:"incident_event_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.IncidentEventSystemComponent.Query().
-//		GroupBy(incidenteventsystemcomponent.FieldIncidentEventID).
+//		GroupBy(incidenteventsystemcomponent.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (iescq *IncidentEventSystemComponentQuery) GroupBy(field string, fields ...string) *IncidentEventSystemComponentGroupBy {
@@ -360,11 +396,11 @@ func (iescq *IncidentEventSystemComponentQuery) GroupBy(field string, fields ...
 // Example:
 //
 //	var v []struct {
-//		IncidentEventID uuid.UUID `json:"incident_event_id,omitempty"`
+//		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
 //	client.IncidentEventSystemComponent.Query().
-//		Select(incidenteventsystemcomponent.FieldIncidentEventID).
+//		Select(incidenteventsystemcomponent.FieldTenantID).
 //		Scan(ctx, &v)
 func (iescq *IncidentEventSystemComponentQuery) Select(fields ...string) *IncidentEventSystemComponentSelect {
 	iescq.ctx.Fields = append(iescq.ctx.Fields, fields...)
@@ -415,7 +451,8 @@ func (iescq *IncidentEventSystemComponentQuery) sqlAll(ctx context.Context, hook
 	var (
 		nodes       = []*IncidentEventSystemComponent{}
 		_spec       = iescq.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [3]bool{
+			iescq.withTenant != nil,
 			iescq.withEvent != nil,
 			iescq.withSystemComponent != nil,
 		}
@@ -441,6 +478,12 @@ func (iescq *IncidentEventSystemComponentQuery) sqlAll(ctx context.Context, hook
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := iescq.withTenant; query != nil {
+		if err := iescq.loadTenant(ctx, query, nodes, nil,
+			func(n *IncidentEventSystemComponent, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := iescq.withEvent; query != nil {
 		if err := iescq.loadEvent(ctx, query, nodes, nil,
 			func(n *IncidentEventSystemComponent, e *IncidentEventSystemComponent) { n.Edges.Event = e }); err != nil {
@@ -456,6 +499,35 @@ func (iescq *IncidentEventSystemComponentQuery) sqlAll(ctx context.Context, hook
 	return nodes, nil
 }
 
+func (iescq *IncidentEventSystemComponentQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IncidentEventSystemComponent, init func(*IncidentEventSystemComponent), assign func(*IncidentEventSystemComponent, *Tenant)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*IncidentEventSystemComponent)
+	for i := range nodes {
+		fk := nodes[i].TenantID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(tenant.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (iescq *IncidentEventSystemComponentQuery) loadEvent(ctx context.Context, query *IncidentEventSystemComponentQuery, nodes []*IncidentEventSystemComponent, init func(*IncidentEventSystemComponent), assign func(*IncidentEventSystemComponent, *IncidentEventSystemComponent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentEventSystemComponent)
@@ -542,6 +614,9 @@ func (iescq *IncidentEventSystemComponentQuery) querySpec() *sqlgraph.QuerySpec 
 			if fields[i] != incidenteventsystemcomponent.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if iescq.withTenant != nil {
+			_spec.Node.AddColumnOnce(incidenteventsystemcomponent.FieldTenantID)
 		}
 		if iescq.withEvent != nil {
 			_spec.Node.AddColumnOnce(incidenteventsystemcomponent.FieldIncidentEventID)
