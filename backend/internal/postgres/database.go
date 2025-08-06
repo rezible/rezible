@@ -39,24 +39,27 @@ func Open(ctx context.Context, uri string) (*Database, error) {
 	return &Database{Pool: pool}, nil
 }
 
+func (d *Database) RunMigrations(ctx context.Context) error {
+	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(d.Pool)))
+	d.client = ent.NewClient(driver)
+	if schemaErr := d.client.Schema.Create(ctx); schemaErr != nil {
+		return fmt.Errorf("create schema: %w", schemaErr)
+	}
+
+	// TODO: enable RLS?
+	// https://entgo.io/docs/migration/row-level-security
+
+	return nil
+}
+
 func (d *Database) Client() *ent.Client {
 	if d.client == nil {
-		d.client = ent.NewClient(ent.Driver(entpgx.NewPgxPoolDriver(d.Pool)))
+		driver := ent.Driver(entpgx.NewPgxPoolDriver(d.Pool))
+		d.client = ent.NewClient(driver)
 		d.client.Use(ensureTenantIdSetHook)
 		d.client.Intercept(setTenantContextInterceptor())
 	}
 	return d.client
-}
-
-func (d *Database) RunMigrations(ctx context.Context) error {
-	driver := ent.Driver(entsql.OpenDB(dialect.Postgres, stdlib.OpenDBFromPool(d.Pool)))
-	client := ent.NewClient(driver)
-	defer func(c *ent.Client) {
-		if closeErr := c.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("failed to close ent client")
-		}
-	}(client)
-	return client.Schema.Create(ctx)
 }
 
 func (d *Database) Close() {
