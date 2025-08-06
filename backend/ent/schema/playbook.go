@@ -16,6 +16,7 @@ type Playbook struct {
 func (Playbook) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

@@ -25,6 +25,7 @@ func (Alert) Fields() []ent.Field {
 func (Alert) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -34,6 +35,40 @@ func (Alert) Edges() []ent.Edge {
 		edge.From("metrics", AlertMetrics.Type).Ref("alert"),
 		edge.From("playbooks", Playbook.Type).Ref("alerts"),
 		edge.From("instances", OncallEvent.Type).Ref("alert"),
+	}
+}
+
+// AlertFeedback holds the schema definition for the AlertFeedback entity.
+type AlertFeedback struct {
+	ent.Schema
+}
+
+func (AlertFeedback) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+// Fields of the AlertFeedback.
+func (AlertFeedback) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("annotation_id", uuid.UUID{}),
+		field.Bool("actionable"),
+		field.Enum("accurate").Values("yes", "no", "unknown"),
+		field.Enum("documentation_available").Values("yes", "needs_update", "no"),
+	}
+}
+
+// Edges of the OncallAnnotationAlertFeedback.
+func (AlertFeedback) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("annotation", OncallAnnotation.Type).
+			Ref("alert_feedback").
+			Field("annotation_id").
+			Unique().
+			Required(),
 	}
 }
 
@@ -53,6 +88,7 @@ func (AlertMetrics) Fields() []ent.Field {
 func (AlertMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

@@ -15,6 +15,7 @@ type RetrospectiveReview struct {
 func (RetrospectiveReview) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

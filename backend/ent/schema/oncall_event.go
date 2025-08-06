@@ -14,6 +14,7 @@ type OncallEvent struct {
 func (OncallEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

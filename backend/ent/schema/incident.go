@@ -15,6 +15,7 @@ type Incident struct {
 func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -40,19 +41,23 @@ func (Incident) Fields() []ent.Field {
 func (Incident) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("severity", IncidentSeverity.Type).
-			Unique().Field("severity_id"),
+			Unique().
+			Field("severity_id"),
 		edge.To("type", IncidentType.Type).
-			Unique().Field("type_id"),
-
-		edge.From("team_assignments", IncidentTeamAssignment.Type).
-			Ref("incident"),
-		edge.From("role_assignments", IncidentRoleAssignment.Type).
-			Ref("incident"),
+			Unique().
+			Field("type_id"),
 
 		edge.To("milestones", IncidentMilestone.Type),
 		edge.To("events", IncidentEvent.Type),
 
 		edge.From("retrospective", Retrospective.Type).
+			Ref("incident"),
+
+		edge.From("users", User.Type).
+			Ref("incidents").
+			Through("user_roles", IncidentRoleAssignment.Type),
+
+		edge.From("role_assignments", IncidentRoleAssignment.Type).
 			Ref("incident"),
 
 		edge.To("linked_incidents", Incident.Type).
@@ -66,30 +71,6 @@ func (Incident) Edges() []ent.Edge {
 	}
 }
 
-type IncidentTeamAssignment struct {
-	ent.Schema
-}
-
-func (IncidentTeamAssignment) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-	}
-}
-
-func (IncidentTeamAssignment) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("incident_id", uuid.UUID{}),
-		field.UUID("team_id", uuid.UUID{}),
-	}
-}
-
-func (IncidentTeamAssignment) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("incident", Incident.Type).Unique().Required().Field("incident_id"),
-		edge.To("team", Team.Type).Unique().Required().Field("team_id"),
-	}
-}
-
 type IncidentRoleAssignment struct {
 	ent.Schema
 }
@@ -97,22 +78,65 @@ type IncidentRoleAssignment struct {
 func (IncidentRoleAssignment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
 func (IncidentRoleAssignment) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("role_id", uuid.UUID{}),
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
+		field.UUID("role_id", uuid.UUID{}),
 	}
 }
 
 func (IncidentRoleAssignment) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("role", IncidentRole.Type).Unique().Required().Field("role_id"),
-		edge.To("incident", Incident.Type).Unique().Required().Field("incident_id"),
-		edge.To("user", User.Type).Unique().Required().Field("user_id"),
+		edge.To("incident", Incident.Type).
+			Required().
+			Unique().
+			Field("incident_id"),
+		edge.To("user", User.Type).
+			Required().
+			Unique().
+			Field("user_id"),
+		edge.To("role", IncidentRole.Type).
+			Required().
+			Unique().
+			Field("role_id"),
+	}
+}
+
+type IncidentLink struct {
+	ent.Schema
+}
+
+func (IncidentLink) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (IncidentLink) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("incident_id", uuid.UUID{}),
+		field.UUID("linked_incident_id", uuid.UUID{}),
+		field.String("description").Optional(),
+		field.Enum("link_type").Values("parent", "child", "similar"),
+	}
+}
+
+func (IncidentLink) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("incident", Incident.Type).
+			Required().
+			Unique().
+			Field("incident_id"),
+		edge.To("linked_incident", Incident.Type).
+			Required().
+			Unique().
+			Field("linked_incident_id"),
 	}
 }

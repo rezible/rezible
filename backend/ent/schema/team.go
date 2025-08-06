@@ -15,6 +15,7 @@ type Team struct {
 func (Team) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -35,11 +36,8 @@ func (Team) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("users", User.Type),
 
-		//edge.From("ladders", Ladder.Type).Ref("teams"),
 		edge.To("oncall_rosters", OncallRoster.Type),
 
-		edge.From("incident_assignments", IncidentTeamAssignment.Type).
-			Ref("team"),
 		edge.From("scheduled_meetings", MeetingSchedule.Type).Ref("owning_team"),
 	}
 }

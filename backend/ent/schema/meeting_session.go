@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 // MeetingSession holds the schema definition for the MeetingSession entity.
@@ -16,6 +17,7 @@ type MeetingSession struct {
 func (MeetingSession) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -35,5 +37,6 @@ func (MeetingSession) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("incidents", Incident.Type).
 			Ref("review_sessions"),
+		edge.To("schedule", MeetingSchedule.Type).Unique(),
 	}
 }

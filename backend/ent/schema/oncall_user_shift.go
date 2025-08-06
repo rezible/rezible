@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 // OncallUserShift holds the schema definition for the OncallUserShift entity.
@@ -16,6 +17,7 @@ type OncallUserShift struct {
 func (OncallUserShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -54,6 +56,7 @@ type OncallUserShiftHandover struct {
 func (OncallUserShiftHandover) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -84,6 +87,7 @@ type OncallUserShiftMetrics struct {
 func (OncallUserShiftMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

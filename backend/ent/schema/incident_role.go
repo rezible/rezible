@@ -15,6 +15,7 @@ type IncidentRole struct {
 func (IncidentRole) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }

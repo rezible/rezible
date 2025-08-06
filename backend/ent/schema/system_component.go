@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 type SystemComponent struct {
@@ -15,6 +16,7 @@ type SystemComponent struct {
 func (SystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -75,6 +77,7 @@ type SystemComponentKind struct {
 func (SystemComponentKind) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -101,6 +104,7 @@ type SystemComponentConstraint struct {
 func (SystemComponentConstraint) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -130,6 +134,7 @@ type SystemComponentSignal struct {
 func (SystemComponentSignal) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -160,6 +165,7 @@ type SystemComponentControl struct {
 func (SystemComponentControl) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

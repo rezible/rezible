@@ -15,6 +15,7 @@ type IncidentSeverity struct {
 func (IncidentSeverity) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }

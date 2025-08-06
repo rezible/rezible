@@ -16,6 +16,7 @@ type Retrospective struct {
 func (Retrospective) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

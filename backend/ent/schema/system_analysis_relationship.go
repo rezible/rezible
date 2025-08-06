@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 type SystemAnalysisRelationship struct {
@@ -15,6 +16,7 @@ type SystemAnalysisRelationship struct {
 func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -31,10 +33,14 @@ func (SystemAnalysisRelationship) Fields() []ent.Field {
 func (SystemAnalysisRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("system_analysis", SystemAnalysis.Type).
-			Required().Unique().Field("analysis_id"),
+			Required().
+			Unique().
+			Field("analysis_id"),
 
 		edge.To("component_relationship", SystemComponentRelationship.Type).
-			Unique().Required().Field("component_relationship_id"),
+			Unique().
+			Required().
+			Field("component_relationship_id"),
 
 		edge.To("controls", SystemComponentControl.Type).
 			Through("control_actions", SystemRelationshipControlAction.Type),
@@ -50,6 +56,7 @@ type SystemRelationshipControlAction struct {
 func (SystemRelationshipControlAction) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -84,6 +91,7 @@ type SystemRelationshipFeedbackSignal struct {
 func (SystemRelationshipFeedbackSignal) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

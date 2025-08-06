@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 type IncidentDebrief struct {
@@ -15,6 +16,7 @@ type IncidentDebrief struct {
 func (IncidentDebrief) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -46,6 +48,7 @@ type IncidentDebriefMessage struct {
 func (IncidentDebriefMessage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -77,6 +80,7 @@ type IncidentDebriefQuestion struct {
 func (IncidentDebriefQuestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -108,6 +112,7 @@ type IncidentDebriefSuggestion struct {
 func (IncidentDebriefSuggestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

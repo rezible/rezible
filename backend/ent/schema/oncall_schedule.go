@@ -15,6 +15,7 @@ type OncallSchedule struct {
 func (OncallSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }
@@ -47,6 +48,7 @@ type OncallScheduleParticipant struct {
 func (OncallScheduleParticipant) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -62,8 +64,13 @@ func (OncallScheduleParticipant) Fields() []ent.Field {
 func (OncallScheduleParticipant) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("schedule", OncallSchedule.Type).
-			Ref("participants").Unique().Required().Field("schedule_id"),
+			Ref("participants").
+			Unique().
+			Required().
+			Field("schedule_id"),
 		edge.To("user", User.Type).
-			Unique().Required().Field("user_id"),
+			Unique().
+			Required().
+			Field("user_id"),
 	}
 }

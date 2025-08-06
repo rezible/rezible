@@ -15,6 +15,7 @@ type IncidentField struct {
 func (IncidentField) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }
@@ -44,6 +45,7 @@ type IncidentFieldOption struct {
 func (IncidentFieldOption) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }

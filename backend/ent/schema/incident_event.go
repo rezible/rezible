@@ -1,12 +1,13 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"time"
 )
 
 // IncidentEvent holds the schema definition for the IncidentEvent entity.
@@ -17,6 +18,7 @@ type IncidentEvent struct {
 func (IncidentEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -77,6 +79,7 @@ type IncidentEventSystemComponent struct {
 func (IncidentEventSystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -107,6 +110,7 @@ type IncidentEventContext struct {
 func (IncidentEventContext) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -134,6 +138,7 @@ type IncidentEventContributingFactor struct {
 func (IncidentEventContributingFactor) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -159,6 +164,7 @@ type IncidentEventEvidence struct {
 func (IncidentEventEvidence) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

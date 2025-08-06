@@ -15,6 +15,7 @@ type IncidentType struct {
 func (IncidentType) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }
@@ -31,7 +32,6 @@ func (IncidentType) Fields() []ent.Field {
 func (IncidentType) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("incidents", Incident.Type).Ref("type"),
-
 		edge.From("debrief_questions", IncidentDebriefQuestion.Type).Ref("incident_types"),
 	}
 }

@@ -1,11 +1,12 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"time"
 )
 
 // OncallHandoverTemplate holds the schema definition for the OncallHandoverTemplate entity.
@@ -16,6 +17,7 @@ type OncallHandoverTemplate struct {
 func (OncallHandoverTemplate) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

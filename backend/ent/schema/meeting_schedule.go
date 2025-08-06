@@ -1,10 +1,11 @@
 package schema
 
 import (
+	"fmt"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
-	"fmt"
 	"github.com/google/uuid"
 )
 
@@ -29,6 +30,7 @@ type MeetingSchedule struct {
 func (MeetingSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 		ArchiveMixin{},
 	}
 }
@@ -54,7 +56,8 @@ func (MeetingSchedule) Fields() []ent.Field {
 // Edges of the MeetingSchedule.
 func (MeetingSchedule) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("sessions", MeetingSession.Type),
 		edge.To("owning_team", Team.Type),
+		edge.From("sessions", MeetingSession.Type).
+			Ref("schedule"),
 	}
 }

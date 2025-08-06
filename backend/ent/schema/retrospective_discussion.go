@@ -15,6 +15,7 @@ type RetrospectiveDiscussion struct {
 func (RetrospectiveDiscussion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 
@@ -49,6 +50,7 @@ type RetrospectiveDiscussionReply struct {
 func (RetrospectiveDiscussionReply) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
+		TenantMixin{},
 	}
 }
 

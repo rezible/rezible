@@ -2,7 +2,9 @@ package rules
 
 import (
 	"context"
+
 	"entgo.io/ent/entql"
+
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/privacy"
 )
@@ -12,6 +14,19 @@ func DenyIfNoAccessContext() privacy.QueryMutationRule {
 		ac := access.GetAuthContext(ctx)
 		if ac == nil {
 			return privacy.Denyf("access context is missing")
+		}
+		return privacy.Skip
+	})
+}
+
+func DenyIfAnonymous() privacy.QueryMutationRule {
+	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
+		ac := access.GetAuthContext(ctx)
+		if ac == nil {
+			return privacy.Denyf("access context is missing")
+		}
+		if ac.HasRole(access.RoleAnonymous) {
+			return privacy.Deny
 		}
 		return privacy.Skip
 	})

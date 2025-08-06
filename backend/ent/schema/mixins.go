@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
 
 	gen "github.com/rezible/rezible/ent"
@@ -30,6 +31,7 @@ func (BaseMixin) Policy() ent.Policy {
 		},
 		Mutation: privacy.MutationPolicy{
 			rules.DenyIfNoAccessContext(),
+			rules.DenyIfAnonymous(),
 		},
 	}
 }
@@ -41,6 +43,12 @@ type TenantMixin struct {
 func (TenantMixin) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("tenant_id").Immutable(),
+	}
+}
+
+func (TenantMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id"),
 	}
 }
 
