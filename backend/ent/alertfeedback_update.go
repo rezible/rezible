@@ -88,15 +88,29 @@ func (afu *AlertFeedbackUpdate) SetNillableAccurate(a *alertfeedback.Accurate) *
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afu *AlertFeedbackUpdate) SetDocumentationAvailable(aa alertfeedback.DocumentationAvailable) *AlertFeedbackUpdate {
-	afu.mutation.SetDocumentationAvailable(aa)
+func (afu *AlertFeedbackUpdate) SetDocumentationAvailable(b bool) *AlertFeedbackUpdate {
+	afu.mutation.SetDocumentationAvailable(b)
 	return afu
 }
 
 // SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (afu *AlertFeedbackUpdate) SetNillableDocumentationAvailable(aa *alertfeedback.DocumentationAvailable) *AlertFeedbackUpdate {
-	if aa != nil {
-		afu.SetDocumentationAvailable(*aa)
+func (afu *AlertFeedbackUpdate) SetNillableDocumentationAvailable(b *bool) *AlertFeedbackUpdate {
+	if b != nil {
+		afu.SetDocumentationAvailable(*b)
+	}
+	return afu
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (afu *AlertFeedbackUpdate) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackUpdate {
+	afu.mutation.SetDocumentationNeedsUpdate(b)
+	return afu
+}
+
+// SetNillableDocumentationNeedsUpdate sets the "documentation_needs_update" field if the given value is not nil.
+func (afu *AlertFeedbackUpdate) SetNillableDocumentationNeedsUpdate(b *bool) *AlertFeedbackUpdate {
+	if b != nil {
+		afu.SetDocumentationNeedsUpdate(*b)
 	}
 	return afu
 }
@@ -162,11 +176,6 @@ func (afu *AlertFeedbackUpdate) check() error {
 			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.accurate": %w`, err)}
 		}
 	}
-	if v, ok := afu.mutation.DocumentationAvailable(); ok {
-		if err := alertfeedback.DocumentationAvailableValidator(v); err != nil {
-			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.documentation_available": %w`, err)}
-		}
-	}
 	if afu.mutation.TenantCleared() && len(afu.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
@@ -204,7 +213,10 @@ func (afu *AlertFeedbackUpdate) sqlSave(ctx context.Context) (n int, err error) 
 		_spec.SetField(alertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
 	if value, ok := afu.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
+	}
+	if value, ok := afu.mutation.DocumentationNeedsUpdate(); ok {
+		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
 	if afu.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -343,15 +355,29 @@ func (afuo *AlertFeedbackUpdateOne) SetNillableAccurate(a *alertfeedback.Accurat
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afuo *AlertFeedbackUpdateOne) SetDocumentationAvailable(aa alertfeedback.DocumentationAvailable) *AlertFeedbackUpdateOne {
-	afuo.mutation.SetDocumentationAvailable(aa)
+func (afuo *AlertFeedbackUpdateOne) SetDocumentationAvailable(b bool) *AlertFeedbackUpdateOne {
+	afuo.mutation.SetDocumentationAvailable(b)
 	return afuo
 }
 
 // SetNillableDocumentationAvailable sets the "documentation_available" field if the given value is not nil.
-func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationAvailable(aa *alertfeedback.DocumentationAvailable) *AlertFeedbackUpdateOne {
-	if aa != nil {
-		afuo.SetDocumentationAvailable(*aa)
+func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationAvailable(b *bool) *AlertFeedbackUpdateOne {
+	if b != nil {
+		afuo.SetDocumentationAvailable(*b)
+	}
+	return afuo
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (afuo *AlertFeedbackUpdateOne) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackUpdateOne {
+	afuo.mutation.SetDocumentationNeedsUpdate(b)
+	return afuo
+}
+
+// SetNillableDocumentationNeedsUpdate sets the "documentation_needs_update" field if the given value is not nil.
+func (afuo *AlertFeedbackUpdateOne) SetNillableDocumentationNeedsUpdate(b *bool) *AlertFeedbackUpdateOne {
+	if b != nil {
+		afuo.SetDocumentationNeedsUpdate(*b)
 	}
 	return afuo
 }
@@ -430,11 +456,6 @@ func (afuo *AlertFeedbackUpdateOne) check() error {
 			return &ValidationError{Name: "accurate", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.accurate": %w`, err)}
 		}
 	}
-	if v, ok := afuo.mutation.DocumentationAvailable(); ok {
-		if err := alertfeedback.DocumentationAvailableValidator(v); err != nil {
-			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.documentation_available": %w`, err)}
-		}
-	}
 	if afuo.mutation.TenantCleared() && len(afuo.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AlertFeedback.tenant"`)
 	}
@@ -489,7 +510,10 @@ func (afuo *AlertFeedbackUpdateOne) sqlSave(ctx context.Context) (_node *AlertFe
 		_spec.SetField(alertfeedback.FieldAccurate, field.TypeEnum, value)
 	}
 	if value, ok := afuo.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
+	}
+	if value, ok := afuo.mutation.DocumentationNeedsUpdate(); ok {
+		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
 	}
 	if afuo.mutation.AlertCleared() {
 		edge := &sqlgraph.EdgeSpec{

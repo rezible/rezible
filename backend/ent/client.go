@@ -84,6 +84,8 @@ type Client struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
+	// AlertMetrics is the client for interacting with the AlertMetrics builders.
+	AlertMetrics *AlertMetricsClient
 	// Incident is the client for interacting with the Incident builders.
 	Incident *IncidentClient
 	// IncidentDebrief is the client for interacting with the IncidentDebrief builders.
@@ -207,6 +209,7 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
+	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
 	c.IncidentDebriefMessage = NewIncidentDebriefMessageClient(c.config)
@@ -356,6 +359,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -432,6 +436,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		config:                           cfg,
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Incident:                         NewIncidentClient(cfg),
 		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
 		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
@@ -542,7 +547,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -1064,6 +1069,36 @@ func (c *AlertFeedbackClient) mutate(ctx context.Context, m *AlertFeedbackMutati
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertFeedback mutation op: %q", m.Op())
 	}
+}
+
+// AlertMetricsClient is a client for the AlertMetrics schema.
+type AlertMetricsClient struct {
+	config
+}
+
+// NewAlertMetricsClient returns a client for the AlertMetrics from the given config.
+func NewAlertMetricsClient(c config) *AlertMetricsClient {
+	return &AlertMetricsClient{config: c}
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertmetrics.Intercept(f(g(h())))`.
+func (c *AlertMetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertMetrics = append(c.inters.AlertMetrics, interceptors...)
+}
+
+// Query returns a query builder for AlertMetrics.
+func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
+	return &AlertMetricsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertMetrics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertMetricsClient) Interceptors() []Interceptor {
+	return c.inters.AlertMetrics
 }
 
 // IncidentClient is a client for the Incident schema.
@@ -12017,14 +12052,15 @@ type (
 		SystemRelationshipFeedbackSignal, Task, Team, Tenant, Ticket, User []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, MeetingSchedule, MeetingSession, OncallAnnotation,
-		OncallEvent, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
-		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		Alert, AlertFeedback, AlertMetrics, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentEvent, IncidentEventContext, IncidentEventContributingFactor,
+		IncidentEventEvidence, IncidentEventSystemComponent, IncidentField,
+		IncidentFieldOption, IncidentLink, IncidentMilestone, IncidentRole,
+		IncidentRoleAssignment, IncidentSeverity, IncidentTag, IncidentType,
+		MeetingSchedule, MeetingSession, OncallAnnotation, OncallEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Playbook, ProviderConfig, ProviderSyncHistory,
 		Retrospective, RetrospectiveDiscussion, RetrospectiveDiscussionReply,
 		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,

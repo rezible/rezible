@@ -28,6 +28,8 @@ const (
 	FieldAccurate = "accurate"
 	// FieldDocumentationAvailable holds the string denoting the documentation_available field in the database.
 	FieldDocumentationAvailable = "documentation_available"
+	// FieldDocumentationNeedsUpdate holds the string denoting the documentation_needs_update field in the database.
+	FieldDocumentationNeedsUpdate = "documentation_needs_update"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlert holds the string denoting the alert edge name in mutations.
@@ -68,6 +70,7 @@ var Columns = []string{
 	FieldActionable,
 	FieldAccurate,
 	FieldDocumentationAvailable,
+	FieldDocumentationNeedsUpdate,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -116,30 +119,6 @@ func AccurateValidator(a Accurate) error {
 	}
 }
 
-// DocumentationAvailable defines the type for the "documentation_available" enum field.
-type DocumentationAvailable string
-
-// DocumentationAvailable values.
-const (
-	DocumentationAvailableYes         DocumentationAvailable = "yes"
-	DocumentationAvailableNeedsUpdate DocumentationAvailable = "needs_update"
-	DocumentationAvailableNo          DocumentationAvailable = "no"
-)
-
-func (da DocumentationAvailable) String() string {
-	return string(da)
-}
-
-// DocumentationAvailableValidator is a validator for the "documentation_available" field enum values. It is called by the builders before save.
-func DocumentationAvailableValidator(da DocumentationAvailable) error {
-	switch da {
-	case DocumentationAvailableYes, DocumentationAvailableNeedsUpdate, DocumentationAvailableNo:
-		return nil
-	default:
-		return fmt.Errorf("alertfeedback: invalid enum value for documentation_available field: %q", da)
-	}
-}
-
 // OrderOption defines the ordering options for the AlertFeedback queries.
 type OrderOption func(*sql.Selector)
 
@@ -176,6 +155,11 @@ func ByAccurate(opts ...sql.OrderTermOption) OrderOption {
 // ByDocumentationAvailable orders the results by the documentation_available field.
 func ByDocumentationAvailable(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDocumentationAvailable, opts...).ToFunc()
+}
+
+// ByDocumentationNeedsUpdate orders the results by the documentation_needs_update field.
+func ByDocumentationNeedsUpdate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDocumentationNeedsUpdate, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

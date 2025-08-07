@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
@@ -176,6 +177,33 @@ func (f TraverseAlertFeedback) Traverse(ctx context.Context, q ent.Query) error 
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertFeedbackQuery", q)
+}
+
+// The AlertMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertMetricsFunc func(context.Context, *ent.AlertMetricsQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AlertMetricsFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
+}
+
+// The TraverseAlertMetrics type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertMetrics func(context.Context, *ent.AlertMetricsQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAlertMetrics) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAlertMetrics) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertMetricsQuery", q)
 }
 
 // The IncidentFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1670,6 +1698,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
+	case *ent.AlertMetricsQuery:
+		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.IncidentQuery:
 		return &query[*ent.IncidentQuery, predicate.Incident, incident.OrderOption]{typ: ent.TypeIncident, tq: q}, nil
 	case *ent.IncidentDebriefQuery:

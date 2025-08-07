@@ -40,12 +40,10 @@ func (h *oncallEventsHandler) ListOncallEvents(ctx context.Context, req *oapi.Li
 		ListParams:         req.ListParams(),
 		From:               req.From,
 		To:                 req.To,
-		RosterID:           req.RosterID,
+		RosterID:           req.RosterId,
 		AnnotationRosterID: req.AnnotationRosterId,
-	}
-
-	if req.WithAnnotations {
-		params.WithAnnotations = &rez.ExpandAnnotationsParams{}
+		WithAnnotations:    req.WithAnnotations,
+		AlertID:            req.AlertId,
 	}
 
 	if req.ShiftId != uuid.Nil {

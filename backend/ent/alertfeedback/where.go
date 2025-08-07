@@ -74,6 +74,16 @@ func Actionable(v bool) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldActionable, v))
 }
 
+// DocumentationAvailable applies equality check predicate on the "documentation_available" field. It's identical to DocumentationAvailableEQ.
+func DocumentationAvailable(v bool) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldDocumentationAvailable, v))
+}
+
+// DocumentationNeedsUpdate applies equality check predicate on the "documentation_needs_update" field. It's identical to DocumentationNeedsUpdateEQ.
+func DocumentationNeedsUpdate(v bool) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldDocumentationNeedsUpdate, v))
+}
+
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldTenantID, v))
@@ -165,23 +175,23 @@ func AccurateNotIn(vs ...Accurate) predicate.AlertFeedback {
 }
 
 // DocumentationAvailableEQ applies the EQ predicate on the "documentation_available" field.
-func DocumentationAvailableEQ(v DocumentationAvailable) predicate.AlertFeedback {
+func DocumentationAvailableEQ(v bool) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldDocumentationAvailable, v))
 }
 
 // DocumentationAvailableNEQ applies the NEQ predicate on the "documentation_available" field.
-func DocumentationAvailableNEQ(v DocumentationAvailable) predicate.AlertFeedback {
+func DocumentationAvailableNEQ(v bool) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldNEQ(FieldDocumentationAvailable, v))
 }
 
-// DocumentationAvailableIn applies the In predicate on the "documentation_available" field.
-func DocumentationAvailableIn(vs ...DocumentationAvailable) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldIn(FieldDocumentationAvailable, vs...))
+// DocumentationNeedsUpdateEQ applies the EQ predicate on the "documentation_needs_update" field.
+func DocumentationNeedsUpdateEQ(v bool) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldEQ(FieldDocumentationNeedsUpdate, v))
 }
 
-// DocumentationAvailableNotIn applies the NotIn predicate on the "documentation_available" field.
-func DocumentationAvailableNotIn(vs ...DocumentationAvailable) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNotIn(FieldDocumentationAvailable, vs...))
+// DocumentationNeedsUpdateNEQ applies the NEQ predicate on the "documentation_needs_update" field.
+func DocumentationNeedsUpdateNEQ(v bool) predicate.AlertFeedback {
+	return predicate.AlertFeedback(sql.FieldNEQ(FieldDocumentationNeedsUpdate, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

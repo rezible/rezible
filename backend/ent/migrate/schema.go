@@ -41,7 +41,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "actionable", Type: field.TypeBool},
 		{Name: "accurate", Type: field.TypeEnum, Enums: []string{"yes", "no", "unknown"}},
-		{Name: "documentation_available", Type: field.TypeEnum, Enums: []string{"yes", "needs_update", "no"}},
+		{Name: "documentation_available", Type: field.TypeBool},
+		{Name: "documentation_needs_update", Type: field.TypeBool},
 		{Name: "alert_id", Type: field.TypeUUID},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "annotation_id", Type: field.TypeUUID, Unique: true},
@@ -54,19 +55,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "alert_feedbacks_alerts_feedback",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[4]},
+				Columns:    []*schema.Column{AlertFeedbacksColumns[5]},
 				RefColumns: []*schema.Column{AlertsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_feedbacks_tenants_tenant",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[5]},
+				Columns:    []*schema.Column{AlertFeedbacksColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "alert_feedbacks_oncall_annotations_alert_feedback",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[6]},
+				Columns:    []*schema.Column{AlertFeedbacksColumns[7]},
 				RefColumns: []*schema.Column{OncallAnnotationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -75,7 +76,7 @@ var (
 			{
 				Name:    "alertfeedback_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AlertFeedbacksColumns[5]},
+				Columns: []*schema.Column{AlertFeedbacksColumns[6]},
 			},
 		},
 	}

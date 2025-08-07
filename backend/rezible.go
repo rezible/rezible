@@ -232,28 +232,17 @@ type (
 		ListParams
 	}
 
-	//GetAlertEventsParams struct {
-	//	AlertId  uuid.UUID
-	//	RosterId uuid.UUID
-	//	From     time.Time
-	//	To       time.Time
-	//}
-
-	//AlertMetrics struct {
-	//	TriggerCount                     int `json:"triggerCount"`
-	//	NightCount                       int `json:"triggersNight"`
-	//	IncidentLinkCount                int `json:"incidentLinks"`
-	//	FeedbackCount                    int `json:"feedbackCount"`
-	//	FeedbackActionable               int `json:"actionable"`
-	//	FeedbackAccurate                 int `json:"accurate"`
-	//	FeedbackAccurateUnknown          int `json:"accurateUnknown"`
-	//	FeedbackDocumentationAvailable   int `json:"docsAvailable"`
-	//	FeedbackDocumentationNeedsUpdate int `json:"docsNeedsUpdate"`
-	//}
+	GetAlertMetricsParams struct {
+		AlertId  uuid.UUID
+		RosterId uuid.UUID
+		From     time.Time
+		To       time.Time
+	}
 
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
+		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 	}
 )
 
@@ -363,7 +352,7 @@ type (
 		RosterID           uuid.UUID
 		AnnotationRosterID uuid.UUID
 		AlertID            uuid.UUID
-		WithAnnotations    *ExpandAnnotationsParams
+		WithAnnotations    bool
 	}
 
 	ListOncallAnnotationsParams struct {

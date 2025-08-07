@@ -3,6 +3,7 @@ package openapi
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -13,11 +14,13 @@ import (
 type AlertsHandler interface {
 	ListAlerts(context.Context, *ListAlertsRequest) (*ListAlertsResponse, error)
 	GetAlert(context.Context, *GetAlertRequest) (*GetAlertResponse, error)
+	GetAlertMetrics(context.Context, *GetAlertMetricsRequest) (*GetAlertMetricsResponse, error)
 }
 
 func (o operations) RegisterAlerts(api huma.API) {
 	huma.Register(api, ListAlerts, o.ListAlerts)
 	huma.Register(api, GetAlert, o.GetAlert)
+	huma.Register(api, GetAlertMetrics, o.GetAlertMetrics)
 }
 
 type (
@@ -30,6 +33,19 @@ type (
 		Title           string     `json:"title"`
 		Description     string     `json:"description"`
 		LinkedPlaybooks []Playbook `json:"linkedPlaybooks"`
+	}
+
+	AlertMetrics struct {
+		Triggers                         int `json:"triggers"`
+		Interrupts                       int `json:"interrupts"`
+		NightInterrupts                  int `json:"nightInterrupts"`
+		IncidentLinks                    int `json:"incidentLinks"`
+		Feedbacks                        int `json:"feedbacks"`
+		FeedbackActionable               int `json:"actionable"`
+		FeedbackAccurate                 int `json:"accurate"`
+		FeedbackAccurateUnknown          int `json:"accurateUnknown"`
+		FeedbackDocumentationAvailable   int `json:"docsAvailable"`
+		FeedbackDocumentationNeedsUpdate int `json:"docsNeedsUpdate"`
 	}
 )
 
@@ -47,6 +63,21 @@ func AlertFromEnt(a *ent.Alert) Alert {
 	return Alert{
 		Id:         a.ID,
 		Attributes: attrs,
+	}
+}
+
+func AlertMetricsFromEnt(m *ent.AlertMetrics) AlertMetrics {
+	return AlertMetrics{
+		Triggers:                         m.EventCount,
+		Interrupts:                       m.InterruptCount,
+		NightInterrupts:                  m.NightInterruptCount,
+		IncidentLinks:                    m.Incidents,
+		Feedbacks:                        m.FeedbackCount,
+		FeedbackActionable:               m.FeedbackActionable,
+		FeedbackAccurate:                 m.FeedbackAccurate,
+		FeedbackAccurateUnknown:          m.FeedbackAccurateUnknown,
+		FeedbackDocumentationAvailable:   m.FeedbackDocsAvailable,
+		FeedbackDocumentationNeedsUpdate: m.FeedbackDocsNeedUpdate,
 	}
 }
 
@@ -83,3 +114,20 @@ type GetAlertRequest struct {
 	IncludeAnnotations bool `query:"includeAnnotations" default:"true"`
 }
 type GetAlertResponse ItemResponse[Alert]
+
+var GetAlertMetrics = huma.Operation{
+	OperationID: "get-alert-metrics",
+	Method:      http.MethodGet,
+	Path:        "/alerts/{id}/metrics",
+	Summary:     "Get Alert Metrics",
+	Tags:        alertsTags,
+	Errors:      errorCodes(),
+}
+
+type GetAlertMetricsRequest struct {
+	GetIdRequest
+	RosterId uuid.UUID `query:"rosterId"`
+	From     time.Time `query:"from" required:"true"`
+	To       time.Time `query:"to" required:"true"`
+}
+type GetAlertMetricsResponse ItemResponse[AlertMetrics]

@@ -57,8 +57,14 @@ func (afc *AlertFeedbackCreate) SetAccurate(a alertfeedback.Accurate) *AlertFeed
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (afc *AlertFeedbackCreate) SetDocumentationAvailable(aa alertfeedback.DocumentationAvailable) *AlertFeedbackCreate {
-	afc.mutation.SetDocumentationAvailable(aa)
+func (afc *AlertFeedbackCreate) SetDocumentationAvailable(b bool) *AlertFeedbackCreate {
+	afc.mutation.SetDocumentationAvailable(b)
+	return afc
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (afc *AlertFeedbackCreate) SetDocumentationNeedsUpdate(b bool) *AlertFeedbackCreate {
+	afc.mutation.SetDocumentationNeedsUpdate(b)
 	return afc
 }
 
@@ -163,10 +169,8 @@ func (afc *AlertFeedbackCreate) check() error {
 	if _, ok := afc.mutation.DocumentationAvailable(); !ok {
 		return &ValidationError{Name: "documentation_available", err: errors.New(`ent: missing required field "AlertFeedback.documentation_available"`)}
 	}
-	if v, ok := afc.mutation.DocumentationAvailable(); ok {
-		if err := alertfeedback.DocumentationAvailableValidator(v); err != nil {
-			return &ValidationError{Name: "documentation_available", err: fmt.Errorf(`ent: validator failed for field "AlertFeedback.documentation_available": %w`, err)}
-		}
+	if _, ok := afc.mutation.DocumentationNeedsUpdate(); !ok {
+		return &ValidationError{Name: "documentation_needs_update", err: errors.New(`ent: missing required field "AlertFeedback.documentation_needs_update"`)}
 	}
 	if len(afc.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertFeedback.tenant"`)}
@@ -222,8 +226,12 @@ func (afc *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSp
 		_node.Accurate = value
 	}
 	if value, ok := afc.mutation.DocumentationAvailable(); ok {
-		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeEnum, value)
+		_spec.SetField(alertfeedback.FieldDocumentationAvailable, field.TypeBool, value)
 		_node.DocumentationAvailable = value
+	}
+	if value, ok := afc.mutation.DocumentationNeedsUpdate(); ok {
+		_spec.SetField(alertfeedback.FieldDocumentationNeedsUpdate, field.TypeBool, value)
+		_node.DocumentationNeedsUpdate = value
 	}
 	if nodes := afc.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -377,7 +385,7 @@ func (u *AlertFeedbackUpsert) UpdateAccurate() *AlertFeedbackUpsert {
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *AlertFeedbackUpsert) SetDocumentationAvailable(v alertfeedback.DocumentationAvailable) *AlertFeedbackUpsert {
+func (u *AlertFeedbackUpsert) SetDocumentationAvailable(v bool) *AlertFeedbackUpsert {
 	u.Set(alertfeedback.FieldDocumentationAvailable, v)
 	return u
 }
@@ -385,6 +393,18 @@ func (u *AlertFeedbackUpsert) SetDocumentationAvailable(v alertfeedback.Document
 // UpdateDocumentationAvailable sets the "documentation_available" field to the value that was provided on create.
 func (u *AlertFeedbackUpsert) UpdateDocumentationAvailable() *AlertFeedbackUpsert {
 	u.SetExcluded(alertfeedback.FieldDocumentationAvailable)
+	return u
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (u *AlertFeedbackUpsert) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackUpsert {
+	u.Set(alertfeedback.FieldDocumentationNeedsUpdate, v)
+	return u
+}
+
+// UpdateDocumentationNeedsUpdate sets the "documentation_needs_update" field to the value that was provided on create.
+func (u *AlertFeedbackUpsert) UpdateDocumentationNeedsUpdate() *AlertFeedbackUpsert {
+	u.SetExcluded(alertfeedback.FieldDocumentationNeedsUpdate)
 	return u
 }
 
@@ -496,7 +516,7 @@ func (u *AlertFeedbackUpsertOne) UpdateAccurate() *AlertFeedbackUpsertOne {
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *AlertFeedbackUpsertOne) SetDocumentationAvailable(v alertfeedback.DocumentationAvailable) *AlertFeedbackUpsertOne {
+func (u *AlertFeedbackUpsertOne) SetDocumentationAvailable(v bool) *AlertFeedbackUpsertOne {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.SetDocumentationAvailable(v)
 	})
@@ -506,6 +526,20 @@ func (u *AlertFeedbackUpsertOne) SetDocumentationAvailable(v alertfeedback.Docum
 func (u *AlertFeedbackUpsertOne) UpdateDocumentationAvailable() *AlertFeedbackUpsertOne {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.UpdateDocumentationAvailable()
+	})
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (u *AlertFeedbackUpsertOne) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackUpsertOne {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.SetDocumentationNeedsUpdate(v)
+	})
+}
+
+// UpdateDocumentationNeedsUpdate sets the "documentation_needs_update" field to the value that was provided on create.
+func (u *AlertFeedbackUpsertOne) UpdateDocumentationNeedsUpdate() *AlertFeedbackUpsertOne {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.UpdateDocumentationNeedsUpdate()
 	})
 }
 
@@ -784,7 +818,7 @@ func (u *AlertFeedbackUpsertBulk) UpdateAccurate() *AlertFeedbackUpsertBulk {
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (u *AlertFeedbackUpsertBulk) SetDocumentationAvailable(v alertfeedback.DocumentationAvailable) *AlertFeedbackUpsertBulk {
+func (u *AlertFeedbackUpsertBulk) SetDocumentationAvailable(v bool) *AlertFeedbackUpsertBulk {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.SetDocumentationAvailable(v)
 	})
@@ -794,6 +828,20 @@ func (u *AlertFeedbackUpsertBulk) SetDocumentationAvailable(v alertfeedback.Docu
 func (u *AlertFeedbackUpsertBulk) UpdateDocumentationAvailable() *AlertFeedbackUpsertBulk {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.UpdateDocumentationAvailable()
+	})
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (u *AlertFeedbackUpsertBulk) SetDocumentationNeedsUpdate(v bool) *AlertFeedbackUpsertBulk {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.SetDocumentationNeedsUpdate(v)
+	})
+}
+
+// UpdateDocumentationNeedsUpdate sets the "documentation_needs_update" field to the value that was provided on create.
+func (u *AlertFeedbackUpsertBulk) UpdateDocumentationNeedsUpdate() *AlertFeedbackUpsertBulk {
+	return u.Update(func(s *AlertFeedbackUpsert) {
+		s.UpdateDocumentationNeedsUpdate()
 	})
 }
 

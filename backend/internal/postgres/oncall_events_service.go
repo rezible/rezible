@@ -67,12 +67,11 @@ func (s *OncallEventsService) ListEvents(ctx context.Context, params rez.ListOnc
 	query.Order(oe.ByTimestamp(order))
 	query.Offset(params.Offset)
 	query.Limit(params.GetLimit())
-	if ap := params.WithAnnotations; ap != nil {
+	if params.WithAnnotations {
 		query.WithAnnotations(func(q *ent.OncallAnnotationQuery) {
 			if params.AnnotationRosterID != uuid.Nil {
 				q.Where(oncallannotation.RosterID(params.AnnotationRosterID))
 			}
-			setAnnotationsQueryParams(q, *ap)
 		})
 	}
 

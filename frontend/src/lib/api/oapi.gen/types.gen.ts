@@ -84,7 +84,21 @@ export type AlertAttributes = {
 export type AlertFeedbackInstance = {
     accurate: 'yes' | 'no' | 'unknown';
     actionable: boolean;
-    documentationAvailable: 'yes' | 'no' | 'needs_update';
+    documentationAvailable: boolean;
+    documentationNeedsUpdate: boolean;
+};
+
+export type AlertMetrics = {
+    accurate: number;
+    accurateUnknown: number;
+    actionable: number;
+    docsAvailable: number;
+    docsNeedsUpdate: number;
+    feedbacks: number;
+    incidentLinks: number;
+    interrupts: number;
+    nightInterrupts: number;
+    triggers: number;
 };
 
 export type AuthSessionsConfig = {
@@ -765,6 +779,14 @@ export type GetAdjacentOncallShiftsResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftsAdjacent;
+};
+
+export type GetAlertMetricsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AlertMetrics;
 };
 
 export type GetAlertResponseBody = {
@@ -2884,6 +2906,57 @@ export type GetAlertResponses = {
 };
 
 export type GetAlertResponse = GetAlertResponses[keyof GetAlertResponses];
+
+export type GetAlertMetricsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query: {
+        rosterId?: string;
+        from: string;
+        to: string;
+    };
+    url: '/alerts/{id}/metrics';
+};
+
+export type GetAlertMetricsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAlertMetricsError = GetAlertMetricsErrors[keyof GetAlertMetricsErrors];
+
+export type GetAlertMetricsResponses = {
+    /**
+     * OK
+     */
+    200: GetAlertMetricsResponseBody;
+};
+
+export type GetAlertMetricsResponse = GetAlertMetricsResponses[keyof GetAlertMetricsResponses];
 
 export type GetAuthSessionConfigData = {
     body?: never;

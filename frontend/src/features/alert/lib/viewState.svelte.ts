@@ -1,11 +1,9 @@
-import { getAlertOptions, listOncallEventsOptions, type ListOncallEventsData } from "$lib/api";
+import { type GetAlertMetricsData, getAlertMetricsOptions, getAlertOptions, listOncallEventsOptions } from "$lib/api";
 import type { Getter } from "$lib/utils.svelte";
-import { getLocalTimeZone, now } from "@internationalized/date";
+import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+import { getLocalTimeZone, now, ZonedDateTime } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-
-const to = now(getLocalTimeZone()).toAbsoluteString();
-const from = now(getLocalTimeZone()).subtract({ days: 7 }).toAbsoluteString();
 
 export class AlertViewState {
 	alertId = $state<string>(null!);
@@ -19,9 +17,18 @@ export class AlertViewState {
 		watch(idFn, id => {this.alertId = id});
 	}
 
-	private eventsQueryData = $derived<ListOncallEventsData["query"]>({ from, to, alertId: this.alertId })
-	private eventsQuery = createQuery(() => listOncallEventsOptions({ query: this.eventsQueryData }));
+	eventsQueryPagination = new QueryPaginatorState();
+	private eventsQuery = createQuery(() => listOncallEventsOptions({ query: { alertId: this.alertId } }));
 	events = $derived(this.eventsQuery.data?.data);
+
+	metricsFrom = $state<ZonedDateTime>(now(getLocalTimeZone()).subtract({ days: 7 }));
+	metricsTo = $state<ZonedDateTime>(now(getLocalTimeZone()));
+	private metricsQueryData = $derived<GetAlertMetricsData["query"]>({
+		from: this.metricsFrom.toAbsoluteString(),
+		to: this.metricsTo.toAbsoluteString(),
+	})
+	private metricsQuery = createQuery(() => getAlertMetricsOptions({ path: { id: this.alertId }, query: this.metricsQueryData }));
+	metrics = $derived(this.metricsQuery.data?.data);
 }
 
 const alertViewStateCtx = new Context<AlertViewState>("alertView");

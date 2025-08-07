@@ -46,3 +46,21 @@ func (h *alertsHandler) GetAlert(ctx context.Context, req *oapi.GetAlertRequest)
 
 	return &resp, nil
 }
+
+func (h *alertsHandler) GetAlertMetrics(ctx context.Context, req *oapi.GetAlertMetricsRequest) (*oapi.GetAlertMetricsResponse, error) {
+	var resp oapi.GetAlertMetricsResponse
+
+	params := rez.GetAlertMetricsParams{
+		AlertId:  req.Id,
+		RosterId: req.RosterId,
+		From:     req.From,
+		To:       req.To,
+	}
+	metrics, getErr := h.alerts.GetAlertMetrics(ctx, params)
+	if getErr != nil {
+		return nil, detailError("get alert metrics", getErr)
+	}
+	resp.Body.Data = oapi.AlertMetricsFromEnt(metrics)
+
+	return &resp, nil
+}

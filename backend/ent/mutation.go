@@ -83,6 +83,7 @@ const (
 	// Node types.
 	TypeAlert                            = "Alert"
 	TypeAlertFeedback                    = "AlertFeedback"
+	TypeAlertMetrics                     = "AlertMetrics"
 	TypeIncident                         = "Incident"
 	TypeIncidentDebrief                  = "IncidentDebrief"
 	TypeIncidentDebriefMessage           = "IncidentDebriefMessage"
@@ -891,22 +892,23 @@ func (m *AlertMutation) ResetEdge(name string) error {
 // AlertFeedbackMutation represents an operation that mutates the AlertFeedback nodes in the graph.
 type AlertFeedbackMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	actionable              *bool
-	accurate                *alertfeedback.Accurate
-	documentation_available *alertfeedback.DocumentationAvailable
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	alert                   *uuid.UUID
-	clearedalert            bool
-	annotation              *uuid.UUID
-	clearedannotation       bool
-	done                    bool
-	oldValue                func(context.Context) (*AlertFeedback, error)
-	predicates              []predicate.AlertFeedback
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	actionable                 *bool
+	accurate                   *alertfeedback.Accurate
+	documentation_available    *bool
+	documentation_needs_update *bool
+	clearedFields              map[string]struct{}
+	tenant                     *int
+	clearedtenant              bool
+	alert                      *uuid.UUID
+	clearedalert               bool
+	annotation                 *uuid.UUID
+	clearedannotation          bool
+	done                       bool
+	oldValue                   func(context.Context) (*AlertFeedback, error)
+	predicates                 []predicate.AlertFeedback
 }
 
 var _ ent.Mutation = (*AlertFeedbackMutation)(nil)
@@ -1194,12 +1196,12 @@ func (m *AlertFeedbackMutation) ResetAccurate() {
 }
 
 // SetDocumentationAvailable sets the "documentation_available" field.
-func (m *AlertFeedbackMutation) SetDocumentationAvailable(aa alertfeedback.DocumentationAvailable) {
-	m.documentation_available = &aa
+func (m *AlertFeedbackMutation) SetDocumentationAvailable(b bool) {
+	m.documentation_available = &b
 }
 
 // DocumentationAvailable returns the value of the "documentation_available" field in the mutation.
-func (m *AlertFeedbackMutation) DocumentationAvailable() (r alertfeedback.DocumentationAvailable, exists bool) {
+func (m *AlertFeedbackMutation) DocumentationAvailable() (r bool, exists bool) {
 	v := m.documentation_available
 	if v == nil {
 		return
@@ -1210,7 +1212,7 @@ func (m *AlertFeedbackMutation) DocumentationAvailable() (r alertfeedback.Docume
 // OldDocumentationAvailable returns the old "documentation_available" field's value of the AlertFeedback entity.
 // If the AlertFeedback object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (v alertfeedback.DocumentationAvailable, err error) {
+func (m *AlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (v bool, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDocumentationAvailable is only allowed on UpdateOne operations")
 	}
@@ -1227,6 +1229,42 @@ func (m *AlertFeedbackMutation) OldDocumentationAvailable(ctx context.Context) (
 // ResetDocumentationAvailable resets all changes to the "documentation_available" field.
 func (m *AlertFeedbackMutation) ResetDocumentationAvailable() {
 	m.documentation_available = nil
+}
+
+// SetDocumentationNeedsUpdate sets the "documentation_needs_update" field.
+func (m *AlertFeedbackMutation) SetDocumentationNeedsUpdate(b bool) {
+	m.documentation_needs_update = &b
+}
+
+// DocumentationNeedsUpdate returns the value of the "documentation_needs_update" field in the mutation.
+func (m *AlertFeedbackMutation) DocumentationNeedsUpdate() (r bool, exists bool) {
+	v := m.documentation_needs_update
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDocumentationNeedsUpdate returns the old "documentation_needs_update" field's value of the AlertFeedback entity.
+// If the AlertFeedback object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AlertFeedbackMutation) OldDocumentationNeedsUpdate(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDocumentationNeedsUpdate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDocumentationNeedsUpdate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDocumentationNeedsUpdate: %w", err)
+	}
+	return oldValue.DocumentationNeedsUpdate, nil
+}
+
+// ResetDocumentationNeedsUpdate resets all changes to the "documentation_needs_update" field.
+func (m *AlertFeedbackMutation) ResetDocumentationNeedsUpdate() {
+	m.documentation_needs_update = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -1344,7 +1382,7 @@ func (m *AlertFeedbackMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AlertFeedbackMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, alertfeedback.FieldTenantID)
 	}
@@ -1362,6 +1400,9 @@ func (m *AlertFeedbackMutation) Fields() []string {
 	}
 	if m.documentation_available != nil {
 		fields = append(fields, alertfeedback.FieldDocumentationAvailable)
+	}
+	if m.documentation_needs_update != nil {
+		fields = append(fields, alertfeedback.FieldDocumentationNeedsUpdate)
 	}
 	return fields
 }
@@ -1383,6 +1424,8 @@ func (m *AlertFeedbackMutation) Field(name string) (ent.Value, bool) {
 		return m.Accurate()
 	case alertfeedback.FieldDocumentationAvailable:
 		return m.DocumentationAvailable()
+	case alertfeedback.FieldDocumentationNeedsUpdate:
+		return m.DocumentationNeedsUpdate()
 	}
 	return nil, false
 }
@@ -1404,6 +1447,8 @@ func (m *AlertFeedbackMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldAccurate(ctx)
 	case alertfeedback.FieldDocumentationAvailable:
 		return m.OldDocumentationAvailable(ctx)
+	case alertfeedback.FieldDocumentationNeedsUpdate:
+		return m.OldDocumentationNeedsUpdate(ctx)
 	}
 	return nil, fmt.Errorf("unknown AlertFeedback field %s", name)
 }
@@ -1449,11 +1494,18 @@ func (m *AlertFeedbackMutation) SetField(name string, value ent.Value) error {
 		m.SetAccurate(v)
 		return nil
 	case alertfeedback.FieldDocumentationAvailable:
-		v, ok := value.(alertfeedback.DocumentationAvailable)
+		v, ok := value.(bool)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDocumentationAvailable(v)
+		return nil
+	case alertfeedback.FieldDocumentationNeedsUpdate:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDocumentationNeedsUpdate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown AlertFeedback field %s", name)
@@ -1524,6 +1576,9 @@ func (m *AlertFeedbackMutation) ResetField(name string) error {
 		return nil
 	case alertfeedback.FieldDocumentationAvailable:
 		m.ResetDocumentationAvailable()
+		return nil
+	case alertfeedback.FieldDocumentationNeedsUpdate:
+		m.ResetDocumentationNeedsUpdate()
 		return nil
 	}
 	return fmt.Errorf("unknown AlertFeedback field %s", name)

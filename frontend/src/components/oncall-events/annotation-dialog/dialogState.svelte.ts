@@ -1,12 +1,13 @@
-import { createOncallAnnotationMutation, type OncallEvent, updateOncallAnnotationMutation, type OncallAnnotation, type OncallAnnotationAlertFeedback, type OncallRoster, getUserOncallInformationOptions } from "$lib/api";
+import { createOncallAnnotationMutation, type OncallEvent, updateOncallAnnotationMutation, type OncallAnnotation, type AlertFeedbackInstance, type OncallRoster, getUserOncallInformationOptions } from "$lib/api";
 import { session } from "$lib/auth.svelte";
+import { useUserOncallInformation } from "$src/lib/userOncall.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { SvelteSet } from "svelte/reactivity";
 
 class EventAnnotationAttributesState {
 	notes = $state("");
-	alertAccuracy = $state<OncallAnnotationAlertFeedback["accurate"]>("yes");
+	alertAccuracy = $state<AlertFeedbackInstance["accurate"]>("yes");
 	alertRequiredAction = $state(true);
 	alertDocs = $state(true);
 	alertDocsNeedUpdate = $state(false);
@@ -15,12 +16,11 @@ class EventAnnotationAttributesState {
 
 	setup(ev: OncallEvent, anno?: OncallAnnotation) {
 		this.notes = anno?.attributes.notes ?? "";
-		const alertFb = anno?.attributes.alertFeedback;
-		this.alertAccuracy = alertFb?.accurate ?? "yes";
-		this.alertRequiredAction = alertFb?.actionable ?? true;
-		const docs = alertFb?.documentationAvailable ?? "yes";
-		this.alertDocs = docs !== "no";
-		this.alertDocsNeedUpdate = docs === "needs_update";
+		const fb = anno?.attributes.alertFeedback;
+		this.alertAccuracy = fb?.accurate ?? "yes";
+		this.alertRequiredAction = fb?.actionable ?? true;
+		this.alertDocs = fb?.documentationAvailable ?? true;
+		this.alertDocsNeedUpdate = fb?.documentationNeedsUpdate ?? false;
 		this.tags = new SvelteSet(anno?.attributes.tags ?? []);
 		this.draftTag = "";
 	}
@@ -34,11 +34,11 @@ class EventAnnotationAttributesState {
 		this.tags.delete(tag)
 	}
 
-	getAlertFeedback(): OncallAnnotationAlertFeedback {
-		const documentationAvailable = !this.alertDocs ? "no" : (this.alertDocsNeedUpdate ? "needs_update" : "yes");
+	getAlertFeedback(): AlertFeedbackInstance {
 		return $state.snapshot({
 			accurate: this.alertAccuracy,
-			documentationAvailable,
+			documentationAvailable: this.alertDocs,
+			documentationNeedsUpdate: this.alertDocsNeedUpdate,
 			actionable: this.alertRequiredAction,
 		})
 	}
@@ -55,13 +55,7 @@ export class AnnotationDialogState {
 	attributes = new EventAnnotationAttributesState();
 	open = $derived(!!this.event);
 
-	oncallInfoQuery = createQuery(() => getUserOncallInformationOptions({
-		query: {
-			userId: session.userId,
-			activeShifts: true,
-		}
-	}));
-	userOncallInfo = $derived(this.oncallInfoQuery.data?.data);
+	userOncallInfo = useUserOncallInformation();
 	userRosters = $derived(this.userOncallInfo?.rosters || []);
 	userActiveShifts = $derived(this.userOncallInfo?.activeShifts || []);
 
@@ -117,7 +111,7 @@ export class AnnotationDialogState {
 		const rosterId = this.annotatableRosterIds.values().next().value;
 		if (!this.event || !rosterId) return;
 
-		let alertFeedback: OncallAnnotationAlertFeedback | undefined = undefined;
+		let alertFeedback: AlertFeedbackInstance | undefined = undefined;
 		if (this.event.attributes.kind === "alert") {
 			alertFeedback = this.attributes.getAlertFeedback();
 		}

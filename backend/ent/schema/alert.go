@@ -57,7 +57,8 @@ func (AlertFeedback) Fields() []ent.Field {
 		field.UUID("annotation_id", uuid.UUID{}),
 		field.Bool("actionable"),
 		field.Enum("accurate").Values("yes", "no", "unknown"),
-		field.Enum("documentation_available").Values("yes", "needs_update", "no"),
+		field.Bool("documentation_available"),
+		field.Bool("documentation_needs_update"),
 	}
 }
 
@@ -74,6 +75,25 @@ func (AlertFeedback) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("annotation_id"),
+	}
+}
+
+type AlertMetrics struct {
+	ent.View
+}
+
+func (AlertMetrics) Fields() []ent.Field {
+	return []ent.Field{
+		field.Int("event_count"),
+		field.Int("interrupt_count"),
+		field.Int("night_interrupt_count"),
+		field.Int("incidents"),
+		field.Int("feedback_count"),
+		field.Int("feedback_actionable"),
+		field.Int("feedback_accurate"),
+		field.Int("feedback_accurate_unknown"),
+		field.Int("feedback_docs_available"),
+		field.Int("feedback_docs_need_update"),
 	}
 }
 

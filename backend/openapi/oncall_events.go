@@ -63,9 +63,10 @@ type (
 	}
 
 	AlertFeedbackInstance struct {
-		Actionable             bool   `json:"actionable"`
-		Accurate               string `json:"accurate" enum:"yes,no,unknown"`
-		DocumentationAvailable string `json:"documentationAvailable" enum:"yes,no,needs_update"`
+		Actionable               bool   `json:"actionable"`
+		Accurate                 string `json:"accurate" enum:"yes,no,unknown"`
+		DocumentationAvailable   bool   `json:"documentationAvailable"`
+		DocumentationNeedsUpdate bool   `json:"documentationNeedsUpdate"`
 	}
 
 	ExpandAnnotationFields struct {
@@ -119,11 +120,12 @@ func OncallAnnotationFromEnt(an *ent.OncallAnnotation) OncallAnnotation {
 		attr.Creator.Attributes = &usr.Attributes
 	}
 
-	if an.Edges.AlertFeedback != nil {
+	if fb := an.Edges.AlertFeedback; fb != nil {
 		attr.AlertFeedback = &AlertFeedbackInstance{
-			Accurate:               an.Edges.AlertFeedback.Accurate.String(),
-			Actionable:             an.Edges.AlertFeedback.Actionable,
-			DocumentationAvailable: an.Edges.AlertFeedback.DocumentationAvailable.String(),
+			Accurate:                 fb.Accurate.String(),
+			Actionable:               fb.Actionable,
+			DocumentationAvailable:   fb.DocumentationAvailable,
+			DocumentationNeedsUpdate: fb.DocumentationNeedsUpdate,
 		}
 	}
 
@@ -171,7 +173,7 @@ type ListOncallEventsRequest struct {
 	To                 time.Time `query:"to"`
 	ShiftId            uuid.UUID `query:"shiftId"`
 	AlertId            uuid.UUID `query:"alertId"`
-	RosterID           uuid.UUID `query:"rosterId"`
+	RosterId           uuid.UUID `query:"rosterId"`
 	AnnotationRosterId uuid.UUID `query:"annotationRosterId"`
 	WithAnnotations    bool      `query:"withAnnotations"`
 }

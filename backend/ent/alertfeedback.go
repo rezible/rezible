@@ -31,7 +31,9 @@ type AlertFeedback struct {
 	// Accurate holds the value of the "accurate" field.
 	Accurate alertfeedback.Accurate `json:"accurate,omitempty"`
 	// DocumentationAvailable holds the value of the "documentation_available" field.
-	DocumentationAvailable alertfeedback.DocumentationAvailable `json:"documentation_available,omitempty"`
+	DocumentationAvailable bool `json:"documentation_available,omitempty"`
+	// DocumentationNeedsUpdate holds the value of the "documentation_needs_update" field.
+	DocumentationNeedsUpdate bool `json:"documentation_needs_update,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertFeedbackQuery when eager-loading is set.
 	Edges        AlertFeedbackEdges `json:"edges"`
@@ -89,11 +91,11 @@ func (*AlertFeedback) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case alertfeedback.FieldActionable:
+		case alertfeedback.FieldActionable, alertfeedback.FieldDocumentationAvailable, alertfeedback.FieldDocumentationNeedsUpdate:
 			values[i] = new(sql.NullBool)
 		case alertfeedback.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case alertfeedback.FieldAccurate, alertfeedback.FieldDocumentationAvailable:
+		case alertfeedback.FieldAccurate:
 			values[i] = new(sql.NullString)
 		case alertfeedback.FieldID, alertfeedback.FieldAlertID, alertfeedback.FieldAnnotationID:
 			values[i] = new(uuid.UUID)
@@ -149,10 +151,16 @@ func (af *AlertFeedback) assignValues(columns []string, values []any) error {
 				af.Accurate = alertfeedback.Accurate(value.String)
 			}
 		case alertfeedback.FieldDocumentationAvailable:
-			if value, ok := values[i].(*sql.NullString); !ok {
+			if value, ok := values[i].(*sql.NullBool); !ok {
 				return fmt.Errorf("unexpected type %T for field documentation_available", values[i])
 			} else if value.Valid {
-				af.DocumentationAvailable = alertfeedback.DocumentationAvailable(value.String)
+				af.DocumentationAvailable = value.Bool
+			}
+		case alertfeedback.FieldDocumentationNeedsUpdate:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field documentation_needs_update", values[i])
+			} else if value.Valid {
+				af.DocumentationNeedsUpdate = value.Bool
 			}
 		default:
 			af.selectValues.Set(columns[i], values[i])
@@ -222,6 +230,9 @@ func (af *AlertFeedback) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("documentation_available=")
 	builder.WriteString(fmt.Sprintf("%v", af.DocumentationAvailable))
+	builder.WriteString(", ")
+	builder.WriteString("documentation_needs_update=")
+	builder.WriteString(fmt.Sprintf("%v", af.DocumentationNeedsUpdate))
 	builder.WriteByte(')')
 	return builder.String()
 }
